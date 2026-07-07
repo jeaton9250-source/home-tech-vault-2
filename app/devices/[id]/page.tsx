@@ -161,7 +161,7 @@ export default async function Home() {
           </p>
 
           <div className="mt-5 bg-blue-50 rounded-xl p-5">
-            <h3 className="font-semibold text-blue-950">💡 Recommendation</h3>
+            <h3 className="font-semibold text-blue-950"> Recommendation</h3>
 
             <p className="text-gray-700 mt-2">
               Add warranty dates, purchase prices, locations, notes, and serial
