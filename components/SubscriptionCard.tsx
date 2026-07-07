@@ -1,3 +1,6 @@
+import Link from "next/link";
+import DeleteSubscriptionButton from "@/components/DeleteSubscriptionButton";
+
 type SubscriptionCardProps = {
   subscription: {
     id: string;
@@ -28,6 +31,17 @@ export default function SubscriptionCard({ subscription }: SubscriptionCardProps
       {subscription.notes && (
         <p className="mt-4 text-gray-600">{subscription.notes}</p>
       )}
+
+      <div className="flex gap-3 mt-5">
+        <Link
+          href={`/subscriptions/${subscription.id}/edit`}
+          className="bg-blue-950 text-white px-4 py-2 rounded-xl text-sm"
+        >
+          Edit
+        </Link>
+
+        <DeleteSubscriptionButton subscriptionId={subscription.id} />
+      </div>
     </div>
   );
 }
