@@ -1,100 +1,60 @@
-import { supabase } from "@/lib/supabase";
 import Link from "next/link";
-import { Laptop, ArrowLeft } from "lucide-react";
-import DeleteDeviceButton from "@/components/DeleteDeviceButton";
+import { supabase } from "@/lib/supabase";
+import PageHeader from "@/components/PageHeader";
 
-export default async function DeviceDetails({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
-
-  const { data: device, error } = await supabase
-    .from("devices")
+export default async function DocumentsPage() {
+  const { data: documents, error } = await supabase
+    .from("documents")
     .select("*")
-    .eq("id", id)
-    .maybeSingle();
+    .order("created_at", { ascending: false });
 
-  if (error || !device) {
-    return (
-      <main className="p-8">
-        <Link href="/devices" className="text-blue-950 font-semibold">
-          Back to Inventory
-        </Link>
-
-        <p className="mt-6 text-red-600">Device not found.</p>
-      </main>
-    );
+  if (error) {
+    return <main className="p-8">Error: {error.message}</main>;
   }
 
   return (
-    <main className="p-8">
-      <div className="flex items-center justify-between">
-        <Link
-          href="/devices"
-          className="inline-flex items-center gap-2 text-blue-950 font-semibold"
-        >
-          <ArrowLeft size={18} /> Back to Inventory
-        </Link>
-
-        <div className="flex gap-3">
+    <main className="min-h-screen bg-gray-100 p-8">
+      <PageHeader
+        title="Document Vault"
+        description="Store receipts, manuals, warranties, invoices, and device files."
+        action={
           <Link
-            href={`/devices/${device.id}/edit`}
-            className="bg-blue-950 text-white px-5 py-3 rounded-xl"
+            href="/documents/upload"
+            className="bg-blue-950 text-white px-6 py-3 rounded-xl"
           >
-            Edit Device
+            + Upload Document
           </Link>
+        }
+      />
 
-          <DeleteDeviceButton deviceId={device.id} />
-        </div>
-      </div>
+      {documents?.length === 0 && (
+        <div className="bg-white rounded-2xl shadow p-10 mt-8 text-center">
+          <h2 className="text-2xl font-bold text-blue-950">
+            No documents uploaded yet
+          </h2>
 
-      <div className="bg-white rounded-3xl shadow p-8 mt-6">
-        <div className="flex items-center gap-5">
-          <div className="bg-blue-50 text-blue-950 p-5 rounded-2xl">
-            <Laptop size={42} />
-          </div>
-
-          <div>
-            <h1 className="text-4xl font-bold text-blue-950">
-              {device.device_name}
-            </h1>
-            <p className="text-gray-500 mt-1">
-              {device.brand} • {device.category}
-            </p>
-          </div>
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-6 mt-10">
-          <Info title="Model Number" value={device.model_number} />
-          <Info title="Serial Number" value={device.serial_number} />
-          <Info title="Location" value={device.location} />
-          <Info title="Purchase Date" value={device.purchase_date} />
-          <Info title="Warranty Date" value={device.warranty_date} />
-          <Info
-            title="Purchase Price"
-            value={device.purchase_price ? `$${device.purchase_price}` : "-"}
-          />
-        </div>
-
-        <div className="mt-10">
-          <h2 className="text-2xl font-bold text-blue-950">Tech Notes</h2>
-
-          <p className="bg-gray-50 rounded-2xl p-5 mt-4 text-gray-700">
-            {device.notes || "No notes added yet."}
+          <p className="text-gray-600 mt-2">
+            Upload receipts, manuals, warranty PDFs, invoices, and photos.
           </p>
         </div>
+      )}
+
+      <div className="grid md:grid-cols-3 gap-6 mt-8">
+        {documents?.map((doc) => (
+          <a
+            key={doc.id}
+            href={doc.file_url}
+            target="_blank"
+            className="bg-white rounded-2xl shadow p-6 border border-gray-100 hover:shadow-lg transition"
+          >
+            <p className="text-sm text-gray-500">{doc.file_type}</p>
+            <h2 className="text-xl font-bold text-blue-950 mt-2">
+              {doc.file_name}
+            </h2>
+            <p className="text-gray-500 mt-4">Open file →</p>
+          </a>
+        ))}
       </div>
     </main>
-  );
-}
-
-function Info({ title, value }: { title: string; value?: string }) {
-  return (
-    <div className="bg-gray-50 rounded-2xl p-5">
-      <p className="text-sm text-gray-500">{title}</p>
-      <p className="font-semibold text-blue-950 mt-1">{value || "-"}</p>
-    </div>
   );
 }

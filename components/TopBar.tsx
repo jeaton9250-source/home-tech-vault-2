@@ -1,26 +1,52 @@
-import { Search, Bell, UserCircle } from "lucide-react";
+"use client";
+
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import Link from "next/link";
 
 export default function TopBar() {
+  const [email, setEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function loadUser() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      setEmail(user?.email ?? null);
+    }
+
+    loadUser();
+  }, []);
+
+  async function signOut() {
+    await supabase.auth.signOut();
+    window.location.href = "/login";
+  }
+
   return (
-    <header className="h-20 bg-white border-b border-gray-200 flex items-center justify-between px-8">
-      <div className="relative w-full max-w-md">
-        <Search className="absolute left-3 top-3 text-gray-400" size={20} />
-        <input
-          className="w-full bg-gray-100 rounded-xl pl-10 pr-4 py-3 outline-none"
-          placeholder="Search your vault..."
-        />
-      </div>
+    <header className="bg-white border-b px-8 py-5 flex justify-between items-center">
+      <h2 className="text-xl font-bold text-blue-950">Home Tech Vault™</h2>
 
-      <div className="flex items-center gap-4">
-        <button className="bg-gray-100 p-3 rounded-xl">
-          <Bell size={20} />
-        </button>
+      {email ? (
+        <div className="flex items-center gap-5">
+          <p className="text-gray-600 text-sm">{email}</p>
 
-        <div className="flex items-center gap-2">
-          <UserCircle size={28} className="text-blue-950" />
-          <span className="font-semibold text-blue-950">Jason</span>
+          <button
+            onClick={signOut}
+            className="bg-red-600 text-white px-4 py-2 rounded-xl"
+          >
+            Sign Out
+          </button>
         </div>
-      </div>
+      ) : (
+        <Link
+          href="/login"
+          className="bg-blue-950 text-white px-4 py-2 rounded-xl"
+        >
+          Sign In
+        </Link>
+      )}
     </header>
   );
 }
