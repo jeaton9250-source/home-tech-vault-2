@@ -4,15 +4,26 @@ import { calculateTechnologyScore } from "@/lib/calculateTechnologyScore";
 import {
   Laptop,
   CreditCard,
-  Wrench,
   ShieldCheck,
   ArrowRight,
   Activity,
+  AlertTriangle,
 } from "lucide-react";
 
 import StatCard from "@/components/StatCard";
 import TechnologyScoreCard from "@/components/TechnologyScoreCard";
 import RecommendationCard from "@/components/RecommendationCard";
+
+function isWithinDays(dateString?: string, days = 30) {
+  if (!dateString) return false;
+
+  const today = new Date();
+  const target = new Date(dateString);
+  const diffTime = target.getTime() - today.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  return diffDays >= 0 && diffDays <= days;
+}
 
 export default async function Home() {
   const { data: devices } = await supabase.from("devices").select("*");
@@ -27,6 +38,12 @@ export default async function Home() {
 
   const totalDeviceValue =
     devices?.reduce((sum, device) => sum + Number(device.purchase_price || 0), 0) ?? 0;
+
+  const warrantiesExpiring =
+    devices?.filter((device) => isWithinDays(device.warranty_date, 30)) ?? [];
+
+  const renewalsComing =
+    subscriptions?.filter((sub) => isWithinDays(sub.renewal_date, 30)) ?? [];
 
   const missingSerials =
     devices?.filter((device) => !device.serial_number).length ?? 0;
@@ -81,7 +98,7 @@ export default async function Home() {
           </div>
           <h2 className="text-xl font-bold text-blue-950 mt-5">Subscription Tracker</h2>
           <p className="text-gray-600 mt-2">
-            Keep track of streaming services, software, cloud storage, and recurring subscriptions.
+            Track streaming, apps, cloud storage, and recurring subscriptions.
           </p>
           <Link href="/subscriptions" className="inline-flex items-center gap-2 mt-5 text-blue-950 font-semibold">
             Manage Subscriptions <ArrowRight size={16} />
@@ -94,7 +111,7 @@ export default async function Home() {
           </div>
           <h2 className="text-xl font-bold text-blue-950 mt-5">Security Center</h2>
           <p className="text-gray-600 mt-2">
-            Review passwords, backups, software updates, and improve your Technology Health Score™.
+            Review passwords, backups, software updates, and improve your score.
           </p>
           <Link href="/security" className="inline-flex items-center gap-2 mt-5 text-blue-950 font-semibold">
             Review Security <ArrowRight size={16} />
@@ -105,33 +122,45 @@ export default async function Home() {
       <div className="grid md:grid-cols-2 gap-6 mt-8">
         <div className="bg-white rounded-2xl shadow p-6">
           <div className="flex items-center gap-3">
+            <AlertTriangle className="text-blue-950" />
+            <h2 className="text-2xl font-bold text-blue-950">Upcoming Reminders</h2>
+          </div>
+
+          <div className="mt-5 space-y-3 text-gray-700">
+            <p>⚠ {warrantiesExpiring.length} warranties expiring in 30 days</p>
+            <p>💳 {renewalsComing.length} subscriptions renewing in 30 days</p>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl shadow p-6">
+          <div className="flex items-center gap-3">
             <Activity className="text-blue-950" />
             <h2 className="text-2xl font-bold text-blue-950">Recent Activity</h2>
           </div>
 
           <div className="mt-5 space-y-3 text-gray-700">
-            <p>✓ Inventory system updated</p>
             <p>✓ {deviceCount} devices currently tracked</p>
             <p>✓ {subscriptionCount} subscriptions currently tracked</p>
+            <p>✓ Dashboard insights updated</p>
           </div>
         </div>
+      </div>
 
-        <div className="space-y-4">
-          <RecommendationCard
-            title="Improve your Technology Score"
-            description={`You have ${missingSerials} devices missing serial numbers and ${missingWarranty} missing warranty dates.`}
-          />
+      <div className="grid md:grid-cols-3 gap-6 mt-8">
+        <RecommendationCard
+          title="Improve your Technology Score"
+          description={`You have ${missingSerials} devices missing serial numbers and ${missingWarranty} missing warranty dates.`}
+        />
 
-          <RecommendationCard
-            title="Review monthly subscriptions"
-            description={`Your current monthly digital spend is $${monthlySpend.toFixed(2)}.`}
-          />
+        <RecommendationCard
+          title="Watch upcoming renewals"
+          description={`${renewalsComing.length} subscriptions renew within the next 30 days.`}
+        />
 
-          <RecommendationCard
-            title="Build your digital vault"
-            description="Next, add photos, receipts, manuals, and warranty documents to each device."
-          />
-        </div>
+        <RecommendationCard
+          title="Protect your purchases"
+          description={`${warrantiesExpiring.length} warranties expire within the next 30 days.`}
+        />
       </div>
     </main>
   );
