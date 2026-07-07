@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import DeviceCard from "@/components/DeviceCard";
+import PageHeader from "@/components/PageHeader";
 
 export default async function Devices({
   searchParams,
@@ -35,23 +36,18 @@ export default async function Devices({
 
   return (
     <main className="min-h-screen bg-gray-100 p-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-4xl font-bold text-blue-950">
-            Technology Inventory
-          </h1>
-          <p className="text-gray-600 mt-2">
-            Search, filter, and manage your home technology.
-          </p>
-        </div>
-
-        <Link
-          href="/devices/add"
-          className="bg-blue-950 text-white px-5 py-3 rounded-xl"
-        >
-          + Add Device
-        </Link>
-      </div>
+      <PageHeader
+        title="Technology Inventory"
+        description="Search, filter, and manage your home technology."
+        action={
+          <Link
+            href="/devices/add"
+            className="bg-blue-950 text-white px-5 py-3 rounded-xl"
+          >
+            + Add Device
+          </Link>
+        }
+      />
 
       <form className="bg-white rounded-2xl shadow p-5 mt-8 flex gap-4">
         <input
@@ -77,9 +73,7 @@ export default async function Devices({
       </form>
 
       {devices?.length === 0 && (
-        <p className="mt-8 text-gray-600">
-          No devices found.
-        </p>
+        <p className="mt-8 text-gray-600">No devices found.</p>
       )}
 
       <div className="grid md:grid-cols-3 gap-6 mt-8">

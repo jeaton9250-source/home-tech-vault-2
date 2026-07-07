@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { calculateTechnologyScore } from "@/lib/calculateTechnologyScore";
 import StatCard from "@/components/StatCard";
+import PageHeader from "@/components/PageHeader";
 
 export default async function ReportsPage() {
   const { data: devices } = await supabase.from("devices").select("*");
@@ -8,7 +9,6 @@ export default async function ReportsPage() {
 
   const deviceCount = devices?.length ?? 0;
   const subscriptionCount = subscriptions?.length ?? 0;
-
   const technologyScore = calculateTechnologyScore(devices ?? []);
 
   const totalDeviceValue =
@@ -26,44 +26,22 @@ export default async function ReportsPage() {
     devices?.filter((device) => !device.warranty_date).length ?? 0;
 
   return (
-    <main className="p-8">
-      <h1 className="text-4xl font-bold text-blue-950">Reports</h1>
-
-      <p className="text-gray-600 mt-2">
-        A snapshot of your home technology, subscriptions, and digital organization.
-      </p>
+    <main className="min-h-screen bg-gray-100 p-8">
+      <PageHeader
+        title="Reports"
+        description="A snapshot of your home technology, subscriptions, and digital organization."
+      />
 
       <div className="grid md:grid-cols-4 gap-6 mt-8">
-        <StatCard
-          title="Technology Score"
-          value={`${technologyScore}/100`}
-          description="Overall home tech health"
-        />
-
-        <StatCard
-          title="Device Value"
-          value={`$${totalDeviceValue.toFixed(2)}`}
-          description={`${deviceCount} devices tracked`}
-        />
-
-        <StatCard
-          title="Monthly Spend"
-          value={`$${monthlySpend.toFixed(2)}`}
-          description={`${subscriptionCount} subscriptions`}
-        />
-
-        <StatCard
-          title="Yearly Spend"
-          value={`$${yearlySpend.toFixed(2)}`}
-          description="Estimated annual subscription cost"
-        />
+        <StatCard title="Technology Score" value={`${technologyScore}/100`} description="Overall home tech health" />
+        <StatCard title="Device Value" value={`$${totalDeviceValue.toFixed(2)}`} description={`${deviceCount} devices tracked`} />
+        <StatCard title="Monthly Spend" value={`$${monthlySpend.toFixed(2)}`} description={`${subscriptionCount} subscriptions`} />
+        <StatCard title="Yearly Spend" value={`$${yearlySpend.toFixed(2)}`} description="Estimated annual subscription cost" />
       </div>
 
       <div className="grid md:grid-cols-2 gap-6 mt-8">
         <div className="bg-white rounded-2xl shadow p-6">
-          <h2 className="text-2xl font-bold text-blue-950">
-            Inventory Completeness
-          </h2>
+          <h2 className="text-2xl font-bold text-blue-950">Inventory Completeness</h2>
 
           <div className="mt-5 space-y-3 text-gray-700">
             <p>Devices missing serial numbers: {devicesMissingSerial}</p>
@@ -73,9 +51,7 @@ export default async function ReportsPage() {
         </div>
 
         <div className="bg-white rounded-2xl shadow p-6">
-          <h2 className="text-2xl font-bold text-blue-950">
-            Subscription Summary
-          </h2>
+          <h2 className="text-2xl font-bold text-blue-950">Subscription Summary</h2>
 
           <div className="mt-5 space-y-3 text-gray-700">
             <p>Subscriptions tracked: {subscriptionCount}</p>

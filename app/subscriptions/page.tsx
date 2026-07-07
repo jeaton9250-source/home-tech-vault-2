@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import SubscriptionCard from "@/components/SubscriptionCard";
+import PageHeader from "@/components/PageHeader";
 
-export default async function Subscriptions() {
+export default async function SubscriptionsPage() {
   const { data: subscriptions, error } = await supabase
     .from("subscriptions")
     .select("*")
@@ -29,35 +30,31 @@ export default async function Subscriptions() {
   const yearlyTotal = monthlyTotal * 12;
 
   return (
-    <main className="p-8">
-
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-4xl font-bold text-blue-950">
-            Subscription Center
-          </h1>
-
-          <p className="text-gray-600 mt-2">
-            Manage all of your recurring digital services.
-          </p>
-        </div>
-
-        <Link
-          href="/subscriptions/add"
-          className="bg-blue-950 text-white px-6 py-3 rounded-xl"
-        >
-          + Add Subscription
-        </Link>
-      </div>
+    <main className="min-h-screen bg-gray-100 p-8">
+      <PageHeader
+        title="Subscription Center"
+        description="Manage all of your recurring digital services."
+        action={
+          <Link
+            href="/subscriptions/add"
+            className="bg-blue-950 text-white px-6 py-3 rounded-xl hover:bg-blue-900 transition"
+          >
+            + Add Subscription
+          </Link>
+        }
+      />
 
       <div className="grid md:grid-cols-2 gap-6 mt-8">
-
         <div className="bg-white rounded-2xl shadow p-6">
           <p className="text-gray-500">Monthly Spend</p>
 
           <h2 className="text-4xl font-bold text-blue-950 mt-2">
             ${monthlyTotal.toFixed(2)}
           </h2>
+
+          <p className="text-gray-500 mt-2">
+            Across {subscriptions?.length ?? 0} subscriptions
+          </p>
         </div>
 
         <div className="bg-white rounded-2xl shadow p-6">
@@ -66,20 +63,30 @@ export default async function Subscriptions() {
           <h2 className="text-4xl font-bold text-blue-950 mt-2">
             ${yearlyTotal.toFixed(2)}
           </h2>
-        </div>
 
+          <p className="text-gray-500 mt-2">
+            Estimated annual recurring cost
+          </p>
+        </div>
       </div>
 
-      {subscriptions.length === 0 && (
+      {subscriptions?.length === 0 && (
         <div className="bg-white rounded-2xl shadow p-10 mt-8 text-center">
           <h2 className="text-2xl font-bold text-blue-950">
             No subscriptions yet
           </h2>
 
           <p className="text-gray-600 mt-2">
-            Start tracking Netflix, Apple One, ChatGPT, Adobe,
-            Microsoft 365, VPNs, and more.
+            Track streaming services, cloud storage, software,
+            AI subscriptions, domains, VPNs, and more.
           </p>
+
+          <Link
+            href="/subscriptions/add"
+            className="inline-block mt-6 bg-blue-950 text-white px-6 py-3 rounded-xl"
+          >
+            Add Your First Subscription
+          </Link>
         </div>
       )}
 
@@ -91,7 +98,6 @@ export default async function Subscriptions() {
           />
         ))}
       </div>
-
     </main>
   );
 }
