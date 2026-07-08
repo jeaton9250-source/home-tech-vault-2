@@ -1,61 +1,91 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Laptop,
-  FileText,
-  Wifi,
-  ShieldCheck,
   CreditCard,
-  Wrench,
+  Wifi,
+  FileText,
   BarChart3,
+  Bot,
   Settings,
 } from "lucide-react";
 
+const links = [
+  {
+    href: "/",
+    label: "Dashboard",
+    icon: LayoutDashboard,
+  },
+  {
+    href: "/devices",
+    label: "Devices",
+    icon: Laptop,
+  },
+  {
+    href: "/subscriptions",
+    label: "Subscriptions",
+    icon: CreditCard,
+  },
+  {
+    href: "/network",
+    label: "Network",
+    icon: Wifi,
+  },
+  {
+    href: "/documents",
+    label: "Documents",
+    icon: FileText,
+  },
+  {
+    href: "/reports",
+    label: "Reports",
+    icon: BarChart3,
+  },
+  {
+    href: "/ai",
+    label: "Home Tech AI",
+    icon: Bot,
+  },
+  {
+    href: "/settings",
+    label: "Settings",
+    icon: Settings,
+  },
+];
+
 export default function Sidebar() {
-  const links = [
-    { href: "/", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/devices", label: "Inventory", icon: Laptop },
-    { href: "/documents", label: "Documents", icon: FileText },
-    { href: "/network", label: "Network", icon: Wifi },
-    { href: "/security", label: "Security", icon: ShieldCheck },
-    { href: "/subscriptions", label: "Subscriptions", icon: CreditCard },
-    { href: "/maintenance", label: "Maintenance", icon: Wrench },
-    { href: "/reports", label: "Reports", icon: BarChart3 },
-    { href: "/settings", label: "Settings", icon: Settings },
-  ];
+  const pathname = usePathname();
 
   return (
-    <aside className="w-72 min-h-screen bg-blue-950 text-white p-6">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold">Home Tech Vault™</h1>
-        <p className="text-sm text-blue-200 mt-1">
-          Organize. Protect. Simplify.
-        </p>
-      </div>
+    <aside className="w-72 bg-blue-950 text-white min-h-screen p-6">
+      <h1 className="text-2xl font-bold mb-10">
+        Home Tech Vault™
+      </h1>
 
       <nav className="space-y-2">
-        {links.map((item) => {
-          const Icon = item.icon;
+        {links.map((link) => {
+          const Icon = link.icon;
+          const active = pathname === link.href;
 
           return (
             <Link
-              key={item.href}
-              href={item.href}
-              className="flex items-center gap-3 rounded-xl px-4 py-3 hover:bg-blue-900 transition"
+              key={link.href}
+              href={link.href}
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition ${
+                active
+                  ? "bg-white text-blue-950 font-semibold"
+                  : "hover:bg-blue-900"
+              }`}
             >
               <Icon size={20} />
-              <span>{item.label}</span>
+              {link.label}
             </Link>
           );
         })}
       </nav>
-
-      <div className="mt-10 rounded-2xl bg-blue-900 p-4">
-        <p className="text-sm font-semibold">Vault Status</p>
-        <p className="text-xs text-blue-200 mt-1">
-          Your home technology system is being built.
-        </p>
-      </div>
     </aside>
   );
 }

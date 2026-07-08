@@ -1,14 +1,15 @@
-
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
 export default function EditDevice({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = use(params);
+
   const [deviceName, setDeviceName] = useState("");
   const [category, setCategory] = useState("");
   const [brand, setBrand] = useState("");
@@ -19,13 +20,15 @@ export default function EditDevice({
   const [purchasePrice, setPurchasePrice] = useState("");
   const [location, setLocation] = useState("");
   const [notes, setNotes] = useState("");
+  const [photoUrl, setPhotoUrl] = useState("");
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
 
   useEffect(() => {
     async function loadDevice() {
       const { data, error } = await supabase
         .from("devices")
         .select("*")
-        .eq("id", params.id)
+        .eq("id", id)
         .single();
 
       if (error) {
@@ -43,12 +46,36 @@ export default function EditDevice({
       setPurchasePrice(data.purchase_price ? String(data.purchase_price) : "");
       setLocation(data.location || "");
       setNotes(data.notes || "");
+      setPhotoUrl(data.photo_url || "");
     }
 
     loadDevice();
-  }, [params.id]);
+  }, [id]);
+
+  async function uploadPhoto() {
+    if (!photoFile) return photoUrl;
+
+    const filePath = `${id}/${Date.now()}-${photoFile.name}`;
+
+    const { error } = await supabase.storage
+      .from("device-photos")
+      .upload(filePath, photoFile);
+
+    if (error) {
+      alert(error.message);
+      return photoUrl;
+    }
+
+    const { data } = supabase.storage
+      .from("device-photos")
+      .getPublicUrl(filePath);
+
+    return data.publicUrl;
+  }
 
   async function updateDevice() {
+    const newPhotoUrl = await uploadPhoto();
+
     const { error } = await supabase
       .from("devices")
       .update({
@@ -62,14 +89,15 @@ export default function EditDevice({
         purchase_price: purchasePrice ? Number(purchasePrice) : null,
         location,
         notes,
+        photo_url: newPhotoUrl,
       })
-      .eq("id", params.id);
+      .eq("id", id);
 
     if (error) {
       alert(error.message);
     } else {
       alert("Device updated!");
-      window.location.href = `/devices/${params.id}`;
+      window.location.href = `/devices/${id}`;
     }
   }
 
@@ -78,6 +106,22 @@ export default function EditDevice({
       <h1 className="text-4xl font-bold text-blue-950">Edit Device</h1>
 
       <div className="bg-white mt-8 p-6 rounded-2xl shadow max-w-2xl">
+        {photoUrl && (
+          <img
+            src={photoUrl}
+            alt="Device photo"
+            className="w-full h-64 object-cover rounded-2xl mb-6"
+          />
+        )}
+
+        <label className="block mb-2 font-semibold">Device Photo</label>
+        <input
+          type="file"
+          accept="image/*"
+          className="border p-3 rounded-xl w-full mb-4"
+          onChange={(e) => setPhotoFile(e.target.files?.[0] || null)}
+        />
+
         <input className="border p-3 rounded-xl w-full mb-4" value={deviceName} placeholder="Device Name" onChange={(e) => setDeviceName(e.target.value)} />
         <input className="border p-3 rounded-xl w-full mb-4" value={category} placeholder="Category" onChange={(e) => setCategory(e.target.value)} />
         <input className="border p-3 rounded-xl w-full mb-4" value={brand} placeholder="Brand" onChange={(e) => setBrand(e.target.value)} />

@@ -12,7 +12,18 @@ export default function AddSubscription() {
   const [notes, setNotes] = useState("");
 
   async function saveSubscription() {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      alert("Please sign in first.");
+      window.location.href = "/login";
+      return;
+    }
+
     const { error } = await supabase.from("subscriptions").insert({
+      user_id: user.id,
       service_name: serviceName,
       category,
       monthly_cost: monthlyCost ? Number(monthlyCost) : 0,
@@ -35,9 +46,7 @@ export default function AddSubscription() {
 
       <div className="bg-white mt-8 p-6 rounded-2xl shadow max-w-2xl">
         <input className="border p-3 rounded-xl w-full mb-4" placeholder="Service Name" onChange={(e) => setServiceName(e.target.value)} />
-
         <input className="border p-3 rounded-xl w-full mb-4" placeholder="Category" onChange={(e) => setCategory(e.target.value)} />
-
         <input type="number" className="border p-3 rounded-xl w-full mb-4" placeholder="Monthly Cost" onChange={(e) => setMonthlyCost(e.target.value)} />
 
         <label className="block mb-2 font-semibold">Renewal Date</label>

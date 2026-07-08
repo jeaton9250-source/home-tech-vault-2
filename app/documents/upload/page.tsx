@@ -16,9 +16,16 @@ export default function UploadDocumentPage() {
 
   useEffect(() => {
     async function loadDevices() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) return;
+
       const { data } = await supabase
         .from("devices")
-        .select("id, device_name");
+        .select("id, device_name")
+        .eq("user_id", user.id);
 
       setDevices(data || []);
     }
@@ -27,12 +34,22 @@ export default function UploadDocumentPage() {
   }, []);
 
   async function uploadDocument() {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      alert("Please sign in first.");
+      window.location.href = "/login";
+      return;
+    }
+
     if (!deviceId || !file) {
       alert("Please select a device and file.");
       return;
     }
 
-    const filePath = `${deviceId}/${Date.now()}-${file.name}`;
+    const filePath = `${user.id}/${deviceId}/${Date.now()}-${file.name}`;
 
     const { error: uploadError } = await supabase.storage
       .from("documents")
@@ -48,6 +65,7 @@ export default function UploadDocumentPage() {
       .getPublicUrl(filePath);
 
     const { error: dbError } = await supabase.from("documents").insert({
+      user_id: user.id,
       device_id: deviceId,
       file_name: file.name,
       file_url: data.publicUrl,
