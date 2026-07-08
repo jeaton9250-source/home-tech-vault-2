@@ -9,21 +9,21 @@ import {
   CreditCard,
   ShieldCheck,
   ArrowRight,
-  Activity,
-  AlertTriangle,
 } from "lucide-react";
 
 import StatCard from "@/components/StatCard";
 import TechnologyScoreCard from "@/components/TechnologyScoreCard";
 import RecommendationCard from "@/components/RecommendationCard";
+import SmartAlertCard from "@/components/SmartAlertCard";
 
 function isWithinDays(dateString?: string, days = 30) {
   if (!dateString) return false;
 
   const today = new Date();
   const target = new Date(dateString);
-  const diffTime = target.getTime() - today.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const diffDays = Math.ceil(
+    (target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+  );
 
   return diffDays >= 0 && diffDays <= days;
 }
@@ -46,10 +46,7 @@ export default function Home() {
 
       setIsDemo(false);
 
-      const { data: deviceData } = await supabase
-        .from("devices")
-        .select("*");
-
+      const { data: deviceData } = await supabase.from("devices").select("*");
       const { data: subscriptionData } = await supabase
         .from("subscriptions")
         .select("*");
@@ -63,7 +60,6 @@ export default function Home() {
 
   const deviceCount = isDemo ? 14 : devices.length;
   const subscriptionCount = isDemo ? 9 : subscriptions.length;
-
   const technologyScore = isDemo ? 94 : calculateTechnologyScore(devices);
 
   const monthlySpend = isDemo
@@ -113,9 +109,9 @@ export default function Home() {
         {isDemo && (
           <div className="mt-5 bg-blue-800/60 border border-blue-600 rounded-xl p-4">
             <p className="text-sm text-blue-100">
-              👋 You're viewing a demo of Home Tech Vault. Create a free account
-              to securely manage your own devices, subscriptions, documents, and
-              home network.
+              👋 You&apos;re viewing a demo of Home Tech Vault. Create a free
+              account to securely manage your own devices, subscriptions,
+              documents, and home network.
             </p>
           </div>
         )}
@@ -152,6 +148,70 @@ export default function Home() {
           description="Estimated device value"
         />
       </div>
+
+      <section className="mt-10">
+        <h2 className="text-3xl font-bold text-blue-950 mb-6">
+          Mission Control
+        </h2>
+
+        <div className="grid gap-6 lg:grid-cols-2">
+          <SmartAlertCard
+            tone={warrantiesExpiring.length > 0 ? "warning" : "success"}
+            title={
+              warrantiesExpiring.length > 0
+                ? `${warrantiesExpiring.length} Warranty Alerts`
+                : "All Warranties Look Good"
+            }
+            description={
+              warrantiesExpiring.length > 0
+                ? "Review warranties that expire within the next 30 days."
+                : "No warranties require immediate attention."
+            }
+          />
+
+          <SmartAlertCard
+            tone={renewalsComing.length > 0 ? "warning" : "success"}
+            title={
+              renewalsComing.length > 0
+                ? `${renewalsComing.length} Subscription Renewals`
+                : "Subscriptions Up To Date"
+            }
+            description={
+              renewalsComing.length > 0
+                ? "Review upcoming renewals to avoid unwanted charges."
+                : "No subscriptions renew within the next 30 days."
+            }
+          />
+
+          <SmartAlertCard
+            tone={missingWarranty > 0 ? "warning" : "success"}
+            title={
+              missingWarranty > 0
+                ? `${missingWarranty} Devices Missing Warranty`
+                : "Warranty Documentation Complete"
+            }
+            description={
+              missingWarranty > 0
+                ? "Adding warranty information improves your Technology Score."
+                : "Every tracked device has warranty information."
+            }
+          />
+
+          <SmartAlertCard
+            tone={missingSerials > 0 ? "info" : "success"}
+            title={
+              missingSerials > 0
+                ? `${missingSerials} Missing Serial Numbers`
+                : "Inventory Complete"
+            }
+            description={
+              missingSerials > 0
+                ? "Serial numbers help with insurance claims, warranties, and technical support."
+                : "Every device has a serial number recorded."
+            }
+          />
+        </div>
+      </section>
 
       <div className="grid md:grid-cols-3 gap-6 mt-8">
         <div className="bg-white rounded-2xl shadow p-6 hover:shadow-lg transition">
@@ -216,37 +276,6 @@ export default function Home() {
           >
             Review Security <ArrowRight size={16} />
           </Link>
-        </div>
-      </div>
-
-      <div className="grid md:grid-cols-2 gap-6 mt-8">
-        <div className="bg-white rounded-2xl shadow p-6">
-          <div className="flex items-center gap-3">
-            <AlertTriangle className="text-blue-950" />
-            <h2 className="text-2xl font-bold text-blue-950">
-              Upcoming Reminders
-            </h2>
-          </div>
-
-          <div className="mt-5 space-y-3 text-gray-700">
-            <p>⚠ {warrantiesExpiring.length} warranties expiring in 30 days</p>
-            <p>💳 {renewalsComing.length} subscriptions renewing in 30 days</p>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-2xl shadow p-6">
-          <div className="flex items-center gap-3">
-            <Activity className="text-blue-950" />
-            <h2 className="text-2xl font-bold text-blue-950">
-              Recent Activity
-            </h2>
-          </div>
-
-          <div className="mt-5 space-y-3 text-gray-700">
-            <p>✓ {deviceCount} devices currently tracked</p>
-            <p>✓ {subscriptionCount} subscriptions currently tracked</p>
-            <p>✓ Dashboard insights updated</p>
-          </div>
         </div>
       </div>
 

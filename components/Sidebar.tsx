@@ -9,6 +9,7 @@ import {
   Wifi,
   FileText,
   BarChart3,
+  ClipboardCheck,
   Bot,
   Settings,
   ShieldCheck,
@@ -22,6 +23,7 @@ const links = [
   { href: "/documents", label: "Documents", icon: FileText },
   { href: "/warranties", label: "Warranties", icon: ShieldCheck },
   { href: "/reports", label: "Reports", icon: BarChart3 },
+  { href: "/audit", label: "Technology Audit", icon: ClipboardCheck },
   { href: "/ai", label: "Home Tech AI", icon: Bot },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
