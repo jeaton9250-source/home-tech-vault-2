@@ -11,49 +11,19 @@ import {
   BarChart3,
   Bot,
   Settings,
+  ShieldCheck,
 } from "lucide-react";
 
 const links = [
-  {
-    href: "/",
-    label: "Dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    href: "/devices",
-    label: "Devices",
-    icon: Laptop,
-  },
-  {
-    href: "/subscriptions",
-    label: "Subscriptions",
-    icon: CreditCard,
-  },
-  {
-    href: "/network",
-    label: "Network",
-    icon: Wifi,
-  },
-  {
-    href: "/documents",
-    label: "Documents",
-    icon: FileText,
-  },
-  {
-    href: "/reports",
-    label: "Reports",
-    icon: BarChart3,
-  },
-  {
-    href: "/ai",
-    label: "Home Tech AI",
-    icon: Bot,
-  },
-  {
-    href: "/settings",
-    label: "Settings",
-    icon: Settings,
-  },
+  { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/devices", label: "Devices", icon: Laptop },
+  { href: "/subscriptions", label: "Subscriptions", icon: CreditCard },
+  { href: "/network", label: "Network", icon: Wifi },
+  { href: "/documents", label: "Documents", icon: FileText },
+  { href: "/warranties", label: "Warranties", icon: ShieldCheck },
+  { href: "/reports", label: "Reports", icon: BarChart3 },
+  { href: "/ai", label: "Home Tech AI", icon: Bot },
+  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 export default function Sidebar() {
@@ -61,9 +31,7 @@ export default function Sidebar() {
 
   return (
     <aside className="w-72 bg-blue-950 text-white min-h-screen p-6">
-      <h1 className="text-2xl font-bold mb-10">
-        Home Tech Vault™
-      </h1>
+      <h1 className="text-2xl font-bold mb-10">Home Tech Vault™</h1>
 
       <nav className="space-y-2">
         {links.map((link) => {

@@ -2,6 +2,10 @@ import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import { Laptop, ArrowLeft, FileText } from "lucide-react";
 import DeleteDeviceButton from "@/components/DeleteDeviceButton";
+import {
+  calculateDeviceHealth,
+  getDeviceHealthLabel,
+} from "@/lib/calculateDeviceHealth";
 
 export default async function DeviceDetails({
   params,
@@ -32,6 +36,9 @@ export default async function DeviceDetails({
       </main>
     );
   }
+
+  const healthScore = calculateDeviceHealth(device);
+  const healthLabel = getDeviceHealthLabel(healthScore);
 
   return (
     <main className="p-8">
@@ -80,6 +87,25 @@ export default async function DeviceDetails({
           <p className="text-gray-500 mt-1">
             {device.brand} • {device.category}
           </p>
+
+          <div className="bg-blue-50 rounded-2xl p-6 mt-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-600">Device Health</p>
+                <h2 className="text-3xl font-bold text-blue-950 mt-1">
+                  {healthScore}/100
+                </h2>
+                <p className="text-gray-600 mt-1">{healthLabel}</p>
+              </div>
+            </div>
+
+            <div className="w-full bg-white rounded-full h-3 mt-5">
+              <div
+                className="bg-blue-950 h-3 rounded-full"
+                style={{ width: `${healthScore}%` }}
+              />
+            </div>
+          </div>
 
           <div className="grid md:grid-cols-3 gap-6 mt-10">
             <Info title="Model Number" value={device.model_number} />
