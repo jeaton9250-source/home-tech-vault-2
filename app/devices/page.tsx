@@ -2,10 +2,10 @@
 import { demoDevices } from "@/lib/demo/devices";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
 import DeviceCard from "@/components/DeviceCard";
 import PageHeader from "@/components/PageHeader";
 import { useDemoMode } from "@/hooks/useDemoMode";
+import { getDevices } from "@/lib/data/devices";
 
 
 export default function DevicesPage() {
@@ -18,30 +18,19 @@ export default function DevicesPage() {
   const categories = ["All", "Computer", "Phone", "Tablet", "TV", "Smart Home", "Other"];
 
   useEffect(() => {
-    async function loadDevices() {
-      if (loading) return;
+  async function loadDevices() {
+    if (loading) return;
 
-      if (isDemo || !user) {
-        setDevices(demoDevices);
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from("devices")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("device_name");
-
-      if (error) {
-        alert(error.message);
-        return;
-      }
-
-      setDevices(data || []);
+    try {
+      const data = await getDevices(user);
+      setDevices(data);
+    } catch (error: any) {
+      alert(error.message);
     }
+  }
 
-    loadDevices();
-  }, [user, isDemo, loading]);
+  loadDevices();
+}, [user, loading]);
 
   const filteredDevices = useMemo(() => {
     return devices.filter((device) => {
