@@ -1,5 +1,5 @@
 "use client";
-
+import { demoDevices } from "@/lib/demo/devices";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
@@ -7,36 +7,6 @@ import DeviceCard from "@/components/DeviceCard";
 import PageHeader from "@/components/PageHeader";
 import { useDemoMode } from "@/hooks/useDemoMode";
 
-const demoDevices = [
-  {
-    id: "demo-1",
-    device_name: "MacBook Pro",
-    brand: "Apple",
-    category: "Computer",
-    model_number: "M3 Pro",
-    serial_number: "DEMO-12345",
-    purchase_date: "2025-03-12",
-    warranty_date: "2027-03-12",
-    purchase_price: 1899,
-    location: "Home Office",
-    notes: "Demo device",
-    photo_url: "",
-  },
-  {
-    id: "demo-2",
-    device_name: "Samsung Smart TV",
-    brand: "Samsung",
-    category: "TV",
-    model_number: "QLED",
-    serial_number: "",
-    purchase_date: "2024-08-10",
-    warranty_date: "",
-    purchase_price: 899,
-    location: "Living Room",
-    notes: "Demo device",
-    photo_url: "",
-  },
-];
 
 export default function DevicesPage() {
   const { user, isDemo, loading } = useDemoMode();
