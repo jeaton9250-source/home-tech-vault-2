@@ -5,57 +5,119 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Laptop,
+  FileText,
   CreditCard,
   Wifi,
-  FileText,
+  Shield,
   BarChart3,
-  ClipboardCheck,
-  Bot,
   Settings,
-  ShieldCheck,
 } from "lucide-react";
 
 const links = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/devices", label: "Devices", icon: Laptop },
-  { href: "/subscriptions", label: "Subscriptions", icon: CreditCard },
-  { href: "/network", label: "Network", icon: Wifi },
-  { href: "/documents", label: "Documents", icon: FileText },
-  { href: "/warranties", label: "Warranties", icon: ShieldCheck },
-  { href: "/reports", label: "Reports", icon: BarChart3 },
-  { href: "/audit", label: "Technology Audit", icon: ClipboardCheck },
-  { href: "/ai", label: "Home Tech AI", icon: Bot },
-  { href: "/settings", label: "Settings", icon: Settings },
+  {
+    title: "Overview",
+    href: "/",
+    icon: LayoutDashboard,
+  },
+  {
+    title: "Devices",
+    href: "/devices",
+    icon: Laptop,
+  },
+  {
+    title: "Documents",
+    href: "/documents",
+    icon: FileText,
+  },
+  {
+    title: "Subscriptions",
+    href: "/subscriptions",
+    icon: CreditCard,
+  },
+  {
+    title: "Network",
+    href: "/network",
+    icon: Wifi,
+  },
+  {
+    title: "Security",
+    href: "/security",
+    icon: Shield,
+  },
+  {
+    title: "Reports",
+    href: "/audit",
+    icon: BarChart3,
+  },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-72 bg-blue-950 text-white min-h-screen p-6">
-      <h1 className="text-2xl font-bold mb-10">Home Tech Vault™</h1>
+    <aside className="hidden lg:flex w-72 bg-white border-r border-neutral-200 flex-col">
+      <div className="px-8 py-10">
+        <h1 className="text-2xl font-semibold tracking-tight text-neutral-950">
+          Home Tech Vault
+        </h1>
 
-      <nav className="space-y-2">
-        {links.map((link) => {
-          const Icon = link.icon;
-          const active = pathname === link.href;
+        <p className="mt-2 text-sm text-neutral-500">
+          Organize • Protect • Simplify
+        </p>
+      </div>
 
-          return (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition ${
-                active
-                  ? "bg-white text-blue-950 font-semibold"
-                  : "hover:bg-blue-900"
-              }`}
-            >
-              <Icon size={20} />
-              {link.label}
-            </Link>
-          );
-        })}
+      <nav className="flex-1 px-4">
+        <div className="space-y-2">
+          {links.map((link) => {
+            const Icon = link.icon;
+
+            const active =
+              pathname === link.href ||
+              pathname.startsWith(link.href + "/");
+
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`flex items-center gap-4 rounded-2xl px-5 py-4 transition-all duration-200 ${
+                  active
+                    ? "bg-neutral-950 text-white"
+                    : "text-neutral-600 hover:bg-neutral-100"
+                }`}
+              >
+                <Icon size={20} />
+                <span className="font-medium">{link.title}</span>
+              </Link>
+            );
+          })}
+        </div>
+
+        <div className="mt-10 border-t border-neutral-200 pt-8">
+          <Link
+            href="/settings"
+            className="flex items-center gap-4 rounded-2xl px-5 py-4 text-neutral-600 hover:bg-neutral-100 transition"
+          >
+            <Settings size={20} />
+            Settings
+          </Link>
+        </div>
       </nav>
+
+      <div className="border-t border-neutral-200 p-6">
+        <div className="rounded-3xl bg-neutral-950 p-6 text-white">
+          <p className="text-sm text-white/70">
+            Technology Health
+          </p>
+
+          <h2 className="mt-2 text-4xl font-semibold">
+            94
+          </h2>
+
+          <p className="mt-1 text-sm text-white/60">
+            Excellent
+          </p>
+        </div>
+      </div>
     </aside>
   );
 }

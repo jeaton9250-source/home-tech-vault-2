@@ -1,7 +1,7 @@
 type StatCardProps = {
   title: string;
   value: string;
-  description?: string;
+  description: string;
 };
 
 export default function StatCard({
@@ -10,12 +10,14 @@ export default function StatCard({
   description,
 }: StatCardProps) {
   return (
-    <div className="bg-white rounded-2xl shadow p-6">
-      <p className="text-gray-500">{title}</p>
-      <h2 className="text-4xl font-bold mt-2 text-blue-950">{value}</h2>
-      {description && (
-        <p className="text-sm text-gray-500 mt-2">{description}</p>
-      )}
+    <div className="rounded-[28px] border border-neutral-200 bg-white p-6 shadow-[0_8px_30px_rgba(15,23,42,0.04)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_16px_45px_rgba(15,23,42,0.08)]">
+      <p className="text-sm text-neutral-500">{title}</p>
+
+      <h2 className="mt-4 text-4xl font-semibold tracking-tight text-neutral-950">
+        {value}
+      </h2>
+
+      <p className="mt-2 text-sm text-neutral-400">{description}</p>
     </div>
   );
 }

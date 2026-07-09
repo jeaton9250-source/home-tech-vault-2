@@ -2,6 +2,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import PageHeader from "@/components/PageHeader";
 import StatCard from "@/components/StatCard";
+import DownloadAuditPdfButton from "@/components/DownloadAuditPdfButton";
 import { calculateTechnologyScore } from "@/lib/calculateTechnologyScore";
 
 export default async function AuditPage() {
@@ -35,20 +36,48 @@ export default async function AuditPage() {
   const missingPhotos = deviceList.filter((device) => !device.photo_url);
 
   return (
-    <main className="min-h-screen bg-gray-100 p-8">
-      <PageHeader
-        title="Technology Audit"
-        description="A complete snapshot of your home technology health."
-      />
+    <main className="min-h-screen bg-gray-100 p-8 print:bg-white">
+      <div className="print:hidden flex items-center justify-between">
+        <PageHeader
+          title="Technology Audit"
+          description="A complete snapshot of your home technology health."
+        />
 
-      <div className="grid md:grid-cols-4 gap-6 mt-8">
-        <StatCard title="Tech Score" value={`${score}/100`} description="Overall health" />
-        <StatCard title="Devices" value={String(deviceList.length)} description="Tracked devices" />
-        <StatCard title="Documents" value={String(documentList.length)} description="Stored files" />
-        <StatCard title="Monthly Spend" value={`$${monthlySpend.toFixed(2)}`} description="Subscriptions" />
+        <DownloadAuditPdfButton />
       </div>
 
-      <div className="bg-white rounded-3xl shadow p-8 mt-8">
+      <div className="hidden print:block mb-8">
+        <h1 className="text-4xl font-bold text-blue-950">Home Tech Vault™</h1>
+        <p className="text-gray-600 mt-2">Technology Audit Report</p>
+      </div>
+
+      <div className="grid md:grid-cols-4 gap-6 mt-8 print:grid-cols-4">
+        <StatCard
+          title="Tech Score"
+          value={`${score}/100`}
+          description="Overall health"
+        />
+
+        <StatCard
+          title="Devices"
+          value={String(deviceList.length)}
+          description="Tracked devices"
+        />
+
+        <StatCard
+          title="Documents"
+          value={String(documentList.length)}
+          description="Stored files"
+        />
+
+        <StatCard
+          title="Monthly Spend"
+          value={`$${monthlySpend.toFixed(2)}`}
+          description="Subscriptions"
+        />
+      </div>
+
+      <div className="bg-white rounded-3xl shadow p-8 mt-8 print:shadow-none print:border">
         <h2 className="text-2xl font-bold text-blue-950">Audit Summary</h2>
 
         <div className="grid md:grid-cols-2 gap-6 mt-6">
@@ -88,8 +117,10 @@ export default async function AuditPage() {
         />
       </div>
 
-      <div className="bg-white rounded-3xl shadow p-8 mt-8">
-        <h2 className="text-2xl font-bold text-blue-950">Recommended Next Steps</h2>
+      <div className="bg-white rounded-3xl shadow p-8 mt-8 print:shadow-none print:border">
+        <h2 className="text-2xl font-bold text-blue-950">
+          Recommended Next Steps
+        </h2>
 
         <ul className="mt-5 space-y-3 text-gray-700">
           <li>✓ Add missing serial numbers for better insurance documentation.</li>
@@ -101,7 +132,7 @@ export default async function AuditPage() {
 
         <Link
           href="/devices"
-          className="inline-block mt-6 bg-blue-950 text-white px-6 py-3 rounded-xl"
+          className="inline-block mt-6 bg-blue-950 text-white px-6 py-3 rounded-xl print:hidden"
         >
           Improve My Vault
         </Link>
@@ -120,8 +151,9 @@ function AuditCard({
   items: string[];
 }) {
   return (
-    <div className="bg-white rounded-2xl shadow p-6">
+    <div className="bg-white rounded-2xl shadow p-6 print:shadow-none print:border">
       <p className="text-gray-500">{title}</p>
+
       <h2 className="text-4xl font-bold text-blue-950 mt-2">{count}</h2>
 
       {items.length === 0 ? (

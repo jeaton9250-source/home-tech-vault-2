@@ -1,52 +1,55 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
-import Link from "next/link";
+import { Bell, Search, UserCircle2 } from "lucide-react";
 
 export default function TopBar() {
-  const [email, setEmail] = useState<string | null>(null);
+  const hour = new Date().getHours();
 
-  useEffect(() => {
-    async function loadUser() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+  const greeting =
+    hour < 12
+      ? "Good Morning"
+      : hour < 18
+      ? "Good Afternoon"
+      : "Good Evening";
 
-      setEmail(user?.email ?? null);
-    }
-
-    loadUser();
-  }, []);
-
-  async function signOut() {
-    await supabase.auth.signOut();
-    window.location.href = "/login";
-  }
+  const today = new Date().toLocaleDateString(undefined, {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
 
   return (
-    <header className="bg-white border-b px-8 py-5 flex justify-between items-center">
-      <h2 className="text-xl font-bold text-blue-950">Home Tech Vault™</h2>
+    <header className="sticky top-0 z-40 border-b border-neutral-200 bg-white/80 backdrop-blur-xl">
+      <div className="mx-auto flex h-20 items-center justify-between px-8">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-neutral-950">
+            {greeting}
+          </h1>
 
-      {email ? (
-        <div className="flex items-center gap-5">
-          <p className="text-gray-600 text-sm">{email}</p>
+          <p className="mt-1 text-sm text-neutral-500">
+            {today}
+          </p>
+        </div>
 
-          <button
-            onClick={signOut}
-            className="bg-red-600 text-white px-4 py-2 rounded-xl"
-          >
-            Sign Out
+        <div className="hidden w-[420px] items-center gap-3 rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-3 lg:flex">
+          <Search size={18} className="text-neutral-400" />
+
+          <input
+            placeholder="Search your vault..."
+            className="w-full bg-transparent outline-none placeholder:text-neutral-400"
+          />
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button className="rounded-2xl border border-neutral-200 p-3 transition hover:bg-neutral-100">
+            <Bell size={20} />
+          </button>
+
+          <button className="rounded-2xl border border-neutral-200 p-3 transition hover:bg-neutral-100">
+            <UserCircle2 size={22} />
           </button>
         </div>
-      ) : (
-        <Link
-          href="/login"
-          className="bg-blue-950 text-white px-4 py-2 rounded-xl"
-        >
-          Sign In
-        </Link>
-      )}
+      </div>
     </header>
   );
 }
