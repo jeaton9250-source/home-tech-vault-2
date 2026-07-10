@@ -6,6 +6,7 @@ import TopBar from "@/components/TopBar";
 import MobileNav from "@/components/MobileNav";
 import AuthGuard from "@/components/AuthGuard";
 import AIAdvisorPopup from "@/components/ai/AIAdvisorPopup";
+import DemoBanner from "@/components/DemoBanner";
 
 export const metadata: Metadata = {
   title: "Home Tech Vault",
@@ -21,6 +22,8 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <AuthGuard>
+          <DemoBanner />
+
           <div className="flex min-h-screen bg-[#F7F5EF]">
             <Sidebar />
 

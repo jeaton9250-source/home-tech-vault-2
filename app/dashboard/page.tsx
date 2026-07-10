@@ -10,19 +10,18 @@ import {
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
+import { useDemoMode } from "@/hooks/useDemoMode";
 
 import DashboardHero from "@/components/dashboard/DashboardHero";
 import StatCard from "@/components/dashboard/StatCard";
 import QuickActions from "@/components/dashboard/QuickActions";
-import TechnologyScoreCard from "@/components/dashboard/TechnologyScoreCard";
-
 import RecentDevices, {
   type RecentDevice,
 } from "@/components/dashboard/RecentDevices";
-
 import WarrantyAlerts, {
   type WarrantyDevice,
 } from "@/components/dashboard/WarrantyAlerts";
+import TechnologyScoreCard from "@/components/dashboard/TechnologyScoreCard";
 
 import {
   calculateVaultScore,
@@ -30,9 +29,22 @@ import {
   type VaultScoreResult,
 } from "@/lib/calculateVaultScore";
 
-type DeviceRow = VaultDevice & {
+import {
+  demoDashboard,
+  demoDevices,
+} from "@/lib/demoData";
+
+type DeviceRow = {
+  id: string;
   device_name: string | null;
   brand: string | null;
+  location: string | null;
+  category: string | null;
+  serial_number: string | null;
+  purchase_date: string | null;
+  purchase_price: number | null;
+  warranty_date: string | null;
+  notes?: string | null;
 };
 
 type ImageRow = {
@@ -40,11 +52,15 @@ type ImageRow = {
   image_url: string;
 };
 
-type DeviceIdRow = {
+type DocumentRow = {
   device_id: string;
 };
 
-const initialVaultScore: VaultScoreResult = {
+type MaintenanceRow = {
+  device_id: string;
+};
+
+const defaultVaultScore: VaultScoreResult = {
   total: 0,
   protection: 0,
   organization: 0,
@@ -55,59 +71,80 @@ const initialVaultScore: VaultScoreResult = {
 };
 
 export default function DashboardPage() {
-  const [firstName, setFirstName] = useState("Homeowner");
+  const {
+    user,
+    isDemo,
+    loading: demoLoading,
+  } = useDemoMode();
+
+  const [firstName, setFirstName] =
+    useState("Homeowner");
+
   const [householdName, setHouseholdName] =
     useState("My Home Tech Vault");
 
-  const [deviceCount, setDeviceCount] = useState(0);
-  const [documentCount, setDocumentCount] = useState(0);
-  const [activeWarrantyCount, setActiveWarrantyCount] =
+  const [deviceCount, setDeviceCount] =
     useState(0);
-  const [protectedValue, setProtectedValue] = useState(0);
+
+  const [documentCount, setDocumentCount] =
+    useState(0);
+
+  const [
+    activeWarrantyCount,
+    setActiveWarrantyCount,
+  ] = useState(0);
+
+  const [protectedValue, setProtectedValue] =
+    useState(0);
 
   const [vaultScore, setVaultScore] =
-    useState<VaultScoreResult>(initialVaultScore);
+    useState<VaultScoreResult>(
+      defaultVaultScore
+    );
 
-  const [recentDevices, setRecentDevices] = useState<
-    RecentDevice[]
-  >([]);
+  const [recentDevices, setRecentDevices] =
+    useState<RecentDevice[]>([]);
 
-  const [warrantyAlerts, setWarrantyAlerts] = useState<
-    WarrantyDevice[]
-  >([]);
+  const [warrantyAlerts, setWarrantyAlerts] =
+    useState<WarrantyDevice[]>([]);
 
-  const [loading, setLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [
+    loadingDashboard,
+    setLoadingDashboard,
+  ] = useState(true);
+
+  const [errorMessage, setErrorMessage] =
+    useState("");
 
   useEffect(() => {
     async function loadDashboard() {
+      if (demoLoading) {
+        return;
+      }
+
       try {
-        setLoading(true);
+        setLoadingDashboard(true);
         setErrorMessage("");
 
-        const {
-          data: { user },
-          error: userError,
-        } = await supabase.auth.getUser();
-
-        if (userError) {
-          throw userError;
-        }
-
-        if (!user) {
-          setErrorMessage("Please sign in to view your dashboard.");
+        if (isDemo || !user) {
+          loadDemoDashboard();
           return;
         }
 
-        const { data: profile, error: profileError } =
-          await supabase
-            .from("profiles")
-            .select("full_name, household_name")
-            .eq("id", user.id)
-            .maybeSingle();
+        const {
+          data: profile,
+          error: profileError,
+        } = await supabase
+          .from("profiles")
+          .select("full_name, household_name")
+          .eq("id", user.id)
+          .maybeSingle();
 
         if (profileError) {
-          console.error("Profile loading error:", profileError);
+          console.error(
+            "Unable to load profile:",
+            profileError
+          );
         }
 
         const displayName =
@@ -115,46 +152,52 @@ export default function DashboardPage() {
           user.email?.split("@")[0] ||
           "Homeowner";
 
-        const resolvedFirstName =
-          displayName.split(" ")[0] || "Homeowner";
-
-        setFirstName(resolvedFirstName);
+        setFirstName(
+          displayName.split(" ")[0]
+        );
 
         setHouseholdName(
           profile?.household_name?.trim() ||
-            `${resolvedFirstName}'s Home Tech Vault`
+            `${displayName.split(" ")[0]}'s Home Tech Vault`
         );
 
-        const { data: devices, error: devicesError } =
-          await supabase
-            .from("devices")
-            .select(
-              `
-                id,
-                device_name,
-                brand,
-                location,
-                category,
-                serial_number,
-                purchase_date,
-                purchase_price,
-                warranty_date
-              `
-            )
-            .eq("user_id", user.id);
+        const {
+          data: devices,
+          error: devicesError,
+        } = await supabase
+          .from("devices")
+          .select(
+            `
+              id,
+              device_name,
+              brand,
+              location,
+              category,
+              serial_number,
+              purchase_date,
+              purchase_price,
+              warranty_date,
+              notes
+            `
+          )
+          .eq("user_id", user.id);
 
         if (devicesError) {
           throw devicesError;
         }
 
-        const deviceRows = (devices || []) as DeviceRow[];
+        const deviceRows =
+          (devices || []) as DeviceRow[];
 
         setDeviceCount(deviceRows.length);
 
         setProtectedValue(
           deviceRows.reduce(
             (total, device) =>
-              total + Number(device.purchase_price || 0),
+              total +
+              Number(
+                device.purchase_price || 0
+              ),
             0
           )
         );
@@ -162,8 +205,8 @@ export default function DashboardPage() {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        const activeWarranties = deviceRows.filter(
-          (device) => {
+        const activeWarranties =
+          deviceRows.filter((device) => {
             if (!device.warranty_date) {
               return false;
             }
@@ -173,28 +216,36 @@ export default function DashboardPage() {
             );
 
             return expiration >= today;
-          }
+          });
+
+        setActiveWarrantyCount(
+          activeWarranties.length
         );
 
-        setActiveWarrantyCount(activeWarranties.length);
-
-        const expiringSoon: WarrantyDevice[] = deviceRows
-          .filter((device) => Boolean(device.warranty_date))
+        const expiringSoon = deviceRows
+          .filter((device) =>
+            Boolean(device.warranty_date)
+          )
           .map((device) => {
             const expiration = new Date(
               `${device.warranty_date}T23:59:59`
             );
 
             const daysRemaining = Math.ceil(
-              (expiration.getTime() - today.getTime()) /
+              (expiration.getTime() -
+                today.getTime()) /
                 (1000 * 60 * 60 * 24)
             );
 
             return {
               id: device.id,
-              device_name: device.device_name,
-              warranty_date: device.warranty_date || null,
-              days_remaining: daysRemaining,
+              device_name:
+                device.device_name ||
+                "Unnamed Device",
+              warranty_date:
+                device.warranty_date,
+              days_remaining:
+                daysRemaining,
             };
           })
           .filter(
@@ -203,221 +254,259 @@ export default function DashboardPage() {
               device.days_remaining <= 60
           )
           .sort(
-            (a, b) =>
-              a.days_remaining - b.days_remaining
+            (first, second) =>
+              first.days_remaining -
+              second.days_remaining
           )
           .slice(0, 4);
 
-        setWarrantyAlerts(expiringSoon);
+        setWarrantyAlerts(
+          expiringSoon as WarrantyDevice[]
+        );
 
-        const { count: documents, error: documentCountError } =
-          await supabase
-            .from("device_documents")
-            .select("*", {
-              count: "exact",
-              head: true,
-            })
-            .eq("user_id", user.id);
+        const {
+          data: documentRows,
+          count: documents,
+          error: documentsError,
+        } = await supabase
+          .from("device_documents")
+          .select("device_id", {
+            count: "exact",
+          })
+          .eq("user_id", user.id);
 
-        if (documentCountError) {
+        if (documentsError) {
           console.error(
-            "Document count error:",
-            documentCountError
+            "Unable to load documents:",
+            documentsError
           );
         }
 
-        setDocumentCount(documents || 0);
+        const resolvedDocumentCount =
+          documents || 0;
 
-        const vaultDevices: VaultDevice[] = deviceRows.map(
-          (device) => ({
-            id: device.id,
-            serial_number: device.serial_number,
-            purchase_date: device.purchase_date,
-            warranty_date: device.warranty_date,
-            purchase_price: device.purchase_price,
-            location: device.location,
-            category: device.category,
-          })
+        setDocumentCount(
+          resolvedDocumentCount
         );
 
-        const allDeviceIds = vaultDevices.map(
-          (device) => device.id
-        );
-
-        if (allDeviceIds.length > 0) {
-          const [
-            photoResult,
-            documentResult,
-            maintenanceResult,
-          ] = await Promise.all([
-            supabase
-              .from("device_images")
-              .select("device_id")
-              .eq("user_id", user.id)
-              .in("device_id", allDeviceIds),
-
-            supabase
-              .from("device_documents")
-              .select("device_id")
-              .eq("user_id", user.id)
-              .in("device_id", allDeviceIds),
-
-            supabase
-              .from("device_events")
-              .select("device_id")
-              .eq("user_id", user.id)
-              .in("device_id", allDeviceIds)
-              .in("event_type", [
-                "Maintenance",
-                "Repair",
-                "Cleaning",
-                "Software Update",
-              ]),
+        const {
+          data: maintenanceRows,
+          error: maintenanceError,
+        } = await supabase
+          .from("device_events")
+          .select("device_id")
+          .eq("user_id", user.id)
+          .in("event_type", [
+            "Maintenance",
+            "Repair",
+            "Cleaning",
+            "Software Update",
           ]);
 
-          if (photoResult.error) {
+        if (maintenanceError) {
+          console.error(
+            "Unable to load maintenance records:",
+            maintenanceError
+          );
+        }
+
+        const latestDevices = [
+          ...deviceRows,
+        ]
+          .reverse()
+          .slice(0, 6);
+
+        const firstImageByDevice =
+          new Map<string, string>();
+
+        const deviceIdsWithPhotos =
+          new Set<string>();
+
+        if (deviceRows.length > 0) {
+          const allDeviceIds =
+            deviceRows.map(
+              (device) => device.id
+            );
+
+          const {
+            data: imageRows,
+            error: imageError,
+          } = await supabase
+            .from("device_images")
+            .select(
+              "device_id, image_url"
+            )
+            .eq("user_id", user.id)
+            .in("device_id", allDeviceIds)
+            .order("created_at", {
+              ascending: true,
+            });
+
+          if (imageError) {
             console.error(
-              "Score photo query error:",
-              photoResult.error
+              "Unable to load device images:",
+              imageError
             );
           }
 
-          if (documentResult.error) {
-            console.error(
-              "Score document query error:",
-              documentResult.error
+          for (const image of (imageRows ||
+            []) as ImageRow[]) {
+            deviceIdsWithPhotos.add(
+              image.device_id
             );
-          }
 
-          if (maintenanceResult.error) {
-            console.error(
-              "Score maintenance query error:",
-              maintenanceResult.error
+            if (
+              !firstImageByDevice.has(
+                image.device_id
+              )
+            ) {
+              firstImageByDevice.set(
+                image.device_id,
+                image.image_url
+              );
+            }
+          }
+        }
+
+        if (latestDevices.length === 0) {
+          setRecentDevices([]);
+        } else {
+          const devicesWithPhotos =
+            await Promise.all(
+              latestDevices.map(
+                async (device) => {
+                  const imagePath =
+                    firstImageByDevice.get(
+                      device.id
+                    );
+
+                  if (!imagePath) {
+                    return {
+                      id: device.id,
+                      device_name:
+                        device.device_name ||
+                        "Unnamed Device",
+                      brand:
+                        device.brand || "",
+                      location:
+                        device.location || "",
+                      photo_url: "",
+                    };
+                  }
+
+                  const {
+                    data: signedData,
+                    error: signedUrlError,
+                  } =
+                    await supabase.storage
+                      .from(
+                        "device-images"
+                      )
+                      .createSignedUrl(
+                        imagePath,
+                        3600
+                      );
+
+                  if (signedUrlError) {
+                    console.error(
+                      "Unable to create signed device image:",
+                      signedUrlError
+                    );
+                  }
+
+                  return {
+                    id: device.id,
+                    device_name:
+                      device.device_name ||
+                      "Unnamed Device",
+                    brand:
+                      device.brand || "",
+                    location:
+                      device.location || "",
+                    photo_url:
+                      signedData?.signedUrl ||
+                      "",
+                  };
+                }
+              )
             );
-          }
 
-          const deviceIdsWithPhotos = new Set(
-            ((photoResult.data || []) as DeviceIdRow[]).map(
-              (record) => record.device_id
+          setRecentDevices(
+            devicesWithPhotos
+          );
+        }
+
+        const vaultDevices: VaultDevice[] =
+          deviceRows.map((device) => ({
+            id: device.id,
+            device_name:
+              device.device_name || "",
+            brand: device.brand || "",
+            category:
+              device.category || "",
+            serial_number:
+              device.serial_number || "",
+            purchase_date:
+              device.purchase_date || "",
+            warranty_date:
+              device.warranty_date || "",
+            purchase_price:
+              device.purchase_price || 0,
+            location:
+              device.location || "",
+            notes:
+              device.notes || "",
+          }));
+
+        const deviceIdsWithDocuments =
+          new Set(
+            (
+              (documentRows ||
+                []) as DocumentRow[]
+            ).map(
+              (document) =>
+                document.device_id
             )
           );
 
-          const deviceIdsWithDocuments = new Set(
-            ((documentResult.data || []) as DeviceIdRow[]).map(
-              (record) => record.device_id
+        const deviceIdsWithMaintenance =
+          new Set(
+            (
+              (maintenanceRows ||
+                []) as MaintenanceRow[]
+            ).map(
+              (maintenance) =>
+                maintenance.device_id
             )
           );
 
-          const deviceIdsWithMaintenance = new Set(
-            ((maintenanceResult.data || []) as DeviceIdRow[]).map(
-              (record) => record.device_id
-            )
-          );
-
-          setVaultScore(
+        try {
+          const calculatedScore =
             calculateVaultScore({
               devices: vaultDevices,
               deviceIdsWithPhotos,
               deviceIdsWithDocuments,
               deviceIdsWithMaintenance,
-            })
-          );
-        } else {
+            });
+
           setVaultScore(
-            calculateVaultScore({
-              devices: [],
-              deviceIdsWithPhotos: new Set<string>(),
-              deviceIdsWithDocuments: new Set<string>(),
-              deviceIdsWithMaintenance: new Set<string>(),
-            })
+            calculatedScore
           );
-        }
-
-        const latestDevices = deviceRows
-          .slice(-6)
-          .reverse();
-
-        if (latestDevices.length === 0) {
-          setRecentDevices([]);
-          return;
-        }
-
-        const latestIds = latestDevices.map(
-          (device) => device.id
-        );
-
-        const { data: imageRows, error: imageError } =
-          await supabase
-            .from("device_images")
-            .select("device_id, image_url")
-            .eq("user_id", user.id)
-            .in("device_id", latestIds)
-            .order("created_at", { ascending: true });
-
-        if (imageError) {
+        } catch (scoreError) {
           console.error(
-            "Recent device image error:",
-            imageError
+            "Unable to calculate vault score:",
+            scoreError
+          );
+
+          setVaultScore(
+            defaultVaultScore
           );
         }
-
-        const firstImageByDevice = new Map<
-          string,
-          string
-        >();
-
-        for (const image of
-          (imageRows || []) as ImageRow[]) {
-          if (!firstImageByDevice.has(image.device_id)) {
-            firstImageByDevice.set(
-              image.device_id,
-              image.image_url
-            );
-          }
-        }
-
-        const devicesWithPhotos = await Promise.all(
-          latestDevices.map(async (device) => {
-            const imagePath =
-              firstImageByDevice.get(device.id);
-
-            if (!imagePath) {
-              return {
-                id: device.id,
-                device_name: device.device_name,
-                brand: device.brand,
-                location: device.location || null,
-                photo_url: "",
-              };
-            }
-
-            const {
-              data: signedData,
-              error: signedUrlError,
-            } = await supabase.storage
-              .from("device-images")
-              .createSignedUrl(imagePath, 3600);
-
-            if (signedUrlError) {
-              console.error(
-                "Recent image signed URL error:",
-                signedUrlError
-              );
-            }
-
-            return {
-              id: device.id,
-              device_name: device.device_name,
-              brand: device.brand,
-              location: device.location || null,
-              photo_url: signedData?.signedUrl || "",
-            };
-          })
-        );
-
-        setRecentDevices(devicesWithPhotos);
       } catch (error) {
-        console.error("Dashboard loading error:", error);
+        console.error(
+          "Dashboard loading error:",
+          error
+        );
 
         setErrorMessage(
           error instanceof Error
@@ -425,12 +514,188 @@ export default function DashboardPage() {
             : "Unable to load your dashboard."
         );
       } finally {
-        setLoading(false);
+        setLoadingDashboard(false);
+      }
+    }
+
+    function loadDemoDashboard() {
+      setFirstName(
+        demoDashboard.firstName
+      );
+
+      setHouseholdName(
+        demoDashboard.householdName
+      );
+
+      setDeviceCount(
+        demoDashboard.deviceCount
+      );
+
+      setDocumentCount(
+        demoDashboard.documentCount
+      );
+
+      setActiveWarrantyCount(
+        demoDashboard.activeWarrantyCount
+      );
+
+      setProtectedValue(
+        demoDashboard.protectedValue
+      );
+
+      const demoRecentDevices: RecentDevice[] =
+        demoDevices
+          .slice(0, 6)
+          .map((device) => ({
+            id: device.id,
+            device_name:
+              device.device_name,
+            brand:
+              device.brand,
+            location:
+              device.location,
+            photo_url:
+              device.photo_url || "",
+          }));
+
+      setRecentDevices(
+        demoRecentDevices
+      );
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const demoWarrantyAlerts =
+        demoDevices
+          .filter((device) =>
+            Boolean(
+              device.warranty_date
+            )
+          )
+          .map((device) => {
+            const expiration =
+              new Date(
+                `${device.warranty_date}T23:59:59`
+              );
+
+            const daysRemaining =
+              Math.ceil(
+                (expiration.getTime() -
+                  today.getTime()) /
+                  (1000 *
+                    60 *
+                    60 *
+                    24)
+              );
+
+            return {
+              id: device.id,
+              device_name:
+                device.device_name,
+              warranty_date:
+                device.warranty_date,
+              days_remaining:
+                daysRemaining,
+            };
+          })
+          .filter(
+            (device) =>
+              device.days_remaining >= 0 &&
+              device.days_remaining <= 365
+          )
+          .sort(
+            (first, second) =>
+              first.days_remaining -
+              second.days_remaining
+          )
+          .slice(0, 4);
+
+      setWarrantyAlerts(
+        demoWarrantyAlerts as WarrantyDevice[]
+      );
+
+      const demoVaultDevices: VaultDevice[] =
+        demoDevices.map((device) => ({
+          id: device.id,
+          device_name:
+            device.device_name,
+          brand:
+            device.brand,
+          category:
+            device.category,
+          serial_number:
+            device.serial_number,
+          purchase_date:
+            device.purchase_date,
+          warranty_date:
+            device.warranty_date,
+          purchase_price:
+            device.purchase_price,
+          location:
+            device.location,
+          notes:
+            device.notes,
+        }));
+
+      try {
+        const calculatedDemoScore =
+          calculateVaultScore({
+            devices:
+              demoVaultDevices,
+
+            deviceIdsWithPhotos:
+              new Set([
+                "demo-macbook",
+                "demo-tv",
+                "demo-xbox",
+                "demo-iphone",
+              ]),
+
+            deviceIdsWithDocuments:
+              new Set([
+                "demo-macbook",
+                "demo-tv",
+                "demo-router",
+              ]),
+
+            deviceIdsWithMaintenance:
+              new Set([
+                "demo-macbook",
+                "demo-printer",
+                "demo-router",
+              ]),
+          });
+
+        setVaultScore(
+          calculatedDemoScore
+        );
+      } catch (scoreError) {
+        console.error(
+          "Unable to calculate demo vault score:",
+          scoreError
+        );
+
+        setVaultScore({
+          total: 92,
+          protection: 94,
+          organization: 96,
+          documentation: 88,
+          maintenance: 90,
+          label: "Excellent",
+          recommendations: [
+            "Upload the missing printer receipt.",
+            "Complete the upcoming router firmware update.",
+          ],
+        });
       }
     }
 
     loadDashboard();
-  }, []);
+  }, [user, isDemo, demoLoading]);
+
+  const loading =
+    demoLoading ||
+    loadingDashboard;
 
   if (loading) {
     return (
@@ -440,6 +705,7 @@ export default function DashboardPage() {
             className="animate-spin"
             size={22}
           />
+
           Loading your vault...
         </div>
       </main>
@@ -448,22 +714,44 @@ export default function DashboardPage() {
 
   if (errorMessage) {
     return (
-      <main className="rounded-[32px] border border-red-200 bg-red-50 p-8 text-red-700">
-        <h1 className="text-2xl font-bold">
-          Unable to load dashboard
-        </h1>
+      <main className="p-8">
+        <div className="rounded-3xl border border-red-200 bg-red-50 p-6 text-red-700">
+          <h1 className="text-xl font-bold">
+            Unable to load dashboard
+          </h1>
 
-        <p className="mt-3">{errorMessage}</p>
+          <p className="mt-2 text-sm">
+            {errorMessage}
+          </p>
+        </div>
       </main>
     );
   }
 
   return (
-    <main className="space-y-8">
+    <main className="space-y-8 p-5 md:p-8">
       <DashboardHero
         firstName={firstName}
         householdName={householdName}
       />
+
+      {isDemo && (
+        <section className="rounded-3xl border border-[#D8C69D] bg-[#FFF8E8] p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A6A2F]">
+            Demo Household
+          </p>
+
+          <h2 className="mt-2 text-xl font-bold text-[#111827]">
+            Explore a fully organized sample vault
+          </h2>
+
+          <p className="mt-2 text-sm leading-6 text-neutral-600">
+            Use the navigation to explore sample devices,
+            warranties, subscriptions, maintenance tasks,
+            network information, and account settings.
+          </p>
+        </section>
+      )}
 
       <section className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
@@ -500,12 +788,19 @@ export default function DashboardPage() {
         />
       </section>
 
-      <TechnologyScoreCard score={vaultScore} />
+      <TechnologyScoreCard
+        score={vaultScore}
+      />
 
-      <RecentDevices devices={recentDevices} />
+      <RecentDevices
+        devices={recentDevices}
+      />
 
       <section className="grid gap-6 xl:grid-cols-2">
-        <WarrantyAlerts warranties={warrantyAlerts} />
+        <WarrantyAlerts
+          warranties={warrantyAlerts}
+        />
+
         <QuickActions />
       </section>
     </main>

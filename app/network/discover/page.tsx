@@ -1,5 +1,6 @@
 "use client";
 
+import PremiumGate from "@/components/PremiumGate";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -29,7 +30,7 @@ type DiscoveredDevice = {
   selected: boolean;
 };
 
-export default function NetworkDiscoveryPage() {
+function NetworkDiscoveryContent() {
   const router = useRouter();
 
   const [rawResults, setRawResults] = useState("");
@@ -51,7 +52,9 @@ export default function NetworkDiscoveryPage() {
         device.ipAddress,
         device.macAddress,
         device.manufacturer,
-      ].some((value) => value.toLowerCase().includes(search))
+      ].some((value) =>
+        value.toLowerCase().includes(search)
+      )
     );
   }, [devices, searchTerm]);
 
@@ -94,7 +97,8 @@ export default function NetworkDiscoveryPage() {
   }
 
   function toggleAll() {
-    const shouldSelectAll = selectedCount !== devices.length;
+    const shouldSelectAll =
+      selectedCount !== devices.length;
 
     setDevices((current) =>
       current.map((device) => ({
@@ -110,7 +114,7 @@ export default function NetworkDiscoveryPage() {
     );
 
     if (selectedDevices.length === 0) {
-      alert("Select at least one device to import.");
+      alert("Select at least one device to sync.");
       return;
     }
 
@@ -131,50 +135,189 @@ export default function NetworkDiscoveryPage() {
         return;
       }
 
-      const rows = selectedDevices.map((device) => ({
-        user_id: user.id,
-        device_name:
-          device.deviceName.trim() ||
-          `Network Device ${device.ipAddress}`,
-        category: "Network Device",
-        brand: device.manufacturer.trim() || null,
-        manufacturer: device.manufacturer.trim() || null,
-        ip_address: device.ipAddress || null,
-        mac_address: device.macAddress || null,
-        location: "Network",
-        discovery_source: "ARP Import",
-        last_seen_at: new Date().toISOString(),
-        notes:
-          "Imported from the network discovery tool. Review and update the device name, category, room, purchase information, and warranty details.",
-      }));
+      const now = new Date().toISOString();
 
-      const { data: importedDevices, error } = await supabase
+      const normalizedDevices = selectedDevices.map(
+        (device) => ({
+          ...device,
+          normalizedMac: normalizeMacAddress(
+            device.macAddress
+          ),
+        })
+      );
+
+      const scannedMacAddresses = normalizedDevices
+        .map((device) => device.normalizedMac)
+        .filter(Boolean);
+
+      const {
+        data: existingRows,
+        error: existingError,
+      } = await supabase
         .from("devices")
-        .insert(rows)
-        .select("id, device_name");
+        .select(
+          `
+            id,
+            device_name,
+            brand,
+            manufacturer,
+            mac_address,
+            ip_address
+          `
+        )
+        .eq("user_id", user.id)
+        .in("mac_address", scannedMacAddresses);
 
-      if (error) {
-        throw error;
+      if (existingError) {
+        throw existingError;
       }
 
-      const importedCount =
-        importedDevices?.length || selectedDevices.length;
+      const existingByMac = new Map(
+        (existingRows || []).map((device) => [
+          normalizeMacAddress(
+            device.mac_address || ""
+          ),
+          device,
+        ])
+      );
+
+      let addedCount = 0;
+      let updatedCount = 0;
+
+      for (const discoveredDevice of normalizedDevices) {
+        const existingDevice = existingByMac.get(
+          discoveredDevice.normalizedMac
+        );
+
+        if (existingDevice) {
+          const suggestedName =
+            discoveredDevice.deviceName.trim();
+
+          const currentName =
+            existingDevice.device_name?.trim() || "";
+
+          const currentNameIsGeneric =
+            currentName === "" ||
+            currentName.startsWith(
+              "Network Device "
+            );
+
+          const updatePayload: {
+            ip_address: string | null;
+            last_seen_at: string;
+            online: boolean;
+            discovery_source: string;
+            manufacturer?: string | null;
+            brand?: string | null;
+            device_name?: string;
+          } = {
+            ip_address:
+              discoveredDevice.ipAddress || null,
+            last_seen_at: now,
+            online: true,
+            discovery_source: "ARP Sync",
+          };
+
+          if (
+            discoveredDevice.manufacturer.trim()
+          ) {
+            updatePayload.manufacturer =
+              discoveredDevice.manufacturer.trim();
+
+            if (!existingDevice.brand?.trim()) {
+              updatePayload.brand =
+                discoveredDevice.manufacturer.trim();
+            }
+          }
+
+          if (
+            currentNameIsGeneric &&
+            suggestedName &&
+            !suggestedName.startsWith(
+              "Network Device "
+            )
+          ) {
+            updatePayload.device_name =
+              suggestedName;
+          }
+
+          const { error: updateError } =
+            await supabase
+              .from("devices")
+              .update(updatePayload)
+              .eq("id", existingDevice.id)
+              .eq("user_id", user.id);
+
+          if (updateError) {
+            throw updateError;
+          }
+
+          updatedCount += 1;
+          continue;
+        }
+
+        const { error: insertError } =
+          await supabase
+            .from("devices")
+            .insert({
+              user_id: user.id,
+              device_name:
+                discoveredDevice.deviceName.trim() ||
+                `Network Device ${discoveredDevice.ipAddress}`,
+              category: guessCategory(
+                discoveredDevice.deviceName,
+                discoveredDevice.manufacturer
+              ),
+              brand:
+                discoveredDevice.manufacturer.trim() ||
+                null,
+              manufacturer:
+                discoveredDevice.manufacturer.trim() ||
+                null,
+              ip_address:
+                discoveredDevice.ipAddress || null,
+              mac_address:
+                discoveredDevice.normalizedMac ||
+                null,
+              location: "Network",
+              discovery_source: "ARP Sync",
+              last_seen_at: now,
+              online: true,
+              notes:
+                "Discovered from a local network scan. Review this record and add its correct room, purchase details, warranty information, photos, and documents.",
+            });
+
+        if (insertError) {
+          throw insertError;
+        }
+
+        addedCount += 1;
+      }
 
       alert(
-        `${importedCount} device${
-          importedCount === 1 ? "" : "s"
-        } imported successfully.`
+        [
+          `${addedCount} new device${
+            addedCount === 1 ? "" : "s"
+          } added.`,
+          `${updatedCount} existing device${
+            updatedCount === 1 ? "" : "s"
+          } updated.`,
+          "No duplicate records were created.",
+        ].join("\n")
       );
 
       router.push("/devices");
       router.refresh();
     } catch (error) {
-      console.error("Network device import error:", error);
+      console.error(
+        "Network sync error:",
+        error
+      );
 
       alert(
         error instanceof Error
           ? error.message
-          : "Unable to import the selected devices."
+          : "Unable to sync the selected devices."
       );
     } finally {
       setImporting(false);
@@ -208,11 +351,13 @@ export default function NetworkDiscoveryPage() {
       <PageTitle
         eyebrow="Network Discovery"
         title="Discover Connected Devices"
-        description="Scan your local network, review detected devices, and import the ones you want to track."
+        description="Scan your local network, review detected devices, and sync the ones you want to track."
         action={
           <Button
             variant="secondary"
-            onClick={() => router.push("/network")}
+            onClick={() =>
+              router.push("/network")
+            }
           >
             <ArrowLeft size={17} />
             Back to Network
@@ -232,9 +377,10 @@ export default function NetworkDiscoveryPage() {
             </h2>
 
             <p className="mt-2 max-w-3xl text-neutral-500">
-              Run the command below on a computer connected to your
-              home network, then paste the complete results into the
-              box below.
+              Run the command below on a
+              computer connected to your home
+              network, then paste the complete
+              results into the box below.
             </p>
           </div>
         </div>
@@ -244,14 +390,23 @@ export default function NetworkDiscoveryPage() {
             title="macOS"
             command="arp -a"
             copied={copiedCommand === "mac"}
-            onCopy={() => copyCommand("arp -a", "mac")}
+            onCopy={() =>
+              copyCommand("arp -a", "mac")
+            }
           />
 
           <CommandCard
             title="Windows"
             command="arp -a"
-            copied={copiedCommand === "windows"}
-            onCopy={() => copyCommand("arp -a", "windows")}
+            copied={
+              copiedCommand === "windows"
+            }
+            onCopy={() =>
+              copyCommand(
+                "arp -a",
+                "windows"
+              )
+            }
           />
         </div>
       </PageCard>
@@ -268,14 +423,17 @@ export default function NetworkDiscoveryPage() {
             </h2>
 
             <p className="mt-1 text-sm text-neutral-500">
-              Paste the full output from your network scan.
+              Paste the full output from your
+              network scan.
             </p>
           </div>
         </div>
 
         <textarea
           value={rawResults}
-          onChange={(event) => setRawResults(event.target.value)}
+          onChange={(event) =>
+            setRawResults(event.target.value)
+          }
           placeholder={`Example:
 
 living-room-appletv (192.168.1.10) at aa:bb:cc:dd:ee:ff on en0
@@ -311,14 +469,16 @@ brother-printer (192.168.1.24) at 11:22:33:44:55:66 on en0`}
               </h2>
 
               <p className="mt-2 text-sm text-neutral-500">
-                Suggested names are generated from available hostnames.
-                You can edit them before importing.
+                Suggested names and categories are
+                generated from available hostnames
+                and local manufacturer clues.
               </p>
             </div>
 
             <div className="rounded-2xl bg-[#F7F5EF] px-5 py-3">
               <p className="text-sm font-semibold text-[#111827]">
-                {selectedCount} of {devices.length} selected
+                {selectedCount} of{" "}
+                {devices.length} selected
               </p>
             </div>
           </div>
@@ -334,7 +494,9 @@ brother-printer (192.168.1.24) at 11:22:33:44:55:66 on en0`}
                 type="search"
                 value={searchTerm}
                 onChange={(event) =>
-                  setSearchTerm(event.target.value)
+                  setSearchTerm(
+                    event.target.value
+                  )
                 }
                 placeholder="Search detected devices..."
                 className="w-full rounded-xl border border-[#E8E2D6] bg-white py-3 pl-11 pr-4 outline-none focus:border-[#C8A96A]"
@@ -346,33 +508,45 @@ brother-printer (192.168.1.24) at 11:22:33:44:55:66 on en0`}
               onClick={toggleAll}
               className="rounded-xl bg-[#F7F5EF] px-4 py-3 text-sm font-semibold text-[#111827]"
             >
-              {selectedCount === devices.length
+              {selectedCount ===
+              devices.length
                 ? "Deselect All"
                 : "Select All"}
             </button>
           </div>
 
           <div className="mt-6 space-y-4">
-            {filteredDevices.map((device) => (
-              <DiscoveredDeviceRow
-                key={device.key}
-                device={device}
-                onChange={(changes) =>
-                  updateDevice(device.key, changes)
-                }
-              />
-            ))}
+            {filteredDevices.map(
+              (device) => (
+                <DiscoveredDeviceRow
+                  key={device.key}
+                  device={device}
+                  onChange={(changes) =>
+                    updateDevice(
+                      device.key,
+                      changes
+                    )
+                  }
+                />
+              )
+            )}
           </div>
 
           <div className="mt-8 flex flex-col gap-4 border-t border-[#E8E2D6] pt-6 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-neutral-500">
-              Imported devices can be edited later to add photos,
-              receipts, warranties, rooms, and purchase details.
+              Existing devices are updated by MAC
+              address. New devices are added
+              without creating duplicates.
             </p>
 
             <Button
-              onClick={importSelectedDevices}
-              disabled={selectedCount === 0 || importing}
+              onClick={
+                importSelectedDevices
+              }
+              disabled={
+                selectedCount === 0 ||
+                importing
+              }
             >
               {importing ? (
                 <Loader2
@@ -384,9 +558,11 @@ brother-printer (192.168.1.24) at 11:22:33:44:55:66 on en0`}
               )}
 
               {importing
-                ? "Importing..."
-                : `Import ${selectedCount} Device${
-                    selectedCount === 1 ? "" : "s"
+                ? "Syncing..."
+                : `Sync ${selectedCount} Device${
+                    selectedCount === 1
+                      ? ""
+                      : "s"
                   }`}
             </Button>
           </div>
@@ -443,7 +619,9 @@ function DiscoveredDeviceRow({
   onChange,
 }: {
   device: DiscoveredDevice;
-  onChange: (changes: Partial<DiscoveredDevice>) => void;
+  onChange: (
+    changes: Partial<DiscoveredDevice>
+  ) => void;
 }) {
   return (
     <div
@@ -466,6 +644,11 @@ function DiscoveredDeviceRow({
               ? "bg-[#111827] text-[#C8A96A]"
               : "bg-[#F7F5EF] text-neutral-400"
           }`}
+          aria-label={
+            device.selected
+              ? "Deselect device"
+              : "Select device"
+          }
         >
           {device.selected ? (
             <CheckCircle2 size={21} />
@@ -484,7 +667,8 @@ function DiscoveredDeviceRow({
               value={device.deviceName}
               onChange={(event) =>
                 onChange({
-                  deviceName: event.target.value,
+                  deviceName:
+                    event.target.value,
                 })
               }
               className="w-full rounded-xl border border-[#E8E2D6] bg-white px-4 py-3 text-sm outline-none focus:border-[#C8A96A]"
@@ -507,10 +691,13 @@ function DiscoveredDeviceRow({
             </span>
 
             <input
-              value={device.manufacturer}
+              value={
+                device.manufacturer
+              }
               onChange={(event) =>
                 onChange({
-                  manufacturer: event.target.value,
+                  manufacturer:
+                    event.target.value,
                 })
               }
               placeholder="Unknown"
@@ -546,7 +733,10 @@ function InfoField({
 function parseArpOutput(
   input: string
 ): DiscoveredDevice[] {
-  const found = new Map<string, DiscoveredDevice>();
+  const found = new Map<
+    string,
+    DiscoveredDevice
+  >();
 
   const macPattern =
     /([0-9a-fA-F]{1,2}[:-]){5}[0-9a-fA-F]{1,2}/;
@@ -565,26 +755,35 @@ function parseArpOutput(
     }
 
     const ipAddress = ipMatch[0];
-    const macAddress = normalizeMacAddress(macMatch[0]);
+    const macAddress =
+      normalizeMacAddress(macMatch[0]);
 
     if (
-      macAddress === "ff:ff:ff:ff:ff:ff" ||
-      macAddress === "00:00:00:00:00:00"
+      macAddress ===
+        "ff:ff:ff:ff:ff:ff" ||
+      macAddress ===
+        "00:00:00:00:00:00"
     ) {
       continue;
     }
 
-    const key = `${ipAddress}-${macAddress}`;
+    const key =
+      `${ipAddress}-${macAddress}`;
 
     if (found.has(key)) {
       continue;
     }
 
-    const hostname = extractHostname(line, ipAddress);
-    const manufacturer = guessManufacturer(
-      hostname,
-      macAddress
+    const hostname = extractHostname(
+      line,
+      ipAddress
     );
+
+    const manufacturer =
+      guessManufacturer(
+        hostname,
+        macAddress
+      );
 
     found.set(key, {
       key,
@@ -600,9 +799,121 @@ function parseArpOutput(
     });
   }
 
-  return Array.from(found.values()).sort((a, b) =>
-    compareIpAddresses(a.ipAddress, b.ipAddress)
+  return Array.from(found.values()).sort(
+    (a, b) =>
+      compareIpAddresses(
+        a.ipAddress,
+        b.ipAddress
+      )
   );
+}
+
+function guessCategory(
+  deviceName: string,
+  manufacturer: string
+) {
+  const text =
+    `${deviceName} ${manufacturer}`.toLowerCase();
+
+  if (
+    text.includes("iphone") ||
+    text.includes("android") ||
+    text.includes("phone")
+  ) {
+    return "Mobile";
+  }
+
+  if (
+    text.includes("ipad") ||
+    text.includes("tablet")
+  ) {
+    return "Tablet";
+  }
+
+  if (
+    text.includes("macbook") ||
+    text.includes("imac") ||
+    text.includes("laptop") ||
+    text.includes("desktop") ||
+    text.includes("computer")
+  ) {
+    return "Computer";
+  }
+
+  if (
+    text.includes("printer") ||
+    text.includes("brother") ||
+    text.includes("epson") ||
+    text.includes("canon") ||
+    text.includes("laserjet") ||
+    text.includes("officejet")
+  ) {
+    return "Printer";
+  }
+
+  if (
+    text.includes("apple tv") ||
+    text.includes("chromecast") ||
+    text.includes("roku") ||
+    text.includes("fire tv")
+  ) {
+    return "Streaming Device";
+  }
+
+  if (
+    text.includes("samsung tv") ||
+    text.includes("lg tv") ||
+    text.includes("smart tv")
+  ) {
+    return "TV";
+  }
+
+  if (
+    text.includes("xbox") ||
+    text.includes("playstation") ||
+    text.includes("ps5") ||
+    text.includes("ps4")
+  ) {
+    return "Gaming";
+  }
+
+  if (
+    text.includes("router") ||
+    text.includes("eero") ||
+    text.includes("netgear") ||
+    text.includes("tp-link") ||
+    text.includes("tplink") ||
+    text.includes("modem")
+  ) {
+    return "Network Equipment";
+  }
+
+  if (
+    text.includes("echo") ||
+    text.includes("sonos") ||
+    text.includes("speaker")
+  ) {
+    return "Audio";
+  }
+
+  if (
+    text.includes("ring") ||
+    text.includes("camera") ||
+    text.includes("doorbell")
+  ) {
+    return "Security";
+  }
+
+  if (
+    text.includes("thermostat") ||
+    text.includes("smart plug") ||
+    text.includes("smart bulb") ||
+    text.includes("homepod")
+  ) {
+    return "Smart Home";
+  }
+
+  return "Network Device";
 }
 
 function suggestDeviceName({
@@ -614,30 +925,86 @@ function suggestDeviceName({
   manufacturer: string;
   ipAddress: string;
 }) {
-  const text = `${hostname} ${manufacturer}`.toLowerCase();
+  const text =
+    `${hostname} ${manufacturer}`.toLowerCase();
 
-  if (text.includes("iphone")) return formatHostname(hostname, "iPhone");
-  if (text.includes("ipad")) return formatHostname(hostname, "iPad");
-  if (text.includes("macbook")) return formatHostname(hostname, "MacBook");
-  if (text.includes("imac")) return formatHostname(hostname, "iMac");
-  if (text.includes("apple-tv") || text.includes("appletv")) {
+  if (text.includes("iphone")) {
+    return formatHostname(
+      hostname,
+      "iPhone"
+    );
+  }
+
+  if (text.includes("ipad")) {
+    return formatHostname(
+      hostname,
+      "iPad"
+    );
+  }
+
+  if (text.includes("macbook")) {
+    return formatHostname(
+      hostname,
+      "MacBook"
+    );
+  }
+
+  if (text.includes("imac")) {
+    return formatHostname(
+      hostname,
+      "iMac"
+    );
+  }
+
+  if (
+    text.includes("apple-tv") ||
+    text.includes("appletv") ||
+    text.includes("apple tv")
+  ) {
     return "Apple TV";
   }
 
-  if (text.includes("chromecast")) return "Google Chromecast";
-  if (text.includes("google-home") || text.includes("nest")) {
+  if (
+    text.includes("chromecast")
+  ) {
+    return "Google Chromecast";
+  }
+
+  if (
+    text.includes("google-home") ||
+    text.includes("nest")
+  ) {
     return "Google Nest Device";
   }
 
-  if (text.includes("roku")) return "Roku";
-  if (text.includes("firetv") || text.includes("fire-tv")) {
+  if (text.includes("roku")) {
+    return "Roku";
+  }
+
+  if (
+    text.includes("firetv") ||
+    text.includes("fire-tv") ||
+    text.includes("fire tv")
+  ) {
     return "Amazon Fire TV";
   }
 
-  if (text.includes("echo")) return "Amazon Echo";
-  if (text.includes("ring")) return "Ring Device";
-  if (text.includes("sonos")) return "Sonos Speaker";
-  if (text.includes("xbox")) return "Xbox";
+  if (text.includes("echo")) {
+    return "Amazon Echo";
+  }
+
+  if (text.includes("ring")) {
+    return "Ring Device";
+  }
+
+  if (text.includes("sonos")) {
+    return "Sonos Speaker";
+  }
+
+  if (text.includes("xbox")) {
+    return "Xbox";
+  }
+
   if (
     text.includes("playstation") ||
     text.includes("ps5") ||
@@ -648,40 +1015,69 @@ function suggestDeviceName({
 
   if (
     text.includes("brother") ||
-    hostname.toLowerCase().startsWith("brn")
+    hostname
+      .toLowerCase()
+      .startsWith("brn")
   ) {
     return "Brother Printer";
   }
 
-  if (text.includes("epson")) return "Epson Printer";
-  if (text.includes("canon")) return "Canon Printer";
+  if (text.includes("epson")) {
+    return "Epson Printer";
+  }
+
+  if (text.includes("canon")) {
+    return "Canon Printer";
+  }
 
   if (
     text.includes("hp") &&
-    (text.includes("printer") ||
+    (
+      text.includes("printer") ||
       text.includes("officejet") ||
-      text.includes("laserjet"))
+      text.includes("laserjet")
+    )
   ) {
     return "HP Printer";
   }
 
-  if (text.includes("samsung") && text.includes("tv")) {
+  if (
+    text.includes("samsung") &&
+    text.includes("tv")
+  ) {
     return "Samsung Smart TV";
   }
 
-  if (text.includes("lg") && text.includes("tv")) {
+  if (
+    text.includes("lg") &&
+    text.includes("tv")
+  ) {
     return "LG Smart TV";
   }
 
-  if (text.includes("tplink") || text.includes("tp-link")) {
+  if (
+    text.includes("tplink") ||
+    text.includes("tp-link")
+  ) {
     return "TP-Link Network Device";
   }
 
-  if (text.includes("netgear")) return "Netgear Network Device";
-  if (text.includes("eero")) return "Eero Router";
+  if (text.includes("netgear")) {
+    return "Netgear Network Device";
+  }
 
-  if (hostname && hostname !== "?") {
-    return formatHostname(hostname, hostname);
+  if (text.includes("eero")) {
+    return "Eero Router";
+  }
+
+  if (
+    hostname &&
+    hostname !== "?"
+  ) {
+    return formatHostname(
+      hostname,
+      hostname
+    );
   }
 
   if (manufacturer) {
@@ -695,7 +1091,9 @@ function guessManufacturer(
   hostname: string,
   macAddress: string
 ) {
-  const text = hostname.toLowerCase();
+  const text =
+    hostname.toLowerCase();
+
   const prefix = macAddress
     .replaceAll(":", "")
     .slice(0, 6)
@@ -711,26 +1109,76 @@ function guessManufacturer(
     return "Apple";
   }
 
-  if (text.includes("samsung")) return "Samsung";
-  if (text.includes("brother") || text.startsWith("brn")) return "Brother";
-  if (text.includes("epson")) return "Epson";
-  if (text.includes("canon")) return "Canon";
-  if (text.includes("roku")) return "Roku";
-  if (text.includes("ring")) return "Ring";
-  if (text.includes("sonos")) return "Sonos";
-  if (text.includes("tplink") || text.includes("tp-link")) return "TP-Link";
-  if (text.includes("netgear")) return "Netgear";
-  if (text.includes("eero")) return "Eero";
-  if (text.includes("google") || text.includes("nest")) return "Google";
-  if (text.includes("amazon") || text.includes("echo")) return "Amazon";
+  if (text.includes("samsung")) {
+    return "Samsung";
+  }
 
-  const localPrefixes: Record<string, string> = {
-    "B827EB": "Raspberry Pi",
-    "DC4F22": "Raspberry Pi",
+  if (
+    text.includes("brother") ||
+    text.startsWith("brn")
+  ) {
+    return "Brother";
+  }
+
+  if (text.includes("epson")) {
+    return "Epson";
+  }
+
+  if (text.includes("canon")) {
+    return "Canon";
+  }
+
+  if (text.includes("roku")) {
+    return "Roku";
+  }
+
+  if (text.includes("ring")) {
+    return "Ring";
+  }
+
+  if (text.includes("sonos")) {
+    return "Sonos";
+  }
+
+  if (
+    text.includes("tplink") ||
+    text.includes("tp-link")
+  ) {
+    return "TP-Link";
+  }
+
+  if (text.includes("netgear")) {
+    return "Netgear";
+  }
+
+  if (text.includes("eero")) {
+    return "Eero";
+  }
+
+  if (
+    text.includes("google") ||
+    text.includes("nest")
+  ) {
+    return "Google";
+  }
+
+  if (
+    text.includes("amazon") ||
+    text.includes("echo")
+  ) {
+    return "Amazon";
+  }
+
+  const localPrefixes: Record<
+    string,
+    string
+  > = {
+    B827EB: "Raspberry Pi",
+    DC4F22: "Raspberry Pi",
     "001A11": "Google",
-    "F4F5D8": "Google",
+    F4F5D8: "Google",
     "44650D": "Amazon",
-    "F0272D": "Amazon",
+    F0272D: "Amazon",
   };
 
   return localPrefixes[prefix] || "";
@@ -740,7 +1188,10 @@ function formatHostname(
   hostname: string,
   fallback: string
 ) {
-  if (!hostname || hostname === "?") {
+  if (
+    !hostname ||
+    hostname === "?"
+  ) {
     return fallback;
   }
 
@@ -749,13 +1200,21 @@ function formatHostname(
     .replace(/[-_]+/g, " ")
     .replace(/\s+/g, " ")
     .trim()
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+    .replace(
+      /\b\w/g,
+      (letter) =>
+        letter.toUpperCase()
+    );
 }
 
-function normalizeMacAddress(value: string) {
+function normalizeMacAddress(
+  value: string
+) {
   return value
     .split(/[:-]/)
-    .map((part) => part.padStart(2, "0"))
+    .map((part) =>
+      part.padStart(2, "0")
+    )
     .join(":")
     .toLowerCase();
 }
@@ -771,7 +1230,8 @@ function extractHostname(
   if (
     hostnameMatch &&
     hostnameMatch[1] !== "?" &&
-    hostnameMatch[1] !== ipAddress
+    hostnameMatch[1] !==
+      ipAddress
   ) {
     return hostnameMatch[1];
   }
@@ -783,10 +1243,19 @@ function compareIpAddresses(
   first: string,
   second: string
 ) {
-  const firstParts = first.split(".").map(Number);
-  const secondParts = second.split(".").map(Number);
+  const firstParts = first
+    .split(".")
+    .map(Number);
 
-  for (let index = 0; index < 4; index += 1) {
+  const secondParts = second
+    .split(".")
+    .map(Number);
+
+  for (
+    let index = 0;
+    index < 4;
+    index += 1
+  ) {
     const difference =
       (firstParts[index] || 0) -
       (secondParts[index] || 0);
@@ -797,4 +1266,15 @@ function compareIpAddresses(
   }
 
   return 0;
+}
+
+export default function NetworkDiscoveryPage() {
+  return (
+    <PremiumGate
+      feature="Network Discovery"
+      description="Automatically discover, identify, and sync devices connected to your home network."
+    >
+      <NetworkDiscoveryContent />
+    </PremiumGate>
+  );
 }

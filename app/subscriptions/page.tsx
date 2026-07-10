@@ -13,11 +13,13 @@ import { getSubscriptions } from "@/lib/data/subscriptions";
 
 type Subscription = {
   id: string;
+  service_name: string;
+  name?: string | null;
   monthly_cost?: number | null;
   renewal_date?: string | null;
-  name?: string | null;
   category?: string | null;
   billing_cycle?: string | null;
+  notes?: string | null;
 };
 
 export default function SubscriptionsPage() {
@@ -170,11 +172,27 @@ export default function SubscriptionsPage() {
           ) : (
             <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
               {subscriptions.map((subscription) => (
-                <SubscriptionCard
-                  key={subscription.id}
-                  subscription={subscription}
-                />
-              ))}
+  <SubscriptionCard
+    key={subscription.id}
+    subscription={{
+      id: subscription.id,
+      service_name:
+        subscription.service_name ||
+        subscription.name ||
+        "Unnamed Subscription",
+      category:
+        subscription.category || undefined,
+      monthly_cost:
+        subscription.monthly_cost ?? undefined,
+      renewal_date:
+        subscription.renewal_date || undefined,
+      billing_cycle:
+        subscription.billing_cycle || undefined,
+      notes:
+        subscription.notes || undefined,
+    }}
+  />
+))}
             </section>
           )}
         </>

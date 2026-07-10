@@ -12,6 +12,7 @@ import {
   ImagePlus,
   Loader2,
   Pencil,
+  Radio,
   Trash2,
 } from "lucide-react";
 
@@ -33,6 +34,12 @@ type Device = {
   purchase_price: number | null;
   location: string | null;
   notes: string | null;
+  online?: boolean | null;
+  last_seen_at?: string | null;
+  ip_address?: string | null;
+  mac_address?: string | null;
+  manufacturer?: string | null;
+  discovery_source?: string | null;
 };
 
 type DeviceImageRow = {
@@ -98,7 +105,9 @@ export default function DevicePage() {
       );
 
       setImages(
-        imagesWithUrls.filter((image) => Boolean(image.signedUrl))
+        imagesWithUrls.filter((image) =>
+          Boolean(image.signedUrl)
+        )
       );
     },
     []
@@ -241,22 +250,21 @@ export default function DevicePage() {
       }
 
       await createDeviceEvent({
-  deviceId: device.id,
-  userId: user.id,
-  eventType: "Photo",
-  title:
-    uploadedFileCount === 1
-      ? "Photo uploaded"
-      : `${uploadedFileCount} photos uploaded`,
-  description:
-    uploadedFileCount === 1
-      ? "A new device photo was added to the vault."
-      : `${uploadedFileCount} new device photos were added to the vault.`,
-});
+        deviceId: device.id,
+        userId: user.id,
+        eventType: "Photo",
+        title:
+          uploadedFileCount === 1
+            ? "Photo uploaded"
+            : `${uploadedFileCount} photos uploaded`,
+        description:
+          uploadedFileCount === 1
+            ? "A new device photo was added to the vault."
+            : `${uploadedFileCount} new device photos were added to the vault.`,
+      });
 
-event.target.value = "";
-await loadImages(device.id, user.id);
-
+      event.target.value = "";
+      await loadImages(device.id, user.id);
     } catch (error) {
       console.error("Unable to upload image:", error);
 
@@ -301,7 +309,8 @@ await loadImages(device.id, user.id);
 
       setImages((currentImages) =>
         currentImages.filter(
-          (currentImage) => currentImage.id !== image.id
+          (currentImage) =>
+            currentImage.id !== image.id
         )
       );
     } catch (error) {
@@ -364,12 +373,14 @@ await loadImages(device.id, user.id);
         }
       }
 
-      const { data: documentRows, error: documentLoadError } =
-        await supabase
-          .from("device_documents")
-          .select("file_path")
-          .eq("device_id", device.id)
-          .eq("user_id", user.id);
+      const {
+        data: documentRows,
+        error: documentLoadError,
+      } = await supabase
+        .from("device_documents")
+        .select("file_path")
+        .eq("device_id", device.id)
+        .eq("user_id", user.id);
 
       if (documentLoadError) {
         console.error(
@@ -379,7 +390,9 @@ await loadImages(device.id, user.id);
       }
 
       const documentPaths =
-        documentRows?.map((document) => document.file_path) || [];
+        documentRows?.map(
+          (document) => document.file_path
+        ) || [];
 
       if (documentPaths.length > 0) {
         const { error: documentStorageError } =
@@ -422,7 +435,10 @@ await loadImages(device.id, user.id);
     return (
       <main className="min-h-screen bg-[#F7F5EF] p-8">
         <div className="flex items-center gap-3 text-neutral-600">
-          <Loader2 className="animate-spin" size={20} />
+          <Loader2
+            className="animate-spin"
+            size={20}
+          />
           Loading device...
         </div>
       </main>
@@ -454,6 +470,16 @@ await loadImages(device.id, user.id);
     );
   }
 
+  const hasNetworkInformation = Boolean(
+    device.ip_address ||
+      device.mac_address ||
+      device.manufacturer ||
+      device.discovery_source ||
+      device.last_seen_at ||
+      device.online !== null &&
+        device.online !== undefined
+  );
+
   return (
     <main className="min-h-screen bg-[#F7F5EF] p-8">
       <div className="mx-auto max-w-5xl">
@@ -467,34 +493,73 @@ await loadImages(device.id, user.id);
         </button>
 
         <div className="rounded-3xl bg-white p-8 shadow-sm">
-         <header className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-  <div>
-    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#C8A96A]">
-      Device Vault
-    </p>
+          <header className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#C8A96A]">
+                Device Vault
+              </p>
 
-    <h1 className="mt-3 text-4xl font-bold text-[#111827]">
-      {device.device_name || "Unnamed Device"}
-    </h1>
+              <h1 className="mt-3 text-4xl font-bold text-[#111827]">
+                {device.device_name || "Unnamed Device"}
+              </h1>
 
-    <p className="mt-2 text-neutral-500">
-      {[device.brand, device.model_number]
-        .filter(Boolean)
-        .join(" · ") || "Brand and model not provided"}
-    </p>
-  </div>
+              <p className="mt-2 text-neutral-500">
+                {[device.brand, device.model_number]
+                  .filter(Boolean)
+                  .join(" · ") ||
+                  "Brand and model not provided"}
+              </p>
 
-  <button
-    type="button"
-    onClick={() =>
-      router.push(`/devices/${device.id}/edit`)
-    }
-    className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#111827] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#263044]"
-  >
-    <Pencil size={17} />
-    Edit Device
-  </button>
-</header>
+              {hasNetworkInformation && (
+                <div className="mt-4 flex flex-wrap items-center gap-3">
+                  <span
+                    className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold ${
+                      device.online === true
+                        ? "bg-emerald-100 text-emerald-700"
+                        : device.online === false
+                          ? "bg-neutral-100 text-neutral-600"
+                          : "bg-amber-100 text-amber-700"
+                    }`}
+                  >
+                    <span
+                      className={`h-2 w-2 rounded-full ${
+                        device.online === true
+                          ? "bg-emerald-500"
+                          : device.online === false
+                            ? "bg-neutral-400"
+                            : "bg-amber-500"
+                      }`}
+                    />
+
+                    {device.online === true
+                      ? "Online"
+                      : device.online === false
+                        ? "Offline"
+                        : "Status unknown"}
+                  </span>
+
+                  <span className="text-sm text-neutral-400">
+                    {formatLastSeen(
+                      device.last_seen_at
+                    )}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={() =>
+                router.push(
+                  `/devices/${device.id}/edit`
+                )
+              }
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#111827] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#263044]"
+            >
+              <Pencil size={17} />
+              Edit Device
+            </button>
+          </header>
 
           <section className="mt-10">
             <div className="flex flex-wrap items-center justify-between gap-4">
@@ -504,8 +569,8 @@ await loadImages(device.id, user.id);
                 </h2>
 
                 <p className="mt-1 text-sm text-neutral-500">
-                  Add photos of the device, receipt, label, or serial
-                  number.
+                  Add photos of the device, receipt,
+                  label, or serial number.
                 </p>
               </div>
 
@@ -519,7 +584,9 @@ await loadImages(device.id, user.id);
                   <ImagePlus size={18} />
                 )}
 
-                {uploading ? "Uploading..." : "Add Photos"}
+                {uploading
+                  ? "Uploading..."
+                  : "Add Photos"}
 
                 <input
                   type="file"
@@ -544,7 +611,8 @@ await loadImages(device.id, user.id);
                 </p>
 
                 <p className="mt-1 text-sm text-neutral-500">
-                  Choose one or multiple images up to 6 MB each.
+                  Choose one or multiple images up to
+                  6 MB each.
                 </p>
 
                 <input
@@ -573,14 +641,17 @@ await loadImages(device.id, user.id);
 
                     <button
                       type="button"
-                      onClick={() => deleteImage(image)}
+                      onClick={() =>
+                        deleteImage(image)
+                      }
                       disabled={
                         deletingImageId === image.id
                       }
                       aria-label="Delete photo"
                       className="absolute right-3 top-3 rounded-full bg-black/70 p-2 text-white transition hover:bg-red-600 disabled:opacity-60"
                     >
-                      {deletingImageId === image.id ? (
+                      {deletingImageId ===
+                      image.id ? (
                         <Loader2
                           size={17}
                           className="animate-spin"
@@ -629,17 +700,23 @@ await loadImages(device.id, user.id);
 
               <InfoItem
                 label="Purchase Date"
-                value={formatDate(device.purchase_date)}
+                value={formatDate(
+                  device.purchase_date
+                )}
               />
 
               <InfoItem
                 label="Warranty Expiration"
-                value={formatDate(device.warranty_date)}
+                value={formatDate(
+                  device.warranty_date
+                )}
               />
 
               <InfoItem
                 label="Purchase Price"
-                value={formatPrice(device.purchase_price)}
+                value={formatPrice(
+                  device.purchase_price
+                )}
               />
 
               <InfoItem
@@ -656,20 +733,87 @@ await loadImages(device.id, user.id);
             </div>
           </section>
 
+          {hasNetworkInformation && (
+            <section className="mt-10 border-t border-[#E8E2D6] pt-10">
+              <div className="flex items-start gap-4">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+                  <Radio size={21} />
+                </div>
+
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
+                    Network Presence
+                  </p>
+
+                  <h2 className="mt-1 text-2xl font-bold text-[#111827]">
+                    Network Information
+                  </h2>
+
+                  <p className="mt-1 text-sm text-neutral-500">
+                    Connection details collected from
+                    network discovery.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                <InfoItem
+                  label="Status"
+                  value={
+                    device.online === true
+                      ? "Online"
+                      : device.online === false
+                        ? "Offline"
+                        : "Not tracked"
+                  }
+                />
+
+                <InfoItem
+                  label="IP Address"
+                  value={device.ip_address}
+                />
+
+                <InfoItem
+                  label="MAC Address"
+                  value={device.mac_address}
+                />
+
+                <InfoItem
+                  label="Manufacturer"
+                  value={device.manufacturer}
+                />
+
+                <InfoItem
+                  label="Discovery Source"
+                  value={device.discovery_source}
+                />
+
+                <InfoItem
+                  label="Last Seen"
+                  value={formatLastSeen(
+                    device.last_seen_at
+                  )}
+                />
+              </div>
+            </section>
+          )}
+
           <DeviceDocuments deviceId={device.id} />
+
           <DeviceTimeline
-  deviceId={device.id}
-  purchaseDate={device.purchase_date}
-  warrantyDate={device.warranty_date}
-/>
+            deviceId={device.id}
+            purchaseDate={device.purchase_date}
+            warrantyDate={device.warranty_date}
+          />
+
           <section className="mt-10 border-t border-[#E8E2D6] pt-8">
             <p className="text-sm font-semibold text-red-700">
               Danger Zone
             </p>
 
             <p className="mt-2 text-sm text-neutral-500">
-              Deleting this device permanently removes its details,
-              photos, and document records.
+              Deleting this device permanently removes
+              its details, photos, and document records.
             </p>
 
             <button
@@ -745,4 +889,56 @@ function formatPrice(value: number | null) {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
+}
+
+function formatLastSeen(value?: string | null) {
+  if (!value) {
+    return "Never seen";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Unknown";
+  }
+
+  const difference = Date.now() - date.getTime();
+  const minutes = Math.floor(
+    difference / (1000 * 60)
+  );
+
+  if (minutes < 1) {
+    return "Seen just now";
+  }
+
+  if (minutes < 60) {
+    return `Seen ${minutes} minute${
+      minutes === 1 ? "" : "s"
+    } ago`;
+  }
+
+  const hours = Math.floor(minutes / 60);
+
+  if (hours < 24) {
+    return `Seen ${hours} hour${
+      hours === 1 ? "" : "s"
+    } ago`;
+  }
+
+  const days = Math.floor(hours / 24);
+
+  if (days < 7) {
+    return `Seen ${days} day${
+      days === 1 ? "" : "s"
+    } ago`;
+  }
+
+  return `Last seen ${date.toLocaleDateString(
+    undefined,
+    {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    }
+  )}`;
 }
