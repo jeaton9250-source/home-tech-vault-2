@@ -9,11 +9,26 @@ import { demoDocuments } from "@/lib/demo/documents";
 import PageHeader from "@/components/PageHeader";
 import DeleteDocumentButton from "@/components/DeleteDocumentButton";
 
+
 export default function DocumentsPage() {
   const { user, isDemo, loading } = useDemoMode();
 
-  const [documents, setDocuments] = useState<any[]>([]);
-  const [devices, setDevices] = useState<any[]>([]);
+  type DocumentRow = {
+    id: string;
+    file_type: string;
+    file_url?: string;
+    file_name: string;
+    device_id?: string;
+    device_name?: string;
+  };
+
+  type DeviceSimple = {
+    id: string;
+    device_name?: string;
+  };
+
+  const [documents, setDocuments] = useState<DocumentRow[]>([]);
+  const [devices, setDevices] = useState<DeviceSimple[]>([]);
 
   useEffect(() => {
     async function loadDocuments() {
@@ -48,7 +63,7 @@ export default function DocumentsPage() {
     loadDocuments();
   }, [user, isDemo, loading]);
 
-  function getDeviceName(doc: any) {
+  function getDeviceName(doc: DocumentRow) {
     if (isDemo) return doc.device_name || "Demo Device";
 
     const device = devices.find((item) => item.id === doc.device_id);

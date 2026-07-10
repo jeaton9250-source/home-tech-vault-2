@@ -1,170 +1,748 @@
-import { supabase } from "@/lib/supabase";
-import Link from "next/link";
-import { Laptop, ArrowLeft, FileText } from "lucide-react";
-import DeleteDeviceButton from "@/components/DeleteDeviceButton";
+"use client";
+
 import {
-  calculateDeviceHealth,
-  getDeviceHealthLabel,
-} from "@/lib/calculateDeviceHealth";
+  ChangeEvent,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
+import { useParams, useRouter } from "next/navigation";
+import {
+  ArrowLeft,
+  ImagePlus,
+  Loader2,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 
-export default async function DeviceDetails({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
+import { supabase } from "@/lib/supabase";
+import DeviceDocuments from "@/components/DeviceDocuments";
+import DeviceTimeline from "@/components/DeviceTimeline";
+import { createDeviceEvent } from "@/lib/deviceEvents";
 
-  const { data: device, error } = await supabase
-    .from("devices")
-    .select("*")
-    .eq("id", id)
-    .maybeSingle();
+type Device = {
+  id: string;
+  user_id: string;
+  device_name: string | null;
+  category: string | null;
+  brand: string | null;
+  model_number: string | null;
+  serial_number: string | null;
+  purchase_date: string | null;
+  warranty_date: string | null;
+  purchase_price: number | null;
+  location: string | null;
+  notes: string | null;
+};
 
-  const { data: documents } = await supabase
-    .from("documents")
-    .select("*")
-    .eq("device_id", id)
-    .order("created_at", { ascending: false });
+type DeviceImageRow = {
+  id: string;
+  device_id: string;
+  user_id: string;
+  image_url: string;
+  created_at: string | null;
+};
 
-  if (error || !device) {
+type DeviceImage = DeviceImageRow & {
+  signedUrl: string;
+};
+
+export default function DevicePage() {
+  const params = useParams<{ id: string }>();
+  const router = useRouter();
+
+  const [device, setDevice] = useState<Device | null>(null);
+  const [images, setImages] = useState<DeviceImage[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [deletingDevice, setDeletingDevice] = useState(false);
+  const [deletingImageId, setDeletingImageId] = useState<
+    string | null
+  >(null);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const loadImages = useCallback(
+    async (deviceId: string, userId: string) => {
+      const { data, error } = await supabase
+        .from("device_images")
+        .select("*")
+        .eq("device_id", deviceId)
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+
+      const rows = (data || []) as DeviceImageRow[];
+
+      const imagesWithUrls = await Promise.all(
+        rows.map(async (image) => {
+          const { data: signedData, error: signedError } =
+            await supabase.storage
+              .from("device-images")
+              .createSignedUrl(image.image_url, 3600);
+
+          if (signedError) {
+            console.error(
+              "Unable to create signed image URL:",
+              signedError
+            );
+          }
+
+          return {
+            ...image,
+            signedUrl: signedData?.signedUrl || "",
+          };
+        })
+      );
+
+      setImages(
+        imagesWithUrls.filter((image) => Boolean(image.signedUrl))
+      );
+    },
+    []
+  );
+
+  useEffect(() => {
+    async function loadPage() {
+      try {
+        setLoading(true);
+        setErrorMessage("");
+
+        const deviceId = params.id;
+
+        if (!deviceId) {
+          setErrorMessage("Invalid device ID.");
+          return;
+        }
+
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
+
+        if (userError) {
+          throw userError;
+        }
+
+        if (!user) {
+          router.push("/login");
+          return;
+        }
+
+        const { data: deviceData, error: deviceError } =
+          await supabase
+            .from("devices")
+            .select("*")
+            .eq("id", deviceId)
+            .eq("user_id", user.id)
+            .maybeSingle();
+
+        if (deviceError) {
+          throw deviceError;
+        }
+
+        if (!deviceData) {
+          setErrorMessage("Device not found.");
+          return;
+        }
+
+        setDevice(deviceData as Device);
+        await loadImages(deviceId, user.id);
+      } catch (error) {
+        console.error("Unable to load device page:", error);
+
+        setErrorMessage(
+          error instanceof Error
+            ? error.message
+            : "Unable to load this device."
+        );
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadPage();
+  }, [loadImages, params.id, router]);
+
+  async function handleUpload(
+    event: ChangeEvent<HTMLInputElement>
+  ) {
+    const files = Array.from(event.target.files || []);
+    const uploadedFileCount = files.length;
+
+    if (!device || files.length === 0) {
+      return;
+    }
+
+    try {
+      setUploading(true);
+
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError) {
+        throw userError;
+      }
+
+      if (!user) {
+        router.push("/login");
+        return;
+      }
+
+      for (const file of files) {
+        if (!file.type.startsWith("image/")) {
+          throw new Error(`${file.name} is not an image.`);
+        }
+
+        if (file.size > 6 * 1024 * 1024) {
+          throw new Error(
+            `${file.name} must be smaller than 6 MB.`
+          );
+        }
+
+        const extension =
+          file.name.split(".").pop()?.toLowerCase() || "jpg";
+
+        const filePath =
+          `${user.id}/${device.id}/` +
+          `${crypto.randomUUID()}.${extension}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("device-images")
+          .upload(filePath, file, {
+            cacheControl: "3600",
+            contentType: file.type,
+            upsert: false,
+          });
+
+        if (uploadError) {
+          throw uploadError;
+        }
+
+        const { error: recordError } = await supabase
+          .from("device_images")
+          .insert({
+            device_id: device.id,
+            user_id: user.id,
+            image_url: filePath,
+          });
+
+        if (recordError) {
+          await supabase.storage
+            .from("device-images")
+            .remove([filePath]);
+
+          throw recordError;
+        }
+      }
+
+      await createDeviceEvent({
+  deviceId: device.id,
+  userId: user.id,
+  eventType: "Photo",
+  title:
+    uploadedFileCount === 1
+      ? "Photo uploaded"
+      : `${uploadedFileCount} photos uploaded`,
+  description:
+    uploadedFileCount === 1
+      ? "A new device photo was added to the vault."
+      : `${uploadedFileCount} new device photos were added to the vault.`,
+});
+
+event.target.value = "";
+await loadImages(device.id, user.id);
+
+    } catch (error) {
+      console.error("Unable to upload image:", error);
+
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Unable to upload the photo."
+      );
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function deleteImage(image: DeviceImage) {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this photo?"
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setDeletingImageId(image.id);
+
+      const { error: storageError } = await supabase.storage
+        .from("device-images")
+        .remove([image.image_url]);
+
+      if (storageError) {
+        throw storageError;
+      }
+
+      const { error: databaseError } = await supabase
+        .from("device_images")
+        .delete()
+        .eq("id", image.id);
+
+      if (databaseError) {
+        throw databaseError;
+      }
+
+      setImages((currentImages) =>
+        currentImages.filter(
+          (currentImage) => currentImage.id !== image.id
+        )
+      );
+    } catch (error) {
+      console.error("Unable to delete image:", error);
+
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Unable to delete the photo."
+      );
+    } finally {
+      setDeletingImageId(null);
+    }
+  }
+
+  async function deleteDevice() {
+    if (!device || deletingDevice) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${
+        device.device_name || "this device"
+      }"? This cannot be undone.`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setDeletingDevice(true);
+
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError) {
+        throw userError;
+      }
+
+      if (!user) {
+        router.push("/login");
+        return;
+      }
+
+      const imagePaths = images.map(
+        (image) => image.image_url
+      );
+
+      if (imagePaths.length > 0) {
+        const { error: imageStorageError } =
+          await supabase.storage
+            .from("device-images")
+            .remove(imagePaths);
+
+        if (imageStorageError) {
+          throw imageStorageError;
+        }
+      }
+
+      const { data: documentRows, error: documentLoadError } =
+        await supabase
+          .from("device_documents")
+          .select("file_path")
+          .eq("device_id", device.id)
+          .eq("user_id", user.id);
+
+      if (documentLoadError) {
+        console.error(
+          "Unable to load device documents before deletion:",
+          documentLoadError
+        );
+      }
+
+      const documentPaths =
+        documentRows?.map((document) => document.file_path) || [];
+
+      if (documentPaths.length > 0) {
+        const { error: documentStorageError } =
+          await supabase.storage
+            .from("device-documents")
+            .remove(documentPaths);
+
+        if (documentStorageError) {
+          throw documentStorageError;
+        }
+      }
+
+      const { error: deleteError } = await supabase
+        .from("devices")
+        .delete()
+        .eq("id", device.id)
+        .eq("user_id", user.id);
+
+      if (deleteError) {
+        throw deleteError;
+      }
+
+      alert("Device deleted successfully.");
+      router.push("/devices");
+      router.refresh();
+    } catch (error) {
+      console.error("Unable to delete device:", error);
+
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Unable to delete this device."
+      );
+    } finally {
+      setDeletingDevice(false);
+    }
+  }
+
+  if (loading) {
     return (
-      <main className="p-8">
-        <Link href="/devices" className="text-blue-950 font-semibold">
-          Back to Inventory
-        </Link>
-        <p className="mt-6 text-red-600">Device not found.</p>
+      <main className="min-h-screen bg-[#F7F5EF] p-8">
+        <div className="flex items-center gap-3 text-neutral-600">
+          <Loader2 className="animate-spin" size={20} />
+          Loading device...
+        </div>
       </main>
     );
   }
 
-  const healthScore = calculateDeviceHealth(device);
-  const healthLabel = getDeviceHealthLabel(healthScore);
-
-  return (
-    <main className="p-8">
-      <div className="flex items-center justify-between">
-        <Link
-          href="/devices"
-          className="inline-flex items-center gap-2 text-blue-950 font-semibold"
-        >
-          <ArrowLeft size={18} /> Back to Inventory
-        </Link>
-
-        <div className="flex gap-3">
-          <Link href="/documents/upload" className="bg-white border px-5 py-3 rounded-xl">
-            Upload Document
-          </Link>
-
-          <Link
-            href={`/devices/${device.id}/edit`}
-            className="bg-blue-950 text-white px-5 py-3 rounded-xl"
-          >
-            Edit Device
-          </Link>
-
-          <DeleteDeviceButton deviceId={device.id} />
-        </div>
-      </div>
-
-      <div className="bg-white rounded-3xl shadow overflow-hidden mt-6">
-        {device.photo_url ? (
-          <img
-            src={device.photo_url}
-            alt={device.device_name}
-            className="w-full h-80 object-cover"
-          />
-        ) : (
-          <div className="h-80 bg-blue-50 flex items-center justify-center text-blue-950">
-            <Laptop size={90} />
-          </div>
-        )}
-
-        <div className="p-8">
-          <h1 className="text-4xl font-bold text-blue-950">
-            {device.device_name}
+  if (errorMessage || !device) {
+    return (
+      <main className="min-h-screen bg-[#F7F5EF] p-8">
+        <div className="mx-auto max-w-5xl">
+          <h1 className="text-3xl font-bold text-[#111827]">
+            Device not found
           </h1>
 
-          <p className="text-gray-500 mt-1">
-            {device.brand} • {device.category}
+          <p className="mt-4 text-neutral-600">
+            {errorMessage ||
+              "This device could not be loaded."}
           </p>
 
-          <div className="bg-blue-50 rounded-2xl p-6 mt-8">
-            <div className="flex items-center justify-between">
+          <button
+            type="button"
+            onClick={() => router.push("/devices")}
+            className="mt-6 rounded-xl bg-[#111827] px-5 py-3 font-semibold text-white"
+          >
+            Back to Devices
+          </button>
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <main className="min-h-screen bg-[#F7F5EF] p-8">
+      <div className="mx-auto max-w-5xl">
+        <button
+          type="button"
+          onClick={() => router.push("/devices")}
+          className="mb-6 inline-flex items-center gap-2 font-medium text-[#111827] hover:underline"
+        >
+          <ArrowLeft size={18} />
+          Back to Devices
+        </button>
+
+        <div className="rounded-3xl bg-white p-8 shadow-sm">
+         <header className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+  <div>
+    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#C8A96A]">
+      Device Vault
+    </p>
+
+    <h1 className="mt-3 text-4xl font-bold text-[#111827]">
+      {device.device_name || "Unnamed Device"}
+    </h1>
+
+    <p className="mt-2 text-neutral-500">
+      {[device.brand, device.model_number]
+        .filter(Boolean)
+        .join(" · ") || "Brand and model not provided"}
+    </p>
+  </div>
+
+  <button
+    type="button"
+    onClick={() =>
+      router.push(`/devices/${device.id}/edit`)
+    }
+    className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#111827] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#263044]"
+  >
+    <Pencil size={17} />
+    Edit Device
+  </button>
+</header>
+
+          <section className="mt-10">
+            <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
-                <p className="text-gray-600">Device Health</p>
-                <h2 className="text-3xl font-bold text-blue-950 mt-1">
-                  {healthScore}/100
+                <h2 className="text-2xl font-bold text-[#111827]">
+                  Device Photos
                 </h2>
-                <p className="text-gray-600 mt-1">{healthLabel}</p>
+
+                <p className="mt-1 text-sm text-neutral-500">
+                  Add photos of the device, receipt, label, or serial
+                  number.
+                </p>
               </div>
+
+              <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-[#111827] px-5 py-3 font-semibold text-white transition hover:opacity-90">
+                {uploading ? (
+                  <Loader2
+                    className="animate-spin"
+                    size={18}
+                  />
+                ) : (
+                  <ImagePlus size={18} />
+                )}
+
+                {uploading ? "Uploading..." : "Add Photos"}
+
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  disabled={uploading}
+                  onChange={handleUpload}
+                  className="hidden"
+                />
+              </label>
             </div>
 
-            <div className="w-full bg-white rounded-full h-3 mt-5">
-              <div
-                className="bg-blue-950 h-3 rounded-full"
-                style={{ width: `${healthScore}%` }}
+            {images.length === 0 ? (
+              <label className="mt-6 flex cursor-pointer flex-col items-center justify-center rounded-3xl border-2 border-dashed border-[#D8D1C3] bg-[#FBFAF7] px-6 py-14 text-center transition hover:border-[#C8A96A]">
+                <ImagePlus
+                  size={36}
+                  className="text-[#C8A96A]"
+                />
+
+                <p className="mt-4 font-semibold text-[#111827]">
+                  Add your first device photo
+                </p>
+
+                <p className="mt-1 text-sm text-neutral-500">
+                  Choose one or multiple images up to 6 MB each.
+                </p>
+
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  disabled={uploading}
+                  onChange={handleUpload}
+                  className="hidden"
+                />
+              </label>
+            ) : (
+              <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {images.map((image) => (
+                  <div
+                    key={image.id}
+                    className="group relative overflow-hidden rounded-2xl border border-[#E8E2D6] bg-white"
+                  >
+                    <img
+                      src={image.signedUrl}
+                      alt={`${
+                        device.device_name || "Device"
+                      } photo`}
+                      className="aspect-square w-full object-cover"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => deleteImage(image)}
+                      disabled={
+                        deletingImageId === image.id
+                      }
+                      aria-label="Delete photo"
+                      className="absolute right-3 top-3 rounded-full bg-black/70 p-2 text-white transition hover:bg-red-600 disabled:opacity-60"
+                    >
+                      {deletingImageId === image.id ? (
+                        <Loader2
+                          size={17}
+                          className="animate-spin"
+                        />
+                      ) : (
+                        <Trash2 size={17} />
+                      )}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
+          <div className="my-10 h-px bg-[#E8E2D6]" />
+
+          <section>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#C8A96A]">
+              Inventory Details
+            </p>
+
+            <h2 className="mt-2 text-2xl font-bold text-[#111827]">
+              Device Information
+            </h2>
+
+            <div className="mt-6 grid gap-5 sm:grid-cols-2">
+              <InfoItem
+                label="Category"
+                value={device.category}
+              />
+
+              <InfoItem
+                label="Brand"
+                value={device.brand}
+              />
+
+              <InfoItem
+                label="Model"
+                value={device.model_number}
+              />
+
+              <InfoItem
+                label="Serial Number"
+                value={device.serial_number}
+              />
+
+              <InfoItem
+                label="Purchase Date"
+                value={formatDate(device.purchase_date)}
+              />
+
+              <InfoItem
+                label="Warranty Expiration"
+                value={formatDate(device.warranty_date)}
+              />
+
+              <InfoItem
+                label="Purchase Price"
+                value={formatPrice(device.purchase_price)}
+              />
+
+              <InfoItem
+                label="Location"
+                value={device.location}
               />
             </div>
-          </div>
 
-          <div className="grid md:grid-cols-3 gap-6 mt-10">
-            <Info title="Model Number" value={device.model_number} />
-            <Info title="Serial Number" value={device.serial_number} />
-            <Info title="Location" value={device.location} />
-            <Info title="Purchase Date" value={device.purchase_date} />
-            <Info title="Warranty Date" value={device.warranty_date} />
-            <Info
-              title="Purchase Price"
-              value={device.purchase_price ? `$${device.purchase_price}` : "-"}
-            />
-          </div>
+            <div className="mt-5">
+              <InfoItem
+                label="Notes"
+                value={device.notes}
+              />
+            </div>
+          </section>
 
-          <div className="mt-10">
-            <h2 className="text-2xl font-bold text-blue-950">Tech Notes</h2>
-            <p className="bg-gray-50 rounded-2xl p-5 mt-4 text-gray-700">
-              {device.notes || "No notes added yet."}
+          <DeviceDocuments deviceId={device.id} />
+          <DeviceTimeline
+  deviceId={device.id}
+  purchaseDate={device.purchase_date}
+  warrantyDate={device.warranty_date}
+/>
+          <section className="mt-10 border-t border-[#E8E2D6] pt-8">
+            <p className="text-sm font-semibold text-red-700">
+              Danger Zone
             </p>
-          </div>
-        </div>
-      </div>
 
-      <div className="bg-white rounded-3xl shadow p-8 mt-6">
-        <h2 className="text-2xl font-bold text-blue-950">Device Documents</h2>
+            <p className="mt-2 text-sm text-neutral-500">
+              Deleting this device permanently removes its details,
+              photos, and document records.
+            </p>
 
-        {documents?.length === 0 && (
-          <p className="text-gray-600 mt-4">
-            No documents uploaded for this device yet.
-          </p>
-        )}
-
-        <div className="grid md:grid-cols-3 gap-6 mt-6">
-          {documents?.map((doc) => (
-            <a
-              key={doc.id}
-              href={doc.file_url}
-              target="_blank"
-              className="border rounded-2xl p-5 hover:shadow transition"
+            <button
+              type="button"
+              onClick={deleteDevice}
+              disabled={deletingDevice}
+              className="mt-5 inline-flex items-center gap-2 rounded-xl bg-red-600 px-6 py-3 font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              <FileText className="text-blue-950" />
+              {deletingDevice ? (
+                <Loader2
+                  className="animate-spin"
+                  size={18}
+                />
+              ) : (
+                <Trash2 size={18} />
+              )}
 
-              <p className="text-sm text-gray-500 mt-4">{doc.file_type}</p>
-
-              <h3 className="font-bold text-blue-950 mt-1">{doc.file_name}</h3>
-
-              <p className="text-gray-500 mt-3">Open file →</p>
-            </a>
-          ))}
+              {deletingDevice
+                ? "Deleting..."
+                : "Delete Device"}
+            </button>
+          </section>
         </div>
       </div>
     </main>
   );
 }
 
-function Info({ title, value }: { title: string; value?: string }) {
+function InfoItem({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | null | undefined;
+}) {
   return (
-    <div className="bg-gray-50 rounded-2xl p-5">
-      <p className="text-sm text-gray-500">{title}</p>
-      <p className="font-semibold text-blue-950 mt-1">{value || "-"}</p>
+    <div className="rounded-2xl bg-[#F7F5EF] p-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#C8A96A]">
+        {label}
+      </p>
+
+      <p className="mt-2 break-words font-medium text-[#111827]">
+        {value || "Not provided"}
+      </p>
     </div>
   );
+}
+
+function formatDate(value: string | null) {
+  if (!value) {
+    return null;
+  }
+
+  const date = new Date(`${value}T00:00:00`);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return date.toLocaleDateString(undefined, {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function formatPrice(value: number | null) {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  return `$${Number(value).toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
 }

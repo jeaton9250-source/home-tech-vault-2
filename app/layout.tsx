@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
+
 import Sidebar from "@/components/Sidebar";
 import TopBar from "@/components/TopBar";
 import MobileNav from "@/components/MobileNav";
 import AuthGuard from "@/components/AuthGuard";
+import AIAdvisorPopup from "@/components/ai/AIAdvisorPopup";
 
 export const metadata: Metadata = {
   title: "Home Tech Vault",
@@ -19,15 +21,18 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <AuthGuard>
-          <div className="flex min-h-screen bg-[#F6F7F9]">
+          <div className="flex min-h-screen bg-[#F7F5EF]">
             <Sidebar />
 
-            <div className="flex-1 pb-20 lg:pb-0">
+            <div className="min-w-0 flex-1 pb-20 lg:pb-0">
               <TopBar />
-             {children}
-            <MobileNav />
-          </div>
-          
+
+              <main>{children}</main>
+
+              <MobileNav />
+            </div>
+
+            <AIAdvisorPopup />
           </div>
         </AuthGuard>
       </body>

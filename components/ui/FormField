@@ -1,0 +1,72 @@
+import {
+  InputHTMLAttributes,
+  TextareaHTMLAttributes,
+} from "react";
+
+type BaseProps = {
+  label: string;
+  error?: string;
+  helpText?: string;
+};
+
+type InputProps = BaseProps & {
+  multiline?: false;
+} & InputHTMLAttributes<HTMLInputElement>;
+
+type TextareaProps = BaseProps & {
+  multiline: true;
+} & TextareaHTMLAttributes<HTMLTextAreaElement>;
+
+type FormFieldProps = InputProps | TextareaProps;
+
+export default function FormField(props: FormFieldProps) {
+  const {
+    label,
+    error,
+    helpText,
+    multiline,
+    className = "",
+    ...fieldProps
+  } = props;
+
+  const fieldClasses = `
+    w-full rounded-xl border bg-white px-4 py-3
+    text-[#111827] outline-none
+    ${
+      error
+        ? "border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-100"
+        : "border-[#E8E2D6] focus:border-[#C8A96A] focus:ring-2 focus:ring-[#C8A96A]/20"
+    }
+    ${className}
+  `;
+
+  return (
+    <label className="block">
+      <span className="mb-2 block text-sm font-semibold text-[#111827]">
+        {label}
+      </span>
+
+      {multiline ? (
+        <textarea
+          {...(fieldProps as TextareaHTMLAttributes<HTMLTextAreaElement>)}
+          className={`${fieldClasses} min-h-28 resize-y`}
+        />
+      ) : (
+        <input
+          {...(fieldProps as InputHTMLAttributes<HTMLInputElement>)}
+          className={fieldClasses}
+        />
+      )}
+
+      {error ? (
+        <span className="mt-2 block text-sm text-red-600">
+          {error}
+        </span>
+      ) : helpText ? (
+        <span className="mt-2 block text-sm text-neutral-400">
+          {helpText}
+        </span>
+      ) : null}
+    </label>
+  );
+}

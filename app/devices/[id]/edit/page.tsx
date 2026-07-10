@@ -1,147 +1,434 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import {
+  ArrowLeft,
+  Loader2,
+  Save,
+} from "lucide-react";
+
 import { supabase } from "@/lib/supabase";
+import PageShell from "@/components/ui/PageShell";
+import PageTitle from "@/components/ui/PageTitle";
+import PageCard from "@/components/ui/PageCard";
+import Button from "@/components/ui/Button";
 
-export default function EditDevice({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = use(params);
+type DeviceForm = {
+  device_name: string;
+  category: string;
+  brand: string;
+  model_number: string;
+  serial_number: string;
+  purchase_date: string;
+  warranty_date: string;
+  purchase_price: string;
+  location: string;
+  notes: string;
+};
 
-  const [deviceName, setDeviceName] = useState("");
-  const [category, setCategory] = useState("");
-  const [brand, setBrand] = useState("");
-  const [modelNumber, setModelNumber] = useState("");
-  const [serialNumber, setSerialNumber] = useState("");
-  const [purchaseDate, setPurchaseDate] = useState("");
-  const [warrantyDate, setWarrantyDate] = useState("");
-  const [purchasePrice, setPurchasePrice] = useState("");
-  const [location, setLocation] = useState("");
-  const [notes, setNotes] = useState("");
-  const [photoUrl, setPhotoUrl] = useState("");
-  const [photoFile, setPhotoFile] = useState<File | null>(null);
+const emptyForm: DeviceForm = {
+  device_name: "",
+  category: "",
+  brand: "",
+  model_number: "",
+  serial_number: "",
+  purchase_date: "",
+  warranty_date: "",
+  purchase_price: "",
+  location: "",
+  notes: "",
+};
+
+export default function EditDevicePage() {
+  const params = useParams<{ id: string }>();
+  const router = useRouter();
+
+  const [form, setForm] = useState<DeviceForm>(emptyForm);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     async function loadDevice() {
-      const { data, error } = await supabase
-        .from("devices")
-        .select("*")
-        .eq("id", id)
-        .single();
+      try {
+        setLoading(true);
+        setErrorMessage("");
 
-      if (error) {
-        alert(error.message);
-        return;
+        const deviceId = params.id;
+
+        if (!deviceId) {
+          throw new Error("Invalid device ID.");
+        }
+
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
+
+        if (userError) {
+          throw userError;
+        }
+
+        if (!user) {
+          router.push("/login");
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from("devices")
+          .select("*")
+          .eq("id", deviceId)
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        if (error) {
+          throw error;
+        }
+
+        if (!data) {
+          throw new Error("Device not found.");
+        }
+
+        setForm({
+          device_name: data.device_name || "",
+          category: data.category || "",
+          brand: data.brand || "",
+          model_number: data.model_number || "",
+          serial_number: data.serial_number || "",
+          purchase_date: data.purchase_date || "",
+          warranty_date: data.warranty_date || "",
+          purchase_price:
+            data.purchase_price !== null &&
+            data.purchase_price !== undefined
+              ? String(data.purchase_price)
+              : "",
+          location: data.location || "",
+          notes: data.notes || "",
+        });
+      } catch (error) {
+        console.error("Unable to load device:", error);
+
+        setErrorMessage(
+          error instanceof Error
+            ? error.message
+            : "Unable to load this device."
+        );
+      } finally {
+        setLoading(false);
       }
-
-      setDeviceName(data.device_name || "");
-      setCategory(data.category || "");
-      setBrand(data.brand || "");
-      setModelNumber(data.model_number || "");
-      setSerialNumber(data.serial_number || "");
-      setPurchaseDate(data.purchase_date || "");
-      setWarrantyDate(data.warranty_date || "");
-      setPurchasePrice(data.purchase_price ? String(data.purchase_price) : "");
-      setLocation(data.location || "");
-      setNotes(data.notes || "");
-      setPhotoUrl(data.photo_url || "");
     }
 
     loadDevice();
-  }, [id]);
+  }, [params.id, router]);
 
-  async function uploadPhoto() {
-    if (!photoFile) return photoUrl;
-
-    const filePath = `${id}/${Date.now()}-${photoFile.name}`;
-
-    const { error } = await supabase.storage
-      .from("device-photos")
-      .upload(filePath, photoFile);
-
-    if (error) {
-      alert(error.message);
-      return photoUrl;
-    }
-
-    const { data } = supabase.storage
-      .from("device-photos")
-      .getPublicUrl(filePath);
-
-    return data.publicUrl;
+  function updateField(
+    field: keyof DeviceForm,
+    value: string
+  ) {
+    setForm((current) => ({
+      ...current,
+      [field]: value,
+    }));
   }
 
-  async function updateDevice() {
-    const newPhotoUrl = await uploadPhoto();
+  async function handleSubmit(
+    event: FormEvent<HTMLFormElement>
+  ) {
+    event.preventDefault();
 
-    const { error } = await supabase
-      .from("devices")
-      .update({
-        device_name: deviceName,
-        category,
-        brand,
-        model_number: modelNumber,
-        serial_number: serialNumber,
-        purchase_date: purchaseDate || null,
-        warranty_date: warrantyDate || null,
-        purchase_price: purchasePrice ? Number(purchasePrice) : null,
-        location,
-        notes,
-        photo_url: newPhotoUrl,
-      })
-      .eq("id", id);
-
-    if (error) {
-      alert(error.message);
-    } else {
-      alert("Device updated!");
-      window.location.href = `/devices/${id}`;
+    if (!form.device_name.trim()) {
+      alert("Please enter a device name.");
+      return;
     }
+
+    try {
+      setSaving(true);
+
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError) {
+        throw userError;
+      }
+
+      if (!user) {
+        router.push("/login");
+        return;
+      }
+
+      const { error } = await supabase
+        .from("devices")
+        .update({
+          device_name: form.device_name.trim(),
+          category: form.category.trim() || null,
+          brand: form.brand.trim() || null,
+          model_number: form.model_number.trim() || null,
+          serial_number: form.serial_number.trim() || null,
+          purchase_date: form.purchase_date || null,
+          warranty_date: form.warranty_date || null,
+          purchase_price: form.purchase_price
+            ? Number(form.purchase_price)
+            : null,
+          location: form.location.trim() || null,
+          notes: form.notes.trim() || null,
+        })
+        .eq("id", params.id)
+        .eq("user_id", user.id);
+
+      if (error) {
+        throw error;
+      }
+
+      alert("Device updated successfully.");
+      router.push(`/devices/${params.id}`);
+      router.refresh();
+    } catch (error) {
+      console.error("Unable to update device:", error);
+
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Unable to update the device."
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <PageShell>
+        <PageCard className="flex min-h-64 items-center justify-center">
+          <div className="flex items-center gap-3 text-neutral-500">
+            <Loader2 className="animate-spin" size={22} />
+            Loading device...
+          </div>
+        </PageCard>
+      </PageShell>
+    );
+  }
+
+  if (errorMessage) {
+    return (
+      <PageShell>
+        <PageCard className="border-red-200 bg-red-50 text-red-700">
+          <h1 className="text-2xl font-bold">
+            Unable to edit device
+          </h1>
+
+          <p className="mt-3">{errorMessage}</p>
+
+          <Button
+            className="mt-6"
+            onClick={() => router.push("/devices")}
+          >
+            Back to Devices
+          </Button>
+        </PageCard>
+      </PageShell>
+    );
   }
 
   return (
-    <main className="p-8 bg-gray-100 min-h-screen">
-      <h1 className="text-4xl font-bold text-blue-950">Edit Device</h1>
+    <PageShell>
+      <PageTitle
+        eyebrow="Device Vault"
+        title="Edit Device"
+        description="Update the saved information for this device."
+        action={
+          <Button
+            variant="secondary"
+            onClick={() =>
+              router.push(`/devices/${params.id}`)
+            }
+          >
+            <ArrowLeft size={17} />
+            Cancel
+          </Button>
+        }
+      />
 
-      <div className="bg-white mt-8 p-6 rounded-2xl shadow max-w-2xl">
-        {photoUrl && (
-          <img
-            src={photoUrl}
-            alt="Device photo"
-            className="w-full h-64 object-cover rounded-2xl mb-6"
+      <PageCard>
+        <form
+          onSubmit={handleSubmit}
+          className="grid gap-6 md:grid-cols-2"
+        >
+          <FormInput
+            label="Device Name"
+            value={form.device_name}
+            onChange={(value) =>
+              updateField("device_name", value)
+            }
+            placeholder="MacBook Pro"
+            required
           />
-        )}
 
-        <label className="block mb-2 font-semibold">Device Photo</label>
-        <input
-          type="file"
-          accept="image/*"
-          className="border p-3 rounded-xl w-full mb-4"
-          onChange={(e) => setPhotoFile(e.target.files?.[0] || null)}
-        />
+          <FormInput
+            label="Category"
+            value={form.category}
+            onChange={(value) =>
+              updateField("category", value)
+            }
+            placeholder="Computer"
+          />
 
-        <input className="border p-3 rounded-xl w-full mb-4" value={deviceName} placeholder="Device Name" onChange={(e) => setDeviceName(e.target.value)} />
-        <input className="border p-3 rounded-xl w-full mb-4" value={category} placeholder="Category" onChange={(e) => setCategory(e.target.value)} />
-        <input className="border p-3 rounded-xl w-full mb-4" value={brand} placeholder="Brand" onChange={(e) => setBrand(e.target.value)} />
-        <input className="border p-3 rounded-xl w-full mb-4" value={modelNumber} placeholder="Model Number" onChange={(e) => setModelNumber(e.target.value)} />
-        <input className="border p-3 rounded-xl w-full mb-4" value={serialNumber} placeholder="Serial Number" onChange={(e) => setSerialNumber(e.target.value)} />
+          <FormInput
+            label="Brand"
+            value={form.brand}
+            onChange={(value) =>
+              updateField("brand", value)
+            }
+            placeholder="Apple"
+          />
 
-        <label className="block mb-2 font-semibold">Purchase Date</label>
-        <input type="date" className="border p-3 rounded-xl w-full mb-4" value={purchaseDate} onChange={(e) => setPurchaseDate(e.target.value)} />
+          <FormInput
+            label="Model Number"
+            value={form.model_number}
+            onChange={(value) =>
+              updateField("model_number", value)
+            }
+            placeholder="M3 Pro"
+          />
 
-        <label className="block mb-2 font-semibold">Warranty Expiration</label>
-        <input type="date" className="border p-3 rounded-xl w-full mb-4" value={warrantyDate} onChange={(e) => setWarrantyDate(e.target.value)} />
+          <FormInput
+            label="Serial Number"
+            value={form.serial_number}
+            onChange={(value) =>
+              updateField("serial_number", value)
+            }
+            placeholder="Serial number"
+          />
 
-        <input type="number" className="border p-3 rounded-xl w-full mb-4" value={purchasePrice} placeholder="Purchase Price" onChange={(e) => setPurchasePrice(e.target.value)} />
-        <input className="border p-3 rounded-xl w-full mb-4" value={location} placeholder="Location" onChange={(e) => setLocation(e.target.value)} />
-        <textarea className="border p-3 rounded-xl w-full mb-4" value={notes} placeholder="Notes" onChange={(e) => setNotes(e.target.value)} />
+          <FormInput
+            label="Location"
+            value={form.location}
+            onChange={(value) =>
+              updateField("location", value)
+            }
+            placeholder="Home Office"
+          />
 
-        <button onClick={updateDevice} className="bg-blue-950 text-white px-6 py-3 rounded-xl">
-          Save Changes
-        </button>
-      </div>
-    </main>
+          <FormInput
+            label="Purchase Date"
+            type="date"
+            value={form.purchase_date}
+            onChange={(value) =>
+              updateField("purchase_date", value)
+            }
+          />
+
+          <FormInput
+            label="Warranty Expiration"
+            type="date"
+            value={form.warranty_date}
+            onChange={(value) =>
+              updateField("warranty_date", value)
+            }
+          />
+
+          <FormInput
+            label="Purchase Price"
+            type="number"
+            value={form.purchase_price}
+            onChange={(value) =>
+              updateField("purchase_price", value)
+            }
+            placeholder="1999.00"
+            step="0.01"
+            min="0"
+          />
+
+          <div className="md:col-span-2">
+            <label className="block">
+              <span className="mb-2 block text-sm font-semibold text-[#111827]">
+                Notes
+              </span>
+
+              <textarea
+                value={form.notes}
+                onChange={(event) =>
+                  updateField("notes", event.target.value)
+                }
+                placeholder="Add notes about this device..."
+                className="min-h-32 w-full resize-y rounded-xl border border-[#E8E2D6] bg-white px-4 py-3 text-[#111827] outline-none focus:border-[#C8A96A] focus:ring-2 focus:ring-[#C8A96A]/20"
+              />
+            </label>
+          </div>
+
+          <div className="flex flex-wrap gap-3 border-t border-[#E8E2D6] pt-6 md:col-span-2">
+            <Button
+              type="submit"
+              disabled={saving}
+            >
+              {saving ? (
+                <Loader2
+                  size={18}
+                  className="animate-spin"
+                />
+              ) : (
+                <Save size={18} />
+              )}
+
+              {saving ? "Saving..." : "Save Changes"}
+            </Button>
+
+            <Button
+              variant="secondary"
+              onClick={() =>
+                router.push(`/devices/${params.id}`)
+              }
+            >
+              Cancel
+            </Button>
+          </div>
+        </form>
+      </PageCard>
+    </PageShell>
+  );
+}
+
+type FormInputProps = {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  type?: string;
+  required?: boolean;
+  step?: string;
+  min?: string;
+};
+
+function FormInput({
+  label,
+  value,
+  onChange,
+  placeholder,
+  type = "text",
+  required,
+  step,
+  min,
+}: FormInputProps) {
+  return (
+    <label className="block">
+      <span className="mb-2 block text-sm font-semibold text-[#111827]">
+        {label}
+      </span>
+
+      <input
+        type={type}
+        value={value}
+        required={required}
+        step={step}
+        min={min}
+        onChange={(event) =>
+          onChange(event.target.value)
+        }
+        placeholder={placeholder}
+        className="w-full rounded-xl border border-[#E8E2D6] bg-white px-4 py-3 text-[#111827] outline-none focus:border-[#C8A96A] focus:ring-2 focus:ring-[#C8A96A]/20"
+      />
+    </label>
   );
 }

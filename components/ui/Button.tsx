@@ -1,31 +1,52 @@
-"use client";
-
 import Link from "next/link";
-import React from "react";
+import { ButtonHTMLAttributes, ReactNode } from "react";
+
+type ButtonVariant =
+  | "primary"
+  | "secondary"
+  | "ghost"
+  | "danger";
 
 type ButtonProps = {
+  children: ReactNode;
   href?: string;
-  children: React.ReactNode;
-  variant?: "primary" | "secondary" | "ghost" | "danger";
+  variant?: ButtonVariant;
   className?: string;
-  onClick?: React.ButtonHTMLAttributes<HTMLButtonElement>["onClick"];
+} & ButtonHTMLAttributes<HTMLButtonElement>;
+
+const variantClasses: Record<ButtonVariant, string> = {
+  primary:
+    "bg-[#111827] text-white hover:bg-[#263044] shadow-sm",
+
+  secondary:
+    "border border-[#E8E2D6] bg-white text-[#111827] hover:bg-[#F7F5EF]",
+
+  ghost:
+    "bg-transparent text-[#111827] hover:bg-[#F7F5EF]",
+
+  danger:
+    "bg-red-600 text-white hover:bg-red-700 shadow-sm",
 };
 
 export default function Button({
-  href,
   children,
+  href,
   variant = "primary",
   className = "",
-  onClick,
+  type = "button",
+  disabled,
+  ...buttonProps
 }: ButtonProps) {
-  const styles: Record<string, string> = {
-    primary: "bg-blue-950 text-white hover:bg-blue-900",
-    secondary: "bg-white text-blue-950 border hover:bg-gray-50",
-    ghost: "bg-transparent text-blue-950 border-transparent hover:bg-gray-100",
-    danger: "bg-red-600 text-white hover:bg-red-700",
-  };
-
-  const classes = `inline-flex items-center justify-center px-5 py-3 rounded-xl font-semibold transition ${styles[variant]} ${className}`;
+  const classes = `
+    inline-flex items-center justify-center gap-2
+    rounded-xl px-5 py-3
+    text-sm font-semibold
+    transition
+    disabled:cursor-not-allowed
+    disabled:opacity-50
+    ${variantClasses[variant]}
+    ${className}
+  `;
 
   if (href) {
     return (
@@ -36,7 +57,12 @@ export default function Button({
   }
 
   return (
-    <button type="button" className={classes} onClick={onClick}>
+    <button
+      type={type}
+      disabled={disabled}
+      className={classes}
+      {...buttonProps}
+    >
       {children}
     </button>
   );

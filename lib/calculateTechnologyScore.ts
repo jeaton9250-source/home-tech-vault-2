@@ -1,4 +1,4 @@
-type Device = {
+export type Device = {
   device_name?: string;
   brand?: string;
   category?: string;
