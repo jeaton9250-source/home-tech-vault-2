@@ -42,9 +42,25 @@ function isWarrantyActive(value?: string | null) {
   return expiration.getTime() >= Date.now();
 }
 
-export function calculateVaultScore(vaultDevices: VaultDevice[], resolvedDocumentCount: number, {
-  devices, deviceIdsWithPhotos, deviceIdsWithDocuments, deviceIdsWithMaintenance,
+export function calculateVaultScore({
+  devices,
+  deviceIdsWithPhotos,
+  deviceIdsWithDocuments,
+  deviceIdsWithMaintenance,
 }: VaultScoreInput): VaultScoreResult {
+  if (devices.length === 0) {
+    return {
+      total: 0,
+      protection: 0,
+      organization: 0,
+      documentation: 0,
+      maintenance: 0,
+      label: "Get Started",
+      recommendations: [
+        "Add your first device to begin calculating your score.",
+      ],
+    };
+  }
   if (devices.length === 0) {
     return {
       total: 0,
