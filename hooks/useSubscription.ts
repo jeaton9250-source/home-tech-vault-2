@@ -1,10 +1,18 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import { supabase } from "@/lib/supabase";
 
-export type SubscriptionPlan = "free" | "pro" | "family";
+export type SubscriptionPlan =
+  | "free"
+  | "pro"
+  | "family";
 
 type Subscription = {
   plan: SubscriptionPlan;
@@ -19,101 +27,139 @@ const defaultSubscription: Subscription = {
 };
 
 export function useSubscription() {
-  const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [loading, setLoading] =
+    useState(true);
+
+  const [isAdmin, setIsAdmin] =
+    useState(false);
 
   const [subscription, setSubscription] =
-    useState<Subscription>(defaultSubscription);
+    useState<Subscription>(
+      defaultSubscription
+    );
 
-  const refreshSubscription = useCallback(async () => {
-    try {
-      setLoading(true);
+  const refreshSubscription =
+    useCallback(async () => {
+      try {
+        setLoading(true);
 
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
+        const {
+          data: { session },
+          error: sessionError,
+        } =
+          await supabase.auth.getSession();
 
-      if (userError) {
-        throw userError;
-      }
+        if (sessionError) {
+          console.error(
+            "Unable to load auth session:",
+            sessionError
+          );
+        }
 
-      if (!user) {
-        setSubscription(defaultSubscription);
-        setIsAdmin(false);
-        return;
-      }
+        const user =
+          session?.user || null;
 
-      const [
-        { data: subscriptionData, error: subscriptionError },
-        { data: profileData, error: profileError },
-      ] = await Promise.all([
-        supabase
-          .from("user_subscriptions")
-          .select("plan, status, current_period_end")
-          .eq("user_id", user.id)
-          .maybeSingle(),
+        if (!user) {
+          setSubscription(
+            defaultSubscription
+          );
+          setIsAdmin(false);
+          return;
+        }
 
-        supabase
-          .from("profiles")
-          .select("is_admin")
-          .eq("id", user.id)
-          .maybeSingle(),
-      ]);
+        const [
+          {
+            data: subscriptionData,
+            error: subscriptionError,
+          },
+          {
+            data: profileData,
+            error: profileError,
+          },
+        ] = await Promise.all([
+          supabase
+            .from("user_subscriptions")
+            .select(
+              "plan, status, current_period_end"
+            )
+            .eq("user_id", user.id)
+            .maybeSingle(),
 
-      if (subscriptionError) {
-        throw subscriptionError;
-      }
+          supabase
+            .from("profiles")
+            .select("is_admin")
+            .eq("id", user.id)
+            .maybeSingle(),
+        ]);
 
-      if (profileError) {
-        console.error(
-          "Unable to load admin status:",
-          profileError
-        );
-      }
+        if (subscriptionError) {
+          throw subscriptionError;
+        }
 
-      const normalizedPlan =
-        subscriptionData?.plan?.trim().toLowerCase();
+        if (profileError) {
+          console.error(
+            "Unable to load admin status:",
+            profileError
+          );
+        }
 
-      const plan: SubscriptionPlan =
-        normalizedPlan === "family"
-          ? "family"
-          : normalizedPlan === "pro"
-            ? "pro"
-            : "free";
-
-      setSubscription({
-        plan,
-        status:
-          subscriptionData?.status
+        const normalizedPlan =
+          subscriptionData?.plan
             ?.trim()
-            .toLowerCase() || "inactive",
-        current_period_end:
-          subscriptionData?.current_period_end || null,
-      });
+            .toLowerCase();
 
-      setIsAdmin(profileData?.is_admin === true);
-    } catch (error) {
-      console.error(
-        "Subscription loading error:",
-        error
-      );
+        const plan: SubscriptionPlan =
+          normalizedPlan === "family"
+            ? "family"
+            : normalizedPlan === "pro"
+              ? "pro"
+              : "free";
 
-      setSubscription(defaultSubscription);
-      setIsAdmin(false);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+        setSubscription({
+          plan,
+          status:
+            subscriptionData?.status
+              ?.trim()
+              .toLowerCase() ||
+            "inactive",
+          current_period_end:
+            subscriptionData
+              ?.current_period_end ||
+            null,
+        });
+
+        setIsAdmin(
+          profileData?.is_admin === true
+        );
+      } catch (error) {
+        console.error(
+          "Subscription loading error:",
+          error
+        );
+
+        setSubscription(
+          defaultSubscription
+        );
+        setIsAdmin(false);
+      } finally {
+        setLoading(false);
+      }
+    }, []);
 
   useEffect(() => {
     refreshSubscription();
 
     const {
-      data: { subscription: authSubscription },
-    } = supabase.auth.onAuthStateChange(() => {
-      refreshSubscription();
-    });
+      data: {
+        subscription:
+          authSubscription,
+      },
+    } =
+      supabase.auth.onAuthStateChange(
+        () => {
+          refreshSubscription();
+        }
+      );
 
     return () => {
       authSubscription.unsubscribe();
@@ -122,22 +168,36 @@ export function useSubscription() {
 
   const isActive = useMemo(
     () =>
-      subscription.status === "active" ||
-      subscription.status === "trialing",
+      subscription.status ===
+        "active" ||
+      subscription.status ===
+        "trialing",
     [subscription.status]
   );
 
   const isPro =
-    subscription.plan === "pro" && isActive;
+    subscription.plan === "pro" &&
+    isActive;
 
   const isFamily =
-    subscription.plan === "family" && isActive;
+    subscription.plan === "family" &&
+    isActive;
 
   const canUsePremiumFeatures =
     isAdmin || isPro || isFamily;
 
   const isFree =
-    !isAdmin && !isPro && !isFamily;
+    !isAdmin &&
+    !isPro &&
+    !isFamily;
+
+  const hasUnlimitedDevices =
+    isAdmin || isPro || isFamily;
+
+  const deviceLimit =
+    hasUnlimitedDevices
+      ? null
+      : 8;
 
   return {
     loading,
@@ -155,6 +215,9 @@ export function useSubscription() {
     isFamily,
     isAdmin,
     canUsePremiumFeatures,
+
+    deviceLimit,
+    hasUnlimitedDevices,
 
     refreshSubscription,
   };

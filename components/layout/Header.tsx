@@ -1,12 +1,13 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { type FormEvent, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Bell, Search, X } from "lucide-react";
 
 export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
+
   const [search, setSearch] = useState("");
 
   function runSearch() {
@@ -35,13 +36,9 @@ export default function Header() {
   return (
     <header className="flex flex-col gap-5 rounded-[32px] border border-[#E8E2D6] bg-white px-6 py-5 shadow-sm lg:flex-row lg:items-center lg:justify-between lg:px-8">
       <div>
-        <h1 className="text-2xl font-bold text-[#111827]">
-          Home Tech Vault
-        </h1>
+        <h1 className="text-2xl font-bold text-[#111827]">Home Tech Vault</h1>
 
-        <p className="text-sm text-neutral-500">
-          Protect. Organize. Simplify.
-        </p>
+        <p className="text-sm text-neutral-500">Protect. Organize. Simplify.</p>
       </div>
 
       <div className="flex w-full items-center gap-3 lg:w-auto">
@@ -83,13 +80,7 @@ export default function Header() {
           </button>
         </form>
 
-        <button
-          type="button"
-          aria-label="Notifications"
-          className="rounded-2xl bg-[#F7F5EF] p-3 text-[#111827] hover:bg-[#EFE9DD]"
-        >
-          <Bell size={20} />
-        </button>
+    
       </div>
     </header>
   );

@@ -2,7 +2,6 @@ import Link from "next/link";
 import {
   ArrowRight,
   Laptop,
-  Radio,
 } from "lucide-react";
 
 import {
@@ -49,140 +48,153 @@ export default function DeviceCard({
     last_seen_at: device.last_seen_at ?? undefined,
     ip_address: device.ip_address ?? undefined,
   };
-  const healthScore = calculateDeviceHealth(cleanDevice);
-  const healthLabel = getDeviceHealthLabel(healthScore);
-  const isDemo = device.id.startsWith("demo");
+
+  const healthScore =
+    calculateDeviceHealth(cleanDevice);
+
+  const healthLabel =
+    getDeviceHealthLabel(healthScore);
+
+  const isDemo =
+    device.id.startsWith("demo");
 
   const hasNetworkStatus =
     device.online !== null &&
     device.online !== undefined;
 
-  const card = (
-    <article className="overflow-hidden rounded-[28px] border border-[#E8E2D6] bg-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-lg">
-      {device.photo_url ? (
-        <img
-          src={device.photo_url}
-          alt={device.device_name}
-          className="h-48 w-full object-cover"
-        />
-      ) : (
-        <div className="flex h-48 items-center justify-center bg-[#F7F5EF] text-[#C8A96A]">
-          <Laptop size={56} />
-        </div>
-      )}
-
-      <div className="p-6">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#C8A96A]">
-              {device.category || "Device"}
-            </p>
-
-            <h2 className="mt-2 truncate text-xl font-bold text-[#111827]">
-              {device.device_name}
-            </h2>
-
-            <p className="mt-1 truncate text-sm text-neutral-500">
-              {device.brand || "No brand added"}
-            </p>
-          </div>
-
-          <span className="shrink-0 rounded-full bg-[#F3EAD7] px-3 py-1 text-xs font-semibold text-[#8A6A2F]">
-            {healthScore}/100
-          </span>
-        </div>
-
-        {hasNetworkStatus && (
-          <div className="mt-5 flex flex-wrap items-center gap-3">
-            <span
-              className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold ${
-                device.online
-                  ? "bg-emerald-100 text-emerald-700"
-                  : "bg-neutral-100 text-neutral-600"
-              }`}
-            >
-              <span
-                className={`h-2 w-2 rounded-full ${
-                  device.online
-                    ? "bg-emerald-500"
-                    : "bg-neutral-400"
-                }`}
-              />
-
-              {device.online ? "Online" : "Offline"}
-            </span>
-
-            <span className="text-xs text-neutral-400">
-              {device.online
-                ? "Seen in latest scan"
-                : formatLastSeen(device.last_seen_at)}
-            </span>
+  return (
+    <Link
+      href={`/devices/${device.id}`}
+      className="block rounded-[28px] focus:outline-none focus:ring-2 focus:ring-[#C8A96A] focus:ring-offset-2"
+      aria-label={`View ${device.device_name}`}
+    >
+      <article className="overflow-hidden rounded-[28px] border border-[#E8E2D6] bg-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-[#C8A96A] hover:shadow-lg">
+        {device.photo_url ? (
+          <img
+            src={device.photo_url}
+            alt={device.device_name}
+            className="h-48 w-full object-cover"
+          />
+        ) : (
+          <div className="flex h-48 items-center justify-center bg-[#F7F5EF] text-[#C8A96A]">
+            <Laptop size={56} />
           </div>
         )}
 
-        <div className="mt-5 rounded-2xl bg-[#F7F5EF] p-4">
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-semibold text-[#111827]">
-              Device Health
-            </p>
+        <div className="p-6">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#C8A96A]">
+                {device.category || "Device"}
+              </p>
 
-            <p className="text-sm text-neutral-500">
-              {healthLabel}
-            </p>
+              <h2 className="mt-2 truncate text-xl font-bold text-[#111827]">
+                {device.device_name}
+              </h2>
+
+              <p className="mt-1 truncate text-sm text-neutral-500">
+                {device.brand || "No brand added"}
+              </p>
+            </div>
+
+            <span className="shrink-0 rounded-full bg-[#F3EAD7] px-3 py-1 text-xs font-semibold text-[#8A6A2F]">
+              {healthScore}/100
+            </span>
           </div>
 
-          <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#E8E2D6]">
-            <div
-              className="h-full rounded-full bg-[#111827]"
-              style={{
-                width: `${healthScore}%`,
-              }}
-            />
+          {hasNetworkStatus && (
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              <span
+                className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold ${
+                  device.online
+                    ? "bg-emerald-100 text-emerald-700"
+                    : "bg-neutral-100 text-neutral-600"
+                }`}
+              >
+                <span
+                  className={`h-2 w-2 rounded-full ${
+                    device.online
+                      ? "bg-emerald-500"
+                      : "bg-neutral-400"
+                  }`}
+                />
+
+                {device.online
+                  ? "Online"
+                  : "Offline"}
+              </span>
+
+              <span className="text-xs text-neutral-400">
+                {device.online
+                  ? "Seen in latest scan"
+                  : formatLastSeen(
+                      device.last_seen_at
+                    )}
+              </span>
+            </div>
+          )}
+
+          <div className="mt-5 rounded-2xl bg-[#F7F5EF] p-4">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-semibold text-[#111827]">
+                Device Health
+              </p>
+
+              <p className="text-sm text-neutral-500">
+                {healthLabel}
+              </p>
+            </div>
+
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#E8E2D6]">
+              <div
+                className="h-full rounded-full bg-[#111827]"
+                style={{
+                  width: `${healthScore}%`,
+                }}
+              />
+            </div>
+          </div>
+
+          <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
+            <div className="rounded-2xl border border-[#E8E2D6] p-4">
+              <p className="text-xs uppercase tracking-[0.14em] text-neutral-400">
+                Location
+              </p>
+
+              <p className="mt-2 truncate font-semibold text-[#111827]">
+                {device.location ||
+                  "Not added"}
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-[#E8E2D6] p-4">
+              <p className="text-xs uppercase tracking-[0.14em] text-neutral-400">
+                Network
+              </p>
+
+              <p className="mt-2 truncate font-semibold text-[#111827]">
+                {device.ip_address ||
+                  "Not connected"}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-5 flex items-center gap-2 font-semibold text-[#111827]">
+            {isDemo
+              ? "Demo Preview"
+              : "View Details"}
+
+            <ArrowRight size={16} />
           </div>
         </div>
-
-        <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
-          <div className="rounded-2xl border border-[#E8E2D6] p-4">
-            <p className="text-xs uppercase tracking-[0.14em] text-neutral-400">
-              Location
-            </p>
-
-            <p className="mt-2 truncate font-semibold text-[#111827]">
-              {device.location || "Not added"}
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-[#E8E2D6] p-4">
-            <p className="text-xs uppercase tracking-[0.14em] text-neutral-400">
-              Network
-            </p>
-
-            <p className="mt-2 truncate font-semibold text-[#111827]">
-              {device.ip_address || "Not connected"}
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-5 flex items-center gap-2 font-semibold text-[#111827]">
-          {isDemo ? "Demo Preview" : "View Details"}
-          <ArrowRight size={16} />
-        </div>
-      </div>
-    </article>
-  );
-
-  if (isDemo) {
-    return card;
-  }
-
-  return (
-    <Link href={`/devices/${device.id}`}>
-      {card}
+      </article>
     </Link>
   );
 }
 
-function formatLastSeen(value?: string | null) {
+function formatLastSeen(
+  value?: string | null
+) {
   if (!value) {
     return "Never seen";
   }
@@ -193,10 +205,17 @@ function formatLastSeen(value?: string | null) {
     return "Last seen unknown";
   }
 
-  const diffMs = Date.now() - date.getTime();
-  const diffMinutes = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMinutes / 60);
-  const diffDays = Math.floor(diffHours / 24);
+  const diffMs =
+    Date.now() - date.getTime();
+
+  const diffMinutes =
+    Math.floor(diffMs / 60000);
+
+  const diffHours =
+    Math.floor(diffMinutes / 60);
+
+  const diffDays =
+    Math.floor(diffHours / 24);
 
   if (diffMinutes < 1) {
     return "Seen just now";
@@ -220,9 +239,12 @@ function formatLastSeen(value?: string | null) {
     } ago`;
   }
 
-  return `Last seen ${date.toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  })}`;
+  return `Last seen ${date.toLocaleDateString(
+    undefined,
+    {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }
+  )}`;
 }

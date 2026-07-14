@@ -1,4 +1,4 @@
- "use client";
+"use client";
 
 import {
   Bot,
@@ -10,10 +10,17 @@ import {
   Sparkles,
   X,
 } from "lucide-react";
-import { FormEvent, useEffect, useRef, useState } from "react";
+import {
+  FormEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { useRouter } from "next/navigation";
 
 import { supabase } from "@/lib/supabase";
+import { useDemoMode } from "@/hooks/useDemoMode";
 
 type ChatMessage = {
   id: string;
@@ -54,64 +61,74 @@ const starterQuestions = [
   "How much do my subscriptions cost?",
 ];
 
+const welcomeMessage: ChatMessage = {
+  id: "welcome",
+  role: "assistant",
+  content:
+    "Hi! I’m your Home Tech Vault Advisor. Ask me about your devices, warranties, rooms, documents, values, or subscriptions.",
+};
+
 export default function AIAdvisorPopup() {
   const router = useRouter();
-  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  const {
+    user,
+    isDemo,
+    loading: demoModeLoading,
+  } = useDemoMode();
+
+  const messagesEndRef =
+    useRef<HTMLDivElement | null>(null);
 
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
 
-  const [devices, setDevices] = useState<Device[]>([]);
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
-  const [deviceIdsWithPhotos, setDeviceIdsWithPhotos] = useState<
-    Set<string>
-  >(new Set());
-  const [deviceIdsWithDocuments, setDeviceIdsWithDocuments] = useState<
-    Set<string>
-  >(new Set());
+  const [devices, setDevices] =
+    useState<Device[]>([]);
 
-  const [vaultLoading, setVaultLoading] = useState(true);
+  const [subscriptions, setSubscriptions] =
+    useState<Subscription[]>([]);
 
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: "welcome",
-      role: "assistant",
-      content:
-        "Hi! I’m your Home Tech Vault Advisor. Ask me about your devices, warranties, rooms, documents, values, or subscriptions.",
-    },
-  ]);
+  const [
+    deviceIdsWithPhotos,
+    setDeviceIdsWithPhotos,
+  ] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    loadVaultData();
-  }, []);
+  const [
+    deviceIdsWithDocuments,
+    setDeviceIdsWithDocuments,
+  ] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({
-      behavior: "smooth",
-    });
-  }, [messages, sending]);
+  const [vaultLoading, setVaultLoading] =
+    useState(false);
 
-  async function loadVaultData() {
+  const [messages, setMessages] =
+    useState<ChatMessage[]>([
+      welcomeMessage,
+    ]);
+
+  const loadVaultData = useCallback(async () => {
+    if (demoModeLoading) {
+      return;
+    }
+
+    if (isDemo || !user) {
+      setDevices([]);
+      setSubscriptions([]);
+      setDeviceIdsWithPhotos(new Set());
+      setDeviceIdsWithDocuments(new Set());
+      setVaultLoading(false);
+      return;
+    }
+
     try {
       setVaultLoading(true);
 
       const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
-
-      if (userError) {
-        throw userError;
-      }
-
-      if (!user) {
-        setDevices([]);
-        setSubscriptions([]);
-        return;
-      }
-
-      const { data: deviceData, error: deviceError } = await supabase
+        data: deviceData,
+        error: deviceError,
+      } = await supabase
         .from("devices")
         .select(
           `
@@ -132,43 +149,57 @@ export default function AIAdvisorPopup() {
         throw deviceError;
       }
 
-      const loadedDevices = (deviceData || []) as Device[];
+      const loadedDevices =
+        (deviceData || []) as Device[];
+
       setDevices(loadedDevices);
 
-      const { data: subscriptionData, error: subscriptionError } =
-        await supabase
-          .from("subscriptions")
-          .select(
-            `
-              id,
-              service_name,
-              monthly_cost,
-              billing_cycle,
-              renewal_date
-            `
-          )
-          .eq("user_id", user.id);
+      const {
+        data: subscriptionData,
+        error: subscriptionError,
+      } = await supabase
+        .from("subscriptions")
+        .select(
+          `
+            id,
+            service_name,
+            monthly_cost,
+            billing_cycle,
+            renewal_date
+          `
+        )
+        .eq("user_id", user.id);
 
       if (subscriptionError) {
         console.error(
           "Unable to load subscriptions for AI Advisor:",
           subscriptionError
         );
+
+        setSubscriptions([]);
       } else {
         setSubscriptions(
-          (subscriptionData || []) as Subscription[]
+          (subscriptionData ||
+            []) as Subscription[]
         );
       }
 
-      const deviceIds = loadedDevices.map((device) => device.id);
+      const deviceIds = loadedDevices.map(
+        (device) => device.id
+      );
 
       if (deviceIds.length === 0) {
         setDeviceIdsWithPhotos(new Set());
-        setDeviceIdsWithDocuments(new Set());
+        setDeviceIdsWithDocuments(
+          new Set()
+        );
         return;
       }
 
-      const [photoResult, documentResult] = await Promise.all([
+      const [
+        photoResult,
+        documentResult,
+      ] = await Promise.all([
         supabase
           .from("device_images")
           .select("device_id")
@@ -198,7 +229,10 @@ export default function AIAdvisorPopup() {
 
       setDeviceIdsWithPhotos(
         new Set(
-          ((photoResult.data || []) as DeviceIdRow[]).map(
+          (
+            (photoResult.data ||
+              []) as DeviceIdRow[]
+          ).map(
             (row) => row.device_id
           )
         )
@@ -206,17 +240,55 @@ export default function AIAdvisorPopup() {
 
       setDeviceIdsWithDocuments(
         new Set(
-          ((documentResult.data || []) as DeviceIdRow[]).map(
+          (
+            (documentResult.data ||
+              []) as DeviceIdRow[]
+          ).map(
             (row) => row.device_id
           )
         )
       );
     } catch (error) {
-      console.error("AI Advisor vault loading error:", error);
+      console.error(
+        "AI Advisor vault loading error:",
+        error
+      );
+
+      setDevices([]);
+      setSubscriptions([]);
+      setDeviceIdsWithPhotos(new Set());
+      setDeviceIdsWithDocuments(new Set());
     } finally {
       setVaultLoading(false);
     }
-  }
+  }, [
+    user,
+    isDemo,
+    demoModeLoading,
+  ]);
+
+  useEffect(() => {
+    if (
+      demoModeLoading ||
+      isDemo ||
+      !user
+    ) {
+      return;
+    }
+
+    loadVaultData();
+  }, [
+    user,
+    isDemo,
+    demoModeLoading,
+    loadVaultData,
+  ]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({
+      behavior: "smooth",
+    });
+  }, [messages, sending]);
 
   async function submitMessage(
     event?: FormEvent<HTMLFormElement>,
@@ -224,9 +296,16 @@ export default function AIAdvisorPopup() {
   ) {
     event?.preventDefault();
 
-    const question = (presetMessage || message).trim();
+    const question = (
+      presetMessage || message
+    ).trim();
 
-    if (!question || sending) {
+    if (
+      !question ||
+      sending ||
+      isDemo ||
+      !user
+    ) {
       return;
     }
 
@@ -236,7 +315,11 @@ export default function AIAdvisorPopup() {
       content: question,
     };
 
-    setMessages((current) => [...current, userMessage]);
+    setMessages((current) => [
+      ...current,
+      userMessage,
+    ]);
+
     setMessage("");
     setSending(true);
 
@@ -245,9 +328,12 @@ export default function AIAdvisorPopup() {
         await loadVaultData();
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 350));
+      await new Promise((resolve) =>
+        window.setTimeout(resolve, 350)
+      );
 
-      const answer = generateVaultAnswer(question);
+      const answer =
+        generateVaultAnswer(question);
 
       const assistantMessage: ChatMessage = {
         id: crypto.randomUUID(),
@@ -260,7 +346,10 @@ export default function AIAdvisorPopup() {
         assistantMessage,
       ]);
     } catch (error) {
-      console.error("AI Advisor error:", error);
+      console.error(
+        "AI Advisor error:",
+        error
+      );
 
       setMessages((current) => [
         ...current,
@@ -276,44 +365,77 @@ export default function AIAdvisorPopup() {
     }
   }
 
-  function generateVaultAnswer(question: string) {
-    const normalized = question.toLowerCase();
+  function generateVaultAnswer(
+    question: string
+  ) {
+    const normalized =
+      question.toLowerCase();
 
     if (devices.length === 0) {
       return "Your vault does not contain any devices yet. Add your first device and I’ll be able to analyze it.";
     }
 
     if (
-      normalized.includes("most valuable") ||
-      normalized.includes("most expensive") ||
-      normalized.includes("worth the most")
+      normalized.includes(
+        "most valuable"
+      ) ||
+      normalized.includes(
+        "most expensive"
+      ) ||
+      normalized.includes(
+        "worth the most"
+      )
     ) {
-      const mostValuable = [...devices].sort(
-        (a, b) =>
-          Number(b.purchase_price || 0) -
-          Number(a.purchase_price || 0)
+      const mostValuable = [
+        ...devices,
+      ].sort(
+        (first, second) =>
+          Number(
+            second.purchase_price || 0
+          ) -
+          Number(
+            first.purchase_price || 0
+          )
       )[0];
 
-      return `${mostValuable.device_name || "Your unnamed device"} is currently your most valuable device at ${formatCurrency(
+      return `${
+        mostValuable.device_name ||
+        "Your unnamed device"
+      } is currently your most valuable device at ${formatCurrency(
         mostValuable.purchase_price
       )}.`;
     }
 
     if (
-      normalized.includes("total value") ||
-      normalized.includes("everything worth") ||
-      normalized.includes("technology worth") ||
-      normalized.includes("spent on technology")
+      normalized.includes(
+        "total value"
+      ) ||
+      normalized.includes(
+        "everything worth"
+      ) ||
+      normalized.includes(
+        "technology worth"
+      ) ||
+      normalized.includes(
+        "spent on technology"
+      )
     ) {
       const total = devices.reduce(
         (sum, device) =>
-          sum + Number(device.purchase_price || 0),
+          sum +
+          Number(
+            device.purchase_price || 0
+          ),
         0
       );
 
-      return `Your vault contains ${devices.length} device${
+      return `Your vault contains ${
+        devices.length
+      } device${
         devices.length === 1 ? "" : "s"
-      } with a combined recorded value of ${formatCurrency(total)}.`;
+      } with a combined recorded value of ${formatCurrency(
+        total
+      )}.`;
     }
 
     if (
@@ -328,12 +450,21 @@ export default function AIAdvisorPopup() {
     }
 
     if (
-      normalized.includes("missing photo") ||
-      normalized.includes("without photo") ||
-      normalized.includes("need photos")
+      normalized.includes(
+        "missing photo"
+      ) ||
+      normalized.includes(
+        "without photo"
+      ) ||
+      normalized.includes(
+        "need photos"
+      )
     ) {
       const missing = devices.filter(
-        (device) => !deviceIdsWithPhotos.has(device.id)
+        (device) =>
+          !deviceIdsWithPhotos.has(
+            device.id
+          )
       );
 
       return buildDeviceListAnswer(
@@ -344,14 +475,27 @@ export default function AIAdvisorPopup() {
     }
 
     if (
-      normalized.includes("missing document") ||
-      normalized.includes("without document") ||
-      normalized.includes("missing receipt") ||
-      normalized.includes("without receipt") ||
-      normalized.includes("missing manual")
+      normalized.includes(
+        "missing document"
+      ) ||
+      normalized.includes(
+        "without document"
+      ) ||
+      normalized.includes(
+        "missing receipt"
+      ) ||
+      normalized.includes(
+        "without receipt"
+      ) ||
+      normalized.includes(
+        "missing manual"
+      )
     ) {
       const missing = devices.filter(
-        (device) => !deviceIdsWithDocuments.has(device.id)
+        (device) =>
+          !deviceIdsWithDocuments.has(
+            device.id
+          )
       );
 
       return buildDeviceListAnswer(
@@ -362,11 +506,16 @@ export default function AIAdvisorPopup() {
     }
 
     if (
-      normalized.includes("missing serial") ||
-      normalized.includes("without serial")
+      normalized.includes(
+        "missing serial"
+      ) ||
+      normalized.includes(
+        "without serial"
+      )
     ) {
       const missing = devices.filter(
-        (device) => !device.serial_number?.trim()
+        (device) =>
+          !device.serial_number?.trim()
       );
 
       return buildDeviceListAnswer(
@@ -377,82 +526,137 @@ export default function AIAdvisorPopup() {
     }
 
     if (
-      normalized.includes("subscription") &&
+      normalized.includes(
+        "subscription"
+      ) &&
       (
         normalized.includes("cost") ||
         normalized.includes("spend") ||
         normalized.includes("pay") ||
-        normalized.includes("monthly")
+        normalized.includes(
+          "monthly"
+        )
       )
     ) {
-      const monthly = subscriptions.reduce(
-        (sum, subscription) =>
-          sum + Number(subscription.monthly_cost || 0),
-        0
-      );
+      const monthly =
+        subscriptions.reduce(
+          (sum, subscription) =>
+            sum +
+            Number(
+              subscription.monthly_cost ||
+                0
+            ),
+          0
+        );
 
-      return `You currently track ${subscriptions.length} subscription${
-        subscriptions.length === 1 ? "" : "s"
+      return `You currently track ${
+        subscriptions.length
+      } subscription${
+        subscriptions.length === 1
+          ? ""
+          : "s"
       }. Their combined monthly cost is ${formatCurrency(
         monthly
-      )}, or approximately ${formatCurrency(monthly * 12)} per year.`;
+      )}, or approximately ${formatCurrency(
+        monthly * 12
+      )} per year.`;
     }
 
-    const matchedRoom = findRoomInQuestion(normalized);
+    const matchedRoom =
+      findRoomInQuestion(normalized);
 
     if (matchedRoom) {
-      const roomDevices = devices.filter(
-        (device) =>
-          device.location?.trim().toLowerCase() ===
-          matchedRoom.toLowerCase()
-      );
+      const roomDevices =
+        devices.filter(
+          (device) =>
+            device.location
+              ?.trim()
+              .toLowerCase() ===
+            matchedRoom.toLowerCase()
+        );
 
-      if (roomDevices.length === 0) {
+      if (
+        roomDevices.length === 0
+      ) {
         return `I couldn’t find any devices assigned to ${matchedRoom}.`;
       }
 
-      const value = roomDevices.reduce(
-        (sum, device) =>
-          sum + Number(device.purchase_price || 0),
-        0
-      );
+      const value =
+        roomDevices.reduce(
+          (sum, device) =>
+            sum +
+            Number(
+              device.purchase_price || 0
+            ),
+          0
+        );
 
       const names = roomDevices
-        .map((device) => `• ${device.device_name || "Unnamed Device"}`)
+        .map(
+          (device) =>
+            `• ${
+              device.device_name ||
+              "Unnamed Device"
+            }`
+        )
         .join("\n");
 
-      return `${matchedRoom} contains ${roomDevices.length} device${
-        roomDevices.length === 1 ? "" : "s"
+      return `${matchedRoom} contains ${
+        roomDevices.length
+      } device${
+        roomDevices.length === 1
+          ? ""
+          : "s"
       } with a combined recorded value of ${formatCurrency(
         value
       )}.\n\n${names}`;
     }
 
-    const matchedBrand = findBrandInQuestion(normalized);
+    const matchedBrand =
+      findBrandInQuestion(normalized);
 
     if (matchedBrand) {
-      const brandDevices = devices.filter(
-        (device) =>
-          device.brand?.trim().toLowerCase() ===
-          matchedBrand.toLowerCase()
-      );
+      const brandDevices =
+        devices.filter(
+          (device) =>
+            device.brand
+              ?.trim()
+              .toLowerCase() ===
+            matchedBrand.toLowerCase()
+        );
 
-      const value = brandDevices.reduce(
-        (sum, device) =>
-          sum + Number(device.purchase_price || 0),
-        0
-      );
+      const value =
+        brandDevices.reduce(
+          (sum, device) =>
+            sum +
+            Number(
+              device.purchase_price || 0
+            ),
+          0
+        );
 
-      return `You have ${brandDevices.length} ${matchedBrand} device${
-        brandDevices.length === 1 ? "" : "s"
-      } with a combined recorded value of ${formatCurrency(value)}.`;
+      return `You have ${
+        brandDevices.length
+      } ${matchedBrand} device${
+        brandDevices.length === 1
+          ? ""
+          : "s"
+      } with a combined recorded value of ${formatCurrency(
+        value
+      )}.`;
     }
 
     if (
-      normalized.includes("how many devices") ||
-      normalized.includes("device count")
+      normalized.includes(
+        "how many devices"
+      ) ||
+      normalized.includes(
+        "device count"
+      )
     ) {
-      return `You currently have ${devices.length} device${
+      return `You currently have ${
+        devices.length
+      } device${
         devices.length === 1 ? "" : "s"
       } saved in your Home Tech Vault.`;
     }
@@ -461,18 +665,33 @@ export default function AIAdvisorPopup() {
       normalized.includes("rooms") ||
       normalized.includes("locations")
     ) {
-      const roomCounts = new Map<string, number>();
+      const roomCounts =
+        new Map<string, number>();
 
       for (const device of devices) {
-        const room = device.location?.trim() || "Unassigned";
-        roomCounts.set(room, (roomCounts.get(room) || 0) + 1);
+        const room =
+          device.location?.trim() ||
+          "Unassigned";
+
+        roomCounts.set(
+          room,
+          (roomCounts.get(room) || 0) +
+            1
+        );
       }
 
-      const list = Array.from(roomCounts.entries())
-        .sort((a, b) => b[1] - a[1])
+      const list = Array.from(
+        roomCounts.entries()
+      )
+        .sort(
+          (first, second) =>
+            second[1] - first[1]
+        )
         .map(
           ([room, count]) =>
-            `• ${room}: ${count} device${count === 1 ? "" : "s"}`
+            `• ${room}: ${count} device${
+              count === 1 ? "" : "s"
+            }`
         )
         .join("\n");
 
@@ -493,45 +712,71 @@ Try asking:
     today.setHours(0, 0, 0, 0);
 
     const warranties = devices
-      .filter((device) => device.warranty_date)
+      .filter(
+        (device) =>
+          Boolean(
+            device.warranty_date
+          )
+      )
       .map((device) => {
         const expiration = new Date(
           `${device.warranty_date}T23:59:59`
         );
 
-        const daysRemaining = Math.ceil(
-          (expiration.getTime() - today.getTime()) /
-            (1000 * 60 * 60 * 24)
-        );
+        const daysRemaining =
+          Math.ceil(
+            (expiration.getTime() -
+              today.getTime()) /
+              (1000 * 60 * 60 * 24)
+          );
 
         return {
           device,
-          expiration,
           daysRemaining,
         };
       })
-      .filter((item) => item.daysRemaining >= 0)
+      .filter(
+        (item) =>
+          item.daysRemaining >= 0
+      )
       .sort(
-        (a, b) => a.daysRemaining - b.daysRemaining
+        (first, second) =>
+          first.daysRemaining -
+          second.daysRemaining
       );
 
-    if (warranties.length === 0) {
+    if (
+      warranties.length === 0
+    ) {
       return "You do not currently have any active warranty expiration dates saved.";
     }
 
     const soon = warranties.filter(
-      (item) => item.daysRemaining <= 60
+      (item) =>
+        item.daysRemaining <= 60
     );
 
-    const items = (soon.length > 0 ? soon : warranties.slice(0, 3))
+    const items = (
+      soon.length > 0
+        ? soon
+        : warranties.slice(0, 3)
+    )
       .slice(0, 5)
       .map(
-        ({ device, daysRemaining }) =>
-          `• ${device.device_name || "Unnamed Device"} — ${
+        ({
+          device,
+          daysRemaining,
+        }) =>
+          `• ${
+            device.device_name ||
+            "Unnamed Device"
+          } — ${
             daysRemaining === 0
               ? "expires today"
               : `${daysRemaining} day${
-                  daysRemaining === 1 ? "" : "s"
+                  daysRemaining === 1
+                    ? ""
+                    : "s"
                 } remaining`
           }`
       )
@@ -547,7 +792,9 @@ Try asking:
     emptyMessage: string,
     heading: string
   ) {
-    if (matchingDevices.length === 0) {
+    if (
+      matchingDevices.length === 0
+    ) {
       return emptyMessage;
     }
 
@@ -555,48 +802,78 @@ Try asking:
       .slice(0, 10)
       .map(
         (device) =>
-          `• ${device.device_name || "Unnamed Device"}${
-            device.location ? ` — ${device.location}` : ""
+          `• ${
+            device.device_name ||
+            "Unnamed Device"
+          }${
+            device.location
+              ? ` — ${device.location}`
+              : ""
           }`
       )
       .join("\n");
 
-    const remaining = matchingDevices.length - 10;
+    const remaining =
+      matchingDevices.length - 10;
 
     return `${heading}\n\n${list}${
       remaining > 0
         ? `\n\n…and ${remaining} more device${
-            remaining === 1 ? "" : "s"
+            remaining === 1
+              ? ""
+              : "s"
           }.`
         : ""
     }`;
   }
 
-  function findRoomInQuestion(question: string) {
+  function findRoomInQuestion(
+    question: string
+  ) {
     const rooms = Array.from(
       new Set(
         devices
-          .map((device) => device.location?.trim())
-          .filter((value): value is string => Boolean(value))
+          .map((device) =>
+            device.location?.trim()
+          )
+          .filter(
+            (
+              value
+            ): value is string =>
+              Boolean(value)
+          )
       )
     );
 
     return rooms.find((room) =>
-      question.includes(room.toLowerCase())
+      question.includes(
+        room.toLowerCase()
+      )
     );
   }
 
-  function findBrandInQuestion(question: string) {
+  function findBrandInQuestion(
+    question: string
+  ) {
     const brands = Array.from(
       new Set(
         devices
-          .map((device) => device.brand?.trim())
-          .filter((value): value is string => Boolean(value))
+          .map((device) =>
+            device.brand?.trim()
+          )
+          .filter(
+            (
+              value
+            ): value is string =>
+              Boolean(value)
+          )
       )
     );
 
     return brands.find((brand) =>
-      question.includes(brand.toLowerCase())
+      question.includes(
+        brand.toLowerCase()
+      )
     );
   }
 
@@ -606,13 +883,18 @@ Try asking:
 
   function clearChat() {
     setMessages([
-      {
-        id: "welcome",
-        role: "assistant",
-        content:
-          "Hi! I’m your Home Tech Vault Advisor. Ask me about your devices, warranties, rooms, documents, values, or subscriptions.",
-      },
+      welcomeMessage,
     ]);
+  }
+
+  // Hide the popup while Demo Mode is active
+  // or when no authenticated user exists.
+  if (
+    demoModeLoading ||
+    isDemo ||
+    !user
+  ) {
+    return null;
   }
 
   return (
@@ -650,7 +932,9 @@ Try asking:
               </div>
 
               <div>
-                <h2 className="font-bold">AI Advisor</h2>
+                <h2 className="font-bold">
+                  AI Advisor
+                </h2>
 
                 <p className="text-xs text-white/60">
                   Connected to your vault
@@ -665,7 +949,9 @@ Try asking:
                 aria-label="Clear chat"
                 className="rounded-xl p-2 text-white/70 hover:bg-white/10 hover:text-white"
               >
-                <FileQuestion size={18} />
+                <FileQuestion
+                  size={18}
+                />
               </button>
 
               <button
@@ -693,26 +979,32 @@ Try asking:
 
           <div className="flex-1 overflow-y-auto bg-[#FBFAF7] p-4">
             <div className="space-y-4">
-              {messages.map((chatMessage) => (
-                <div
-                  key={chatMessage.id}
-                  className={`flex ${
-                    chatMessage.role === "user"
-                      ? "justify-end"
-                      : "justify-start"
-                  }`}
-                >
+              {messages.map(
+                (chatMessage) => (
                   <div
-                    className={`max-w-[88%] whitespace-pre-line rounded-2xl px-4 py-3 text-sm leading-6 ${
-                      chatMessage.role === "user"
-                        ? "rounded-br-md bg-[#111827] text-white"
-                        : "rounded-bl-md border border-[#E8E2D6] bg-white text-neutral-700"
+                    key={chatMessage.id}
+                    className={`flex ${
+                      chatMessage.role ===
+                      "user"
+                        ? "justify-end"
+                        : "justify-start"
                     }`}
                   >
-                    {chatMessage.content}
+                    <div
+                      className={`max-w-[88%] whitespace-pre-line rounded-2xl px-4 py-3 text-sm leading-6 ${
+                        chatMessage.role ===
+                        "user"
+                          ? "rounded-br-md bg-[#111827] text-white"
+                          : "rounded-bl-md border border-[#E8E2D6] bg-white text-neutral-700"
+                      }`}
+                    >
+                      {
+                        chatMessage.content
+                      }
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              )}
 
               {sending && (
                 <div className="flex justify-start">
@@ -726,7 +1018,9 @@ Try asking:
                 </div>
               )}
 
-              <div ref={messagesEndRef} />
+              <div
+                ref={messagesEndRef}
+              />
             </div>
 
             {messages.length === 1 && (
@@ -736,23 +1030,28 @@ Try asking:
                 </p>
 
                 <div className="space-y-2">
-                  {starterQuestions.map((question) => (
-                    <button
-                      key={question}
-                      type="button"
-                      onClick={() =>
-                        submitMessage(undefined, question)
-                      }
-                      className="flex w-full items-center gap-3 rounded-2xl border border-[#E8E2D6] bg-white p-3 text-left text-sm text-[#111827] transition hover:border-[#C8A96A] hover:shadow-sm"
-                    >
-                      <MessageCircle
-                        size={16}
-                        className="shrink-0 text-[#C8A96A]"
-                      />
+                  {starterQuestions.map(
+                    (question) => (
+                      <button
+                        key={question}
+                        type="button"
+                        onClick={() =>
+                          submitMessage(
+                            undefined,
+                            question
+                          )
+                        }
+                        className="flex w-full items-center gap-3 rounded-2xl border border-[#E8E2D6] bg-white p-3 text-left text-sm text-[#111827] transition hover:border-[#C8A96A] hover:shadow-sm"
+                      >
+                        <MessageCircle
+                          size={16}
+                          className="shrink-0 text-[#C8A96A]"
+                        />
 
-                      {question}
-                    </button>
-                  ))}
+                        {question}
+                      </button>
+                    )
+                  )}
                 </div>
               </div>
             )}
@@ -766,11 +1065,14 @@ Try asking:
               <textarea
                 value={message}
                 onChange={(event) =>
-                  setMessage(event.target.value)
+                  setMessage(
+                    event.target.value
+                  )
                 }
                 onKeyDown={(event) => {
                   if (
-                    event.key === "Enter" &&
+                    event.key ===
+                      "Enter" &&
                     !event.shiftKey
                   ) {
                     event.preventDefault();
@@ -784,7 +1086,10 @@ Try asking:
 
               <button
                 type="submit"
-                disabled={!message.trim() || sending}
+                disabled={
+                  !message.trim() ||
+                  sending
+                }
                 aria-label="Send message"
                 className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#111827] text-white transition hover:bg-[#263044] disabled:cursor-not-allowed disabled:opacity-40"
               >
@@ -809,8 +1114,12 @@ Try asking:
   );
 }
 
-function formatCurrency(value?: number | null) {
-  return Number(value || 0).toLocaleString(undefined, {
+function formatCurrency(
+  value?: number | null
+) {
+  return Number(
+    value || 0
+  ).toLocaleString(undefined, {
     style: "currency",
     currency: "USD",
     minimumFractionDigits: 2,

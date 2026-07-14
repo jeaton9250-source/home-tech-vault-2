@@ -12,16 +12,26 @@ import {
   Mail,
   ShieldCheck,
   Sparkles,
+  User,
+  Users,
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
 
-export default function LoginPage() {
+export default function SignupPage() {
   const router = useRouter();
 
+  const [fullName, setFullName] = useState("");
+  const [householdName, setHouseholdName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] =
+    useState("");
+
   const [showPassword, setShowPassword] =
+    useState(false);
+
+  const [agreedToTerms, setAgreedToTerms] =
     useState(false);
 
   const [submitting, setSubmitting] =
@@ -30,15 +40,36 @@ export default function LoginPage() {
   const [errorMessage, setErrorMessage] =
     useState("");
 
-  async function handleSignIn(
+  const [successMessage, setSuccessMessage] =
+    useState("");
+
+  async function handleSignup(
     event: FormEvent<HTMLFormElement>
   ) {
     event.preventDefault();
 
     setErrorMessage("");
+    setSuccessMessage("");
 
+    const normalizedName = fullName.trim();
+    const normalizedHousehold =
+      householdName.trim();
     const normalizedEmail =
       email.trim().toLowerCase();
+
+    if (!normalizedName) {
+      setErrorMessage(
+        "Enter your full name."
+      );
+      return;
+    }
+
+    if (!normalizedHousehold) {
+      setErrorMessage(
+        "Enter a household name."
+      );
+      return;
+    }
 
     if (!normalizedEmail) {
       setErrorMessage(
@@ -47,9 +78,23 @@ export default function LoginPage() {
       return;
     }
 
-    if (!password) {
+    if (password.length < 8) {
       setErrorMessage(
-        "Enter your password."
+        "Your password must be at least 8 characters."
+      );
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setErrorMessage(
+        "Your passwords do not match."
+      );
+      return;
+    }
+
+    if (!agreedToTerms) {
+      setErrorMessage(
+        "You must agree to the Terms and Privacy Policy."
       );
       return;
     }
@@ -61,28 +106,73 @@ export default function LoginPage() {
         "home-tech-vault-demo"
       );
 
-      const { error } =
-        await supabase.auth.signInWithPassword({
-          email: normalizedEmail,
-          password,
-        });
+      const {
+        data,
+        error: signupError,
+      } = await supabase.auth.signUp({
+        email: normalizedEmail,
+        password,
+        options: {
+          data: {
+            full_name: normalizedName,
+            household_name:
+              normalizedHousehold,
+          },
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+        },
+      });
 
-      if (error) {
-        throw error;
+      if (signupError) {
+        throw signupError;
       }
 
-      router.replace("/dashboard");
-      router.refresh();
+      const user = data.user;
+      const session = data.session;
+
+      if (user && session) {
+        const {
+          error: profileError,
+        } = await supabase
+          .from("profiles")
+          .upsert(
+            {
+              id: user.id,
+              full_name:
+                normalizedName,
+              household_name:
+                normalizedHousehold,
+              avatar_url: null,
+            },
+            {
+              onConflict: "id",
+            }
+          );
+
+        if (profileError) {
+          console.error(
+            "Unable to create profile:",
+            profileError
+          );
+        }
+
+        router.replace("/dashboard");
+        router.refresh();
+        return;
+      }
+
+      setSuccessMessage(
+        "Your vault was created. Check your email to confirm your account, then sign in."
+      );
     } catch (error) {
       console.error(
-        "Sign-in error:",
+        "Signup error:",
         error
       );
 
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : "Unable to sign in."
+          : "Unable to create your account."
       );
     } finally {
       setSubmitting(false);
@@ -114,24 +204,25 @@ export default function LoginPage() {
             </Link>
 
             <p className="mt-14 text-xs font-semibold uppercase tracking-[0.22em] text-[#C8A96A]">
-              Welcome back
+              Your home technology, organized
             </p>
 
             <h1 className="mt-5 max-w-2xl text-4xl font-bold leading-tight md:text-6xl">
-              Your home technology is waiting for you.
+              Create one secure place for every device in your home.
             </h1>
 
             <p className="mt-6 max-w-xl text-lg leading-8 text-white/65">
-              Sign in to review your devices, warranties,
-              subscriptions, documents, maintenance records,
-              and network information.
+              Track devices, warranties, receipts,
+              subscriptions, maintenance, and network
+              details without searching through drawers,
+              inboxes, or old files.
             </p>
 
             <div className="mt-10 grid gap-4 sm:grid-cols-2">
-              <LoginBenefit text="Review every device" />
-              <LoginBenefit text="Track warranty coverage" />
-              <LoginBenefit text="Find important documents" />
-              <LoginBenefit text="Monitor your technology health" />
+              <SignupBenefit text="Track every device" />
+              <SignupBenefit text="Store receipts and manuals" />
+              <SignupBenefit text="Monitor warranty dates" />
+              <SignupBenefit text="Protect your home inventory" />
             </div>
           </div>
 
@@ -146,16 +237,16 @@ export default function LoginPage() {
             </div>
 
             <p className="mt-6 text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
-              Sign In
+              Create Your Vault
             </p>
 
             <h2 className="mt-2 text-3xl font-bold text-[#111827] md:text-4xl">
-              Welcome back to your vault
+              Start organizing your home technology
             </h2>
 
             <p className="mt-3 text-sm leading-6 text-neutral-500">
-              Enter your account details to continue managing
-              your home technology.
+              Create your account and begin building
+              your personal Home Tech Vault.
             </p>
 
             {errorMessage && (
@@ -164,10 +255,58 @@ export default function LoginPage() {
               </div>
             )}
 
+            {successMessage && (
+              <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm leading-6 text-emerald-700">
+                {successMessage}
+
+                <Link
+                  href="/login"
+                  className="mt-3 block font-semibold underline"
+                >
+                  Go to Sign In
+                </Link>
+              </div>
+            )}
+
             <form
-              onSubmit={handleSignIn}
+              onSubmit={handleSignup}
               className="mt-8 space-y-5"
             >
+              <FormField
+                label="Full Name"
+                icon={User}
+              >
+                <input
+                  type="text"
+                  value={fullName}
+                  onChange={(event) =>
+                    setFullName(
+                      event.target.value
+                    )
+                  }
+                  autoComplete="name"
+                  placeholder="Your Full Name"
+                  className={inputClassName}
+                />
+              </FormField>
+
+              <FormField
+                label="Household Name"
+                icon={Users}
+              >
+                <input
+                  type="text"
+                  value={householdName}
+                  onChange={(event) =>
+                    setHouseholdName(
+                      event.target.value
+                    )
+                  }
+                  placeholder="My Household"
+                  className={inputClassName}
+                />
+              </FormField>
+
               <FormField
                 label="Email Address"
                 icon={Mail}
@@ -176,7 +315,9 @@ export default function LoginPage() {
                   type="email"
                   value={email}
                   onChange={(event) =>
-                    setEmail(event.target.value)
+                    setEmail(
+                      event.target.value
+                    )
                   }
                   autoComplete="email"
                   placeholder="you@example.com"
@@ -201,8 +342,8 @@ export default function LoginPage() {
                         event.target.value
                       )
                     }
-                    autoComplete="current-password"
-                    placeholder="Enter your password"
+                    autoComplete="new-password"
+                    placeholder="At least 8 characters"
                     className={`${inputClassName} pr-12`}
                   />
 
@@ -210,7 +351,8 @@ export default function LoginPage() {
                     type="button"
                     onClick={() =>
                       setShowPassword(
-                        (current) => !current
+                        (current) =>
+                          !current
                       )
                     }
                     aria-label={
@@ -229,14 +371,58 @@ export default function LoginPage() {
                 </div>
               </FormField>
 
-              <div className="flex items-center justify-end">
-                <Link
-                  href="/forgot-password"
-                  className="text-sm font-semibold text-[#111827] underline"
-                >
-                  Forgot password?
-                </Link>
-              </div>
+              <FormField
+                label="Confirm Password"
+                icon={LockKeyhole}
+              >
+                <input
+                  type={
+                    showPassword
+                      ? "text"
+                      : "password"
+                  }
+                  value={confirmPassword}
+                  onChange={(event) =>
+                    setConfirmPassword(
+                      event.target.value
+                    )
+                  }
+                  autoComplete="new-password"
+                  placeholder="Enter your password again"
+                  className={inputClassName}
+                />
+              </FormField>
+
+              <label className="flex cursor-pointer items-start gap-3 rounded-2xl bg-[#F7F5EF] p-4">
+                <input
+                  type="checkbox"
+                  checked={agreedToTerms}
+                  onChange={(event) =>
+                    setAgreedToTerms(
+                      event.target.checked
+                    )
+                  }
+                  className="mt-1 h-4 w-4 accent-[#111827]"
+                />
+
+                <span className="text-sm leading-6 text-neutral-600">
+                  I agree to the{" "}
+                  <Link
+                    href="/terms"
+                    className="font-semibold text-[#111827] underline"
+                  >
+                    Terms
+                  </Link>{" "}
+                  and{" "}
+                  <Link
+                    href="/privacy"
+                    className="font-semibold text-[#111827] underline"
+                  >
+                    Privacy Policy
+                  </Link>
+                  .
+                </span>
+              </label>
 
               <button
                 type="submit"
@@ -249,33 +435,26 @@ export default function LoginPage() {
                     className="animate-spin"
                   />
                 ) : (
-                  <ShieldCheck size={19} />
+                  <Sparkles size={19} />
                 )}
 
                 {submitting
-                  ? "Opening Your Vault..."
-                  : "Sign In to My Vault"}
+                  ? "Creating Your Vault..."
+                  : "Create My Vault"}
               </button>
             </form>
 
-            <div className="my-8 flex items-center gap-4">
-              <div className="h-px flex-1 bg-[#E8E2D6]" />
-
-              <span className="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-400">
-                New here?
-              </span>
-
-              <div className="h-px flex-1 bg-[#E8E2D6]" />
-            </div>
-
-            <Link
-              href="/signup"
-              className="inline-flex w-full items-center justify-center rounded-2xl border border-[#E8E2D6] bg-white px-6 py-4 font-semibold text-[#111827] transition hover:border-[#C8A96A] hover:bg-[#F7F5EF]"
-            >
-              Create Your Vault
-            </Link>
-
             <p className="mt-7 text-center text-sm text-neutral-500">
+              Already have an account?{" "}
+              <Link
+                href="/login"
+                className="font-semibold text-[#111827] underline"
+              >
+                Sign In
+              </Link>
+            </p>
+
+            <p className="mt-4 text-center text-sm text-neutral-500">
               Want to look around first?{" "}
               <Link
                 href="/demo"
@@ -300,7 +479,7 @@ function FormField({
   children,
 }: {
   label: string;
-  icon: typeof Mail;
+  icon: typeof User;
   children: React.ReactNode;
 }) {
   return (
@@ -310,7 +489,6 @@ function FormField({
           size={16}
           className="text-[#C8A96A]"
         />
-
         {label}
       </span>
 
@@ -319,7 +497,7 @@ function FormField({
   );
 }
 
-function LoginBenefit({
+function SignupBenefit({
   text,
 }: {
   text: string;

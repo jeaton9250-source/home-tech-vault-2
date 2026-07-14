@@ -4,11 +4,13 @@ import {
   ChangeEvent,
   useCallback,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   ArrowLeft,
+  FileText,
   ImagePlus,
   Loader2,
   Pencil,
@@ -17,13 +19,20 @@ import {
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
+import { createDeviceEvent } from "@/lib/deviceEvents";
+import {
+  demoDevices,
+  demoDocuments,
+  demoTimelineEvents,
+} from "@/lib/demoData";
+import { useDemoMode } from "@/hooks/useDemoMode";
+
 import DeviceDocuments from "@/components/DeviceDocuments";
 import DeviceTimeline from "@/components/DeviceTimeline";
-import { createDeviceEvent } from "@/lib/deviceEvents";
 
 type Device = {
   id: string;
-  user_id: string;
+  user_id?: string;
   device_name: string | null;
   category: string | null;
   brand: string | null;
@@ -58,9 +67,15 @@ export default function DevicePage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
 
+  const {
+    user,
+    isDemo,
+    loading: demoModeLoading,
+  } = useDemoMode();
+
   const [device, setDevice] = useState<Device | null>(null);
   const [images, setImages] = useState<DeviceImage[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingDevice, setLoadingDevice] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [deletingDevice, setDeletingDevice] = useState(false);
   const [deletingImageId, setDeletingImageId] = useState<
@@ -68,12 +83,30 @@ export default function DevicePage() {
   >(null);
   const [errorMessage, setErrorMessage] = useState("");
 
+  const deviceId = params.id;
+
+  const sampleDocuments = useMemo(
+    () =>
+      demoDocuments.filter(
+        (document) => document.device_id === deviceId
+      ),
+    [deviceId]
+  );
+
+  const sampleTimeline = useMemo(
+    () =>
+      demoTimelineEvents.filter(
+        (event) => event.device_id === deviceId
+      ),
+    [deviceId]
+  );
+
   const loadImages = useCallback(
-    async (deviceId: string, userId: string) => {
+    async (selectedDeviceId: string, userId: string) => {
       const { data, error } = await supabase
         .from("device_images")
         .select("*")
-        .eq("device_id", deviceId)
+        .eq("device_id", selectedDeviceId)
         .eq("user_id", userId)
         .order("created_at", { ascending: false });
 
@@ -115,28 +148,57 @@ export default function DevicePage() {
 
   useEffect(() => {
     async function loadPage() {
-      try {
-        setLoading(true);
-        setErrorMessage("");
+      if (demoModeLoading) {
+        return;
+      }
 
-        const deviceId = params.id;
+      try {
+        setLoadingDevice(true);
+        setErrorMessage("");
 
         if (!deviceId) {
           setErrorMessage("Invalid device ID.");
           return;
         }
 
-        const {
-          data: { user },
-          error: userError,
-        } = await supabase.auth.getUser();
+        if (isDemo) {
+          const sampleDevice = demoDevices.find(
+            (item) => item.id === deviceId
+          );
 
-        if (userError) {
-          throw userError;
+          if (!sampleDevice) {
+            setDevice(null);
+            setErrorMessage("Demo device not found.");
+            return;
+          }
+
+          setDevice({
+            id: sampleDevice.id,
+            device_name: sampleDevice.device_name,
+            category: sampleDevice.category,
+            brand: sampleDevice.brand,
+            model_number: sampleDevice.model_number,
+            serial_number: sampleDevice.serial_number,
+            purchase_date: sampleDevice.purchase_date,
+            warranty_date: sampleDevice.warranty_date,
+            purchase_price: sampleDevice.purchase_price,
+            location: sampleDevice.location,
+            notes: sampleDevice.notes,
+            online: sampleDevice.online,
+            last_seen_at: sampleDevice.last_seen_at,
+            ip_address: sampleDevice.ip_address,
+            mac_address: sampleDevice.mac_address,
+            manufacturer: sampleDevice.manufacturer,
+            discovery_source: sampleDevice.discovery_source,
+          });
+
+          setImages([]);
+          return;
         }
 
         if (!user) {
-          router.push("/login");
+          setDevice(null);
+          setErrorMessage("You must be signed in to view this device.");
           return;
         }
 
@@ -153,6 +215,7 @@ export default function DevicePage() {
         }
 
         if (!deviceData) {
+          setDevice(null);
           setErrorMessage("Device not found.");
           return;
         }
@@ -168,39 +231,41 @@ export default function DevicePage() {
             : "Unable to load this device."
         );
       } finally {
-        setLoading(false);
+        setLoadingDevice(false);
       }
     }
 
     loadPage();
-  }, [loadImages, params.id, router]);
+  }, [
+    deviceId,
+    user,
+    isDemo,
+    demoModeLoading,
+    loadImages,
+  ]);
+
+  function redirectDemoUser() {
+    router.push("/signup");
+  }
 
   async function handleUpload(
     event: ChangeEvent<HTMLInputElement>
   ) {
+    if (isDemo) {
+      event.target.value = "";
+      redirectDemoUser();
+      return;
+    }
+
     const files = Array.from(event.target.files || []);
     const uploadedFileCount = files.length;
 
-    if (!device || files.length === 0) {
+    if (!device || !user || files.length === 0) {
       return;
     }
 
     try {
       setUploading(true);
-
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
-
-      if (userError) {
-        throw userError;
-      }
-
-      if (!user) {
-        router.push("/login");
-        return;
-      }
 
       for (const file of files) {
         if (!file.type.startsWith("image/")) {
@@ -279,6 +344,15 @@ export default function DevicePage() {
   }
 
   async function deleteImage(image: DeviceImage) {
+    if (isDemo) {
+      redirectDemoUser();
+      return;
+    }
+
+    if (!user) {
+      return;
+    }
+
     const confirmed = window.confirm(
       "Are you sure you want to delete this photo?"
     );
@@ -301,7 +375,8 @@ export default function DevicePage() {
       const { error: databaseError } = await supabase
         .from("device_images")
         .delete()
-        .eq("id", image.id);
+        .eq("id", image.id)
+        .eq("user_id", user.id);
 
       if (databaseError) {
         throw databaseError;
@@ -309,8 +384,7 @@ export default function DevicePage() {
 
       setImages((currentImages) =>
         currentImages.filter(
-          (currentImage) =>
-            currentImage.id !== image.id
+          (currentImage) => currentImage.id !== image.id
         )
       );
     } catch (error) {
@@ -327,7 +401,12 @@ export default function DevicePage() {
   }
 
   async function deleteDevice() {
-    if (!device || deletingDevice) {
+    if (isDemo) {
+      redirectDemoUser();
+      return;
+    }
+
+    if (!device || !user || deletingDevice) {
       return;
     }
 
@@ -343,20 +422,6 @@ export default function DevicePage() {
 
     try {
       setDeletingDevice(true);
-
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
-
-      if (userError) {
-        throw userError;
-      }
-
-      if (!user) {
-        router.push("/login");
-        return;
-      }
 
       const imagePaths = images.map(
         (image) => image.image_url
@@ -415,7 +480,6 @@ export default function DevicePage() {
         throw deleteError;
       }
 
-      alert("Device deleted successfully.");
       router.push("/devices");
       router.refresh();
     } catch (error) {
@@ -430,6 +494,9 @@ export default function DevicePage() {
       setDeletingDevice(false);
     }
   }
+
+  const loading =
+    demoModeLoading || loadingDevice;
 
   if (loading) {
     return (
@@ -476,12 +543,12 @@ export default function DevicePage() {
       device.manufacturer ||
       device.discovery_source ||
       device.last_seen_at ||
-      device.online !== null &&
-        device.online !== undefined
+      (device.online !== null &&
+        device.online !== undefined)
   );
 
   return (
-    <main className="min-h-screen bg-[#F7F5EF] p-8">
+    <main className="min-h-screen bg-[#F7F5EF] p-5 md:p-8">
       <div className="mx-auto max-w-5xl">
         <button
           type="button"
@@ -492,7 +559,25 @@ export default function DevicePage() {
           Back to Devices
         </button>
 
-        <div className="rounded-3xl bg-white p-8 shadow-sm">
+        {isDemo && (
+          <section className="mb-6 rounded-3xl border border-[#D8C69D] bg-[#FFF8E8] p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A6A2F]">
+              Interactive Demo
+            </p>
+
+            <h2 className="mt-2 text-xl font-bold text-[#111827]">
+              Sample device profile
+            </h2>
+
+            <p className="mt-2 text-sm text-neutral-600">
+              This page demonstrates how photos, purchase details,
+              warranties, network information, documents, and device
+              history are organized.
+            </p>
+          </section>
+        )}
+
+        <div className="rounded-3xl bg-white p-6 shadow-sm md:p-8">
           <header className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#C8A96A]">
@@ -539,9 +624,7 @@ export default function DevicePage() {
                   </span>
 
                   <span className="text-sm text-neutral-400">
-                    {formatLastSeen(
-                      device.last_seen_at
-                    )}
+                    {formatLastSeen(device.last_seen_at)}
                   </span>
                 </div>
               )}
@@ -549,15 +632,20 @@ export default function DevicePage() {
 
             <button
               type="button"
-              onClick={() =>
+              onClick={() => {
+                if (isDemo) {
+                  redirectDemoUser();
+                  return;
+                }
+
                 router.push(
                   `/devices/${device.id}/edit`
-                )
-              }
+                );
+              }}
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#111827] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#263044]"
             >
               <Pencil size={17} />
-              Edit Device
+              {isDemo ? "Create Vault to Edit" : "Edit Device"}
             </button>
           </header>
 
@@ -569,12 +657,12 @@ export default function DevicePage() {
                 </h2>
 
                 <p className="mt-1 text-sm text-neutral-500">
-                  Add photos of the device, receipt,
-                  label, or serial number.
+                  Store photos of the device, receipt, label, or
+                  serial number.
                 </p>
               </div>
 
-              <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-[#111827] px-5 py-3 font-semibold text-white transition hover:opacity-90">
+              <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-[#111827] px-5 py-3 font-semibold text-white">
                 {uploading ? (
                   <Loader2
                     className="animate-spin"
@@ -584,9 +672,11 @@ export default function DevicePage() {
                   <ImagePlus size={18} />
                 )}
 
-                {uploading
-                  ? "Uploading..."
-                  : "Add Photos"}
+                {isDemo
+                  ? "Create Vault to Upload"
+                  : uploading
+                    ? "Uploading..."
+                    : "Add Photos"}
 
                 <input
                   type="file"
@@ -607,12 +697,15 @@ export default function DevicePage() {
                 />
 
                 <p className="mt-4 font-semibold text-[#111827]">
-                  Add your first device photo
+                  {isDemo
+                    ? "Device photos appear here"
+                    : "Add your first device photo"}
                 </p>
 
                 <p className="mt-1 text-sm text-neutral-500">
-                  Choose one or multiple images up to
-                  6 MB each.
+                  {isDemo
+                    ? "Create an account to upload device photos, receipts, and labels."
+                    : "Choose one or multiple images up to 6 MB each."}
                 </p>
 
                 <input
@@ -641,17 +734,14 @@ export default function DevicePage() {
 
                     <button
                       type="button"
-                      onClick={() =>
-                        deleteImage(image)
-                      }
+                      onClick={() => deleteImage(image)}
                       disabled={
                         deletingImageId === image.id
                       }
                       aria-label="Delete photo"
-                      className="absolute right-3 top-3 rounded-full bg-black/70 p-2 text-white transition hover:bg-red-600 disabled:opacity-60"
+                      className="absolute right-3 top-3 rounded-full bg-black/70 p-2 text-white hover:bg-red-600 disabled:opacity-60"
                     >
-                      {deletingImageId ===
-                      image.id ? (
+                      {deletingImageId === image.id ? (
                         <Loader2
                           size={17}
                           className="animate-spin"
@@ -700,23 +790,17 @@ export default function DevicePage() {
 
               <InfoItem
                 label="Purchase Date"
-                value={formatDate(
-                  device.purchase_date
-                )}
+                value={formatDate(device.purchase_date)}
               />
 
               <InfoItem
                 label="Warranty Expiration"
-                value={formatDate(
-                  device.warranty_date
-                )}
+                value={formatDate(device.warranty_date)}
               />
 
               <InfoItem
                 label="Purchase Price"
-                value={formatPrice(
-                  device.purchase_price
-                )}
+                value={formatPrice(device.purchase_price)}
               />
 
               <InfoItem
@@ -750,8 +834,7 @@ export default function DevicePage() {
                   </h2>
 
                   <p className="mt-1 text-sm text-neutral-500">
-                    Connection details collected from
-                    network discovery.
+                    Connection details collected from network discovery.
                   </p>
                 </div>
               </div>
@@ -790,21 +873,28 @@ export default function DevicePage() {
 
                 <InfoItem
                   label="Last Seen"
-                  value={formatLastSeen(
-                    device.last_seen_at
-                  )}
+                  value={formatLastSeen(device.last_seen_at)}
                 />
               </div>
             </section>
           )}
 
-          <DeviceDocuments deviceId={device.id} />
+          {isDemo ? (
+            <>
+              <DemoDocuments documents={sampleDocuments} />
+              <DemoTimeline events={sampleTimeline} />
+            </>
+          ) : (
+            <>
+              <DeviceDocuments deviceId={device.id} />
 
-          <DeviceTimeline
-            deviceId={device.id}
-            purchaseDate={device.purchase_date}
-            warrantyDate={device.warranty_date}
-          />
+              <DeviceTimeline
+                deviceId={device.id}
+                purchaseDate={device.purchase_date}
+                warrantyDate={device.warranty_date}
+              />
+            </>
+          )}
 
           <section className="mt-10 border-t border-[#E8E2D6] pt-8">
             <p className="text-sm font-semibold text-red-700">
@@ -812,8 +902,9 @@ export default function DevicePage() {
             </p>
 
             <p className="mt-2 text-sm text-neutral-500">
-              Deleting this device permanently removes
-              its details, photos, and document records.
+              {isDemo
+                ? "Demo devices cannot be deleted."
+                : "Deleting this device permanently removes its details, photos, and document records."}
             </p>
 
             <button
@@ -831,14 +922,131 @@ export default function DevicePage() {
                 <Trash2 size={18} />
               )}
 
-              {deletingDevice
-                ? "Deleting..."
-                : "Delete Device"}
+              {isDemo
+                ? "Create Vault to Manage Devices"
+                : deletingDevice
+                  ? "Deleting..."
+                  : "Delete Device"}
             </button>
           </section>
         </div>
       </div>
     </main>
+  );
+}
+
+function DemoDocuments({
+  documents,
+}: {
+  documents: typeof demoDocuments;
+}) {
+  return (
+    <section className="mt-10 border-t border-[#E8E2D6] pt-10">
+      <div className="flex items-start gap-4">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+          <FileText size={21} />
+        </div>
+
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
+            Documents
+          </p>
+
+          <h2 className="mt-1 text-2xl font-bold text-[#111827]">
+            Device Documents
+          </h2>
+
+          <p className="mt-1 text-sm text-neutral-500">
+            Receipts, manuals, warranties, and setup guides.
+          </p>
+        </div>
+      </div>
+
+      {documents.length === 0 ? (
+        <div className="mt-6 rounded-2xl bg-[#F7F5EF] p-5 text-sm text-neutral-500">
+          No sample documents are attached to this device.
+        </div>
+      ) : (
+        <div className="mt-6 space-y-3">
+          {documents.map((document) => (
+            <div
+              key={document.id}
+              className="flex items-center justify-between gap-4 rounded-2xl border border-[#E8E2D6] p-4"
+            >
+              <div>
+                <p className="font-semibold text-[#111827]">
+                  {document.document_name}
+                </p>
+
+                <p className="mt-1 text-sm text-neutral-500">
+                  {document.document_type} · {document.file_name}
+                </p>
+              </div>
+
+              <span className="rounded-full bg-[#F7F5EF] px-3 py-1 text-xs font-semibold text-[#8A6A2F]">
+                Demo
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function DemoTimeline({
+  events,
+}: {
+  events: typeof demoTimelineEvents;
+}) {
+  return (
+    <section className="mt-10 border-t border-[#E8E2D6] pt-10">
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
+        Device History
+      </p>
+
+      <h2 className="mt-2 text-2xl font-bold text-[#111827]">
+        Timeline
+      </h2>
+
+      {events.length === 0 ? (
+        <div className="mt-6 rounded-2xl bg-[#F7F5EF] p-5 text-sm text-neutral-500">
+          No sample timeline events are recorded for this device.
+        </div>
+      ) : (
+        <div className="mt-6 space-y-4">
+          {events.map((event) => (
+            <div
+              key={event.id}
+              className="rounded-2xl border border-[#E8E2D6] p-5"
+            >
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="font-semibold text-[#111827]">
+                    {event.title}
+                  </p>
+
+                  <p className="mt-1 text-sm text-neutral-500">
+                    {event.description}
+                  </p>
+                </div>
+
+                <span className="text-sm text-neutral-400">
+                  {new Date(event.event_date).toLocaleDateString(
+                    undefined,
+                    {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    }
+                  )}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -933,12 +1141,9 @@ function formatLastSeen(value?: string | null) {
     } ago`;
   }
 
-  return `Last seen ${date.toLocaleDateString(
-    undefined,
-    {
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    }
-  )}`;
+  return `Last seen ${date.toLocaleDateString(undefined, {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  })}`;
 }

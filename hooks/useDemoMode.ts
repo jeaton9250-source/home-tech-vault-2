@@ -27,21 +27,23 @@ export function useDemoMode() {
     try {
       const demoEnabled = getStoredDemoMode();
 
+      /*
+        getSession() safely returns session: null
+        when the visitor is signed out.
+      */
       const {
-        data: { user: currentUser },
-        error,
-      } = await supabase.auth.getUser();
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
 
-      if (error) {
+      if (sessionError) {
         console.error(
-          "Unable to load authenticated user:",
-          error
+          "Unable to load auth session:",
+          sessionError
         );
       }
 
-      setUser(currentUser);
-
-      // Explicit Demo Mode takes priority, even if a session remains.
+      setUser(session?.user || null);
       setIsDemo(demoEnabled);
     } catch (error) {
       console.error(
@@ -61,9 +63,13 @@ export function useDemoMode() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(() => {
-      loadMode();
-    });
+    } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(session?.user || null);
+        setIsDemo(getStoredDemoMode());
+        setLoading(false);
+      }
+    );
 
     function handleDemoChange() {
       setIsDemo(getStoredDemoMode());

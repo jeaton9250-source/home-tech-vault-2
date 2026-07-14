@@ -15,6 +15,8 @@ const publicRoutes = [
   "/login",
   "/signup",
   "/demo",
+  "/forgot-password",
+  "/reset-password",
   "/upgrade",
   "/upgrade/success",
 ];

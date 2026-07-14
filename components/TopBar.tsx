@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Bell, Search, X } from "lucide-react";
+import NotificationBell from "@/components/NotificationBell";
 
 export default function Header() {
   const router = useRouter();
@@ -83,13 +84,7 @@ export default function Header() {
           </button>
         </form>
 
-        <button
-          type="button"
-          aria-label="Notifications"
-          className="rounded-2xl bg-[#F7F5EF] p-3 text-[#111827] hover:bg-[#EFE9DD]"
-        >
-          <Bell size={20} />
-        </button>
+       <NotificationBell />
       </div>
     </header>
   );

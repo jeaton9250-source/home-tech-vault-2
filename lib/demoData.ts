@@ -106,7 +106,7 @@ export const demoDevices: DemoDevice[] = [
   },
   {
     id: "demo-iphone",
-    device_name: "Jason’s iPhone",
+    device_name: "Personal iPhone",
     brand: "Apple",
     category: "Mobile",
     model_number: "iPhone 16 Pro",
@@ -343,13 +343,13 @@ export const demoTimelineEvents = [
 ];
 
 export const demoProfile = {
-  full_name: "Jason Demo",
+  full_name: "Demo User",
   household_name: "The Demo Home",
   email: "demo@hometechvault.com",
 };
 
 export const demoDashboard = {
-  firstName: "Jason",
+  firstName: "User",
   householdName: "The Demo Home",
   deviceCount: demoDevices.length,
   documentCount: demoDocuments.length,

@@ -11,14 +11,22 @@ import {
   FileText,
   House,
   Laptop,
+  ReceiptText,
   Settings,
   Shield,
+  Sparkles,
   User,
   Wifi,
   Wrench,
+  MessageSquare
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
+import { useDemoMode } from "@/hooks/useDemoMode";
+import {
+  demoDashboard,
+  demoProfile,
+} from "@/lib/demoData";
 
 type Profile = {
   full_name: string | null;
@@ -67,26 +75,31 @@ const navigationGroups = [
       },
     ],
   },
-  {
-    label: "Management",
-    links: [
-      {
-        href: "/maintenance",
-        icon: Wrench,
-        label: "Maintenance",
-      },
-      {
-        href: "/subscriptions",
-        icon: CreditCard,
-        label: "Subscriptions",
-      },
-      {
-        href: "/reports",
-        icon: BarChart3,
-        label: "Reports",
-      },
-    ],
-  },
+{
+  label: "Management",
+  links: [
+    {
+      href: "/maintenance",
+      icon: Wrench,
+      label: "Maintenance",
+    },
+    {
+      href: "/subscriptions",
+      icon: CreditCard,
+      label: "Subscriptions",
+    },
+    {
+      href: "/reports",
+      icon: BarChart3,
+      label: "Reports",
+    },
+    {
+      href: "/insights",
+      icon: Sparkles,
+      label: "Vault Insights",
+    },
+  ],
+},
   {
     label: "Tools",
     links: [
@@ -96,15 +109,17 @@ const navigationGroups = [
         label: "AI Advisor",
       },
       {
-        href: "/profile",
-        icon: User,
-        label: "My Profile",
-      },
-      {
-        href: "/settings",
-        icon: Settings,
-        label: "Settings",
-      },
+  href: "/account",
+  icon: User,
+  label: "My Account",
+},
+
+{
+  label: "Contact Us",
+  href: "/contact",
+  icon: MessageSquare,
+},
+      
     ],
   },
 ];
@@ -112,82 +127,170 @@ const navigationGroups = [
 export default function Sidebar() {
   const pathname = usePathname();
 
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const {
+    user,
+    isDemo,
+    loading: demoModeLoading,
+  } = useDemoMode();
+
+  const [profile, setProfile] =
+    useState<Profile | null>(null);
+
   const [email, setEmail] = useState("");
   const [deviceCount, setDeviceCount] = useState(0);
   const [totalValue, setTotalValue] = useState(0);
+  const [loadingSidebar, setLoadingSidebar] =
+    useState(true);
 
   useEffect(() => {
     async function loadSidebarData() {
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
-
-      if (userError) {
-        console.error("Sidebar user error:", userError);
+      if (demoModeLoading) {
         return;
       }
 
-      if (!user) {
-        return;
-      }
+      try {
+        setLoadingSidebar(true);
 
-      setEmail(user.email || "");
+        if (isDemo) {
+          setProfile({
+            full_name: demoProfile.full_name,
+            household_name:
+              demoProfile.household_name,
+            avatar_url: null,
+          });
 
-      const { data: profileData, error: profileError } =
-        await supabase
+          setEmail(demoProfile.email);
+
+          setDeviceCount(
+            demoDashboard.deviceCount
+          );
+
+          setTotalValue(
+            demoDashboard.protectedValue
+          );
+
+          return;
+        }
+
+        if (!user) {
+          setProfile(null);
+          setEmail("");
+          setDeviceCount(0);
+          setTotalValue(0);
+          return;
+        }
+
+        setEmail(user.email || "");
+
+        const {
+          data: profileData,
+          error: profileError,
+        } = await supabase
           .from("profiles")
-          .select("full_name, household_name, avatar_url")
+          .select(
+            "full_name, household_name, avatar_url"
+          )
           .eq("id", user.id)
           .maybeSingle();
 
-      if (profileError) {
-        console.error("Profile error:", profileError);
-      } else if (profileData) {
-        setProfile(profileData);
-      }
+        if (profileError) {
+          console.error(
+            "Sidebar profile error:",
+            profileError
+          );
+        } else if (profileData) {
+          setProfile(
+            profileData as Profile
+          );
+        } else {
+          setProfile(null);
+        }
 
-      const { data: devices, error: devicesError } =
-        await supabase
+        const {
+          data: devices,
+          error: devicesError,
+        } = await supabase
           .from("devices")
           .select("purchase_price")
           .eq("user_id", user.id);
 
-      if (devicesError) {
-        console.error("Devices error:", devicesError);
-        return;
+        if (devicesError) {
+          throw devicesError;
+        }
+
+        setDeviceCount(
+          devices?.length || 0
+        );
+
+        const protectedValue =
+          devices?.reduce(
+            (total, device) =>
+              total +
+              Number(
+                device.purchase_price || 0
+              ),
+            0
+          ) || 0;
+
+        setTotalValue(protectedValue);
+      } catch (error) {
+        console.error(
+          "Sidebar loading error:",
+          error
+        );
+
+        if (isDemo) {
+          setProfile({
+            full_name:
+              demoProfile.full_name,
+            household_name:
+              demoProfile.household_name,
+            avatar_url: null,
+          });
+
+          setEmail(demoProfile.email);
+
+          setDeviceCount(
+            demoDashboard.deviceCount
+          );
+
+          setTotalValue(
+            demoDashboard.protectedValue
+          );
+        }
+      } finally {
+        setLoadingSidebar(false);
       }
-
-      setDeviceCount(devices?.length || 0);
-
-      const protectedValue =
-        devices?.reduce((total, device) => {
-          return total + Number(device.purchase_price || 0);
-        }, 0) || 0;
-
-      setTotalValue(protectedValue);
     }
 
     loadSidebarData();
-  }, []);
+  }, [
+    user,
+    isDemo,
+    demoModeLoading,
+  ]);
 
   const displayName =
     profile?.full_name?.trim() ||
     email.split("@")[0] ||
-    "Homeowner";
+    (isDemo ? "Demo User" : "Homeowner");
 
-  const firstName = displayName.split(" ")[0];
+  const firstName =
+    displayName.split(" ")[0];
 
   const householdName =
     profile?.household_name?.trim() ||
-    `${firstName}'s Home Tech Vault`;
+    (isDemo
+      ? "The Demo Home"
+      : `${firstName}'s Home Tech Vault`);
 
   const initials = displayName
     .split(" ")
     .filter(Boolean)
     .slice(0, 2)
-    .map((name) => name[0]?.toUpperCase())
+    .map((name) =>
+      name[0]?.toUpperCase()
+    )
     .join("");
 
   function isLinkActive(href: string) {
@@ -195,17 +298,20 @@ export default function Sidebar() {
       return pathname === "/dashboard";
     }
 
-    return pathname === href || pathname.startsWith(`${href}/`);
+    return (
+      pathname === href ||
+      pathname.startsWith(`${href}/`)
+    );
   }
 
   return (
-    <aside className="flex h-screen w-72 shrink-0 flex-col overflow-y-auto border-r border-[#E8E2D6] bg-white px-5 py-6">
+    <aside className="hidden h-screen w-72 shrink-0 flex-col overflow-y-auto border-r border-[#E8E2D6] bg-white px-5 py-6 lg:flex">
       <Link
-        href="/profile"
+        href={isDemo ? "/dashboard" : "/profile"}
         className="rounded-3xl border border-[#E8E2D6] bg-[#F7F5EF] p-4 transition hover:border-[#C8A96A] hover:shadow-sm"
       >
         <div className="flex items-center gap-3">
-          {profile?.avatar_url ? (
+          {profile?.avatar_url && !isDemo ? (
             <img
               src={profile.avatar_url}
               alt={displayName}
@@ -219,11 +325,15 @@ export default function Sidebar() {
 
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
-              Welcome home
+              {isDemo
+                ? "Interactive Demo"
+                : "Welcome home"}
             </p>
 
             <h2 className="truncate text-lg font-bold text-[#111827]">
-              {firstName}
+              {loadingSidebar
+                ? "Loading..."
+                : firstName}
             </h2>
           </div>
         </div>
@@ -233,45 +343,58 @@ export default function Sidebar() {
         </p>
 
         <p className="mt-1 truncate text-xs text-neutral-500">
-          {email}
+          {isDemo
+            ? "Sample household"
+            : email || "Account"}
         </p>
       </Link>
 
       <nav className="mt-7 space-y-7">
-        {navigationGroups.map((group) => (
-          <div key={group.label}>
-            <p className="mb-2 px-4 text-[11px] font-bold uppercase tracking-[0.22em] text-[#C8A96A]">
-              {group.label}
-            </p>
+        {navigationGroups.map(
+          (group) => (
+            <div key={group.label}>
+              <p className="mb-2 px-4 text-[11px] font-bold uppercase tracking-[0.22em] text-[#C8A96A]">
+                {group.label}
+              </p>
 
-            <div className="space-y-1">
-              {group.links.map(({ href, icon: Icon, label }) => {
-                const active = isLinkActive(href);
+              <div className="space-y-1">
+                {group.links.map(
+                  ({
+                    href,
+                    icon: Icon,
+                    label,
+                  }) => {
+                    const active =
+                      isLinkActive(href);
 
-                return (
-                  <Link
-                    key={href}
-                    href={href}
-                    className={`flex items-center gap-4 rounded-2xl px-4 py-3 text-sm font-medium transition ${
-                      active
-                        ? "bg-[#111827] text-white shadow-sm"
-                        : "text-neutral-700 hover:bg-[#F7F5EF]"
-                    }`}
-                  >
-                    <Icon
-                      size={19}
-                      className={
-                        active ? "text-[#C8A96A]" : "text-neutral-500"
-                      }
-                    />
+                    return (
+                      <Link
+                        key={href}
+                        href={href}
+                        className={`flex items-center gap-4 rounded-2xl px-4 py-3 text-sm font-medium transition ${
+                          active
+                            ? "bg-[#111827] text-white shadow-sm"
+                            : "text-neutral-700 hover:bg-[#F7F5EF]"
+                        }`}
+                      >
+                        <Icon
+                          size={19}
+                          className={
+                            active
+                              ? "text-[#C8A96A]"
+                              : "text-neutral-500"
+                          }
+                        />
 
-                    {label}
-                  </Link>
-                );
-              })}
+                        {label}
+                      </Link>
+                    );
+                  }
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        )}
       </nav>
 
       <div className="mt-auto pt-8">
@@ -283,7 +406,7 @@ export default function Sidebar() {
               </p>
 
               <h2 className="mt-3 text-4xl font-bold">
-                94
+                {isDemo ? "92" : "94"}
               </h2>
 
               <p className="mt-1 text-sm text-neutral-300">
@@ -308,7 +431,9 @@ export default function Sidebar() {
               </p>
 
               <p className="mt-1 text-lg font-semibold">
-                {deviceCount}
+                {loadingSidebar
+                  ? "—"
+                  : deviceCount}
               </p>
             </div>
 
@@ -318,10 +443,14 @@ export default function Sidebar() {
               </p>
 
               <p className="mt-1 truncate text-lg font-semibold">
-                $
-                {totalValue.toLocaleString(undefined, {
-                  maximumFractionDigits: 0,
-                })}
+                {loadingSidebar
+                  ? "—"
+                  : `$${totalValue.toLocaleString(
+                      undefined,
+                      {
+                        maximumFractionDigits: 0,
+                      }
+                    )}`}
               </p>
             </div>
           </div>
