@@ -24,7 +24,7 @@ export function usePermissions() {
     const metadataRole = String(
       user.app_metadata?.role ??
         user.user_metadata?.role ??
-        "member"
+        "viewer"
     )
       .trim()
       .toLowerCase();
