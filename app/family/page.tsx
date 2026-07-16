@@ -2263,7 +2263,7 @@ function InviteModal({
             role={form.role}
           />
 
-          <button
+         <button
   type="submit"
   disabled={
     sending ||
