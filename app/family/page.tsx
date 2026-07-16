@@ -2199,9 +2199,14 @@ function InviteModal({
         </div>
 
         <form
-          onSubmit={onSubmit}
-          className="space-y-5 p-6"
-        >
+  onSubmit={(event) => {
+    event.preventDefault();
+    alert("Invite form submitted");
+    console.log("[Family Invite] Modal form submitted");
+    onSubmit(event);
+  }}
+  className="space-y-5 p-6"
+>
           <label className="block">
             <span className="mb-2 block text-sm font-semibold text-[#111827]">
               Email address
@@ -2258,38 +2263,27 @@ function InviteModal({
             role={form.role}
           />
 
-          <div className="flex flex-wrap gap-3 border-t border-[#E8E2D6] pt-5">
-            <Button
-              type="submit"
-              disabled={
-                sending ||
-                availableSeats <= 0
-              }
-            >
-              {sending ? (
-                <Loader2
-                  size={17}
-                  className="animate-spin"
-                />
-              ) : (
-                <UserPlus
-                  size={17}
-                />
-              )}
+          <button
+  type="submit"
+  disabled={
+    sending ||
+    availableSeats <= 0
+  }
+  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-[#111827] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#263044] disabled:cursor-not-allowed disabled:opacity-50"
+>
+  {sending ? (
+    <Loader2
+      size={17}
+      className="animate-spin"
+    />
+  ) : (
+    <UserPlus size={17} />
+  )}
 
-              {sending
-                ? "Creating Invite..."
-                : "Create Invitation"}
-            </Button>
-
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={onClose}
-            >
-              Cancel
-            </Button>
-          </div>
+  {sending
+    ? "Creating Invite..."
+    : "Create Invitation"}
+</button>
         </form>
       </div>
     </div>
