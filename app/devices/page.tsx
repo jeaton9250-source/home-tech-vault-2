@@ -191,64 +191,23 @@ export default function DevicesPage() {
         throw membershipError;
       }
 
-      const currentHouseholdId =
-        membership?.household_id || null;
+      const {
+        data: familyAccess,
+        error: familyAccessError,
+      } = await supabase.rpc(
+        "current_household_has_family_access"
+      );
 
-      let familyAccess = false;
-
-      const householdRelation =
-        membership?.households as
-          | {
-              owner_id?: string;
-            }
-          | {
-              owner_id?: string;
-            }[]
-          | null
-          | undefined;
-
-      const householdOwnerId =
-        Array.isArray(householdRelation)
-          ? householdRelation[0]?.owner_id
-          : householdRelation?.owner_id;
-
-      if (
-        currentHouseholdId &&
-        householdOwnerId
-      ) {
-        const {
-          data: ownerSubscription,
-          error: ownerSubscriptionError,
-        } = await supabase
-          .from("user_subscriptions")
-          .select("plan, status")
-          .eq("user_id", householdOwnerId)
-          .maybeSingle();
-
-        if (ownerSubscriptionError) {
-          console.error(
-            "Unable to check household subscription:",
-            ownerSubscriptionError
-          );
-        }
-
-        const ownerPlan =
-          ownerSubscription?.plan
-            ?.trim()
-            .toLowerCase();
-
-        const ownerStatus =
-          ownerSubscription?.status
-            ?.trim()
-            .toLowerCase();
-
-        familyAccess =
-          ownerPlan === "family" &&
-          (ownerStatus === "active" ||
-            ownerStatus === "trialing");
+      if (familyAccessError) {
+        console.error(
+          "Unable to check household Family access:",
+          familyAccessError
+        );
       }
 
-      setHasFamilyHouseholdAccess(familyAccess);
+      setHasFamilyHouseholdAccess(
+        familyAccess === true
+      );
 
       /*
        * Users without a household can still see their

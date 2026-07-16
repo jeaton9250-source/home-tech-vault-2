@@ -138,68 +138,23 @@ export default function AddDevicePage() {
           currentHouseholdId
         );
 
-        let familyHouseholdAccess = false;
+        const {
+          data: familyAccess,
+          error: familyAccessError,
+        } = await supabase.rpc(
+          "current_household_has_family_access"
+        );
 
-const householdRelation =
-  membership?.households as
-    | {
-        owner_id?: string;
-      }
-    | {
-        owner_id?: string;
-      }[]
-    | null
-    | undefined;
+        if (familyAccessError) {
+          console.error(
+            "Unable to check household Family access:",
+            familyAccessError
+          );
+        }
 
-const householdOwnerId =
-  Array.isArray(householdRelation)
-    ? householdRelation[0]?.owner_id
-    : householdRelation?.owner_id;
-
-if (
-  currentHouseholdId &&
-  householdOwnerId
-) {
-  const {
-    data: ownerSubscription,
-    error: ownerSubscriptionError,
-  } = await supabase
-    .from("user_subscriptions")
-    .select("plan, status")
-    .eq(
-      "user_id",
-      householdOwnerId
-    )
-    .maybeSingle();
-
-  if (ownerSubscriptionError) {
-    console.error(
-      "Unable to check household subscription:",
-      ownerSubscriptionError
-    );
-  }
-
-  const ownerPlan =
-    ownerSubscription?.plan
-      ?.trim()
-      .toLowerCase();
-
-  const ownerStatus =
-    ownerSubscription?.status
-      ?.trim()
-      .toLowerCase();
-
-  familyHouseholdAccess =
-    ownerPlan === "family" &&
-    (
-      ownerStatus === "active" ||
-      ownerStatus === "trialing"
-    );
-}
-
-setHasFamilyHouseholdAccess(
-  familyHouseholdAccess
-);
+        setHasFamilyHouseholdAccess(
+          familyAccess === true
+        );
 
         let countQuery =
           supabase
