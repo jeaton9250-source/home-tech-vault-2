@@ -882,16 +882,36 @@ export default function FamilyPage() {
       );
 
       const {
-        data: emailResult,
-        error: emailError,
-      } = await supabase.functions.invoke(
-        "send-family-invite",
-        {
-          body: {
-            invitationId: invitation.id,
-          },
-        }
-      );
+  data: {
+    session,
+  },
+  error: sessionError,
+} = await supabase.auth.getSession();
+
+if (sessionError) {
+  throw sessionError;
+}
+
+if (!session?.access_token) {
+  throw new Error(
+    "Your login session could not be found. Please sign out and sign back in."
+  );
+}
+
+const {
+  data: emailResult,
+  error: emailError,
+} = await supabase.functions.invoke(
+  "send-family-invite",
+  {
+    body: {
+      invitationId: invitation.id,
+    },
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  }
+);
 
       console.log(
         "[Family Invite] Step 6: Edge Function response received",
