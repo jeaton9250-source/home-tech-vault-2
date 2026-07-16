@@ -2,6 +2,7 @@
 
 import {
   useEffect,
+  useRef,
   useState,
 } from "react";
 import {
@@ -39,6 +40,9 @@ export default function AcceptFamilyInvitationPage() {
       ? params.token
       : "";
 
+  const hasStarted =
+    useRef(false);
+
   const [state, setState] =
     useState<AcceptState>("checking");
 
@@ -48,6 +52,12 @@ export default function AcceptFamilyInvitationPage() {
     );
 
   useEffect(() => {
+    if (hasStarted.current) {
+      return;
+    }
+
+    hasStarted.current = true;
+
     let active = true;
 
     async function acceptInvitation() {
@@ -94,8 +104,7 @@ export default function AcceptFamilyInvitationPage() {
         );
 
         const {
-          data,
-          error,
+          error: acceptanceError,
         } = await supabase.rpc(
           "accept_household_invitation",
           {
@@ -103,14 +112,8 @@ export default function AcceptFamilyInvitationPage() {
           }
         );
 
-        if (error) {
-          throw error;
-        }
-
-        if (!data) {
-          throw new Error(
-            "The invitation could not be accepted."
-          );
+        if (acceptanceError) {
+          throw acceptanceError;
         }
 
         if (!active) {
@@ -135,6 +138,7 @@ export default function AcceptFamilyInvitationPage() {
           error as {
             message?: string;
             details?: string;
+            hint?: string;
           };
 
         console.error(
@@ -146,6 +150,7 @@ export default function AcceptFamilyInvitationPage() {
         setMessage(
           possibleError.message ||
             possibleError.details ||
+            possibleError.hint ||
             "Unable to accept this invitation."
         );
       }
