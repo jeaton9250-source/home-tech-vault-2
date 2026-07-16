@@ -5,10 +5,9 @@ import {
   useMemo,
   useState,
   type ComponentType,
+  type ReactNode,
 } from "react";
-
 import Link from "next/link";
-
 import {
   CalendarDays,
   CheckCircle2,
@@ -26,15 +25,11 @@ import {
 import { supabase } from "@/lib/supabase";
 import { createDeviceEvent } from "@/lib/deviceEvents";
 import { useDemoMode } from "@/hooks/useDemoMode";
-
 import {
   demoDevices,
   demoMaintenance,
 } from "@/lib/demoData";
-
 import PageShell from "@/components/ui/PageShell";
-import PageCard from "@/components/ui/PageCard";
-import Button from "@/components/ui/Button";
 
 type MaintenanceTask = {
   id: string;
@@ -68,12 +63,16 @@ type MaintenanceIcon = ComponentType<{
   className?: string;
 }>;
 
+type DemoRecord = Record<string, unknown>;
+
 export default function MaintenancePage() {
+  
   const {
     user,
     isDemo,
     loading: demoModeLoading,
   } = useDemoMode();
+  const isViewer = isDemo || !user;
 
   const [tasks, setTasks] =
     useState<MaintenanceTask[]>([]);
@@ -99,105 +98,109 @@ export default function MaintenancePage() {
   ] = useState<MaintenanceFilter>("all");
 
   useEffect(() => {
-    if (demoModeLoading) {
-      return;
+    let mounted = true;
+
+    async function loadTasks() {
+      if (demoModeLoading) {
+        return;
+      }
+
+      try {
+        setLoadingTasks(true);
+        setErrorMessage("");
+
+        if (isDemo || !user) {
+          const sampleTasks =
+            demoMaintenance.map(
+              (item, index) =>
+                normalizeDemoTask(
+                  item,
+                  index
+                )
+            );
+
+          if (!mounted) {
+            return;
+          }
+
+          setTasks(sampleTasks);
+          return;
+        }
+
+        const {
+          data,
+          error,
+        } = await supabase
+          .from("maintenance_tasks")
+          .select(
+            "*, devices(device_name)"
+          )
+          .eq("user_id", user.id)
+          .order("completed", {
+            ascending: true,
+          })
+          .order("due_date", {
+            ascending: true,
+            nullsFirst: false,
+          });
+
+        if (error) {
+          throw error;
+        }
+
+        if (!mounted) {
+          return;
+        }
+
+        setTasks(
+          (data ?? []) as MaintenanceTask[]
+        );
+      } catch (error: unknown) {
+        console.error(
+          "Maintenance loading error:",
+          error
+        );
+
+        if (!mounted) {
+          return;
+        }
+
+        setErrorMessage(
+          error instanceof Error
+            ? error.message
+            : "Unable to load maintenance tasks."
+        );
+      } finally {
+        if (mounted) {
+          setLoadingTasks(false);
+        }
+      }
     }
 
-    loadTasks();
+    void loadTasks();
+
+    return () => {
+      mounted = false;
+    };
   }, [
     user,
     isDemo,
     demoModeLoading,
   ]);
 
-  async function loadTasks() {
+  async function reloadTasks() {
+    if (!user || isDemo) {
+      return;
+    }
+
     try {
-      setLoadingTasks(true);
-      setErrorMessage("");
-
-      if (isDemo) {
-        const sampleTasks =
-          demoMaintenance.map(
-            (item) => {
-              const connectedDevice =
-                demoDevices.find(
-                  (device) =>
-                    device.id ===
-                    item.device_id
-                );
-
-              const itemStatus =
-                String(
-                  item.status || ""
-                ).toLowerCase();
-
-              const completed =
-                itemStatus.includes(
-                  "complete"
-                );
-
-              return {
-                id: item.id,
-                user_id: "demo-user",
-                device_id:
-                  item.device_id ||
-                  null,
-                title:
-                  item.title ||
-                  "Maintenance Task",
-                description:
-                  item.notes ||
-                  null,
-                task_type:
-                  item.category ||
-                  "Maintenance",
-                due_date:
-                  item.due_date ||
-                  null,
-                completed,
-                completed_at: completed
-                  ? new Date().toISOString()
-                  : null,
-                recurring_interval:
-                  item.frequency ||
-                  null,
-                created_at:
-                  new Date().toISOString(),
-                devices:
-                  connectedDevice
-                    ? {
-                        device_name:
-                          connectedDevice.device_name,
-                      }
-                    : null,
-              } satisfies MaintenanceTask;
-            }
-          );
-
-        setTasks(sampleTasks);
-        return;
-      }
-
-      if (!user) {
-        setTasks([]);
-        setErrorMessage(
-          "Please sign in to view maintenance tasks."
-        );
-        return;
-      }
-
       const {
         data,
         error,
       } = await supabase
         .from("maintenance_tasks")
         .select(
-          `
-            *,
-            devices (
-              device_name
-            )
-          `
+          "*, devices(device_name)"
         )
         .eq("user_id", user.id)
         .order("completed", {
@@ -213,48 +216,31 @@ export default function MaintenancePage() {
       }
 
       setTasks(
-        (data ||
-          []) as MaintenanceTask[]
+        (data ?? []) as MaintenanceTask[]
       );
     } catch (error: unknown) {
-      const possibleError =
-        error as {
-          message?: string;
-          details?: string;
-        };
-
       console.error(
-        "Maintenance loading error:",
+        "Maintenance reload error:",
         error
       );
 
       setErrorMessage(
-        possibleError.message ||
-          possibleError.details ||
-          "Unable to load maintenance tasks."
+        error instanceof Error
+          ? error.message
+          : "Unable to reload maintenance tasks."
       );
-    } finally {
-      setLoadingTasks(false);
     }
   }
 
-  function redirectDemoUser() {
-    window.location.href =
-      "/signup";
+  function sendViewerToSignup() {
+    window.location.href = "/signup";
   }
 
   async function toggleComplete(
     task: MaintenanceTask
   ) {
-    if (isDemo) {
-      redirectDemoUser();
-      return;
-    }
-
-    if (!user) {
-      window.alert(
-        "Please sign in."
-      );
+    if (isDemo || !user) {
+      sendViewerToSignup();
       return;
     }
 
@@ -268,10 +254,9 @@ export default function MaintenancePage() {
         .from("maintenance_tasks")
         .update({
           completed: nextCompleted,
-          completed_at:
-            nextCompleted
-              ? new Date().toISOString()
-              : null,
+          completed_at: nextCompleted
+            ? new Date().toISOString()
+            : null,
         })
         .eq("id", task.id)
         .eq("user_id", user.id);
@@ -288,17 +273,17 @@ export default function MaintenancePage() {
           deviceId: task.device_id,
           userId: user.id,
           eventType:
-            task.task_type ||
+            task.task_type ??
             "Maintenance",
           title: task.title,
           description:
-            task.description ||
+            task.description ??
             "Maintenance task completed through the Maintenance Center.",
         });
       }
 
-      await loadTasks();
-    } catch (error) {
+      await reloadTasks();
+    } catch (error: unknown) {
       console.error(
         "Maintenance update error:",
         error
@@ -317,15 +302,8 @@ export default function MaintenancePage() {
   async function deleteTask(
     taskId: string
   ) {
-    if (isDemo) {
-      redirectDemoUser();
-      return;
-    }
-
-    if (!user) {
-      window.alert(
-        "Please sign in."
-      );
+    if (isDemo || !user) {
+      sendViewerToSignup();
       return;
     }
 
@@ -357,7 +335,7 @@ export default function MaintenancePage() {
             task.id !== taskId
         )
       );
-    } catch (error) {
+    } catch (error: unknown) {
       console.error(
         "Maintenance delete error:",
         error
@@ -376,12 +354,7 @@ export default function MaintenancePage() {
   const today = useMemo(() => {
     const date = new Date();
 
-    date.setHours(
-      0,
-      0,
-      0,
-      0
-    );
+    date.setHours(0, 0, 0, 0);
 
     return date;
   }, []);
@@ -411,8 +384,7 @@ export default function MaintenancePage() {
           getTaskStatus(
             task,
             today
-          ).group ===
-          "overdue"
+          ).group === "overdue"
       ),
     [openTasks, today]
   );
@@ -424,8 +396,7 @@ export default function MaintenancePage() {
           getTaskStatus(
             task,
             today
-          ).group ===
-          "due-soon"
+          ).group === "due-soon"
       ),
     [openTasks, today]
   );
@@ -475,7 +446,7 @@ export default function MaintenancePage() {
           ]
             .map((value) =>
               String(
-                value || ""
+                value ?? ""
               ).toLowerCase()
             )
             .join(" ");
@@ -524,7 +495,7 @@ export default function MaintenancePage() {
   if (pageLoading) {
     return (
       <PageShell>
-        <PageCard className="flex min-h-72 items-center justify-center">
+        <Card className="flex min-h-72 items-center justify-center">
           <div className="flex items-center gap-3 text-neutral-500">
             <Loader2
               className="animate-spin"
@@ -533,7 +504,7 @@ export default function MaintenancePage() {
 
             Loading maintenance...
           </div>
-        </PageCard>
+        </Card>
       </PageShell>
     );
   }
@@ -541,7 +512,7 @@ export default function MaintenancePage() {
   if (errorMessage) {
     return (
       <PageShell>
-        <PageCard className="border-red-200 bg-red-50 text-red-700">
+        <Card className="border-red-200 bg-red-50 p-6 text-red-700">
           <h1 className="text-xl font-semibold">
             Unable to load maintenance
           </h1>
@@ -549,7 +520,7 @@ export default function MaintenancePage() {
           <p className="mt-2 text-sm">
             {errorMessage}
           </p>
-        </PageCard>
+        </Card>
       </PageShell>
     );
   }
@@ -575,24 +546,24 @@ export default function MaintenancePage() {
             </p>
           </div>
 
-          <Button
-            href={
-              isDemo
-                ? "/signup"
-                : "/maintenance/new"
-            }
-            variant="secondary"
-          >
-            <Plus size={17} />
+          <ActionLink
+  href={
+    isViewer
+      ? "/signup"
+      : "/maintenance/new"
+  }
+  variant="light"
+>
+  <Plus size={17} />
 
-            {isDemo
-              ? "Create Your Vault"
-              : "Add Task"}
-          </Button>
+  {isViewer
+    ? "Create Your Vault"
+    : "Add Task"}
+</ActionLink>
         </div>
       </section>
 
-      {isDemo && (
+      {isViewer && (
         <section className="rounded-3xl border border-[#D8C69D] bg-[#FFF8E8] p-5">
           <div className="flex items-start gap-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#111827] text-[#C8A96A]">
@@ -601,14 +572,14 @@ export default function MaintenancePage() {
 
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A6A2F]">
-                Interactive Demo
+                Viewer Access
               </p>
 
               <p className="mt-2 text-sm leading-6 text-neutral-600">
                 Explore sample maintenance
                 tasks. Create an account to
-                add, complete, and manage
-                your own tasks.
+                add, complete, update, and
+                delete your own tasks.
               </p>
             </div>
           </div>
@@ -651,7 +622,7 @@ export default function MaintenancePage() {
 
       {tasks.length > 0 && (
         <section className="grid gap-6 xl:grid-cols-[0.8fr_1.2fr]">
-          <PageCard className="flex min-h-[350px] flex-col items-center justify-center p-8 text-center">
+          <Card className="flex min-h-[350px] flex-col items-center justify-center p-8 text-center">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">
               Completion
             </p>
@@ -667,9 +638,9 @@ export default function MaintenancePage() {
               {tasks.length} maintenance
               tasks have been completed.
             </p>
-          </PageCard>
+          </Card>
 
-          <PageCard className="p-7 md:p-9">
+          <Card className="p-7 md:p-9">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
               Maintenance Overview
             </p>
@@ -707,12 +678,12 @@ export default function MaintenancePage() {
                 tone="neutral"
               />
             </div>
-          </PageCard>
+          </Card>
         </section>
       )}
 
       {tasks.length > 0 && (
-        <PageCard className="p-5 md:p-6">
+        <Card className="p-5 md:p-6">
           <div className="flex flex-col gap-5">
             <div className="relative">
               <Search
@@ -747,61 +718,33 @@ export default function MaintenancePage() {
             </div>
 
             <div className="flex gap-2 overflow-x-auto pb-1">
-              {(
-                [
-                  {
-                    value: "all",
-                    label: "All Tasks",
-                  },
-                  {
-                    value: "open",
-                    label: "Open",
-                  },
-                  {
-                    value: "due-soon",
-                    label: "Due Soon",
-                  },
-                  {
-                    value: "overdue",
-                    label: "Overdue",
-                  },
-                  {
-                    value:
-                      "unscheduled",
-                    label: "No Due Date",
-                  },
-                  {
-                    value: "completed",
-                    label: "Completed",
-                  },
-                ] as {
-                  value: MaintenanceFilter;
-                  label: string;
-                }[]
-              ).map((filter) => {
-                const active =
-                  selectedFilter ===
-                  filter.value;
+              {maintenanceFilters.map(
+                (filter) => {
+                  const active =
+                    selectedFilter ===
+                    filter.value;
 
-                return (
-                  <button
-                    key={filter.value}
-                    type="button"
-                    onClick={() =>
-                      setSelectedFilter(
-                        filter.value
-                      )
-                    }
-                    className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition ${
-                      active
-                        ? "bg-[#111827] text-white"
-                        : "border border-[#E8E2D6] bg-white text-neutral-500 hover:border-[#C8A96A] hover:text-[#111827]"
-                    }`}
-                  >
-                    {filter.label}
-                  </button>
-                );
-              })}
+                  return (
+                    <button
+                      key={filter.value}
+                      type="button"
+                      onClick={() =>
+                        setSelectedFilter(
+                          filter.value
+                        )
+                      }
+                      className={
+                        "shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition " +
+                        (active
+                          ? "bg-[#111827] text-white"
+                          : "border border-[#E8E2D6] bg-white text-neutral-500 hover:border-[#C8A96A] hover:text-[#111827]")
+                      }
+                    >
+                      {filter.label}
+                    </button>
+                  );
+                }
+              )}
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#E8E2D6] pt-4">
@@ -825,42 +768,39 @@ export default function MaintenancePage() {
               )}
             </div>
           </div>
-        </PageCard>
+        </Card>
       )}
 
-      {tasks.length === 0 ? (
-        <EmptyState
-          isDemo={isDemo}
-          title="Nothing scheduled"
-          description="Add your first maintenance task to begin tracking updates, cleaning, repairs, and routine care."
-        />
-      ) : filteredTasks.length > 0 ? (
+    
+        {tasks.length === 0 ? (
+  <EmptyState
+    isDemo={isViewer}
+    title="Nothing scheduled"
+    description="Add your first maintenance task to begin tracking updates, cleaning, repairs, and routine care."
+  />
+) : filteredTasks.length > 0 ? (
         <section className="grid gap-6 lg:grid-cols-2">
           {filteredTasks.map(
             (task) => (
               <TaskCard
-                key={task.id}
-                task={task}
-                today={today}
-                isDemo={isDemo}
-                updating={
-                  updatingId === task.id
-                }
-                deleting={
-                  deletingId === task.id
-                }
-                onToggle={() =>
-                  toggleComplete(task)
-                }
-                onDelete={() =>
-                  deleteTask(task.id)
-                }
-              />
+  key={task.id}
+  task={task}
+  today={today}
+  isDemo={isViewer}
+  updating={updatingId === task.id}
+  deleting={deletingId === task.id}
+  onToggle={() =>
+    void toggleComplete(task)
+  }
+  onDelete={() =>
+    void deleteTask(task.id)
+  }
+/>
             )
           )}
         </section>
       ) : (
-        <PageCard className="py-14 text-center">
+        <Card className="py-14 text-center">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
             <Search size={28} />
           </div>
@@ -874,16 +814,187 @@ export default function MaintenancePage() {
             or maintenance status.
           </p>
 
-          <Button
-            variant="secondary"
-            className="mt-6"
-            onClick={clearFilters}
-          >
-            Clear Filters
-          </Button>
-        </PageCard>
+          <div className="mt-6">
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="inline-flex min-h-11 items-center justify-center rounded-xl border border-[#E8E2D6] bg-white px-4 text-sm font-semibold text-[#111827] transition hover:bg-[#F7F5EF]"
+            >
+              Clear Filters
+            </button>
+          </div>
+        </Card>
       )}
     </PageShell>
+  );
+}
+
+const maintenanceFilters: Array<{
+  value: MaintenanceFilter;
+  label: string;
+}> = [
+  {
+    value: "all",
+    label: "All Tasks",
+  },
+  {
+    value: "open",
+    label: "Open",
+  },
+  {
+    value: "due-soon",
+    label: "Due Soon",
+  },
+  {
+    value: "overdue",
+    label: "Overdue",
+  },
+  {
+    value: "unscheduled",
+    label: "No Due Date",
+  },
+  {
+    value: "completed",
+    label: "Completed",
+  },
+];
+
+function normalizeDemoTask(
+  item: unknown,
+  index: number
+): MaintenanceTask {
+  const record =
+    typeof item === "object" &&
+    item !== null
+      ? (item as DemoRecord)
+      : {};
+
+  const id =
+    getString(record, "id") ??
+    "demo-maintenance-" +
+      String(index + 1);
+
+  const deviceId =
+    getString(
+      record,
+      "device_id"
+    );
+
+  const connectedDevice =
+    demoDevices.find(
+      (device) =>
+        device.id === deviceId
+    );
+
+  const status =
+    getString(record, "status") ??
+    "";
+
+  const completed =
+    status
+      .toLowerCase()
+      .includes("complete");
+
+  return {
+    id,
+    user_id: "demo-user",
+    device_id: deviceId,
+    title:
+      getString(
+        record,
+        "title"
+      ) ?? "Maintenance Task",
+    description:
+      getString(record, "notes"),
+    task_type:
+      getString(
+        record,
+        "category"
+      ) ?? "Maintenance",
+    due_date:
+      getString(
+        record,
+        "due_date"
+      ),
+    completed,
+    completed_at: completed
+      ? new Date().toISOString()
+      : null,
+    recurring_interval:
+      getString(
+        record,
+        "frequency"
+      ),
+    created_at:
+      new Date().toISOString(),
+    devices: connectedDevice
+      ? {
+          device_name:
+            connectedDevice.device_name,
+        }
+      : null,
+  };
+}
+
+function getString(
+  record: DemoRecord,
+  key: string
+): string | null {
+  const value = record[key];
+
+  return typeof value === "string"
+    ? value
+    : null;
+}
+
+function Card({
+  children,
+  className = "",
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={
+        "rounded-[28px] border border-[#E8E2D6] bg-white shadow-sm " +
+        className
+      }
+    >
+      {children}
+    </div>
+  );
+}
+
+function ActionLink({
+  href,
+  children,
+  variant = "primary",
+}: {
+  href: string;
+  children: ReactNode;
+  variant?:
+    | "primary"
+    | "secondary"
+    | "light";
+}) {
+  const styles =
+    variant === "light"
+      ? "bg-white text-[#111827] hover:bg-neutral-100"
+      : variant === "secondary"
+        ? "border border-[#E8E2D6] bg-white text-[#111827] hover:bg-[#F7F5EF]"
+        : "bg-[#111827] text-white hover:bg-[#263044]";
+
+  return (
+    <Link
+      href={href}
+      className={
+        "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold transition " +
+        styles
+      }
+    >
+      {children}
+    </Link>
   );
 }
 
@@ -925,11 +1036,12 @@ function TaskCard({
                   ? "Mark task incomplete"
                   : "Mark task complete"
             }
-            className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-[20px] bg-white shadow-sm transition disabled:opacity-50 ${
-              task.completed
+            className={
+              "flex h-12 w-12 shrink-0 items-center justify-center rounded-[20px] bg-white shadow-sm transition disabled:opacity-50 " +
+              (task.completed
                 ? "text-emerald-700"
-                : "text-[#C8A96A]"
-            }`}
+                : "text-[#C8A96A]")
+            }
           >
             {updating ? (
               <Loader2
@@ -946,18 +1058,22 @@ function TaskCard({
           </button>
 
           <span
-            className={`rounded-full px-3 py-1.5 text-xs font-semibold ${status.badgeClass}`}
+            className={
+              "rounded-full px-3 py-1.5 text-xs font-semibold " +
+              status.badgeClass
+            }
           >
             {status.label}
           </span>
         </div>
 
         <h2
-          className={`mt-6 text-2xl font-semibold tracking-[-0.04em] ${
-            task.completed
+          className={
+            "mt-6 text-2xl font-semibold tracking-[-0.04em] " +
+            (task.completed
               ? "text-neutral-400 line-through"
-              : "text-[#111827]"
-          }`}
+              : "text-[#111827]")
+          }
         >
           {task.title}
         </h2>
@@ -1011,22 +1127,23 @@ function TaskCard({
         )}
 
         <div className="mt-5 flex items-center gap-3 border-t border-[#E8E2D6] pt-5">
-          {task.device_id &&
-          !isDemo ? (
-            <Link
-              href={`/devices/${task.device_id}`}
-              className="inline-flex min-h-11 flex-1 items-center justify-center rounded-2xl border border-[#E8E2D6] bg-white px-4 text-sm font-semibold text-[#111827] transition hover:border-[#C8A96A] hover:bg-[#FCFAF6]"
-            >
-              View Device
-            </Link>
-          ) : isDemo ? (
-            <Button
+          {isDemo ? (
+            <ActionLink
               href="/signup"
               variant="secondary"
-              className="flex-1"
             >
               Create Vault to Manage
-            </Button>
+            </ActionLink>
+          ) : task.device_id ? (
+            <ActionLink
+              href={
+                "/devices/" +
+                task.device_id
+              }
+              variant="secondary"
+            >
+              View Device
+            </ActionLink>
           ) : (
             <div className="flex-1" />
           )}
@@ -1086,7 +1203,7 @@ function SummaryCard({
   };
 
   return (
-    <PageCard className="p-5 md:p-6">
+    <Card className="p-5 md:p-6">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-sm text-neutral-500">
@@ -1103,12 +1220,15 @@ function SummaryCard({
         </div>
 
         <div
-          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${toneClasses[tone]}`}
+          className={
+            "flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl " +
+            toneClasses[tone]
+          }
         >
           <Icon size={20} />
         </div>
       </div>
-    </PageCard>
+    </Card>
   );
 }
 
@@ -1138,7 +1258,10 @@ function AttentionRow({
   return (
     <div className="flex items-center gap-4 rounded-[22px] bg-[#F7F5EF] p-4">
       <div
-        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${toneClasses[tone]}`}
+        className={
+          "flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl " +
+          toneClasses[tone]
+        }
       >
         <Icon size={18} />
       </div>
@@ -1200,7 +1323,11 @@ function CompletionRing({
         viewBox="0 0 176 176"
         className="h-full w-full -rotate-90"
         role="img"
-        aria-label={`Maintenance completion: ${normalizedScore}%`}
+        aria-label={
+          "Maintenance completion: " +
+          String(normalizedScore) +
+          "%"
+        }
       >
         <circle
           cx="88"
@@ -1223,7 +1350,6 @@ function CompletionRing({
             circumference
           }
           strokeDashoffset={offset}
-          className="transition-[stroke-dashoffset] duration-1000 ease-out"
         />
       </svg>
 
@@ -1254,7 +1380,7 @@ function EmptyState({
   description: string;
 }) {
   return (
-    <PageCard className="py-14 text-center">
+    <Card className="py-14 text-center">
       <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
         <Wrench size={29} />
       </div>
@@ -1267,21 +1393,22 @@ function EmptyState({
         {description}
       </p>
 
-      <Button
-        href={
-          isDemo
-            ? "/signup"
-            : "/maintenance/new"
-        }
-        className="mt-6"
-      >
-        <Plus size={17} />
+      <div className="mt-6">
+        <ActionLink
+          href={
+            isDemo
+              ? "/signup"
+              : "/maintenance/new"
+          }
+        >
+          <Plus size={17} />
 
-        {isDemo
-          ? "Create Your Vault"
-          : "Add Maintenance Task"}
-      </Button>
-    </PageCard>
+          {isDemo
+            ? "Create Your Vault"
+            : "Add Maintenance Task"}
+        </ActionLink>
+      </div>
+    </Card>
   );
 }
 
@@ -1310,7 +1437,7 @@ function getTaskStatus(
   }
 
   const dueDate = new Date(
-    `${task.due_date}T00:00:00`
+    task.due_date + "T00:00:00"
   );
 
   if (
@@ -1335,9 +1462,10 @@ function getTaskStatus(
 
   if (difference < 0) {
     return {
-      label: `${Math.abs(
-        difference
-      )} days overdue`,
+      label:
+        String(
+          Math.abs(difference)
+        ) + " days overdue",
       group:
         "overdue" as MaintenanceFilter,
       badgeClass:
@@ -1357,7 +1485,10 @@ function getTaskStatus(
 
   if (difference <= 7) {
     return {
-      label: `Due in ${difference} days`,
+      label:
+        "Due in " +
+        String(difference) +
+        " days",
       group:
         "due-soon" as MaintenanceFilter,
       badgeClass:
@@ -1366,9 +1497,11 @@ function getTaskStatus(
   }
 
   return {
-    label: `Due ${formatDate(
-      task.due_date
-    )}`,
+    label:
+      "Due " +
+      formatDate(
+        task.due_date
+      ),
     group:
       "open" as MaintenanceFilter,
     badgeClass:
@@ -1380,7 +1513,7 @@ function formatDate(
   value: string
 ) {
   const date = new Date(
-    `${value}T00:00:00`
+    value + "T00:00:00"
   );
 
   if (

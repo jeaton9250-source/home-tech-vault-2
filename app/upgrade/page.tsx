@@ -82,7 +82,7 @@ export default function UpgradePage() {
           description="For getting started with your home technology inventory."
           icon={ShieldCheck}
           features={[
-            "Up to 10 devices",
+            "Up to 8 devices",
             "Basic device inventory",
             "Photos and documents",
             "Warranty tracking",

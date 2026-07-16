@@ -6,13 +6,10 @@ import {
   useState,
   type ComponentType,
 } from "react";
-
 import Link from "next/link";
-
 import {
   ExternalLink,
   File,
-  FileImage,
   FileText,
   FolderOpen,
   ImageIcon,
@@ -27,7 +24,6 @@ import {
 
 import { supabase } from "@/lib/supabase";
 import { useDemoMode } from "@/hooks/useDemoMode";
-
 import {
   demoDevices,
   demoDocuments,
@@ -87,7 +83,16 @@ export default function DocumentsPage() {
   const [selectedType, setSelectedType] =
     useState("All");
 
+  const [
+    previewDocument,
+    setPreviewDocument,
+  ] = useState<DocumentRecord | null>(
+    null
+  );
+
   useEffect(() => {
+    let mounted = true;
+
     async function loadDocuments() {
       if (demoModeLoading) {
         return;
@@ -97,7 +102,7 @@ export default function DocumentsPage() {
         setLoadingDocuments(true);
         setErrorMessage("");
 
-        if (isDemo) {
+        if (isDemo || !user) {
           const sampleDocuments: DocumentRecord[] =
             demoDocuments.map(
               (document) => ({
@@ -126,20 +131,16 @@ export default function DocumentsPage() {
               })
             );
 
+          if (!mounted) {
+            return;
+          }
+
           setDocuments(
             sampleDocuments
           );
 
-          setDevices(
-            sampleDevices
-          );
+          setDevices(sampleDevices);
 
-          return;
-        }
-
-        if (!user) {
-          setDocuments([]);
-          setDevices([]);
           return;
         }
 
@@ -158,7 +159,7 @@ export default function DocumentsPage() {
         }
 
         const currentHouseholdId =
-          membership?.household_id ||
+          membership?.household_id ??
           null;
 
         let documentQuery =
@@ -209,56 +210,66 @@ export default function DocumentsPage() {
               ascending: false,
             }
           ),
-          deviceQuery,
+
+          deviceQuery.order(
+            "device_name",
+            {
+              ascending: true,
+            }
+          ),
         ]);
 
-        if (
-          documentResult.error
-        ) {
+        if (documentResult.error) {
           throw documentResult.error;
         }
 
-        if (
-          deviceResult.error
-        ) {
+        if (deviceResult.error) {
           console.error(
             "Unable to load devices for documents:",
             deviceResult.error
           );
         }
 
+        if (!mounted) {
+          return;
+        }
+
         setDocuments(
-          (documentResult.data ||
+          (documentResult.data ??
             []) as DocumentRecord[]
         );
 
         setDevices(
-          (deviceResult.data ||
+          (deviceResult.data ??
             []) as DeviceRecord[]
         );
       } catch (error: unknown) {
-        const possibleError =
-          error as {
-            message?: string;
-            details?: string;
-          };
-
         console.error(
           "Unable to load documents:",
           error
         );
 
+        if (!mounted) {
+          return;
+        }
+
         setErrorMessage(
-          possibleError.message ||
-            possibleError.details ||
-            "Unable to load your documents."
+          error instanceof Error
+            ? error.message
+            : "Unable to load your documents."
         );
       } finally {
-        setLoadingDocuments(false);
+        if (mounted) {
+          setLoadingDocuments(false);
+        }
       }
     }
 
     void loadDocuments();
+
+    return () => {
+      mounted = false;
+    };
   }, [
     user,
     isDemo,
@@ -309,14 +320,13 @@ export default function DocumentsPage() {
               document.file_type,
               deviceName,
             ].some((value) =>
-              String(value || "")
+              String(value ?? "")
                 .toLowerCase()
                 .includes(search)
             );
 
           const matchesType =
-            selectedType ===
-              "All" ||
+            selectedType === "All" ||
             document.file_type ===
               selectedType;
 
@@ -369,16 +379,6 @@ export default function DocumentsPage() {
   function clearFilters() {
     setSearchTerm("");
     setSelectedType("All");
-  }
-
-  function openDemoPreview(
-    document: DocumentRecord
-  ) {
-    window.alert(
-      `${getDocumentTitle(
-        document
-      )}\n\nThis is a sample document preview. Create an account to upload, open, and manage your own files.`
-    );
   }
 
   if (loading) {
@@ -461,14 +461,15 @@ export default function DocumentsPage() {
 
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A6A2F]">
-                Interactive Demo
+                Viewer Access
               </p>
 
               <p className="mt-2 max-w-3xl text-sm leading-6 text-neutral-600">
-                Explore how important
-                files can stay connected
-                to the devices they
-                belong to.
+                Explore sample receipts,
+                manuals, warranties, and
+                device files. Create an
+                account to upload, open,
+                and manage your own files.
               </p>
             </div>
           </div>
@@ -484,13 +485,13 @@ export default function DocumentsPage() {
           />
 
           <SummaryCard
-            icon={LaptopDocumentIcon}
+            icon={FileText}
             label="Connected"
             value={connectedDocumentCount.toLocaleString()}
           />
 
           <SummaryCard
-            icon={FileText}
+            icon={ShieldCheck}
             label="File Types"
             value={uniqueTypeCount.toLocaleString()}
           />
@@ -554,11 +555,12 @@ export default function DocumentsPage() {
                           type
                         )
                       }
-                      className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition ${
-                        active
+                      className={
+                        "shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition " +
+                        (active
                           ? "bg-[#111827] text-white"
-                          : "border border-[#E8E2D6] bg-white text-neutral-500 hover:border-[#C8A96A] hover:text-[#111827]"
-                      }`}
+                          : "border border-[#E8E2D6] bg-white text-neutral-500 hover:border-[#C8A96A] hover:text-[#111827]")
+                      }
                     >
                       {type === "All"
                         ? "All Documents"
@@ -606,7 +608,7 @@ export default function DocumentsPage() {
                 )}
                 isDemo={isDemo}
                 onDemoPreview={() =>
-                  openDemoPreview(
+                  setPreviewDocument(
                     document
                   )
                 }
@@ -629,13 +631,14 @@ export default function DocumentsPage() {
             term or document type.
           </p>
 
-          <Button
-            variant="secondary"
-            className="mt-6"
-            onClick={clearFilters}
-          >
-            Clear Filters
-          </Button>
+          <div className="mt-6">
+            <Button
+              variant="secondary"
+              onClick={clearFilters}
+            >
+              Clear Filters
+            </Button>
+          </div>
         </PageCard>
       ) : (
         <PageCard className="py-14 text-center">
@@ -651,25 +654,38 @@ export default function DocumentsPage() {
             Upload receipts, manuals,
             warranties, invoices, and
             other important files so
-            they are ready when you
-            need them.
+            they are ready when needed.
           </p>
 
-          <Button
-            href={
-              isDemo
-                ? "/signup"
-                : "/documents/upload"
-            }
-            className="mt-6"
-          >
-            <Upload size={17} />
+          <div className="mt-6">
+            <Button
+              href={
+                isDemo
+                  ? "/signup"
+                  : "/documents/upload"
+              }
+            >
+              <Upload size={17} />
 
-            {isDemo
-              ? "Create Your Vault"
-              : "Upload Your First Document"}
-          </Button>
+              {isDemo
+                ? "Create Your Vault"
+                : "Upload Your First Document"}
+            </Button>
+          </div>
         </PageCard>
+      )}
+
+      {previewDocument && (
+        <DemoPreviewModal
+          document={previewDocument}
+          deviceName={getDeviceName(
+            previewDocument,
+            devices
+          )}
+          onClose={() =>
+            setPreviewDocument(null)
+          }
+        />
       )}
     </PageShell>
   );
@@ -694,11 +710,21 @@ function DocumentCard({
       document.file_type
     );
 
+  const VisualIcon =
+    visual.icon;
+
   const isImage =
     isImageDocument(
       document.file_type,
       document.file_name
     );
+
+  const deviceHref = isDemo
+    ? "/devices"
+    : document.device_id
+      ? "/devices/" +
+        document.device_id
+      : "/devices";
 
   return (
     <article className="group overflow-hidden rounded-[28px] border border-[#E8E2D6] bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#D8C69D] hover:shadow-lg">
@@ -714,11 +740,12 @@ function DocumentCard({
         ) : (
           <div className="flex h-full flex-col items-center justify-center px-6 text-center">
             <div
-              className={`flex h-20 w-20 items-center justify-center rounded-[28px] bg-white shadow-sm ${visual.iconClassName}`}
+              className={
+                "flex h-20 w-20 items-center justify-center rounded-[28px] bg-white shadow-sm " +
+                visual.iconClassName
+              }
             >
-              <visual.icon
-                size={32}
-              />
+              <VisualIcon size={32} />
             </div>
 
             <p className="mt-4 text-xs font-semibold uppercase tracking-[0.16em] text-neutral-400">
@@ -755,7 +782,7 @@ function DocumentCard({
 
           {document.device_id ? (
             <Link
-              href={`/devices/${document.device_id}`}
+              href={deviceHref}
               className="mt-2 inline-flex max-w-full items-center gap-2 font-semibold text-[#111827] transition hover:text-[#8A6A2F]"
             >
               <span className="truncate">
@@ -834,6 +861,152 @@ function DocumentCard({
   );
 }
 
+function DemoPreviewModal({
+  document,
+  deviceName,
+  onClose,
+}: {
+  document: DocumentRecord;
+  deviceName: string;
+  onClose: () => void;
+}) {
+  const visual =
+    getDocumentVisual(
+      document.file_type
+    );
+
+  const VisualIcon =
+    visual.icon;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Sample document preview"
+      onMouseDown={(event) => {
+        if (
+          event.target ===
+          event.currentTarget
+        ) {
+          onClose();
+        }
+      }}
+    >
+      <div className="w-full max-w-lg overflow-hidden rounded-[30px] bg-white shadow-2xl">
+        <div className="flex items-center justify-between border-b border-[#E8E2D6] px-5 py-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#C8A96A]">
+              Sample Preview
+            </p>
+
+            <h2 className="mt-1 font-semibold text-[#111827]">
+              {getDocumentTitle(
+                document
+              )}
+            </h2>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close preview"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-[#F7F5EF] text-neutral-500 transition hover:text-[#111827]"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="p-6">
+          <div className="flex min-h-52 flex-col items-center justify-center rounded-[24px] bg-[#F7F5EF] p-6 text-center">
+            <div
+              className={
+                "flex h-20 w-20 items-center justify-center rounded-[28px] bg-white shadow-sm " +
+                visual.iconClassName
+              }
+            >
+              <VisualIcon size={32} />
+            </div>
+
+            <p className="mt-5 text-sm font-semibold text-[#111827]">
+              {document.file_name}
+            </p>
+
+            <p className="mt-2 text-sm text-neutral-500">
+              {document.file_type}
+            </p>
+          </div>
+
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <PreviewDetail
+              label="Connected Device"
+              value={deviceName}
+            />
+
+            <PreviewDetail
+              label="Date Added"
+              value={
+                document.created_at
+                  ? formatDate(
+                      document.created_at
+                    )
+                  : "Not provided"
+              }
+            />
+          </div>
+
+          <div className="mt-6 rounded-2xl border border-[#D8C69D] bg-[#FFF8E8] p-4">
+            <p className="text-sm leading-6 text-neutral-600">
+              This is a viewer-access
+              sample. Create an account
+              to upload, open, organize,
+              and securely manage your
+              own documents.
+            </p>
+          </div>
+
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+            <Button
+              href="/signup"
+              className="flex-1"
+            >
+              Create Your Vault
+            </Button>
+
+            <Button
+              variant="secondary"
+              onClick={onClose}
+              className="flex-1"
+            >
+              Continue Exploring
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PreviewDetail({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-2xl bg-[#F7F5EF] p-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-400">
+        {label}
+      </p>
+
+      <p className="mt-2 truncate text-sm font-semibold text-[#111827]">
+        {value}
+      </p>
+    </div>
+  );
+}
+
 function SummaryCard({
   icon: Icon,
   label,
@@ -861,28 +1034,6 @@ function SummaryCard({
         </div>
       </div>
     </PageCard>
-  );
-}
-
-function LaptopDocumentIcon({
-  size = 20,
-  className = "",
-}: {
-  size?: number;
-  className?: string;
-}) {
-  return (
-    <div
-      className={`relative ${className}`}
-      style={{
-        width: size,
-        height: size,
-      }}
-    >
-      <FileText
-        size={size}
-      />
-    </div>
   );
 }
 

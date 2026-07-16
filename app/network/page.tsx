@@ -5,12 +5,12 @@ import {
   useMemo,
   useState,
   type ComponentType,
+  type ReactNode,
 } from "react";
-
+import Link from "next/link";
 import {
-  ArrowRight,
+  CalendarClock,
   CheckCircle2,
-  Clock3,
   Gauge,
   Globe,
   History,
@@ -23,17 +23,13 @@ import {
   Radar,
   Router,
   ShieldCheck,
-  Signal,
   Wifi,
   WifiOff,
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
 import { useDemoMode } from "@/hooks/useDemoMode";
-
 import PageShell from "@/components/ui/PageShell";
-import PageCard from "@/components/ui/PageCard";
-import Button from "@/components/ui/Button";
 
 type NetworkInfo = {
   id?: string;
@@ -83,7 +79,7 @@ const demoNetwork: NetworkInfo = {
   guest_network: "Enabled",
   admin_url: "192.168.1.1",
   notes:
-    "Demo network information. Sign in to manage your own network details.",
+    "This sample network demonstrates how Home Tech Vault organizes provider details, equipment, Wi-Fi information, and scan history.",
 };
 
 const demoScans: NetworkScan[] = [
@@ -98,8 +94,7 @@ const demoScans: NetworkScan[] = [
   {
     id: "demo-scan-2",
     scanned_at: new Date(
-      Date.now() -
-        24 * 60 * 60 * 1000
+      Date.now() - 24 * 60 * 60 * 1000
     ).toISOString(),
     devices_found: 16,
     online_devices: 15,
@@ -109,8 +104,7 @@ const demoScans: NetworkScan[] = [
   {
     id: "demo-scan-3",
     scanned_at: new Date(
-      Date.now() -
-        3 * 24 * 60 * 60 * 1000
+      Date.now() - 3 * 24 * 60 * 60 * 1000
     ).toISOString(),
     devices_found: 15,
     online_devices: 15,
@@ -147,15 +141,15 @@ export default function NetworkPage() {
     unprotected: 0,
   });
 
-  const [
-    loadingNetwork,
-    setLoadingNetwork,
-  ] = useState(true);
+  const [loadingNetwork, setLoadingNetwork] =
+    useState(true);
 
   const [errorMessage, setErrorMessage] =
     useState("");
 
   useEffect(() => {
+    let mounted = true;
+
     async function loadNetwork() {
       if (demoLoading) {
         return;
@@ -166,11 +160,16 @@ export default function NetworkPage() {
         setErrorMessage("");
 
         if (isDemo || !user) {
+          if (!mounted) {
+            return;
+          }
+
           setNetwork(demoNetwork);
           setScanHistory(demoScans);
           setDiscoverySummary(
             demoDiscoverySummary
           );
+
           return;
         }
 
@@ -188,14 +187,7 @@ export default function NetworkPage() {
           supabase
             .from("network_scans")
             .select(
-              `
-                id,
-                scanned_at,
-                devices_found,
-                online_devices,
-                offline_devices,
-                new_devices
-              `
+              "id, scanned_at, devices_found, online_devices, offline_devices, new_devices"
             )
             .eq("user_id", user.id)
             .order("scanned_at", {
@@ -212,26 +204,31 @@ export default function NetworkPage() {
           throw scansResult.error;
         }
 
+        if (!mounted) {
+          return;
+        }
+
         const loadedScans =
-          (scansResult.data ||
+          (scansResult.data ??
             []) as NetworkScan[];
 
         setNetwork(
-          (networkResult.data as NetworkInfo) ||
+          (networkResult.data as NetworkInfo) ??
             null
         );
 
         setScanHistory(loadedScans);
 
-        const latestScan =
+        const latestLoadedScan =
           loadedScans[0];
 
-        if (!latestScan) {
+        if (!latestLoadedScan) {
           setDiscoverySummary({
             total: 0,
             protected: 0,
             unprotected: 0,
           });
+
           return;
         }
 
@@ -244,55 +241,61 @@ export default function NetworkPage() {
           .eq("user_id", user.id)
           .eq(
             "scan_id",
-            latestScan.id
+            latestLoadedScan.id
           );
 
         if (discoveryError) {
           throw discoveryError;
         }
 
+        if (!mounted) {
+          return;
+        }
+
         const rows =
-          (discoveryRows ||
+          (discoveryRows ??
             []) as DiscoveryRow[];
 
         const protectedDevices =
           rows.filter(
             (row) =>
-              row.added_to_vault ===
-              true
+              row.added_to_vault === true
           ).length;
 
         setDiscoverySummary({
           total: rows.length,
-          protected:
-            protectedDevices,
+          protected: protectedDevices,
           unprotected:
             rows.length -
             protectedDevices,
         });
       } catch (error: unknown) {
-        const possibleError =
-          error as {
-            message?: string;
-            details?: string;
-          };
-
         console.error(
           "Network loading error:",
           error
         );
 
+        if (!mounted) {
+          return;
+        }
+
         setErrorMessage(
-          possibleError.message ||
-            possibleError.details ||
-            "Unable to load the network dashboard."
+          error instanceof Error
+            ? error.message
+            : "Unable to load the network dashboard."
         );
       } finally {
-        setLoadingNetwork(false);
+        if (mounted) {
+          setLoadingNetwork(false);
+        }
       }
     }
 
-    loadNetwork();
+    void loadNetwork();
+
+    return () => {
+      mounted = false;
+    };
   }, [
     user,
     isDemo,
@@ -300,7 +303,7 @@ export default function NetworkPage() {
   ]);
 
   const latestScan =
-    scanHistory[0] || null;
+    scanHistory[0] ?? null;
 
   const networkScore = useMemo(() => {
     if (!network) {
@@ -313,33 +316,25 @@ export default function NetworkPage() {
       score += 10;
     }
 
-    if (
-      network.router_model?.trim()
-    ) {
+    if (network.router_model?.trim()) {
       score += 10;
     }
 
-    if (
-      network.modem_model?.trim()
-    ) {
+    if (network.modem_model?.trim()) {
       score += 5;
     }
 
-    if (
-      network.wifi_name?.trim()
-    ) {
+    if (network.wifi_name?.trim()) {
       score += 10;
     }
 
-    if (
-      network.admin_url?.trim()
-    ) {
+    if (network.admin_url?.trim()) {
       score += 5;
     }
 
     if (
       Number(
-        network.speed_download || 0
+        network.speed_download ?? 0
       ) >= 100
     ) {
       score += 10;
@@ -347,7 +342,7 @@ export default function NetworkPage() {
 
     if (
       Number(
-        network.speed_upload || 0
+        network.speed_upload ?? 0
       ) >= 20
     ) {
       score += 5;
@@ -374,13 +369,20 @@ export default function NetworkPage() {
           : "Incomplete";
 
   const loading =
-    demoLoading ||
-    loadingNetwork;
+    demoLoading || loadingNetwork;
+
+  const scanHref = isDemo
+    ? "/signup"
+    : "/network/discover";
+
+  const editHref = isDemo
+    ? "/signup"
+    : "/network/edit";
 
   if (loading) {
     return (
       <PageShell>
-        <PageCard className="flex min-h-72 items-center justify-center">
+        <div className="flex min-h-72 items-center justify-center rounded-3xl border border-neutral-200 bg-white">
           <div className="flex items-center gap-3 text-neutral-500">
             <Loader2
               className="animate-spin"
@@ -389,7 +391,7 @@ export default function NetworkPage() {
 
             Loading your network...
           </div>
-        </PageCard>
+        </div>
       </PageShell>
     );
   }
@@ -397,7 +399,7 @@ export default function NetworkPage() {
   if (errorMessage) {
     return (
       <PageShell>
-        <PageCard className="border-red-200 bg-red-50 text-red-700">
+        <div className="rounded-3xl border border-red-200 bg-red-50 p-6 text-red-700">
           <h1 className="text-xl font-semibold">
             Unable to load network
           </h1>
@@ -405,7 +407,7 @@ export default function NetworkPage() {
           <p className="mt-2 text-sm">
             {errorMessage}
           </p>
-        </PageCard>
+        </div>
       </PageShell>
     );
   }
@@ -432,21 +434,20 @@ export default function NetworkPage() {
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <Button
-              href="/network/discover"
-              variant="secondary"
+            <ActionLink
+              href={scanHref}
+              variant="light"
             >
               <Radar size={17} />
-              Scan Network
-            </Button>
 
-            <Button
-              href={
-                isDemo
-                  ? "/signup"
-                  : "/network/edit"
-              }
-              variant="secondary"
+              {isDemo
+                ? "Create Vault to Scan"
+                : "Scan Network"}
+            </ActionLink>
+
+            <ActionLink
+              href={editHref}
+              variant="light"
             >
               <Pencil size={17} />
 
@@ -455,7 +456,7 @@ export default function NetworkPage() {
                 : network
                   ? "Edit Network"
                   : "Set Up Network"}
-            </Button>
+            </ActionLink>
           </div>
         </div>
       </section>
@@ -463,13 +464,15 @@ export default function NetworkPage() {
       {isDemo && (
         <section className="rounded-3xl border border-[#D8C69D] bg-[#FFF8E8] p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A6A2F]">
-            Interactive Demo
+            Viewer Access
           </p>
 
           <p className="mt-2 text-sm leading-6 text-neutral-600">
-            Explore a sample home
-            network, recent scans, and
-            discovered devices.
+            You are exploring sample
+            network information. Create
+            an account to save your own
+            equipment, Wi-Fi details,
+            and scan history.
           </p>
         </section>
       )}
@@ -478,7 +481,9 @@ export default function NetworkPage() {
         <SummaryCard
           icon={ShieldCheck}
           label="Network Health"
-          value={`${networkScore}%`}
+          value={
+            String(networkScore) + "%"
+          }
           description={networkLabel}
         />
 
@@ -486,8 +491,7 @@ export default function NetworkPage() {
           icon={Laptop}
           label="Devices Found"
           value={String(
-            latestScan
-              ?.devices_found || 0
+            latestScan?.devices_found ?? 0
           )}
           description="Latest scan"
         />
@@ -496,12 +500,13 @@ export default function NetworkPage() {
           icon={Wifi}
           label="Online"
           value={String(
-            latestScan
-              ?.online_devices || 0
+            latestScan?.online_devices ?? 0
           )}
           description={
             latestScan
-              ? `${latestScan.offline_devices} offline`
+              ? String(
+                  latestScan.offline_devices
+                ) + " offline"
               : "No scan yet"
           }
         />
@@ -510,15 +515,14 @@ export default function NetworkPage() {
           icon={Plus}
           label="New Devices"
           value={String(
-            latestScan
-              ?.new_devices || 0
+            latestScan?.new_devices ?? 0
           )}
           description="Needs review"
         />
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[0.8fr_1.2fr]">
-        <PageCard className="flex min-h-[370px] flex-col items-center justify-center p-8 text-center">
+        <Card className="flex min-h-[370px] flex-col items-center justify-center p-8 text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">
             Network Health
           </p>
@@ -531,14 +535,14 @@ export default function NetworkPage() {
           </div>
 
           <p className="mt-7 max-w-sm text-sm leading-6 text-neutral-500">
-            Your score reflects the
-            completeness of your saved
-            equipment, Wi-Fi, provider,
-            and speed information.
+            Your score reflects your
+            provider, equipment,
+            wireless, speed, and
+            security details.
           </p>
-        </PageCard>
+        </Card>
 
-        <PageCard className="p-7 md:p-9">
+        <Card className="p-7 md:p-9">
           <SectionHeading
             eyebrow="Latest Scan"
             title="Connected devices"
@@ -584,7 +588,7 @@ export default function NetworkPage() {
                   value={
                     discoverySummary.protected
                   }
-                  description="Already saved in your vault."
+                  description="Already saved in the vault."
                   tone="green"
                 />
 
@@ -600,34 +604,40 @@ export default function NetworkPage() {
               </div>
 
               <div className="mt-6 flex flex-wrap gap-3">
-                <Button href="/network/discover">
+                <ActionLink href={scanHref}>
                   <Radar size={17} />
-                  Scan Again
-                </Button>
 
-                <Button
+                  {isDemo
+                    ? "Create Vault to Scan"
+                    : "Scan Again"}
+                </ActionLink>
+
+                <ActionLink
                   href="/devices"
                   variant="secondary"
                 >
                   <Laptop size={17} />
                   View Devices
-                </Button>
+                </ActionLink>
               </div>
             </>
           ) : (
-            <EmptyScanState />
+            <EmptyScanState
+              href={scanHref}
+              isDemo={isDemo}
+            />
           )}
-        </PageCard>
+        </Card>
       </section>
 
       {network ? (
         <>
           <section className="grid gap-6 xl:grid-cols-2">
-            <PageCard className="p-7 md:p-8">
+            <Card className="p-7 md:p-8">
               <SectionHeading
                 eyebrow="Internet"
                 title="Provider and speed"
-                description="The connection details saved for your home."
+                description="The connection details saved for this home."
               />
 
               <div className="mt-7 grid gap-4 sm:grid-cols-2">
@@ -642,7 +652,9 @@ export default function NetworkPage() {
                   label="Download"
                   value={
                     network.speed_download
-                      ? `${network.speed_download} Mbps`
+                      ? String(
+                          network.speed_download
+                        ) + " Mbps"
                       : null
                   }
                 />
@@ -652,7 +664,9 @@ export default function NetworkPage() {
                   label="Upload"
                   value={
                     network.speed_upload
-                      ? `${network.speed_upload} Mbps`
+                      ? String(
+                          network.speed_upload
+                        ) + " Mbps"
                       : null
                   }
                 />
@@ -667,13 +681,13 @@ export default function NetworkPage() {
                   }
                 />
               </div>
-            </PageCard>
+            </Card>
 
-            <PageCard className="p-7 md:p-8">
+            <Card className="p-7 md:p-8">
               <SectionHeading
                 eyebrow="Equipment"
                 title="Router and modem"
-                description="The hardware powering your home network."
+                description="The hardware powering this home network."
               />
 
               <div className="mt-7 grid gap-4 sm:grid-cols-2">
@@ -709,15 +723,15 @@ export default function NetworkPage() {
                   }
                 />
               </div>
-            </PageCard>
+            </Card>
           </section>
 
           <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-            <PageCard className="p-7 md:p-8">
+            <Card className="p-7 md:p-8">
               <SectionHeading
                 eyebrow="Wireless"
                 title="Wi-Fi details"
-                description="Your primary network, guest access, and admin portal."
+                description="Primary network, guest access, and administration information."
               />
 
               <div className="mt-7 space-y-3">
@@ -748,44 +762,40 @@ export default function NetworkPage() {
                   }
                 />
               </div>
-            </PageCard>
+            </Card>
 
-            <PageCard className="p-7 md:p-8">
+            <Card className="p-7 md:p-8">
               <SectionHeading
                 eyebrow="Setup"
                 title="Network checklist"
-                description="A quick review of your saved network information."
+                description="A quick review of the saved network information."
               />
 
               <div className="mt-7 space-y-3">
                 <ChecklistItem
                   complete={Boolean(
-                    network.router_model
-                      ?.trim()
+                    network.router_model?.trim()
                   )}
                   label="Router saved"
                 />
 
                 <ChecklistItem
                   complete={Boolean(
-                    network.modem_model
-                      ?.trim()
+                    network.modem_model?.trim()
                   )}
                   label="Modem saved"
                 />
 
                 <ChecklistItem
                   complete={Boolean(
-                    network.wifi_name
-                      ?.trim()
+                    network.wifi_name?.trim()
                   )}
                   label="Wi-Fi documented"
                 />
 
                 <ChecklistItem
                   complete={Boolean(
-                    network.admin_url
-                      ?.trim()
+                    network.admin_url?.trim()
                   )}
                   label="Admin address saved"
                 />
@@ -797,15 +807,15 @@ export default function NetworkPage() {
                   label="Guest network enabled"
                 />
               </div>
-            </PageCard>
+            </Card>
           </section>
 
-          <PageCard className="p-7 md:p-8">
+          <Card className="p-7 md:p-8">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <SectionHeading
                 eyebrow="History"
                 title="Recent scans"
-                description="See how your connected-device count has changed over time."
+                description="See how the connected-device count has changed over time."
               />
 
               {latestScan && (
@@ -818,31 +828,22 @@ export default function NetworkPage() {
               )}
             </div>
 
-            {scanHistory.length === 0 ? (
-              <div className="mt-6 rounded-2xl bg-[#F7F5EF] p-5 text-sm text-neutral-500">
-                No network scans have
-                been saved yet.
-              </div>
-            ) : (
-              <div className="mt-7 space-y-3">
-                {scanHistory.map(
-                  (scan) => (
-                    <ScanHistoryRow
-                      key={scan.id}
-                      scan={scan}
-                    />
-                  )
-                )}
-              </div>
-            )}
-          </PageCard>
+            <div className="mt-7 space-y-3">
+              {scanHistory.map((scan) => (
+                <ScanHistoryRow
+                  key={scan.id}
+                  scan={scan}
+                />
+              ))}
+            </div>
+          </Card>
 
           {network.notes && (
-            <PageCard className="p-7 md:p-8">
+            <Card className="p-7 md:p-8">
               <SectionHeading
                 eyebrow="Notes"
                 title="Network notes"
-                description="Troubleshooting details, placement notes, or provider information."
+                description="Troubleshooting, placement, and provider information."
               />
 
               <div className="mt-6 rounded-[24px] bg-[#F7F5EF] p-5">
@@ -850,35 +851,84 @@ export default function NetworkPage() {
                   {network.notes}
                 </p>
               </div>
-            </PageCard>
+            </Card>
           )}
         </>
       ) : (
-        <PageCard className="py-14 text-center">
+        <Card className="py-14 text-center">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
             <Wifi size={29} />
           </div>
 
-          <h2 className="mt-5 text-2xl font-semibold tracking-[-0.03em] text-[#111827]">
+          <h2 className="mt-5 text-2xl font-semibold text-[#111827]">
             Set up your network
           </h2>
 
           <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-neutral-500">
-            Add your provider,
-            router, modem, Wi-Fi
-            name, guest network, and
-            internet speeds.
+            Add your provider, router,
+            modem, Wi-Fi, guest network,
+            and internet speeds.
           </p>
 
-          <Button
-            href="/network/edit"
-            className="mt-6"
-          >
-            Set Up Network
-          </Button>
-        </PageCard>
+          <div className="mt-6">
+            <ActionLink href={editHref}>
+              Set Up Network
+            </ActionLink>
+          </div>
+        </Card>
       )}
     </PageShell>
+  );
+}
+
+function Card({
+  children,
+  className = "",
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={
+        "rounded-[28px] border border-[#E8E2D6] bg-white shadow-sm " +
+        className
+      }
+    >
+      {children}
+    </div>
+  );
+}
+
+function ActionLink({
+  href,
+  children,
+  variant = "primary",
+}: {
+  href: string;
+  children: ReactNode;
+  variant?:
+    | "primary"
+    | "secondary"
+    | "light";
+}) {
+  const styles =
+    variant === "light"
+      ? "bg-white text-[#111827] hover:bg-neutral-100"
+      : variant === "secondary"
+        ? "border border-[#E8E2D6] bg-white text-[#111827] hover:bg-[#F7F5EF]"
+        : "bg-[#111827] text-white hover:bg-[#1f2937]";
+
+  return (
+    <Link
+      href={href}
+      className={
+        "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold transition " +
+        styles
+      }
+    >
+      {children}
+    </Link>
   );
 }
 
@@ -895,7 +945,6 @@ function NetworkHealthRing({
   );
 
   const radius = 72;
-
   const circumference =
     2 * Math.PI * radius;
 
@@ -910,7 +959,11 @@ function NetworkHealthRing({
         viewBox="0 0 176 176"
         className="h-full w-full -rotate-90"
         role="img"
-        aria-label={`Network health score: ${normalizedScore}%`}
+        aria-label={
+          "Network health score: " +
+          String(normalizedScore) +
+          "%"
+        }
       >
         <circle
           cx="88"
@@ -933,15 +986,13 @@ function NetworkHealthRing({
             circumference
           }
           strokeDashoffset={offset}
-          className="transition-[stroke-dashoffset] duration-1000 ease-out"
         />
       </svg>
 
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-5xl font-semibold tracking-[-0.05em] text-[#111827]">
+        <span className="text-5xl font-semibold text-[#111827]">
           {normalizedScore}
-
-          <span className="ml-0.5 text-2xl text-neutral-400">
+          <span className="text-2xl text-neutral-400">
             %
           </span>
         </span>
@@ -966,14 +1017,14 @@ function SummaryCard({
   description: string;
 }) {
   return (
-    <PageCard className="p-5 md:p-6">
+    <Card className="p-5 md:p-6">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <p className="text-sm text-neutral-500">
             {label}
           </p>
 
-          <p className="mt-2 truncate text-2xl font-semibold tracking-[-0.03em] text-[#111827] md:text-3xl">
+          <p className="mt-2 truncate text-3xl font-semibold text-[#111827]">
             {value}
           </p>
 
@@ -986,7 +1037,7 @@ function SummaryCard({
           <Icon size={20} />
         </div>
       </div>
-    </PageCard>
+    </Card>
   );
 }
 
@@ -1005,7 +1056,7 @@ function SectionHeading({
         {eyebrow}
       </p>
 
-      <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[#111827]">
+      <h2 className="mt-2 text-2xl font-semibold text-[#111827]">
         {title}
       </h2>
 
@@ -1057,7 +1108,10 @@ function StatusCard({
   return (
     <div className="rounded-[24px] border border-[#E8E2D6] p-5">
       <div
-        className={`flex h-11 w-11 items-center justify-center rounded-2xl ${iconClasses}`}
+        className={
+          "flex h-11 w-11 items-center justify-center rounded-2xl " +
+          iconClasses
+        }
       >
         <Icon size={20} />
       </div>
@@ -1141,11 +1195,12 @@ function ChecklistItem({
   return (
     <div className="flex items-center gap-3 rounded-[22px] bg-[#F7F5EF] p-4">
       <div
-        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
-          complete
+        className={
+          "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl " +
+          (complete
             ? "bg-emerald-50 text-emerald-700"
-            : "bg-amber-50 text-amber-700"
-        }`}
+            : "bg-amber-50 text-amber-700")
+        }
       >
         {complete ? (
           <CheckCircle2 size={17} />
@@ -1189,30 +1244,22 @@ function ScanHistoryRow({
       <div className="grid grid-cols-4 gap-4 lg:min-w-[360px]">
         <HistoryMetric
           label="Found"
-          value={
-            scan.devices_found
-          }
+          value={scan.devices_found}
         />
 
         <HistoryMetric
           label="Online"
-          value={
-            scan.online_devices
-          }
+          value={scan.online_devices}
         />
 
         <HistoryMetric
           label="Offline"
-          value={
-            scan.offline_devices
-          }
+          value={scan.offline_devices}
         />
 
         <HistoryMetric
           label="New"
-          value={
-            scan.new_devices
-          }
+          value={scan.new_devices}
         />
       </div>
     </div>
@@ -1239,7 +1286,13 @@ function HistoryMetric({
   );
 }
 
-function EmptyScanState() {
+function EmptyScanState({
+  href,
+  isDemo,
+}: {
+  href: string;
+  isDemo: boolean;
+}) {
   return (
     <div className="mt-7 rounded-[24px] bg-[#F7F5EF] p-6">
       <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#C8A96A] shadow-sm">
@@ -1251,19 +1304,20 @@ function EmptyScanState() {
       </h3>
 
       <p className="mt-2 max-w-md text-sm leading-6 text-neutral-500">
-        Discover connected devices,
-        identify new equipment, and
+        Discover connected devices and
         begin building your network
         history.
       </p>
 
-      <Button
-        href="/network/discover"
-        className="mt-5"
-      >
-        <Radar size={17} />
-        Start Network Scan
-      </Button>
+      <div className="mt-5">
+        <ActionLink href={href}>
+          <Radar size={17} />
+
+          {isDemo
+            ? "Create Vault to Scan"
+            : "Start Network Scan"}
+        </ActionLink>
+      </div>
     </div>
   );
 }
@@ -1273,11 +1327,7 @@ function formatScanDate(
 ) {
   const date = new Date(value);
 
-  if (
-    Number.isNaN(
-      date.getTime()
-    )
-  ) {
+  if (Number.isNaN(date.getTime())) {
     return value;
   }
 
@@ -1298,62 +1348,60 @@ function formatRelativeScanDate(
 ) {
   const date = new Date(value);
 
-  if (
-    Number.isNaN(
-      date.getTime()
-    )
-  ) {
+  if (Number.isNaN(date.getTime())) {
     return value;
   }
 
   const difference =
-    Date.now() -
-    date.getTime();
+    Date.now() - date.getTime();
 
-  const minutes =
-    Math.floor(
-      difference /
-        (1000 * 60)
-    );
+  const minutes = Math.floor(
+    difference / (1000 * 60)
+  );
 
   if (minutes < 1) {
     return "just now";
   }
 
   if (minutes < 60) {
-    return `${minutes} minute${
-      minutes === 1 ? "" : "s"
-    } ago`;
+    return (
+      String(minutes) +
+      " minute" +
+      (minutes === 1 ? "" : "s") +
+      " ago"
+    );
   }
 
-  const hours =
-    Math.floor(
-      minutes / 60
-    );
+  const hours = Math.floor(
+    minutes / 60
+  );
 
   if (hours < 24) {
-    return `${hours} hour${
-      hours === 1 ? "" : "s"
-    } ago`;
+    return (
+      String(hours) +
+      " hour" +
+      (hours === 1 ? "" : "s") +
+      " ago"
+    );
   }
 
-  const days =
-    Math.floor(
-      hours / 24
-    );
+  const days = Math.floor(
+    hours / 24
+  );
 
-  return `${days} day${
-    days === 1 ? "" : "s"
-  } ago`;
+  return (
+    String(days) +
+    " day" +
+    (days === 1 ? "" : "s") +
+    " ago"
+  );
 }
 
 function isGuestNetworkEnabled(
   value?: string | null
 ) {
   const normalized =
-    value
-      ?.trim()
-      .toLowerCase() || "";
+    value?.trim().toLowerCase() ?? "";
 
   return [
     "enabled",

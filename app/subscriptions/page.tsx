@@ -21,7 +21,7 @@ import PageShell from "@/components/ui/PageShell";
 import PageCard from "@/components/ui/PageCard";
 import Button from "@/components/ui/Button";
 
-import { useDemoMode } from "@/hooks/useDemoMode";
+import { usePermissions } from "@/hooks/usePermissions";
 import { getSubscriptions } from "@/lib/data/subscriptions";
 
 type Subscription = {
@@ -37,10 +37,14 @@ type Subscription = {
 
 export default function SubscriptionsPage() {
   const {
-    user,
-    isDemo,
-    loading: demoLoading,
-  } = useDemoMode();
+  user,
+  loading: permissionsLoading,
+  isViewer,
+  canCreate,
+  canEdit,
+  canDelete,
+  protectedHref,
+} = usePermissions();
 
   const [
     subscriptions,
@@ -69,9 +73,9 @@ export default function SubscriptionsPage() {
 
   useEffect(() => {
     async function loadSubscriptions() {
-      if (demoLoading) {
-        return;
-      }
+      if (permissionsLoading) {
+  return;
+}
 
       try {
         setLoadingSubscriptions(true);
@@ -103,11 +107,11 @@ export default function SubscriptionsPage() {
       }
     }
 
-    loadSubscriptions();
-  }, [
+   void loadSubscriptions();
+ }, [
     user,
-    demoLoading,
-  ]);
+    permissionsLoading,
+]);
 
   const categories = useMemo(() => {
     const values = subscriptions
@@ -223,9 +227,9 @@ export default function SubscriptionsPage() {
       : monthlyTotal /
         subscriptions.length;
 
-  const loading =
-    demoLoading ||
-    loadingSubscriptions;
+ const loading =
+  permissionsLoading ||
+  loadingSubscriptions;
 
   const filtersActive =
     searchTerm.trim() !== "" ||
@@ -289,35 +293,32 @@ export default function SubscriptionsPage() {
             </p>
           </div>
 
-          <Button
-            href={
-              isDemo
-                ? "/signup"
-                : "/subscriptions/add"
-            }
-            variant="secondary"
-          >
-            <Plus size={17} />
+         <Button
+  href={protectedHref("/subscriptions/add")}
+  variant="secondary"
+>
+  <Plus size={17} />
 
-            {isDemo
-              ? "Create Your Vault"
-              : "Add Subscription"}
-          </Button>
+  {canCreate
+    ? "Add Subscription"
+    : "Create Your Vault"}
+</Button>
+
         </div>
       </section>
 
-      {isDemo && (
+      {isViewer && (
         <section className="rounded-3xl border border-[#D8C69D] bg-[#FFF8E8] p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A6A2F]">
-            Interactive Demo
+            Viewer Access
           </p>
 
           <p className="mt-2 text-sm leading-6 text-neutral-600">
-            Explore how Home Tech Vault
-            organizes recurring services,
-            renewal dates, and ongoing
-            technology costs.
-          </p>
+  Explore sample recurring services,
+  renewal dates, and technology costs.
+  Viewer access is read-only. Create an
+  account to manage subscriptions.
+</p>
         </section>
       )}
 
@@ -525,51 +526,53 @@ export default function SubscriptionsPage() {
             expenses.
           </p>
 
-          <Button
-            href={
-              isDemo
-                ? "/signup"
-                : "/subscriptions/add"
-            }
-            className="mt-6"
-          >
-            <Plus size={17} />
+         <Button
+  href={protectedHref(
+    "/subscriptions/add"
+  )}
+  className="mt-6"
+>
+  <Plus size={17} />
 
-            {isDemo
-              ? "Create Your Vault"
-              : "Add Your First Subscription"}
-          </Button>
+  {canCreate
+    ? "Add Your First Subscription"
+    : "Create Your Vault"}
+</Button>
+
         </PageCard>
       ) : filteredSubscriptions.length >
         0 ? (
         <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
           {filteredSubscriptions.map(
             (subscription) => (
-              <SubscriptionCard
-                key={subscription.id}
-                subscription={{
-                  id: subscription.id,
-                  service_name:
-                    subscription.service_name ||
-                    subscription.name ||
-                    "Unnamed Subscription",
-                  category:
-                    subscription.category ||
-                    undefined,
-                  monthly_cost:
-                    subscription.monthly_cost ??
-                    undefined,
-                  renewal_date:
-                    subscription.renewal_date ||
-                    undefined,
-                  billing_cycle:
-                    subscription.billing_cycle ||
-                    undefined,
-                  notes:
-                    subscription.notes ||
-                    undefined,
-                }}
-              />
+             <SubscriptionCard
+  key={subscription.id}
+  subscription={{
+    id: subscription.id,
+    service_name:
+      subscription.service_name ||
+      subscription.name ||
+      "Unnamed Subscription",
+    category:
+      subscription.category ||
+      undefined,
+    monthly_cost:
+      subscription.monthly_cost ??
+      undefined,
+    renewal_date:
+      subscription.renewal_date ||
+      undefined,
+    billing_cycle:
+      subscription.billing_cycle ||
+      undefined,
+    notes:
+      subscription.notes ||
+      undefined,
+  }}
+  canEdit={canEdit}
+  canDelete={canDelete}
+  isViewer={isViewer}
+/>
             )
           )}
         </section>
