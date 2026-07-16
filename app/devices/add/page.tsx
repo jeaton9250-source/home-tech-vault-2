@@ -41,6 +41,11 @@ export default function AddDevicePage() {
     useState(0);
 
   const [
+    householdId,
+    setHouseholdId,
+  ] = useState<string | null>(null);
+
+  const [
     checkingDeviceLimit,
     setCheckingDeviceLimit,
   ] = useState(true);
@@ -82,7 +87,7 @@ export default function AddDevicePage() {
     useState("");
 
   useEffect(() => {
-    async function checkDeviceLimit() {
+    async function loadHouseholdAndDeviceCount() {
       if (
         demoModeLoading ||
         subscriptionLoading
@@ -92,23 +97,64 @@ export default function AddDevicePage() {
 
       try {
         setCheckingDeviceLimit(true);
+        setErrorMessage("");
 
         if (isDemo || !user) {
+          setHouseholdId(null);
           setDeviceCount(0);
           return;
         }
 
-        const { count, error } =
-          await supabase
+        const {
+          data: membership,
+          error: membershipError,
+        } = await supabase
+          .from("household_members")
+          .select("household_id")
+          .eq("user_id", user.id)
+          .limit(1)
+          .maybeSingle();
+
+        if (membershipError) {
+          throw membershipError;
+        }
+
+        const currentHouseholdId =
+          membership?.household_id || null;
+
+        setHouseholdId(
+          currentHouseholdId
+        );
+
+        let countQuery =
+          supabase
             .from("devices")
             .select("*", {
               count: "exact",
               head: true,
-            })
-            .eq("user_id", user.id);
+            });
 
-        if (error) {
-          throw error;
+        if (currentHouseholdId) {
+          countQuery =
+            countQuery.eq(
+              "household_id",
+              currentHouseholdId
+            );
+        } else {
+          countQuery =
+            countQuery.eq(
+              "user_id",
+              user.id
+            );
+        }
+
+        const {
+          count,
+          error: countError,
+        } = await countQuery;
+
+        if (countError) {
+          throw countError;
         }
 
         setDeviceCount(count || 0);
@@ -128,7 +174,7 @@ export default function AddDevicePage() {
       }
     }
 
-    checkDeviceLimit();
+    void loadHouseholdAndDeviceCount();
   }, [
     user,
     isDemo,
@@ -184,6 +230,8 @@ export default function AddDevicePage() {
         .from("devices")
         .insert({
           user_id: user.id,
+          household_id:
+            householdId,
           device_name:
             deviceName.trim(),
           category:
@@ -250,6 +298,7 @@ export default function AddDevicePage() {
               size={22}
               className="animate-spin"
             />
+
             Checking your device allowance...
           </div>
         </PageCard>
@@ -364,7 +413,11 @@ export default function AddDevicePage() {
       <PageTitle
         eyebrow="Device Inventory"
         title="Add New Device"
-        description="Save purchase details, warranty information, serial numbers, and notes in your vault."
+        description={
+          householdId
+            ? "Add a device to your shared household vault."
+            : "Save purchase details, warranty information, serial numbers, and notes in your vault."
+        }
       />
 
       {!hasUnlimitedDevices &&
@@ -597,6 +650,7 @@ function FormField({
     <label className="block">
       <span className="mb-2 block text-sm font-semibold text-[#111827]">
         {label}
+
         {required && (
           <span className="ml-1 text-red-600">
             *
