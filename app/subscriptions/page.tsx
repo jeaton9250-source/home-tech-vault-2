@@ -10,7 +10,6 @@ import {
   CalendarClock,
   CreditCard,
   Loader2,
-  Plus,
   Search,
   WalletCards,
   X,
@@ -20,6 +19,12 @@ import SubscriptionCard from "@/components/SubscriptionCard";
 import PageShell from "@/components/ui/PageShell";
 import PageCard from "@/components/ui/PageCard";
 import Button from "@/components/ui/Button";
+
+import {
+  PageAction,
+  PermissionEmptyState,
+  ViewerBanner,
+} from "@/components/ui/PermissionUI";
 
 import { usePermissions } from "@/hooks/usePermissions";
 import { getSubscriptions } from "@/lib/data/subscriptions";
@@ -37,22 +42,13 @@ type Subscription = {
 
 export default function SubscriptionsPage() {
   const {
-  user,
-  loading: permissionsLoading,
-  isViewer,
-  canCreate,
-  canEdit,
-  canDelete,
-  protectedHref,
-} = usePermissions();
-
-console.log({
-  userId: user?.id ?? null,
-  isViewer,
-  canCreate,
-  canEdit,
-  canDelete,
-});
+    user,
+    loading: permissionsLoading,
+    isViewer,
+    canCreate,
+    canEdit,
+    canDelete,
+  } = usePermissions();
 
   const [
     subscriptions,
@@ -80,10 +76,12 @@ console.log({
   ] = useState("All");
 
   useEffect(() => {
+    let mounted = true;
+
     async function loadSubscriptions() {
       if (permissionsLoading) {
-  return;
-}
+        return;
+      }
 
       try {
         setLoadingSubscriptions(true);
@@ -92,34 +90,42 @@ console.log({
         const data =
           await getSubscriptions(user);
 
-        setSubscriptions(data || []);
-      } catch (error: unknown) {
-        const possibleError =
-          error as {
-            message?: string;
-            details?: string;
-          };
+        if (!mounted) {
+          return;
+        }
 
+        setSubscriptions(data ?? []);
+      } catch (error: unknown) {
         console.error(
           "Subscription loading error:",
           error
         );
 
+        if (!mounted) {
+          return;
+        }
+
         setErrorMessage(
-          possibleError.message ||
-            possibleError.details ||
-            "Unable to load subscriptions."
+          error instanceof Error
+            ? error.message
+            : "Unable to load subscriptions."
         );
       } finally {
-        setLoadingSubscriptions(false);
+        if (mounted) {
+          setLoadingSubscriptions(false);
+        }
       }
     }
 
-   void loadSubscriptions();
- }, [
+    void loadSubscriptions();
+
+    return () => {
+      mounted = false;
+    };
+  }, [
     user,
     permissionsLoading,
-]);
+  ]);
 
   const categories = useMemo(() => {
     const values = subscriptions
@@ -162,9 +168,8 @@ console.log({
             subscription.notes,
           ]
             .map((value) =>
-              String(
-                value || ""
-              ).toLowerCase()
+              String(value ?? "")
+                .toLowerCase()
             )
             .join(" ");
 
@@ -175,8 +180,7 @@ console.log({
             );
 
           const matchesCategory =
-            selectedCategory ===
-              "All" ||
+            selectedCategory === "All" ||
             subscription.category ===
               selectedCategory;
 
@@ -189,14 +193,16 @@ console.log({
           const firstDate =
             first.renewal_date
               ? new Date(
-                  `${first.renewal_date}T00:00:00`
+                  first.renewal_date +
+                    "T00:00:00"
                 ).getTime()
               : Number.MAX_SAFE_INTEGER;
 
           const secondDate =
             second.renewal_date
               ? new Date(
-                  `${second.renewal_date}T00:00:00`
+                  second.renewal_date +
+                    "T00:00:00"
                 ).getTime()
               : Number.MAX_SAFE_INTEGER;
 
@@ -235,9 +241,9 @@ console.log({
       : monthlyTotal /
         subscriptions.length;
 
- const loading =
-  permissionsLoading ||
-  loadingSubscriptions;
+  const loading =
+    permissionsLoading ||
+    loadingSubscriptions;
 
   const filtersActive =
     searchTerm.trim() !== "" ||
@@ -268,7 +274,7 @@ console.log({
   if (errorMessage) {
     return (
       <PageShell>
-        <PageCard className="border-red-200 bg-red-50 text-red-700">
+        <PageCard className="border-red-200 bg-red-50 p-6 text-red-700">
           <h1 className="text-xl font-semibold">
             Unable to load subscriptions
           </h1>
@@ -301,34 +307,19 @@ console.log({
             </p>
           </div>
 
-         <Button
-  href={protectedHref("/subscriptions/add")}
-  variant="secondary"
->
-  <Plus size={17} />
-
-  {canCreate
-    ? "Add Subscription"
-    : "Create Your Vault"}
-</Button>
-
+          <PageAction
+            canCreate={canCreate}
+            href="/subscriptions/add"
+            label="Add Subscription"
+            variant="light"
+          />
         </div>
       </section>
 
-      {isViewer && (
-        <section className="rounded-3xl border border-[#D8C69D] bg-[#FFF8E8] p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A6A2F]">
-            Viewer Access
-          </p>
-
-          <p className="mt-2 text-sm leading-6 text-neutral-600">
-  Explore sample recurring services,
-  renewal dates, and technology costs.
-  Viewer access is read-only. Create an
-  account to manage subscriptions.
-</p>
-        </section>
-      )}
+      <ViewerBanner
+        show={isViewer}
+        description="Explore sample recurring services, renewal dates, and technology costs. Viewer access is read-only."
+      />
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <SummaryCard
@@ -419,8 +410,8 @@ console.log({
 
             <p className="mt-4 text-sm leading-6 text-white/55">
               Review recurring services
-              regularly to make sure each one
-              still provides value.
+              regularly to make sure each
+              one still provides value.
             </p>
           </PageCard>
         </section>
@@ -477,11 +468,12 @@ console.log({
                           category
                         )
                       }
-                      className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition ${
-                        active
+                      className={
+                        "shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition " +
+                        (active
                           ? "bg-[#111827] text-white"
-                          : "border border-[#E8E2D6] bg-white text-neutral-500 hover:border-[#C8A96A] hover:text-[#111827]"
-                      }`}
+                          : "border border-[#E8E2D6] bg-white text-neutral-500 hover:border-[#C8A96A] hover:text-[#111827]")
+                      }
                     >
                       {category === "All"
                         ? "All Subscriptions"
@@ -517,70 +509,47 @@ console.log({
       )}
 
       {subscriptions.length === 0 ? (
-        <PageCard className="py-14 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
-            <CreditCard size={29} />
-          </div>
-
-          <h2 className="mt-5 text-2xl font-semibold tracking-[-0.03em] text-[#111827]">
-            No subscriptions yet
-          </h2>
-
-          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-neutral-500">
-            Track streaming services,
-            cloud storage, software, VPNs,
-            domains, internet services, and
-            other recurring technology
-            expenses.
-          </p>
-
-         <Button
-  href={protectedHref(
-    "/subscriptions/add"
-  )}
-  className="mt-6"
->
-  <Plus size={17} />
-
-  {canCreate
-    ? "Add Your First Subscription"
-    : "Create Your Vault"}
-</Button>
-
-        </PageCard>
+        <PermissionEmptyState
+          icon={CreditCard}
+          title="No subscriptions yet"
+          description="Track streaming services, cloud storage, software, VPNs, domains, internet services, and other recurring technology expenses."
+          canCreate={canCreate}
+          href="/subscriptions/add"
+          buttonLabel="Add Your First Subscription"
+        />
       ) : filteredSubscriptions.length >
         0 ? (
         <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
           {filteredSubscriptions.map(
             (subscription) => (
-             <SubscriptionCard
-  key={subscription.id}
-  subscription={{
-    id: subscription.id,
-    service_name:
-      subscription.service_name ||
-      subscription.name ||
-      "Unnamed Subscription",
-    category:
-      subscription.category ||
-      undefined,
-    monthly_cost:
-      subscription.monthly_cost ??
-      undefined,
-    renewal_date:
-      subscription.renewal_date ||
-      undefined,
-    billing_cycle:
-      subscription.billing_cycle ||
-      undefined,
-    notes:
-      subscription.notes ||
-      undefined,
-  }}
-  canEdit={canEdit}
-  canDelete={canDelete}
-  isViewer={isViewer}
-/>
+              <SubscriptionCard
+                key={subscription.id}
+                subscription={{
+                  id: subscription.id,
+                  service_name:
+                    subscription.service_name ||
+                    subscription.name ||
+                    "Unnamed Subscription",
+                  category:
+                    subscription.category ||
+                    undefined,
+                  monthly_cost:
+                    subscription.monthly_cost ??
+                    undefined,
+                  renewal_date:
+                    subscription.renewal_date ||
+                    undefined,
+                  billing_cycle:
+                    subscription.billing_cycle ||
+                    undefined,
+                  notes:
+                    subscription.notes ||
+                    undefined,
+                }}
+                canEdit={canEdit}
+                canDelete={canDelete}
+                isViewer={isViewer}
+              />
             )
           )}
         </section>
@@ -672,13 +641,13 @@ function getMonthlyEquivalent(
   subscription: Subscription
 ) {
   const amount = Number(
-    subscription.monthly_cost || 0
+    subscription.monthly_cost ?? 0
   );
 
   const cycle =
     subscription.billing_cycle
       ?.trim()
-      .toLowerCase() || "";
+      .toLowerCase() ?? "";
 
   if (
     cycle.includes("annual") ||
@@ -711,7 +680,7 @@ function isRenewingSoon(
 
   const renewalDate =
     new Date(
-      `${value}T23:59:59`
+      value + "T23:59:59"
     );
 
   if (
@@ -723,7 +692,13 @@ function isRenewingSoon(
   }
 
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
+
+  today.setHours(
+    0,
+    0,
+    0,
+    0
+  );
 
   const difference =
     Math.ceil(
@@ -753,16 +728,21 @@ function getSubscriptionInsight(
   }
 
   if (upcomingRenewals > 0) {
-    return `${upcomingRenewals} ${
-      upcomingRenewals === 1
+    return (
+      String(upcomingRenewals) +
+      " " +
+      (upcomingRenewals === 1
         ? "subscription renews"
-        : "subscriptions renew"
-    } within the next 30 days.`;
+        : "subscriptions renew") +
+      " within the next 30 days."
+    );
   }
 
-  return `Your tracked services cost about ${formatCurrency(
-    monthlyTotal
-  )} each month.`;
+  return (
+    "Your tracked services cost about " +
+    formatCurrency(monthlyTotal) +
+    " each month."
+  );
 }
 
 function formatCurrency(

@@ -18,32 +18,32 @@ export function usePermissions() {
 
   
 
-  const role = useMemo<UserRole>(() => {
-    if (isDemo || !user) {
-      return "viewer";
-    }
+ const role = useMemo<UserRole>(() => {
+  if (!user) {
+    return "viewer";
+  }
 
-    const metadataRole = String(
-      user.app_metadata?.role ??
-        user.user_metadata?.role ??
-        "viewer"
-    )
-      .trim()
-      .toLowerCase();
+  const metadataRole = String(
+    user.app_metadata?.role ??
+      user.user_metadata?.role ??
+      "member"
+  )
+    .trim()
+    .toLowerCase();
 
-    if (metadataRole === "admin") {
-      return "admin";
-    }
+  if (
+    metadataRole === "admin" ||
+    metadataRole === "owner"
+  ) {
+    return "admin";
+  }
 
-    if (metadataRole === "viewer") {
-      return "viewer";
-    }
+  if (metadataRole === "viewer") {
+    return "viewer";
+  }
 
-    return "member";
-  }, [
-    user,
-    isDemo,
-  ]);
+  return "member";
+}, [user]);
 
   const isViewer =
     role === "viewer";
@@ -92,7 +92,7 @@ export function usePermissions() {
     user,
     role,
     loading,
-    isDemo,
+    isDemo: !user && isDemo,
 
     isViewer,
     isMember,

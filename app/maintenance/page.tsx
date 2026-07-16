@@ -5,18 +5,17 @@ import {
   useMemo,
   useState,
   type ComponentType,
-  type ReactNode,
 } from "react";
+
 import Link from "next/link";
+
 import {
   CalendarDays,
   CheckCircle2,
   Circle,
   Clock,
   Loader2,
-  Plus,
   Search,
-  Sparkles,
   Trash2,
   Wrench,
   X,
@@ -24,16 +23,28 @@ import {
 
 import { supabase } from "@/lib/supabase";
 import { createDeviceEvent } from "@/lib/deviceEvents";
-import { useDemoMode } from "@/hooks/useDemoMode";
+
 import {
   demoDevices,
   demoMaintenance,
 } from "@/lib/demoData";
+
+import { usePermissions } from "@/hooks/usePermissions";
+
 import PageShell from "@/components/ui/PageShell";
+import PageCard from "@/components/ui/PageCard";
+import Button from "@/components/ui/Button";
+
+import {
+  PageAction,
+  PermissionEmptyState,
+  ViewerBanner,
+} from "@/components/ui/PermissionUI";
 
 type MaintenanceTask = {
   id: string;
   user_id: string;
+  household_id?: string | null;
   device_id: string | null;
   title: string;
   description: string | null;
@@ -66,19 +77,23 @@ type MaintenanceIcon = ComponentType<{
 type DemoRecord = Record<string, unknown>;
 
 export default function MaintenancePage() {
-  
   const {
     user,
     isDemo,
-    loading: demoModeLoading,
-  } = useDemoMode();
-  const isViewer = isDemo || !user;
+    isViewer,
+    canCreate,
+    canEdit,
+    canDelete,
+    loading: permissionsLoading,
+  } = usePermissions();
 
   const [tasks, setTasks] =
     useState<MaintenanceTask[]>([]);
 
-  const [loadingTasks, setLoadingTasks] =
-    useState(true);
+  const [
+    loadingTasks,
+    setLoadingTasks,
+  ] = useState(true);
 
   const [updatingId, setUpdatingId] =
     useState<string | null>(null);
@@ -86,8 +101,10 @@ export default function MaintenancePage() {
   const [deletingId, setDeletingId] =
     useState<string | null>(null);
 
-  const [errorMessage, setErrorMessage] =
-    useState("");
+  const [
+    errorMessage,
+    setErrorMessage,
+  ] = useState("");
 
   const [searchTerm, setSearchTerm] =
     useState("");
@@ -95,13 +112,16 @@ export default function MaintenancePage() {
   const [
     selectedFilter,
     setSelectedFilter,
-  ] = useState<MaintenanceFilter>("all");
+  ] =
+    useState<MaintenanceFilter>(
+      "all"
+    );
 
   useEffect(() => {
     let mounted = true;
 
     async function loadTasks() {
-      if (demoModeLoading) {
+      if (permissionsLoading) {
         return;
       }
 
@@ -133,9 +153,13 @@ export default function MaintenancePage() {
         } = await supabase
           .from("maintenance_tasks")
           .select(
-            "*, devices(device_name)"
+            `
+              *,
+              devices (
+                device_name
+              )
+            `
           )
-          .eq("user_id", user.id)
           .order("completed", {
             ascending: true,
           })
@@ -153,7 +177,8 @@ export default function MaintenancePage() {
         }
 
         setTasks(
-          (data ?? []) as MaintenanceTask[]
+          (data ??
+            []) as MaintenanceTask[]
         );
       } catch (error: unknown) {
         console.error(
@@ -185,7 +210,7 @@ export default function MaintenancePage() {
   }, [
     user,
     isDemo,
-    demoModeLoading,
+    permissionsLoading,
   ]);
 
   async function reloadTasks() {
@@ -200,9 +225,13 @@ export default function MaintenancePage() {
       } = await supabase
         .from("maintenance_tasks")
         .select(
-          "*, devices(device_name)"
+          `
+            *,
+            devices (
+              device_name
+            )
+          `
         )
-        .eq("user_id", user.id)
         .order("completed", {
           ascending: true,
         })
@@ -216,7 +245,8 @@ export default function MaintenancePage() {
       }
 
       setTasks(
-        (data ?? []) as MaintenanceTask[]
+        (data ??
+          []) as MaintenanceTask[]
       );
     } catch (error: unknown) {
       console.error(
@@ -232,15 +262,14 @@ export default function MaintenancePage() {
     }
   }
 
-  function sendViewerToSignup() {
-    window.location.href = "/signup";
-  }
-
   async function toggleComplete(
     task: MaintenanceTask
   ) {
-    if (isDemo || !user) {
-      sendViewerToSignup();
+    if (
+      !canEdit ||
+      !user ||
+      isDemo
+    ) {
       return;
     }
 
@@ -250,16 +279,20 @@ export default function MaintenancePage() {
       const nextCompleted =
         !task.completed;
 
-      const { error } = await supabase
+      const {
+        error,
+      } = await supabase
         .from("maintenance_tasks")
         .update({
-          completed: nextCompleted,
-          completed_at: nextCompleted
-            ? new Date().toISOString()
-            : null,
+          completed:
+            nextCompleted,
+
+          completed_at:
+            nextCompleted
+              ? new Date().toISOString()
+              : null,
         })
-        .eq("id", task.id)
-        .eq("user_id", user.id);
+        .eq("id", task.id);
 
       if (error) {
         throw error;
@@ -270,12 +303,19 @@ export default function MaintenancePage() {
         task.device_id
       ) {
         await createDeviceEvent({
-          deviceId: task.device_id,
-          userId: user.id,
+          deviceId:
+            task.device_id,
+
+          userId:
+            user.id,
+
           eventType:
             task.task_type ??
             "Maintenance",
-          title: task.title,
+
+          title:
+            task.title,
+
           description:
             task.description ??
             "Maintenance task completed through the Maintenance Center.",
@@ -302,8 +342,11 @@ export default function MaintenancePage() {
   async function deleteTask(
     taskId: string
   ) {
-    if (isDemo || !user) {
-      sendViewerToSignup();
+    if (
+      !canDelete ||
+      !user ||
+      isDemo
+    ) {
       return;
     }
 
@@ -319,11 +362,12 @@ export default function MaintenancePage() {
     try {
       setDeletingId(taskId);
 
-      const { error } = await supabase
+      const {
+        error,
+      } = await supabase
         .from("maintenance_tasks")
         .delete()
-        .eq("id", taskId)
-        .eq("user_id", user.id);
+        .eq("id", taskId);
 
       if (error) {
         throw error;
@@ -354,7 +398,12 @@ export default function MaintenancePage() {
   const today = useMemo(() => {
     const date = new Date();
 
-    date.setHours(0, 0, 0, 0);
+    date.setHours(
+      0,
+      0,
+      0,
+      0
+    );
 
     return date;
   }, []);
@@ -484,7 +533,7 @@ export default function MaintenancePage() {
         );
 
   const pageLoading =
-    demoModeLoading ||
+    permissionsLoading ||
     loadingTasks;
 
   function clearFilters() {
@@ -495,7 +544,7 @@ export default function MaintenancePage() {
   if (pageLoading) {
     return (
       <PageShell>
-        <Card className="flex min-h-72 items-center justify-center">
+        <PageCard className="flex min-h-72 items-center justify-center">
           <div className="flex items-center gap-3 text-neutral-500">
             <Loader2
               className="animate-spin"
@@ -504,7 +553,7 @@ export default function MaintenancePage() {
 
             Loading maintenance...
           </div>
-        </Card>
+        </PageCard>
       </PageShell>
     );
   }
@@ -512,7 +561,7 @@ export default function MaintenancePage() {
   if (errorMessage) {
     return (
       <PageShell>
-        <Card className="border-red-200 bg-red-50 p-6 text-red-700">
+        <PageCard className="border-red-200 bg-red-50 p-6 text-red-700">
           <h1 className="text-xl font-semibold">
             Unable to load maintenance
           </h1>
@@ -520,7 +569,7 @@ export default function MaintenancePage() {
           <p className="mt-2 text-sm">
             {errorMessage}
           </p>
-        </Card>
+        </PageCard>
       </PageShell>
     );
   }
@@ -546,45 +595,23 @@ export default function MaintenancePage() {
             </p>
           </div>
 
-          <ActionLink
-  href={
-    isViewer
-      ? "/signup"
-      : "/maintenance/new"
-  }
-  variant="light"
->
-  <Plus size={17} />
-
-  {isViewer
-    ? "Create Your Vault"
-    : "Add Task"}
-</ActionLink>
+          <PageAction
+            canCreate={canCreate}
+            href="/maintenance/new"
+            label="Add Task"
+            variant="light"
+          />
         </div>
       </section>
 
-      {isViewer && (
-        <section className="rounded-3xl border border-[#D8C69D] bg-[#FFF8E8] p-5">
-          <div className="flex items-start gap-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#111827] text-[#C8A96A]">
-              <Sparkles size={18} />
-            </div>
-
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A6A2F]">
-                Viewer Access
-              </p>
-
-              <p className="mt-2 text-sm leading-6 text-neutral-600">
-                Explore sample maintenance
-                tasks. Create an account to
-                add, complete, update, and
-                delete your own tasks.
-              </p>
-            </div>
-          </div>
-        </section>
-      )}
+      <ViewerBanner
+        show={isViewer}
+        description={
+          user
+            ? "You can view shared maintenance tasks and their status. Viewer access cannot add, complete, reopen, edit, or delete tasks."
+            : "Explore sample maintenance tasks. Create an account to track updates, cleaning, repairs, and routine device care."
+        }
+      />
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <SummaryCard
@@ -622,7 +649,7 @@ export default function MaintenancePage() {
 
       {tasks.length > 0 && (
         <section className="grid gap-6 xl:grid-cols-[0.8fr_1.2fr]">
-          <Card className="flex min-h-[350px] flex-col items-center justify-center p-8 text-center">
+          <PageCard className="flex min-h-[350px] flex-col items-center justify-center p-8 text-center">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">
               Completion
             </p>
@@ -638,9 +665,9 @@ export default function MaintenancePage() {
               {tasks.length} maintenance
               tasks have been completed.
             </p>
-          </Card>
+          </PageCard>
 
-          <Card className="p-7 md:p-9">
+          <PageCard className="p-7 md:p-9">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
               Maintenance Overview
             </p>
@@ -658,14 +685,18 @@ export default function MaintenancePage() {
               <AttentionRow
                 icon={CalendarDays}
                 label="Overdue tasks"
-                value={overdueTasks.length}
+                value={
+                  overdueTasks.length
+                }
                 tone="red"
               />
 
               <AttentionRow
                 icon={Clock}
                 label="Due within seven days"
-                value={dueSoonTasks.length}
+                value={
+                  dueSoonTasks.length
+                }
                 tone="gold"
               />
 
@@ -678,12 +709,12 @@ export default function MaintenancePage() {
                 tone="neutral"
               />
             </div>
-          </Card>
+          </PageCard>
         </section>
       )}
 
       {tasks.length > 0 && (
-        <Card className="p-5 md:p-6">
+        <PageCard className="p-5 md:p-6">
           <div className="flex flex-col gap-5">
             <div className="relative">
               <Search
@@ -726,7 +757,9 @@ export default function MaintenancePage() {
 
                   return (
                     <button
-                      key={filter.value}
+                      key={
+                        filter.value
+                      }
                       type="button"
                       onClick={() =>
                         setSelectedFilter(
@@ -759,7 +792,9 @@ export default function MaintenancePage() {
               {filtersActive && (
                 <button
                   type="button"
-                  onClick={clearFilters}
+                  onClick={
+                    clearFilters
+                  }
                   className="inline-flex items-center gap-2 text-sm font-semibold text-[#111827] transition hover:text-[#8A6A2F]"
                 >
                   <X size={15} />
@@ -768,39 +803,56 @@ export default function MaintenancePage() {
               )}
             </div>
           </div>
-        </Card>
+        </PageCard>
       )}
 
-    
-        {tasks.length === 0 ? (
-  <EmptyState
-    isDemo={isViewer}
-    title="Nothing scheduled"
-    description="Add your first maintenance task to begin tracking updates, cleaning, repairs, and routine care."
-  />
-) : filteredTasks.length > 0 ? (
+      {tasks.length === 0 ? (
+        <PermissionEmptyState
+          icon={Wrench}
+          title="Nothing scheduled"
+          description="Add your first maintenance task to begin tracking updates, cleaning, repairs, and routine care."
+          canCreate={canCreate}
+          href="/maintenance/new"
+          buttonLabel="Add Maintenance Task"
+        />
+      ) : filteredTasks.length > 0 ? (
         <section className="grid gap-6 lg:grid-cols-2">
           {filteredTasks.map(
             (task) => (
               <TaskCard
-  key={task.id}
-  task={task}
-  today={today}
-  isDemo={isViewer}
-  updating={updatingId === task.id}
-  deleting={deletingId === task.id}
-  onToggle={() =>
-    void toggleComplete(task)
-  }
-  onDelete={() =>
-    void deleteTask(task.id)
-  }
-/>
+                key={task.id}
+                task={task}
+                today={today}
+                canEdit={
+                  canEdit
+                }
+                canDelete={
+                  canDelete
+                }
+                updating={
+                  updatingId ===
+                  task.id
+                }
+                deleting={
+                  deletingId ===
+                  task.id
+                }
+                onToggle={() =>
+                  void toggleComplete(
+                    task
+                  )
+                }
+                onDelete={() =>
+                  void deleteTask(
+                    task.id
+                  )
+                }
+              />
             )
           )}
         </section>
       ) : (
-        <Card className="py-14 text-center">
+        <PageCard className="py-14 text-center">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
             <Search size={28} />
           </div>
@@ -814,50 +866,50 @@ export default function MaintenancePage() {
             or maintenance status.
           </p>
 
-          <div className="mt-6">
-            <button
-              type="button"
-              onClick={clearFilters}
-              className="inline-flex min-h-11 items-center justify-center rounded-xl border border-[#E8E2D6] bg-white px-4 text-sm font-semibold text-[#111827] transition hover:bg-[#F7F5EF]"
-            >
-              Clear Filters
-            </button>
-          </div>
-        </Card>
+          <Button
+            type="button"
+            variant="secondary"
+            className="mt-6"
+            onClick={clearFilters}
+          >
+            Clear Filters
+          </Button>
+        </PageCard>
       )}
     </PageShell>
   );
 }
 
-const maintenanceFilters: Array<{
-  value: MaintenanceFilter;
-  label: string;
-}> = [
-  {
-    value: "all",
-    label: "All Tasks",
-  },
-  {
-    value: "open",
-    label: "Open",
-  },
-  {
-    value: "due-soon",
-    label: "Due Soon",
-  },
-  {
-    value: "overdue",
-    label: "Overdue",
-  },
-  {
-    value: "unscheduled",
-    label: "No Due Date",
-  },
-  {
-    value: "completed",
-    label: "Completed",
-  },
-];
+const maintenanceFilters:
+  Array<{
+    value: MaintenanceFilter;
+    label: string;
+  }> = [
+    {
+      value: "all",
+      label: "All Tasks",
+    },
+    {
+      value: "open",
+      label: "Open",
+    },
+    {
+      value: "due-soon",
+      label: "Due Soon",
+    },
+    {
+      value: "overdue",
+      label: "Overdue",
+    },
+    {
+      value: "unscheduled",
+      label: "No Due Date",
+    },
+    {
+      value: "completed",
+      label: "Completed",
+    },
+  ];
 
 function normalizeDemoTask(
   item: unknown,
@@ -870,7 +922,10 @@ function normalizeDemoTask(
       : {};
 
   const id =
-    getString(record, "id") ??
+    getString(
+      record,
+      "id"
+    ) ??
     "demo-maintenance-" +
       String(index + 1);
 
@@ -887,8 +942,10 @@ function normalizeDemoTask(
     );
 
   const status =
-    getString(record, "status") ??
-    "";
+    getString(
+      record,
+      "status"
+    ) ?? "";
 
   const completed =
     status
@@ -897,42 +954,62 @@ function normalizeDemoTask(
 
   return {
     id,
-    user_id: "demo-user",
-    device_id: deviceId,
+    user_id:
+      "demo-user",
+    household_id:
+      null,
+    device_id:
+      deviceId,
+
     title:
       getString(
         record,
         "title"
-      ) ?? "Maintenance Task",
+      ) ??
+      "Maintenance Task",
+
     description:
-      getString(record, "notes"),
+      getString(
+        record,
+        "notes"
+      ),
+
     task_type:
       getString(
         record,
         "category"
-      ) ?? "Maintenance",
+      ) ??
+      "Maintenance",
+
     due_date:
       getString(
         record,
         "due_date"
       ),
+
     completed,
-    completed_at: completed
-      ? new Date().toISOString()
-      : null,
+
+    completed_at:
+      completed
+        ? new Date().toISOString()
+        : null,
+
     recurring_interval:
       getString(
         record,
         "frequency"
       ),
+
     created_at:
       new Date().toISOString(),
-    devices: connectedDevice
-      ? {
-          device_name:
-            connectedDevice.device_name,
-        }
-      : null,
+
+    devices:
+      connectedDevice
+        ? {
+            device_name:
+              connectedDevice.device_name,
+          }
+        : null,
   };
 }
 
@@ -940,68 +1017,19 @@ function getString(
   record: DemoRecord,
   key: string
 ): string | null {
-  const value = record[key];
+  const value =
+    record[key];
 
   return typeof value === "string"
     ? value
     : null;
 }
 
-function Card({
-  children,
-  className = "",
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
-  return (
-    <div
-      className={
-        "rounded-[28px] border border-[#E8E2D6] bg-white shadow-sm " +
-        className
-      }
-    >
-      {children}
-    </div>
-  );
-}
-
-function ActionLink({
-  href,
-  children,
-  variant = "primary",
-}: {
-  href: string;
-  children: ReactNode;
-  variant?:
-    | "primary"
-    | "secondary"
-    | "light";
-}) {
-  const styles =
-    variant === "light"
-      ? "bg-white text-[#111827] hover:bg-neutral-100"
-      : variant === "secondary"
-        ? "border border-[#E8E2D6] bg-white text-[#111827] hover:bg-[#F7F5EF]"
-        : "bg-[#111827] text-white hover:bg-[#263044]";
-
-  return (
-    <Link
-      href={href}
-      className={
-        "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold transition " +
-        styles
-      }
-    >
-      {children}
-    </Link>
-  );
-}
-
 function TaskCard({
   task,
   today,
-  isDemo,
+  canEdit,
+  canDelete,
   updating,
   deleting,
   onToggle,
@@ -1009,7 +1037,8 @@ function TaskCard({
 }: {
   task: MaintenanceTask;
   today: Date;
-  isDemo: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
   updating: boolean;
   deleting: boolean;
   onToggle: () => void;
@@ -1025,37 +1054,58 @@ function TaskCard({
     <article className="group overflow-hidden rounded-[28px] border border-[#E8E2D6] bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#D8C69D] hover:shadow-lg">
       <div className="bg-[#F7F5EF] px-6 py-6">
         <div className="flex items-start justify-between gap-4">
-          <button
-            type="button"
-            onClick={onToggle}
-            disabled={updating}
-            aria-label={
-              isDemo
-                ? "Create an account to manage tasks"
-                : task.completed
+          {canEdit ? (
+            <button
+              type="button"
+              onClick={onToggle}
+              disabled={updating}
+              aria-label={
+                task.completed
                   ? "Mark task incomplete"
                   : "Mark task complete"
-            }
-            className={
-              "flex h-12 w-12 shrink-0 items-center justify-center rounded-[20px] bg-white shadow-sm transition disabled:opacity-50 " +
-              (task.completed
-                ? "text-emerald-700"
-                : "text-[#C8A96A]")
-            }
-          >
-            {updating ? (
-              <Loader2
-                size={22}
-                className="animate-spin"
-              />
-            ) : task.completed ? (
-              <CheckCircle2
-                size={23}
-              />
-            ) : (
-              <Circle size={23} />
-            )}
-          </button>
+              }
+              className={
+                "flex h-12 w-12 shrink-0 items-center justify-center rounded-[20px] bg-white shadow-sm transition disabled:opacity-50 " +
+                (task.completed
+                  ? "text-emerald-700"
+                  : "text-[#C8A96A]")
+              }
+            >
+              {updating ? (
+                <Loader2
+                  size={22}
+                  className="animate-spin"
+                />
+              ) : task.completed ? (
+                <CheckCircle2
+                  size={23}
+                />
+              ) : (
+                <Circle
+                  size={23}
+                />
+              )}
+            </button>
+          ) : (
+            <div
+              className={
+                "flex h-12 w-12 shrink-0 items-center justify-center rounded-[20px] bg-white shadow-sm " +
+                (task.completed
+                  ? "text-emerald-700"
+                  : "text-[#C8A96A]")
+              }
+            >
+              {task.completed ? (
+                <CheckCircle2
+                  size={23}
+                />
+              ) : (
+                <Circle
+                  size={23}
+                />
+              )}
+            </div>
+          )}
 
           <span
             className={
@@ -1121,53 +1171,48 @@ function TaskCard({
 
             <p className="mt-1 font-semibold text-[#111827]">
               Repeats{" "}
-              {task.recurring_interval}
+              {
+                task.recurring_interval
+              }
             </p>
           </div>
         )}
 
         <div className="mt-5 flex items-center gap-3 border-t border-[#E8E2D6] pt-5">
-          {isDemo ? (
-            <ActionLink
-              href="/signup"
-              variant="secondary"
-            >
-              Create Vault to Manage
-            </ActionLink>
-          ) : task.device_id ? (
-            <ActionLink
+          {task.device_id ? (
+            <Link
               href={
                 "/devices/" +
                 task.device_id
               }
-              variant="secondary"
+              className="inline-flex min-h-11 flex-1 items-center justify-center rounded-2xl border border-[#E8E2D6] bg-white px-4 text-sm font-semibold text-[#111827] transition hover:border-[#C8A96A] hover:bg-[#F7F5EF]"
             >
               View Device
-            </ActionLink>
+            </Link>
           ) : (
             <div className="flex-1" />
           )}
 
-          <button
-            type="button"
-            onClick={onDelete}
-            disabled={deleting}
-            aria-label={
-              isDemo
-                ? "Create an account to delete tasks"
-                : "Delete maintenance task"
-            }
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-red-100 bg-red-50 text-red-700 transition hover:bg-red-600 hover:text-white disabled:opacity-50"
-          >
-            {deleting ? (
-              <Loader2
-                size={17}
-                className="animate-spin"
-              />
-            ) : (
-              <Trash2 size={17} />
-            )}
-          </button>
+          {canDelete && (
+            <button
+              type="button"
+              onClick={onDelete}
+              disabled={deleting}
+              aria-label="Delete maintenance task"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-red-100 bg-red-50 text-red-700 transition hover:bg-red-600 hover:text-white disabled:opacity-50"
+            >
+              {deleting ? (
+                <Loader2
+                  size={17}
+                  className="animate-spin"
+                />
+              ) : (
+                <Trash2
+                  size={17}
+                />
+              )}
+            </button>
+          )}
         </div>
       </div>
     </article>
@@ -1194,16 +1239,19 @@ function SummaryCard({
   const toneClasses = {
     neutral:
       "bg-[#F7F5EF] text-[#C8A96A]",
+
     gold:
       "bg-amber-50 text-amber-700",
+
     red:
       "bg-red-50 text-red-700",
+
     green:
       "bg-emerald-50 text-emerald-700",
   };
 
   return (
-    <Card className="p-5 md:p-6">
+    <PageCard className="p-5 md:p-6">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-sm text-neutral-500">
@@ -1228,7 +1276,7 @@ function SummaryCard({
           <Icon size={20} />
         </div>
       </div>
-    </Card>
+    </PageCard>
   );
 }
 
@@ -1249,8 +1297,10 @@ function AttentionRow({
   const toneClasses = {
     red:
       "bg-red-50 text-red-700",
+
     gold:
       "bg-amber-50 text-amber-700",
+
     neutral:
       "bg-neutral-100 text-neutral-600",
   };
@@ -1302,15 +1352,21 @@ function CompletionRing({
 }: {
   score: number;
 }) {
-  const normalizedScore = Math.max(
-    0,
-    Math.min(score, 100)
-  );
+  const normalizedScore =
+    Math.max(
+      0,
+      Math.min(
+        score,
+        100
+      )
+    );
 
   const radius = 72;
 
   const circumference =
-    2 * Math.PI * radius;
+    2 *
+    Math.PI *
+    radius;
 
   const offset =
     circumference -
@@ -1325,7 +1381,9 @@ function CompletionRing({
         role="img"
         aria-label={
           "Maintenance completion: " +
-          String(normalizedScore) +
+          String(
+            normalizedScore
+          ) +
           "%"
         }
       >
@@ -1349,7 +1407,9 @@ function CompletionRing({
           strokeDasharray={
             circumference
           }
-          strokeDashoffset={offset}
+          strokeDashoffset={
+            offset
+          }
         />
       </svg>
 
@@ -1370,48 +1430,6 @@ function CompletionRing({
   );
 }
 
-function EmptyState({
-  isDemo,
-  title,
-  description,
-}: {
-  isDemo: boolean;
-  title: string;
-  description: string;
-}) {
-  return (
-    <Card className="py-14 text-center">
-      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
-        <Wrench size={29} />
-      </div>
-
-      <h2 className="mt-5 text-2xl font-semibold tracking-[-0.03em] text-[#111827]">
-        {title}
-      </h2>
-
-      <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-neutral-500">
-        {description}
-      </p>
-
-      <div className="mt-6">
-        <ActionLink
-          href={
-            isDemo
-              ? "/signup"
-              : "/maintenance/new"
-          }
-        >
-          <Plus size={17} />
-
-          {isDemo
-            ? "Create Your Vault"
-            : "Add Maintenance Task"}
-        </ActionLink>
-      </div>
-    </Card>
-  );
-}
-
 function getTaskStatus(
   task: MaintenanceTask,
   today: Date
@@ -1419,8 +1437,10 @@ function getTaskStatus(
   if (task.completed) {
     return {
       label: "Completed",
+
       group:
         "completed" as MaintenanceFilter,
+
       badgeClass:
         "bg-emerald-50 text-emerald-700",
     };
@@ -1428,17 +1448,22 @@ function getTaskStatus(
 
   if (!task.due_date) {
     return {
-      label: "No due date",
+      label:
+        "No due date",
+
       group:
         "unscheduled" as MaintenanceFilter,
+
       badgeClass:
         "bg-neutral-100 text-neutral-600",
     };
   }
 
-  const dueDate = new Date(
-    task.due_date + "T00:00:00"
-  );
+  const dueDate =
+    new Date(
+      task.due_date +
+        "T00:00:00"
+    );
 
   if (
     Number.isNaN(
@@ -1446,28 +1471,40 @@ function getTaskStatus(
     )
   ) {
     return {
-      label: "Date unknown",
+      label:
+        "Date unknown",
+
       group:
         "unscheduled" as MaintenanceFilter,
+
       badgeClass:
         "bg-neutral-100 text-neutral-600",
     };
   }
 
-  const difference = Math.ceil(
-    (dueDate.getTime() -
-      today.getTime()) /
-      (1000 * 60 * 60 * 24)
-  );
+  const difference =
+    Math.ceil(
+      (dueDate.getTime() -
+        today.getTime()) /
+        (1000 *
+          60 *
+          60 *
+          24)
+    );
 
   if (difference < 0) {
     return {
       label:
         String(
-          Math.abs(difference)
-        ) + " days overdue",
+          Math.abs(
+            difference
+          )
+        ) +
+        " days overdue",
+
       group:
         "overdue" as MaintenanceFilter,
+
       badgeClass:
         "bg-red-50 text-red-700",
     };
@@ -1475,9 +1512,12 @@ function getTaskStatus(
 
   if (difference === 0) {
     return {
-      label: "Due today",
+      label:
+        "Due today",
+
       group:
         "due-soon" as MaintenanceFilter,
+
       badgeClass:
         "bg-amber-50 text-amber-700",
     };
@@ -1487,10 +1527,14 @@ function getTaskStatus(
     return {
       label:
         "Due in " +
-        String(difference) +
+        String(
+          difference
+        ) +
         " days",
+
       group:
         "due-soon" as MaintenanceFilter,
+
       badgeClass:
         "bg-amber-50 text-amber-700",
     };
@@ -1502,8 +1546,10 @@ function getTaskStatus(
       formatDate(
         task.due_date
       ),
+
     group:
       "open" as MaintenanceFilter,
+
     badgeClass:
       "bg-[#FFF8E8] text-[#8A6A2F]",
   };
@@ -1512,9 +1558,11 @@ function getTaskStatus(
 function formatDate(
   value: string
 ) {
-  const date = new Date(
-    value + "T00:00:00"
-  );
+  const date =
+    new Date(
+      value +
+        "T00:00:00"
+    );
 
   if (
     Number.isNaN(
@@ -1527,9 +1575,14 @@ function formatDate(
   return date.toLocaleDateString(
     undefined,
     {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
+      month:
+        "short",
+
+      day:
+        "numeric",
+
+      year:
+        "numeric",
     }
   );
 }

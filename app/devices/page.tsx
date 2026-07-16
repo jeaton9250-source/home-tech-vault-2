@@ -5,14 +5,11 @@ import {
   useMemo,
   useState,
 } from "react";
-
 import Link from "next/link";
-
 import {
   useRouter,
   useSearchParams,
 } from "next/navigation";
-
 import {
   ArrowRight,
   Check,
@@ -30,20 +27,20 @@ import {
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
-
-import {
-  type Device as BaseDevice,
+import type {
+  Device as BaseDevice,
 } from "@/lib/calculateTechnologyScore";
-
 import { demoDevices } from "@/lib/demoData";
 
-import { useDemoMode } from "@/hooks/useDemoMode";
+import { usePermissions } from "@/hooks/usePermissions";
 import { useSubscription } from "@/hooks/useSubscription";
-import { useHouseholdRole } from "@/hooks/useHouseholdRole";
 
 import PageShell from "@/components/ui/PageShell";
 import PageCard from "@/components/ui/PageCard";
 import Button from "@/components/ui/Button";
+import {
+  ViewerBanner,
+} from "@/components/ui/PermissionUI";
 
 type DeviceRecord = BaseDevice & {
   id: string;
@@ -66,23 +63,16 @@ type SortOption =
 
 export default function DevicesPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const {
-  isViewer,
-  canAdd,
-  loading: roleLoading,
-} = useHouseholdRole();
-
-  const [
-  hasFamilyHouseholdAccess,
-  setHasFamilyHouseholdAccess,
-] = useState(false);
+  const searchParams =
+    useSearchParams();
 
   const {
     user,
     isDemo,
-    loading: demoModeLoading,
-  } = useDemoMode();
+    isViewer,
+    canCreate,
+    loading: permissionsLoading,
+  } = usePermissions();
 
   const {
     deviceLimit,
@@ -90,14 +80,23 @@ export default function DevicesPage() {
     loading: subscriptionLoading,
   } = useSubscription();
 
+  const [
+    hasFamilyHouseholdAccess,
+    setHasFamilyHouseholdAccess,
+  ] = useState(false);
+
   const [devices, setDevices] =
     useState<DeviceRecord[]>([]);
 
-  const [loadingDevices, setLoadingDevices] =
-    useState(true);
+  const [
+    loadingDevices,
+    setLoadingDevices,
+  ] = useState(true);
 
-  const [errorMessage, setErrorMessage] =
-    useState("");
+  const [
+    errorMessage,
+    setErrorMessage,
+  ] = useState("");
 
   const [searchTerm, setSearchTerm] =
     useState("");
@@ -120,286 +119,304 @@ export default function DevicesPage() {
 
   useEffect(() => {
     const searchFromUrl =
-      searchParams.get("search") || "";
+      searchParams.get("search") ?? "";
 
     setSearchTerm(searchFromUrl);
   }, [searchParams]);
 
-   useEffect(() => {
-  async function loadDevices() {
-    if (demoModeLoading) {
-      return;
-    }
+  useEffect(() => {
+    let mounted = true;
 
-    try {
-      setLoadingDevices(true);
-      setErrorMessage("");
-
-      if (isDemo) {
-        const sampleDevices: DeviceRecord[] =
-          demoDevices.map((device) => ({
-            id: device.id,
-            device_name:
-              device.device_name,
-            brand: device.brand,
-            category: device.category,
-            model_number:
-              device.model_number,
-            serial_number:
-              device.serial_number,
-            purchase_date:
-              device.purchase_date,
-            warranty_date:
-              device.warranty_date,
-            purchase_price:
-              device.purchase_price,
-            location: device.location,
-            notes: device.notes,
-            online: device.online,
-            last_seen_at:
-              device.last_seen_at,
-            ip_address:
-              device.ip_address,
-            photo_url:
-              device.photo_url || "",
-          }));
-
-        setDevices(sampleDevices);
+    async function loadDevices() {
+      if (permissionsLoading) {
         return;
       }
 
-      if (!user) {
-        setDevices([]);
-        return;
-      }
+      try {
+        setLoadingDevices(true);
+        setErrorMessage("");
 
-      /*
-       * Find the household that the signed-in user belongs to.
-       */
-      const {
-        data: membership,
-        error: membershipError,
-      } = await supabase
-        .from("household_members")
-        .select(
-          `
-            household_id,
-            households (
-              owner_id
-            )
-          `
-        )
-        .eq("user_id", user.id)
-        .limit(1)
-        .maybeSingle();
+        /*
+         * Signed-out visitors use sample data.
+         * Signed-in viewers still load their
+         * real shared household devices.
+         */
+        if (isDemo || !user) {
+          const sampleDevices: DeviceRecord[] =
+            demoDevices.map(
+              (device) => ({
+                id: device.id,
+                device_name:
+                  device.device_name,
+                brand: device.brand,
+                category:
+                  device.category,
+                model_number:
+                  device.model_number,
+                serial_number:
+                  device.serial_number,
+                purchase_date:
+                  device.purchase_date,
+                warranty_date:
+                  device.warranty_date,
+                purchase_price:
+                  device.purchase_price,
+                location:
+                  device.location,
+                notes: device.notes,
+                online: device.online,
+                last_seen_at:
+                  device.last_seen_at,
+                ip_address:
+                  device.ip_address,
+                photo_url:
+                  device.photo_url ?? "",
+              })
+            );
 
-      if (membershipError) {
-        throw membershipError;
-      }
+          if (!mounted) {
+            return;
+          }
 
-      const {
-        data: familyAccess,
-        error: familyAccessError,
-      } = await supabase.rpc(
-        "current_household_has_family_access"
-      );
-
-      if (familyAccessError) {
-        console.error(
-          "Unable to check household Family access:",
-          familyAccessError
-        );
-      }
-
-      setHasFamilyHouseholdAccess(
-        familyAccess === true
-      );
-
-      /*
-       * Users without a household can still see their
-       * own personal devices.
-       */
-      let deviceQuery =
-        supabase
-          .from("devices")
-          .select("*");
-
-      if (membership?.household_id) {
-        deviceQuery =
-          deviceQuery.eq(
-            "household_id",
-            membership.household_id
+          setDevices(sampleDevices);
+          setHasFamilyHouseholdAccess(
+            false
           );
-      } else {
-        deviceQuery =
-          deviceQuery.eq(
-            "user_id",
-            user.id
-          );
-      }
 
-      const {
-        data: deviceData,
-        error: deviceError,
-      } = await deviceQuery;
+          return;
+        }
 
-      if (deviceError) {
-        throw deviceError;
-      }
+        const {
+          data: membership,
+          error: membershipError,
+        } = await supabase
+          .from("household_members")
+          .select("household_id")
+          .eq("user_id", user.id)
+          .limit(1)
+          .maybeSingle();
 
-      const loadedDevices =
-        (deviceData ||
-          []) as DeviceRecord[];
+        if (membershipError) {
+          throw membershipError;
+        }
 
-      if (
-        loadedDevices.length === 0
-      ) {
-        setDevices([]);
-        return;
-      }
-
-      const deviceIds =
-        loadedDevices.map(
-          (device) => device.id
+        const {
+          data: familyAccess,
+          error: familyAccessError,
+        } = await supabase.rpc(
+          "current_household_has_family_access"
         );
 
-      /*
-       * Device images are loaded by device ID.
-       * Do not filter these by the current user's user_id,
-       * because shared devices may have been created by
-       * another household member.
-       */
-      const {
-        data: imageData,
-        error: imageError,
-      } = await supabase
-        .from("device_images")
-        .select(
-          "device_id, image_url"
-        )
-        .in(
-          "device_id",
-          deviceIds
-        );
-
-      if (imageError) {
-        console.error(
-          "Unable to load device images:",
-          imageError
-        );
-
-        setDevices(
-          loadedDevices.map(
-            (device) => ({
-              ...device,
-              photo_url:
-                device.photo_url || "",
-            })
-          )
-        );
-
-        return;
-      }
-
-      const firstImageByDevice =
-        new Map<string, string>();
-
-      for (
-        const image of
-        (imageData ||
-          []) as DeviceImageRecord[]
-      ) {
-        if (
-          !firstImageByDevice.has(
-            image.device_id
-          )
-        ) {
-          firstImageByDevice.set(
-            image.device_id,
-            image.image_url
+        if (familyAccessError) {
+          console.error(
+            "Unable to check household Family access:",
+            familyAccessError
           );
         }
-      }
 
-      const devicesWithPhotos =
-        await Promise.all(
+        if (!mounted) {
+          return;
+        }
+
+        setHasFamilyHouseholdAccess(
+          familyAccess === true
+        );
+
+        let deviceQuery =
+          supabase
+            .from("devices")
+            .select("*");
+
+        if (membership?.household_id) {
+          deviceQuery =
+            deviceQuery.eq(
+              "household_id",
+              membership.household_id
+            );
+        } else {
+          deviceQuery =
+            deviceQuery.eq(
+              "user_id",
+              user.id
+            );
+        }
+
+        const {
+          data: deviceData,
+          error: deviceError,
+        } = await deviceQuery;
+
+        if (deviceError) {
+          throw deviceError;
+        }
+
+        if (!mounted) {
+          return;
+        }
+
+        const loadedDevices =
+          (deviceData ??
+            []) as DeviceRecord[];
+
+        if (
+          loadedDevices.length === 0
+        ) {
+          setDevices([]);
+          return;
+        }
+
+        const deviceIds =
           loadedDevices.map(
-            async (device) => {
-              const imagePath =
-                firstImageByDevice.get(
-                  device.id
-                );
+            (device) => device.id
+          );
 
-              if (!imagePath) {
+        const {
+          data: imageData,
+          error: imageError,
+        } = await supabase
+          .from("device_images")
+          .select(
+            "device_id, image_url"
+          )
+          .in(
+            "device_id",
+            deviceIds
+          );
+
+        if (imageError) {
+          console.error(
+            "Unable to load device images:",
+            imageError
+          );
+
+          if (!mounted) {
+            return;
+          }
+
+          setDevices(
+            loadedDevices.map(
+              (device) => ({
+                ...device,
+                photo_url:
+                  device.photo_url ?? "",
+              })
+            )
+          );
+
+          return;
+        }
+
+        const firstImageByDevice =
+          new Map<string, string>();
+
+        for (
+          const image of
+          (imageData ??
+            []) as DeviceImageRecord[]
+        ) {
+          if (
+            !firstImageByDevice.has(
+              image.device_id
+            )
+          ) {
+            firstImageByDevice.set(
+              image.device_id,
+              image.image_url
+            );
+          }
+        }
+
+        const devicesWithPhotos =
+          await Promise.all(
+            loadedDevices.map(
+              async (device) => {
+                const imagePath =
+                  firstImageByDevice.get(
+                    device.id
+                  );
+
+                if (!imagePath) {
+                  return {
+                    ...device,
+                    photo_url:
+                      device.photo_url ??
+                      "",
+                  };
+                }
+
+                const {
+                  data: signedData,
+                  error: signedError,
+                } =
+                  await supabase.storage
+                    .from(
+                      "device-images"
+                    )
+                    .createSignedUrl(
+                      imagePath,
+                      3600
+                    );
+
+                if (signedError) {
+                  console.error(
+                    "Unable to create photo URL for " +
+                      device.device_name +
+                      ":",
+                    signedError
+                  );
+                }
+
                 return {
                   ...device,
                   photo_url:
-                    device.photo_url ||
+                    signedData
+                      ?.signedUrl ??
+                    device.photo_url ??
                     "",
                 };
               }
+            )
+          );
 
-              const {
-                data: signedData,
-                error: signedError,
-              } =
-                await supabase.storage
-                  .from(
-                    "device-images"
-                  )
-                  .createSignedUrl(
-                    imagePath,
-                    3600
-                  );
+        if (!mounted) {
+          return;
+        }
 
-              if (signedError) {
-                console.error(
-                  `Unable to create photo URL for ${device.device_name}:`,
-                  signedError
-                );
-              }
-
-              return {
-                ...device,
-                photo_url:
-                  signedData
-                    ?.signedUrl || "",
-              };
-            }
-          )
+        setDevices(
+          devicesWithPhotos
+        );
+      } catch (error: unknown) {
+        console.error(
+          "Unable to load devices:",
+          error
         );
 
-      setDevices(
-        devicesWithPhotos
-      );
-    } catch (error: unknown) {
-      const possibleError =
-        error as {
-          message?: string;
-          details?: string;
-        };
+        if (!mounted) {
+          return;
+        }
 
-      console.error(
-        "Unable to load devices:",
-        error
-      );
-
-      setErrorMessage(
-        possibleError.message ||
-          possibleError.details ||
-          "Unable to load your devices."
-      );
-    } finally {
-      setLoadingDevices(false);
+        setErrorMessage(
+          error instanceof Error
+            ? error.message
+            : "Unable to load your devices."
+        );
+      } finally {
+        if (mounted) {
+          setLoadingDevices(false);
+        }
+      }
     }
-  }
 
-  void loadDevices();
-}, [
-  user,
-  isDemo,
-  demoModeLoading,
-]);
+    void loadDevices();
+
+    return () => {
+      mounted = false;
+    };
+  }, [
+    user,
+    isDemo,
+    permissionsLoading,
+  ]);
 
   const categories = useMemo(() => {
     const values = devices
@@ -460,9 +477,8 @@ export default function DevicesPage() {
             device.notes,
           ]
             .map((value) =>
-              String(
-                value ?? ""
-              ).toLowerCase()
+              String(value ?? "")
+                .toLowerCase()
             )
             .join(" ");
 
@@ -473,16 +489,14 @@ export default function DevicesPage() {
             );
 
           const matchesCategory =
-            selectedCategory ===
-              "All" ||
+            selectedCategory === "All" ||
             String(
               device.category ?? ""
             ).trim() ===
               selectedCategory;
 
           const matchesLocation =
-            selectedLocation ===
-              "All" ||
+            selectedLocation === "All" ||
             String(
               device.location ?? ""
             ).trim() ===
@@ -526,14 +540,16 @@ export default function DevicesPage() {
               const firstTime =
                 first.warranty_date
                   ? new Date(
-                      `${first.warranty_date}T00:00:00`
+                      first.warranty_date +
+                        "T00:00:00"
                     ).getTime()
                   : Number.MAX_SAFE_INTEGER;
 
               const secondTime =
                 second.warranty_date
                   ? new Date(
-                      `${second.warranty_date}T00:00:00`
+                      second.warranty_date +
+                        "T00:00:00"
                     ).getTime()
                   : Number.MAX_SAFE_INTEGER;
 
@@ -568,22 +584,23 @@ export default function DevicesPage() {
         (total, device) =>
           total +
           Number(
-            device.purchase_price || 0
+            device.purchase_price ?? 0
           ),
         0
       ),
     [devices]
   );
 
-  const activeWarrantyCount = useMemo(
-    () =>
-      devices.filter((device) =>
-        hasActiveWarranty(
-          device.warranty_date
-        )
-      ).length,
-    [devices]
-  );
+  const activeWarrantyCount =
+    useMemo(
+      () =>
+        devices.filter((device) =>
+          hasActiveWarranty(
+            device.warranty_date
+          )
+        ).length,
+      [devices]
+    );
 
   const filtersActive =
     searchTerm.trim() !== "" ||
@@ -592,19 +609,18 @@ export default function DevicesPage() {
     sortOption !== "name";
 
   const loading =
-  demoModeLoading ||
-  subscriptionLoading ||
-  roleLoading ||
-  loadingDevices;
+    permissionsLoading ||
+    subscriptionLoading ||
+    loadingDevices;
 
   const householdHasUnlimitedDevices =
-  hasUnlimitedDevices ||
-  hasFamilyHouseholdAccess;
+    hasUnlimitedDevices ||
+    hasFamilyHouseholdAccess;
 
-const deviceLimitReached =
-  !householdHasUnlimitedDevices &&
-  deviceLimit !== null &&
-  devices.length >= deviceLimit;
+  const deviceLimitReached =
+    !householdHasUnlimitedDevices &&
+    deviceLimit !== null &&
+    devices.length >= deviceLimit;
 
   function clearFilters() {
     setSearchTerm("");
@@ -617,27 +633,24 @@ const deviceLimitReached =
   }
 
   function handleAddDevice() {
-  if (isDemo) {
-    router.push("/signup");
-    return;
-  }
+    if (!canCreate) {
+      router.push(
+        user ? "/devices" : "/signup"
+      );
 
-  if (!canAdd || isViewer) {
-    setErrorMessage(
-      "Viewer access is read-only. You cannot add devices."
-    );
-    return;
-  }
+      return;
+    }
 
-  if (deviceLimitReached) {
-    router.push(
-      "/upgrade?reason=device-limit"
-    );
-    return;
-  }
+    if (deviceLimitReached) {
+      router.push(
+        "/upgrade?reason=device-limit"
+      );
 
-  router.push("/devices/add");
-}
+      return;
+    }
+
+    router.push("/devices/add");
+  }
 
   return (
     <PageShell>
@@ -653,54 +666,51 @@ const deviceLimitReached =
             </h1>
 
             <p className="mt-4 max-w-xl text-sm leading-6 text-white/60 md:text-base">
-              Everything you own, organized
-              in one calm and secure place.
+              Everything you own,
+              organized in one calm and
+              secure place.
             </p>
           </div>
 
-         {isDemo ? (
-  <Button
-    onClick={handleAddDevice}
-    variant="secondary"
-  >
-    <Plus size={17} />
-    Create Your Vault
-  </Button>
-) : canAdd && !isViewer ? (
-  <Button
-    onClick={handleAddDevice}
-    variant="secondary"
-  >
-    <Plus size={17} />
+          {canCreate ? (
+            <Button
+              type="button"
+              onClick={handleAddDevice}
+              variant="secondary"
+            >
+              <Plus size={17} />
 
-    {deviceLimitReached
-      ? "Upgrade to Add More"
-      : "Add Device"}
-  </Button>
-) : (
-  <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm font-semibold text-white/70">
-    Viewer Access · Read Only
-  </div>
-)}
+              {deviceLimitReached
+                ? "Upgrade to Add More"
+                : "Add Device"}
+            </Button>
+          ) : !user ? (
+            <Button
+              href="/signup"
+              variant="secondary"
+            >
+              <Plus size={17} />
+              Create Your Vault
+            </Button>
+          ) : (
+            <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm font-semibold text-white/70">
+              Viewer Access · Read Only
+            </div>
+          )}
         </div>
       </section>
 
-      {isDemo && !loading && (
-        <section className="rounded-3xl border border-[#D8C69D] bg-[#FFF8E8] p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A6A2F]">
-            Interactive Demo
-          </p>
-
-          <p className="mt-2 text-sm leading-6 text-neutral-600">
-            You are browsing a sample
-            household. Create an account to
-            organize your own devices.
-          </p>
-        </section>
-      )}
+      <ViewerBanner
+        show={isViewer}
+        description={
+          user
+            ? "You can view shared devices, search records, and open device details. Viewer access cannot add, edit, upload, or delete devices."
+            : "You are browsing a sample device vault. Create an account to organize and manage your own technology."
+        }
+      />
 
       {errorMessage && (
-        <PageCard className="border-red-200 bg-red-50 text-red-700">
+        <PageCard className="border-red-200 bg-red-50 p-5 text-red-700">
           {errorMessage}
         </PageCard>
       )}
@@ -801,11 +811,12 @@ const deviceLimitReached =
 
                   <ChevronDown
                     size={16}
-                    className={`transition ${
-                      showFilters
+                    className={
+                      "transition " +
+                      (showFilters
                         ? "rotate-180"
-                        : ""
-                    }`}
+                        : "")
+                    }
                   />
                 </button>
               </div>
@@ -826,11 +837,12 @@ const deviceLimitReached =
                             category
                           )
                         }
-                        className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition ${
-                          active
+                        className={
+                          "shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition " +
+                          (active
                             ? "bg-[#111827] text-white"
-                            : "border border-[#E8E2D6] bg-white text-neutral-500 hover:border-[#C8A96A] hover:text-[#111827]"
-                        }`}
+                            : "border border-[#E8E2D6] bg-white text-neutral-500 hover:border-[#C8A96A] hover:text-[#111827]")
+                        }
                       >
                         {category}
                       </button>
@@ -943,8 +955,7 @@ const deviceLimitReached =
             Loading your devices...
           </div>
         </PageCard>
-      ) : filteredDevices.length >
-        0 ? (
+      ) : filteredDevices.length > 0 ? (
         <section className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
           {filteredDevices.map(
             (device) => (
@@ -995,38 +1006,42 @@ const deviceLimitReached =
             documents.
           </p>
 
-          {isDemo ? (
-  <Button
-    onClick={handleAddDevice}
-    className="mt-6"
-  >
-    <Plus size={17} />
-    Create Your Vault
-  </Button>
-) : canAdd && !isViewer ? (
-  <Button
-    onClick={handleAddDevice}
-    className="mt-6"
-  >
-    <Plus size={17} />
+          {canCreate ? (
+            <Button
+              type="button"
+              onClick={handleAddDevice}
+              className="mt-6"
+            >
+              <Plus size={17} />
 
-    {deviceLimitReached
-      ? "Upgrade to Add More"
-      : "Add Your First Device"}
-  </Button>
-) : (
-  <div className="mx-auto mt-6 max-w-md rounded-2xl bg-[#F7F5EF] px-5 py-4 text-sm text-neutral-500">
-    You have viewer access. You can view shared devices, but you cannot add or change them.
-  </div>
-)}
+              {deviceLimitReached
+                ? "Upgrade to Add More"
+                : "Add Your First Device"}
+            </Button>
+          ) : !user ? (
+            <Button
+              href="/signup"
+              className="mt-6"
+            >
+              <Plus size={17} />
+              Create Your Vault
+            </Button>
+          ) : (
+            <div className="mx-auto mt-6 max-w-md rounded-2xl bg-[#F7F5EF] px-5 py-4 text-sm text-neutral-500">
+              You have viewer access.
+              You can view shared devices,
+              but you cannot add or change
+              them.
+            </div>
+          )}
         </PageCard>
       )}
 
       {!isDemo &&
-  !loading &&
-  !isViewer &&
-  !householdHasUnlimitedDevices &&
-  deviceLimit !== null && (
+        !loading &&
+        canCreate &&
+        !householdHasUnlimitedDevices &&
+        deviceLimit !== null && (
           <PageCard className="p-5 md:p-6">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
               <div>
@@ -1058,12 +1073,15 @@ const deviceLimitReached =
               <div
                 className="h-full rounded-full bg-[#111827] transition-all"
                 style={{
-                  width: `${Math.min(
-                    (devices.length /
-                      deviceLimit) *
-                      100,
-                    100
-                  )}%`,
+                  width:
+                    String(
+                      Math.min(
+                        (devices.length /
+                          deviceLimit) *
+                          100,
+                        100
+                      )
+                    ) + "%",
                 }}
               />
             </div>
@@ -1085,7 +1103,10 @@ function ModernDeviceCard({
 
   return (
     <Link
-      href={`/devices/${device.id}`}
+      href={
+        "/devices/" +
+        device.id
+      }
       className="group overflow-hidden rounded-[28px] border border-[#E8E2D6] bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#D7C79F] hover:shadow-lg"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-[#F7F5EF]">
@@ -1147,7 +1168,10 @@ function ModernDeviceCard({
           )}
 
           <span
-            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium ${warranty.className}`}
+            className={
+              "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium " +
+              warranty.className
+            }
           >
             <ShieldCheck size={13} />
             {warranty.label}
@@ -1221,7 +1245,7 @@ function hasActiveWarranty(
   }
 
   const expiration = new Date(
-    `${warrantyDate}T23:59:59`
+    warrantyDate + "T23:59:59"
   );
 
   return (
@@ -1248,7 +1272,7 @@ function getWarrantyStatus(
   }
 
   const expiration = new Date(
-    `${warrantyDate}T23:59:59`
+    warrantyDate + "T23:59:59"
   );
 
   if (
@@ -1279,7 +1303,9 @@ function getWarrantyStatus(
 
   if (daysRemaining <= 60) {
     return {
-      label: `${daysRemaining} days left`,
+      label:
+        String(daysRemaining) +
+        " days left",
       className:
         "bg-amber-50 text-amber-700",
     };

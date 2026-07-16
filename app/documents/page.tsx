@@ -6,7 +6,9 @@ import {
   useState,
   type ComponentType,
 } from "react";
+
 import Link from "next/link";
+
 import {
   ExternalLink,
   File,
@@ -17,22 +19,30 @@ import {
   ReceiptText,
   Search,
   ShieldCheck,
-  Sparkles,
   Upload,
   X,
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
-import { useDemoMode } from "@/hooks/useDemoMode";
+
 import {
   demoDevices,
   demoDocuments,
 } from "@/lib/demoData";
 
+import { usePermissions } from "@/hooks/usePermissions";
+
 import DeleteDocumentButton from "@/components/DeleteDocumentButton";
+
 import PageShell from "@/components/ui/PageShell";
 import PageCard from "@/components/ui/PageCard";
 import Button from "@/components/ui/Button";
+
+import {
+  PageAction,
+  PermissionEmptyState,
+  ViewerBanner,
+} from "@/components/ui/PermissionUI";
 
 type DocumentRecord = {
   id: string;
@@ -60,8 +70,11 @@ export default function DocumentsPage() {
   const {
     user,
     isDemo,
-    loading: demoModeLoading,
-  } = useDemoMode();
+    isViewer,
+    canUpload,
+    canDelete,
+    loading: permissionsLoading,
+  } = usePermissions();
 
   const [documents, setDocuments] =
     useState<DocumentRecord[]>([]);
@@ -74,14 +87,18 @@ export default function DocumentsPage() {
     setLoadingDocuments,
   ] = useState(true);
 
-  const [errorMessage, setErrorMessage] =
-    useState("");
+  const [
+    errorMessage,
+    setErrorMessage,
+  ] = useState("");
 
   const [searchTerm, setSearchTerm] =
     useState("");
 
-  const [selectedType, setSelectedType] =
-    useState("All");
+  const [
+    selectedType,
+    setSelectedType,
+  ] = useState("All");
 
   const [
     previewDocument,
@@ -94,7 +111,7 @@ export default function DocumentsPage() {
     let mounted = true;
 
     async function loadDocuments() {
-      if (demoModeLoading) {
+      if (permissionsLoading) {
         return;
       }
 
@@ -102,8 +119,14 @@ export default function DocumentsPage() {
         setLoadingDocuments(true);
         setErrorMessage("");
 
+        /*
+         * Signed-out visitors see sample data.
+         * Signed-in viewers see their real
+         * shared household documents.
+         */
         if (isDemo || !user) {
-          const sampleDocuments: DocumentRecord[] =
+          const sampleDocuments:
+            DocumentRecord[] =
             demoDocuments.map(
               (document) => ({
                 id: document.id,
@@ -122,7 +145,8 @@ export default function DocumentsPage() {
               })
             );
 
-          const sampleDevices: DeviceRecord[] =
+          const sampleDevices:
+            DeviceRecord[] =
             demoDevices.map(
               (device) => ({
                 id: device.id,
@@ -139,7 +163,9 @@ export default function DocumentsPage() {
             sampleDocuments
           );
 
-          setDevices(sampleDevices);
+          setDevices(
+            sampleDevices
+          );
 
           return;
         }
@@ -273,7 +299,7 @@ export default function DocumentsPage() {
   }, [
     user,
     isDemo,
-    demoModeLoading,
+    permissionsLoading,
   ]);
 
   const documentTypes =
@@ -369,7 +395,7 @@ export default function DocumentsPage() {
     ).length;
 
   const loading =
-    demoModeLoading ||
+    permissionsLoading ||
     loadingDocuments;
 
   const filtersActive =
@@ -401,7 +427,7 @@ export default function DocumentsPage() {
   if (errorMessage) {
     return (
       <PageShell>
-        <PageCard className="border-red-200 bg-red-50 text-red-700">
+        <PageCard className="border-red-200 bg-red-50 p-6 text-red-700">
           <h1 className="text-xl font-semibold">
             Unable to load documents
           </h1>
@@ -435,46 +461,23 @@ export default function DocumentsPage() {
             </p>
           </div>
 
-          <Button
-            href={
-              isDemo
-                ? "/signup"
-                : "/documents/upload"
-            }
-            variant="secondary"
-          >
-            <Upload size={17} />
-
-            {isDemo
-              ? "Create Your Vault"
-              : "Upload Document"}
-          </Button>
+          <PageAction
+            canCreate={canUpload}
+            href="/documents/upload"
+            label="Upload Document"
+            variant="light"
+          />
         </div>
       </section>
 
-      {isDemo && (
-        <section className="rounded-3xl border border-[#D8C69D] bg-[#FFF8E8] p-5">
-          <div className="flex items-start gap-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#111827] text-[#C8A96A]">
-              <Sparkles size={18} />
-            </div>
-
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A6A2F]">
-                Viewer Access
-              </p>
-
-              <p className="mt-2 max-w-3xl text-sm leading-6 text-neutral-600">
-                Explore sample receipts,
-                manuals, warranties, and
-                device files. Create an
-                account to upload, open,
-                and manage your own files.
-              </p>
-            </div>
-          </div>
-        </section>
-      )}
+      <ViewerBanner
+        show={isViewer}
+        description={
+          user
+            ? "You can view and open shared documents. Viewer access cannot upload, replace, edit, or delete files."
+            : "Explore sample receipts, manuals, warranties, and device files. Create an account to upload and manage your own documents."
+        }
+      />
 
       {documents.length > 0 && (
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -606,7 +609,10 @@ export default function DocumentsPage() {
                   document,
                   devices
                 )}
-                isDemo={isDemo}
+                isDemo={
+                  isDemo || !user
+                }
+                canDelete={canDelete}
                 onDemoPreview={() =>
                   setPreviewDocument(
                     document
@@ -631,59 +637,38 @@ export default function DocumentsPage() {
             term or document type.
           </p>
 
-          <div className="mt-6">
-            <Button
-              variant="secondary"
-              onClick={clearFilters}
-            >
-              Clear Filters
-            </Button>
-          </div>
+          <Button
+            variant="secondary"
+            className="mt-6"
+            onClick={clearFilters}
+          >
+            Clear Filters
+          </Button>
         </PageCard>
       ) : (
-        <PageCard className="py-14 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
-            <FileText size={29} />
-          </div>
-
-          <h2 className="mt-5 text-2xl font-semibold tracking-[-0.03em] text-[#111827]">
-            No documents yet
-          </h2>
-
-          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-neutral-500">
-            Upload receipts, manuals,
-            warranties, invoices, and
-            other important files so
-            they are ready when needed.
-          </p>
-
-          <div className="mt-6">
-            <Button
-              href={
-                isDemo
-                  ? "/signup"
-                  : "/documents/upload"
-              }
-            >
-              <Upload size={17} />
-
-              {isDemo
-                ? "Create Your Vault"
-                : "Upload Your First Document"}
-            </Button>
-          </div>
-        </PageCard>
+        <PermissionEmptyState
+          icon={FileText}
+          title="No documents yet"
+          description="Upload receipts, manuals, warranties, invoices, and other important files so they are ready when needed."
+          canCreate={canUpload}
+          href="/documents/upload"
+          buttonLabel="Upload Your First Document"
+        />
       )}
 
       {previewDocument && (
         <DemoPreviewModal
-          document={previewDocument}
+          document={
+            previewDocument
+          }
           deviceName={getDeviceName(
             previewDocument,
             devices
           )}
           onClose={() =>
-            setPreviewDocument(null)
+            setPreviewDocument(
+              null
+            )
           }
         />
       )}
@@ -695,11 +680,13 @@ function DocumentCard({
   document,
   deviceName,
   isDemo,
+  canDelete,
   onDemoPreview,
 }: {
   document: DocumentRecord;
   deviceName: string;
   isDemo: boolean;
+  canDelete: boolean;
   onDemoPreview: () => void;
 }) {
   const title =
@@ -719,9 +706,8 @@ function DocumentCard({
       document.file_name
     );
 
-  const deviceHref = isDemo
-    ? "/devices"
-    : document.device_id
+  const deviceHref =
+    document.device_id
       ? "/devices/" +
         document.device_id
       : "/devices";
@@ -782,7 +768,11 @@ function DocumentCard({
 
           {document.device_id ? (
             <Link
-              href={deviceHref}
+              href={
+                isDemo
+                  ? "/devices"
+                  : deviceHref
+              }
               className="mt-2 inline-flex max-w-full items-center gap-2 font-semibold text-[#111827] transition hover:text-[#8A6A2F]"
             >
               <span className="truncate">
@@ -848,11 +838,13 @@ function DocumentCard({
                 </button>
               )}
 
-              <DeleteDocumentButton
-                documentId={
-                  document.id
-                }
-              />
+              {canDelete && (
+                <DeleteDocumentButton
+                  documentId={
+                    document.id
+                  }
+                />
+              )}
             </>
           )}
         </div>
@@ -957,11 +949,10 @@ function DemoPreviewModal({
 
           <div className="mt-6 rounded-2xl border border-[#D8C69D] bg-[#FFF8E8] p-4">
             <p className="text-sm leading-6 text-neutral-600">
-              This is a viewer-access
-              sample. Create an account
-              to upload, open, organize,
-              and securely manage your
-              own documents.
+              This is a sample
+              document preview. Create
+              an account to upload and
+              manage your own files.
             </p>
           </div>
 

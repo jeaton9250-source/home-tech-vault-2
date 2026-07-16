@@ -43,7 +43,7 @@ import {
   demoTimelineEvents,
 } from "@/lib/demoData";
 
-import { useDemoMode } from "@/hooks/useDemoMode";
+import { usePermissions } from "@/hooks/usePermissions";
 
 import DeviceDocuments from "@/components/DeviceDocuments";
 import DeviceTimeline from "@/components/DeviceTimeline";
@@ -51,9 +51,14 @@ import PageShell from "@/components/ui/PageShell";
 import PageCard from "@/components/ui/PageCard";
 import Button from "@/components/ui/Button";
 
+import {
+  ViewerBanner,
+} from "@/components/ui/PermissionUI";
+
 type Device = {
   id: string;
   user_id?: string;
+  household_id?: string | null;
   device_name: string | null;
   category: string | null;
   brand: string | null;
@@ -98,8 +103,12 @@ export default function DevicePage() {
   const {
     user,
     isDemo,
-    loading: demoModeLoading,
-  } = useDemoMode();
+    isViewer,
+    canEdit,
+    canUpload,
+    canDelete,
+    loading: permissionsLoading,
+  } = usePermissions();
 
   const deviceId = params.id;
 
@@ -159,8 +168,7 @@ export default function DevicePage() {
 
   const loadImages = useCallback(
     async (
-      selectedDeviceId: string,
-      userId: string
+      selectedDeviceId: string
     ) => {
       const {
         data,
@@ -172,7 +180,6 @@ export default function DevicePage() {
           "device_id",
           selectedDeviceId
         )
-        .eq("user_id", userId)
         .order("created_at", {
           ascending: false,
         });
@@ -182,8 +189,7 @@ export default function DevicePage() {
       }
 
       const rows =
-        (data ||
-          []) as DeviceImageRow[];
+        (data ?? []) as DeviceImageRow[];
 
       const imagesWithUrls =
         await Promise.all(
@@ -211,7 +217,7 @@ export default function DevicePage() {
             return {
               ...image,
               signedUrl:
-                signedData?.signedUrl ||
+                signedData?.signedUrl ??
                 "",
             };
           })
@@ -239,8 +245,10 @@ export default function DevicePage() {
   );
 
   useEffect(() => {
+    let mounted = true;
+
     async function loadPage() {
-      if (demoModeLoading) {
+      if (permissionsLoading) {
         return;
       }
 
@@ -249,25 +257,35 @@ export default function DevicePage() {
         setErrorMessage("");
 
         if (!deviceId) {
+          if (!mounted) {
+            return;
+          }
+
           setDevice(null);
           setErrorMessage(
             "Invalid device ID."
           );
+
           return;
         }
 
-        if (isDemo) {
+        if (isDemo || !user) {
           const sampleDevice =
             demoDevices.find(
               (item) =>
                 item.id === deviceId
             );
 
+          if (!mounted) {
+            return;
+          }
+
           if (!sampleDevice) {
             setDevice(null);
             setErrorMessage(
               "Demo device not found."
             );
+
             return;
           }
 
@@ -277,7 +295,8 @@ export default function DevicePage() {
               sampleDevice.device_name,
             category:
               sampleDevice.category,
-            brand: sampleDevice.brand,
+            brand:
+              sampleDevice.brand,
             model_number:
               sampleDevice.model_number,
             serial_number:
@@ -290,8 +309,10 @@ export default function DevicePage() {
               sampleDevice.purchase_price,
             location:
               sampleDevice.location,
-            notes: sampleDevice.notes,
-            online: sampleDevice.online,
+            notes:
+              sampleDevice.notes,
+            online:
+              sampleDevice.online,
             last_seen_at:
               sampleDevice.last_seen_at,
             ip_address:
@@ -305,31 +326,56 @@ export default function DevicePage() {
           });
 
           setImages([]);
-          return;
-        }
-
-        if (!user) {
-          setDevice(null);
-
-          setErrorMessage(
-            "You must be signed in to view this device."
-          );
 
           return;
         }
 
         const {
+          data: membership,
+          error: membershipError,
+        } = await supabase
+          .from("household_members")
+          .select("household_id")
+          .eq("user_id", user.id)
+          .limit(1)
+          .maybeSingle();
+
+        if (membershipError) {
+          throw membershipError;
+        }
+
+        let deviceQuery =
+          supabase
+            .from("devices")
+            .select("*")
+            .eq("id", deviceId);
+
+        if (membership?.household_id) {
+          deviceQuery =
+            deviceQuery.eq(
+              "household_id",
+              membership.household_id
+            );
+        } else {
+          deviceQuery =
+            deviceQuery.eq(
+              "user_id",
+              user.id
+            );
+        }
+
+        const {
           data: deviceData,
           error: deviceError,
-        } = await supabase
-          .from("devices")
-          .select("*")
-          .eq("id", deviceId)
-          .eq("user_id", user.id)
-          .maybeSingle();
+        } =
+          await deviceQuery.maybeSingle();
 
         if (deviceError) {
           throw deviceError;
+        }
+
+        if (!mounted) {
+          return;
         }
 
         if (!deviceData) {
@@ -337,6 +383,7 @@ export default function DevicePage() {
           setErrorMessage(
             "Device not found."
           );
+
           return;
         }
 
@@ -344,43 +391,46 @@ export default function DevicePage() {
           deviceData as Device
         );
 
-        await loadImages(
-          deviceId,
-          user.id
-        );
+        await loadImages(deviceId);
       } catch (error: unknown) {
-        const possibleError =
-          error as {
-            message?: string;
-            details?: string;
-          };
-
         console.error(
           "Unable to load device page:",
           error
         );
 
+        if (!mounted) {
+          return;
+        }
+
         setErrorMessage(
-          possibleError.message ||
-            possibleError.details ||
-            "Unable to load this device."
+          error instanceof Error
+            ? error.message
+            : "Unable to load this device."
         );
       } finally {
-        setLoadingDevice(false);
+        if (mounted) {
+          setLoadingDevice(false);
+        }
       }
     }
 
-    loadPage();
+    void loadPage();
+
+    return () => {
+      mounted = false;
+    };
   }, [
     deviceId,
     user,
     isDemo,
-    demoModeLoading,
+    permissionsLoading,
     loadImages,
   ]);
 
-  function redirectDemoUser() {
-    router.push("/signup");
+  function redirectViewer() {
+    router.push(
+      user ? "/devices" : "/signup"
+    );
   }
 
   function handleEditDevice() {
@@ -388,32 +438,33 @@ export default function DevicePage() {
       return;
     }
 
-    if (isDemo) {
-      redirectDemoUser();
+    if (!canEdit) {
+      redirectViewer();
       return;
     }
 
     router.push(
-      `/devices/${device.id}/edit`
+      "/devices/" +
+        device.id +
+        "/edit"
     );
   }
 
   async function handleUpload(
     event: ChangeEvent<HTMLInputElement>
   ) {
-    if (isDemo) {
+    if (!canUpload || !user) {
       event.target.value = "";
-      redirectDemoUser();
+      redirectViewer();
       return;
     }
 
     const files = Array.from(
-      event.target.files || []
+      event.target.files ?? []
     );
 
     if (
       !device ||
-      !user ||
       files.length === 0
     ) {
       return;
@@ -429,7 +480,8 @@ export default function DevicePage() {
           )
         ) {
           throw new Error(
-            `${file.name} is not an image.`
+            file.name +
+              " is not an image."
           );
         }
 
@@ -438,7 +490,8 @@ export default function DevicePage() {
           6 * 1024 * 1024
         ) {
           throw new Error(
-            `${file.name} must be smaller than 6 MB.`
+            file.name +
+              " must be smaller than 6 MB."
           );
         }
 
@@ -446,12 +499,17 @@ export default function DevicePage() {
           file.name
             .split(".")
             .pop()
-            ?.toLowerCase() ||
+            ?.toLowerCase() ??
           "jpg";
 
         const filePath =
-          `${user.id}/${device.id}/` +
-          `${crypto.randomUUID()}.${extension}`;
+          user.id +
+          "/" +
+          device.id +
+          "/" +
+          crypto.randomUUID() +
+          "." +
+          extension;
 
         const {
           error: uploadError,
@@ -479,9 +537,12 @@ export default function DevicePage() {
         } = await supabase
           .from("device_images")
           .insert({
-            device_id: device.id,
-            user_id: user.id,
-            image_url: filePath,
+            device_id:
+              device.id,
+            user_id:
+              user.id,
+            image_url:
+              filePath,
           });
 
         if (recordError) {
@@ -494,17 +555,26 @@ export default function DevicePage() {
       }
 
       await createDeviceEvent({
-        deviceId: device.id,
-        userId: user.id,
-        eventType: "Photo",
+        deviceId:
+          device.id,
+        userId:
+          user.id,
+        eventType:
+          "Photo",
         title:
           files.length === 1
             ? "Photo uploaded"
-            : `${files.length} photos uploaded`,
+            : String(
+                files.length
+              ) +
+              " photos uploaded",
         description:
           files.length === 1
             ? "A new device photo was added to the vault."
-            : `${files.length} new device photos were added to the vault.`,
+            : String(
+                files.length
+              ) +
+              " new device photos were added to the vault.",
       });
 
       event.target.value = "";
@@ -512,10 +582,9 @@ export default function DevicePage() {
       setSelectedImageIndex(0);
 
       await loadImages(
-        device.id,
-        user.id
+        device.id
       );
-    } catch (error) {
+    } catch (error: unknown) {
       console.error(
         "Unable to upload image:",
         error
@@ -534,12 +603,8 @@ export default function DevicePage() {
   async function deleteImage(
     image: DeviceImage
   ) {
-    if (isDemo) {
-      redirectDemoUser();
-      return;
-    }
-
-    if (!user) {
+    if (!canDelete || !user) {
+      redirectViewer();
       return;
     }
 
@@ -575,8 +640,7 @@ export default function DevicePage() {
       } = await supabase
         .from("device_images")
         .delete()
-        .eq("id", image.id)
-        .eq("user_id", user.id);
+        .eq("id", image.id);
 
       if (databaseError) {
         throw databaseError;
@@ -592,7 +656,7 @@ export default function DevicePage() {
       );
 
       setSelectedImageIndex(0);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error(
         "Unable to delete image:",
         error
@@ -609,14 +673,13 @@ export default function DevicePage() {
   }
 
   async function deleteDevice() {
-    if (isDemo) {
-      redirectDemoUser();
+    if (!canDelete || !user) {
+      redirectViewer();
       return;
     }
 
     if (
       !device ||
-      !user ||
       deletingDevice
     ) {
       return;
@@ -624,10 +687,10 @@ export default function DevicePage() {
 
     const confirmed =
       window.confirm(
-        `Are you sure you want to delete "${
-          device.device_name ||
-          "this device"
-        }"? This cannot be undone.`
+        'Are you sure you want to delete "' +
+          (device.device_name ||
+            "this device") +
+          '"? This cannot be undone.'
       );
 
     if (!confirmed) {
@@ -675,8 +738,7 @@ export default function DevicePage() {
         .eq(
           "device_id",
           device.id
-        )
-        .eq("user_id", user.id);
+        );
 
       if (
         documentLoadError
@@ -689,7 +751,7 @@ export default function DevicePage() {
 
       const documentPaths =
         (
-          (documentRows ||
+          (documentRows ??
             []) as DocumentStorageRow[]
         ).map(
           (document) =>
@@ -723,8 +785,7 @@ export default function DevicePage() {
       } = await supabase
         .from("devices")
         .delete()
-        .eq("id", device.id)
-        .eq("user_id", user.id);
+        .eq("id", device.id);
 
       if (deleteError) {
         throw deleteError;
@@ -732,7 +793,7 @@ export default function DevicePage() {
 
       router.push("/devices");
       router.refresh();
-    } catch (error) {
+    } catch (error: unknown) {
       console.error(
         "Unable to delete device:",
         error
@@ -749,7 +810,7 @@ export default function DevicePage() {
   }
 
   const loading =
-    demoModeLoading ||
+    permissionsLoading ||
     loadingDevice;
 
   if (loading) {
@@ -835,35 +896,38 @@ export default function DevicePage() {
           Devices
         </Link>
 
-        <Button
-          onClick={
-            handleEditDevice
-          }
-          variant="secondary"
-        >
-          <Pencil size={16} />
-
-          {isDemo
-            ? "Create Vault to Edit"
-            : "Edit Device"}
-        </Button>
+        {canEdit ? (
+          <Button
+            onClick={
+              handleEditDevice
+            }
+            variant="secondary"
+          >
+            <Pencil size={16} />
+            Edit Device
+          </Button>
+        ) : !user ? (
+          <Button
+            href="/signup"
+            variant="secondary"
+          >
+            Create Your Vault
+          </Button>
+        ) : (
+          <div className="rounded-2xl border border-[#E8E2D6] bg-[#F7F5EF] px-4 py-3 text-sm font-semibold text-neutral-500">
+            Viewer Access · Read Only
+          </div>
+        )}
       </div>
 
-      {isDemo && (
-        <section className="rounded-3xl border border-[#D8C69D] bg-[#FFF8E8] p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A6A2F]">
-            Interactive Demo
-          </p>
-
-          <p className="mt-2 text-sm leading-6 text-neutral-600">
-            This sample profile
-            demonstrates how a device,
-            its photos, documents,
-            network information, and
-            history are organized.
-          </p>
-        </section>
-      )}
+      <ViewerBanner
+        show={isViewer}
+        description={
+          user
+            ? "You can view this device, its photos, documents, network details, and history. Viewer access cannot edit, upload, or delete anything."
+            : "This sample profile demonstrates how device photos, documents, network information, and history are organized."
+        }
+      />
 
       <section className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
         <PageCard className="overflow-hidden p-0">
@@ -881,22 +945,20 @@ export default function DevicePage() {
                 unoptimized
                 className="object-cover"
               />
-            ) : (
+            ) : canUpload ? (
               <label className="flex h-full cursor-pointer flex-col items-center justify-center px-6 text-center">
                 <div className="flex h-20 w-20 items-center justify-center rounded-[28px] bg-white text-[#C8A96A] shadow-sm">
                   <Camera size={32} />
                 </div>
 
                 <p className="mt-5 text-lg font-semibold text-[#111827]">
-                  {isDemo
-                    ? "Device photos appear here"
-                    : "Add a device photo"}
+                  Add a device photo
                 </p>
 
                 <p className="mt-2 max-w-sm text-sm leading-6 text-neutral-500">
-                  {isDemo
-                    ? "Create an account to upload photos, receipts, labels, and serial numbers."
-                    : "Photos make your inventory easier to identify and document."}
+                  Photos make your
+                  inventory easier to
+                  identify and document.
                 </p>
 
                 <input
@@ -912,41 +974,57 @@ export default function DevicePage() {
                   className="hidden"
                 />
               </label>
+            ) : (
+              <div className="flex h-full flex-col items-center justify-center px-6 text-center">
+                <div className="flex h-20 w-20 items-center justify-center rounded-[28px] bg-white text-[#C8A96A] shadow-sm">
+                  <Camera size={32} />
+                </div>
+
+                <p className="mt-5 text-lg font-semibold text-[#111827]">
+                  No device photo
+                </p>
+
+                <p className="mt-2 max-w-sm text-sm leading-6 text-neutral-500">
+                  Viewer access is
+                  read-only. Members and
+                  Admins can upload device
+                  photos.
+                </p>
+              </div>
             )}
 
-            {images.length > 0 && (
-              <label className="absolute bottom-4 right-4 inline-flex cursor-pointer items-center gap-2 rounded-full bg-white/90 px-4 py-2.5 text-sm font-semibold text-[#111827] shadow-lg backdrop-blur transition hover:bg-white">
-                {uploading ? (
-                  <Loader2
-                    size={16}
-                    className="animate-spin"
-                  />
-                ) : (
-                  <ImagePlus
-                    size={16}
-                  />
-                )}
+            {images.length > 0 &&
+              canUpload && (
+                <label className="absolute bottom-4 right-4 inline-flex cursor-pointer items-center gap-2 rounded-full bg-white/90 px-4 py-2.5 text-sm font-semibold text-[#111827] shadow-lg backdrop-blur transition hover:bg-white">
+                  {uploading ? (
+                    <Loader2
+                      size={16}
+                      className="animate-spin"
+                    />
+                  ) : (
+                    <ImagePlus
+                      size={16}
+                    />
+                  )}
 
-                {isDemo
-                  ? "Create Vault"
-                  : uploading
+                  {uploading
                     ? "Uploading"
                     : "Add Photos"}
 
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  disabled={
-                    uploading
-                  }
-                  onChange={
-                    handleUpload
-                  }
-                  className="hidden"
-                />
-              </label>
-            )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    disabled={
+                      uploading
+                    }
+                    onChange={
+                      handleUpload
+                    }
+                    className="hidden"
+                  />
+                </label>
+              )}
           </div>
 
           {images.length > 0 && (
@@ -969,11 +1047,12 @@ export default function DevicePage() {
                           index
                         )
                       }
-                      className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl border-2 transition ${
-                        active
+                      className={
+                        "relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl border-2 transition " +
+                        (active
                           ? "border-[#111827]"
-                          : "border-transparent opacity-70 hover:opacity-100"
-                      }`}
+                          : "border-transparent opacity-70 hover:opacity-100")
+                      }
                     >
                       <Image
                         src={
@@ -1002,7 +1081,10 @@ export default function DevicePage() {
               )}
 
               <span
-                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ${warranty.className}`}
+                className={
+                  "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold " +
+                  warranty.className
+                }
               >
                 <ShieldCheck
                   size={13}
@@ -1064,11 +1146,14 @@ export default function DevicePage() {
           <SectionHeading
             eyebrow="Photo Gallery"
             title="Device photos"
-            description={`${images.length} ${
-              images.length === 1
+            description={
+              String(images.length) +
+              " " +
+              (images.length === 1
                 ? "photo"
-                : "photos"
-            } stored in your vault.`}
+                : "photos") +
+              " stored in your vault."
+            }
           />
 
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -1082,41 +1167,44 @@ export default function DevicePage() {
                     src={
                       image.signedUrl
                     }
-                    alt={`${
-                      device.device_name ||
-                      "Device"
-                    } photo`}
+                    alt={
+                      (device.device_name ||
+                        "Device") +
+                      " photo"
+                    }
                     fill
                     unoptimized
                     className="object-cover transition duration-500 group-hover:scale-[1.03]"
                   />
 
-                  <button
-                    type="button"
-                    onClick={() =>
-                      deleteImage(
-                        image
-                      )
-                    }
-                    disabled={
-                      deletingImageId ===
-                      image.id
-                    }
-                    aria-label="Delete photo"
-                    className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full bg-black/65 text-white opacity-100 backdrop-blur transition hover:bg-red-600 md:opacity-0 md:group-hover:opacity-100"
-                  >
-                    {deletingImageId ===
-                    image.id ? (
-                      <Loader2
-                        size={17}
-                        className="animate-spin"
-                      />
-                    ) : (
-                      <Trash2
-                        size={17}
-                      />
-                    )}
-                  </button>
+                  {canDelete && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        void deleteImage(
+                          image
+                        )
+                      }
+                      disabled={
+                        deletingImageId ===
+                        image.id
+                      }
+                      aria-label="Delete photo"
+                      className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full bg-black/65 text-white opacity-100 backdrop-blur transition hover:bg-red-600 md:opacity-0 md:group-hover:opacity-100"
+                    >
+                      {deletingImageId ===
+                      image.id ? (
+                        <Loader2
+                          size={17}
+                          className="animate-spin"
+                        />
+                      ) : (
+                        <Trash2
+                          size={17}
+                        />
+                      )}
+                    </button>
+                  )}
                 </div>
               )
             )}
@@ -1287,7 +1375,7 @@ export default function DevicePage() {
         </PageCard>
       )}
 
-      {isDemo ? (
+      {isDemo || !user ? (
         <>
           <DemoDocuments
             documents={
@@ -1319,53 +1407,54 @@ export default function DevicePage() {
         </>
       )}
 
-      <PageCard className="border-red-100 p-6 md:p-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-red-600">
-          Danger Zone
-        </p>
+      {canDelete && (
+        <PageCard className="border-red-100 p-6 md:p-8">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-red-600">
+            Danger Zone
+          </p>
 
-        <div className="mt-4 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="text-xl font-semibold text-[#111827]">
-              Delete this device
-            </h2>
+          <div className="mt-4 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-xl font-semibold text-[#111827]">
+                Delete this device
+              </h2>
 
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-500">
-              {isDemo
-                ? "Demo devices cannot be deleted."
-                : "This permanently removes the device and its associated photos and records."}
-            </p>
-          </div>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-500">
+                This permanently removes
+                the device and its
+                associated photos and
+                records.
+              </p>
+            </div>
 
-          <button
-            type="button"
-            onClick={
-              deleteDevice
-            }
-            disabled={
-              deletingDevice
-            }
-            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl border border-red-200 bg-red-50 px-5 py-3 text-sm font-semibold text-red-700 transition hover:bg-red-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {deletingDevice ? (
-              <Loader2
-                className="animate-spin"
-                size={17}
-              />
-            ) : (
-              <Trash2
-                size={17}
-              />
-            )}
+            <button
+              type="button"
+              onClick={() =>
+                void deleteDevice()
+              }
+              disabled={
+                deletingDevice
+              }
+              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl border border-red-200 bg-red-50 px-5 py-3 text-sm font-semibold text-red-700 transition hover:bg-red-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {deletingDevice ? (
+                <Loader2
+                  className="animate-spin"
+                  size={17}
+                />
+              ) : (
+                <Trash2
+                  size={17}
+                />
+              )}
 
-            {isDemo
-              ? "Create Vault to Manage"
-              : deletingDevice
+              {deletingDevice
                 ? "Deleting..."
                 : "Delete Device"}
-          </button>
-        </div>
-      </PageCard>
+            </button>
+          </div>
+        </PageCard>
+      )}
     </PageShell>
   );
 }
@@ -1487,10 +1576,16 @@ function NetworkStatus({
   return (
     <div className="shrink-0">
       <span
-        className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold ${status.className}`}
+        className={
+          "inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold " +
+          status.className
+        }
       >
         <span
-          className={`h-2 w-2 rounded-full ${status.dot}`}
+          className={
+            "h-2 w-2 rounded-full " +
+            status.dot
+          }
         />
 
         {status.label}
@@ -1627,8 +1722,10 @@ function DemoTimeline({
                         {
                           month:
                             "short",
-                          day: "numeric",
-                          year: "numeric",
+                          day:
+                            "numeric",
+                          year:
+                            "numeric",
                         }
                       )}
                     </span>
@@ -1651,7 +1748,8 @@ function getWarrantyStatus(
 ) {
   if (!warrantyDate) {
     return {
-      label: "No warranty recorded",
+      label:
+        "No warranty recorded",
       shortLabel:
         "Not recorded",
       className:
@@ -1661,7 +1759,8 @@ function getWarrantyStatus(
 
   const expiration =
     new Date(
-      `${warrantyDate}T23:59:59`
+      warrantyDate +
+        "T23:59:59"
     );
 
   if (
@@ -1672,7 +1771,8 @@ function getWarrantyStatus(
     return {
       label:
         "Warranty status unknown",
-      shortLabel: "Unknown",
+      shortLabel:
+        "Unknown",
       className:
         "bg-neutral-100 text-neutral-600",
     };
@@ -1692,7 +1792,8 @@ function getWarrantyStatus(
     return {
       label:
         "Warranty expired",
-      shortLabel: "Expired",
+      shortLabel:
+        "Expired",
       className:
         "bg-red-50 text-red-700",
     };
@@ -1704,7 +1805,8 @@ function getWarrantyStatus(
     return {
       label:
         "Warranty expires today",
-      shortLabel: "Today",
+      shortLabel:
+        "Today",
       className:
         "bg-amber-50 text-amber-700",
     };
@@ -1714,16 +1816,29 @@ function getWarrantyStatus(
     daysRemaining <= 60
   ) {
     return {
-      label: `${daysRemaining} days remaining`,
-      shortLabel: `${daysRemaining} days`,
+      label:
+        String(
+          daysRemaining
+        ) +
+        " days remaining",
+      shortLabel:
+        String(
+          daysRemaining
+        ) +
+        " days",
       className:
         "bg-amber-50 text-amber-700",
     };
   }
 
   return {
-    label: "Warranty active",
-    shortLabel: `${daysRemaining} days`,
+    label:
+      "Warranty active",
+    shortLabel:
+      String(
+        daysRemaining
+      ) +
+      " days",
     className:
       "bg-emerald-50 text-emerald-700",
   };
@@ -1737,7 +1852,7 @@ function formatDate(
   }
 
   const date = new Date(
-    `${value}T00:00:00`
+    value + "T00:00:00"
   );
 
   if (
@@ -1814,11 +1929,15 @@ function formatLastSeen(
   }
 
   if (minutes < 60) {
-    return `Seen ${minutes} minute${
-      minutes === 1
+    return (
+      "Seen " +
+      String(minutes) +
+      " minute" +
+      (minutes === 1
         ? ""
-        : "s"
-    } ago`;
+        : "s") +
+      " ago"
+    );
   }
 
   const hours =
@@ -1827,9 +1946,15 @@ function formatLastSeen(
     );
 
   if (hours < 24) {
-    return `Seen ${hours} hour${
-      hours === 1 ? "" : "s"
-    } ago`;
+    return (
+      "Seen " +
+      String(hours) +
+      " hour" +
+      (hours === 1
+        ? ""
+        : "s") +
+      " ago"
+    );
   }
 
   const days =
@@ -1838,17 +1963,26 @@ function formatLastSeen(
     );
 
   if (days < 7) {
-    return `Seen ${days} day${
-      days === 1 ? "" : "s"
-    } ago`;
+    return (
+      "Seen " +
+      String(days) +
+      " day" +
+      (days === 1
+        ? ""
+        : "s") +
+      " ago"
+    );
   }
 
-  return `Last seen ${date.toLocaleDateString(
-    undefined,
-    {
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    }
-  )}`;
+  return (
+    "Last seen " +
+    date.toLocaleDateString(
+      undefined,
+      {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      }
+    )
+  );
 }
