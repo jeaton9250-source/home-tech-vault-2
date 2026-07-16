@@ -46,6 +46,11 @@ export default function AddDevicePage() {
   ] = useState<string | null>(null);
 
   const [
+  hasFamilyHouseholdAccess,
+  setHasFamilyHouseholdAccess,
+] = useState(false);
+
+  const [
     checkingDeviceLimit,
     setCheckingDeviceLimit,
   ] = useState(true);
@@ -105,15 +110,22 @@ export default function AddDevicePage() {
           return;
         }
 
-        const {
-          data: membership,
-          error: membershipError,
-        } = await supabase
-          .from("household_members")
-          .select("household_id")
-          .eq("user_id", user.id)
-          .limit(1)
-          .maybeSingle();
+       const {
+  data: membership,
+  error: membershipError,
+} = await supabase
+  .from("household_members")
+  .select(
+    `
+      household_id,
+      households (
+        owner_id
+      )
+    `
+  )
+  .eq("user_id", user.id)
+  .limit(1)
+  .maybeSingle();
 
         if (membershipError) {
           throw membershipError;
@@ -125,6 +137,69 @@ export default function AddDevicePage() {
         setHouseholdId(
           currentHouseholdId
         );
+
+        let familyHouseholdAccess = false;
+
+const householdRelation =
+  membership?.households as
+    | {
+        owner_id?: string;
+      }
+    | {
+        owner_id?: string;
+      }[]
+    | null
+    | undefined;
+
+const householdOwnerId =
+  Array.isArray(householdRelation)
+    ? householdRelation[0]?.owner_id
+    : householdRelation?.owner_id;
+
+if (
+  currentHouseholdId &&
+  householdOwnerId
+) {
+  const {
+    data: ownerSubscription,
+    error: ownerSubscriptionError,
+  } = await supabase
+    .from("user_subscriptions")
+    .select("plan, status")
+    .eq(
+      "user_id",
+      householdOwnerId
+    )
+    .maybeSingle();
+
+  if (ownerSubscriptionError) {
+    console.error(
+      "Unable to check household subscription:",
+      ownerSubscriptionError
+    );
+  }
+
+  const ownerPlan =
+    ownerSubscription?.plan
+      ?.trim()
+      .toLowerCase();
+
+  const ownerStatus =
+    ownerSubscription?.status
+      ?.trim()
+      .toLowerCase();
+
+  familyHouseholdAccess =
+    ownerPlan === "family" &&
+    (
+      ownerStatus === "active" ||
+      ownerStatus === "trialing"
+    );
+}
+
+setHasFamilyHouseholdAccess(
+  familyHouseholdAccess
+);
 
         let countQuery =
           supabase
@@ -187,10 +262,14 @@ export default function AddDevicePage() {
     subscriptionLoading ||
     checkingDeviceLimit;
 
-  const deviceLimitReached =
-    !hasUnlimitedDevices &&
-    deviceLimit !== null &&
-    deviceCount >= deviceLimit;
+  const householdHasUnlimitedDevices =
+  hasUnlimitedDevices ||
+  hasFamilyHouseholdAccess;
+
+const deviceLimitReached =
+ !householdHasUnlimitedDevices &&
+  deviceLimit !== null &&
+  deviceCount >= deviceLimit;
 
   async function saveDevice(
     event: FormEvent<HTMLFormElement>
@@ -420,7 +499,7 @@ export default function AddDevicePage() {
         }
       />
 
-      {!hasUnlimitedDevices &&
+      {!householdHasUnlimitedDevices &&
         deviceLimit !== null && (
           <PageCard className="border-[#D8C69D] bg-[#FFF8E8]">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8A6A2F]">
