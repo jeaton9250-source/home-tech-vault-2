@@ -39,6 +39,7 @@ import { demoDevices } from "@/lib/demoData";
 
 import { useDemoMode } from "@/hooks/useDemoMode";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useHouseholdRole } from "@/hooks/useHouseholdRole";
 
 import PageShell from "@/components/ui/PageShell";
 import PageCard from "@/components/ui/PageCard";
@@ -66,6 +67,11 @@ type SortOption =
 export default function DevicesPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const {
+  isViewer,
+  canAdd,
+  loading: roleLoading,
+} = useHouseholdRole();
 
   const [
   hasFamilyHouseholdAccess,
@@ -586,9 +592,10 @@ export default function DevicesPage() {
     sortOption !== "name";
 
   const loading =
-    demoModeLoading ||
-    subscriptionLoading ||
-    loadingDevices;
+  demoModeLoading ||
+  subscriptionLoading ||
+  roleLoading ||
+  loadingDevices;
 
   const householdHasUnlimitedDevices =
   hasUnlimitedDevices ||
@@ -610,20 +617,27 @@ const deviceLimitReached =
   }
 
   function handleAddDevice() {
-    if (isDemo) {
-      router.push("/signup");
-      return;
-    }
-
-    if (deviceLimitReached) {
-      router.push(
-        "/upgrade?reason=device-limit"
-      );
-      return;
-    }
-
-    router.push("/devices/add");
+  if (isDemo) {
+    router.push("/signup");
+    return;
   }
+
+  if (!canAdd || isViewer) {
+    setErrorMessage(
+      "Viewer access is read-only. You cannot add devices."
+    );
+    return;
+  }
+
+  if (deviceLimitReached) {
+    router.push(
+      "/upgrade?reason=device-limit"
+    );
+    return;
+  }
+
+  router.push("/devices/add");
+}
 
   return (
     <PageShell>
@@ -644,18 +658,30 @@ const deviceLimitReached =
             </p>
           </div>
 
-          <Button
-            onClick={handleAddDevice}
-            variant="secondary"
-          >
-            <Plus size={17} />
+         {isDemo ? (
+  <Button
+    onClick={handleAddDevice}
+    variant="secondary"
+  >
+    <Plus size={17} />
+    Create Your Vault
+  </Button>
+) : canAdd && !isViewer ? (
+  <Button
+    onClick={handleAddDevice}
+    variant="secondary"
+  >
+    <Plus size={17} />
 
-            {isDemo
-              ? "Create Your Vault"
-              : deviceLimitReached
-                ? "Upgrade to Add More"
-                : "Add Device"}
-          </Button>
+    {deviceLimitReached
+      ? "Upgrade to Add More"
+      : "Add Device"}
+  </Button>
+) : (
+  <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm font-semibold text-white/70">
+    Viewer Access · Read Only
+  </div>
+)}
         </div>
       </section>
 
@@ -969,25 +995,38 @@ const deviceLimitReached =
             documents.
           </p>
 
-          <Button
-            onClick={handleAddDevice}
-            className="mt-6"
-          >
-            <Plus size={17} />
+          {isDemo ? (
+  <Button
+    onClick={handleAddDevice}
+    className="mt-6"
+  >
+    <Plus size={17} />
+    Create Your Vault
+  </Button>
+) : canAdd && !isViewer ? (
+  <Button
+    onClick={handleAddDevice}
+    className="mt-6"
+  >
+    <Plus size={17} />
 
-            {isDemo
-              ? "Create Your Vault"
-              : deviceLimitReached
-                ? "Upgrade to Add More"
-                : "Add Your First Device"}
-          </Button>
+    {deviceLimitReached
+      ? "Upgrade to Add More"
+      : "Add Your First Device"}
+  </Button>
+) : (
+  <div className="mx-auto mt-6 max-w-md rounded-2xl bg-[#F7F5EF] px-5 py-4 text-sm text-neutral-500">
+    You have viewer access. You can view shared devices, but you cannot add or change them.
+  </div>
+)}
         </PageCard>
       )}
 
       {!isDemo &&
-        !loading &&
-        !householdHasUnlimitedDevices &&
-        deviceLimit !== null && (
+  !loading &&
+  !isViewer &&
+  !householdHasUnlimitedDevices &&
+  deviceLimit !== null && (
           <PageCard className="p-5 md:p-6">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
               <div>
