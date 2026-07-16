@@ -87,6 +87,24 @@ export default function MaintenancePage() {
     loading: permissionsLoading,
   } = usePermissions();
 
+  const maintenanceCanCreate =
+  canCreate &&
+  !isViewer &&
+  !isDemo &&
+  Boolean(user);
+
+const maintenanceCanEdit =
+  canEdit &&
+  !isViewer &&
+  !isDemo &&
+  Boolean(user);
+
+const maintenanceCanDelete =
+  canDelete &&
+  !isViewer &&
+  !isDemo &&
+  Boolean(user);
+
   const [tasks, setTasks] =
     useState<MaintenanceTask[]>([]);
 
@@ -265,13 +283,9 @@ export default function MaintenancePage() {
   async function toggleComplete(
     task: MaintenanceTask
   ) {
-    if (
-      !canEdit ||
-      !user ||
-      isDemo
-    ) {
-      return;
-    }
+    if (!maintenanceCanEdit || !user) {
+  return;
+}
 
     try {
       setUpdatingId(task.id);
@@ -342,13 +356,9 @@ export default function MaintenancePage() {
   async function deleteTask(
     taskId: string
   ) {
-    if (
-      !canDelete ||
-      !user ||
-      isDemo
-    ) {
-      return;
-    }
+    if (!maintenanceCanDelete || !user) {
+  return;
+}
 
     const confirmed =
       window.confirm(
@@ -596,7 +606,7 @@ export default function MaintenancePage() {
           </div>
 
           <PageAction
-            canCreate={canCreate}
+            canCreate={maintenanceCanCreate}
             href="/maintenance/new"
             label="Add Task"
             variant="light"
@@ -811,7 +821,7 @@ export default function MaintenancePage() {
           icon={Wrench}
           title="Nothing scheduled"
           description="Add your first maintenance task to begin tracking updates, cleaning, repairs, and routine care."
-          canCreate={canCreate}
+          canCreate={maintenanceCanCreate}
           href="/maintenance/new"
           buttonLabel="Add Maintenance Task"
         />
