@@ -50,7 +50,6 @@ type DocumentRow = {
 type DiscoveryRow = {
   id: string;
   device_name: string | null;
-  created_at: string | null;
   added_to_vault: boolean | null;
 };
 
@@ -163,21 +162,17 @@ export function useNotifications() {
               .eq("user_id", user.id),
 
             supabase
-              .from("network_discoveries")
-              .select(
-                `
-                id,
-                device_name,
-                created_at,
-                added_to_vault
-              `,
-              )
-              .eq("user_id", user.id)
-              .eq("added_to_vault", false)
-              .order("created_at", {
-                ascending: false,
-              })
-              .limit(10),
+  .from("network_discoveries")
+  .select(
+    `
+    id,
+    device_name,
+    added_to_vault
+  `,
+  )
+  .eq("user_id", user.id)
+  .eq("added_to_vault", false)
+  .limit(10),
           ]);
 
         if (devicesResult.error) {

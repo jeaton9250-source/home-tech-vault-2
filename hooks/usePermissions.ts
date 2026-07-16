@@ -16,6 +16,8 @@ export function usePermissions() {
     loading,
   } = useDemoMode();
 
+  
+
   const role = useMemo<UserRole>(() => {
     if (isDemo || !user) {
       return "viewer";

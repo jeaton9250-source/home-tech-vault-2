@@ -46,6 +46,14 @@ export default function SubscriptionsPage() {
   protectedHref,
 } = usePermissions();
 
+console.log({
+  userId: user?.id ?? null,
+  isViewer,
+  canCreate,
+  canEdit,
+  canDelete,
+});
+
   const [
     subscriptions,
     setSubscriptions,
