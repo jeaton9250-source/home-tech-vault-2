@@ -726,7 +726,7 @@ export default function FamilyPage() {
     }
   }
 
-  async function sendInvitation(
+ async function sendInvitation( 
     event: FormEvent<HTMLFormElement>
   ) {
     event.preventDefault();
@@ -811,50 +811,81 @@ export default function FamilyPage() {
       setSuccessMessage("");
       setErrorMessage("");
 
-      const {
-        data:
-          createdInvitation,
-        error,
-      } = await supabase
-        .from(
-          "household_invitations"
-        )
-        .insert({
-          household_id:
-            household.id,
-          email,
-          role: inviteForm.role,
-          invited_by: user.id,
-        })
-        .select("*")
-        .single();
+   const {
+  data: createdInvitation,
+  error: invitationError,
+} = await supabase
+  .from("household_invitations")
+  .insert({
+    household_id: household.id,
+    email,
+    role: inviteForm.role,
+    invited_by: user.id,
+  })
+  .select("*")
+  .single();
 
-      if (error) {
-        throw error;
-      }
+if (invitationError) {
+  throw invitationError;
+}
 
-      setInviteForm(
-        initialInviteForm
-      );
+const invitation =
+  createdInvitation as HouseholdInvitation;
 
-      setShowInviteForm(
-        false
-      );
+setInvitations((current) => [
+  invitation,
+  ...current,
+]);
 
-      if (
-        createdInvitation
-      ) {
-        setInvitations(
-          (current) => [
-            createdInvitation as HouseholdInvitation,
-            ...current,
-          ]
-        );
-      }
+const {
+  data: emailResult,
+  error: emailError,
+} = await supabase.functions.invoke(
+  "send-family-invite",
+  {
+    body: {
+      invitationId: invitation.id,
+    },
+  }
+);
 
-      setSuccessMessage(
-        `Invitation created for ${email}. Use the copy button to share the invitation link.`
-      );
+console.log("Invite email result:", {
+  emailResult,
+  emailError,
+});
+
+setInviteForm(initialInviteForm);
+setShowInviteForm(false);
+
+if (emailError) {
+  setSuccessMessage(
+    `Invitation created for ${email}.`
+  );
+
+  setErrorMessage(
+    `The invitation was saved, but the email was not sent: ${emailError.message}`
+  );
+
+  return;
+}
+
+if (emailResult?.success !== true) {
+  setSuccessMessage(
+    `Invitation created for ${email}.`
+  );
+
+  setErrorMessage(
+    emailResult?.error ||
+      "The invitation was saved, but the email service returned an error."
+  );
+
+  return;
+}
+
+setSuccessMessage(
+  `Invitation emailed successfully to ${email}.`
+);
+
     } catch (error: unknown) {
       const possibleError =
         error as {
@@ -873,13 +904,12 @@ export default function FamilyPage() {
           "Unable to create the invitation."
       );
     } finally {
-      setSendingInvitation(
-        false
-      );
+      setSendingInvitation(false);
     }
+
   }
 
-  async function copyInvitationLink(
+    async function copyInvitationLink(
     invitation: HouseholdInvitation
   ) {
     if (isDemo) {
