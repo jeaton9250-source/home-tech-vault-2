@@ -726,62 +726,81 @@ export default function FamilyPage() {
     }
   }
 
- async function sendInvitation( 
+async function sendInvitation(
     event: FormEvent<HTMLFormElement>
   ) {
     event.preventDefault();
 
+    console.log("[Family Invite] Step 1: Form submitted");
+
     if (isDemo) {
-      window.location.href =
-        "/signup";
+      console.log("[Family Invite] Stopped: Demo mode");
+      window.location.href = "/signup";
       return;
     }
 
-    if (
-      !user ||
-      !household
-    ) {
+    if (!user) {
+      console.error("[Family Invite] Stopped: No signed-in user");
+      setErrorMessage("Please sign in before sending an invitation.");
       return;
     }
 
-    if (
-      !canManageSharing
-    ) {
-      window.location.href =
-        "/upgrade";
+    if (!household) {
+      console.error("[Family Invite] Stopped: No household found");
+      setErrorMessage("Your household could not be found.");
       return;
     }
 
-    const email =
-      inviteForm.email
-        .trim()
-        .toLowerCase();
+    if (!canManageSharing) {
+      console.error(
+        "[Family Invite] Stopped: User cannot manage sharing",
+        {
+          userId: user.id,
+          householdId: household.id,
+          canManageSharing,
+        }
+      );
+
+      window.location.href = "/upgrade";
+      return;
+    }
+
+    const email = inviteForm.email
+      .trim()
+      .toLowerCase();
+
+    console.log("[Family Invite] Step 2: Validation started", {
+      email,
+      availableSeats,
+      memberLimit,
+      householdId: household.id,
+    });
 
     if (!email) {
-      setErrorMessage(
-        "Please enter an email address."
-      );
+      console.error("[Family Invite] Stopped: Email missing");
+      setErrorMessage("Please enter an email address.");
       return;
     }
 
-    if (
-      availableSeats <= 0
-    ) {
+    if (availableSeats <= 0) {
+      console.error("[Family Invite] Stopped: No available seats");
+
       setErrorMessage(
         `Your household has reached its ${memberLimit}-member limit.`
       );
+
       return;
     }
 
-    if (
-      email ===
-      user.email
-        ?.trim()
-        .toLowerCase()
-    ) {
+    if (email === user.email?.trim().toLowerCase()) {
+      console.error(
+        "[Family Invite] Stopped: Owner attempted to invite themselves"
+      );
+
       setErrorMessage(
         "You are already the household owner."
       );
+
       return;
     }
 
@@ -790,123 +809,214 @@ export default function FamilyPage() {
         (invitation) =>
           invitation.email
             .trim()
-            .toLowerCase() ===
-          email
+            .toLowerCase() === email
       );
 
-    if (
-      invitationAlreadyExists
-    ) {
+    if (invitationAlreadyExists) {
+      console.error(
+        "[Family Invite] Stopped: Pending invitation already exists",
+        { email }
+      );
+
       setErrorMessage(
         "A pending invitation already exists for this email."
       );
+
       return;
     }
 
     try {
-      setSendingInvitation(
-        true
-      );
-
+      setSendingInvitation(true);
       setSuccessMessage("");
       setErrorMessage("");
 
-   const {
-  data: createdInvitation,
-  error: invitationError,
-} = await supabase
-  .from("household_invitations")
-  .insert({
-    household_id: household.id,
-    email,
-    role: inviteForm.role,
-    invited_by: user.id,
-  })
-  .select("*")
-  .single();
+      console.log(
+        "[Family Invite] Step 3: Creating invitation record"
+      );
 
-if (invitationError) {
-  throw invitationError;
-}
+      const {
+        data: createdInvitation,
+        error: invitationError,
+      } = await supabase
+        .from("household_invitations")
+        .insert({
+          household_id: household.id,
+          email,
+          role: inviteForm.role,
+          invited_by: user.id,
+        })
+        .select("*")
+        .single();
 
-const invitation =
-  createdInvitation as HouseholdInvitation;
+      if (invitationError) {
+        console.error(
+          "[Family Invite] Failed during database insert",
+          invitationError
+        );
 
-setInvitations((current) => [
-  invitation,
-  ...current,
-]);
+        throw invitationError;
+      }
 
-const {
-  data: emailResult,
-  error: emailError,
-} = await supabase.functions.invoke(
-  "send-family-invite",
-  {
-    body: {
-      invitationId: invitation.id,
-    },
-  }
-);
+      if (!createdInvitation) {
+        throw new Error(
+          "The invitation was created, but no invitation record was returned."
+        );
+      }
 
-console.log("Invite email result:", {
-  emailResult,
-  emailError,
-});
+      const invitation =
+        createdInvitation as HouseholdInvitation;
 
-setInviteForm(initialInviteForm);
-setShowInviteForm(false);
+      console.log(
+        "[Family Invite] Step 4: Invitation record created",
+        {
+          invitationId: invitation.id,
+          invitationEmail: invitation.email,
+        }
+      );
 
-if (emailError) {
-  setSuccessMessage(
-    `Invitation created for ${email}.`
-  );
+      setInvitations((current) => [
+        invitation,
+        ...current,
+      ]);
 
-  setErrorMessage(
-    `The invitation was saved, but the email was not sent: ${emailError.message}`
-  );
+      alert(
+        `Invitation created. Calling email function now.\n\nInvitation ID: ${invitation.id}`
+      );
 
-  return;
-}
+      console.log(
+        "[Family Invite] Step 5: Calling send-family-invite Edge Function",
+        {
+          invitationId: invitation.id,
+        }
+      );
 
-if (emailResult?.success !== true) {
-  setSuccessMessage(
-    `Invitation created for ${email}.`
-  );
+      const {
+        data: emailResult,
+        error: emailError,
+      } = await supabase.functions.invoke(
+        "send-family-invite",
+        {
+          body: {
+            invitationId: invitation.id,
+          },
+        }
+      );
 
-  setErrorMessage(
-    emailResult?.error ||
-      "The invitation was saved, but the email service returned an error."
-  );
+      console.log(
+        "[Family Invite] Step 6: Edge Function response received",
+        {
+          emailResult,
+          emailError,
+        }
+      );
 
-  return;
-}
+      setInviteForm(initialInviteForm);
+      setShowInviteForm(false);
 
-setSuccessMessage(
-  `Invitation emailed successfully to ${email}.`
-);
+      if (emailError) {
+        console.error(
+          "[Family Invite] Edge Function returned an error",
+          emailError
+        );
 
+        let detailedMessage =
+          emailError.message ||
+          "Unable to send the invitation email.";
+
+        try {
+          const context =
+            "context" in emailError
+              ? emailError.context
+              : null;
+
+          if (
+            context &&
+            typeof context.json === "function"
+          ) {
+            const errorBody =
+              await context.json();
+
+            console.error(
+              "[Family Invite] Edge Function error body",
+              errorBody
+            );
+
+            detailedMessage =
+              errorBody?.error ||
+              errorBody?.message ||
+              detailedMessage;
+          }
+        } catch (contextError) {
+          console.error(
+            "[Family Invite] Could not read Edge Function error body",
+            contextError
+          );
+        }
+
+        setSuccessMessage(
+          `Invitation created for ${email}.`
+        );
+
+        setErrorMessage(
+          `The email was not sent: ${detailedMessage}`
+        );
+
+        return;
+      }
+
+      if (emailResult?.success !== true) {
+        console.error(
+          "[Family Invite] Edge Function returned an unsuccessful response",
+          emailResult
+        );
+
+        setSuccessMessage(
+          `Invitation created for ${email}.`
+        );
+
+        setErrorMessage(
+          emailResult?.error ||
+            "The email service returned an unexpected response."
+        );
+
+        return;
+      }
+
+      console.log(
+        "[Family Invite] Step 7: Invitation email sent successfully",
+        emailResult
+      );
+
+      setSuccessMessage(
+        `Invitation emailed successfully to ${email}.`
+      );
     } catch (error: unknown) {
       const possibleError =
         error as {
           message?: string;
           details?: string;
+          hint?: string;
+          code?: string;
         };
 
       console.error(
-        "Unable to create invitation:",
+        "[Family Invite] Invitation process failed",
         error
       );
 
       setErrorMessage(
         possibleError.message ||
           possibleError.details ||
+          possibleError.hint ||
           "Unable to create the invitation."
       );
     } finally {
+      console.log(
+        "[Family Invite] Process finished"
+      );
+
       setSendingInvitation(false);
     }
-
   }
 
     async function copyInvitationLink(
