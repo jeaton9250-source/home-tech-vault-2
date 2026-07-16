@@ -1,34 +1,55 @@
 "use client";
 
 import {
-  ChangeEvent,
+  type ChangeEvent,
   useCallback,
   useEffect,
   useMemo,
   useState,
 } from "react";
-import { useParams, useRouter } from "next/navigation";
+
+import Image from "next/image";
+import Link from "next/link";
+
+import {
+  useParams,
+  useRouter,
+} from "next/navigation";
+
 import {
   ArrowLeft,
+  CalendarDays,
+  Camera,
+  CircleDollarSign,
   FileText,
   ImagePlus,
+  Laptop,
   Loader2,
+  MapPin,
   Pencil,
   Radio,
+  ShieldCheck,
+  Sparkles,
+  Tag,
   Trash2,
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
 import { createDeviceEvent } from "@/lib/deviceEvents";
+
 import {
   demoDevices,
   demoDocuments,
   demoTimelineEvents,
 } from "@/lib/demoData";
+
 import { useDemoMode } from "@/hooks/useDemoMode";
 
 import DeviceDocuments from "@/components/DeviceDocuments";
 import DeviceTimeline from "@/components/DeviceTimeline";
+import PageShell from "@/components/ui/PageShell";
+import PageCard from "@/components/ui/PageCard";
+import Button from "@/components/ui/Button";
 
 type Device = {
   id: string;
@@ -63,8 +84,15 @@ type DeviceImage = DeviceImageRow & {
   signedUrl: string;
 };
 
+type DocumentStorageRow = {
+  file_path: string;
+};
+
 export default function DevicePage() {
-  const params = useParams<{ id: string }>();
+  const params = useParams<{
+    id: string;
+  }>();
+
   const router = useRouter();
 
   const {
@@ -73,22 +101,48 @@ export default function DevicePage() {
     loading: demoModeLoading,
   } = useDemoMode();
 
-  const [device, setDevice] = useState<Device | null>(null);
-  const [images, setImages] = useState<DeviceImage[]>([]);
-  const [loadingDevice, setLoadingDevice] = useState(true);
-  const [uploading, setUploading] = useState(false);
-  const [deletingDevice, setDeletingDevice] = useState(false);
-  const [deletingImageId, setDeletingImageId] = useState<
-    string | null
-  >(null);
-  const [errorMessage, setErrorMessage] = useState("");
-
   const deviceId = params.id;
+
+  const [device, setDevice] =
+    useState<Device | null>(null);
+
+  const [images, setImages] =
+    useState<DeviceImage[]>([]);
+
+  const [
+    selectedImageIndex,
+    setSelectedImageIndex,
+  ] = useState(0);
+
+  const [
+    loadingDevice,
+    setLoadingDevice,
+  ] = useState(true);
+
+  const [uploading, setUploading] =
+    useState(false);
+
+  const [
+    deletingDevice,
+    setDeletingDevice,
+  ] = useState(false);
+
+  const [
+    deletingImageId,
+    setDeletingImageId,
+  ] = useState<string | null>(null);
+
+  const [
+    errorMessage,
+    setErrorMessage,
+  ] = useState("");
 
   const sampleDocuments = useMemo(
     () =>
       demoDocuments.filter(
-        (document) => document.device_id === deviceId
+        (document) =>
+          document.device_id ===
+          deviceId
       ),
     [deviceId]
   );
@@ -96,51 +150,89 @@ export default function DevicePage() {
   const sampleTimeline = useMemo(
     () =>
       demoTimelineEvents.filter(
-        (event) => event.device_id === deviceId
+        (event) =>
+          event.device_id ===
+          deviceId
       ),
     [deviceId]
   );
 
   const loadImages = useCallback(
-    async (selectedDeviceId: string, userId: string) => {
-      const { data, error } = await supabase
+    async (
+      selectedDeviceId: string,
+      userId: string
+    ) => {
+      const {
+        data,
+        error,
+      } = await supabase
         .from("device_images")
         .select("*")
-        .eq("device_id", selectedDeviceId)
+        .eq(
+          "device_id",
+          selectedDeviceId
+        )
         .eq("user_id", userId)
-        .order("created_at", { ascending: false });
+        .order("created_at", {
+          ascending: false,
+        });
 
       if (error) {
         throw error;
       }
 
-      const rows = (data || []) as DeviceImageRow[];
+      const rows =
+        (data ||
+          []) as DeviceImageRow[];
 
-      const imagesWithUrls = await Promise.all(
-        rows.map(async (image) => {
-          const { data: signedData, error: signedError } =
-            await supabase.storage
-              .from("device-images")
-              .createSignedUrl(image.image_url, 3600);
+      const imagesWithUrls =
+        await Promise.all(
+          rows.map(async (image) => {
+            const {
+              data: signedData,
+              error: signedError,
+            } =
+              await supabase.storage
+                .from(
+                  "device-images"
+                )
+                .createSignedUrl(
+                  image.image_url,
+                  3600
+                );
 
-          if (signedError) {
-            console.error(
-              "Unable to create signed image URL:",
-              signedError
-            );
-          }
+            if (signedError) {
+              console.error(
+                "Unable to create signed image URL:",
+                signedError
+              );
+            }
 
-          return {
-            ...image,
-            signedUrl: signedData?.signedUrl || "",
-          };
-        })
-      );
+            return {
+              ...image,
+              signedUrl:
+                signedData?.signedUrl ||
+                "",
+            };
+          })
+        );
 
-      setImages(
-        imagesWithUrls.filter((image) =>
-          Boolean(image.signedUrl)
-        )
+      const validImages =
+        imagesWithUrls.filter(
+          (image) =>
+            Boolean(image.signedUrl)
+        );
+
+      setImages(validImages);
+
+      setSelectedImageIndex(
+        (currentIndex) =>
+          validImages.length === 0
+            ? 0
+            : Math.min(
+                currentIndex,
+                validImages.length - 1
+              )
       );
     },
     []
@@ -157,39 +249,59 @@ export default function DevicePage() {
         setErrorMessage("");
 
         if (!deviceId) {
-          setErrorMessage("Invalid device ID.");
+          setDevice(null);
+          setErrorMessage(
+            "Invalid device ID."
+          );
           return;
         }
 
         if (isDemo) {
-          const sampleDevice = demoDevices.find(
-            (item) => item.id === deviceId
-          );
+          const sampleDevice =
+            demoDevices.find(
+              (item) =>
+                item.id === deviceId
+            );
 
           if (!sampleDevice) {
             setDevice(null);
-            setErrorMessage("Demo device not found.");
+            setErrorMessage(
+              "Demo device not found."
+            );
             return;
           }
 
           setDevice({
             id: sampleDevice.id,
-            device_name: sampleDevice.device_name,
-            category: sampleDevice.category,
+            device_name:
+              sampleDevice.device_name,
+            category:
+              sampleDevice.category,
             brand: sampleDevice.brand,
-            model_number: sampleDevice.model_number,
-            serial_number: sampleDevice.serial_number,
-            purchase_date: sampleDevice.purchase_date,
-            warranty_date: sampleDevice.warranty_date,
-            purchase_price: sampleDevice.purchase_price,
-            location: sampleDevice.location,
+            model_number:
+              sampleDevice.model_number,
+            serial_number:
+              sampleDevice.serial_number,
+            purchase_date:
+              sampleDevice.purchase_date,
+            warranty_date:
+              sampleDevice.warranty_date,
+            purchase_price:
+              sampleDevice.purchase_price,
+            location:
+              sampleDevice.location,
             notes: sampleDevice.notes,
             online: sampleDevice.online,
-            last_seen_at: sampleDevice.last_seen_at,
-            ip_address: sampleDevice.ip_address,
-            mac_address: sampleDevice.mac_address,
-            manufacturer: sampleDevice.manufacturer,
-            discovery_source: sampleDevice.discovery_source,
+            last_seen_at:
+              sampleDevice.last_seen_at,
+            ip_address:
+              sampleDevice.ip_address,
+            mac_address:
+              sampleDevice.mac_address,
+            manufacturer:
+              sampleDevice.manufacturer,
+            discovery_source:
+              sampleDevice.discovery_source,
           });
 
           setImages([]);
@@ -198,17 +310,23 @@ export default function DevicePage() {
 
         if (!user) {
           setDevice(null);
-          setErrorMessage("You must be signed in to view this device.");
+
+          setErrorMessage(
+            "You must be signed in to view this device."
+          );
+
           return;
         }
 
-        const { data: deviceData, error: deviceError } =
-          await supabase
-            .from("devices")
-            .select("*")
-            .eq("id", deviceId)
-            .eq("user_id", user.id)
-            .maybeSingle();
+        const {
+          data: deviceData,
+          error: deviceError,
+        } = await supabase
+          .from("devices")
+          .select("*")
+          .eq("id", deviceId)
+          .eq("user_id", user.id)
+          .maybeSingle();
 
         if (deviceError) {
           throw deviceError;
@@ -216,19 +334,36 @@ export default function DevicePage() {
 
         if (!deviceData) {
           setDevice(null);
-          setErrorMessage("Device not found.");
+          setErrorMessage(
+            "Device not found."
+          );
           return;
         }
 
-        setDevice(deviceData as Device);
-        await loadImages(deviceId, user.id);
-      } catch (error) {
-        console.error("Unable to load device page:", error);
+        setDevice(
+          deviceData as Device
+        );
+
+        await loadImages(
+          deviceId,
+          user.id
+        );
+      } catch (error: unknown) {
+        const possibleError =
+          error as {
+            message?: string;
+            details?: string;
+          };
+
+        console.error(
+          "Unable to load device page:",
+          error
+        );
 
         setErrorMessage(
-          error instanceof Error
-            ? error.message
-            : "Unable to load this device."
+          possibleError.message ||
+            possibleError.details ||
+            "Unable to load this device."
         );
       } finally {
         setLoadingDevice(false);
@@ -248,6 +383,21 @@ export default function DevicePage() {
     router.push("/signup");
   }
 
+  function handleEditDevice() {
+    if (!device) {
+      return;
+    }
+
+    if (isDemo) {
+      redirectDemoUser();
+      return;
+    }
+
+    router.push(
+      `/devices/${device.id}/edit`
+    );
+  }
+
   async function handleUpload(
     event: ChangeEvent<HTMLInputElement>
   ) {
@@ -257,10 +407,15 @@ export default function DevicePage() {
       return;
     }
 
-    const files = Array.from(event.target.files || []);
-    const uploadedFileCount = files.length;
+    const files = Array.from(
+      event.target.files || []
+    );
 
-    if (!device || !user || files.length === 0) {
+    if (
+      !device ||
+      !user ||
+      files.length === 0
+    ) {
       return;
     }
 
@@ -268,36 +423,60 @@ export default function DevicePage() {
       setUploading(true);
 
       for (const file of files) {
-        if (!file.type.startsWith("image/")) {
-          throw new Error(`${file.name} is not an image.`);
+        if (
+          !file.type.startsWith(
+            "image/"
+          )
+        ) {
+          throw new Error(
+            `${file.name} is not an image.`
+          );
         }
 
-        if (file.size > 6 * 1024 * 1024) {
+        if (
+          file.size >
+          6 * 1024 * 1024
+        ) {
           throw new Error(
             `${file.name} must be smaller than 6 MB.`
           );
         }
 
         const extension =
-          file.name.split(".").pop()?.toLowerCase() || "jpg";
+          file.name
+            .split(".")
+            .pop()
+            ?.toLowerCase() ||
+          "jpg";
 
         const filePath =
           `${user.id}/${device.id}/` +
           `${crypto.randomUUID()}.${extension}`;
 
-        const { error: uploadError } = await supabase.storage
-          .from("device-images")
-          .upload(filePath, file, {
-            cacheControl: "3600",
-            contentType: file.type,
-            upsert: false,
-          });
+        const {
+          error: uploadError,
+        } =
+          await supabase.storage
+            .from("device-images")
+            .upload(
+              filePath,
+              file,
+              {
+                cacheControl:
+                  "3600",
+                contentType:
+                  file.type,
+                upsert: false,
+              }
+            );
 
         if (uploadError) {
           throw uploadError;
         }
 
-        const { error: recordError } = await supabase
+        const {
+          error: recordError,
+        } = await supabase
           .from("device_images")
           .insert({
             device_id: device.id,
@@ -319,21 +498,30 @@ export default function DevicePage() {
         userId: user.id,
         eventType: "Photo",
         title:
-          uploadedFileCount === 1
+          files.length === 1
             ? "Photo uploaded"
-            : `${uploadedFileCount} photos uploaded`,
+            : `${files.length} photos uploaded`,
         description:
-          uploadedFileCount === 1
+          files.length === 1
             ? "A new device photo was added to the vault."
-            : `${uploadedFileCount} new device photos were added to the vault.`,
+            : `${files.length} new device photos were added to the vault.`,
       });
 
       event.target.value = "";
-      await loadImages(device.id, user.id);
-    } catch (error) {
-      console.error("Unable to upload image:", error);
 
-      alert(
+      setSelectedImageIndex(0);
+
+      await loadImages(
+        device.id,
+        user.id
+      );
+    } catch (error) {
+      console.error(
+        "Unable to upload image:",
+        error
+      );
+
+      window.alert(
         error instanceof Error
           ? error.message
           : "Unable to upload the photo."
@@ -343,7 +531,9 @@ export default function DevicePage() {
     }
   }
 
-  async function deleteImage(image: DeviceImage) {
+  async function deleteImage(
+    image: DeviceImage
+  ) {
     if (isDemo) {
       redirectDemoUser();
       return;
@@ -353,26 +543,36 @@ export default function DevicePage() {
       return;
     }
 
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this photo?"
-    );
+    const confirmed =
+      window.confirm(
+        "Are you sure you want to delete this photo?"
+      );
 
     if (!confirmed) {
       return;
     }
 
     try {
-      setDeletingImageId(image.id);
+      setDeletingImageId(
+        image.id
+      );
 
-      const { error: storageError } = await supabase.storage
-        .from("device-images")
-        .remove([image.image_url]);
+      const {
+        error: storageError,
+      } =
+        await supabase.storage
+          .from("device-images")
+          .remove([
+            image.image_url,
+          ]);
 
       if (storageError) {
         throw storageError;
       }
 
-      const { error: databaseError } = await supabase
+      const {
+        error: databaseError,
+      } = await supabase
         .from("device_images")
         .delete()
         .eq("id", image.id)
@@ -382,15 +582,23 @@ export default function DevicePage() {
         throw databaseError;
       }
 
-      setImages((currentImages) =>
-        currentImages.filter(
-          (currentImage) => currentImage.id !== image.id
-        )
+      setImages(
+        (currentImages) =>
+          currentImages.filter(
+            (currentImage) =>
+              currentImage.id !==
+              image.id
+          )
       );
-    } catch (error) {
-      console.error("Unable to delete image:", error);
 
-      alert(
+      setSelectedImageIndex(0);
+    } catch (error) {
+      console.error(
+        "Unable to delete image:",
+        error
+      );
+
+      window.alert(
         error instanceof Error
           ? error.message
           : "Unable to delete the photo."
@@ -406,15 +614,21 @@ export default function DevicePage() {
       return;
     }
 
-    if (!device || !user || deletingDevice) {
+    if (
+      !device ||
+      !user ||
+      deletingDevice
+    ) {
       return;
     }
 
-    const confirmed = window.confirm(
-      `Are you sure you want to delete "${
-        device.device_name || "this device"
-      }"? This cannot be undone.`
-    );
+    const confirmed =
+      window.confirm(
+        `Are you sure you want to delete "${
+          device.device_name ||
+          "this device"
+        }"? This cannot be undone.`
+      );
 
     if (!confirmed) {
       return;
@@ -423,31 +637,50 @@ export default function DevicePage() {
     try {
       setDeletingDevice(true);
 
-      const imagePaths = images.map(
-        (image) => image.image_url
-      );
+      const imagePaths =
+        images.map(
+          (image) =>
+            image.image_url
+        );
 
-      if (imagePaths.length > 0) {
-        const { error: imageStorageError } =
+      if (
+        imagePaths.length > 0
+      ) {
+        const {
+          error:
+            imageStorageError,
+        } =
           await supabase.storage
-            .from("device-images")
+            .from(
+              "device-images"
+            )
             .remove(imagePaths);
 
-        if (imageStorageError) {
+        if (
+          imageStorageError
+        ) {
           throw imageStorageError;
         }
       }
 
       const {
         data: documentRows,
-        error: documentLoadError,
+        error:
+          documentLoadError,
       } = await supabase
-        .from("device_documents")
+        .from(
+          "device_documents"
+        )
         .select("file_path")
-        .eq("device_id", device.id)
+        .eq(
+          "device_id",
+          device.id
+        )
         .eq("user_id", user.id);
 
-      if (documentLoadError) {
+      if (
+        documentLoadError
+      ) {
         console.error(
           "Unable to load device documents before deletion:",
           documentLoadError
@@ -455,22 +688,39 @@ export default function DevicePage() {
       }
 
       const documentPaths =
-        documentRows?.map(
-          (document) => document.file_path
-        ) || [];
+        (
+          (documentRows ||
+            []) as DocumentStorageRow[]
+        ).map(
+          (document) =>
+            document.file_path
+        );
 
-      if (documentPaths.length > 0) {
-        const { error: documentStorageError } =
+      if (
+        documentPaths.length > 0
+      ) {
+        const {
+          error:
+            documentStorageError,
+        } =
           await supabase.storage
-            .from("device-documents")
-            .remove(documentPaths);
+            .from(
+              "device-documents"
+            )
+            .remove(
+              documentPaths
+            );
 
-        if (documentStorageError) {
+        if (
+          documentStorageError
+        ) {
           throw documentStorageError;
         }
       }
 
-      const { error: deleteError } = await supabase
+      const {
+        error: deleteError,
+      } = await supabase
         .from("devices")
         .delete()
         .eq("id", device.id)
@@ -483,9 +733,12 @@ export default function DevicePage() {
       router.push("/devices");
       router.refresh();
     } catch (error) {
-      console.error("Unable to delete device:", error);
+      console.error(
+        "Unable to delete device:",
+        error
+      );
 
-      alert(
+      window.alert(
         error instanceof Error
           ? error.message
           : "Unable to delete this device."
@@ -496,624 +749,1065 @@ export default function DevicePage() {
   }
 
   const loading =
-    demoModeLoading || loadingDevice;
+    demoModeLoading ||
+    loadingDevice;
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#F7F5EF] p-8">
-        <div className="flex items-center gap-3 text-neutral-600">
-          <Loader2
-            className="animate-spin"
-            size={20}
-          />
-          Loading device...
-        </div>
-      </main>
+      <PageShell>
+        <PageCard className="flex min-h-72 items-center justify-center">
+          <div className="flex items-center gap-3 text-neutral-500">
+            <Loader2
+              className="animate-spin"
+              size={22}
+            />
+
+            Loading device...
+          </div>
+        </PageCard>
+      </PageShell>
     );
   }
 
-  if (errorMessage || !device) {
+  if (
+    errorMessage ||
+    !device
+  ) {
     return (
-      <main className="min-h-screen bg-[#F7F5EF] p-8">
-        <div className="mx-auto max-w-5xl">
-          <h1 className="text-3xl font-bold text-[#111827]">
+      <PageShell>
+        <PageCard className="py-14 text-center">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+            <Laptop size={28} />
+          </div>
+
+          <h1 className="mt-5 text-3xl font-semibold tracking-[-0.04em] text-[#111827]">
             Device not found
           </h1>
 
-          <p className="mt-4 text-neutral-600">
+          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-neutral-500">
             {errorMessage ||
               "This device could not be loaded."}
           </p>
 
-          <button
-            type="button"
-            onClick={() => router.push("/devices")}
-            className="mt-6 rounded-xl bg-[#111827] px-5 py-3 font-semibold text-white"
+          <Button
+            href="/devices"
+            className="mt-6"
           >
+            <ArrowLeft size={17} />
             Back to Devices
-          </button>
-        </div>
-      </main>
+          </Button>
+        </PageCard>
+      </PageShell>
     );
   }
 
-  const hasNetworkInformation = Boolean(
-    device.ip_address ||
-      device.mac_address ||
-      device.manufacturer ||
-      device.discovery_source ||
-      device.last_seen_at ||
-      (device.online !== null &&
-        device.online !== undefined)
-  );
+  const hasNetworkInformation =
+    Boolean(
+      device.ip_address ||
+        device.mac_address ||
+        device.manufacturer ||
+        device.discovery_source ||
+        device.last_seen_at ||
+        (device.online !==
+          null &&
+          device.online !==
+            undefined)
+    );
+
+  const selectedImage =
+    images[
+      selectedImageIndex
+    ];
+
+  const warranty =
+    getWarrantyStatus(
+      device.warranty_date
+    );
 
   return (
-    <main className="min-h-screen bg-[#F7F5EF] p-5 md:p-8">
-      <div className="mx-auto max-w-5xl">
-        <button
-          type="button"
-          onClick={() => router.push("/devices")}
-          className="mb-6 inline-flex items-center gap-2 font-medium text-[#111827] hover:underline"
+    <PageShell>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <Link
+          href="/devices"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-neutral-500 transition hover:text-[#111827]"
         >
-          <ArrowLeft size={18} />
-          Back to Devices
-        </button>
+          <ArrowLeft size={17} />
+          Devices
+        </Link>
 
-        {isDemo && (
-          <section className="mb-6 rounded-3xl border border-[#D8C69D] bg-[#FFF8E8] p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A6A2F]">
-              Interactive Demo
-            </p>
+        <Button
+          onClick={
+            handleEditDevice
+          }
+          variant="secondary"
+        >
+          <Pencil size={16} />
 
-            <h2 className="mt-2 text-xl font-bold text-[#111827]">
-              Sample device profile
-            </h2>
+          {isDemo
+            ? "Create Vault to Edit"
+            : "Edit Device"}
+        </Button>
+      </div>
 
-            <p className="mt-2 text-sm text-neutral-600">
-              This page demonstrates how photos, purchase details,
-              warranties, network information, documents, and device
-              history are organized.
-            </p>
-          </section>
-        )}
+      {isDemo && (
+        <section className="rounded-3xl border border-[#D8C69D] bg-[#FFF8E8] p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A6A2F]">
+            Interactive Demo
+          </p>
 
-        <div className="rounded-3xl bg-white p-6 shadow-sm md:p-8">
-          <header className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#C8A96A]">
-                Device Vault
-              </p>
+          <p className="mt-2 text-sm leading-6 text-neutral-600">
+            This sample profile
+            demonstrates how a device,
+            its photos, documents,
+            network information, and
+            history are organized.
+          </p>
+        </section>
+      )}
 
-              <h1 className="mt-3 text-4xl font-bold text-[#111827]">
-                {device.device_name || "Unnamed Device"}
-              </h1>
-
-              <p className="mt-2 text-neutral-500">
-                {[device.brand, device.model_number]
-                  .filter(Boolean)
-                  .join(" · ") ||
-                  "Brand and model not provided"}
-              </p>
-
-              {hasNetworkInformation && (
-                <div className="mt-4 flex flex-wrap items-center gap-3">
-                  <span
-                    className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold ${
-                      device.online === true
-                        ? "bg-emerald-100 text-emerald-700"
-                        : device.online === false
-                          ? "bg-neutral-100 text-neutral-600"
-                          : "bg-amber-100 text-amber-700"
-                    }`}
-                  >
-                    <span
-                      className={`h-2 w-2 rounded-full ${
-                        device.online === true
-                          ? "bg-emerald-500"
-                          : device.online === false
-                            ? "bg-neutral-400"
-                            : "bg-amber-500"
-                      }`}
-                    />
-
-                    {device.online === true
-                      ? "Online"
-                      : device.online === false
-                        ? "Offline"
-                        : "Status unknown"}
-                  </span>
-
-                  <span className="text-sm text-neutral-400">
-                    {formatLastSeen(device.last_seen_at)}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            <button
-              type="button"
-              onClick={() => {
-                if (isDemo) {
-                  redirectDemoUser();
-                  return;
+      <section className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+        <PageCard className="overflow-hidden p-0">
+          <div className="relative aspect-[5/4] overflow-hidden bg-[#F7F5EF]">
+            {selectedImage ? (
+              <Image
+                src={
+                  selectedImage.signedUrl
                 }
+                alt={
+                  device.device_name ||
+                  "Device photo"
+                }
+                fill
+                unoptimized
+                className="object-cover"
+              />
+            ) : (
+              <label className="flex h-full cursor-pointer flex-col items-center justify-center px-6 text-center">
+                <div className="flex h-20 w-20 items-center justify-center rounded-[28px] bg-white text-[#C8A96A] shadow-sm">
+                  <Camera size={32} />
+                </div>
 
-                router.push(
-                  `/devices/${device.id}/edit`
-                );
-              }}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#111827] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#263044]"
-            >
-              <Pencil size={17} />
-              {isDemo ? "Create Vault to Edit" : "Edit Device"}
-            </button>
-          </header>
-
-          <section className="mt-10">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div>
-                <h2 className="text-2xl font-bold text-[#111827]">
-                  Device Photos
-                </h2>
-
-                <p className="mt-1 text-sm text-neutral-500">
-                  Store photos of the device, receipt, label, or
-                  serial number.
+                <p className="mt-5 text-lg font-semibold text-[#111827]">
+                  {isDemo
+                    ? "Device photos appear here"
+                    : "Add a device photo"}
                 </p>
-              </div>
 
-              <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-[#111827] px-5 py-3 font-semibold text-white">
+                <p className="mt-2 max-w-sm text-sm leading-6 text-neutral-500">
+                  {isDemo
+                    ? "Create an account to upload photos, receipts, labels, and serial numbers."
+                    : "Photos make your inventory easier to identify and document."}
+                </p>
+
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  disabled={
+                    uploading
+                  }
+                  onChange={
+                    handleUpload
+                  }
+                  className="hidden"
+                />
+              </label>
+            )}
+
+            {images.length > 0 && (
+              <label className="absolute bottom-4 right-4 inline-flex cursor-pointer items-center gap-2 rounded-full bg-white/90 px-4 py-2.5 text-sm font-semibold text-[#111827] shadow-lg backdrop-blur transition hover:bg-white">
                 {uploading ? (
                   <Loader2
+                    size={16}
                     className="animate-spin"
-                    size={18}
                   />
                 ) : (
-                  <ImagePlus size={18} />
+                  <ImagePlus
+                    size={16}
+                  />
                 )}
 
                 {isDemo
-                  ? "Create Vault to Upload"
+                  ? "Create Vault"
                   : uploading
-                    ? "Uploading..."
+                    ? "Uploading"
                     : "Add Photos"}
 
                 <input
                   type="file"
                   accept="image/*"
                   multiple
-                  disabled={uploading}
-                  onChange={handleUpload}
-                  className="hidden"
-                />
-              </label>
-            </div>
-
-            {images.length === 0 ? (
-              <label className="mt-6 flex cursor-pointer flex-col items-center justify-center rounded-3xl border-2 border-dashed border-[#D8D1C3] bg-[#FBFAF7] px-6 py-14 text-center transition hover:border-[#C8A96A]">
-                <ImagePlus
-                  size={36}
-                  className="text-[#C8A96A]"
-                />
-
-                <p className="mt-4 font-semibold text-[#111827]">
-                  {isDemo
-                    ? "Device photos appear here"
-                    : "Add your first device photo"}
-                </p>
-
-                <p className="mt-1 text-sm text-neutral-500">
-                  {isDemo
-                    ? "Create an account to upload device photos, receipts, and labels."
-                    : "Choose one or multiple images up to 6 MB each."}
-                </p>
-
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  disabled={uploading}
-                  onChange={handleUpload}
-                  className="hidden"
-                />
-              </label>
-            ) : (
-              <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                {images.map((image) => (
-                  <div
-                    key={image.id}
-                    className="group relative overflow-hidden rounded-2xl border border-[#E8E2D6] bg-white"
-                  >
-                    <img
-                      src={image.signedUrl}
-                      alt={`${
-                        device.device_name || "Device"
-                      } photo`}
-                      className="aspect-square w-full object-cover"
-                    />
-
-                    <button
-                      type="button"
-                      onClick={() => deleteImage(image)}
-                      disabled={
-                        deletingImageId === image.id
-                      }
-                      aria-label="Delete photo"
-                      className="absolute right-3 top-3 rounded-full bg-black/70 p-2 text-white hover:bg-red-600 disabled:opacity-60"
-                    >
-                      {deletingImageId === image.id ? (
-                        <Loader2
-                          size={17}
-                          className="animate-spin"
-                        />
-                      ) : (
-                        <Trash2 size={17} />
-                      )}
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-
-          <div className="my-10 h-px bg-[#E8E2D6]" />
-
-          <section>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#C8A96A]">
-              Inventory Details
-            </p>
-
-            <h2 className="mt-2 text-2xl font-bold text-[#111827]">
-              Device Information
-            </h2>
-
-            <div className="mt-6 grid gap-5 sm:grid-cols-2">
-              <InfoItem
-                label="Category"
-                value={device.category}
-              />
-
-              <InfoItem
-                label="Brand"
-                value={device.brand}
-              />
-
-              <InfoItem
-                label="Model"
-                value={device.model_number}
-              />
-
-              <InfoItem
-                label="Serial Number"
-                value={device.serial_number}
-              />
-
-              <InfoItem
-                label="Purchase Date"
-                value={formatDate(device.purchase_date)}
-              />
-
-              <InfoItem
-                label="Warranty Expiration"
-                value={formatDate(device.warranty_date)}
-              />
-
-              <InfoItem
-                label="Purchase Price"
-                value={formatPrice(device.purchase_price)}
-              />
-
-              <InfoItem
-                label="Location"
-                value={device.location}
-              />
-            </div>
-
-            <div className="mt-5">
-              <InfoItem
-                label="Notes"
-                value={device.notes}
-              />
-            </div>
-          </section>
-
-          {hasNetworkInformation && (
-            <section className="mt-10 border-t border-[#E8E2D6] pt-10">
-              <div className="flex items-start gap-4">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
-                  <Radio size={21} />
-                </div>
-
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
-                    Network Presence
-                  </p>
-
-                  <h2 className="mt-1 text-2xl font-bold text-[#111827]">
-                    Network Information
-                  </h2>
-
-                  <p className="mt-1 text-sm text-neutral-500">
-                    Connection details collected from network discovery.
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-                <InfoItem
-                  label="Status"
-                  value={
-                    device.online === true
-                      ? "Online"
-                      : device.online === false
-                        ? "Offline"
-                        : "Not tracked"
+                  disabled={
+                    uploading
                   }
+                  onChange={
+                    handleUpload
+                  }
+                  className="hidden"
                 />
+              </label>
+            )}
+          </div>
 
-                <InfoItem
-                  label="IP Address"
-                  value={device.ip_address}
-                />
+          {images.length > 0 && (
+            <div className="flex gap-3 overflow-x-auto p-4">
+              {images.map(
+                (
+                  image,
+                  index
+                ) => {
+                  const active =
+                    index ===
+                    selectedImageIndex;
 
-                <InfoItem
-                  label="MAC Address"
-                  value={device.mac_address}
-                />
-
-                <InfoItem
-                  label="Manufacturer"
-                  value={device.manufacturer}
-                />
-
-                <InfoItem
-                  label="Discovery Source"
-                  value={device.discovery_source}
-                />
-
-                <InfoItem
-                  label="Last Seen"
-                  value={formatLastSeen(device.last_seen_at)}
-                />
-              </div>
-            </section>
+                  return (
+                    <button
+                      key={image.id}
+                      type="button"
+                      onClick={() =>
+                        setSelectedImageIndex(
+                          index
+                        )
+                      }
+                      className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl border-2 transition ${
+                        active
+                          ? "border-[#111827]"
+                          : "border-transparent opacity-70 hover:opacity-100"
+                      }`}
+                    >
+                      <Image
+                        src={
+                          image.signedUrl
+                        }
+                        alt="Device thumbnail"
+                        fill
+                        unoptimized
+                        className="object-cover"
+                      />
+                    </button>
+                  );
+                }
+              )}
+            </div>
           )}
+        </PageCard>
 
-          {isDemo ? (
-            <>
-              <DemoDocuments documents={sampleDocuments} />
-              <DemoTimeline events={sampleTimeline} />
-            </>
-          ) : (
-            <>
-              <DeviceDocuments deviceId={device.id} />
-
-              <DeviceTimeline
-                deviceId={device.id}
-                purchaseDate={device.purchase_date}
-                warrantyDate={device.warranty_date}
-              />
-            </>
-          )}
-
-          <section className="mt-10 border-t border-[#E8E2D6] pt-8">
-            <p className="text-sm font-semibold text-red-700">
-              Danger Zone
-            </p>
-
-            <p className="mt-2 text-sm text-neutral-500">
-              {isDemo
-                ? "Demo devices cannot be deleted."
-                : "Deleting this device permanently removes its details, photos, and document records."}
-            </p>
-
-            <button
-              type="button"
-              onClick={deleteDevice}
-              disabled={deletingDevice}
-              className="mt-5 inline-flex items-center gap-2 rounded-xl bg-red-600 px-6 py-3 font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {deletingDevice ? (
-                <Loader2
-                  className="animate-spin"
-                  size={18}
-                />
-              ) : (
-                <Trash2 size={18} />
+        <PageCard className="flex flex-col justify-between p-7 md:p-9">
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              {device.category && (
+                <span className="rounded-full bg-[#F7F5EF] px-3 py-1.5 text-xs font-semibold text-neutral-600">
+                  {device.category}
+                </span>
               )}
 
-              {isDemo
-                ? "Create Vault to Manage Devices"
-                : deletingDevice
-                  ? "Deleting..."
-                  : "Delete Device"}
-            </button>
-          </section>
+              <span
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ${warranty.className}`}
+              >
+                <ShieldCheck
+                  size={13}
+                />
+                {warranty.label}
+              </span>
+            </div>
+
+            <p className="mt-7 text-xs font-semibold uppercase tracking-[0.2em] text-[#C8A96A]">
+              Device Profile
+            </p>
+
+            <h1 className="mt-3 text-4xl font-semibold tracking-[-0.05em] text-[#111827] md:text-5xl">
+              {device.device_name ||
+                "Unnamed Device"}
+            </h1>
+
+            <p className="mt-3 text-base text-neutral-500">
+              {[
+                device.brand,
+                device.model_number,
+              ]
+                .filter(Boolean)
+                .join(" · ") ||
+                "Brand and model not provided"}
+            </p>
+
+            {device.location && (
+              <p className="mt-5 inline-flex items-center gap-2 text-sm text-neutral-500">
+                <MapPin
+                  size={16}
+                  className="text-[#C8A96A]"
+                />
+                {device.location}
+              </p>
+            )}
+          </div>
+
+          <div className="mt-10 grid grid-cols-2 gap-3">
+            <HeroMetric
+              label="Purchase Value"
+              value={formatPrice(
+                device.purchase_price
+              )}
+            />
+
+            <HeroMetric
+              label="Warranty"
+              value={
+                warranty.shortLabel
+              }
+            />
+          </div>
+        </PageCard>
+      </section>
+
+      {images.length > 0 && (
+        <PageCard className="p-6 md:p-8">
+          <SectionHeading
+            eyebrow="Photo Gallery"
+            title="Device photos"
+            description={`${images.length} ${
+              images.length === 1
+                ? "photo"
+                : "photos"
+            } stored in your vault.`}
+          />
+
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {images.map(
+              (image) => (
+                <div
+                  key={image.id}
+                  className="group relative aspect-square overflow-hidden rounded-[24px] bg-[#F7F5EF]"
+                >
+                  <Image
+                    src={
+                      image.signedUrl
+                    }
+                    alt={`${
+                      device.device_name ||
+                      "Device"
+                    } photo`}
+                    fill
+                    unoptimized
+                    className="object-cover transition duration-500 group-hover:scale-[1.03]"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      deleteImage(
+                        image
+                      )
+                    }
+                    disabled={
+                      deletingImageId ===
+                      image.id
+                    }
+                    aria-label="Delete photo"
+                    className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full bg-black/65 text-white opacity-100 backdrop-blur transition hover:bg-red-600 md:opacity-0 md:group-hover:opacity-100"
+                  >
+                    {deletingImageId ===
+                    image.id ? (
+                      <Loader2
+                        size={17}
+                        className="animate-spin"
+                      />
+                    ) : (
+                      <Trash2
+                        size={17}
+                      />
+                    )}
+                  </button>
+                </div>
+              )
+            )}
+          </div>
+        </PageCard>
+      )}
+
+      <PageCard className="p-6 md:p-8">
+        <SectionHeading
+          eyebrow="At a Glance"
+          title="Device information"
+          description="The most important ownership and identification details."
+        />
+
+        <div className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <DetailCard
+            icon={Tag}
+            label="Category"
+            value={device.category}
+          />
+
+          <DetailCard
+            icon={Laptop}
+            label="Brand"
+            value={device.brand}
+          />
+
+          <DetailCard
+            icon={Sparkles}
+            label="Model"
+            value={
+              device.model_number
+            }
+          />
+
+          <DetailCard
+            icon={MapPin}
+            label="Location"
+            value={device.location}
+          />
+
+          <DetailCard
+            icon={
+              CalendarDays
+            }
+            label="Purchase Date"
+            value={formatDate(
+              device.purchase_date
+            )}
+          />
+
+          <DetailCard
+            icon={ShieldCheck}
+            label="Warranty Expiration"
+            value={formatDate(
+              device.warranty_date
+            )}
+          />
+
+          <DetailCard
+            icon={
+              CircleDollarSign
+            }
+            label="Purchase Price"
+            value={formatPrice(
+              device.purchase_price
+            )}
+          />
+
+          <DetailCard
+            icon={FileText}
+            label="Serial Number"
+            value={
+              device.serial_number
+            }
+          />
         </div>
+
+        {device.notes && (
+          <div className="mt-4 rounded-[24px] bg-[#F7F5EF] p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#C8A96A]">
+              Notes
+            </p>
+
+            <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-[#111827]">
+              {device.notes}
+            </p>
+          </div>
+        )}
+      </PageCard>
+
+      {hasNetworkInformation && (
+        <PageCard className="p-6 md:p-8">
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+            <SectionHeading
+              eyebrow="Network Presence"
+              title="Connection information"
+              description="Details collected through network discovery."
+            />
+
+            <NetworkStatus
+              online={
+                device.online
+              }
+              lastSeen={
+                device.last_seen_at
+              }
+            />
+          </div>
+
+          <div className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <DetailCard
+              icon={Radio}
+              label="Status"
+              value={
+                device.online ===
+                true
+                  ? "Online"
+                  : device.online ===
+                      false
+                    ? "Offline"
+                    : "Not tracked"
+              }
+            />
+
+            <DetailCard
+              icon={Radio}
+              label="IP Address"
+              value={
+                device.ip_address
+              }
+            />
+
+            <DetailCard
+              icon={Radio}
+              label="MAC Address"
+              value={
+                device.mac_address
+              }
+            />
+
+            <DetailCard
+              icon={Laptop}
+              label="Manufacturer"
+              value={
+                device.manufacturer
+              }
+            />
+
+            <DetailCard
+              icon={Sparkles}
+              label="Discovery Source"
+              value={
+                device.discovery_source
+              }
+            />
+
+            <DetailCard
+              icon={
+                CalendarDays
+              }
+              label="Last Seen"
+              value={formatLastSeen(
+                device.last_seen_at
+              )}
+            />
+          </div>
+        </PageCard>
+      )}
+
+      {isDemo ? (
+        <>
+          <DemoDocuments
+            documents={
+              sampleDocuments
+            }
+          />
+
+          <DemoTimeline
+            events={
+              sampleTimeline
+            }
+          />
+        </>
+      ) : (
+        <>
+          <DeviceDocuments
+            deviceId={device.id}
+          />
+
+          <DeviceTimeline
+            deviceId={device.id}
+            purchaseDate={
+              device.purchase_date
+            }
+            warrantyDate={
+              device.warranty_date
+            }
+          />
+        </>
+      )}
+
+      <PageCard className="border-red-100 p-6 md:p-8">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-red-600">
+          Danger Zone
+        </p>
+
+        <div className="mt-4 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-xl font-semibold text-[#111827]">
+              Delete this device
+            </h2>
+
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-500">
+              {isDemo
+                ? "Demo devices cannot be deleted."
+                : "This permanently removes the device and its associated photos and records."}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={
+              deleteDevice
+            }
+            disabled={
+              deletingDevice
+            }
+            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl border border-red-200 bg-red-50 px-5 py-3 text-sm font-semibold text-red-700 transition hover:bg-red-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {deletingDevice ? (
+              <Loader2
+                className="animate-spin"
+                size={17}
+              />
+            ) : (
+              <Trash2
+                size={17}
+              />
+            )}
+
+            {isDemo
+              ? "Create Vault to Manage"
+              : deletingDevice
+                ? "Deleting..."
+                : "Delete Device"}
+          </button>
+        </div>
+      </PageCard>
+    </PageShell>
+  );
+}
+
+function SectionHeading({
+  eyebrow,
+  title,
+  description,
+}: {
+  eyebrow: string;
+  title: string;
+  description?: string;
+}) {
+  return (
+    <div>
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
+        {eyebrow}
+      </p>
+
+      <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[#111827]">
+        {title}
+      </h2>
+
+      {description && (
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-500">
+          {description}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function HeroMetric({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | null;
+}) {
+  return (
+    <div className="rounded-[22px] bg-[#F7F5EF] p-4">
+      <p className="text-xs text-neutral-500">
+        {label}
+      </p>
+
+      <p className="mt-2 truncate text-lg font-semibold text-[#111827]">
+        {value || "Not recorded"}
+      </p>
+    </div>
+  );
+}
+
+function DetailCard({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: typeof Laptop;
+  label: string;
+  value:
+    | string
+    | null
+    | undefined;
+}) {
+  return (
+    <div className="rounded-[24px] bg-[#F7F5EF] p-5">
+      <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-[#C8A96A] shadow-sm">
+        <Icon size={18} />
       </div>
-    </main>
+
+      <p className="mt-5 text-xs font-semibold uppercase tracking-[0.15em] text-neutral-400">
+        {label}
+      </p>
+
+      <p className="mt-2 break-words font-semibold text-[#111827]">
+        {value ||
+          "Not provided"}
+      </p>
+    </div>
+  );
+}
+
+function NetworkStatus({
+  online,
+  lastSeen,
+}: {
+  online:
+    | boolean
+    | null
+    | undefined;
+  lastSeen:
+    | string
+    | null
+    | undefined;
+}) {
+  const status =
+    online === true
+      ? {
+          label: "Online",
+          dot: "bg-emerald-500",
+          className:
+            "bg-emerald-50 text-emerald-700",
+        }
+      : online === false
+        ? {
+            label: "Offline",
+            dot: "bg-neutral-400",
+            className:
+              "bg-neutral-100 text-neutral-600",
+          }
+        : {
+            label:
+              "Status unknown",
+            dot: "bg-amber-500",
+            className:
+              "bg-amber-50 text-amber-700",
+          };
+
+  return (
+    <div className="shrink-0">
+      <span
+        className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold ${status.className}`}
+      >
+        <span
+          className={`h-2 w-2 rounded-full ${status.dot}`}
+        />
+
+        {status.label}
+      </span>
+
+      <p className="mt-2 text-right text-xs text-neutral-400">
+        {formatLastSeen(
+          lastSeen
+        )}
+      </p>
+    </div>
   );
 }
 
 function DemoDocuments({
   documents,
 }: {
-  documents: typeof demoDocuments;
+  documents:
+    typeof demoDocuments;
 }) {
   return (
-    <section className="mt-10 border-t border-[#E8E2D6] pt-10">
-      <div className="flex items-start gap-4">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
-          <FileText size={21} />
-        </div>
+    <PageCard className="p-6 md:p-8">
+      <SectionHeading
+        eyebrow="Documents"
+        title="Device documents"
+        description="Receipts, manuals, warranty files, and setup guides."
+      />
 
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
-            Documents
-          </p>
-
-          <h2 className="mt-1 text-2xl font-bold text-[#111827]">
-            Device Documents
-          </h2>
-
-          <p className="mt-1 text-sm text-neutral-500">
-            Receipts, manuals, warranties, and setup guides.
-          </p>
-        </div>
-      </div>
-
-      {documents.length === 0 ? (
+      {documents.length ===
+      0 ? (
         <div className="mt-6 rounded-2xl bg-[#F7F5EF] p-5 text-sm text-neutral-500">
-          No sample documents are attached to this device.
+          No sample documents
+          are attached to this
+          device.
         </div>
       ) : (
-        <div className="mt-6 space-y-3">
-          {documents.map((document) => (
-            <div
-              key={document.id}
-              className="flex items-center justify-between gap-4 rounded-2xl border border-[#E8E2D6] p-4"
-            >
-              <div>
-                <p className="font-semibold text-[#111827]">
-                  {document.document_name}
-                </p>
+        <div className="mt-6 grid gap-3 md:grid-cols-2">
+          {documents.map(
+            (document) => (
+              <div
+                key={
+                  document.id
+                }
+                className="flex items-center gap-4 rounded-[22px] border border-[#E8E2D6] p-4"
+              >
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+                  <FileText
+                    size={19}
+                  />
+                </div>
 
-                <p className="mt-1 text-sm text-neutral-500">
-                  {document.document_type} · {document.file_name}
-                </p>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-semibold text-[#111827]">
+                    {
+                      document.document_name
+                    }
+                  </p>
+
+                  <p className="mt-1 truncate text-sm text-neutral-500">
+                    {
+                      document.document_type
+                    }{" "}
+                    ·{" "}
+                    {
+                      document.file_name
+                    }
+                  </p>
+                </div>
+
+                <span className="rounded-full bg-[#F7F5EF] px-3 py-1 text-xs font-semibold text-[#8A6A2F]">
+                  Demo
+                </span>
               </div>
-
-              <span className="rounded-full bg-[#F7F5EF] px-3 py-1 text-xs font-semibold text-[#8A6A2F]">
-                Demo
-              </span>
-            </div>
-          ))}
+            )
+          )}
         </div>
       )}
-    </section>
+    </PageCard>
   );
 }
 
 function DemoTimeline({
   events,
 }: {
-  events: typeof demoTimelineEvents;
+  events:
+    typeof demoTimelineEvents;
 }) {
   return (
-    <section className="mt-10 border-t border-[#E8E2D6] pt-10">
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
-        Device History
-      </p>
+    <PageCard className="p-6 md:p-8">
+      <SectionHeading
+        eyebrow="Device History"
+        title="Timeline"
+        description="A simple history of important device activity."
+      />
 
-      <h2 className="mt-2 text-2xl font-bold text-[#111827]">
-        Timeline
-      </h2>
-
-      {events.length === 0 ? (
+      {events.length ===
+      0 ? (
         <div className="mt-6 rounded-2xl bg-[#F7F5EF] p-5 text-sm text-neutral-500">
-          No sample timeline events are recorded for this device.
+          No sample timeline
+          events are recorded for
+          this device.
         </div>
       ) : (
-        <div className="mt-6 space-y-4">
-          {events.map((event) => (
-            <div
-              key={event.id}
-              className="rounded-2xl border border-[#E8E2D6] p-5"
-            >
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <p className="font-semibold text-[#111827]">
-                    {event.title}
-                  </p>
+        <div className="relative mt-7 space-y-6 before:absolute before:bottom-2 before:left-[7px] before:top-2 before:w-px before:bg-[#E8E2D6]">
+          {events.map(
+            (event) => (
+              <div
+                key={event.id}
+                className="relative pl-8"
+              >
+                <span className="absolute left-0 top-2 h-[15px] w-[15px] rounded-full border-4 border-white bg-[#C8A96A] shadow-sm" />
 
-                  <p className="mt-1 text-sm text-neutral-500">
-                    {event.description}
-                  </p>
+                <div className="rounded-[22px] bg-[#F7F5EF] p-5">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <p className="font-semibold text-[#111827]">
+                        {
+                          event.title
+                        }
+                      </p>
+
+                      <p className="mt-2 text-sm leading-6 text-neutral-500">
+                        {
+                          event.description
+                        }
+                      </p>
+                    </div>
+
+                    <span className="shrink-0 text-xs text-neutral-400">
+                      {new Date(
+                        event.event_date
+                      ).toLocaleDateString(
+                        undefined,
+                        {
+                          month:
+                            "short",
+                          day: "numeric",
+                          year: "numeric",
+                        }
+                      )}
+                    </span>
+                  </div>
                 </div>
-
-                <span className="text-sm text-neutral-400">
-                  {new Date(event.event_date).toLocaleDateString(
-                    undefined,
-                    {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    }
-                  )}
-                </span>
               </div>
-            </div>
-          ))}
+            )
+          )}
         </div>
       )}
-    </section>
+    </PageCard>
   );
 }
 
-function InfoItem({
-  label,
-  value,
-}: {
-  label: string;
-  value: string | null | undefined;
-}) {
-  return (
-    <div className="rounded-2xl bg-[#F7F5EF] p-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#C8A96A]">
-        {label}
-      </p>
+function getWarrantyStatus(
+  warrantyDate:
+    | string
+    | null
+    | undefined
+) {
+  if (!warrantyDate) {
+    return {
+      label: "No warranty recorded",
+      shortLabel:
+        "Not recorded",
+      className:
+        "bg-neutral-100 text-neutral-600",
+    };
+  }
 
-      <p className="mt-2 break-words font-medium text-[#111827]">
-        {value || "Not provided"}
-      </p>
-    </div>
-  );
+  const expiration =
+    new Date(
+      `${warrantyDate}T23:59:59`
+    );
+
+  if (
+    Number.isNaN(
+      expiration.getTime()
+    )
+  ) {
+    return {
+      label:
+        "Warranty status unknown",
+      shortLabel: "Unknown",
+      className:
+        "bg-neutral-100 text-neutral-600",
+    };
+  }
+
+  const daysRemaining =
+    Math.ceil(
+      (expiration.getTime() -
+        Date.now()) /
+        (1000 *
+          60 *
+          60 *
+          24)
+    );
+
+  if (daysRemaining < 0) {
+    return {
+      label:
+        "Warranty expired",
+      shortLabel: "Expired",
+      className:
+        "bg-red-50 text-red-700",
+    };
+  }
+
+  if (
+    daysRemaining === 0
+  ) {
+    return {
+      label:
+        "Warranty expires today",
+      shortLabel: "Today",
+      className:
+        "bg-amber-50 text-amber-700",
+    };
+  }
+
+  if (
+    daysRemaining <= 60
+  ) {
+    return {
+      label: `${daysRemaining} days remaining`,
+      shortLabel: `${daysRemaining} days`,
+      className:
+        "bg-amber-50 text-amber-700",
+    };
+  }
+
+  return {
+    label: "Warranty active",
+    shortLabel: `${daysRemaining} days`,
+    className:
+      "bg-emerald-50 text-emerald-700",
+  };
 }
 
-function formatDate(value: string | null) {
+function formatDate(
+  value: string | null
+) {
   if (!value) {
     return null;
   }
 
-  const date = new Date(`${value}T00:00:00`);
+  const date = new Date(
+    `${value}T00:00:00`
+  );
 
-  if (Number.isNaN(date.getTime())) {
+  if (
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
     return value;
   }
 
-  return date.toLocaleDateString(undefined, {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
+  return date.toLocaleDateString(
+    undefined,
+    {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    }
+  );
 }
 
-function formatPrice(value: number | null) {
-  if (value === null || value === undefined) {
+function formatPrice(
+  value: number | null
+) {
+  if (
+    value === null ||
+    value === undefined
+  ) {
     return null;
   }
 
-  return `$${Number(value).toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
+  return Number(
+    value
+  ).toLocaleString(
+    undefined,
+    {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    }
+  );
 }
 
-function formatLastSeen(value?: string | null) {
+function formatLastSeen(
+  value?: string | null
+) {
   if (!value) {
     return "Never seen";
   }
 
-  const date = new Date(value);
+  const date =
+    new Date(value);
 
-  if (Number.isNaN(date.getTime())) {
+  if (
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
     return "Unknown";
   }
 
-  const difference = Date.now() - date.getTime();
-  const minutes = Math.floor(
-    difference / (1000 * 60)
-  );
+  const difference =
+    Date.now() -
+    date.getTime();
+
+  const minutes =
+    Math.floor(
+      difference /
+        (1000 * 60)
+    );
 
   if (minutes < 1) {
     return "Seen just now";
@@ -1121,11 +1815,16 @@ function formatLastSeen(value?: string | null) {
 
   if (minutes < 60) {
     return `Seen ${minutes} minute${
-      minutes === 1 ? "" : "s"
+      minutes === 1
+        ? ""
+        : "s"
     } ago`;
   }
 
-  const hours = Math.floor(minutes / 60);
+  const hours =
+    Math.floor(
+      minutes / 60
+    );
 
   if (hours < 24) {
     return `Seen ${hours} hour${
@@ -1133,7 +1832,10 @@ function formatLastSeen(value?: string | null) {
     } ago`;
   }
 
-  const days = Math.floor(hours / 24);
+  const days =
+    Math.floor(
+      hours / 24
+    );
 
   if (days < 7) {
     return `Seen ${days} day${
@@ -1141,9 +1843,12 @@ function formatLastSeen(value?: string | null) {
     } ago`;
   }
 
-  return `Last seen ${date.toLocaleDateString(undefined, {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  })}`;
+  return `Last seen ${date.toLocaleDateString(
+    undefined,
+    {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    }
+  )}`;
 }

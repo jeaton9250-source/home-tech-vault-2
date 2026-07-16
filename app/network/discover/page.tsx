@@ -915,7 +915,7 @@ function NetworkDiscoveryContent() {
 
         <div className="mt-8 grid gap-5 md:grid-cols-2">
           <CommandCard
-            title="macOS"
+            title="mac"
             command="arp -a"
             copied={
               copiedCommand === "mac"

@@ -394,11 +394,6 @@ export default function AccountPage() {
 
   return (
     <PageShell>
-      <PageTitle
-        eyebrow="Account Center"
-        title="Profile & Settings"
-        description="Manage your personal profile, household, subscription, preferences, and account access."
-      />
 
       {loading ? (
         <PageCard className="flex min-h-64 items-center justify-center">

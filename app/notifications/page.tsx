@@ -1,41 +1,30 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import {
   Bell,
   CheckCircle2,
   CircleAlert,
   Clock3,
-  FileText,
-  Laptop,
   Loader2,
-  Radar,
-  ShieldCheck,
+  Sparkles,
 } from "lucide-react";
 
 import { useDemoMode } from "@/hooks/useDemoMode";
-import { useRouter } from "next/navigation";
+import {
+  useNotifications,
+  type VaultNotification,
+} from "@/hooks/useNotifications";
 
 import PageShell from "@/components/ui/PageShell";
 import PageTitle from "@/components/ui/PageTitle";
 import PageCard from "@/components/ui/PageCard";
 import Button from "@/components/ui/Button";
 
-import {
-  useNotifications,
-  type VaultNotification,
-} from "@/hooks/useNotifications";
-
-type DeviceRow = {
-  id: string;
-  device_name: string | null;
-  warranty_date: string | null;
-  serial_number: string | null;
-  purchase_price: number | null;
-};
-
 export default function NotificationsPage() {
   const router = useRouter();
+
   const { isDemo } = useDemoMode();
 
   const {
@@ -83,9 +72,17 @@ export default function NotificationsPage() {
         title="Notifications"
         description="Stay ahead of warranty expirations, missing information, and important vault updates."
         action={
-          <Button href="/settings" variant="secondary">
-            Notification Settings
-          </Button>
+          <div className="flex flex-wrap gap-3">
+            {notifications.length > 0 && (
+              <Button variant="secondary" onClick={markAllAsRead}>
+                Mark All as Read
+              </Button>
+            )}
+
+            <Button href="/settings" variant="secondary">
+              Notification Settings
+            </Button>
+          </div>
         }
       />
 
@@ -102,7 +99,7 @@ export default function NotificationsPage() {
         </PageCard>
       )}
 
-      <section className="grid gap-4 sm:grid-cols-3">
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <NotificationStat
           label="Total"
           value={notifications.length}
@@ -116,6 +113,12 @@ export default function NotificationsPage() {
         />
 
         <NotificationStat label="Suggestions" value={infoCount} icon={Clock3} />
+
+        <NotificationStat
+          label="Insights"
+          value={insightCount}
+          icon={Sparkles}
+        />
       </section>
 
       <PageCard>
@@ -151,6 +154,13 @@ export default function NotificationsPage() {
             >
               Suggestions
             </FilterButton>
+
+            <FilterButton
+              active={filter === "insight"}
+              onClick={() => setFilter("insight")}
+            >
+              Insights
+            </FilterButton>
           </div>
         </div>
 
@@ -185,6 +195,8 @@ export default function NotificationsPage() {
               <NotificationRow
                 key={notification.id}
                 notification={notification}
+                isRead={readIds.has(notification.id)}
+                onClick={() => openNotification(notification)}
               />
             ))}
           </div>
@@ -196,15 +208,22 @@ export default function NotificationsPage() {
 
 function NotificationRow({
   notification,
+  isRead,
+  onClick,
 }: {
   notification: VaultNotification;
+  isRead: boolean;
+  onClick: () => void;
 }) {
   const Icon = notification.icon;
 
   return (
-    <a
-      href={notification.href}
-      className="flex items-start gap-4 py-5 first:pt-0 last:pb-0"
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex w-full items-start gap-4 py-5 text-left transition first:pt-0 last:pb-0 hover:bg-[#FBFAF7] ${
+        isRead ? "opacity-70" : ""
+      }`}
     >
       <div
         className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${
@@ -212,14 +231,22 @@ function NotificationRow({
             ? "bg-amber-100 text-amber-700"
             : notification.type === "success"
               ? "bg-emerald-100 text-emerald-700"
-              : "bg-[#F7F5EF] text-[#C8A96A]"
+              : notification.type === "insight"
+                ? "bg-violet-100 text-violet-700"
+                : "bg-[#F7F5EF] text-[#C8A96A]"
         }`}
       >
         <Icon size={20} />
       </div>
 
       <div className="min-w-0 flex-1">
-        <p className="font-semibold text-[#111827]">{notification.title}</p>
+        <div className="flex items-start gap-2">
+          <p className="font-semibold text-[#111827]">{notification.title}</p>
+
+          {!isRead && (
+            <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-[#C8A96A]" />
+          )}
+        </div>
 
         <p className="mt-1 text-sm leading-6 text-neutral-500">
           {notification.description}
@@ -227,7 +254,7 @@ function NotificationRow({
       </div>
 
       <span className="shrink-0 text-neutral-300">→</span>
-    </a>
+    </button>
   );
 }
 
@@ -264,7 +291,7 @@ function FilterButton({
 }: {
   active: boolean;
   onClick: () => void;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <button

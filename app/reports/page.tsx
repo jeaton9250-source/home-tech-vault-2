@@ -1,583 +1,1244 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
 import {
-  AlertTriangle,
-  BarChart3,
-  CameraOff,
-  FileQuestion,
+  useEffect,
+  useMemo,
+  useState,
+  type ComponentType,
+} from "react";
+
+import {
+  Crown,
+  Download,
+  Eye,
+  FileText,
+  Home,
   Laptop,
   Loader2,
-  MapPin,
+  LockKeyhole,
   ShieldCheck,
-  Trophy,
-  WalletCards,
+  Wifi,
+  Wrench,
+  X,
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
+import { useDemoMode } from "@/hooks/useDemoMode";
+import { useSubscription } from "@/hooks/useSubscription";
+
+import {
+  generateReportPdf,
+  type ReportPdfDevice,
+  type ReportPdfType,
+} from "@/lib/reports/generateReportPdf";
+
 import PageShell from "@/components/ui/PageShell";
-import PageTitle from "@/components/ui/PageTitle";
 import PageCard from "@/components/ui/PageCard";
+import Button from "@/components/ui/Button";
+
+type ReportIcon = ComponentType<{
+  size?: number;
+  className?: string;
+}>;
+
+type PreviewReport = {
+  type: ReportPdfType;
+  title: string;
+  description: string;
+  rows: {
+    label: string;
+    value: string;
+  }[];
+};
 
 type DeviceRow = {
   id: string;
   device_name: string | null;
-  brand: string | null;
-  category: string | null;
-  location: string | null;
   purchase_price: number | null;
   warranty_date: string | null;
+  serial_number: string | null;
+  location: string | null;
 };
 
-type DeviceIdRow = {
-  device_id: string;
+type ReportCoverage = {
+  photos: number;
+  documents: number;
+  serialNumbers: number;
+  warranties: number;
 };
 
-type ValueGroup = {
-  label: string;
-  value: number;
+type ReportOption = {
+  type: ReportPdfType;
+  title: string;
+  description: string;
+  icon: ReportIcon;
 };
+
+const reportOptions: ReportOption[] = [
+  {
+    type: "household",
+    title: "Household Summary",
+    description:
+      "A simple overview of your devices, value, documents, and warranties.",
+    icon: Home,
+  },
+  {
+    type: "devices",
+    title: "Device Inventory",
+    description:
+      "A complete list of every device stored in your vault.",
+    icon: Laptop,
+  },
+  {
+    type: "insurance",
+    title: "Insurance Report",
+    description:
+      "Claim-ready device, photo, document, and value information.",
+    icon: ShieldCheck,
+  },
+  {
+    type: "warranties",
+    title: "Warranty Report",
+    description:
+      "A summary of active, expiring, expired, and missing coverage.",
+    icon: ShieldCheck,
+  },
+  {
+    type: "network",
+    title: "Network Report",
+    description:
+      "A record of your internet, Wi-Fi, router, modem, and network devices.",
+    icon: Wifi,
+  },
+  {
+    type: "maintenance",
+    title: "Maintenance Report",
+    description:
+      "A summary of maintenance, repairs, cleaning, and software updates.",
+    icon: Wrench,
+  },
+];
 
 export default function ReportsPage() {
-  const [devices, setDevices] = useState<DeviceRow[]>([]);
-  const [deviceIdsWithPhotos, setDeviceIdsWithPhotos] = useState<
-    Set<string>
-  >(new Set());
-  const [deviceIdsWithDocuments, setDeviceIdsWithDocuments] = useState<
-    Set<string>
-  >(new Set());
+  const {
+    user,
+    isDemo,
+    loading: demoLoading,
+  } = useDemoMode();
 
-  const [loading, setLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState("");
+  const {
+    loading: subscriptionLoading,
+    plan,
+    status,
+    isAdmin,
+  } = useSubscription();
+
+  const [devices, setDevices] =
+    useState<DeviceRow[]>([]);
+
+  const [deviceCount, setDeviceCount] =
+    useState(0);
+
+  const [documentCount, setDocumentCount] =
+    useState(0);
+
+  const [photoCount, setPhotoCount] =
+    useState(0);
+
+  const [
+    serialNumberCount,
+    setSerialNumberCount,
+  ] = useState(0);
+
+  const [roomCount, setRoomCount] =
+    useState(0);
+
+  const [
+    protectedValue,
+    setProtectedValue,
+  ] = useState(0);
+
+  const [
+    activeWarrantyCount,
+    setActiveWarrantyCount,
+  ] = useState(0);
+
+  const [
+    reportCoverage,
+    setReportCoverage,
+  ] = useState<ReportCoverage>({
+    photos: 0,
+    documents: 0,
+    serialNumbers: 0,
+    warranties: 0,
+  });
+
+  const [
+    loadingReports,
+    setLoadingReports,
+  ] = useState(true);
+
+  const [errorMessage, setErrorMessage] =
+    useState("");
+
+  const [
+    selectedReportType,
+    setSelectedReportType,
+  ] =
+    useState<ReportPdfType>("household");
+
+  const [
+    previewReport,
+    setPreviewReport,
+  ] = useState<PreviewReport | null>(
+    null
+  );
+
+  const [
+    generatingReport,
+    setGeneratingReport,
+  ] =
+    useState<ReportPdfType | null>(
+      null
+    );
+
+  const hasPdfAccess =
+    isAdmin ||
+    (["pro", "family"].includes(
+      plan
+    ) &&
+      ["active", "trialing"].includes(
+        status
+      ));
 
   useEffect(() => {
-    async function loadAnalytics() {
+    async function loadReportOverview() {
+      if (demoLoading) {
+        return;
+      }
+
       try {
-        setLoading(true);
+        setLoadingReports(true);
         setErrorMessage("");
 
-        const {
-          data: { user },
-          error: userError,
-        } = await supabase.auth.getUser();
+        if (isDemo || !user) {
+          setDevices([]);
+          setDeviceCount(8);
+          setDocumentCount(18);
+          setPhotoCount(16);
+          setSerialNumberCount(14);
+          setRoomCount(5);
+          setProtectedValue(18420);
+          setActiveWarrantyCount(6);
 
-        if (userError) {
-          throw userError;
+          setReportCoverage({
+            photos: 88,
+            documents: 88,
+            serialNumbers: 75,
+            warranties: 75,
+          });
+
+          return;
         }
 
-        if (!user) {
-          throw new Error("Please sign in to view analytics.");
-        }
-
-        const { data: deviceData, error: deviceError } =
-          await supabase
+        const [
+          devicesResult,
+          documentsResult,
+          photosResult,
+        ] = await Promise.all([
+          supabase
             .from("devices")
             .select(
               `
                 id,
                 device_name,
-                brand,
-                category,
                 location,
-                purchase_price,
-                warranty_date
+                warranty_date,
+                serial_number,
+                purchase_price
               `
             )
-            .eq("user_id", user.id);
-
-        if (deviceError) {
-          throw deviceError;
-        }
-
-        const deviceRows = (deviceData || []) as DeviceRow[];
-        setDevices(deviceRows);
-
-        const deviceIds = deviceRows.map((device) => device.id);
-
-        if (deviceIds.length === 0) {
-          setDeviceIdsWithPhotos(new Set());
-          setDeviceIdsWithDocuments(new Set());
-          return;
-        }
-
-        const [photoResult, documentResult] = await Promise.all([
-          supabase
-            .from("device_images")
-            .select("device_id")
-            .eq("user_id", user.id)
-            .in("device_id", deviceIds),
+            .eq("user_id", user.id),
 
           supabase
             .from("device_documents")
             .select("device_id")
-            .eq("user_id", user.id)
-            .in("device_id", deviceIds),
+            .eq("user_id", user.id),
+
+          supabase
+            .from("device_images")
+            .select("device_id")
+            .eq("user_id", user.id),
         ]);
 
-        if (photoResult.error) {
-          console.error("Analytics photo error:", photoResult.error);
+        if (devicesResult.error) {
+          throw devicesResult.error;
         }
 
-        if (documentResult.error) {
+        if (documentsResult.error) {
           console.error(
-            "Analytics document error:",
-            documentResult.error
+            "Unable to load report documents:",
+            documentsResult.error
           );
         }
 
-        setDeviceIdsWithPhotos(
+        if (photosResult.error) {
+          console.error(
+            "Unable to load report photos:",
+            photosResult.error
+          );
+        }
+
+        const loadedDevices =
+          (devicesResult.data ||
+            []) as DeviceRow[];
+
+        const documentDeviceIds =
           new Set(
-            ((photoResult.data || []) as DeviceIdRow[]).map(
-              (row) => row.device_id
+            (
+              documentsResult.data ||
+              []
+            ).map(
+              (row) =>
+                row.device_id
             )
-          )
+          );
+
+        const photoDeviceIds =
+          new Set(
+            (
+              photosResult.data ||
+              []
+            ).map(
+              (row) =>
+                row.device_id
+            )
+          );
+
+        const totalValue =
+          loadedDevices.reduce(
+            (total, device) =>
+              total +
+              Number(
+                device.purchase_price ||
+                  0
+              ),
+            0
+          );
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const activeWarranties =
+          loadedDevices.filter(
+            (device) => {
+              if (
+                !device.warranty_date
+              ) {
+                return false;
+              }
+
+              const expiration =
+                new Date(
+                  `${device.warranty_date}T23:59:59`
+                );
+
+              return (
+                expiration >= today
+              );
+            }
+          ).length;
+
+        const devicesWithSerialNumbers =
+          loadedDevices.filter(
+            (device) =>
+              Boolean(
+                device.serial_number?.trim()
+              )
+          ).length;
+
+        const rooms = new Set(
+          loadedDevices
+            .map((device) =>
+              device.location?.trim()
+            )
+            .filter(Boolean)
         );
 
-        setDeviceIdsWithDocuments(
-          new Set(
-            ((documentResult.data || []) as DeviceIdRow[]).map(
-              (row) => row.device_id
-            )
-          )
+        function calculateCoverage(
+          value: number
+        ) {
+          if (
+            loadedDevices.length ===
+            0
+          ) {
+            return 0;
+          }
+
+          return Math.round(
+            (value /
+              loadedDevices.length) *
+              100
+          );
+        }
+
+        setDevices(loadedDevices);
+
+        setDeviceCount(
+          loadedDevices.length
         );
-      } catch (error) {
-        console.error("Analytics loading error:", error);
+
+        setDocumentCount(
+          documentDeviceIds.size
+        );
+
+        setPhotoCount(
+          photoDeviceIds.size
+        );
+
+        setSerialNumberCount(
+          devicesWithSerialNumbers
+        );
+
+        setRoomCount(rooms.size);
+
+        setProtectedValue(
+          totalValue
+        );
+
+        setActiveWarrantyCount(
+          activeWarranties
+        );
+
+        setReportCoverage({
+          photos: calculateCoverage(
+            photoDeviceIds.size
+          ),
+          documents:
+            calculateCoverage(
+              documentDeviceIds.size
+            ),
+          serialNumbers:
+            calculateCoverage(
+              devicesWithSerialNumbers
+            ),
+          warranties:
+            calculateCoverage(
+              activeWarranties
+            ),
+        });
+      } catch (error: unknown) {
+        const possibleError =
+          error as {
+            message?: string;
+            details?: string;
+          };
+
+        console.error(
+          "Unable to load Reports Center:",
+          error
+        );
 
         setErrorMessage(
-          error instanceof Error
-            ? error.message
-            : "Unable to load analytics."
+          possibleError.message ||
+            possibleError.details ||
+            "Unable to load your reports."
         );
       } finally {
-        setLoading(false);
+        setLoadingReports(false);
       }
     }
 
-    loadAnalytics();
-  }, []);
+    loadReportOverview();
+  }, [
+    user,
+    isDemo,
+    demoLoading,
+  ]);
 
-  const totalValue = useMemo(
-    () =>
-      devices.reduce(
-        (total, device) =>
-          total + Number(device.purchase_price || 0),
-        0
-      ),
-    [devices]
-  );
-
-  const activeWarrantyCount = useMemo(() => {
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-
-    return devices.filter((device) => {
-      if (!device.warranty_date) {
-        return false;
+  const readinessScore =
+    useMemo(() => {
+      if (deviceCount === 0) {
+        return 0;
       }
 
-      const expiration = new Date(
-        `${device.warranty_date}T23:59:59`
+      return Math.round(
+        (reportCoverage.photos +
+          reportCoverage.documents +
+          reportCoverage.serialNumbers +
+          reportCoverage.warranties) /
+          4
       );
+    }, [
+      deviceCount,
+      reportCoverage,
+    ]);
 
-      return expiration >= now;
-    }).length;
-  }, [devices]);
+  const readinessLabel =
+    readinessScore >= 90
+      ? "Insurance ready"
+      : readinessScore >= 75
+        ? "Nearly ready"
+        : readinessScore >= 50
+          ? "Needs attention"
+          : "Getting started";
 
-  const warrantyCoverageRate =
-    devices.length === 0
-      ? 0
-      : Math.round(
-          (activeWarrantyCount / devices.length) * 100
-        );
+  const selectedOption =
+    reportOptions.find(
+      (report) =>
+        report.type ===
+        selectedReportType
+    ) || reportOptions[0];
 
-  const missingPhotoCount = devices.filter(
-    (device) => !deviceIdsWithPhotos.has(device.id)
-  ).length;
+  function getPreviewReport(
+    type: ReportPdfType
+  ): PreviewReport {
+    switch (type) {
+      case "household":
+        return {
+          type,
+          title:
+            "Household Summary",
+          description:
+            "A high-level overview of your complete Home Tech Vault.",
+          rows: [
+            {
+              label: "Devices",
+              value:
+                deviceCount.toLocaleString(),
+            },
+            {
+              label:
+                "Recorded Value",
+              value:
+                formatCurrency(
+                  protectedValue
+                ),
+            },
+            {
+              label: "Documents",
+              value:
+                documentCount.toLocaleString(),
+            },
+            {
+              label:
+                "Active Warranties",
+              value:
+                activeWarrantyCount.toLocaleString(),
+            },
+          ],
+        };
 
-  const missingDocumentCount = devices.filter(
-    (device) => !deviceIdsWithDocuments.has(device.id)
-  ).length;
+      case "devices":
+        return {
+          type,
+          title:
+            "Device Inventory",
+          description:
+            "A complete inventory of your saved household technology.",
+          rows: [
+            {
+              label:
+                "Total Devices",
+              value:
+                deviceCount.toLocaleString(),
+            },
+            {
+              label: "Rooms",
+              value:
+                roomCount.toLocaleString(),
+            },
+            {
+              label:
+                "Serial Numbers",
+              value:
+                serialNumberCount.toLocaleString(),
+            },
+            {
+              label:
+                "Recorded Value",
+              value:
+                formatCurrency(
+                  protectedValue
+                ),
+            },
+          ],
+        };
 
-  const valueByRoom = useMemo(
-    () =>
-      groupByValue(
-        devices,
-        (device) => device.location?.trim() || "Unassigned"
-      ),
-    [devices]
-  );
+      case "insurance":
+        return {
+          type,
+          title:
+            "Insurance Report",
+          description:
+            "Claim-ready technology information for insurance purposes.",
+          rows: [
+            {
+              label: "Devices",
+              value:
+                deviceCount.toLocaleString(),
+            },
+            {
+              label: "Documents",
+              value:
+                documentCount.toLocaleString(),
+            },
+            {
+              label: "Photos",
+              value:
+                photoCount.toLocaleString(),
+            },
+            {
+              label:
+                "Recorded Value",
+              value:
+                formatCurrency(
+                  protectedValue
+                ),
+            },
+          ],
+        };
 
-  const valueByBrand = useMemo(
-    () =>
-      groupByValue(
-        devices,
-        (device) => device.brand?.trim() || "Unknown Brand"
-      ),
-    [devices]
-  );
+      case "warranties":
+        return {
+          type,
+          title:
+            "Warranty Report",
+          description:
+            "Review active and documented warranties.",
+          rows: [
+            {
+              label:
+                "Active Warranties",
+              value:
+                activeWarrantyCount.toLocaleString(),
+            },
+            {
+              label:
+                "Total Devices",
+              value:
+                deviceCount.toLocaleString(),
+            },
+            {
+              label:
+                "Warranty Coverage",
+              value: `${reportCoverage.warranties}%`,
+            },
+            {
+              label:
+                "Documented Devices",
+              value:
+                documentCount.toLocaleString(),
+            },
+          ],
+        };
 
-  const topDevices = useMemo(
-    () =>
-      [...devices]
-        .sort(
-          (a, b) =>
-            Number(b.purchase_price || 0) -
-            Number(a.purchase_price || 0)
-        )
-        .slice(0, 5),
-    [devices]
-  );
+      case "network":
+        return {
+          type,
+          title:
+            "Network Report",
+          description:
+            "Document your home network devices and configuration.",
+          rows: [
+            {
+              label: "Devices",
+              value:
+                deviceCount.toLocaleString(),
+            },
+            {
+              label: "Rooms",
+              value:
+                roomCount.toLocaleString(),
+            },
+            {
+              label:
+                "Serial Numbers",
+              value:
+                serialNumberCount.toLocaleString(),
+            },
+            {
+              label:
+                "Photo Coverage",
+              value: `${reportCoverage.photos}%`,
+            },
+          ],
+        };
+
+      case "maintenance":
+        return {
+          type,
+          title:
+            "Maintenance Report",
+          description:
+            "Track service, repairs, and maintenance history.",
+          rows: [
+            {
+              label: "Devices",
+              value:
+                deviceCount.toLocaleString(),
+            },
+            {
+              label:
+                "Active Warranties",
+              value:
+                activeWarrantyCount.toLocaleString(),
+            },
+            {
+              label:
+                "Document Coverage",
+              value: `${reportCoverage.documents}%`,
+            },
+            {
+              label:
+                "Photo Coverage",
+              value: `${reportCoverage.photos}%`,
+            },
+          ],
+        };
+
+      default:
+        return {
+          type,
+          title: "Report",
+          description:
+            "Preview report details.",
+          rows: [],
+        };
+    }
+  }
+
+  function handlePreview() {
+    setPreviewReport(
+      getPreviewReport(
+        selectedReportType
+      )
+    );
+  }
+
+  async function handlePdfRequest(
+    type: ReportPdfType
+  ) {
+    if (subscriptionLoading) {
+      return;
+    }
+
+    if (isDemo) {
+      window.location.href =
+        "/signup";
+      return;
+    }
+
+    if (!hasPdfAccess) {
+      window.location.href =
+        "/upgrade";
+      return;
+    }
+
+    setGeneratingReport(type);
+
+    try {
+      const reportDevices: ReportPdfDevice[] =
+        devices.map((device) => ({
+          name:
+            device.device_name ||
+            "Unnamed Device",
+          purchasePrice:
+            device.purchase_price ||
+            0,
+          location:
+            device.location || "",
+          serialNumber:
+            device.serial_number ||
+            "",
+          warrantyDate:
+            device.warranty_date ||
+            "",
+        }));
+
+      generateReportPdf({
+        type,
+        householdName:
+          user?.email ||
+          "Home Tech Vault",
+        ownerName:
+          user?.email ||
+          undefined,
+        city: "",
+        devices: reportDevices,
+      });
+    } finally {
+      setGeneratingReport(null);
+    }
+  }
+
+  const loading =
+    demoLoading ||
+    loadingReports;
+
+  if (loading) {
+    return (
+      <PageShell>
+        <PageCard className="flex min-h-72 items-center justify-center">
+          <div className="flex items-center gap-3 text-neutral-500">
+            <Loader2
+              size={22}
+              className="animate-spin"
+            />
+
+            Loading reports...
+          </div>
+        </PageCard>
+      </PageShell>
+    );
+  }
+
+  if (errorMessage) {
+    return (
+      <PageShell>
+        <PageCard className="border-red-200 bg-red-50 text-red-700">
+          <h1 className="text-xl font-semibold">
+            Unable to load reports
+          </h1>
+
+          <p className="mt-2 text-sm">
+            {errorMessage}
+          </p>
+        </PageCard>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell>
-      <PageTitle
-        eyebrow="Vault Intelligence"
-        title="Technology Analytics"
-        description="Understand the value, organization, and protection of the technology in your home."
-      />
+      <section className="rounded-[32px] bg-[#111827] px-6 py-9 text-white shadow-sm md:px-10 md:py-11">
+        <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#C8A96A]">
+              Reports
+            </p>
 
-      {loading ? (
-        <PageCard className="flex min-h-64 items-center justify-center">
-          <div className="flex items-center gap-3 text-neutral-500">
-            <Loader2 className="animate-spin" size={22} />
-            Loading analytics...
-          </div>
-        </PageCard>
-      ) : errorMessage ? (
-        <PageCard className="border-red-200 bg-red-50 text-red-700">
-          {errorMessage}
-        </PageCard>
-      ) : devices.length === 0 ? (
-        <PageCard className="text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
-            <BarChart3 size={30} />
+            <h1 className="mt-3 text-4xl font-semibold tracking-[-0.04em] md:text-5xl">
+              Export your vault.
+            </h1>
+
+            <p className="mt-4 max-w-xl text-sm leading-6 text-white/60 md:text-base">
+              Create clear PDF reports
+              for insurance, organization,
+              warranties, maintenance, and
+              planning.
+            </p>
           </div>
 
-          <h2 className="mt-5 text-2xl font-bold text-[#111827]">
-            No analytics yet
-          </h2>
+          {!hasPdfAccess &&
+            !isDemo && (
+              <Button
+                href="/upgrade"
+                variant="secondary"
+              >
+                <Crown size={17} />
+                Upgrade to Pro
+              </Button>
+            )}
 
-          <p className="mx-auto mt-3 max-w-lg text-neutral-500">
-            Add devices and purchase values to begin building your
-            technology analytics.
+          {isDemo && (
+            <Button
+              href="/signup"
+              variant="secondary"
+            >
+              Create Your Vault
+            </Button>
+          )}
+        </div>
+      </section>
+
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <SummaryCard
+          title="Devices"
+          value={deviceCount.toLocaleString()}
+          icon={Laptop}
+        />
+
+        <SummaryCard
+          title="Protected Value"
+          value={formatCurrency(
+            protectedValue
+          )}
+          icon={ShieldCheck}
+        />
+
+        <SummaryCard
+          title="Documents"
+          value={documentCount.toLocaleString()}
+          icon={FileText}
+        />
+
+        <SummaryCard
+          title="Report Readiness"
+          value={`${readinessScore}%`}
+          icon={ShieldCheck}
+        />
+      </section>
+
+      <section className="grid gap-6 xl:grid-cols-[0.75fr_1.25fr]">
+        <PageCard className="flex min-h-[350px] flex-col items-center justify-center p-8 text-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">
+            Report Readiness
+          </p>
+
+          <div className="mt-7">
+            <ReadinessRing
+              score={readinessScore}
+              label={readinessLabel}
+            />
+          </div>
+
+          <p className="mt-7 max-w-sm text-sm leading-6 text-neutral-500">
+            Your score is based on photo,
+            document, serial-number, and
+            warranty coverage.
           </p>
         </PageCard>
-      ) : (
-        <>
-          <section className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-            <AnalyticsStat
-              label="Protected Value"
-              value={`$${totalValue.toLocaleString(undefined, {
-                maximumFractionDigits: 0,
-              })}`}
-              description="Total purchase value"
-              icon={WalletCards}
-            />
 
-            <AnalyticsStat
-              label="Devices"
-              value={devices.length}
-              description="Saved in your vault"
-              icon={Laptop}
-            />
+        <PageCard className="p-7 md:p-9">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
+            Choose a Report
+          </p>
 
-            <AnalyticsStat
-              label="Warranty Coverage"
-              value={`${warrantyCoverageRate}%`}
-              description={`${activeWarrantyCount} active warranties`}
-              icon={ShieldCheck}
-            />
+          <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[#111827]">
+            What would you like to export?
+          </h2>
 
-            <AnalyticsStat
-              label="Needs Attention"
-              value={missingPhotoCount + missingDocumentCount}
-              description="Missing photos or documents"
-              icon={AlertTriangle}
-            />
-          </section>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-500">
+            Select one report, review its
+            summary, and download the PDF.
+          </p>
 
-          <section className="grid gap-6 xl:grid-cols-2">
-            <ValueBreakdownCard
-              title="Value by Room"
-              description="Where your technology value is located."
-              icon={MapPin}
-              groups={valueByRoom}
-              totalValue={totalValue}
-            />
+          <div className="mt-7">
+            <label
+              htmlFor="report-type"
+              className="text-xs font-semibold uppercase tracking-[0.15em] text-neutral-400"
+            >
+              Report Type
+            </label>
 
-            <ValueBreakdownCard
-              title="Value by Brand"
-              description="Which brands make up your vault."
-              icon={BarChart3}
-              groups={valueByBrand}
-              totalValue={totalValue}
-            />
-          </section>
-
-          <section className="grid gap-6 xl:grid-cols-2">
-            <PageCard>
-              <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
-                  <Trophy size={21} />
-                </div>
-
-                <div>
-                  <h2 className="text-2xl font-bold text-[#111827]">
-                    Most Valuable Devices
-                  </h2>
-
-                  <p className="mt-1 text-sm text-neutral-500">
-                    Your highest-value technology.
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-6 space-y-3">
-                {topDevices.map((device, index) => (
-                  <div
-                    key={device.id}
-                    className="flex items-center justify-between gap-4 rounded-2xl bg-[#F7F5EF] p-4"
+            <select
+              id="report-type"
+              value={selectedReportType}
+              onChange={(event) =>
+                setSelectedReportType(
+                  event.target
+                    .value as ReportPdfType
+                )
+              }
+              className="mt-2 w-full rounded-2xl border border-[#E8E2D6] bg-white px-4 py-3.5 text-sm font-semibold text-[#111827] outline-none transition focus:border-[#C8A96A] focus:ring-4 focus:ring-[#C8A96A]/10"
+            >
+              {reportOptions.map(
+                (report) => (
+                  <option
+                    key={report.type}
+                    value={report.type}
                   >
-                    <div className="flex min-w-0 items-center gap-4">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white font-bold text-[#111827] shadow-sm">
-                        {index + 1}
-                      </div>
+                    {report.title}
+                  </option>
+                )
+              )}
+            </select>
+          </div>
 
-                      <div className="min-w-0">
-                        <p className="truncate font-semibold text-[#111827]">
-                          {device.device_name || "Unnamed Device"}
-                        </p>
+          <SelectedReportCard
+            report={selectedOption}
+          />
 
-                        <p className="mt-1 truncate text-sm text-neutral-500">
-                          {device.brand || "No brand"} ·{" "}
-                          {device.location || "No location"}
-                        </p>
-                      </div>
+          <div className="mt-7 flex flex-wrap gap-3">
+            <Button
+              onClick={handlePreview}
+              variant="secondary"
+            >
+              <Eye size={17} />
+              Preview
+            </Button>
+
+            <Button
+              onClick={() =>
+                void handlePdfRequest(
+                  selectedReportType
+                )
+              }
+              disabled={
+                generatingReport ===
+                selectedReportType
+              }
+            >
+              {generatingReport ===
+              selectedReportType ? (
+                <Loader2
+                  size={17}
+                  className="animate-spin"
+                />
+              ) : hasPdfAccess ? (
+                <Download size={17} />
+              ) : (
+                <LockKeyhole
+                  size={17}
+                />
+              )}
+
+              {generatingReport ===
+              selectedReportType
+                ? "Generating..."
+                : isDemo
+                  ? "Create Vault to Download"
+                  : hasPdfAccess
+                    ? "Download PDF"
+                    : "Unlock with Pro"}
+            </Button>
+          </div>
+        </PageCard>
+      </section>
+
+      {previewReport && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[#111827]/60 p-4 backdrop-blur-sm">
+          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[32px] border border-[#E8E2D6] bg-white shadow-2xl">
+            <div className="flex items-start justify-between gap-5 border-b border-[#E8E2D6] p-6 md:p-8">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
+                  Report Preview
+                </p>
+
+                <h2 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-[#111827]">
+                  {previewReport.title}
+                </h2>
+
+                <p className="mt-2 max-w-xl text-sm leading-6 text-neutral-500">
+                  {
+                    previewReport.description
+                  }
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setPreviewReport(null)
+                }
+                aria-label="Close preview"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#111827] transition hover:bg-[#EEEAE1]"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="p-6 md:p-8">
+              <div className="space-y-3">
+                {previewReport.rows.map(
+                  (row) => (
+                    <div
+                      key={row.label}
+                      className="flex items-center justify-between gap-4 rounded-[22px] bg-[#F7F5EF] p-4"
+                    >
+                      <p className="text-sm text-neutral-500">
+                        {row.label}
+                      </p>
+
+                      <p className="text-right text-sm font-semibold text-[#111827]">
+                        {row.value}
+                      </p>
                     </div>
-
-                    <p className="whitespace-nowrap font-bold text-[#111827]">
-                      $
-                      {Number(
-                        device.purchase_price || 0
-                      ).toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </PageCard>
-
-            <PageCard>
-              <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
-                  <AlertTriangle size={21} />
-                </div>
-
-                <div>
-                  <h2 className="text-2xl font-bold text-[#111827]">
-                    Documentation Gaps
-                  </h2>
-
-                  <p className="mt-1 text-sm text-neutral-500">
-                    Items that would improve your vault.
-                  </p>
-                </div>
+                  )
+                )}
               </div>
 
-              <div className="mt-6 space-y-4">
-                <GapRow
-                  icon={CameraOff}
-                  label="Devices missing photos"
-                  value={missingPhotoCount}
-                />
+              <div className="mt-7 flex flex-wrap gap-3">
+                <Button
+                  onClick={() =>
+                    void handlePdfRequest(
+                      previewReport.type
+                    )
+                  }
+                  disabled={
+                    generatingReport ===
+                    previewReport.type
+                  }
+                >
+                  {generatingReport ===
+                  previewReport.type ? (
+                    <Loader2
+                      size={17}
+                      className="animate-spin"
+                    />
+                  ) : hasPdfAccess ? (
+                    <Download size={17} />
+                  ) : (
+                    <LockKeyhole
+                      size={17}
+                    />
+                  )}
 
-                <GapRow
-                  icon={FileQuestion}
-                  label="Devices missing documents"
-                  value={missingDocumentCount}
-                />
+                  {generatingReport ===
+                  previewReport.type
+                    ? "Generating..."
+                    : isDemo
+                      ? "Create Vault to Download"
+                      : hasPdfAccess
+                        ? "Download PDF"
+                        : "Unlock with Pro"}
+                </Button>
 
-                <GapRow
-                  icon={ShieldCheck}
-                  label="Devices without active warranty"
-                  value={devices.length - activeWarrantyCount}
-                />
+                <Button
+                  variant="secondary"
+                  onClick={() =>
+                    setPreviewReport(null)
+                  }
+                >
+                  Close Preview
+                </Button>
               </div>
-            </PageCard>
-          </section>
-        </>
+            </div>
+          </div>
+        </div>
       )}
     </PageShell>
   );
 }
 
-function groupByValue(
-  devices: DeviceRow[],
-  getLabel: (device: DeviceRow) => string
-): ValueGroup[] {
-  const totals = new Map<string, number>();
-
-  for (const device of devices) {
-    const label = getLabel(device);
-    const current = totals.get(label) || 0;
-
-    totals.set(
-      label,
-      current + Number(device.purchase_price || 0)
-    );
-  }
-
-  return Array.from(totals.entries())
-    .map(([label, value]) => ({
-      label,
-      value,
-    }))
-    .sort((a, b) => b.value - a.value);
-}
-
-type AnalyticsStatProps = {
-  label: string;
-  value: string | number;
-  description: string;
-  icon: typeof Laptop;
-};
-
-function AnalyticsStat({
-  label,
-  value,
-  description,
-  icon: Icon,
-}: AnalyticsStatProps) {
-  return (
-    <PageCard className="p-6 md:p-6">
-      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
-        <Icon size={24} />
-      </div>
-
-      <p className="mt-5 text-sm text-neutral-500">
-        {label}
-      </p>
-
-      <h2 className="mt-2 text-4xl font-bold text-[#111827]">
-        {value}
-      </h2>
-
-      <p className="mt-2 text-sm text-neutral-400">
-        {description}
-      </p>
-    </PageCard>
-  );
-}
-
-type ValueBreakdownCardProps = {
-  title: string;
-  description: string;
-  icon: typeof MapPin;
-  groups: ValueGroup[];
-  totalValue: number;
-};
-
-function ValueBreakdownCard({
-  title,
-  description,
-  icon: Icon,
-  groups,
-  totalValue,
-}: ValueBreakdownCardProps) {
-  const largestValue = groups[0]?.value || 1;
+function SelectedReportCard({
+  report,
+}: {
+  report: ReportOption;
+}) {
+  const Icon = report.icon;
 
   return (
-    <PageCard>
-      <div className="flex items-center gap-3">
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
-          <Icon size={21} />
-        </div>
-
-        <div>
-          <h2 className="text-2xl font-bold text-[#111827]">
-            {title}
-          </h2>
-
-          <p className="mt-1 text-sm text-neutral-500">
-            {description}
-          </p>
-        </div>
+    <div className="mt-5 flex items-start gap-4 rounded-[24px] bg-[#F7F5EF] p-5">
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-[#C8A96A] shadow-sm">
+        <Icon size={21} />
       </div>
 
-      <div className="mt-6 space-y-5">
-        {groups.slice(0, 8).map((group) => {
-          const barWidth = Math.max(
-            4,
-            Math.round(
-              (group.value / largestValue) * 100
-            )
-          );
+      <div>
+        <h3 className="font-semibold text-[#111827]">
+          {report.title}
+        </h3>
 
-          const percentOfTotal =
-            totalValue === 0
-              ? 0
-              : Math.round(
-                  (group.value / totalValue) * 100
-                );
-
-          return (
-            <div key={group.label}>
-              <div className="flex items-center justify-between gap-4">
-                <p className="truncate font-semibold text-[#111827]">
-                  {group.label}
-                </p>
-
-                <p className="whitespace-nowrap text-sm font-semibold text-neutral-600">
-                  $
-                  {group.value.toLocaleString(undefined, {
-                    maximumFractionDigits: 0,
-                  })}{" "}
-                  · {percentOfTotal}%
-                </p>
-              </div>
-
-              <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#EFECE5]">
-                <div
-                  className="h-full rounded-full bg-[#111827]"
-                  style={{ width: `${barWidth}%` }}
-                />
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </PageCard>
-  );
-}
-
-type GapRowProps = {
-  icon: typeof CameraOff;
-  label: string;
-  value: number;
-};
-
-function GapRow({
-  icon: Icon,
-  label,
-  value,
-}: GapRowProps) {
-  return (
-    <div className="flex items-center justify-between gap-4 rounded-2xl bg-[#F7F5EF] p-5">
-      <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-[#C8A96A] shadow-sm">
-          <Icon size={19} />
-        </div>
-
-        <p className="font-semibold text-[#111827]">
-          {label}
+        <p className="mt-2 text-sm leading-6 text-neutral-500">
+          {report.description}
         </p>
       </div>
-
-      <p className="text-2xl font-bold text-[#111827]">
-        {value}
-      </p>
     </div>
+  );
+}
+
+function SummaryCard({
+  title,
+  value,
+  icon: Icon,
+}: {
+  title: string;
+  value: string;
+  icon: ReportIcon;
+}) {
+  return (
+    <PageCard className="p-5 md:p-6">
+      <div className="flex items-center justify-between gap-4">
+        <div className="min-w-0">
+          <p className="text-sm text-neutral-500">
+            {title}
+          </p>
+
+          <p className="mt-2 truncate text-2xl font-semibold tracking-[-0.03em] text-[#111827] md:text-3xl">
+            {value}
+          </p>
+        </div>
+
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+          <Icon size={20} />
+        </div>
+      </div>
+    </PageCard>
+  );
+}
+
+function ReadinessRing({
+  score,
+  label,
+}: {
+  score: number;
+  label: string;
+}) {
+  const normalizedScore = Math.max(
+    0,
+    Math.min(score, 100)
+  );
+
+  const radius = 72;
+
+  const circumference =
+    2 * Math.PI * radius;
+
+  const offset =
+    circumference -
+    (normalizedScore / 100) *
+      circumference;
+
+  return (
+    <div className="relative h-44 w-44 md:h-48 md:w-48">
+      <svg
+        viewBox="0 0 176 176"
+        className="h-full w-full -rotate-90"
+        role="img"
+        aria-label={`Report readiness: ${normalizedScore}%`}
+      >
+        <circle
+          cx="88"
+          cy="88"
+          r={radius}
+          fill="none"
+          stroke="#E8E2D6"
+          strokeWidth="12"
+        />
+
+        <circle
+          cx="88"
+          cy="88"
+          r={radius}
+          fill="none"
+          stroke="#111827"
+          strokeWidth="12"
+          strokeLinecap="round"
+          strokeDasharray={
+            circumference
+          }
+          strokeDashoffset={offset}
+          className="transition-[stroke-dashoffset] duration-1000 ease-out"
+        />
+      </svg>
+
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="text-5xl font-semibold tracking-[-0.05em] text-[#111827]">
+          {normalizedScore}
+
+          <span className="ml-0.5 text-2xl text-neutral-400">
+            %
+          </span>
+        </span>
+
+        <span className="mt-2 max-w-28 text-sm font-semibold text-[#8A6A2F]">
+          {label}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function formatCurrency(
+  value: number
+) {
+  return value.toLocaleString(
+    undefined,
+    {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: 0,
+    }
   );
 }

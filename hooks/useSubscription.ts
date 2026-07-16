@@ -14,9 +14,17 @@ export type SubscriptionPlan =
   | "pro"
   | "family";
 
+export type SubscriptionStatus =
+  | "inactive"
+  | "active"
+  | "trialing"
+  | "past_due"
+  | "canceled"
+  | string;
+
 type Subscription = {
   plan: SubscriptionPlan;
-  status: string;
+  status: SubscriptionStatus;
   current_period_end: string | null;
 };
 
@@ -63,7 +71,9 @@ export function useSubscription() {
           setSubscription(
             defaultSubscription
           );
+
           setIsAdmin(false);
+
           return;
         }
 
@@ -80,7 +90,11 @@ export function useSubscription() {
           supabase
             .from("user_subscriptions")
             .select(
-              "plan, status, current_period_end"
+              `
+                plan,
+                status,
+                current_period_end
+              `
             )
             .eq("user_id", user.id)
             .maybeSingle(),
@@ -115,13 +129,15 @@ export function useSubscription() {
               ? "pro"
               : "free";
 
+        const normalizedStatus =
+          subscriptionData?.status
+            ?.trim()
+            .toLowerCase() ||
+          "inactive";
+
         setSubscription({
           plan,
-          status:
-            subscriptionData?.status
-              ?.trim()
-              .toLowerCase() ||
-            "inactive",
+          status: normalizedStatus,
           current_period_end:
             subscriptionData
               ?.current_period_end ||
@@ -140,6 +156,7 @@ export function useSubscription() {
         setSubscription(
           defaultSubscription
         );
+
         setIsAdmin(false);
       } finally {
         setLoading(false);
@@ -183,21 +200,42 @@ export function useSubscription() {
     subscription.plan === "family" &&
     isActive;
 
-  const canUsePremiumFeatures =
-    isAdmin || isPro || isFamily;
-
   const isFree =
     !isAdmin &&
     !isPro &&
     !isFamily;
 
+  const canUsePremiumFeatures =
+    isAdmin ||
+    isPro ||
+    isFamily;
+
+  /*
+   * Family Sharing is intentionally stricter
+   * than other premium features.
+   *
+   * Pro users do not receive access.
+   */
+  const canUseFamilySharing =
+    isAdmin || isFamily;
+
+  const canManageFamilySharing =
+    isAdmin || isFamily;
+
   const hasUnlimitedDevices =
-    isAdmin || isPro || isFamily;
+    isAdmin ||
+    isPro ||
+    isFamily;
 
   const deviceLimit =
     hasUnlimitedDevices
       ? null
       : 8;
+
+  const familyMemberLimit =
+    canUseFamilySharing
+      ? 6
+      : 0;
 
   return {
     loading,
@@ -214,10 +252,14 @@ export function useSubscription() {
     isPro,
     isFamily,
     isAdmin,
+
     canUsePremiumFeatures,
+    canUseFamilySharing,
+    canManageFamilySharing,
 
     deviceLimit,
     hasUnlimitedDevices,
+    familyMemberLimit,
 
     refreshSubscription,
   };

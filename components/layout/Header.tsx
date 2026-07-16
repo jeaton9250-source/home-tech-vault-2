@@ -1,87 +1,274 @@
 "use client";
 
-import { type FormEvent, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
-import { Bell, Search, X } from "lucide-react";
+import {
+  type FormEvent,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
+import {
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
+
+import {
+  Bell,
+  Search,
+  X,
+} from "lucide-react";
+
+const pageTitles: Record<
+  string,
+  {
+    title: string;
+    description: string;
+  }
+> = {
+  "/dashboard": {
+    title: "Home",
+    description:
+      "A simple view of your home technology.",
+  },
+
+  "/devices": {
+    title: "Devices",
+    description:
+      "Browse and manage everything in your vault.",
+  },
+
+  "/home": {
+    title: "Rooms",
+    description:
+      "See your technology organized by location.",
+  },
+
+  "/network": {
+    title: "Network",
+    description:
+      "View connected devices and network details.",
+  },
+
+  "/documents": {
+    title: "Documents",
+    description:
+      "Keep receipts, manuals, and important files together.",
+  },
+
+  "/warranties": {
+    title: "Warranties",
+    description:
+      "Track coverage and upcoming expiration dates.",
+  },
+
+  "/maintenance": {
+    title: "Maintenance",
+    description:
+      "Stay ahead of updates, cleaning, and repairs.",
+  },
+
+  "/subscriptions": {
+    title: "Subscriptions",
+    description:
+      "Understand your recurring technology costs.",
+  },
+
+  "/reports": {
+    title: "Reports",
+    description:
+      "Create clear records for insurance and planning.",
+  },
+
+  "/insights": {
+    title: "Insights",
+    description:
+      "See what needs your attention.",
+  },
+
+  "/account": {
+    title: "Account",
+    description:
+      "Manage your personal information and preferences.",
+  },
+
+  "/settings": {
+    title: "Settings",
+    description:
+      "Customize how Home Tech Vault works for you.",
+  },
+
+  "/contact": {
+    title: "Contact",
+    description:
+      "Get help or send us a message.",
+  },
+};
 
 export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams =
+    useSearchParams();
 
-  const [search, setSearch] = useState("");
+  const [search, setSearch] =
+    useState("");
 
-  function runSearch() {
-    const query = search.trim();
+  useEffect(() => {
+    if (
+      pathname === "/devices"
+    ) {
+      setSearch(
+        searchParams.get(
+          "search"
+        ) || ""
+      );
+    }
+  }, [
+    pathname,
+    searchParams,
+  ]);
+
+  const pageInfo = useMemo(
+    () =>
+      getPageInfo(pathname),
+    [pathname]
+  );
+
+  function handleSubmit(
+    event: FormEvent<HTMLFormElement>
+  ) {
+    event.preventDefault();
+
+    const query =
+      search.trim();
 
     if (!query) {
+      router.push(
+        "/devices"
+      );
+
       return;
     }
 
-    router.push(`/devices?search=${encodeURIComponent(query)}`);
-  }
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    runSearch();
+    router.push(
+      `/devices?search=${encodeURIComponent(
+        query
+      )}`
+    );
   }
 
   function clearSearch() {
     setSearch("");
 
-    if (pathname === "/devices") {
-      router.push("/devices");
+    if (
+      pathname === "/devices"
+    ) {
+      router.push(
+        "/devices"
+      );
     }
   }
 
   return (
-    <header className="flex flex-col gap-5 rounded-[32px] border border-[#E8E2D6] bg-white px-6 py-5 shadow-sm lg:flex-row lg:items-center lg:justify-between lg:px-8">
-      <div>
-        <h1 className="text-2xl font-bold text-[#111827]">Home Tech Vault</h1>
+    <header className="flex flex-col gap-5 border-b border-[#E8E2D6] bg-[#FAFAF8]/95 px-5 py-5 backdrop-blur md:px-8 lg:flex-row lg:items-center lg:justify-between">
+      <div className="min-w-0">
+        <h1 className="truncate text-2xl font-semibold tracking-[-0.03em] text-[#111827]">
+          {pageInfo.title}
+        </h1>
 
-        <p className="text-sm text-neutral-500">Protect. Organize. Simplify.</p>
+        <p className="mt-1 max-w-xl text-sm leading-6 text-neutral-500">
+          {
+            pageInfo.description
+          }
+        </p>
       </div>
 
       <div className="flex w-full items-center gap-3 lg:w-auto">
         <form
-          onSubmit={handleSubmit}
-          className="flex w-full items-center gap-2 lg:w-[420px]"
+          onSubmit={
+            handleSubmit
+          }
+          className="relative flex-1 lg:w-[360px] lg:flex-none"
         >
-          <div className="relative flex-1">
-            <Search
-              size={18}
-              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400"
-            />
+          <Search
+            size={18}
+            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400"
+          />
 
-            <input
-              type="search"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search devices, brands, models, or rooms..."
-              className="w-full rounded-2xl border border-[#E8E2D6] bg-[#F7F5EF] py-3 pl-11 pr-11 text-[#111827] outline-none focus:border-[#C8A96A] focus:ring-2 focus:ring-[#C8A96A]/20"
-            />
+          <input
+            type="search"
+            value={search}
+            onChange={(
+              event
+            ) =>
+              setSearch(
+                event.target
+                  .value
+              )
+            }
+            placeholder="Search devices..."
+            aria-label="Search devices"
+            className="w-full rounded-2xl border border-[#E8E2D6] bg-white py-3 pl-11 pr-11 text-sm text-[#111827] shadow-sm outline-none transition placeholder:text-neutral-400 focus:border-[#C8A96A] focus:ring-4 focus:ring-[#C8A96A]/10"
+          />
 
-            {search && (
-              <button
-                type="button"
-                onClick={clearSearch}
-                aria-label="Clear search"
-                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1 text-neutral-400 hover:bg-white hover:text-[#111827]"
-              >
-                <X size={17} />
-              </button>
-            )}
-          </div>
-
-          <button
-            type="submit"
-            className="rounded-xl bg-[#111827] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#263044]"
-          >
-            Search
-          </button>
+          {search && (
+            <button
+              type="button"
+              onClick={
+                clearSearch
+              }
+              aria-label="Clear search"
+              className="absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-neutral-400 transition hover:bg-[#F7F5EF] hover:text-[#111827]"
+            >
+              <X
+                size={15}
+              />
+            </button>
+          )}
         </form>
 
-    
+        <button
+          type="button"
+          aria-label="Notifications"
+          className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-[#E8E2D6] bg-white text-neutral-500 shadow-sm transition hover:border-[#D8C69D] hover:text-[#111827]"
+        >
+          <Bell size={18} />
+
+          <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full border-2 border-white bg-[#C8A96A]" />
+        </button>
       </div>
     </header>
   );
+}
+
+function getPageInfo(
+  pathname: string
+) {
+  const exactMatch =
+    pageTitles[pathname];
+
+  if (exactMatch) {
+    return exactMatch;
+  }
+
+  if (
+    pathname.startsWith(
+      "/devices/"
+    )
+  ) {
+    return {
+      title:
+        "Device Details",
+      description:
+        "Everything important about this device.",
+    };
+  }
+
+  return {
+    title:
+      "Home Tech Vault",
+    description:
+      "Organize, protect, and simplify your home technology.",
+  };
 }
