@@ -47,6 +47,7 @@ import Button from "@/components/ui/Button";
 type DeviceRecord = BaseDevice & {
   id: string;
   user_id?: string;
+  household_id?: string | null;
   device_name: string;
   photo_url?: string;
 };
@@ -113,204 +114,256 @@ export default function DevicesPage() {
     setSearchTerm(searchFromUrl);
   }, [searchParams]);
 
-  useEffect(() => {
-    async function loadDevices() {
-      if (demoModeLoading) {
+   useEffect(() => {
+  async function loadDevices() {
+    if (demoModeLoading) {
+      return;
+    }
+
+    try {
+      setLoadingDevices(true);
+      setErrorMessage("");
+
+      if (isDemo) {
+        const sampleDevices: DeviceRecord[] =
+          demoDevices.map((device) => ({
+            id: device.id,
+            device_name:
+              device.device_name,
+            brand: device.brand,
+            category: device.category,
+            model_number:
+              device.model_number,
+            serial_number:
+              device.serial_number,
+            purchase_date:
+              device.purchase_date,
+            warranty_date:
+              device.warranty_date,
+            purchase_price:
+              device.purchase_price,
+            location: device.location,
+            notes: device.notes,
+            online: device.online,
+            last_seen_at:
+              device.last_seen_at,
+            ip_address:
+              device.ip_address,
+            photo_url:
+              device.photo_url || "",
+          }));
+
+        setDevices(sampleDevices);
         return;
       }
 
-      try {
-        setLoadingDevices(true);
-        setErrorMessage("");
+      if (!user) {
+        setDevices([]);
+        return;
+      }
 
-        if (isDemo) {
-          const sampleDevices: DeviceRecord[] =
-            demoDevices.map((device) => ({
-              id: device.id,
-              device_name:
-                device.device_name,
-              brand: device.brand,
-              category: device.category,
-              model_number:
-                device.model_number,
-              serial_number:
-                device.serial_number,
-              purchase_date:
-                device.purchase_date,
-              warranty_date:
-                device.warranty_date,
-              purchase_price:
-                device.purchase_price,
-              location: device.location,
-              notes: device.notes,
-              online: device.online,
-              last_seen_at:
-                device.last_seen_at,
-              ip_address:
-                device.ip_address,
+      /*
+       * Find the household that the signed-in user belongs to.
+       */
+      const {
+        data: membership,
+        error: membershipError,
+      } = await supabase
+        .from("household_members")
+        .select("household_id")
+        .eq("user_id", user.id)
+        .limit(1)
+        .maybeSingle();
+
+      if (membershipError) {
+        throw membershipError;
+      }
+
+      /*
+       * Users without a household can still see their
+       * own personal devices.
+       */
+      let deviceQuery =
+        supabase
+          .from("devices")
+          .select("*");
+
+      if (membership?.household_id) {
+        deviceQuery =
+          deviceQuery.eq(
+            "household_id",
+            membership.household_id
+          );
+      } else {
+        deviceQuery =
+          deviceQuery.eq(
+            "user_id",
+            user.id
+          );
+      }
+
+      const {
+        data: deviceData,
+        error: deviceError,
+      } = await deviceQuery;
+
+      if (deviceError) {
+        throw deviceError;
+      }
+
+      const loadedDevices =
+        (deviceData ||
+          []) as DeviceRecord[];
+
+      if (
+        loadedDevices.length === 0
+      ) {
+        setDevices([]);
+        return;
+      }
+
+      const deviceIds =
+        loadedDevices.map(
+          (device) => device.id
+        );
+
+      /*
+       * Device images are loaded by device ID.
+       * Do not filter these by the current user's user_id,
+       * because shared devices may have been created by
+       * another household member.
+       */
+      const {
+        data: imageData,
+        error: imageError,
+      } = await supabase
+        .from("device_images")
+        .select(
+          "device_id, image_url"
+        )
+        .in(
+          "device_id",
+          deviceIds
+        );
+
+      if (imageError) {
+        console.error(
+          "Unable to load device images:",
+          imageError
+        );
+
+        setDevices(
+          loadedDevices.map(
+            (device) => ({
+              ...device,
               photo_url:
                 device.photo_url || "",
-            }));
-
-          setDevices(sampleDevices);
-          return;
-        }
-
-        if (!user) {
-          setDevices([]);
-          return;
-        }
-
-        const {
-          data: deviceData,
-          error: deviceError,
-        } = await supabase
-          .from("devices")
-          .select("*")
-          .eq("user_id", user.id);
-
-        if (deviceError) {
-          throw deviceError;
-        }
-
-        const loadedDevices =
-          (deviceData ||
-            []) as DeviceRecord[];
-
-        if (loadedDevices.length === 0) {
-          setDevices([]);
-          return;
-        }
-
-        const deviceIds =
-          loadedDevices.map(
-            (device) => device.id
-          );
-
-        const {
-          data: imageData,
-          error: imageError,
-        } = await supabase
-          .from("device_images")
-          .select(
-            "device_id, image_url"
+            })
           )
-          .eq("user_id", user.id)
-          .in("device_id", deviceIds);
+        );
 
-        if (imageError) {
-          console.error(
-            "Unable to load device images:",
-            imageError
+        return;
+      }
+
+      const firstImageByDevice =
+        new Map<string, string>();
+
+      for (
+        const image of
+        (imageData ||
+          []) as DeviceImageRecord[]
+      ) {
+        if (
+          !firstImageByDevice.has(
+            image.device_id
+          )
+        ) {
+          firstImageByDevice.set(
+            image.device_id,
+            image.image_url
           );
-
-          setDevices(
-            loadedDevices.map(
-              (device) => ({
-                ...device,
-                photo_url:
-                  device.photo_url || "",
-              })
-            )
-          );
-
-          return;
         }
+      }
 
-        const firstImageByDevice =
-          new Map<string, string>();
+      const devicesWithPhotos =
+        await Promise.all(
+          loadedDevices.map(
+            async (device) => {
+              const imagePath =
+                firstImageByDevice.get(
+                  device.id
+                );
 
-        for (const image of
-          (imageData ||
-            []) as DeviceImageRecord[]) {
-          if (
-            !firstImageByDevice.has(
-              image.device_id
-            )
-          ) {
-            firstImageByDevice.set(
-              image.device_id,
-              image.image_url
-            );
-          }
-        }
-
-        const devicesWithPhotos =
-          await Promise.all(
-            loadedDevices.map(
-              async (device) => {
-                const imagePath =
-                  firstImageByDevice.get(
-                    device.id
-                  );
-
-                if (!imagePath) {
-                  return {
-                    ...device,
-                    photo_url:
-                      device.photo_url ||
-                      "",
-                  };
-                }
-
-                const {
-                  data: signedData,
-                  error: signedError,
-                } =
-                  await supabase.storage
-                    .from(
-                      "device-images"
-                    )
-                    .createSignedUrl(
-                      imagePath,
-                      3600
-                    );
-
-                if (signedError) {
-                  console.error(
-                    `Unable to create photo URL for ${device.device_name}:`,
-                    signedError
-                  );
-                }
-
+              if (!imagePath) {
                 return {
                   ...device,
                   photo_url:
-                    signedData?.signedUrl ||
+                    device.photo_url ||
                     "",
                 };
               }
-            )
-          );
 
-        setDevices(devicesWithPhotos);
-      } catch (error: unknown) {
-        const possibleError = error as {
+              const {
+                data: signedData,
+                error: signedError,
+              } =
+                await supabase.storage
+                  .from(
+                    "device-images"
+                  )
+                  .createSignedUrl(
+                    imagePath,
+                    3600
+                  );
+
+              if (signedError) {
+                console.error(
+                  `Unable to create photo URL for ${device.device_name}:`,
+                  signedError
+                );
+              }
+
+              return {
+                ...device,
+                photo_url:
+                  signedData
+                    ?.signedUrl || "",
+              };
+            }
+          )
+        );
+
+      setDevices(
+        devicesWithPhotos
+      );
+    } catch (error: unknown) {
+      const possibleError =
+        error as {
           message?: string;
           details?: string;
         };
 
-        console.error(
-          "Unable to load devices:",
-          error
-        );
+      console.error(
+        "Unable to load devices:",
+        error
+      );
 
-        setErrorMessage(
-          possibleError.message ||
-            possibleError.details ||
-            "Unable to load your devices."
-        );
-      } finally {
-        setLoadingDevices(false);
-      }
+      setErrorMessage(
+        possibleError.message ||
+          possibleError.details ||
+          "Unable to load your devices."
+      );
+    } finally {
+      setLoadingDevices(false);
     }
+  }
 
-    loadDevices();
-  }, [
-    user,
-    isDemo,
-    demoModeLoading,
-  ]);
+  void loadDevices();
+}, [
+  user,
+  isDemo,
+  demoModeLoading,
+]);
 
   const categories = useMemo(() => {
     const values = devices
