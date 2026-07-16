@@ -16,6 +16,7 @@ import {
 import { supabase } from "@/lib/supabase";
 import { useDemoMode } from "@/hooks/useDemoMode";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useHouseholdRole } from "@/hooks/useHouseholdRole";
 
 import PageShell from "@/components/ui/PageShell";
 import PageTitle from "@/components/ui/PageTitle";
@@ -24,6 +25,12 @@ import Button from "@/components/ui/Button";
 
 export default function AddDevicePage() {
   const router = useRouter();
+
+  const {
+  isViewer,
+  canAdd,
+  loading: roleLoading,
+} = useHouseholdRole();
 
   const {
     user,
@@ -212,10 +219,11 @@ export default function AddDevicePage() {
     subscriptionLoading,
   ]);
 
-  const loading =
-    demoModeLoading ||
-    subscriptionLoading ||
-    checkingDeviceLimit;
+const loading =
+  demoModeLoading ||
+  subscriptionLoading ||
+  roleLoading ||
+  checkingDeviceLimit;
 
   const householdHasUnlimitedDevices =
   hasUnlimitedDevices ||
@@ -242,6 +250,46 @@ const deviceLimitReached =
       router.push("/login");
       return;
     }
+
+    if (!canAdd || isViewer) {
+  setErrorMessage(
+    "Viewer access is read-only. You cannot add devices."
+  );
+  return;
+}
+
+if (isViewer || !canAdd) {
+  return (
+    <PageShell>
+      <PageTitle
+        eyebrow="Viewer Access"
+        title="This household is read-only"
+        description="Viewers can review shared devices, warranties, documents, and other household information, but cannot add or change records."
+      />
+
+      <PageCard className="text-center">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+          <Laptop size={30} />
+        </div>
+
+        <h2 className="mt-5 text-2xl font-semibold text-[#111827]">
+          You cannot add devices
+        </h2>
+
+        <p className="mx-auto mt-3 max-w-lg text-neutral-500">
+          Your household role is Viewer. Contact the household owner or an administrator if you need permission to add or edit information.
+        </p>
+
+        <Button
+          href="/devices"
+          className="mt-6"
+        >
+          Back to Devices
+        </Button>
+      </PageCard>
+    </PageShell>
+  );
+}
 
     if (deviceLimitReached) {
       router.push(
