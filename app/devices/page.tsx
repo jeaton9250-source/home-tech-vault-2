@@ -67,6 +67,11 @@ export default function DevicesPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  const [
+  hasFamilyHouseholdAccess,
+  setHasFamilyHouseholdAccess,
+] = useState(false);
+
   const {
     user,
     isDemo,
@@ -170,7 +175,14 @@ export default function DevicesPage() {
         error: membershipError,
       } = await supabase
         .from("household_members")
-        .select("household_id")
+        .select(
+          `
+            household_id,
+            households (
+              owner_id
+            )
+          `
+        )
         .eq("user_id", user.id)
         .limit(1)
         .maybeSingle();
@@ -178,6 +190,65 @@ export default function DevicesPage() {
       if (membershipError) {
         throw membershipError;
       }
+
+      const currentHouseholdId =
+        membership?.household_id || null;
+
+      let familyAccess = false;
+
+      const householdRelation =
+        membership?.households as
+          | {
+              owner_id?: string;
+            }
+          | {
+              owner_id?: string;
+            }[]
+          | null
+          | undefined;
+
+      const householdOwnerId =
+        Array.isArray(householdRelation)
+          ? householdRelation[0]?.owner_id
+          : householdRelation?.owner_id;
+
+      if (
+        currentHouseholdId &&
+        householdOwnerId
+      ) {
+        const {
+          data: ownerSubscription,
+          error: ownerSubscriptionError,
+        } = await supabase
+          .from("user_subscriptions")
+          .select("plan, status")
+          .eq("user_id", householdOwnerId)
+          .maybeSingle();
+
+        if (ownerSubscriptionError) {
+          console.error(
+            "Unable to check household subscription:",
+            ownerSubscriptionError
+          );
+        }
+
+        const ownerPlan =
+          ownerSubscription?.plan
+            ?.trim()
+            .toLowerCase();
+
+        const ownerStatus =
+          ownerSubscription?.status
+            ?.trim()
+            .toLowerCase();
+
+        familyAccess =
+          ownerPlan === "family" &&
+          (ownerStatus === "active" ||
+            ownerStatus === "trialing");
+      }
+
+      setHasFamilyHouseholdAccess(familyAccess);
 
       /*
        * Users without a household can still see their
@@ -560,10 +631,14 @@ export default function DevicesPage() {
     subscriptionLoading ||
     loadingDevices;
 
-  const deviceLimitReached =
-    !hasUnlimitedDevices &&
-    deviceLimit !== null &&
-    devices.length >= deviceLimit;
+  const householdHasUnlimitedDevices =
+  hasUnlimitedDevices ||
+  hasFamilyHouseholdAccess;
+
+const deviceLimitReached =
+  !householdHasUnlimitedDevices &&
+  deviceLimit !== null &&
+  devices.length >= deviceLimit;
 
   function clearFilters() {
     setSearchTerm("");
@@ -952,7 +1027,7 @@ export default function DevicesPage() {
 
       {!isDemo &&
         !loading &&
-        !hasUnlimitedDevices &&
+        !householdHasUnlimitedDevices &&
         deviceLimit !== null && (
           <PageCard className="p-5 md:p-6">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
