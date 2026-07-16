@@ -41,6 +41,7 @@ import Button from "@/components/ui/Button";
 type DocumentRecord = {
   id: string;
   user_id?: string | null;
+  household_id?: string | null;
   device_id?: string | null;
   file_type: string;
   file_url?: string | null;
@@ -142,24 +143,73 @@ export default function DocumentsPage() {
           return;
         }
 
-        const [
-          documentResult,
-          deviceResult,
-        ] = await Promise.all([
+        const {
+          data: membership,
+          error: membershipError,
+        } = await supabase
+          .from("household_members")
+          .select("household_id")
+          .eq("user_id", user.id)
+          .limit(1)
+          .maybeSingle();
+
+        if (membershipError) {
+          throw membershipError;
+        }
+
+        const currentHouseholdId =
+          membership?.household_id ||
+          null;
+
+        let documentQuery =
           supabase
             .from("documents")
-            .select("*")
-            .eq("user_id", user.id)
-            .order("created_at", {
-              ascending: false,
-            }),
+            .select("*");
 
+        let deviceQuery =
           supabase
             .from("devices")
             .select(
               "id, device_name"
-            )
-            .eq("user_id", user.id),
+            );
+
+        if (currentHouseholdId) {
+          documentQuery =
+            documentQuery.eq(
+              "household_id",
+              currentHouseholdId
+            );
+
+          deviceQuery =
+            deviceQuery.eq(
+              "household_id",
+              currentHouseholdId
+            );
+        } else {
+          documentQuery =
+            documentQuery.eq(
+              "user_id",
+              user.id
+            );
+
+          deviceQuery =
+            deviceQuery.eq(
+              "user_id",
+              user.id
+            );
+        }
+
+        const [
+          documentResult,
+          deviceResult,
+        ] = await Promise.all([
+          documentQuery.order(
+            "created_at",
+            {
+              ascending: false,
+            }
+          ),
+          deviceQuery,
         ]);
 
         if (
@@ -208,7 +258,7 @@ export default function DocumentsPage() {
       }
     }
 
-    loadDocuments();
+    void loadDocuments();
   }, [
     user,
     isDemo,
