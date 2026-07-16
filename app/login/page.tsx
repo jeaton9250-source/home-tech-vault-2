@@ -1,7 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import {
+  FormEvent,
+  useEffect,
+  useState,
+} from "react";
 import { useRouter } from "next/navigation";
 import {
   CheckCircle2,
@@ -19,16 +23,51 @@ import { supabase } from "@/lib/supabase";
 export default function LoginPage() {
   const router = useRouter();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] =
-    useState(false);
-
-  const [submitting, setSubmitting] =
-    useState(false);
-
-  const [errorMessage, setErrorMessage] =
+  const [email, setEmail] =
     useState("");
+
+  const [password, setPassword] =
+    useState("");
+
+  const [
+    showPassword,
+    setShowPassword,
+  ] = useState(false);
+
+  const [
+    submitting,
+    setSubmitting,
+  ] = useState(false);
+
+  const [
+    errorMessage,
+    setErrorMessage,
+  ] = useState("");
+
+  const [
+    redirectPath,
+    setRedirectPath,
+  ] = useState("/dashboard");
+
+  useEffect(() => {
+    const searchParams =
+      new URLSearchParams(
+        window.location.search
+      );
+
+    const requestedRedirect =
+      searchParams.get("redirect");
+
+    if (
+      requestedRedirect &&
+      requestedRedirect.startsWith("/") &&
+      !requestedRedirect.startsWith("//")
+    ) {
+      setRedirectPath(
+        requestedRedirect
+      );
+    }
+  }, []);
 
   async function handleSignIn(
     event: FormEvent<HTMLFormElement>
@@ -61,17 +100,31 @@ export default function LoginPage() {
         "home-tech-vault-demo"
       );
 
-      const { error } =
-        await supabase.auth.signInWithPassword({
-          email: normalizedEmail,
-          password,
-        });
+      const {
+        data,
+        error,
+      } =
+        await supabase.auth.signInWithPassword(
+          {
+            email: normalizedEmail,
+            password,
+          }
+        );
 
       if (error) {
         throw error;
       }
 
-      router.replace("/dashboard");
+      if (!data.user) {
+        throw new Error(
+          "Your account could not be loaded."
+        );
+      }
+
+      router.replace(
+        redirectPath
+      );
+
       router.refresh();
     } catch (error) {
       console.error(
@@ -89,6 +142,25 @@ export default function LoginPage() {
     }
   }
 
+  const signupHref =
+    redirectPath !== "/dashboard"
+      ? `/signup?redirect=${encodeURIComponent(
+          redirectPath
+        )}`
+      : "/signup";
+
+  const forgotPasswordHref =
+    redirectPath !== "/dashboard"
+      ? `/forgot-password?redirect=${encodeURIComponent(
+          redirectPath
+        )}`
+      : "/forgot-password";
+
+  const isFamilyInvitation =
+    redirectPath.startsWith(
+      "/family/accept/"
+    );
+
   return (
     <main className="min-h-screen bg-[#F7F5EF] px-5 py-8 md:px-8">
       <div className="mx-auto grid min-h-[calc(100vh-64px)] max-w-7xl overflow-hidden rounded-[36px] border border-[#E8E2D6] bg-white shadow-xl lg:grid-cols-[1.05fr_0.95fr]">
@@ -99,7 +171,9 @@ export default function LoginPage() {
               className="inline-flex items-center gap-3"
             >
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 text-[#C8A96A]">
-                <ShieldCheck size={22} />
+                <ShieldCheck
+                  size={22}
+                />
               </div>
 
               <div>
@@ -108,34 +182,43 @@ export default function LoginPage() {
                 </p>
 
                 <p className="text-xs text-white/50">
-                  Organize. Protect. Simplify.
+                  Organize. Protect.
+                  Simplify.
                 </p>
               </div>
             </Link>
 
             <p className="mt-14 text-xs font-semibold uppercase tracking-[0.22em] text-[#C8A96A]">
-              Welcome back
+              {isFamilyInvitation
+                ? "Household invitation"
+                : "Welcome back"}
             </p>
 
             <h1 className="mt-5 max-w-2xl text-4xl font-bold leading-tight md:text-6xl">
-              Your home technology is waiting for you.
+              {isFamilyInvitation
+                ? "Sign in to join your shared household."
+                : "Your home technology is waiting for you."}
             </h1>
 
             <p className="mt-6 max-w-xl text-lg leading-8 text-white/65">
-              Sign in to review your devices, warranties,
-              subscriptions, documents, maintenance records,
-              and network information.
+              {isFamilyInvitation
+                ? "After signing in, you’ll return to your invitation and be added to the shared Home Tech Vault household."
+                : "Sign in to review your devices, warranties, subscriptions, documents, maintenance records, and network information."}
             </p>
 
             <div className="mt-10 grid gap-4 sm:grid-cols-2">
               <LoginBenefit text="Review every device" />
+
               <LoginBenefit text="Track warranty coverage" />
+
               <LoginBenefit text="Find important documents" />
+
               <LoginBenefit text="Monitor your technology health" />
             </div>
           </div>
 
           <div className="pointer-events-none absolute -bottom-40 -right-32 h-96 w-96 rounded-full bg-[#C8A96A]/10 blur-3xl" />
+
           <div className="pointer-events-none absolute -left-40 top-1/3 h-80 w-80 rounded-full bg-white/5 blur-3xl" />
         </section>
 
@@ -150,13 +233,30 @@ export default function LoginPage() {
             </p>
 
             <h2 className="mt-2 text-3xl font-bold text-[#111827] md:text-4xl">
-              Welcome back to your vault
+              {isFamilyInvitation
+                ? "Continue to your invitation"
+                : "Welcome back to your vault"}
             </h2>
 
             <p className="mt-3 text-sm leading-6 text-neutral-500">
-              Enter your account details to continue managing
-              your home technology.
+              {isFamilyInvitation
+                ? "Use the email address that received the household invitation."
+                : "Enter your account details to continue managing your home technology."}
             </p>
+
+            {isFamilyInvitation && (
+              <div className="mt-6 rounded-2xl border border-[#D8C69D] bg-[#FFF8E8] p-4">
+                <p className="text-sm font-semibold text-[#8A6A2F]">
+                  Family invitation detected
+                </p>
+
+                <p className="mt-1 text-sm leading-6 text-neutral-600">
+                  You will return to the
+                  invitation automatically
+                  after signing in.
+                </p>
+              </div>
+            )}
 
             {errorMessage && (
               <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
@@ -176,11 +276,16 @@ export default function LoginPage() {
                   type="email"
                   value={email}
                   onChange={(event) =>
-                    setEmail(event.target.value)
+                    setEmail(
+                      event.target.value
+                    )
                   }
                   autoComplete="email"
                   placeholder="you@example.com"
-                  className={inputClassName}
+                  required
+                  className={
+                    inputClassName
+                  }
                 />
               </FormField>
 
@@ -203,6 +308,7 @@ export default function LoginPage() {
                     }
                     autoComplete="current-password"
                     placeholder="Enter your password"
+                    required
                     className={`${inputClassName} pr-12`}
                   />
 
@@ -210,7 +316,8 @@ export default function LoginPage() {
                     type="button"
                     onClick={() =>
                       setShowPassword(
-                        (current) => !current
+                        (current) =>
+                          !current
                       )
                     }
                     aria-label={
@@ -221,9 +328,13 @@ export default function LoginPage() {
                     className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 transition hover:text-[#111827]"
                   >
                     {showPassword ? (
-                      <EyeOff size={18} />
+                      <EyeOff
+                        size={18}
+                      />
                     ) : (
-                      <Eye size={18} />
+                      <Eye
+                        size={18}
+                      />
                     )}
                   </button>
                 </div>
@@ -231,7 +342,9 @@ export default function LoginPage() {
 
               <div className="flex items-center justify-end">
                 <Link
-                  href="/forgot-password"
+                  href={
+                    forgotPasswordHref
+                  }
                   className="text-sm font-semibold text-[#111827] underline"
                 >
                   Forgot password?
@@ -249,12 +362,18 @@ export default function LoginPage() {
                     className="animate-spin"
                   />
                 ) : (
-                  <ShieldCheck size={19} />
+                  <ShieldCheck
+                    size={19}
+                  />
                 )}
 
                 {submitting
-                  ? "Opening Your Vault..."
-                  : "Sign In to My Vault"}
+                  ? isFamilyInvitation
+                    ? "Returning to Invitation..."
+                    : "Opening Your Vault..."
+                  : isFamilyInvitation
+                    ? "Sign In and Accept Invitation"
+                    : "Sign In to My Vault"}
               </button>
             </form>
 
@@ -269,10 +388,12 @@ export default function LoginPage() {
             </div>
 
             <Link
-              href="/signup"
+              href={signupHref}
               className="inline-flex w-full items-center justify-center rounded-2xl border border-[#E8E2D6] bg-white px-6 py-4 font-semibold text-[#111827] transition hover:border-[#C8A96A] hover:bg-[#F7F5EF]"
             >
-              Create Your Vault
+              {isFamilyInvitation
+                ? "Create an Account to Join"
+                : "Create Your Vault"}
             </Link>
 
             <p className="mt-7 text-center text-sm text-neutral-500">

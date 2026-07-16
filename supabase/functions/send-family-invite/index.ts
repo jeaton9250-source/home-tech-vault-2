@@ -1,4 +1,6 @@
-import { createClient } from "@supabase/supabase-js";
+// @ts-nocheck
+// @ts-ignore -- Supabase Edge Functions use Deno npm specifiers.
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 declare global {
   namespace Deno {

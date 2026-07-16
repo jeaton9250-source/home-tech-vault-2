@@ -646,8 +646,7 @@ export default function FamilyPage() {
     event.preventDefault();
 
     if (isDemo) {
-      window.location.href =
-        "/signup";
+      window.location.href = "/signup";
       return;
     }
 
@@ -658,16 +657,12 @@ export default function FamilyPage() {
       return;
     }
 
-    if (
-      !canCreateHousehold
-    ) {
-      window.location.href =
-        "/upgrade";
+    if (!canCreateHousehold) {
+      window.location.href = "/upgrade";
       return;
     }
 
-    const name =
-      householdName.trim();
+    const name = householdName.trim();
 
     if (!name) {
       setErrorMessage(
@@ -677,9 +672,7 @@ export default function FamilyPage() {
     }
 
     try {
-      setCreatingHousehold(
-        true
-      );
+      setCreatingHousehold(true);
 
       setSuccessMessage("");
       setErrorMessage("");
@@ -720,13 +713,11 @@ export default function FamilyPage() {
           "Unable to create your household."
       );
     } finally {
-      setCreatingHousehold(
-        false
-      );
+      setCreatingHousehold(false);
     }
   }
 
-async function sendInvitation(
+  async function sendInvitation(
     event: FormEvent<HTMLFormElement>
   ) {
     event.preventDefault();
@@ -1019,7 +1010,7 @@ async function sendInvitation(
     }
   }
 
-    async function copyInvitationLink(
+  async function copyInvitationLink(
     invitation: HouseholdInvitation
   ) {
     if (isDemo) {
