@@ -1,4 +1,5 @@
 "use client";
+
 import {
   useEffect,
   useMemo,
@@ -19,19 +20,23 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
+
 import { supabase } from "@/lib/supabase";
 import { demoDevices } from "@/lib/demoData";
+
 type WarrantyFilter =
   | "all"
   | "active"
   | "expiring"
   | "expired"
   | "missing";
+
 type WarrantyStatus =
   | "active"
   | "expiring"
   | "expired"
   | "missing";
+
 type WarrantyDevice = {
   id: string;
   device_name: string | null;
@@ -42,6 +47,7 @@ type WarrantyDevice = {
   purchase_date: string | null;
   purchase_price: number | null;
 };
+
 type WarrantySummary = {
   total: number;
   active: number;
@@ -49,25 +55,31 @@ type WarrantySummary = {
   expired: number;
   missing: number;
 };
+
 type UnknownRecord = Record<string, unknown>;
+
 function getString(
   record: UnknownRecord,
   key: string
 ): string | null {
   const value = record[key];
+
   return typeof value === "string"
     ? value
     : null;
 }
+
 function getNumber(
   record: UnknownRecord,
   key: string
 ): number | null {
   const value = record[key];
+
   return typeof value === "number"
     ? value
     : null;
 }
+
 function normalizeDevice(
   device: unknown,
   index: number
@@ -77,42 +89,53 @@ function normalizeDevice(
     device !== null
       ? (device as UnknownRecord)
       : {};
+
   return {
     id:
       getString(record, "id") ??
       "demo-device-" + String(index + 1),
+
     device_name:
       getString(record, "device_name") ??
       "Unnamed Device",
+
     brand: getString(record, "brand"),
+
     model: getString(record, "model"),
+
     location: getString(
       record,
       "location"
     ),
+
     warranty_date: getString(
       record,
       "warranty_date"
     ),
+
     purchase_date: getString(
       record,
       "purchase_date"
     ),
+
     purchase_price: getNumber(
       record,
       "purchase_price"
     ),
   };
 }
+
 function getWarrantyStatus(
   warrantyDate: string | null
 ): WarrantyStatus {
   if (!warrantyDate) {
     return "missing";
   }
+
   const expirationDate = new Date(
     warrantyDate + "T12:00:00"
   );
+
   if (
     Number.isNaN(
       expirationDate.getTime()
@@ -120,30 +143,38 @@ function getWarrantyStatus(
   ) {
     return "missing";
   }
+
   const millisecondsPerDay =
     1000 * 60 * 60 * 24;
+
   const daysRemaining = Math.ceil(
     (expirationDate.getTime() -
       Date.now()) /
       millisecondsPerDay
   );
+
   if (daysRemaining < 0) {
     return "expired";
   }
+
   if (daysRemaining <= 90) {
     return "expiring";
   }
+
   return "active";
 }
+
 function getDaysRemaining(
   warrantyDate: string | null
 ): number | null {
   if (!warrantyDate) {
     return null;
   }
+
   const expirationDate = new Date(
     warrantyDate + "T12:00:00"
   );
+
   if (
     Number.isNaN(
       expirationDate.getTime()
@@ -151,26 +182,32 @@ function getDaysRemaining(
   ) {
     return null;
   }
+
   const millisecondsPerDay =
     1000 * 60 * 60 * 24;
+
   return Math.ceil(
     (expirationDate.getTime() -
       Date.now()) /
       millisecondsPerDay
   );
 }
+
 function formatDate(
   value: string | null
 ): string {
   if (!value) {
     return "Not added";
   }
+
   const date = new Date(
     value + "T12:00:00"
   );
+
   if (Number.isNaN(date.getTime())) {
     return "Not added";
   }
+
   return new Intl.DateTimeFormat(
     "en-US",
     {
@@ -180,12 +217,14 @@ function formatDate(
     }
   ).format(date);
 }
+
 function formatCurrency(
   value: number | null
 ): string {
   if (value === null) {
     return "Not added";
   }
+
   return new Intl.NumberFormat(
     "en-US",
     {
@@ -195,53 +234,67 @@ function formatCurrency(
     }
   ).format(value);
 }
+
 function getStatusLabel(
   status: WarrantyStatus
 ): string {
   if (status === "active") {
     return "Active";
   }
+
   if (status === "expiring") {
     return "Expiring Soon";
   }
+
   if (status === "expired") {
     return "Expired";
   }
+
   return "Missing Warranty";
 }
+
 function getStatusDescription(
   warrantyDate: string | null
 ): string {
   const status =
     getWarrantyStatus(warrantyDate);
+
   const daysRemaining =
     getDaysRemaining(warrantyDate);
+
   if (status === "missing") {
     return "Add a warranty expiration date.";
   }
+
   if (daysRemaining === null) {
     return "";
   }
+
   if (status === "expired") {
     const expiredDays =
       Math.abs(daysRemaining);
+
     if (expiredDays === 1) {
       return "Expired 1 day ago";
     }
+
     return (
       "Expired " +
       String(expiredDays) +
       " days ago"
     );
   }
+
   if (daysRemaining === 0) {
     return "Expires today";
   }
+
   return (
     String(daysRemaining) +
     " days remaining"
   );
 }
+
 function getStatusStyles(
   status: WarrantyStatus
 ) {
@@ -253,6 +306,7 @@ function getStatusStyles(
         "bg-emerald-100 text-emerald-700",
     };
   }
+
   if (status === "expiring") {
     return {
       badge:
@@ -261,6 +315,7 @@ function getStatusStyles(
         "bg-amber-100 text-amber-700",
     };
   }
+
   if (status === "expired") {
     return {
       badge:
@@ -269,6 +324,7 @@ function getStatusStyles(
         "bg-red-100 text-red-700",
     };
   }
+
   return {
     badge:
       "border-neutral-200 bg-neutral-100 text-neutral-600",
@@ -276,49 +332,68 @@ function getStatusStyles(
       "bg-neutral-100 text-neutral-600",
   };
 }
+
 export default function WarrantiesPage() {
   const router = useRouter();
+
   const [user, setUser] =
     useState<User | null>(null);
+
   const [devices, setDevices] =
     useState<WarrantyDevice[]>([]);
+
   const [searchQuery, setSearchQuery] =
     useState("");
+
   const [activeFilter, setActiveFilter] =
     useState<WarrantyFilter>("all");
+
   const [loading, setLoading] =
     useState(true);
+
   const [exporting, setExporting] =
     useState(false);
+
   const [error, setError] =
     useState<string | null>(null);
+
   useEffect(() => {
     let mounted = true;
+
     async function loadWarranties() {
       try {
         setLoading(true);
         setError(null);
+
         const authResult =
           await supabase.auth.getUser();
+
         const currentUser =
           authResult.data.user;
+
         if (authResult.error) {
           throw authResult.error;
         }
+
         if (!mounted) {
           return;
         }
+
         setUser(currentUser);
+
         if (!currentUser) {
           const demoWarrantyDevices =
             (demoDevices as unknown[]).map(
               normalizeDevice
             );
+
           setDevices(
             demoWarrantyDevices
           );
+
           return;
         }
+
         const queryResult =
           await supabase
             .from("devices")
@@ -328,26 +403,32 @@ export default function WarrantiesPage() {
             .order("device_name", {
               ascending: true,
             });
+
         if (queryResult.error) {
           throw queryResult.error;
         }
+
         if (!mounted) {
           return;
         }
+
         const realDevices =
           (
             (queryResult.data ??
               []) as unknown[]
           ).map(normalizeDevice);
+
         setDevices(realDevices);
       } catch (loadError: unknown) {
         console.error(
           "Unable to load warranties:",
           loadError
         );
+
         if (!mounted) {
           return;
         }
+
         setError(
           loadError instanceof Error
             ? loadError.message
@@ -359,11 +440,14 @@ export default function WarrantiesPage() {
         }
       }
     }
+
     void loadWarranties();
+
     return () => {
       mounted = false;
     };
   }, []);
+
   const summary =
     useMemo<WarrantySummary>(() => {
       return devices.reduce(
@@ -372,8 +456,10 @@ export default function WarrantiesPage() {
             getWarrantyStatus(
               device.warranty_date
             );
+
           result.total += 1;
           result[status] += 1;
+
           return result;
         },
         {
@@ -385,20 +471,98 @@ export default function WarrantiesPage() {
         }
       );
     }, [devices]);
+
+  const protectedValue = useMemo(() => {
+    return devices.reduce(
+      (total, device) => {
+        const status =
+          getWarrantyStatus(
+            device.warranty_date
+          );
+
+        if (
+          status === "active" ||
+          status === "expiring"
+        ) {
+          return (
+            total +
+            (device.purchase_price ?? 0)
+          );
+        }
+
+        return total;
+      },
+      0
+    );
+  }, [devices]);
+
+  const nextExpiringDevice =
+    useMemo<WarrantyDevice | null>(() => {
+      const eligibleDevices = devices
+        .filter((device) => {
+          const status =
+            getWarrantyStatus(
+              device.warranty_date
+            );
+
+          return (
+            status === "active" ||
+            status === "expiring"
+          );
+        })
+        .filter(
+          (
+            device
+          ): device is WarrantyDevice & {
+            warranty_date: string;
+          } =>
+            device.warranty_date !== null
+        )
+        .sort(
+          (
+            firstDevice,
+            secondDevice
+          ) => {
+            const firstDate =
+              new Date(
+                firstDevice.warranty_date +
+                  "T12:00:00"
+              ).getTime();
+
+            const secondDate =
+              new Date(
+                secondDevice.warranty_date +
+                  "T12:00:00"
+              ).getTime();
+
+            return (
+              firstDate - secondDate
+            );
+          }
+        );
+
+      return (
+        eligibleDevices[0] ?? null
+      );
+    }, [devices]);
+
   const filteredDevices =
     useMemo<WarrantyDevice[]>(() => {
       const search =
         searchQuery
           .trim()
           .toLowerCase();
+
       return devices.filter((device) => {
         const status =
           getWarrantyStatus(
             device.warranty_date
           );
+
         const matchesFilter =
           activeFilter === "all" ||
           status === activeFilter;
+
         const searchableText = [
           device.device_name,
           device.brand,
@@ -411,9 +575,11 @@ export default function WarrantiesPage() {
           )
           .join(" ")
           .toLowerCase();
+
         const matchesSearch =
           search.length === 0 ||
           searchableText.includes(search);
+
         return (
           matchesFilter &&
           matchesSearch
@@ -424,6 +590,7 @@ export default function WarrantiesPage() {
       devices,
       searchQuery,
     ]);
+
   const filters: Array<{
     id: WarrantyFilter;
     label: string;
@@ -455,9 +622,12 @@ export default function WarrantiesPage() {
       count: summary.missing,
     },
   ];
+
   function handleExport() {
     try {
       setExporting(true);
+      setError(null);
+
       const rows: string[][] = [
         [
           "Device",
@@ -491,6 +661,7 @@ export default function WarrantiesPage() {
           ]
         ),
       ];
+
       const csv = rows
         .map((row) =>
           row
@@ -500,6 +671,7 @@ export default function WarrantiesPage() {
                   /"/g,
                   '""'
                 );
+
               return (
                 '"' +
                 escaped +
@@ -509,25 +681,32 @@ export default function WarrantiesPage() {
             .join(",")
         )
         .join("\n");
+
       const blob = new Blob([csv], {
         type: "text/csv;charset=utf-8",
       });
+
       const url =
         URL.createObjectURL(blob);
+
       const anchor =
         document.createElement("a");
+
       anchor.href = url;
       anchor.download =
         "home-tech-vault-warranties.csv";
+
       document.body.appendChild(anchor);
       anchor.click();
       anchor.remove();
+
       URL.revokeObjectURL(url);
     } catch (exportError) {
       console.error(
         "Unable to export warranties:",
         exportError
       );
+
       setError(
         "Unable to export warranties."
       );
@@ -535,6 +714,7 @@ export default function WarrantiesPage() {
       setExporting(false);
     }
   }
+
   return (
     <main className="min-h-screen bg-neutral-50 px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-6">
@@ -543,10 +723,12 @@ export default function WarrantiesPage() {
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-neutral-950 text-white">
               <ShieldCheck size={22} />
             </div>
+
             <div>
               <h1 className="text-2xl font-bold tracking-tight text-neutral-950">
                 Warranties
               </h1>
+
               <p className="mt-1 text-sm text-neutral-500">
                 Track warranty coverage and
                 see which devices need
@@ -554,6 +736,7 @@ export default function WarrantiesPage() {
               </p>
             </div>
           </div>
+
           <button
             type="button"
             onClick={handleExport}
@@ -561,21 +744,25 @@ export default function WarrantiesPage() {
               exporting ||
               filteredDevices.length === 0
             }
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-neutral-200 bg-white px-4 text-sm font-semibold text-neutral-700 disabled:opacity-50"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-neutral-200 bg-white px-4 text-sm font-semibold text-neutral-700 transition hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Download size={17} />
+
             {exporting
               ? "Exporting..."
               : "Export"}
           </button>
         </header>
+
         {!loading && !user && (
           <div className="flex items-start gap-3 rounded-2xl border border-sky-200 bg-sky-50 p-4 text-sky-900">
             <CircleAlert size={20} />
+
             <div>
               <p className="font-semibold">
                 Demo Mode
               </p>
+
               <p className="mt-1 text-sm">
                 You are viewing sample
                 warranty information.
@@ -583,19 +770,23 @@ export default function WarrantiesPage() {
             </div>
           </div>
         )}
+
         {error && (
           <div className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-red-900">
             <ShieldAlert size={20} />
+
             <div>
               <p className="font-semibold">
                 Unable to load warranties
               </p>
+
               <p className="mt-1 text-sm">
                 {error}
               </p>
             </div>
           </div>
         )}
+
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <SummaryCard
             title="Active"
@@ -606,6 +797,7 @@ export default function WarrantiesPage() {
             }
             iconClassName="bg-emerald-100 text-emerald-700"
           />
+
           <SummaryCard
             title="Expiring Soon"
             value={summary.expiring}
@@ -615,6 +807,7 @@ export default function WarrantiesPage() {
             }
             iconClassName="bg-amber-100 text-amber-700"
           />
+
           <SummaryCard
             title="Expired"
             value={summary.expired}
@@ -624,6 +817,7 @@ export default function WarrantiesPage() {
             }
             iconClassName="bg-red-100 text-red-700"
           />
+
           <SummaryCard
             title="Missing"
             value={summary.missing}
@@ -632,22 +826,100 @@ export default function WarrantiesPage() {
             iconClassName="bg-neutral-100 text-neutral-600"
           />
         </section>
+
+        <section className="grid gap-4 lg:grid-cols-2">
+          <div className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-sm">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm font-medium text-neutral-500">
+                  Protected Value
+                </p>
+
+                <p className="mt-2 text-3xl font-bold tracking-tight text-neutral-950">
+                  {formatCurrency(
+                    protectedValue
+                  )}
+                </p>
+
+                <p className="mt-1 text-sm text-neutral-500">
+                  Value currently covered by
+                  active warranties
+                </p>
+              </div>
+
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-100 text-violet-700">
+                <ShieldCheck size={22} />
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-sm">
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-neutral-500">
+                  Next Expiring
+                </p>
+
+                {nextExpiringDevice ? (
+                  <>
+                    <p className="mt-2 truncate text-xl font-bold text-neutral-950">
+                      {nextExpiringDevice.device_name ??
+                        "Unnamed Device"}
+                    </p>
+
+                    <p className="mt-1 text-sm font-medium text-amber-700">
+                      {getStatusDescription(
+                        nextExpiringDevice.warranty_date
+                      )}
+                    </p>
+
+                    <p className="mt-1 text-sm text-neutral-500">
+                      Expires{" "}
+                      {formatDate(
+                        nextExpiringDevice.warranty_date
+                      )}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="mt-2 text-xl font-bold text-neutral-950">
+                      Nothing upcoming
+                    </p>
+
+                    <p className="mt-1 text-sm text-neutral-500">
+                      No active warranty
+                      expirations were found.
+                    </p>
+                  </>
+                )}
+              </div>
+
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
+                <CalendarClock size={22} />
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-sm">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <h2 className="text-lg font-semibold text-neutral-950">
                 Warranty Overview
               </h2>
+
               <p className="mt-1 text-sm text-neutral-500">
                 Search and filter your
                 devices.
               </p>
             </div>
+
             <div className="relative w-full lg:max-w-sm">
               <Search
                 size={18}
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"
               />
+
               <input
                 type="search"
                 value={searchQuery}
@@ -657,10 +929,11 @@ export default function WarrantiesPage() {
                   )
                 }
                 placeholder="Search devices..."
-                className="h-11 w-full rounded-xl border border-neutral-200 pl-10 pr-4 text-sm outline-none"
+                className="h-11 w-full rounded-xl border border-neutral-200 pl-10 pr-4 text-sm outline-none focus:border-neutral-400"
               />
             </div>
           </div>
+
           <div className="mt-4 flex gap-2 overflow-x-auto">
             {filters.map((filter) => (
               <button
@@ -685,23 +958,31 @@ export default function WarrantiesPage() {
             ))}
           </div>
         </section>
+
         <section className="space-y-4">
           {loading ? (
             [1, 2, 3].map((item) => (
               <div
                 key={item}
-                className="h-32 animate-pulse rounded-3xl bg-white"
+                className="h-32 animate-pulse rounded-3xl border border-neutral-200 bg-white"
               />
             ))
-          ) : filteredDevices.length === 0 ? (
+          ) : filteredDevices.length ===
+            0 ? (
             <div className="rounded-3xl border border-neutral-200 bg-white p-10 text-center">
               <ShieldCheck
                 size={30}
                 className="mx-auto text-neutral-400"
               />
+
               <h2 className="mt-4 font-semibold">
                 No warranties found
               </h2>
+
+              <p className="mt-2 text-sm text-neutral-500">
+                Try another search or
+                filter.
+              </p>
             </div>
           ) : (
             filteredDevices.map(
@@ -710,8 +991,10 @@ export default function WarrantiesPage() {
                   getWarrantyStatus(
                     device.warranty_date
                   );
+
                 const styles =
                   getStatusStyles(status);
+
                 return (
                   <button
                     key={device.id}
@@ -722,7 +1005,7 @@ export default function WarrantiesPage() {
                           device.id
                       )
                     }
-                    className="w-full rounded-3xl border border-neutral-200 bg-white p-5 text-left shadow-sm"
+                    className="w-full rounded-3xl border border-neutral-200 bg-white p-5 text-left shadow-sm transition hover:border-neutral-300"
                   >
                     <div className="flex flex-col gap-5 lg:flex-row lg:items-center">
                       <div className="flex min-w-0 flex-1 items-start gap-4">
@@ -734,12 +1017,14 @@ export default function WarrantiesPage() {
                         >
                           <Laptop size={22} />
                         </div>
+
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
                             <h3 className="font-semibold text-neutral-950">
                               {device.device_name ??
                                 "Unnamed Device"}
                             </h3>
+
                             <span
                               className={
                                 "rounded-full border px-2.5 py-1 text-xs font-semibold " +
@@ -751,6 +1036,7 @@ export default function WarrantiesPage() {
                               )}
                             </span>
                           </div>
+
                           <p className="mt-1 text-sm text-neutral-500">
                             {[
                               device.brand,
@@ -760,13 +1046,15 @@ export default function WarrantiesPage() {
                               .join(" • ") ||
                               "Brand and model not added"}
                           </p>
-                          <p className="mt-2 text-sm font-medium">
+
+                          <p className="mt-2 text-sm font-medium text-neutral-700">
                             {getStatusDescription(
                               device.warranty_date
                             )}
                           </p>
                         </div>
                       </div>
+
                       <div className="grid flex-1 gap-3 sm:grid-cols-3">
                         <DetailBox
                           label="Warranty Ends"
@@ -774,12 +1062,14 @@ export default function WarrantiesPage() {
                             device.warranty_date
                           )}
                         />
+
                         <DetailBox
                           label="Purchase Price"
                           value={formatCurrency(
                             device.purchase_price
                           )}
                         />
+
                         <DetailBox
                           label="Location"
                           value={
@@ -788,6 +1078,7 @@ export default function WarrantiesPage() {
                           }
                         />
                       </div>
+
                       <ChevronRight
                         size={20}
                         className="hidden text-neutral-400 lg:block"
@@ -803,6 +1094,7 @@ export default function WarrantiesPage() {
     </main>
   );
 }
+
 function SummaryCard({
   title,
   value,
@@ -823,13 +1115,16 @@ function SummaryCard({
           <p className="text-sm text-neutral-500">
             {title}
           </p>
+
           <p className="mt-2 text-3xl font-bold">
             {value}
           </p>
+
           <p className="mt-1 text-sm text-neutral-500">
             {description}
           </p>
         </div>
+
         <div
           className={
             "flex h-11 w-11 items-center justify-center rounded-2xl " +
@@ -842,6 +1137,7 @@ function SummaryCard({
     </div>
   );
 }
+
 function DetailBox({
   label,
   value,
@@ -854,6 +1150,7 @@ function DetailBox({
       <p className="text-xs uppercase tracking-wide text-neutral-400">
         {label}
       </p>
+
       <p className="mt-1 truncate text-sm font-semibold">
         {value}
       </p>
