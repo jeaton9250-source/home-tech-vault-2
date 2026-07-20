@@ -12,6 +12,7 @@ type AuthGuardProps = {
 };
 
 const publicRoutes = [
+  "/",
   "/login",
   "/signup",
   "/demo",

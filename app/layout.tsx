@@ -1,16 +1,26 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
-import Sidebar from "@/components/Sidebar";
-import TopBar from "@/components/TopBar";
-import MobileNav from "@/components/MobileNav";
 import AuthGuard from "@/components/AuthGuard";
-import AIAdvisorPopup from "@/components/ai/AIAdvisorPopup";
-import DemoBanner from "@/components/DemoBanner";
+import AppChrome from "@/components/AppChrome";
 
 export const metadata: Metadata = {
-  title: "Home Tech Vault",
-  description: "Organize. Protect. Simplify.",
+  title: "Home Tech Vault — Organize. Protect. Simplify.",
+  description:
+    "Home Tech Vault is the effortless way to catalog every device in your home, track warranties, store documents, and protect the technology you own.",
+  keywords: [
+    "home inventory",
+    "device inventory",
+    "warranty tracker",
+    "home technology",
+    "smart home management",
+  ],
+  openGraph: {
+    title: "Home Tech Vault — Organize. Protect. Simplify.",
+    description:
+      "Catalog every device, track warranties, and protect the technology you own — all in one beautifully simple vault.",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
@@ -19,24 +29,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className="bg-[#F7F5EF]">
       <body>
         <AuthGuard>
-          <DemoBanner />
-
-          <div className="flex min-h-screen bg-[#F7F5EF]">
-            <Sidebar />
-
-            <div className="min-w-0 flex-1 pb-20 lg:pb-0">
-              <TopBar />
-
-              <main>{children}</main>
-
-              <MobileNav />
-            </div>
-
-            <AIAdvisorPopup />
-          </div>
+          <AppChrome>{children}</AppChrome>
         </AuthGuard>
       </body>
     </html>
