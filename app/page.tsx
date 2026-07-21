@@ -1,5 +1,7 @@
 import LandingPage from "@/components/landing/LandingPage";
 import StructuredData from "@/components/marketing/StructuredData";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { loadPublicFoundingProgramSummary } from "@/lib/founding-members/loaders";
 import {
   createPageMetadata,
   createSoftwareApplicationJsonLd,
@@ -20,13 +22,27 @@ export const metadata = createPageMetadata({
   ],
 });
 
-export default function HomePage() {
+export default async function HomePage() {
+  let foundingSummary = null;
+
+  try {
+    const admin = createAdminClient();
+    foundingSummary =
+      await loadPublicFoundingProgramSummary(
+        admin
+      );
+  } catch {
+    foundingSummary = null;
+  }
+
   return (
     <>
       <StructuredData
         data={createSoftwareApplicationJsonLd()}
       />
-      <LandingPage />
+      <LandingPage
+        foundingSummary={foundingSummary}
+      />
     </>
   );
 }

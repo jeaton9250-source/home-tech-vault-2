@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import PlanAccessAdminSection from "@/components/admin/users/PlanAccessAdminSection";
+import FoundingMemberAdminSection from "@/components/admin/users/FoundingMemberAdminSection";
 import AccountDangerZone from "@/components/admin/users/AccountDangerZone";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPanel, {
@@ -509,6 +510,15 @@ export default function UsersAdminClient() {
               ) : null}
 
               <PlanAccessAdminSection
+                detail={detail}
+                onUpdated={async () => {
+                  if (selectedId) {
+                    await loadDetail(selectedId);
+                  }
+                }}
+              />
+
+              <FoundingMemberAdminSection
                 detail={detail}
                 onUpdated={async () => {
                   if (selectedId) {

@@ -653,6 +653,51 @@ export async function loadAdminUserDetail(
       : latestGrant.status
     : null;
 
+  let foundingMemberNumber: number | null = null;
+  let foundingMemberStatus:
+    | "active"
+    | "removed"
+    | null = null;
+  let foundingMemberEnrolledAt:
+    | string
+    | null = null;
+  let foundingMemberBenefitMode:
+    | string
+    | null = null;
+  let foundingMemberPlanGrantId:
+    | string
+    | null = null;
+
+  try {
+    const { data: foundingMember } = await admin
+      .from("platform_founding_members")
+      .select(
+        "member_number, status, enrolled_at, benefit_mode, plan_grant_id"
+      )
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (foundingMember) {
+      foundingMemberNumber =
+        foundingMember.member_number;
+      foundingMemberStatus =
+        foundingMember.status === "removed"
+          ? "removed"
+          : "active";
+      foundingMemberEnrolledAt =
+        foundingMember.enrolled_at;
+      foundingMemberBenefitMode =
+        foundingMember.benefit_mode;
+      foundingMemberPlanGrantId =
+        foundingMember.plan_grant_id;
+    }
+  } catch (foundingMemberError) {
+    console.warn(
+      "Founding member lookup unavailable:",
+      foundingMemberError
+    );
+  }
+
   return {
     id: profile.id,
     email: auth?.email ?? null,
@@ -737,6 +782,11 @@ export async function loadAdminUserDetail(
     deletionJobError:
       deletionJob?.safe_error_message ??
       null,
+    foundingMemberNumber,
+    foundingMemberStatus,
+    foundingMemberEnrolledAt,
+    foundingMemberBenefitMode,
+    foundingMemberPlanGrantId,
   };
 }
 

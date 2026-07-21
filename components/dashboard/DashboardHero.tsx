@@ -2,6 +2,7 @@
 
 import HomeHealth from "@/components/brand/HomeHealth";
 import Button from "@/components/ui/Button";
+import FoundingMemberBadge from "@/components/founding-members/FoundingMemberBadge";
 
 import { brand, sections } from "@/lib/design-system/tokens";
 
@@ -58,6 +59,12 @@ export default function DashboardHero({
           <p className="mt-3 text-lg font-medium text-text-secondary">
             {householdName}
           </p>
+
+          {!isDemo ? (
+            <div className="mt-4">
+              <FoundingMemberBadge />
+            </div>
+          ) : null}
 
           <p className="mt-4 text-sm leading-7 text-text-muted">
             {summaryParts.join(" · ")}

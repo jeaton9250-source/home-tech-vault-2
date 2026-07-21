@@ -32,6 +32,7 @@ import {
   getPlanDescription,
 } from "@/lib/permissions/effectivePlan";
 import PlanAccessSummary from "@/components/permissions/PlanAccessSummary";
+import FoundingMemberBadge from "@/components/founding-members/FoundingMemberBadge";
 
 import PageShell from "@/components/ui/PageShell";
 import PageTitle from "@/components/ui/PageTitle";
@@ -483,6 +484,10 @@ export default function AccountPage() {
                 <p className="mt-2 text-2xl font-bold text-text-primary">
                   {planLabel}
                 </p>
+
+                <div className="mt-3">
+                  <FoundingMemberBadge />
+                </div>
 
                 {roleDisplayName && (
                   <p className="mt-2 text-sm font-semibold text-section-insights">

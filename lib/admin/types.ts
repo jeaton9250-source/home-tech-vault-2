@@ -79,6 +79,11 @@ export type AdminUserDetail = AdminUserSummary & {
   deletionJobStatus: string | null;
   deletionJobStep: string | null;
   deletionJobError: string | null;
+  foundingMemberNumber: number | null;
+  foundingMemberStatus: "active" | "removed" | null;
+  foundingMemberEnrolledAt: string | null;
+  foundingMemberBenefitMode: string | null;
+  foundingMemberPlanGrantId: string | null;
 };
 
 export type AdminHouseholdSummary = {

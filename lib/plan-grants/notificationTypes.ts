@@ -29,6 +29,7 @@ export type GrantNotificationResult = {
 
 export const CUSTOMER_VISIBLE_GRANT_REASONS: PlanGrantReason[] =
   [
+    "Founding Member",
     "Beta Tester",
     "Employee",
     "Friend or Family",

@@ -1,10 +1,12 @@
 import Link from "next/link";
 
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import FoundingMembersDashboardCard from "@/components/admin/founding-members/FoundingMembersDashboardCard";
 import AdminPanel, {
   formatAdminDate,
 } from "@/components/admin/AdminPanel";
 import AdminStatCard from "@/components/admin/AdminStatCard";
+import { loadFoundingMembersDashboardMetrics } from "@/lib/admin/data/foundingMembers";
 import { loadAdminDashboardMetrics } from "@/lib/admin/data/dashboard";
 
 export const metadata = {
@@ -12,8 +14,13 @@ export const metadata = {
 };
 
 export default async function AdminDashboardPage() {
-  const metrics =
-    await loadAdminDashboardMetrics();
+  const [metrics, foundingMetricsResult] =
+    await Promise.all([
+      loadAdminDashboardMetrics(),
+      loadFoundingMembersDashboardMetrics().catch(
+        () => null
+      ),
+    ]);
 
   return (
     <>
@@ -81,6 +88,10 @@ export default async function AdminDashboardPage() {
       )}
 
       <section className="mt-6 grid gap-6 xl:grid-cols-3">
+        <FoundingMembersDashboardCard
+          metrics={foundingMetricsResult}
+        />
+
         <AdminPanel title="Recent signups">
           <div className="space-y-3">
             {metrics.recentSignups.length ===

@@ -8,6 +8,7 @@ import {
   formatSubscriptionStatus,
 } from "@/lib/permissions/effectivePlan";
 import { getGrantDisplayLabel } from "@/lib/plan-grants/grantAccess";
+import FoundingMemberBadge from "@/components/founding-members/FoundingMemberBadge";
 
 function formatGrantExpiration(
   value: string
@@ -87,6 +88,7 @@ export default function PlanAccessSummary({
 
   return (
     <div className="space-y-3">
+      <FoundingMemberBadge compact />
       <div
         className={
           compact

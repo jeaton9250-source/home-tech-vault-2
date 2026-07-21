@@ -59,4 +59,11 @@ export type AdminAuditEventType =
   | "deletion_started"
   | "deletion_completed"
   | "deletion_failed"
-  | "household_ownership_transferred";
+  | "household_ownership_transferred"
+  | "founding_program_enabled"
+  | "founding_program_paused"
+  | "founding_program_capacity_changed"
+  | "founding_member_enrolled"
+  | "founding_member_removed"
+  | "founding_member_grant_revoked"
+  | "founding_program_full";

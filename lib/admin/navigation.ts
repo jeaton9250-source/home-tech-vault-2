@@ -1,5 +1,6 @@
 import {
   Activity,
+  Award,
   CreditCard,
   Home,
   LifeBuoy,
@@ -35,6 +36,12 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     label: "Users",
     icon: Users,
     description: "Account directory",
+  },
+  {
+    href: "/admin/founding-members",
+    label: "Founding Members",
+    icon: Award,
+    description: "First 50 member program",
   },
   {
     href: "/admin/households",

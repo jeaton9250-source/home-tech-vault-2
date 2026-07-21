@@ -47,6 +47,7 @@ export type PlanGrantInput = {
 };
 
 export const PLAN_GRANT_REASONS = [
+  "Founding Member",
   "Beta Tester",
   "Employee",
   "Friend or Family",

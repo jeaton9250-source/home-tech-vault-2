@@ -21,6 +21,8 @@ import {
 import { useDemoMode } from "@/hooks/useDemoMode";
 import { MARKETING_ROUTES } from "@/lib/marketing/routes";
 import { sections } from "@/lib/design-system/tokens";
+import FoundingMembersCallout from "@/components/landing/FoundingMembersCallout";
+import type { PublicFoundingProgramSummary } from "@/lib/founding-members/types";
 
 const fadeUp = {
   initial: { opacity: 0, y: 24 },
@@ -53,7 +55,13 @@ const heroTrustItems = [
   "Built for every home",
 ] as const;
 
-export default function LandingPage() {
+type LandingPageProps = {
+  foundingSummary?: PublicFoundingProgramSummary | null;
+};
+
+export default function LandingPage({
+  foundingSummary = null,
+}: LandingPageProps) {
   const {
     user,
     loading,
@@ -165,6 +173,12 @@ export default function LandingPage() {
           </motion.div>
         </div>
       </section>
+
+      {!isSignedIn && foundingSummary ? (
+        <FoundingMembersCallout
+          summary={foundingSummary}
+        />
+      ) : null}
 
       <section className="border-y border-border-subtle bg-surface-card/40 px-6 py-14 md:px-8">
         <MarketingContent className="py-0">
