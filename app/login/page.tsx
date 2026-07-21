@@ -3,21 +3,23 @@
 import Link from "next/link";
 import {
   FormEvent,
-  useEffect,
   useState,
 } from "react";
 import { useRouter } from "next/navigation";
 import {
-  CheckCircle2,
-  Eye,
-  EyeOff,
   Loader2,
   LockKeyhole,
   Mail,
   ShieldCheck,
-  Sparkles,
 } from "lucide-react";
 
+import AuthAlert from "@/components/auth/AuthAlert";
+import AuthCard from "@/components/auth/AuthCard";
+import AuthFormField from "@/components/auth/AuthFormField";
+import AuthLayout from "@/components/auth/AuthLayout";
+import PasswordInput from "@/components/auth/PasswordInput";
+import { authInputClassName } from "@/components/auth/authStyles";
+import Button from "@/components/ui/Button";
 import { supabase } from "@/lib/supabase";
 import { resolvePostAuthRedirect } from "@/lib/onboarding/redirect";
 import { enforceActiveAccount } from "@/lib/auth/enforceActiveAccount";
@@ -48,28 +50,26 @@ export default function LoginPage() {
 
   const [
     redirectPath,
-    setRedirectPath,
-  ] = useState("/dashboard");
-
-  useEffect(() => {
-    const searchParams =
-      new URLSearchParams(
-        window.location.search
-      );
+  ] = useState(() => {
+    if (typeof window === "undefined") {
+      return "/dashboard";
+    }
 
     const requestedRedirect =
-      searchParams.get("redirect");
+      new URLSearchParams(
+        window.location.search
+      ).get("redirect");
 
     if (
       requestedRedirect &&
       requestedRedirect.startsWith("/") &&
       !requestedRedirect.startsWith("//")
     ) {
-      setRedirectPath(
-        requestedRedirect
-      );
+      return requestedRedirect;
     }
-  }, []);
+
+    return "/dashboard";
+  });
 
   async function handleSignIn(
     event: FormEvent<HTMLFormElement>
@@ -178,300 +178,183 @@ export default function LoginPage() {
       "/family/accept/"
     );
 
+  const loginTitle = isFamilyInvitation
+    ? "Continue to your invitation"
+    : "Welcome back";
+
+  const loginDescription = isFamilyInvitation
+    ? "Use the email address that received the household invitation. You will return to the invitation after signing in."
+    : "Sign in to access your devices, warranties, documents, subscriptions, and household technology records.";
+
   return (
-    <main className="min-h-screen bg-surface-sunken px-5 py-8 md:px-8">
-      <div className="mx-auto grid min-h-[calc(100vh-64px)] max-w-7xl overflow-hidden rounded-[36px] border border-border-subtle bg-white shadow-xl lg:grid-cols-[1.05fr_0.95fr]">
-        <section className="htv-auth-panel relative overflow-hidden px-7 py-10 text-text-primary md:px-12 md:py-14">
-          <div className="relative z-10">
+    <AuthLayout
+      overline={
+        isFamilyInvitation
+          ? "Household invitation"
+          : "Welcome back"
+      }
+      headline={
+        isFamilyInvitation
+          ? "Sign in to join your shared household."
+          : "Your home technology, organized and protected."
+      }
+      description={
+        isFamilyInvitation
+          ? "After signing in, you will return to your invitation and be added to the shared Home Tech Vault household."
+          : "Access warranties, receipts, network details, and maintenance records from one secure vault."
+      }
+      benefits={[
+        "Review every device in one place",
+        "Track warranty coverage",
+        "Find important documents quickly",
+        "Monitor your home technology health",
+      ]}
+      brandHref="/"
+    >
+      <AuthCard
+        overline="Sign in"
+        title={loginTitle}
+        description={loginDescription}
+      >
+        {isFamilyInvitation ? (
+          <AuthAlert
+            variant="success"
+            className="mb-5 border-warning/30 bg-warning-soft text-achievement"
+          >
+            <p className="font-medium">
+              Family invitation detected
+            </p>
+            <p className="mt-1 text-text-secondary">
+              You will return to the invitation
+              automatically after signing in.
+            </p>
+          </AuthAlert>
+        ) : null}
+
+        {errorMessage ? (
+          <AuthAlert
+            variant="error"
+            className="mb-5"
+          >
+            {errorMessage}
+          </AuthAlert>
+        ) : null}
+
+        <form
+          onSubmit={handleSignIn}
+          className="space-y-5"
+          noValidate
+        >
+          <AuthFormField
+            label="Email address"
+            htmlFor="login-email"
+            icon={Mail}
+          >
+            <input
+              id="login-email"
+              type="email"
+              value={email}
+              onChange={(event) =>
+                setEmail(event.target.value)
+              }
+              autoComplete="email"
+              placeholder="you@example.com"
+              required
+              className={authInputClassName}
+            />
+          </AuthFormField>
+
+          <AuthFormField
+            label="Password"
+            htmlFor="login-password"
+            icon={LockKeyhole}
+          >
+            <PasswordInput
+              id="login-password"
+              value={password}
+              onChange={setPassword}
+              autoComplete="current-password"
+              placeholder="Enter your password"
+              showPassword={showPassword}
+              onToggleVisibility={() =>
+                setShowPassword(
+                  (current) => !current
+                )
+              }
+              required
+            />
+          </AuthFormField>
+
+          <div className="flex items-center justify-end">
             <Link
-              href="/demo"
-              className="inline-flex items-center gap-3"
+              href={forgotPasswordHref}
+              className="text-sm font-medium text-interaction underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interaction"
             >
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border-subtle bg-surface-card text-charcoal shadow-[var(--shadow-sm)]">
+              Forgot password?
+            </Link>
+          </div>
+
+          <Button
+            type="submit"
+            fullWidth
+            size="lg"
+            disabled={submitting}
+          >
+            {submitting ? (
+              <>
+                <Loader2
+                  size={18}
+                  className="animate-spin"
+                  aria-hidden
+                />
+                {isFamilyInvitation
+                  ? "Returning to invitation..."
+                  : "Signing in..."}
+              </>
+            ) : (
+              <>
                 <ShieldCheck
-                  size={22}
+                  size={18}
+                  aria-hidden
                 />
-              </div>
-
-              <div>
-                <p className="font-bold">
-                  Home Tech Vault
-                </p>
-
-                <p className="text-xs text-text-tertiary">
-                  Organize. Protect.
-                  Simplify.
-                </p>
-              </div>
-            </Link>
-
-            <p className="mt-14 text-xs font-semibold uppercase tracking-[0.22em] text-text-secondary">
-              {isFamilyInvitation
-                ? "Household invitation"
-                : "Welcome back"}
-            </p>
-
-            <h1 className="mt-5 max-w-2xl text-4xl font-bold leading-tight md:text-6xl">
-              {isFamilyInvitation
-                ? "Sign in to join your shared household."
-                : "Your home technology is waiting for you."}
-            </h1>
-
-            <p className="mt-6 max-w-xl text-lg leading-8 text-text-secondary">
-              {isFamilyInvitation
-                ? "After signing in, you’ll return to your invitation and be added to the shared Home Tech Vault household."
-                : "Sign in to review your devices, warranties, subscriptions, documents, maintenance records, and network information."}
-            </p>
-
-            <div className="mt-10 grid gap-4 sm:grid-cols-2">
-              <LoginBenefit text="Review every device" />
-
-              <LoginBenefit text="Track warranty coverage" />
-
-              <LoginBenefit text="Find important documents" />
-
-              <LoginBenefit text="Monitor your technology health" />
-            </div>
-          </div>
-
-          <div className="pointer-events-none absolute -bottom-40 -right-32 h-96 w-96 rounded-full bg-home-health-soft blur-3xl" />
-
-          <div className="pointer-events-none absolute -left-40 top-1/3 h-80 w-80 rounded-full bg-white/5 blur-3xl" />
-        </section>
-
-        <section className="flex items-center px-6 py-10 md:px-12 md:py-14">
-          <div className="mx-auto w-full max-w-lg">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
-              <Sparkles size={23} />
-            </div>
-
-            <p className="mt-6 text-overline text-charcoal-soft">
-              Sign In
-            </p>
-
-            <h2 className="mt-2 text-3xl font-bold text-text-primary md:text-4xl">
-              {isFamilyInvitation
-                ? "Continue to your invitation"
-                : "Welcome back to your vault"}
-            </h2>
-
-            <p className="mt-3 text-sm leading-6 text-text-secondary">
-              {isFamilyInvitation
-                ? "Use the email address that received the household invitation."
-                : "Enter your account details to continue managing your home technology."}
-            </p>
-
-            {isFamilyInvitation && (
-              <div className="mt-6 rounded-2xl border border-warning/40 bg-warning-soft p-4">
-                <p className="text-sm font-semibold text-achievement">
-                  Family invitation detected
-                </p>
-
-                <p className="mt-1 text-sm leading-6 text-text-secondary">
-                  You will return to the
-                  invitation automatically
-                  after signing in.
-                </p>
-              </div>
+                {isFamilyInvitation
+                  ? "Sign in and accept invitation"
+                  : "Sign in"}
+              </>
             )}
+          </Button>
+        </form>
 
-            {errorMessage && (
-              <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-                {errorMessage}
-              </div>
-            )}
+        <p className="mt-6 text-center text-sm leading-6 text-text-muted">
+          New to Home Tech Vault?{" "}
+          <Link
+            href={signupHref}
+            className="font-medium text-interaction underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interaction"
+          >
+            Create your vault
+          </Link>
+        </p>
 
-            <form
-              onSubmit={handleSignIn}
-              className="mt-8 space-y-5"
-            >
-              <FormField
-                label="Email Address"
-                icon={Mail}
-              >
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(event) =>
-                    setEmail(
-                      event.target.value
-                    )
-                  }
-                  autoComplete="email"
-                  placeholder="you@example.com"
-                  required
-                  className={
-                    inputClassName
-                  }
-                />
-              </FormField>
+        <p className="mt-5 flex items-center justify-center gap-2 text-center text-xs leading-5 text-text-muted">
+          <ShieldCheck
+            size={14}
+            className="shrink-0 text-interaction"
+            aria-hidden
+          />
+          Your vault is protected with secure
+          authentication.
+        </p>
 
-              <FormField
-                label="Password"
-                icon={LockKeyhole}
-              >
-                <div className="relative">
-                  <input
-                    type={
-                      showPassword
-                        ? "text"
-                        : "password"
-                    }
-                    value={password}
-                    onChange={(event) =>
-                      setPassword(
-                        event.target.value
-                      )
-                    }
-                    autoComplete="current-password"
-                    placeholder="Enter your password"
-                    required
-                    className={`${inputClassName} pr-12`}
-                  />
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setShowPassword(
-                        (current) =>
-                          !current
-                      )
-                    }
-                    aria-label={
-                      showPassword
-                        ? "Hide password"
-                        : "Show password"
-                    }
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-text-tertiary transition hover:text-text-primary"
-                  >
-                    {showPassword ? (
-                      <EyeOff
-                        size={18}
-                      />
-                    ) : (
-                      <Eye
-                        size={18}
-                      />
-                    )}
-                  </button>
-                </div>
-              </FormField>
-
-              <div className="flex items-center justify-end">
-                <Link
-                  href={
-                    forgotPasswordHref
-                  }
-                  className="text-sm font-semibold text-text-primary underline"
-                >
-                  Forgot password?
-                </Link>
-              </div>
-
-              <button
-                type="submit"
-                disabled={submitting}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-charcoal px-6 py-4 font-semibold text-surface-card transition hover:bg-charcoal-hover disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {submitting ? (
-                  <Loader2
-                    size={19}
-                    className="animate-spin"
-                  />
-                ) : (
-                  <ShieldCheck
-                    size={19}
-                  />
-                )}
-
-                {submitting
-                  ? isFamilyInvitation
-                    ? "Returning to Invitation..."
-                    : "Opening Your Vault..."
-                  : isFamilyInvitation
-                    ? "Sign In and Accept Invitation"
-                    : "Sign In to My Vault"}
-              </button>
-            </form>
-
-            <div className="my-8 flex items-center gap-4">
-              <div className="h-px flex-1 bg-border-subtle" />
-
-              <span className="text-xs font-semibold uppercase tracking-[0.16em] text-text-tertiary">
-                New here?
-              </span>
-
-              <div className="h-px flex-1 bg-border-subtle" />
-            </div>
-
-            <Link
-              href={signupHref}
-              className="inline-flex w-full items-center justify-center rounded-2xl border border-border-subtle bg-white px-6 py-4 font-semibold text-text-primary transition hover:border-border-strong hover:bg-surface-sunken"
-            >
-              {isFamilyInvitation
-                ? "Create an Account to Join"
-                : "Create Your Vault"}
-            </Link>
-
-            <p className="mt-7 text-center text-sm text-text-secondary">
-              Want to look around first?{" "}
-              <Link
-                href="/demo"
-                className="font-semibold text-text-primary underline"
-              >
-                Open Interactive Demo
-              </Link>
-            </p>
-          </div>
-        </section>
-      </div>
-    </main>
-  );
-}
-
-const inputClassName =
-  "w-full rounded-2xl border border-border-subtle bg-white px-4 py-3.5 text-text-primary outline-none transition placeholder:text-text-tertiary focus:border-interaction focus:ring-2 focus:ring-interaction/20";
-
-function FormField({
-  label,
-  icon: Icon,
-  children,
-}: {
-  label: string;
-  icon: typeof Mail;
-  children: React.ReactNode;
-}) {
-  return (
-    <label className="block">
-      <span className="mb-2 flex items-center gap-2 text-sm font-semibold text-text-primary">
-        <Icon
-          size={16}
-          className="text-interaction"
-        />
-
-        {label}
-      </span>
-
-      {children}
-    </label>
-  );
-}
-
-function LoginBenefit({
-  text,
-}: {
-  text: string;
-}) {
-  return (
-    <div className="flex items-center gap-3 rounded-2xl bg-white/5 p-4">
-      <CheckCircle2
-        size={19}
-        className="shrink-0 text-interaction"
-      />
-
-      <p className="text-sm font-medium text-text-primary">
-        {text}
-      </p>
-    </div>
+        <p className="mt-5 text-center text-sm text-text-muted">
+          Want to look around first?{" "}
+          <Link
+            href="/demo"
+            className="font-medium text-interaction underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interaction"
+          >
+            Open interactive demo
+          </Link>
+        </p>
+      </AuthCard>
+    </AuthLayout>
   );
 }

@@ -1,36 +1,50 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import {
+  FormEvent,
+  useState,
+} from "react";
 import { useRouter } from "next/navigation";
 import {
-  CheckCircle2,
-  Eye,
-  EyeOff,
   Loader2,
-  LockKeyhole,
   Mail,
-  ShieldCheck,
   Sparkles,
   User,
   Users,
 } from "lucide-react";
 
+import AuthAlert from "@/components/auth/AuthAlert";
+import AuthCard from "@/components/auth/AuthCard";
+import AuthFormField from "@/components/auth/AuthFormField";
+import AuthLayout from "@/components/auth/AuthLayout";
+import PasswordInput from "@/components/auth/PasswordInput";
+import { authInputClassName } from "@/components/auth/authStyles";
+import Button from "@/components/ui/Button";
 import { supabase } from "@/lib/supabase";
 import { resolvePostAuthRedirect } from "@/lib/onboarding/redirect";
 
 export default function SignupPage() {
   const router = useRouter();
 
-  const [fullName, setFullName] = useState("");
-  const [householdName, setHouseholdName] = useState("");
+  const [fullName, setFullName] =
+    useState("");
+  const [householdName, setHouseholdName] =
+    useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [password, setPassword] =
+    useState("");
   const [confirmPassword, setConfirmPassword] =
     useState("");
 
-  const [showPassword, setShowPassword] =
-    useState(false);
+  const [
+    showPassword,
+    setShowPassword,
+  ] = useState(false);
+  const [
+    showConfirmPassword,
+    setShowConfirmPassword,
+  ] = useState(false);
 
   const [agreedToTerms, setAgreedToTerms] =
     useState(false);
@@ -188,338 +202,251 @@ export default function SignupPage() {
   }
 
   return (
-    <main className="min-h-screen bg-surface-sunken px-5 py-8 md:px-8">
-      <div className="mx-auto grid min-h-[calc(100vh-64px)] max-w-7xl overflow-hidden rounded-[36px] border border-border-subtle bg-white shadow-xl lg:grid-cols-[1.05fr_0.95fr]">
-        <section className="htv-auth-panel relative overflow-hidden px-7 py-10 text-text-primary md:px-12 md:py-14">
-          <div className="relative z-10">
+    <AuthLayout
+      overline="Get started"
+      headline="Create your Home Tech Vault"
+      description="Set up one secure place for your household devices, warranties, documents, subscriptions, and maintenance records."
+      benefits={[
+        "Organize every household device",
+        "Track warranties and important documents",
+        "Share access with trusted household members",
+        "Keep network and subscription details together",
+      ]}
+      brandHref="/"
+    >
+      <AuthCard
+        overline="Get started"
+        title="Create your Home Tech Vault"
+        description="Set up one secure place for your household devices, warranties, documents, subscriptions, and maintenance records."
+      >
+        <ul className="mb-6 space-y-2.5">
+          {[
+            "Organize every household device",
+            "Track warranties and important documents",
+            "Share access with trusted household members",
+          ].map((benefit) => (
+            <li
+              key={benefit}
+              className="flex items-start gap-2.5 text-sm leading-6 text-text-secondary"
+            >
+              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-interaction" />
+              {benefit}
+            </li>
+          ))}
+        </ul>
+
+        {errorMessage ? (
+          <AuthAlert
+            variant="error"
+            className="mb-5"
+          >
+            {errorMessage}
+          </AuthAlert>
+        ) : null}
+
+        {successMessage ? (
+          <AuthAlert
+            variant="success"
+            className="mb-5"
+          >
+            {successMessage}
+
             <Link
-              href="/demo"
-              className="inline-flex items-center gap-3"
+              href="/login"
+              className="mt-2 inline-block font-medium underline underline-offset-4"
             >
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border-subtle bg-surface-card text-section-insights shadow-[var(--shadow-sm)]">
-                <ShieldCheck size={22} />
-              </div>
-
-              <div>
-                <p className="font-bold">
-                  Home Tech Vault
-                </p>
-
-                <p className="text-xs text-text-tertiary">
-                  Organize. Protect. Simplify.
-                </p>
-              </div>
+              Go to sign in
             </Link>
+          </AuthAlert>
+        ) : null}
 
-            <p className="mt-14 text-overline text-home-health">
-              Your home technology, organized
-            </p>
+        <form
+          onSubmit={handleSignup}
+          className="space-y-5"
+          noValidate
+        >
+          <AuthFormField
+            label="Full name"
+            htmlFor="signup-full-name"
+            icon={User}
+          >
+            <input
+              id="signup-full-name"
+              type="text"
+              value={fullName}
+              onChange={(event) =>
+                setFullName(
+                  event.target.value
+                )
+              }
+              autoComplete="name"
+              placeholder="Your full name"
+              required
+              className={authInputClassName}
+            />
+          </AuthFormField>
 
-            <h1 className="mt-5 max-w-2xl text-4xl font-bold leading-tight md:text-6xl">
-              Create one secure place for every device in your home.
-            </h1>
+          <AuthFormField
+            label="Household name"
+            htmlFor="signup-household-name"
+            icon={Users}
+            hint="This is the name your household will see in Home Tech Vault."
+          >
+            <input
+              id="signup-household-name"
+              type="text"
+              value={householdName}
+              onChange={(event) =>
+                setHouseholdName(
+                  event.target.value
+                )
+              }
+              autoComplete="organization"
+              placeholder="My household"
+              required
+              className={authInputClassName}
+            />
+          </AuthFormField>
 
-            <p className="mt-6 max-w-xl text-lg leading-8 text-text-secondary">
-              Track devices, warranties, receipts,
-              subscriptions, maintenance, and network
-              details without searching through drawers,
-              inboxes, or old files.
-            </p>
+          <AuthFormField
+            label="Email address"
+            htmlFor="signup-email"
+            icon={Mail}
+          >
+            <input
+              id="signup-email"
+              type="email"
+              value={email}
+              onChange={(event) =>
+                setEmail(event.target.value)
+              }
+              autoComplete="email"
+              placeholder="you@example.com"
+              required
+              className={authInputClassName}
+            />
+          </AuthFormField>
 
-            <div className="mt-10 grid gap-4 sm:grid-cols-2">
-              <SignupBenefit text="Track every device" />
-              <SignupBenefit text="Store receipts and manuals" />
-              <SignupBenefit text="Monitor warranty dates" />
-              <SignupBenefit text="Protect your home inventory" />
-            </div>
-          </div>
+          <AuthFormField
+            label="Password"
+            htmlFor="signup-password"
+            hint="Use at least 8 characters."
+          >
+            <PasswordInput
+              id="signup-password"
+              value={password}
+              onChange={setPassword}
+              autoComplete="new-password"
+              placeholder="At least 8 characters"
+              showPassword={showPassword}
+              onToggleVisibility={() =>
+                setShowPassword(
+                  (current) => !current
+                )
+              }
+              required
+              describedBy="signup-password-hint"
+            />
+          </AuthFormField>
 
-          <div className="pointer-events-none absolute -bottom-40 -right-32 h-96 w-96 rounded-full bg-home-health-soft blur-3xl" />
-          <div className="pointer-events-none absolute -left-40 top-1/3 h-80 w-80 rounded-full bg-white/5 blur-3xl" />
-        </section>
+          <AuthFormField
+            label="Confirm password"
+            htmlFor="signup-confirm-password"
+          >
+            <PasswordInput
+              id="signup-confirm-password"
+              value={confirmPassword}
+              onChange={setConfirmPassword}
+              autoComplete="new-password"
+              placeholder="Enter your password again"
+              showPassword={showConfirmPassword}
+              onToggleVisibility={() =>
+                setShowConfirmPassword(
+                  (current) => !current
+                )
+              }
+              required
+            />
+          </AuthFormField>
 
-        <section className="flex items-center px-6 py-10 md:px-12 md:py-14">
-          <div className="mx-auto w-full max-w-lg">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
-              <Sparkles size={23} />
-            </div>
+          <label className="flex cursor-pointer items-start gap-3 rounded-[var(--radius-input)] border border-border-subtle bg-surface-sunken/70 p-4">
+            <input
+              type="checkbox"
+              checked={agreedToTerms}
+              onChange={(event) =>
+                setAgreedToTerms(
+                  event.target.checked
+                )
+              }
+              className="mt-1 h-4 w-4 accent-interaction"
+            />
 
-            <p className="mt-6 text-overline text-charcoal-soft">
-              Create Your Vault
-            </p>
-
-            <h2 className="mt-2 text-3xl font-bold text-text-primary md:text-4xl">
-              Start organizing your home technology
-            </h2>
-
-            <p className="mt-3 text-sm leading-6 text-text-secondary">
-              Create your account and begin building
-              your personal Home Tech Vault.
-            </p>
-
-            {errorMessage && (
-              <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-                {errorMessage}
-              </div>
-            )}
-
-            {successMessage && (
-              <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm leading-6 text-emerald-700">
-                {successMessage}
-
-                <Link
-                  href="/login"
-                  className="mt-3 block font-semibold underline"
-                >
-                  Go to Sign In
-                </Link>
-              </div>
-            )}
-
-            <form
-              onSubmit={handleSignup}
-              className="mt-8 space-y-5"
-            >
-              <FormField
-                label="Full Name"
-                icon={User}
-              >
-                <input
-                  type="text"
-                  value={fullName}
-                  onChange={(event) =>
-                    setFullName(
-                      event.target.value
-                    )
-                  }
-                  autoComplete="name"
-                  placeholder="Your Full Name"
-                  className={inputClassName}
-                />
-              </FormField>
-
-              <FormField
-                label="Household Name"
-                icon={Users}
-              >
-                <input
-                  type="text"
-                  value={householdName}
-                  onChange={(event) =>
-                    setHouseholdName(
-                      event.target.value
-                    )
-                  }
-                  placeholder="My Household"
-                  className={inputClassName}
-                />
-              </FormField>
-
-              <FormField
-                label="Email Address"
-                icon={Mail}
-              >
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(event) =>
-                    setEmail(
-                      event.target.value
-                    )
-                  }
-                  autoComplete="email"
-                  placeholder="you@example.com"
-                  className={inputClassName}
-                />
-              </FormField>
-
-              <FormField
-                label="Password"
-                icon={LockKeyhole}
-              >
-                <div className="relative">
-                  <input
-                    type={
-                      showPassword
-                        ? "text"
-                        : "password"
-                    }
-                    value={password}
-                    onChange={(event) =>
-                      setPassword(
-                        event.target.value
-                      )
-                    }
-                    autoComplete="new-password"
-                    placeholder="At least 8 characters"
-                    className={`${inputClassName} pr-12`}
-                  />
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setShowPassword(
-                        (current) =>
-                          !current
-                      )
-                    }
-                    aria-label={
-                      showPassword
-                        ? "Hide password"
-                        : "Show password"
-                    }
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-text-tertiary transition hover:text-text-primary"
-                  >
-                    {showPassword ? (
-                      <EyeOff size={18} />
-                    ) : (
-                      <Eye size={18} />
-                    )}
-                  </button>
-                </div>
-              </FormField>
-
-              <FormField
-                label="Confirm Password"
-                icon={LockKeyhole}
-              >
-                <input
-                  type={
-                    showPassword
-                      ? "text"
-                      : "password"
-                  }
-                  value={confirmPassword}
-                  onChange={(event) =>
-                    setConfirmPassword(
-                      event.target.value
-                    )
-                  }
-                  autoComplete="new-password"
-                  placeholder="Enter your password again"
-                  className={inputClassName}
-                />
-              </FormField>
-
-              <label className="flex cursor-pointer items-start gap-3 rounded-2xl bg-surface-sunken p-4">
-                <input
-                  type="checkbox"
-                  checked={agreedToTerms}
-                  onChange={(event) =>
-                    setAgreedToTerms(
-                      event.target.checked
-                    )
-                  }
-                  className="mt-1 h-4 w-4 accent-[#111827]"
-                />
-
-                <span className="text-sm leading-6 text-text-secondary">
-                  I agree to the{" "}
-                  <Link
-                    href="/terms"
-                    className="font-semibold text-text-primary underline"
-                  >
-                    Terms
-                  </Link>{" "}
-                  and{" "}
-                  <Link
-                    href="/privacy"
-                    className="font-semibold text-text-primary underline"
-                  >
-                    Privacy Policy
-                  </Link>
-                  .
-                </span>
-              </label>
-
-              <button
-                type="submit"
-                disabled={submitting}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-charcoal px-6 py-4 font-semibold text-surface-card transition hover:bg-charcoal-hover disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {submitting ? (
-                  <Loader2
-                    size={19}
-                    className="animate-spin"
-                  />
-                ) : (
-                  <Sparkles size={19} />
-                )}
-
-                {submitting
-                  ? "Creating Your Vault..."
-                  : "Create My Vault"}
-              </button>
-            </form>
-
-            <p className="mt-7 text-center text-sm text-text-secondary">
-              Already have an account?{" "}
+            <span className="text-sm leading-6 text-text-secondary">
+              I agree to the{" "}
               <Link
-                href="/login"
-                className="font-semibold text-text-primary underline"
+                href="/terms"
+                className="font-medium text-interaction underline-offset-4 hover:underline"
               >
-                Sign In
-              </Link>
-            </p>
-
-            <p className="mt-4 text-center text-sm text-text-secondary">
-              Want to look around first?{" "}
+                Terms
+              </Link>{" "}
+              and{" "}
               <Link
-                href="/demo"
-                className="font-semibold text-text-primary underline"
+                href="/privacy"
+                className="font-medium text-interaction underline-offset-4 hover:underline"
               >
-                Open Interactive Demo
+                Privacy Policy
               </Link>
-            </p>
-          </div>
-        </section>
-      </div>
-    </main>
-  );
-}
+              .
+            </span>
+          </label>
 
-const inputClassName =
-  "w-full rounded-2xl border border-border-subtle bg-white px-4 py-3.5 text-text-primary outline-none transition placeholder:text-text-tertiary focus:border-interaction focus:ring-2 focus:ring-interaction/20";
+          <Button
+            type="submit"
+            fullWidth
+            size="lg"
+            disabled={submitting}
+          >
+            {submitting ? (
+              <>
+                <Loader2
+                  size={18}
+                  className="animate-spin"
+                  aria-hidden
+                />
+                Creating your vault...
+              </>
+            ) : (
+              <>
+                <Sparkles
+                  size={18}
+                  aria-hidden
+                />
+                Create my vault
+              </>
+            )}
+          </Button>
+        </form>
 
-function FormField({
-  label,
-  icon: Icon,
-  children,
-}: {
-  label: string;
-  icon: typeof User;
-  children: React.ReactNode;
-}) {
-  return (
-    <label className="block">
-      <span className="mb-2 flex items-center gap-2 text-sm font-semibold text-text-primary">
-        <Icon
-          size={16}
-          className="text-interaction"
-        />
-        {label}
-      </span>
+        <p className="mt-6 text-center text-sm leading-6 text-text-muted">
+          Already have a vault?{" "}
+          <Link
+            href="/login"
+            className="font-medium text-interaction underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interaction"
+          >
+            Sign in
+          </Link>
+        </p>
 
-      {children}
-    </label>
-  );
-}
-
-function SignupBenefit({
-  text,
-}: {
-  text: string;
-}) {
-  return (
-    <div className="flex items-center gap-3 rounded-2xl bg-white/5 p-4">
-      <CheckCircle2
-        size={19}
-        className="shrink-0 text-interaction"
-      />
-
-      <p className="text-sm font-medium text-text-primary">
-        {text}
-      </p>
-    </div>
+        <p className="mt-5 text-center text-sm text-text-muted">
+          Want to look around first?{" "}
+          <Link
+            href="/demo"
+            className="font-medium text-interaction underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interaction"
+          >
+            Open interactive demo
+          </Link>
+        </p>
+      </AuthCard>
+    </AuthLayout>
   );
 }
