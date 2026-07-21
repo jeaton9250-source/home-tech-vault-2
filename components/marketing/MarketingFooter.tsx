@@ -12,22 +12,22 @@ import {
 
 export default function MarketingFooter() {
   return (
-    <footer className="border-t border-border-subtle bg-surface-card/40">
-      <div className="mx-auto max-w-6xl px-6 py-20 md:px-8 md:py-24">
-        <div className="flex flex-col gap-12 lg:flex-row lg:items-start lg:justify-between lg:gap-20">
-          <div className="max-w-md border-b border-border-subtle pb-12 lg:border-b-0 lg:pb-0">
+    <footer className="border-t border-border-subtle/80 bg-surface-card/30">
+      <div className="mx-auto max-w-6xl px-8 py-16 md:px-10 md:py-20">
+        <div className="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between lg:gap-16">
+          <div className="max-w-sm lg:max-w-md">
             <Logo />
 
-            <p className="mt-5 text-sm font-medium leading-6 text-text-secondary">
+            <p className="mt-4 text-sm leading-6 text-text-muted">
               {brand.tagline}
             </p>
 
-            <p className="mt-4 text-sm leading-7 text-text-muted">
+            <p className="mt-3 text-sm leading-6 text-text-tertiary">
               {FOOTER_BRAND_DESCRIPTION}
             </p>
           </div>
 
-          <div className="grid gap-12 sm:grid-cols-2 sm:gap-16 lg:gap-20">
+          <div className="grid gap-10 sm:grid-cols-2 sm:gap-14">
             <FooterColumn
               title="Support"
               links={FOOTER_SUPPORT_LINKS}
@@ -39,7 +39,7 @@ export default function MarketingFooter() {
           </div>
         </div>
 
-        <p className="mt-16 border-t border-border-subtle pt-10 text-xs text-text-tertiary">
+        <p className="mt-12 border-t border-border-subtle/80 pt-8 text-xs leading-5 text-text-tertiary">
           {FOOTER_COPYRIGHT}
         </p>
       </div>
@@ -65,12 +65,12 @@ function FooterColumn({
         {title}
       </p>
 
-      <ul className="mt-5 space-y-3">
+      <ul className="mt-4 space-y-2.5">
         {links.map((link) => (
           <li key={link.label}>
             <Link
               href={link.href}
-              className="text-sm text-text-secondary transition hover:text-text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interaction"
+              className="text-sm leading-6 text-text-secondary transition-colors duration-200 hover:text-text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interaction"
             >
               {link.label}
             </Link>

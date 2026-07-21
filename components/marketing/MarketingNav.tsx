@@ -10,6 +10,10 @@ import FoundingMembersBanner from "@/components/landing/FoundingMembersBanner";
 import Button from "@/components/ui/Button";
 import { useDemoMode } from "@/hooks/useDemoMode";
 import type { PublicFoundingProgramSummary } from "@/lib/founding-members/types";
+import {
+  marketingPrimaryButtonClass,
+  marketingSecondaryButtonClass,
+} from "@/lib/marketing/landingStyles";
 import { MARKETING_ROUTES } from "@/lib/marketing/routes";
 import { cn } from "@/lib/design-system/cn";
 
@@ -61,8 +65,13 @@ export default function MarketingNav({
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border-subtle bg-surface-base/95 backdrop-blur-sm">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-6 md:px-8">
+    <header className="sticky top-0 z-50 border-b border-border-subtle/80 bg-surface-base/90 backdrop-blur-md">
+      <div
+        className={cn(
+          "mx-auto flex h-[4.25rem] max-w-6xl items-center justify-between px-8 lg:px-10",
+          minimal ? "gap-8" : "gap-4"
+        )}
+      >
         <Link
           href={MARKETING_ROUTES.home}
           className="shrink-0"
@@ -73,7 +82,10 @@ export default function MarketingNav({
         </Link>
 
         <nav
-          className="hidden items-center gap-0.5 lg:flex"
+          className={cn(
+            "hidden items-center lg:flex",
+            minimal ? "gap-10" : "gap-0.5"
+          )}
           aria-label="Primary"
         >
           {navLinks.map((link) => (
@@ -81,10 +93,15 @@ export default function MarketingNav({
               key={link.href}
               href={link.href}
               className={cn(
-                "rounded-[var(--radius-button)] px-3 py-2 text-sm font-medium transition-colors hover:text-text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interaction",
+                "rounded-[var(--radius-button)] px-1 py-2 text-[0.9375rem] transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interaction",
+                minimal
+                  ? "font-normal"
+                  : "px-3 font-medium",
                 isActive(link.href)
-                  ? "text-text-primary"
-                  : "text-text-muted"
+                  ? minimal
+                    ? "text-interaction"
+                    : "text-text-primary"
+                  : "text-text-muted hover:text-text-primary"
               )}
             >
               {link.label}
@@ -92,24 +109,32 @@ export default function MarketingNav({
           ))}
         </nav>
 
-        <div className="hidden items-center gap-2 md:flex">
+        <div className="hidden items-center gap-3 md:flex">
           {!loading && !isSignedIn && (
             <Link
               href={MARKETING_ROUTES.login}
-              className="rounded-[var(--radius-button)] px-4 py-2 text-sm font-medium text-text-muted transition-colors hover:text-text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interaction"
+              className="rounded-[var(--radius-button)] px-3 py-2 text-[0.9375rem] font-normal text-text-muted transition-colors duration-200 hover:text-text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interaction"
             >
               Sign In
             </Link>
           )}
 
-          <Button href={startHref} size="sm">
+          <Button
+            href={startHref}
+            size="sm"
+            className={
+              minimal
+                ? marketingPrimaryButtonClass
+                : undefined
+            }
+          >
             {startLabel}
           </Button>
         </div>
 
         <button
           type="button"
-          className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-button)] text-text-primary hover:bg-surface-sunken focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interaction lg:hidden"
+          className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-button)] text-text-primary transition-colors duration-200 hover:bg-surface-sunken focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interaction lg:hidden"
           aria-label={
             mobileOpen ? "Close menu" : "Open menu"
           }
@@ -136,7 +161,7 @@ export default function MarketingNav({
       ) : null}
 
       {mobileOpen && (
-        <div className="border-t border-border-subtle bg-surface-base px-6 py-4 lg:hidden">
+        <div className="border-t border-border-subtle bg-surface-base px-8 py-4 lg:hidden">
           <nav
             className="flex flex-col gap-1"
             aria-label="Primary mobile"
@@ -151,7 +176,7 @@ export default function MarketingNav({
                 className={cn(
                   "rounded-[var(--radius-button)] px-3 py-3 text-sm font-medium",
                   isActive(link.href)
-                    ? "bg-surface-sunken text-text-primary"
+                    ? "bg-surface-sunken text-interaction"
                     : "text-text-muted"
                 )}
               >
@@ -165,6 +190,7 @@ export default function MarketingNav({
                   href={MARKETING_ROUTES.login}
                   variant="secondary"
                   fullWidth
+                  className={marketingSecondaryButtonClass}
                   onClick={() =>
                     setMobileOpen(false)
                   }
@@ -176,6 +202,11 @@ export default function MarketingNav({
               <Button
                 href={startHref}
                 fullWidth
+                className={
+                  minimal
+                    ? marketingPrimaryButtonClass
+                    : undefined
+                }
                 onClick={() =>
                   setMobileOpen(false)
                 }

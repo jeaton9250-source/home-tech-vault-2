@@ -16,11 +16,15 @@ import MarketingLayout, {
 import Button from "@/components/ui/Button";
 import PageCard from "@/components/ui/PageCard";
 import { useDemoMode } from "@/hooks/useDemoMode";
+import {
+  landingMotionRise,
+  landingSectionClass,
+  marketingPrimaryButtonClass,
+  marketingSecondaryButtonClass,
+} from "@/lib/marketing/landingStyles";
 import { MARKETING_ROUTES } from "@/lib/marketing/routes";
+import { cn } from "@/lib/design-system/cn";
 import type { PublicFoundingProgramSummary } from "@/lib/founding-members/types";
-
-const landingPrimaryButtonClass =
-  "border-charcoal bg-charcoal text-surface-card hover:border-charcoal-hover hover:bg-charcoal-hover focus-visible:ring-charcoal/20";
 
 type LandingPageProps = {
   foundingSummary?: PublicFoundingProgramSummary | null;
@@ -58,7 +62,7 @@ export default function LandingPage({
     : "Create Your Free Vault";
   const finalCtaLabel = isSignedIn
     ? "Go to Your Vault"
-    : "Create My Vault";
+    : "Create Your Free Vault";
 
   return (
     <MarketingLayout
@@ -67,29 +71,35 @@ export default function LandingPage({
       minimalNav
     >
       {/* Hero */}
-      <section className="px-6 pb-10 pt-10 md:px-8 md:pb-14 md:pt-14">
-        <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[1.05fr_1fr] lg:gap-14">
-          <div>
+      <section
+        className={cn(
+          "px-8 lg:px-10",
+          landingSectionClass,
+          "pt-12 md:pt-16"
+        )}
+      >
+        <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[1.02fr_1fr] lg:gap-16">
+          <div className={landingMotionRise}>
             <p className="text-overline text-interaction">
               Home Tech Vault
             </p>
 
-            <h1 className="mt-4 max-w-xl text-4xl font-medium tracking-[-0.04em] text-text-primary md:text-5xl md:leading-[1.05]">
+            <h1 className="mt-5 max-w-xl text-4xl font-medium tracking-[-0.04em] text-text-primary md:text-[3.25rem] md:leading-[1.04]">
               The digital home for everything
               that powers yours.
             </h1>
 
-            <p className="mt-4 max-w-lg text-base leading-7 text-text-muted">
+            <p className="mt-5 max-w-md text-[0.9375rem] leading-7 text-text-muted">
               Organize your devices, warranties, receipts,
               subscriptions, and important documents in one
               secure place.
             </p>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
               <Button
                 href={primaryHref}
                 size="lg"
-                className={landingPrimaryButtonClass}
+                className={marketingPrimaryButtonClass}
               >
                 {primaryLabel}
                 <ArrowRight size={16} aria-hidden />
@@ -100,6 +110,7 @@ export default function LandingPage({
                   href={MARKETING_ROUTES.demo}
                   variant="secondary"
                   size="lg"
+                  className={marketingSecondaryButtonClass}
                 >
                   <Play size={16} aria-hidden />
                   Explore the Demo
@@ -108,7 +119,13 @@ export default function LandingPage({
             </div>
           </div>
 
-          <div className="mx-auto w-full max-w-xl lg:max-w-none">
+          <div
+            className={cn(
+              "mx-auto w-full max-w-xl lg:max-w-none",
+              landingMotionRise,
+              "htv-landing-delay-1"
+            )}
+          >
             <HeroAppPreview />
           </div>
         </div>
@@ -119,16 +136,21 @@ export default function LandingPage({
       <LandingTrustSection />
 
       {/* Final CTA */}
-      <MarketingContent className="py-10 md:py-14">
+      <MarketingContent
+        className={cn(landingSectionClass, "pb-14 md:pb-16")}
+      >
         <PageCard
-          elevated
-          className="mx-auto max-w-3xl px-8 py-12 text-center md:px-14 md:py-14"
+          elevated={false}
+          className={cn(
+            landingMotionRise,
+            "mx-auto max-w-3xl border-border-subtle px-8 py-14 text-center md:px-16 md:py-16"
+          )}
         >
-          <h2 className="text-2xl font-medium tracking-[-0.03em] text-text-primary md:text-3xl">
-            Ready to organize your home technology?
+          <h2 className="text-2xl font-medium tracking-[-0.03em] text-text-primary md:text-[2rem] md:leading-tight">
+            Ready to build your Home Tech Vault?
           </h2>
 
-          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-text-muted">
+          <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-text-muted">
             Create your free vault and keep everything
             important in one place.
           </p>
@@ -136,7 +158,10 @@ export default function LandingPage({
           <Button
             href={primaryHref}
             size="lg"
-            className={`mt-8 ${landingPrimaryButtonClass}`}
+            className={cn(
+              "mt-9",
+              marketingPrimaryButtonClass
+            )}
           >
             {finalCtaLabel}
             <ArrowRight size={16} aria-hidden />

@@ -1,63 +1,67 @@
-import { Check } from "lucide-react";
-
 import { MarketingContent } from "@/components/marketing/MarketingLayout";
 import PageCard from "@/components/ui/PageCard";
+import {
+  landingCardClass,
+  landingMotionRise,
+  landingSectionClass,
+} from "@/lib/marketing/landingStyles";
+import { cn } from "@/lib/design-system/cn";
 
-const trustPoints = [
-  "Secure sign-in keeps your account protected",
-  "Household permissions control who can view and manage records",
-  "HTTPS protects data in transit between your browser and Home Tech Vault",
-  "You decide what stays in your vault and who can access it",
+const trustItems = [
+  {
+    title: "Your account",
+    copy: "Sign in with the email address tied to your vault.",
+  },
+  {
+    title: "Your household",
+    copy: "Choose who can view and manage shared records.",
+  },
+  {
+    title: "Your connection",
+    copy: "HTTPS keeps data encrypted while it travels to and from your browser.",
+  },
+  {
+    title: "Your data",
+    copy: "We do not sell your personal information.",
+  },
 ] as const;
 
 export default function LandingTrustSection() {
   return (
-    <MarketingContent className="py-10 md:py-14">
+    <MarketingContent className={landingSectionClass}>
       <PageCard
         elevated={false}
-        className="border-border-subtle bg-surface-sunken/35 p-6 md:p-8"
+        className={cn(
+          landingCardClass,
+          landingMotionRise,
+          "border-border-subtle bg-surface-sunken/30 p-7 md:p-10"
+        )}
       >
-        <div className="grid gap-6 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] md:gap-10 md:items-start">
-          <div>
-            <p className="text-overline text-interaction">
-              Trust & privacy
-            </p>
+        <div className="max-w-2xl">
+          <h2 className="text-section-title text-text-primary">
+            Built with privacy in mind.
+          </h2>
 
-            <h2 className="text-section-title mt-2 text-text-primary">
-              Built to keep your household information safe
-            </h2>
+          <p className="mt-3 text-sm leading-6 text-text-muted md:text-[0.9375rem] md:leading-7">
+            Only you control who can access your Home Tech
+            Vault.
+          </p>
+        </div>
 
-            <p className="mt-3 text-sm leading-6 text-text-muted">
-              Home Tech Vault is designed for households
-              who want calm organization without giving up
-              control of their data.
-            </p>
-          </div>
-
-          <div>
-            <ul className="space-y-3">
-              {trustPoints.map((point) => (
-                <li
-                  key={point}
-                  className="flex items-start gap-3 text-sm leading-6 text-text-secondary"
-                >
-                  <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-interaction-soft text-interaction">
-                    <Check
-                      size={12}
-                      strokeWidth={2.5}
-                      aria-hidden
-                    />
-                  </span>
-                  {point}
-                </li>
-              ))}
-            </ul>
-
-            <p className="mt-5 border-t border-border-subtle pt-5 text-sm leading-6 text-text-primary">
-              Your information belongs to you. Home Tech Vault
-              does not sell your personal information.
-            </p>
-          </div>
+        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+          {trustItems.map((item) => (
+            <div
+              key={item.title}
+              className="rounded-[var(--radius-button)] border border-border-subtle/80 bg-surface-card px-4 py-4"
+            >
+              <p className="text-sm font-medium text-text-primary">
+                {item.title}
+              </p>
+              <p className="mt-1.5 text-sm leading-6 text-text-muted">
+                {item.copy}
+              </p>
+            </div>
+          ))}
         </div>
       </PageCard>
     </MarketingContent>

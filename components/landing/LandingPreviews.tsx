@@ -22,7 +22,30 @@ import {
 import { sections } from "@/lib/design-system/tokens";
 import { DEMO_DEVICE_IMAGE_PATHS } from "@/lib/devices/demoDeviceImages";
 
-export function CommandCenterPreview() {
+function MiniHealthChart() {
+  const bars = [42, 58, 52, 68, 62, 74, 70];
+
+  return (
+    <div
+      className="flex h-10 items-end gap-1"
+      aria-hidden
+    >
+      {bars.map((height, index) => (
+        <span
+          key={index}
+          className="w-1.5 rounded-full bg-home-health/25"
+          style={{ height: `${height}%` }}
+        />
+      ))}
+    </div>
+  );
+}
+
+export function CommandCenterPreview({
+  compact = false,
+}: {
+  compact?: boolean;
+}) {
   return (
     <div className="bg-surface-base p-5 md:p-6">
       <div className="flex items-start justify-between gap-4">
@@ -30,12 +53,14 @@ export function CommandCenterPreview() {
           <p className="text-overline text-home-health">
             Home Pulse
           </p>
-          <p className="mt-1 text-xl font-medium tracking-[-0.02em]">
+          <p className="mt-1 text-xl font-medium tracking-[-0.02em] text-text-primary">
             Good afternoon, Alex
           </p>
-          <p className="mt-0.5 text-xs text-text-muted">
-            The Morgan Household
-          </p>
+          {!compact && (
+            <p className="mt-0.5 text-xs text-text-muted">
+              The Morgan Household
+            </p>
+          )}
         </div>
 
         <div className="rounded-full border border-home-health-muted bg-home-health-soft px-3 py-1 text-xs font-medium text-home-health">
@@ -43,17 +68,18 @@ export function CommandCenterPreview() {
         </div>
       </div>
 
-      <div className="mt-4 flex items-start gap-2 rounded-[var(--radius-button)] border border-warning/20 bg-warning-soft/70 px-3 py-2.5">
-        <Bell
-          size={14}
-          className="mt-0.5 shrink-0 text-warning"
-          aria-hidden
-        />
-        <p className="text-xs leading-5 text-text-secondary">
-          TV warranty expires in 28 days. Review coverage
-          before it lapses.
-        </p>
-      </div>
+      {!compact && (
+        <div className="mt-4 flex items-start gap-2 rounded-[var(--radius-button)] border border-warning/20 bg-warning-soft/70 px-3 py-2.5">
+          <Bell
+            size={14}
+            className="mt-0.5 shrink-0 text-warning"
+            aria-hidden
+          />
+          <p className="text-xs leading-5 text-text-secondary">
+            TV warranty expires in 28 days.
+          </p>
+        </div>
+      )}
 
       <div className="mt-4 grid grid-cols-3 gap-2">
         {[
@@ -63,31 +89,49 @@ export function CommandCenterPreview() {
         ].map((item) => (
           <div
             key={item.label}
-            className="rounded-[var(--radius-button)] border border-border-subtle bg-surface-card px-3 py-2.5"
+            className="rounded-[var(--radius-button)] border border-border-subtle bg-surface-card px-3 py-2.5 shadow-[var(--shadow-sm)] transition-all duration-200 hover:-translate-y-px hover:shadow-md"
           >
             <p className="text-[0.625rem] font-semibold uppercase tracking-wider text-text-muted">
               {item.label}
             </p>
-            <p className="mt-0.5 text-lg font-medium tabular-nums">
+            <p className="mt-0.5 text-lg font-medium tabular-nums text-text-primary">
               {item.value}
             </p>
           </div>
         ))}
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-2">
-        {["Add device", "Upload receipt", "Add warranty"].map(
-          (action) => (
-            <span
-              key={action}
-              className="inline-flex items-center gap-1 rounded-full border border-border-subtle bg-surface-card px-2.5 py-1 text-[0.6875rem] font-medium text-text-secondary"
-            >
-              <Plus size={11} aria-hidden />
-              {action}
-            </span>
-          )
-        )}
-      </div>
+      {!compact && (
+        <div className="mt-4 rounded-[var(--radius-button)] border border-border-subtle bg-surface-card px-3 py-3 shadow-[var(--shadow-sm)]">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[0.625rem] font-semibold uppercase tracking-wider text-text-muted">
+                Vault activity
+              </p>
+              <p className="mt-1 text-xs text-text-secondary">
+                3 updates this week
+              </p>
+            </div>
+            <MiniHealthChart />
+          </div>
+        </div>
+      )}
+
+      {!compact && (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {["Add device", "Upload receipt"].map(
+            (action) => (
+              <span
+                key={action}
+                className="inline-flex items-center gap-1 rounded-full border border-border-subtle bg-surface-card px-2.5 py-1 text-[0.6875rem] font-medium text-text-secondary"
+              >
+                <Plus size={11} aria-hidden />
+                {action}
+              </span>
+            )
+          )}
+        </div>
+      )}
 
       <div className="mt-4 space-y-2">
         <p className="text-[0.625rem] font-semibold uppercase tracking-wider text-text-muted">
@@ -112,6 +156,17 @@ export function CommandCenterPreview() {
           soft={sections.technology.soft}
         />
       </div>
+
+      {!compact && (
+        <div className="mt-4 border-t border-border-subtle pt-3">
+          <p className="text-[0.625rem] font-semibold uppercase tracking-wider text-text-muted">
+            Recent activity
+          </p>
+          <p className="mt-2 text-xs text-text-secondary">
+            Receipt uploaded for MacBook Pro · 2h ago
+          </p>
+        </div>
+      )}
     </div>
   );
 }
@@ -124,21 +179,45 @@ const heroNavItems = [
   { label: "Reports", icon: BarChart3, active: false },
 ] as const;
 
+export function PreviewAppShell({
+  title,
+  children,
+}: {
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="overflow-hidden rounded-[var(--radius-card)] border border-border-subtle bg-surface-card shadow-[var(--shadow-md),0_20px_40px_-18px_rgb(17_24_39_/_0.18)]">
+      <div className="flex items-center gap-2 border-b border-border-subtle bg-surface-sunken/80 px-4 py-2.5">
+        <div className="flex gap-1.5" aria-hidden>
+          <span className="h-2.5 w-2.5 rounded-full bg-border-strong/30" />
+          <span className="h-2.5 w-2.5 rounded-full bg-border-strong/30" />
+          <span className="h-2.5 w-2.5 rounded-full bg-border-strong/30" />
+        </div>
+        <p className="mx-auto truncate text-[10px] text-text-muted">
+          app.hometechvault.com/{title.toLowerCase()}
+        </p>
+      </div>
+      {children}
+    </div>
+  );
+}
+
 export function HeroAppPreview() {
   return (
     <div
-      className="overflow-hidden rounded-[var(--radius-card)] border border-border-subtle bg-surface-card shadow-[var(--shadow-md),0_24px_48px_-16px_rgb(28_25_23_/_0.14)]"
+      className="overflow-hidden rounded-[var(--radius-card)] border border-border-subtle bg-surface-card shadow-[var(--shadow-md),0_24px_48px_-16px_rgb(17_24_39_/_0.16)] transition-shadow duration-300 hover:shadow-[var(--shadow-lg),0_28px_56px_-16px_rgb(17_24_39_/_0.18)]"
       role="img"
       aria-label="Preview of the Home Tech Vault Home Pulse dashboard"
     >
       <div className="flex items-center gap-2 border-b border-border-subtle bg-surface-sunken/90 px-4 py-2.5">
         <div className="flex gap-1.5" aria-hidden>
-          <span className="h-2.5 w-2.5 rounded-full bg-border-strong/35" />
-          <span className="h-2.5 w-2.5 rounded-full bg-border-strong/35" />
-          <span className="h-2.5 w-2.5 rounded-full bg-border-strong/35" />
+          <span className="h-2.5 w-2.5 rounded-full bg-border-strong/30" />
+          <span className="h-2.5 w-2.5 rounded-full bg-border-strong/30" />
+          <span className="h-2.5 w-2.5 rounded-full bg-border-strong/30" />
         </div>
 
-        <div className="mx-auto flex h-7 min-w-0 flex-1 max-w-[180px] items-center justify-center gap-1.5 rounded-md border border-border-subtle bg-surface-card px-3 text-[10px] text-text-muted">
+        <div className="mx-auto flex h-7 min-w-0 flex-1 max-w-[180px] items-center justify-center rounded-md border border-border-subtle bg-surface-card px-3 text-[10px] text-text-muted">
           <span className="truncate">
             app.hometechvault.com/home
           </span>
@@ -164,9 +243,9 @@ export function HeroAppPreview() {
             {heroNavItems.map(({ label, icon: Icon, active }) => (
               <div
                 key={label}
-                className={`flex items-center gap-2 rounded-[10px] px-2 py-2 text-[11px] font-medium ${
+                className={`flex items-center gap-2 rounded-[10px] px-2 py-2 text-[11px] font-medium transition-colors duration-200 ${
                   active
-                    ? "bg-surface-card text-text-primary shadow-[var(--shadow-sm)]"
+                    ? "bg-surface-card text-interaction shadow-[var(--shadow-sm)]"
                     : "text-text-muted"
                 }`}
               >

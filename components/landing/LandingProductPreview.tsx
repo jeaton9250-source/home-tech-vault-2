@@ -11,13 +11,16 @@ import {
 import {
   CommandCenterPreview,
   DocumentsPreview,
-  PillarPreview,
+  PreviewAppShell,
   ReportsPreview,
   WarrantiesPreview,
 } from "@/components/landing/LandingPreviews";
 import { MarketingContent } from "@/components/marketing/MarketingLayout";
+import {
+  landingPreviewEnter,
+  landingSectionClass,
+} from "@/lib/marketing/landingStyles";
 import { cn } from "@/lib/design-system/cn";
-import { sections } from "@/lib/design-system/tokens";
 
 const previews = [
   {
@@ -26,9 +29,7 @@ const previews = [
     description:
       "Track every device with photos, purchase details, and location.",
     icon: Laptop,
-    accent: sections.technology.accent,
-    soft: sections.technology.soft,
-    preview: <CommandCenterPreview />,
+    preview: <CommandCenterPreview compact />,
   },
   {
     id: "warranties",
@@ -36,8 +37,6 @@ const previews = [
     description:
       "See coverage status and upcoming expirations at a glance.",
     icon: ShieldCheck,
-    accent: sections.warning.accent,
-    soft: sections.warning.soft,
     preview: <WarrantiesPreview />,
   },
   {
@@ -46,8 +45,6 @@ const previews = [
     description:
       "Store receipts, manuals, and warranty cards in one vault.",
     icon: FileText,
-    accent: sections.digitalVault.accent,
-    soft: sections.digitalVault.soft,
     preview: <DocumentsPreview />,
   },
   {
@@ -56,8 +53,6 @@ const previews = [
     description:
       "Review household technology health in a simple summary.",
     icon: BarChart3,
-    accent: sections.insights.accent,
-    soft: sections.insights.soft,
     preview: <ReportsPreview />,
   },
 ] as const;
@@ -73,19 +68,25 @@ export default function LandingProductPreview() {
     previews[0];
 
   return (
-    <section className="border-y border-border-subtle bg-surface-card/40">
-      <MarketingContent className="py-10 md:py-14">
+    <section className="border-y border-border-subtle/80 bg-surface-card/30">
+      <MarketingContent className={landingSectionClass}>
         <div className="max-w-xl">
           <h2 className="text-section-title text-text-primary">
             See your vault in action
           </h2>
-          <p className="mt-2 text-sm leading-6 text-text-muted">
+          <p
+            key={activePreview.id}
+            className={cn(
+              "mt-2 text-sm leading-6 text-text-muted",
+              landingPreviewEnter
+            )}
+          >
             {activePreview.description}
           </p>
         </div>
 
         <div
-          className="mt-6 flex flex-wrap gap-2"
+          className="mt-7 flex flex-wrap gap-2"
           role="tablist"
           aria-label="Product preview"
         >
@@ -101,10 +102,10 @@ export default function LandingProductPreview() {
                 setActiveId(item.id)
               }
               className={cn(
-                "inline-flex min-h-10 items-center gap-2 rounded-[var(--radius-button)] border px-4 py-2 text-sm font-medium transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interaction",
+                "inline-flex min-h-10 items-center gap-2 rounded-[var(--radius-button)] border px-4 py-2 text-sm font-medium transition-all duration-200 ease-[var(--ease-premium)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interaction",
                 activeId === item.id
-                  ? "border-interaction/30 bg-interaction-soft text-interaction"
-                  : "border-border-subtle bg-surface-card text-text-secondary hover:bg-surface-hover"
+                  ? "border-interaction/25 bg-interaction-soft text-interaction"
+                  : "border-border-subtle bg-surface-card text-text-secondary hover:-translate-y-px hover:border-border-strong hover:shadow-sm"
               )}
             >
               <item.icon size={15} aria-hidden />
@@ -117,15 +118,16 @@ export default function LandingProductPreview() {
           role="tabpanel"
           id={`landing-preview-${activePreview.id}`}
           aria-labelledby={`landing-preview-tab-${activePreview.id}`}
-          className="mt-5"
+          className="mt-6"
         >
-          <PillarPreview
-            icon={activePreview.icon}
-            accent={activePreview.accent}
-            soft={activePreview.soft}
+          <div
+            key={activePreview.id}
+            className={landingPreviewEnter}
           >
-            {activePreview.preview}
-          </PillarPreview>
+            <PreviewAppShell title={activePreview.label}>
+              {activePreview.preview}
+            </PreviewAppShell>
+          </div>
         </div>
       </MarketingContent>
     </section>
