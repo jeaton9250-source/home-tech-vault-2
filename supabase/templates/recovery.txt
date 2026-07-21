@@ -1,0 +1,13 @@
+Reset your password.
+
+Use the button below to choose a new password for your account.
+If you did not request this, you can ignore this email and your password will stay the same.
+
+Reset Password: {{ .ConfirmationURL }}
+
+Never share this link. Home Tech Vault will never ask for your password by email.
+
+Home Tech Vault
+Organize. Protect. Simplify.
+support@hometechvault.com
+https://hometechvault.com

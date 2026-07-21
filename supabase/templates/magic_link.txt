@@ -1,0 +1,13 @@
+Sign in securely.
+
+Use the button below to sign in to your Home Tech Vault account.
+This link expires soon and works once. If you did not request it, you can ignore this email.
+
+Sign In: {{ .ConfirmationURL }}
+
+If this was not you, do not use this link.
+
+Home Tech Vault
+Organize. Protect. Simplify.
+support@hometechvault.com
+https://hometechvault.com

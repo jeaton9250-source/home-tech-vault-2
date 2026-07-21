@@ -1,0 +1,13 @@
+Confirm your account.
+
+Tap the button below to confirm your email address and start organizing your home technology.
+If you did not create an account, you can safely ignore this email.
+
+Confirm Account: {{ .ConfirmationURL }}
+
+This link is personal to you. Do not forward it.
+
+Home Tech Vault
+Organize. Protect. Simplify.
+support@hometechvault.com
+https://hometechvault.com

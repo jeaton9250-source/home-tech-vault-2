@@ -1,0 +1,13 @@
+You're invited.
+
+Accept the invitation below to create your account and access your shared home technology vault.
+If you were not expecting this invitation, you can safely ignore this email.
+
+Accept Invitation: {{ .ConfirmationURL }}
+
+This invitation link is personal to you.
+
+Home Tech Vault
+Organize. Protect. Simplify.
+support@hometechvault.com
+https://hometechvault.com

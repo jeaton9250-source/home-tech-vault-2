@@ -1,0 +1,15 @@
+Confirm it's you.
+
+Use the button below to confirm your identity and continue.
+If you did not start this request, secure your account right away.
+
+Confirm Identity: {{ .ConfirmationURL }}
+
+Verification code: {{ .Token }}
+
+You can also use your verification code if prompted.
+
+Home Tech Vault
+Organize. Protect. Simplify.
+support@hometechvault.com
+https://hometechvault.com

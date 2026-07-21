@@ -2,6 +2,11 @@
 // @ts-ignore -- Supabase Edge Functions use Deno npm specifiers.
 import { createClient } from "npm:@supabase/supabase-js@2";
 
+import {
+  formatHouseholdRole,
+  renderFamilyInvitationEmail,
+} from "../_shared/email/familyInvitationEmail.ts";
+
 declare global {
   namespace Deno {
     const env: {
@@ -47,6 +52,15 @@ type ProfileRecord = {
   is_admin: boolean | null;
 };
 
+const RESEND_FROM =
+  "Home Tech Vault <hello@hometechvault.com>";
+
+const EMAIL_PATTERN =
+  /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const TOKEN_PATTERN =
+  /^[A-Za-z0-9_-]{8,128}$/;
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -58,40 +72,60 @@ function jsonResponse(
   body: Record<string, unknown>,
   status = 200
 ) {
-  return new Response(
-    JSON.stringify(body),
-    {
-      status,
-      headers: {
-        ...corsHeaders,
-        "Content-Type":
-          "application/json",
-      },
-    }
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      ...corsHeaders,
+      "Content-Type": "application/json",
+    },
+  });
+}
+
+function isValidEmail(email: string) {
+  return (
+    email.length >= 5 &&
+    email.length <= 254 &&
+    EMAIL_PATTERN.test(email)
   );
 }
 
-function formatRole(
-  role: HouseholdRole
-) {
-  return role
-    .replaceAll("_", " ")
-    .replace(
-      /\b\w/g,
-      (letter) =>
-        letter.toUpperCase()
-    );
+function isValidInvitationToken(token: string) {
+  return TOKEN_PATTERN.test(token);
 }
 
-function escapeHtml(
-  value: string
+function formatExpiration(
+  expiresAt: string | null | undefined
 ) {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+  if (!expiresAt) {
+    return null;
+  }
+
+  const date = new Date(expiresAt);
+
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return date.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function buildAcceptanceUrl(
+  appUrl: string,
+  token: string
+) {
+  const normalizedAppUrl = appUrl.replace(
+    /\/+$/,
+    ""
+  );
+
+  return (
+    `${normalizedAppUrl}/family/accept/` +
+    encodeURIComponent(token)
+  );
 }
 
 Deno.serve(async (request) => {
@@ -103,49 +137,27 @@ Deno.serve(async (request) => {
 
   if (request.method !== "POST") {
     return jsonResponse(
-      {
-        error:
-          "Method not allowed.",
-      },
+      { error: "Method not allowed." },
       405
     );
   }
 
   try {
-    const supabaseUrl =
-      Deno.env.get(
-        "SUPABASE_URL"
-      );
-
-    const supabaseAnonKey =
-      Deno.env.get(
-        "SUPABASE_ANON_KEY"
-      );
-
-    const serviceRoleKey =
-      Deno.env.get(
-        "SUPABASE_SERVICE_ROLE_KEY"
-      );
-
-    const resendApiKey =
-      Deno.env.get(
-        "RESEND_API_KEY"
-      );
-
-    const resendFromEmail =
-      Deno.env.get(
-        "RESEND_FROM_EMAIL"
-      );
-
-    const appUrl =
-      Deno.env.get("APP_URL");
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseAnonKey = Deno.env.get(
+      "SUPABASE_ANON_KEY"
+    );
+    const serviceRoleKey = Deno.env.get(
+      "SUPABASE_SERVICE_ROLE_KEY"
+    );
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    const appUrl = Deno.env.get("APP_URL");
 
     if (
       !supabaseUrl ||
       !supabaseAnonKey ||
       !serviceRoleKey ||
       !resendApiKey ||
-      !resendFromEmail ||
       !appUrl
     ) {
       console.error(
@@ -161,50 +173,37 @@ Deno.serve(async (request) => {
       );
     }
 
-    const authorization =
-      request.headers.get(
-        "Authorization"
-      );
+    const authorization = request.headers.get(
+      "Authorization"
+    );
 
     if (!authorization) {
       return jsonResponse(
-        {
-          error:
-            "Authentication is required.",
-        },
+        { error: "Authentication is required." },
         401
       );
     }
 
-    /*
-     * This client uses the caller's JWT.
-     * It identifies the signed-in user.
-     */
-    const callerClient =
-      createClient(
-        supabaseUrl,
-        supabaseAnonKey,
-        {
-          global: {
-            headers: {
-              Authorization:
-                authorization,
-            },
+    const callerClient = createClient(
+      supabaseUrl,
+      supabaseAnonKey,
+      {
+        global: {
+          headers: {
+            Authorization: authorization,
           },
-          auth: {
-            persistSession: false,
-            autoRefreshToken: false,
-          },
-        }
-      );
+        },
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false,
+        },
+      }
+    );
 
     const {
-      data: {
-        user,
-      },
+      data: { user },
       error: userError,
-    } =
-      await callerClient.auth.getUser();
+    } = await callerClient.auth.getUser();
 
     if (userError || !user) {
       console.error(
@@ -213,55 +212,37 @@ Deno.serve(async (request) => {
       );
 
       return jsonResponse(
-        {
-          error:
-            "Authentication is required.",
-        },
+        { error: "Authentication is required." },
         401
       );
     }
 
-    const body =
-      (await request.json()) as RequestBody;
-
-    const invitationId =
-      body.invitationId?.trim();
+    const body = (await request.json()) as RequestBody;
+    const invitationId = body.invitationId?.trim();
 
     if (!invitationId) {
       return jsonResponse(
-        {
-          error:
-            "Invitation ID is required.",
-        },
+        { error: "Invitation ID is required." },
         400
       );
     }
 
-    /*
-     * The service-role client may read the invitation
-     * and related records after we authenticate the caller.
-     *
-     * Never expose the service-role key to the browser.
-     */
-    const adminClient =
-      createClient(
-        supabaseUrl,
-        serviceRoleKey,
-        {
-          auth: {
-            persistSession: false,
-            autoRefreshToken: false,
-          },
-        }
-      );
+    const adminClient = createClient(
+      supabaseUrl,
+      serviceRoleKey,
+      {
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false,
+        },
+      }
+    );
 
     const {
       data: invitationData,
       error: invitationError,
     } = await adminClient
-      .from(
-        "household_invitations"
-      )
+      .from("household_invitations")
       .select(
         `
           id,
@@ -278,20 +259,14 @@ Deno.serve(async (request) => {
       .eq("id", invitationId)
       .maybeSingle();
 
-    if (
-      invitationError ||
-      !invitationData
-    ) {
+    if (invitationError || !invitationData) {
       console.error(
         "Unable to load invitation:",
         invitationError
       );
 
       return jsonResponse(
-        {
-          error:
-            "Invitation not found.",
-        },
+        { error: "Invitation not found." },
         404
       );
     }
@@ -299,9 +274,38 @@ Deno.serve(async (request) => {
     const invitation =
       invitationData as InvitationRecord;
 
-    if (
-      invitation.accepted_at
-    ) {
+    const recipientEmail = invitation.email
+      .trim()
+      .toLowerCase();
+
+    if (!isValidEmail(recipientEmail)) {
+      return jsonResponse(
+        {
+          error:
+            "The invitation recipient email is invalid.",
+        },
+        400
+      );
+    }
+
+    const invitationToken = invitation.token?.trim();
+
+    if (!isValidInvitationToken(invitationToken)) {
+      console.error(
+        "Invitation token failed validation:",
+        invitation.id
+      );
+
+      return jsonResponse(
+        {
+          error:
+            "The invitation token is invalid.",
+        },
+        400
+      );
+    }
+
+    if (invitation.accepted_at) {
       return jsonResponse(
         {
           error:
@@ -312,16 +316,11 @@ Deno.serve(async (request) => {
     }
 
     if (
-      new Date(
-        invitation.expires_at
-      ).getTime() <
+      new Date(invitation.expires_at).getTime() <
       Date.now()
     ) {
       return jsonResponse(
-        {
-          error:
-            "This invitation has expired.",
-        },
+        { error: "This invitation has expired." },
         400
       );
     }
@@ -341,42 +340,26 @@ Deno.serve(async (request) => {
             name
           `
         )
-        .eq(
-          "id",
-          invitation.household_id
-        )
+        .eq("id", invitation.household_id)
         .maybeSingle(),
 
       adminClient
-        .from(
-          "household_members"
-        )
+        .from("household_members")
         .select("role")
-        .eq(
-          "household_id",
-          invitation.household_id
-        )
-        .eq(
-          "user_id",
-          user.id
-        )
+        .eq("household_id", invitation.household_id)
+        .eq("user_id", user.id)
         .maybeSingle(),
 
       adminClient
         .from("profiles")
-        .select(
-          "full_name, is_admin"
-        )
+        .select("full_name, is_admin")
         .eq("id", user.id)
         .maybeSingle(),
 
       adminClient
         .from("profiles")
         .select("full_name")
-        .eq(
-          "id",
-          invitation.invited_by
-        )
+        .eq("id", invitation.invited_by)
         .maybeSingle(),
     ]);
 
@@ -390,10 +373,7 @@ Deno.serve(async (request) => {
       );
 
       return jsonResponse(
-        {
-          error:
-            "Household not found.",
-        },
+        { error: "Household not found." },
         404
       );
     }
@@ -409,10 +389,7 @@ Deno.serve(async (request) => {
       .select(
         "plan, status, current_period_end"
       )
-      .eq(
-        "user_id",
-        household.owner_id
-      )
+      .eq("user_id", household.owner_id)
       .maybeSingle();
 
     if (ownerSubscriptionError) {
@@ -422,34 +399,29 @@ Deno.serve(async (request) => {
       );
     }
 
-    const callerRole =
-      memberResult.data?.role as
-        | HouseholdRole
-        | undefined;
+    const callerRole = memberResult.data?.role as
+      | HouseholdRole
+      | undefined;
 
     const callerCanManage =
       callerRole === "owner" ||
       callerRole === "admin" ||
       user.id === household.owner_id;
 
-    const callerProfile =
-      profileResult.data as
-        | ProfileRecord
-        | null;
+    const callerProfile = profileResult.data as
+      | ProfileRecord
+      | null;
 
     const callerIsAdmin =
-      callerProfile?.is_admin ===
-      true;
+      callerProfile?.is_admin === true;
 
-    const ownerPlan =
-      ownerSubscriptionData?.plan
-        ?.trim()
-        .toLowerCase();
+    const ownerPlan = ownerSubscriptionData?.plan
+      ?.trim()
+      .toLowerCase();
 
-    const ownerStatus =
-      ownerSubscriptionData?.status
-        ?.trim()
-        .toLowerCase();
+    const ownerStatus = ownerSubscriptionData?.status
+      ?.trim()
+      .toLowerCase();
 
     const ownerCurrentPeriodEnd =
       ownerSubscriptionData?.current_period_end ??
@@ -476,11 +448,8 @@ Deno.serve(async (request) => {
         );
 
         return (
-          !Number.isNaN(
-            periodEnd.getTime()
-          ) &&
-          periodEnd.getTime() >
-            Date.now()
+          !Number.isNaN(periodEnd.getTime()) &&
+          periodEnd.getTime() > Date.now()
         );
       }
 
@@ -490,18 +459,9 @@ Deno.serve(async (request) => {
     const householdHasFamilyPlan =
       ownerSubscriptionGrantsFamilyAccess();
 
-    /*
-     * Only household admins may send invitations when the
-     * billing owner (`households.owner_id`) has a granting
-     * Family subscription. Logic mirrors
-     * lib/permissions/subscriptionAccess.ts.
-     */
     if (
       !callerIsAdmin &&
-      (
-        !callerCanManage ||
-        !householdHasFamilyPlan
-      )
+      (!callerCanManage || !householdHasFamilyPlan)
     ) {
       return jsonResponse(
         {
@@ -512,370 +472,76 @@ Deno.serve(async (request) => {
       );
     }
 
-    /*
-     * Prevent someone from sending an invitation
-     * that was created by a different household.
-     */
-    if (
-      invitation.household_id !==
-      household.id
-    ) {
+    if (invitation.household_id !== household.id) {
       return jsonResponse(
         {
-          error:
-            "Invitation household mismatch.",
+          error: "Invitation household mismatch.",
         },
         403
       );
     }
 
     const senderName =
-      senderProfileResult.data
-        ?.full_name?.trim() ||
+      senderProfileResult.data?.full_name?.trim() ||
       callerProfile?.full_name?.trim() ||
       user.email?.split("@")[0] ||
       "A household member";
 
-    const safeSenderName =
-      escapeHtml(senderName);
+    const acceptanceUrl = buildAcceptanceUrl(
+      appUrl,
+      invitationToken
+    );
 
-    const safeHouseholdName =
-      escapeHtml(household.name);
+    const emailContent = renderFamilyInvitationEmail({
+      inviterName: senderName,
+      householdName: household.name,
+      roleLabel: formatHouseholdRole(
+        invitation.role
+      ),
+      acceptanceUrl,
+      expirationLabel: formatExpiration(
+        invitation.expires_at
+      ),
+    });
 
-    const safeRole =
-      escapeHtml(
-        formatRole(
-          invitation.role
-        )
+    const resendResponse = await fetch(
+      "https://api.resend.com/emails",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${resendApiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: RESEND_FROM,
+          to: [recipientEmail],
+          subject: emailContent.subject,
+          html: emailContent.html,
+          text: emailContent.text,
+        }),
+      }
+    );
+
+    let resendResult: Record<string, unknown> = {};
+
+    try {
+      resendResult = await resendResponse.json();
+    } catch (parseError) {
+      console.error(
+        "Unable to parse Resend response:",
+        parseError
       );
-
-    const normalizedAppUrl =
-      appUrl.replace(/\/+$/, "");
-
-    const acceptanceUrl =
-      `${normalizedAppUrl}/family/accept/` +
-      encodeURIComponent(
-        invitation.token
-      );
-
-    const subject =
-      `${senderName} invited you to ${household.name}`;
-
-    const emailHtml = `
-      <!doctype html>
-      <html lang="en">
-        <head>
-          <meta charset="utf-8" />
-          <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1"
-          />
-          <title>${escapeHtml(subject)}</title>
-        </head>
-
-        <body
-          style="
-            margin: 0;
-            padding: 0;
-            background: #F7F5EF;
-            font-family: Arial, Helvetica, sans-serif;
-            color: #111827;
-          "
-        >
-          <table
-            role="presentation"
-            width="100%"
-            cellpadding="0"
-            cellspacing="0"
-            style="
-              width: 100%;
-              background: #F7F5EF;
-              padding: 32px 16px;
-            "
-          >
-            <tr>
-              <td align="center">
-                <table
-                  role="presentation"
-                  width="100%"
-                  cellpadding="0"
-                  cellspacing="0"
-                  style="
-                    width: 100%;
-                    max-width: 620px;
-                    background: #FFFFFF;
-                    border: 1px solid #E8E2D6;
-                    border-radius: 28px;
-                    overflow: hidden;
-                  "
-                >
-                  <tr>
-                    <td
-                      style="
-                        background: #111827;
-                        padding: 40px 36px;
-                        color: #FFFFFF;
-                      "
-                    >
-                      <p
-                        style="
-                          margin: 0;
-                          color: #C8A96A;
-                          font-size: 12px;
-                          font-weight: 700;
-                          letter-spacing: 2px;
-                          text-transform: uppercase;
-                        "
-                      >
-                        Home Tech Vault
-                      </p>
-
-                      <h1
-                        style="
-                          margin: 16px 0 0;
-                          color: #FFFFFF;
-                          font-size: 34px;
-                          line-height: 1.15;
-                        "
-                      >
-                        You’ve been invited.
-                      </h1>
-
-                      <p
-                        style="
-                          margin: 16px 0 0;
-                          color: #D1D5DB;
-                          font-size: 16px;
-                          line-height: 1.7;
-                        "
-                      >
-                        ${safeSenderName} invited you to join
-                        ${safeHouseholdName} in Home Tech Vault.
-                      </p>
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td
-                      style="
-                        padding: 36px;
-                      "
-                    >
-                      <p
-                        style="
-                          margin: 0;
-                          color: #6B7280;
-                          font-size: 15px;
-                          line-height: 1.7;
-                        "
-                      >
-                        Once you accept, you’ll be able to access
-                        the household’s shared technology records
-                        based on your assigned role.
-                      </p>
-
-                      <table
-                        role="presentation"
-                        width="100%"
-                        cellpadding="0"
-                        cellspacing="0"
-                        style="
-                          margin-top: 24px;
-                          background: #F7F5EF;
-                          border-radius: 18px;
-                        "
-                      >
-                        <tr>
-                          <td
-                            style="
-                              padding: 20px;
-                            "
-                          >
-                            <p
-                              style="
-                                margin: 0;
-                                color: #8A6A2F;
-                                font-size: 11px;
-                                font-weight: 700;
-                                letter-spacing: 1.5px;
-                                text-transform: uppercase;
-                              "
-                            >
-                              Household
-                            </p>
-
-                            <p
-                              style="
-                                margin: 8px 0 0;
-                                color: #111827;
-                                font-size: 18px;
-                                font-weight: 700;
-                              "
-                            >
-                              ${safeHouseholdName}
-                            </p>
-                          </td>
-                        </tr>
-
-                        <tr>
-                          <td
-                            style="
-                              padding: 0 20px 20px;
-                            "
-                          >
-                            <p
-                              style="
-                                margin: 0;
-                                color: #8A6A2F;
-                                font-size: 11px;
-                                font-weight: 700;
-                                letter-spacing: 1.5px;
-                                text-transform: uppercase;
-                              "
-                            >
-                              Your Role
-                            </p>
-
-                            <p
-                              style="
-                                margin: 8px 0 0;
-                                color: #111827;
-                                font-size: 16px;
-                                font-weight: 700;
-                              "
-                            >
-                              ${safeRole}
-                            </p>
-                          </td>
-                        </tr>
-                      </table>
-
-                      <table
-                        role="presentation"
-                        cellpadding="0"
-                        cellspacing="0"
-                        style="
-                          margin-top: 30px;
-                        "
-                      >
-                        <tr>
-                          <td
-                            style="
-                              background: #111827;
-                              border-radius: 12px;
-                            "
-                          >
-                            <a
-                              href="${acceptanceUrl}"
-                              style="
-                                display: inline-block;
-                                padding: 15px 24px;
-                                color: #FFFFFF;
-                                font-size: 15px;
-                                font-weight: 700;
-                                text-decoration: none;
-                              "
-                            >
-                              Accept Invitation
-                            </a>
-                          </td>
-                        </tr>
-                      </table>
-
-                      <p
-                        style="
-                          margin: 28px 0 0;
-                          color: #9CA3AF;
-                          font-size: 12px;
-                          line-height: 1.7;
-                        "
-                      >
-                        This invitation expires on
-                        ${new Date(
-                          invitation.expires_at
-                        ).toLocaleDateString(
-                          "en-US",
-                          {
-                            month: "long",
-                            day: "numeric",
-                            year: "numeric",
-                          }
-                        )}.
-                      </p>
-
-                      <p
-                        style="
-                          margin: 18px 0 0;
-                          color: #9CA3AF;
-                          font-size: 12px;
-                          line-height: 1.7;
-                          word-break: break-all;
-                        "
-                      >
-                        Button not working? Copy and paste this link:
-                        <br />
-                        ${acceptanceUrl}
-                      </p>
-                    </td>
-                  </tr>
-                </table>
-
-                <p
-                  style="
-                    margin: 22px 0 0;
-                    color: #9CA3AF;
-                    font-size: 12px;
-                  "
-                >
-                  Home Tech Vault · Protect. Organize. Simplify.
-                </p>
-              </td>
-            </tr>
-          </table>
-        </body>
-      </html>
-    `;
-
-    /*
-     * Resend accepts POST requests to /emails with
-     * the API key in the Authorization header.
-     */
-    const resendResponse =
-      await fetch(
-        "https://api.resend.com/emails",
-        {
-          method: "POST",
-          headers: {
-            Authorization:
-              `Bearer ${resendApiKey}`,
-            "Content-Type":
-              "application/json",
-          },
-          body: JSON.stringify({
-            from: resendFromEmail,
-            to: [
-              invitation.email,
-            ],
-            subject,
-            html: emailHtml,
-          }),
-        }
-      );
-
-    const resendResult =
-      await resendResponse.json();
+    }
 
     if (!resendResponse.ok) {
-      console.error(
-        "Resend email error:",
-        resendResult
-      );
+      console.error("Resend email error:", resendResult);
 
       return jsonResponse(
         {
           error:
-            resendResult?.message ||
-            "Unable to send the invitation email.",
+            typeof resendResult.message === "string"
+              ? resendResult.message
+              : "Unable to send the invitation email.",
         },
         502
       );
@@ -884,7 +550,9 @@ Deno.serve(async (request) => {
     return jsonResponse({
       success: true,
       emailId:
-        resendResult?.id || null,
+        typeof resendResult.id === "string"
+          ? resendResult.id
+          : null,
       message:
         "Invitation email sent successfully.",
     });
@@ -897,9 +565,7 @@ Deno.serve(async (request) => {
     return jsonResponse(
       {
         error:
-          error instanceof Error
-            ? error.message
-            : "Unable to send the invitation email.",
+          "Unable to send the invitation email.",
       },
       500
     );
