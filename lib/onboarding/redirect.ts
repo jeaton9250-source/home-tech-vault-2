@@ -1,6 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import {
+  isOnboardingSchemaError,
+  readLocalOnboardingState,
+} from "@/lib/onboarding/clientStorage";
+
+import {
   isOnboardingStep,
 } from "@/lib/onboarding/steps";
 
@@ -67,6 +72,29 @@ export async function loadOnboardingProfile(
     .maybeSingle();
 
   if (error) {
+    if (isOnboardingSchemaError(error)) {
+      const localState =
+        readLocalOnboardingState(userId);
+
+      if (!localState) {
+        return null;
+      }
+
+      return {
+        onboarding_completed_at:
+          localState.onboarding_completed_at,
+        onboarding_step: isOnboardingStep(
+          localState.onboarding_step
+        )
+          ? localState.onboarding_step
+          : null,
+        onboarding_skipped_at:
+          localState.onboarding_skipped_at,
+        full_name: null,
+        household_name: null,
+      };
+    }
+
     console.error(
       "Unable to load onboarding profile:",
       error

@@ -44,6 +44,7 @@ import {
 import {
   buildProgressSummary,
   completeOnboarding,
+  getErrorMessage,
   loadOnboardingDataSnapshot,
   loadOnboardingProfile,
   nextStep,
@@ -344,9 +345,10 @@ function OnboardingFlow() {
 
         if (mounted) {
           setErrorMessage(
-            error instanceof Error
-              ? error.message
-              : "Unable to load onboarding."
+            getErrorMessage(
+              error,
+              "Unable to load onboarding."
+            )
           );
         }
       } finally {
@@ -467,9 +469,10 @@ function OnboardingFlow() {
       await persistStep("home");
     } catch (error) {
       setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "Unable to continue."
+        getErrorMessage(
+          error,
+          "Unable to continue."
+        )
       );
     } finally {
       setSubmitting(false);
@@ -496,9 +499,10 @@ function OnboardingFlow() {
       router.replace("/dashboard");
     } catch (error) {
       setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "Unable to skip onboarding."
+        getErrorMessage(
+          error,
+          "Unable to skip onboarding."
+        )
       );
     } finally {
       setSubmitting(false);
@@ -541,9 +545,10 @@ function OnboardingFlow() {
       await persistStep("device");
     } catch (error) {
       setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "Unable to save your home name."
+        getErrorMessage(
+          error,
+          "Unable to save your home name."
+        )
       );
     } finally {
       setSubmitting(false);
@@ -688,9 +693,10 @@ function OnboardingFlow() {
       await persistStep("document");
     } catch (error) {
       setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "Unable to save your device."
+        getErrorMessage(
+          error,
+          "Unable to save your device."
+        )
       );
     } finally {
       setSubmitting(false);
@@ -827,9 +833,10 @@ function OnboardingFlow() {
       await persistStep("network");
     } catch (error) {
       setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "Unable to upload your document."
+        getErrorMessage(
+          error,
+          "Unable to upload your document."
+        )
       );
     } finally {
       setSubmitting(false);
@@ -927,9 +934,10 @@ function OnboardingFlow() {
       await persistStep("complete");
     } catch (error) {
       setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "Unable to save network details."
+        getErrorMessage(
+          error,
+          "Unable to save network details."
+        )
       );
     } finally {
       setSubmitting(false);
@@ -953,9 +961,10 @@ function OnboardingFlow() {
       router.replace("/dashboard");
     } catch (error) {
       setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "Unable to finish onboarding."
+        getErrorMessage(
+          error,
+          "Unable to finish onboarding."
+        )
       );
     } finally {
       setSubmitting(false);
@@ -971,9 +980,10 @@ function OnboardingFlow() {
       await persistStep(prior);
     } catch (error) {
       setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "Unable to go back."
+        getErrorMessage(
+          error,
+          "Unable to go back."
+        )
       );
     }
   }
@@ -997,9 +1007,10 @@ function OnboardingFlow() {
       await persistStep(nextStep(step));
     } catch (error) {
       setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "Unable to continue."
+        getErrorMessage(
+          error,
+          "Unable to continue."
+        )
       );
     } finally {
       setSubmitting(false);

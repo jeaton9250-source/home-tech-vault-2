@@ -9,6 +9,14 @@ export {
 } from "@/lib/onboarding/analytics";
 
 export {
+  clearLocalOnboardingState,
+  getErrorMessage,
+  isOnboardingSchemaError,
+  readLocalOnboardingState,
+  writeLocalOnboardingState,
+} from "@/lib/onboarding/clientStorage";
+
+export {
   completeOnboarding,
   restartOnboardingProfile,
   saveHomeName,
