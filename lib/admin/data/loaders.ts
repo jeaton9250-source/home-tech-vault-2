@@ -1,6 +1,6 @@
 import "server-only";
 
-import { resolveEffectivePlan } from "@/lib/permissions/effectivePlan";
+import { reconcileActiveDeletionJobsForUser } from "@/lib/account-admin/deletion";
 import {
   buildServerPlanAccessContext,
   formatEffectivePlanSourceLabel,
@@ -211,7 +211,7 @@ async function loadLatestDeletionJobForUser(
   const { data, error } = await admin
     .from("admin_account_deletion_jobs")
     .select(
-      "id, status, current_step, safe_error_message"
+      "id, status, current_step, safe_error_code, safe_error_message, retry_count, started_at, updated_at, completed_at, failed_at, canceled_at, processor_lease_expires_at, last_heartbeat_at"
     )
     .eq("target_user_id", userId)
     .order("created_at", {
@@ -495,6 +495,12 @@ export async function loadAdminUserDetail(
       userId
     );
 
+  const deletionJobView = deletionJob
+    ? buildDeletionJobView(
+        mapDeletionJobRow(deletionJob)
+      )
+    : null;
+
   let ownedHouseholdMemberCount = 0;
 
   if (ownedHouseholdResult.data?.id) {
@@ -776,12 +782,37 @@ export async function loadAdminUserDetail(
     ownedHouseholdMemberCount,
     deletionJobId: deletionJob?.id ?? null,
     deletionJobStatus:
-      deletionJob?.status ?? null,
+      deletionJobView?.status ??
+      deletionJob?.status ??
+      null,
     deletionJobStep:
-      deletionJob?.current_step ?? null,
+      deletionJobView?.currentStep ??
+      deletionJob?.current_step ??
+      null,
     deletionJobError:
+      deletionJobView?.safeErrorMessage ??
       deletionJob?.safe_error_message ??
       null,
+    deletionJobSafeErrorCode:
+      deletionJobView?.safeErrorCode ??
+      deletionJob?.safe_error_code ??
+      null,
+    deletionJobUpdatedAt:
+      deletionJobView?.updatedAt ??
+      deletionJob?.updated_at ??
+      null,
+    deletionJobStartedAt:
+      deletionJobView?.startedAt ??
+      deletionJob?.started_at ??
+      null,
+    deletionJobCanRetry:
+      deletionJobView?.canRetry ?? false,
+    deletionJobCanCancel:
+      deletionJobView?.canCancel ?? false,
+    deletionJobIsStale:
+      deletionJobView?.isStale ?? false,
+    deletionJobMessage:
+      deletionJobView?.message ?? null,
     foundingMemberNumber,
     foundingMemberStatus,
     foundingMemberEnrolledAt,

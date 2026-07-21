@@ -6,7 +6,8 @@ export type DeletionJobStatus =
   | "blocked"
   | "processing"
   | "completed"
-  | "failed";
+  | "failed"
+  | "canceled";
 
 export type DeletionBlockCode =
   | "TARGET_NOT_FOUND"
@@ -59,6 +60,8 @@ export type AdminAuditEventType =
   | "deletion_started"
   | "deletion_completed"
   | "deletion_failed"
+  | "deletion_canceled"
+  | "deletion_retried"
   | "household_ownership_transferred"
   | "founding_program_enabled"
   | "founding_program_paused"

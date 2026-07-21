@@ -79,6 +79,13 @@ export type AdminUserDetail = AdminUserSummary & {
   deletionJobStatus: string | null;
   deletionJobStep: string | null;
   deletionJobError: string | null;
+  deletionJobSafeErrorCode: string | null;
+  deletionJobUpdatedAt: string | null;
+  deletionJobStartedAt: string | null;
+  deletionJobCanRetry: boolean;
+  deletionJobCanCancel: boolean;
+  deletionJobIsStale: boolean;
+  deletionJobMessage: string | null;
   foundingMemberNumber: number | null;
   foundingMemberStatus: "active" | "removed" | null;
   foundingMemberEnrolledAt: string | null;

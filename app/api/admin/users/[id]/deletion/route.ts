@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 
 import {
+  cancelDeletionJob,
   createDeletionJob,
-  getLatestDeletionJob,
+  getDeletionJobStatusForUser,
 } from "@/lib/account-admin/deletion";
 import { isDestructiveActionRateLimited } from "@/lib/account-admin/rateLimit";
 import { DELETION_REASONS } from "@/lib/account-admin/constants";
@@ -27,6 +28,12 @@ type DeletionPostBody = {
   confirmIrreversible?: boolean;
 };
 
+type DeletionDeleteBody = {
+  jobId?: string;
+  confirm?: boolean;
+  reason?: string | null;
+};
+
 const VALID_REASON_IDS = new Set(
   DELETION_REASONS.map((entry) => entry.id)
 );
@@ -36,17 +43,23 @@ export async function GET(
   context: RouteContext
 ) {
   try {
-    await requirePlatformAdminSession();
+    const session =
+      await requirePlatformAdminSession();
 
     const { id } = await context.params;
     const admin = createAdminClient();
 
-    const job = await getLatestDeletionJob(
-      admin,
-      id
-    );
+    const { job, jobView } =
+      await getDeletionJobStatusForUser(
+        admin,
+        id,
+        session.userId
+      );
 
-    return NextResponse.json({ job });
+    return NextResponse.json({
+      job,
+      jobView,
+    });
   } catch (error) {
     const accessResponse =
       platformAdminAccessResponse(error);
@@ -155,6 +168,8 @@ export async function POST(
           error: result.message,
           code: result.code,
           preview: result.preview ?? null,
+          job: result.job ?? null,
+          jobView: result.jobView ?? null,
         },
         { status: 400 }
       );
@@ -162,6 +177,7 @@ export async function POST(
 
     return NextResponse.json({
       job: result.job,
+      jobView: result.jobView,
       preview: result.preview,
     });
   } catch (error) {
@@ -181,6 +197,92 @@ export async function POST(
       {
         error:
           "Unable to create deletion job.",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  request: Request,
+  context: RouteContext
+) {
+  try {
+    const session =
+      await requirePlatformAdminSession();
+
+    const { id } = await context.params;
+    const body =
+      (await request.json()) as DeletionDeleteBody;
+    const admin = createAdminClient();
+
+    let jobId = body.jobId?.trim();
+
+    if (!jobId) {
+      const { job } =
+        await getDeletionJobStatusForUser(
+          admin,
+          id,
+          session.userId
+        );
+      jobId = job?.id;
+    }
+
+    if (!jobId) {
+      return NextResponse.json(
+        {
+          error:
+            "No deletion job found for this user.",
+        },
+        { status: 404 }
+      );
+    }
+
+    const result = await cancelDeletionJob(
+      admin,
+      {
+        jobId,
+        actorId: session.userId,
+        confirm: body.confirm === true,
+        reason: body.reason ?? null,
+      }
+    );
+
+    if (!result.ok) {
+      return NextResponse.json(
+        {
+          error:
+            result.message ??
+            "Unable to cancel deletion job.",
+          job: result.job ?? null,
+          jobView: result.jobView ?? null,
+        },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json({
+      ok: true,
+      job: result.job,
+      jobView: result.jobView,
+    });
+  } catch (error) {
+    const accessResponse =
+      platformAdminAccessResponse(error);
+
+    if (accessResponse) {
+      return accessResponse;
+    }
+
+    console.error(
+      "Admin deletion cancel error:",
+      error
+    );
+
+    return NextResponse.json(
+      {
+        error:
+          "Unable to cancel deletion job.",
       },
       { status: 500 }
     );

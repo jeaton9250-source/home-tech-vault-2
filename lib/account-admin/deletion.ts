@@ -3,38 +3,357 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { recordPlatformAdminAudit } from "@/lib/account-admin/audit";
+import {
+  buildDeletionJobView,
+  canCancelDeletionJob,
+  DELETION_JOB_LEASE_SECONDS,
+  type DeletionJobRecord,
+  type DeletionJobView,
+  isActiveDeletionStatus,
+  isDeletionJobStale,
+  mapDeletionJobRow,
+} from "@/lib/account-admin/deletionJobState";
 import { cleanupUserStorage } from "@/lib/account-admin/storageCleanup";
 import { buildDeletionPreview } from "@/lib/account-admin/validation";
 
 import type { DeletionJobStatus } from "@/lib/account-admin/types";
 
-type DeletionJobRow = {
-  id: string;
-  target_user_id: string;
-  target_email_snapshot: string;
-  requested_by: string;
-  reason: string;
-  notes: string | null;
-  transfer_owner_user_id: string | null;
-  delete_household_data: boolean;
-  status: DeletionJobStatus;
-  current_step: string | null;
-  retry_count: number;
+const DELETION_JOB_SELECT =
+  "id, target_user_id, target_email_snapshot, requested_by, reason, notes, transfer_owner_user_id, delete_household_data, status, current_step, safe_error_code, safe_error_message, retry_count, started_at, completed_at, failed_at, canceled_at, canceled_by, processor_started_at, processor_lease_expires_at, processor_actor_id, last_heartbeat_at, created_at, updated_at";
+
+type ClaimResult = {
+  claimed: boolean;
+  job: DeletionJobRecord | null;
 };
+
+async function loadDeletionJobById(
+  admin: SupabaseClient,
+  jobId: string
+): Promise<DeletionJobRecord | null> {
+  const { data, error } = await admin
+    .from("admin_account_deletion_jobs")
+    .select(DELETION_JOB_SELECT)
+    .eq("id", jobId)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  return data ? mapDeletionJobRow(data) : null;
+}
 
 async function updateJob(
   admin: SupabaseClient,
   jobId: string,
   patch: Record<string, unknown>
 ) {
+  const heartbeatPatch = {
+    ...patch,
+    last_heartbeat_at: new Date().toISOString(),
+  };
+
   const { error } = await admin
     .from("admin_account_deletion_jobs")
-    .update(patch)
+    .update(heartbeatPatch)
     .eq("id", jobId);
 
   if (error) {
     throw error;
   }
+}
+
+async function extendProcessorLease(
+  admin: SupabaseClient,
+  jobId: string,
+  actorId: string
+) {
+  const leaseUntil = new Date(
+    Date.now() +
+      DELETION_JOB_LEASE_SECONDS * 1000
+  ).toISOString();
+
+  await updateJob(admin, jobId, {
+    processor_lease_expires_at: leaseUntil,
+    processor_actor_id: actorId,
+  });
+}
+
+export async function markDeletionJobFailed(
+  admin: SupabaseClient,
+  options: {
+    jobId: string;
+    actorId: string;
+    safeErrorCode: string;
+    safeErrorMessage: string;
+    currentStep?: string | null;
+    incrementRetry?: boolean;
+    job?: DeletionJobRecord | null;
+  }
+) {
+  const job =
+    options.job ??
+    (await loadDeletionJobById(
+      admin,
+      options.jobId
+    ));
+
+  if (!job) {
+    return null;
+  }
+
+  await updateJob(admin, options.jobId, {
+    status: "failed",
+    current_step:
+      options.currentStep ?? "failed",
+    failed_at: new Date().toISOString(),
+    safe_error_code: options.safeErrorCode,
+    safe_error_message:
+      options.safeErrorMessage,
+    processor_started_at: null,
+    processor_lease_expires_at: null,
+    processor_actor_id: null,
+    retry_count: options.incrementRetry
+      ? job.retry_count + 1
+      : job.retry_count,
+  });
+
+  await recordPlatformAdminAudit(admin, {
+    eventType: "deletion_failed",
+    actorId: options.actorId,
+    targetUserId: job.target_user_id,
+    targetEmailSnapshot:
+      job.target_email_snapshot,
+    metadata: {
+      jobId: options.jobId,
+      safeErrorCode: options.safeErrorCode,
+      safeErrorMessage:
+        options.safeErrorMessage,
+    },
+  });
+
+  return loadDeletionJobById(
+    admin,
+    options.jobId
+  );
+}
+
+export async function reconcileStaleDeletionJob(
+  admin: SupabaseClient,
+  job: DeletionJobRecord,
+  actorId: string
+): Promise<DeletionJobRecord> {
+  if (!isDeletionJobStale(job)) {
+    return job;
+  }
+
+  const failedJob = await markDeletionJobFailed(
+    admin,
+    {
+      jobId: job.id,
+      actorId,
+      safeErrorCode: "PROCESSOR_TIMEOUT",
+      safeErrorMessage:
+        "The deletion process stopped before completing. You can safely retry this job.",
+      currentStep: job.current_step,
+      incrementRetry: false,
+      job,
+    }
+  );
+
+  return failedJob ?? job;
+}
+
+export async function reconcileActiveDeletionJobsForUser(
+  admin: SupabaseClient,
+  targetUserId: string,
+  actorId: string
+) {
+  const { data, error } = await admin
+    .from("admin_account_deletion_jobs")
+    .select(DELETION_JOB_SELECT)
+    .eq("target_user_id", targetUserId)
+    .in("status", [
+      "pending",
+      "validating",
+      "processing",
+    ]);
+
+  if (error) {
+    throw error;
+  }
+
+  for (const row of data ?? []) {
+    const job = mapDeletionJobRow(row);
+
+    if (isDeletionJobStale(job)) {
+      await reconcileStaleDeletionJob(
+        admin,
+        job,
+        actorId
+      );
+    }
+  }
+}
+
+async function claimDeletionJob(
+  admin: SupabaseClient,
+  jobId: string,
+  actorId: string
+): Promise<ClaimResult> {
+  const { data, error } = await admin.rpc(
+    "claim_deletion_job",
+    {
+      p_job_id: jobId,
+      p_actor_id: actorId,
+      p_lease_seconds:
+        DELETION_JOB_LEASE_SECONDS,
+    }
+  );
+
+  if (error) {
+    if (
+      error.message.includes(
+        "claim_deletion_job"
+      ) ||
+      error.code === "PGRST202"
+    ) {
+      return claimDeletionJobFallback(
+        admin,
+        jobId,
+        actorId
+      );
+    }
+
+    throw error;
+  }
+
+  const row = Array.isArray(data)
+    ? data[0]
+    : data;
+
+  if (!row?.job_id) {
+    const existing = await loadDeletionJobById(
+      admin,
+      jobId
+    );
+
+    return {
+      claimed: false,
+      job: existing,
+    };
+  }
+
+  const job = await loadDeletionJobById(
+    admin,
+    row.job_id as string
+  );
+
+  return {
+    claimed: row.claimed === true,
+    job,
+  };
+}
+
+async function claimDeletionJobFallback(
+  admin: SupabaseClient,
+  jobId: string,
+  actorId: string
+): Promise<ClaimResult> {
+  const job = await loadDeletionJobById(
+    admin,
+    jobId
+  );
+
+  if (!job) {
+    return { claimed: false, job: null };
+  }
+
+  if (
+    job.status === "completed" ||
+    job.status === "canceled" ||
+    job.status === "blocked"
+  ) {
+    return { claimed: false, job };
+  }
+
+  const now = Date.now();
+  const leaseActive =
+    job.status === "processing" &&
+    job.processor_lease_expires_at &&
+    Date.parse(
+      job.processor_lease_expires_at
+    ) > now;
+
+  if (leaseActive) {
+    return { claimed: false, job };
+  }
+
+  const leaseUntil = new Date(
+    now + DELETION_JOB_LEASE_SECONDS * 1000
+  ).toISOString();
+
+  const { data, error } = await admin
+    .from("admin_account_deletion_jobs")
+    .update({
+      status: "processing",
+      current_step:
+        job.current_step ?? "queued",
+      started_at:
+        job.started_at ??
+        new Date().toISOString(),
+      failed_at: null,
+      safe_error_code: null,
+      safe_error_message: null,
+      processor_started_at:
+        new Date().toISOString(),
+      processor_lease_expires_at:
+        leaseUntil,
+      processor_actor_id: actorId,
+      last_heartbeat_at:
+        new Date().toISOString(),
+      retry_count:
+        job.status === "failed"
+          ? job.retry_count + 1
+          : job.retry_count,
+    })
+    .eq("id", jobId)
+    .in("status", [
+      "pending",
+      "validating",
+      "processing",
+      "failed",
+    ])
+    .select(DELETION_JOB_SELECT)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  if (!data) {
+    const latest = await loadDeletionJobById(
+      admin,
+      jobId
+    );
+    return { claimed: false, job: latest };
+  }
+
+  if (job.status === "failed") {
+    await recordPlatformAdminAudit(admin, {
+      eventType: "deletion_retried",
+      actorId,
+      targetUserId: job.target_user_id,
+      targetEmailSnapshot:
+        job.target_email_snapshot,
+      metadata: { jobId },
+    });
+  }
+
+  return {
+    claimed: true,
+    job: mapDeletionJobRow(data),
+  };
 }
 
 async function deleteWhereUserId(
@@ -142,6 +461,33 @@ async function deleteHouseholdData(
   }
 }
 
+async function profileExists(
+  admin: SupabaseClient,
+  userId: string
+) {
+  const { data } = await admin
+    .from("profiles")
+    .select("id")
+    .eq("id", userId)
+    .maybeSingle();
+
+  return Boolean(data?.id);
+}
+
+async function authUserExists(
+  admin: SupabaseClient,
+  userId: string
+) {
+  const { data, error } =
+    await admin.auth.admin.getUserById(userId);
+
+  if (error) {
+    return false;
+  }
+
+  return Boolean(data.user?.id);
+}
+
 export async function createDeletionJob(
   admin: SupabaseClient,
   options: {
@@ -154,6 +500,12 @@ export async function createDeletionJob(
     deleteHouseholdData?: boolean;
   }
 ) {
+  await reconcileActiveDeletionJobsForUser(
+    admin,
+    options.targetUserId,
+    options.actorId
+  );
+
   const preview = await buildDeletionPreview(
     admin,
     options.targetUserId,
@@ -180,6 +532,32 @@ export async function createDeletionJob(
       code: "EMAIL_MISMATCH",
       message:
         "Email confirmation does not match.",
+    };
+  }
+
+  const activeJobBlocker =
+    preview.blockers.find(
+      (blocker) =>
+        blocker.code ===
+        "ACTIVE_DELETION_JOB"
+    );
+
+  if (activeJobBlocker) {
+    const latestJob =
+      await getLatestDeletionJob(
+        admin,
+        options.targetUserId
+      );
+
+    return {
+      ok: false as const,
+      code: "ACTIVE_DELETION_JOB" as const,
+      message: activeJobBlocker.message,
+      preview,
+      job: latestJob,
+      jobView: latestJob
+        ? buildDeletionJobView(latestJob)
+        : null,
     };
   }
 
@@ -289,12 +667,38 @@ export async function createDeletionJob(
       status: "pending",
       current_step: "queued",
     })
-    .select("*")
+    .select(DELETION_JOB_SELECT)
     .single();
 
   if (error) {
+    if (
+      error.message.includes(
+        "idx_admin_account_deletion_jobs_one_active"
+      )
+    ) {
+      const latestJob =
+        await getLatestDeletionJob(
+          admin,
+          options.targetUserId
+        );
+
+      return {
+        ok: false as const,
+        code: "ACTIVE_DELETION_JOB" as const,
+        message:
+          "A deletion job is already in progress for this user.",
+        preview,
+        job: latestJob,
+        jobView: latestJob
+          ? buildDeletionJobView(latestJob)
+          : null,
+      };
+    }
+
     throw error;
   }
+
+  const job = mapDeletionJobRow(data);
 
   await recordPlatformAdminAudit(admin, {
     eventType: "deletion_requested",
@@ -303,30 +707,38 @@ export async function createDeletionJob(
     targetEmailSnapshot: preview.email,
     reason: options.reason,
     notes: options.notes ?? null,
-    metadata: { jobId: data.id },
+    metadata: { jobId: job.id },
   });
 
   return {
     ok: true as const,
-    job: data as DeletionJobRow,
+    job,
+    jobView: buildDeletionJobView(job),
     preview,
   };
 }
 
-export async function processDeletionJob(
+export async function cancelDeletionJob(
   admin: SupabaseClient,
-  jobId: string,
-  actorId: string
-) {
-  const { data: job, error } = await admin
-    .from("admin_account_deletion_jobs")
-    .select("*")
-    .eq("id", jobId)
-    .maybeSingle();
-
-  if (error) {
-    throw error;
+  options: {
+    jobId: string;
+    actorId: string;
+    confirm: boolean;
+    reason?: string | null;
   }
+) {
+  if (!options.confirm) {
+    return {
+      ok: false as const,
+      message:
+        "Confirmation is required to cancel deletion.",
+    };
+  }
+
+  const job = await loadDeletionJobById(
+    admin,
+    options.jobId
+  );
 
   if (!job) {
     return {
@@ -337,29 +749,181 @@ export async function processDeletionJob(
 
   if (
     job.status === "completed" ||
-    job.status === "blocked"
+    job.status === "canceled"
   ) {
     return {
       ok: true as const,
       job,
+      jobView: buildDeletionJobView(job),
     };
   }
 
-  const targetUserId =
-    job.target_user_id as string;
+  if (!canCancelDeletionJob(job)) {
+    return {
+      ok: false as const,
+      message:
+        "This deletion job can no longer be canceled because irreversible cleanup has started.",
+      job,
+      jobView: buildDeletionJobView(job),
+    };
+  }
+
+  if (
+    job.status === "processing" &&
+    job.processor_lease_expires_at &&
+    Date.parse(
+      job.processor_lease_expires_at
+    ) > Date.now()
+  ) {
+    return {
+      ok: false as const,
+      message:
+        "Another administrator is currently processing this deletion job.",
+      job,
+      jobView: buildDeletionJobView(job),
+    };
+  }
+
+  await updateJob(admin, job.id, {
+    status: "canceled",
+    current_step: "canceled",
+    canceled_at: new Date().toISOString(),
+    canceled_by: options.actorId,
+    processor_started_at: null,
+    processor_lease_expires_at: null,
+    processor_actor_id: null,
+    safe_error_code: null,
+    safe_error_message: null,
+  });
+
+  const updatedJob = await loadDeletionJobById(
+    admin,
+    job.id
+  );
+
+  await recordPlatformAdminAudit(admin, {
+    eventType: "deletion_canceled",
+    actorId: options.actorId,
+    targetUserId: job.target_user_id,
+    targetEmailSnapshot:
+      job.target_email_snapshot,
+    reason: options.reason ?? null,
+    metadata: { jobId: job.id },
+  });
+
+  return {
+    ok: true as const,
+    job: updatedJob,
+    jobView: updatedJob
+      ? buildDeletionJobView(updatedJob)
+      : null,
+  };
+}
+
+export async function getDeletionJobStatusForUser(
+  admin: SupabaseClient,
+  targetUserId: string,
+  actorId: string
+): Promise<{
+  job: DeletionJobRecord | null;
+  jobView: DeletionJobView | null;
+}> {
+  await reconcileActiveDeletionJobsForUser(
+    admin,
+    targetUserId,
+    actorId
+  );
+
+  const job = await getLatestDeletionJob(
+    admin,
+    targetUserId
+  );
+
+  return {
+    job,
+    jobView: job
+      ? buildDeletionJobView(job)
+      : null,
+  };
+}
+
+export async function processDeletionJob(
+  admin: SupabaseClient,
+  jobId: string,
+  actorId: string
+) {
+  let job = await loadDeletionJobById(
+    admin,
+    jobId
+  );
+
+  if (!job) {
+    return {
+      ok: false as const,
+      message: "Deletion job not found.",
+    };
+  }
+
+  if (job.status === "completed") {
+    return {
+      ok: true as const,
+      job,
+      jobView: buildDeletionJobView(job),
+    };
+  }
+
+  if (job.status === "canceled") {
+    return {
+      ok: false as const,
+      message: "This deletion request was canceled.",
+      job,
+      jobView: buildDeletionJobView(job),
+    };
+  }
+
+  if (job.status === "blocked") {
+    return {
+      ok: false as const,
+      message:
+        job.safe_error_message ??
+        "Deletion is blocked.",
+      job,
+      jobView: buildDeletionJobView(job),
+    };
+  }
+
+  job = await reconcileStaleDeletionJob(
+    admin,
+    job,
+    actorId
+  );
+
+  const claim = await claimDeletionJob(
+    admin,
+    jobId,
+    actorId
+  );
+
+  if (!claim.claimed || !claim.job) {
+    const message =
+      claim.job?.status === "processing"
+        ? "Another administrator is currently processing this deletion job."
+        : "Unable to claim this deletion job for processing.";
+
+    return {
+      ok: false as const,
+      message,
+      job: claim.job,
+      jobView: claim.job
+        ? buildDeletionJobView(claim.job)
+        : null,
+    };
+  }
+
+  job = claim.job;
+  const targetUserId = job.target_user_id;
 
   try {
-    await updateJob(admin, jobId, {
-      status: "processing",
-      current_step: "validate",
-      started_at:
-        job.started_at ??
-        new Date().toISOString(),
-      failed_at: null,
-      safe_error_code: null,
-      safe_error_message: null,
-    });
-
     await recordPlatformAdminAudit(admin, {
       eventType: "deletion_started",
       actorId,
@@ -368,6 +932,62 @@ export async function processDeletionJob(
         job.target_email_snapshot,
       metadata: { jobId },
     });
+
+    const profileStillExists =
+      await profileExists(
+        admin,
+        targetUserId
+      );
+    const authStillExists =
+      await authUserExists(
+        admin,
+        targetUserId
+      );
+
+    if (!profileStillExists && !authStillExists) {
+      await updateJob(admin, jobId, {
+        status: "completed",
+        current_step: "completed",
+        completed_at: new Date().toISOString(),
+        processor_started_at: null,
+        processor_lease_expires_at: null,
+        processor_actor_id: null,
+      });
+
+      const completedJob =
+        await loadDeletionJobById(
+          admin,
+          jobId
+        );
+
+      await recordPlatformAdminAudit(admin, {
+        eventType: "deletion_completed",
+        actorId,
+        targetUserId: null,
+        targetEmailSnapshot:
+          job.target_email_snapshot,
+        metadata: { jobId },
+      });
+
+      return {
+        ok: true as const,
+        job: completedJob,
+        jobView: completedJob
+          ? buildDeletionJobView(
+              completedJob
+            )
+          : null,
+      };
+    }
+
+    await updateJob(admin, jobId, {
+      current_step: "validate",
+    });
+    await extendProcessorLease(
+      admin,
+      jobId,
+      actorId
+    );
 
     const preview = await buildDeletionPreview(
       admin,
@@ -384,6 +1004,10 @@ export async function processDeletionJob(
         blocker.code !==
           "HOUSEHOLD_HAS_MEMBERS" ||
         !job.transfer_owner_user_id
+    ).filter(
+      (blocker) =>
+        blocker.code !==
+        "ACTIVE_DELETION_JOB"
     );
 
     if (blockers.length > 0) {
@@ -393,11 +1017,25 @@ export async function processDeletionJob(
         safe_error_code: blockers[0].code,
         safe_error_message:
           blockers[0].message,
+        processor_started_at: null,
+        processor_lease_expires_at: null,
+        processor_actor_id: null,
       });
+
+      const blockedJob =
+        await loadDeletionJobById(
+          admin,
+          jobId
+        );
 
       return {
         ok: false as const,
-        job,
+        job: blockedJob,
+        jobView: blockedJob
+          ? buildDeletionJobView(
+              blockedJob
+            )
+          : null,
         message: blockers[0].message,
       };
     }
@@ -417,17 +1055,32 @@ export async function processDeletionJob(
       await updateJob(admin, jobId, {
         current_step: "transfer_household",
       });
-
-      await transferHouseholdOwnership(
+      await extendProcessorLease(
         admin,
-        {
-          householdId: ownedHouseholdId,
-          newOwnerId:
-            job.transfer_owner_user_id,
-          actorId,
-          previousOwnerId: targetUserId,
-        }
+        jobId,
+        actorId
       );
+
+      const { data: household } = await admin
+        .from("households")
+        .select("owner_id")
+        .eq("id", ownedHouseholdId)
+        .maybeSingle();
+
+      if (
+        household?.owner_id === targetUserId
+      ) {
+        await transferHouseholdOwnership(
+          admin,
+          {
+            householdId: ownedHouseholdId,
+            newOwnerId:
+              job.transfer_owner_user_id,
+            actorId,
+            previousOwnerId: targetUserId,
+          }
+        );
+      }
     }
 
     if (
@@ -446,21 +1099,40 @@ export async function processDeletionJob(
         );
 
       if ((count ?? 0) <= 1) {
-        await updateJob(admin, jobId, {
-          current_step:
-            "delete_household_data",
-        });
+        const { data: householdStillExists } =
+          await admin
+            .from("households")
+            .select("id")
+            .eq("id", ownedHouseholdId)
+            .maybeSingle();
 
-        await deleteHouseholdData(
-          admin,
-          ownedHouseholdId
-        );
+        if (householdStillExists?.id) {
+          await updateJob(admin, jobId, {
+            current_step:
+              "delete_household_data",
+          });
+          await extendProcessorLease(
+            admin,
+            jobId,
+            actorId
+          );
+
+          await deleteHouseholdData(
+            admin,
+            ownedHouseholdId
+          );
+        }
       }
     }
 
     await updateJob(admin, jobId, {
       current_step: "cleanup_storage",
     });
+    await extendProcessorLease(
+      admin,
+      jobId,
+      actorId
+    );
 
     await cleanupUserStorage(admin, {
       userId: targetUserId,
@@ -474,6 +1146,11 @@ export async function processDeletionJob(
     await updateJob(admin, jobId, {
       current_step: "delete_application_data",
     });
+    await extendProcessorLease(
+      admin,
+      jobId,
+      actorId
+    );
 
     const userScopedTables = [
       "device_events",
@@ -521,33 +1198,56 @@ export async function processDeletionJob(
       .delete()
       .eq("author_id", targetUserId);
 
-    await updateJob(admin, jobId, {
-      current_step: "delete_profile",
-    });
-
-    await admin
-      .from("profiles")
-      .delete()
-      .eq("id", targetUserId);
-
-    await updateJob(admin, jobId, {
-      current_step: "delete_auth_user",
-    });
-
-    const { error: authDeleteError } =
-      await admin.auth.admin.deleteUser(
-        targetUserId
+    if (await profileExists(admin, targetUserId)) {
+      await updateJob(admin, jobId, {
+        current_step: "delete_profile",
+      });
+      await extendProcessorLease(
+        admin,
+        jobId,
+        actorId
       );
 
-    if (authDeleteError) {
-      throw authDeleteError;
+      await admin
+        .from("profiles")
+        .delete()
+        .eq("id", targetUserId);
+    }
+
+    if (await authUserExists(admin, targetUserId)) {
+      await updateJob(admin, jobId, {
+        current_step: "delete_auth_user",
+      });
+      await extendProcessorLease(
+        admin,
+        jobId,
+        actorId
+      );
+
+      const { error: authDeleteError } =
+        await admin.auth.admin.deleteUser(
+          targetUserId
+        );
+
+      if (authDeleteError) {
+        throw authDeleteError;
+      }
     }
 
     await updateJob(admin, jobId, {
       status: "completed",
       current_step: "completed",
       completed_at: new Date().toISOString(),
+      processor_started_at: null,
+      processor_lease_expires_at: null,
+      processor_actor_id: null,
     });
+
+    const completedJob =
+      await loadDeletionJobById(
+        admin,
+        jobId
+      );
 
     await recordPlatformAdminAudit(admin, {
       eventType: "deletion_completed",
@@ -560,7 +1260,12 @@ export async function processDeletionJob(
 
     return {
       ok: true as const,
-      job,
+      job: completedJob,
+      jobView: completedJob
+        ? buildDeletionJobView(
+            completedJob
+          )
+        : null,
     };
   } catch (processingError) {
     const message =
@@ -568,31 +1273,26 @@ export async function processDeletionJob(
         ? processingError.message
         : "Deletion failed.";
 
-    await updateJob(admin, jobId, {
-      status: "failed",
-      current_step: "failed",
-      failed_at: new Date().toISOString(),
-      safe_error_code: "PROCESSING_FAILED",
-      safe_error_message: message,
-      retry_count:
-        (job.retry_count ?? 0) + 1,
-    });
-
-    await recordPlatformAdminAudit(admin, {
-      eventType: "deletion_failed",
-      actorId,
-      targetUserId,
-      targetEmailSnapshot:
-        job.target_email_snapshot,
-      metadata: {
+    const failedJob = await markDeletionJobFailed(
+      admin,
+      {
         jobId,
-        message,
-      },
-    });
+        actorId,
+        safeErrorCode: "PROCESSING_FAILED",
+        safeErrorMessage:
+          "Deletion could not be completed. You can retry this job safely.",
+        currentStep: "failed",
+        incrementRetry: true,
+        job,
+      }
+    );
 
     return {
       ok: false as const,
-      job,
+      job: failedJob,
+      jobView: failedJob
+        ? buildDeletionJobView(failedJob)
+        : null,
       message,
     };
   }
@@ -601,10 +1301,10 @@ export async function processDeletionJob(
 export async function getLatestDeletionJob(
   admin: SupabaseClient,
   targetUserId: string
-) {
+): Promise<DeletionJobRecord | null> {
   const { data, error } = await admin
     .from("admin_account_deletion_jobs")
-    .select("*")
+    .select(DELETION_JOB_SELECT)
     .eq("target_user_id", targetUserId)
     .order("created_at", {
       ascending: false,
@@ -616,5 +1316,7 @@ export async function getLatestDeletionJob(
     throw error;
   }
 
-  return data;
+  return data ? mapDeletionJobRow(data) : null;
 }
+
+export type { DeletionJobView };

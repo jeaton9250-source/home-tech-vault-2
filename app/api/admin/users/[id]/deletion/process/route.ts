@@ -96,8 +96,9 @@ export async function POST(
     ) {
       return NextResponse.json({
         ok: true,
-        job: result.job,
         deleted: true,
+        job: result.job,
+        jobView: result.jobView ?? null,
       });
     }
 
@@ -106,6 +107,7 @@ export async function POST(
         {
           ok: false,
           job: result.job ?? null,
+          jobView: result.jobView ?? null,
           error:
             result.message ??
             "Deletion could not be completed.",
@@ -118,7 +120,9 @@ export async function POST(
 
     return NextResponse.json({
       ok: true,
+      deleted: false,
       job: result.job,
+      jobView: result.jobView ?? null,
       user,
     });
   } catch (error) {

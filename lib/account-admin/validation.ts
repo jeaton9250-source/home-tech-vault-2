@@ -6,6 +6,7 @@ import { countPlatformAdmins } from "@/lib/admin/data/loaders";
 import { isSubscriptionGrantingAccess } from "@/lib/permissions/subscriptionAccess";
 
 import { loadProfileAccountRecord } from "@/lib/account-admin/status";
+import { reconcileActiveDeletionJobsForUser } from "@/lib/account-admin/deletion";
 
 import type {
   DeletionBlockCode,
@@ -40,6 +41,12 @@ export async function buildDeletionPreview(
   if (!profile) {
     return null;
   }
+
+  await reconcileActiveDeletionJobsForUser(
+    admin,
+    targetUserId,
+    actorId
+  );
 
   const email =
     await getAuthEmail(admin, targetUserId);
