@@ -659,6 +659,9 @@ function usePermissionsState() {
     isFamily,
     isPlatformAdmin:
       effectiveIsPlatformAdmin,
+    /** Real `profiles.is_admin` only — never development-access simulation. */
+    isVerifiedPlatformAdmin:
+      isPlatformAdmin,
     canUsePremiumFeatures,
     canUseFamilySharing,
     hasUnlimitedDevices:

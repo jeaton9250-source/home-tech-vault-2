@@ -1,6 +1,7 @@
 export {
   getEmailFromAddress,
   getEmailReplyToAddress,
+  getSupportEmailTo,
   getResendApiKey,
   isResendConfigured,
   getResendClient,

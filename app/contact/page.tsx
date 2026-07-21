@@ -25,6 +25,7 @@ import {
 
 import { supabase } from "@/lib/supabase";
 import { usePermissions } from "@/hooks/usePermissions";
+import { SUPPORT_CATEGORIES } from "@/lib/support/categories";
 
 import PageShell from "@/components/ui/PageShell";
 import PageCard from "@/components/ui/PageCard";
@@ -36,6 +37,12 @@ type FormState = {
   category: string;
   subject: string;
   message: string;
+  honeypot: string;
+};
+
+type SubmissionSuccess = {
+  ticketNumber: string;
+  customerEmail: string;
 };
 
 type ContactIcon = ComponentType<{
@@ -46,10 +53,22 @@ type ContactIcon = ComponentType<{
 const initialForm: FormState = {
   name: "",
   email: "",
-  category: "General Question",
+  category: SUPPORT_CATEGORIES[0],
   subject: "",
   message: "",
+  honeypot: "",
 };
+
+function createIdempotencyKey() {
+  if (
+    typeof crypto !== "undefined" &&
+    "randomUUID" in crypto
+  ) {
+    return crypto.randomUUID();
+  }
+
+  return `contact-${Date.now()}`;
+}
 
 export default function ContactPage() {
   const {
@@ -69,15 +88,20 @@ export default function ContactPage() {
   const [submitting, setSubmitting] =
     useState(false);
 
-  const [
-    successMessage,
-    setSuccessMessage,
-  ] = useState("");
+  const [submission, setSubmission] =
+    useState<SubmissionSuccess | null>(
+      null
+    );
 
   const [
     errorMessage,
     setErrorMessage,
   ] = useState("");
+
+  const [
+    idempotencyKey,
+    setIdempotencyKey,
+  ] = useState(() => createIdempotencyKey());
 
   useEffect(() => {
     async function loadContactDetails() {
@@ -136,8 +160,19 @@ export default function ContactPage() {
       [field]: value,
     }));
 
-    setSuccessMessage("");
+    setSubmission(null);
     setErrorMessage("");
+  }
+
+  function resetForAnotherRequest() {
+    setSubmission(null);
+    setErrorMessage("");
+    setIdempotencyKey(createIdempotencyKey());
+    setForm((current) => ({
+      ...initialForm,
+      name: current.name,
+      email: current.email,
+    }));
   }
 
   async function submitContactForm(
@@ -153,6 +188,7 @@ export default function ContactPage() {
     const message = form.message.trim();
 
     if (
+      !name ||
       !email ||
       !category ||
       !subject ||
@@ -167,52 +203,77 @@ export default function ContactPage() {
 
     try {
       setSubmitting(true);
-      setSuccessMessage("");
+      setSubmission(null);
       setErrorMessage("");
 
-      const { error } = await supabase
-        .from("contact_messages")
-        .insert({
-          user_id:
-            !isDemo && user
-              ? user.id
-              : null,
-          name: name || null,
-          email,
-          category,
-          subject,
-          message,
-        });
+      const response = await fetch(
+        "/api/support/tickets",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            name,
+            email,
+            category,
+            subject,
+            message,
+            honeypot: form.honeypot,
+            idempotencyKey,
+            isDemo,
+            sourcePage:
+              typeof window !== "undefined"
+                ? window.location.href
+                : null,
+          }),
+        }
+      );
 
-      if (error) {
-        throw error;
+      const payload =
+        (await response.json()) as {
+          ticketNumber?: string;
+          customerEmail?: string;
+          error?: string;
+        };
+
+      if (!response.ok) {
+        setErrorMessage(
+          payload.error ||
+            "We couldn't save your support request right now. Please try again in a moment."
+        );
+        return;
       }
 
-      setSuccessMessage(
-        "Thanks for reaching out. Your message made it to me, and I’ll get back to you as soon as I can."
-      );
+      if (
+        !payload.ticketNumber ||
+        !payload.customerEmail
+      ) {
+        setErrorMessage(
+          "We couldn't save your support request right now. Please try again in a moment."
+        );
+        return;
+      }
+
+      setSubmission({
+        ticketNumber: payload.ticketNumber,
+        customerEmail: payload.customerEmail,
+      });
 
       setForm((current) => ({
         ...initialForm,
         name: current.name,
         email: current.email,
       }));
-    } catch (error: unknown) {
-      const possibleError =
-        error as {
-          message?: string;
-          details?: string;
-        };
-
+    } catch (error) {
       console.error(
         "Unable to submit contact form:",
         error
       );
 
       setErrorMessage(
-        possibleError.message ||
-          possibleError.details ||
-          "Unable to send your message."
+        "We couldn't save your support request right now. Please try again in a moment."
       );
     } finally {
       setSubmitting(false);
@@ -226,6 +287,8 @@ export default function ContactPage() {
   const firstName =
     form.name.trim().split(" ")[0] ||
     "";
+
+  const isSignedIn = Boolean(user) && !isDemo;
 
   return (
     <PageShell>
@@ -316,7 +379,60 @@ export default function ContactPage() {
             </div>
           </div>
 
-          {loading ? (
+          {submission ? (
+            <div className="mt-8 rounded-[24px] border border-emerald-200 bg-emerald-50 p-6 md:p-8">
+              <div className="flex items-start gap-3">
+                <CheckCircle2
+                  size={22}
+                  className="mt-0.5 shrink-0 text-emerald-700"
+                />
+
+                <div>
+                  <h3 className="text-xl font-semibold text-emerald-900">
+                    Message received.
+                  </h3>
+
+                  <p className="mt-4 text-sm leading-7 text-emerald-800">
+                    Your support request number is:
+                  </p>
+
+                  <p className="mt-2 text-lg font-semibold tracking-[-0.02em] text-emerald-900">
+                    {submission.ticketNumber}
+                  </p>
+
+                  <p className="mt-4 text-sm leading-7 text-emerald-800">
+                    We sent a confirmation to:
+                  </p>
+
+                  <p className="mt-1 text-sm font-semibold text-emerald-900">
+                    {submission.customerEmail}
+                  </p>
+
+                  <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                    {isSignedIn ? (
+                      <Button href="/dashboard">
+                        Return to Dashboard
+                      </Button>
+                    ) : (
+                      <Button href="/">
+                        Return Home
+                      </Button>
+                    )}
+
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={
+                        resetForAnotherRequest
+                      }
+                    >
+                      Submit another request
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : loading ? (
             <div className="mt-8 flex min-h-52 items-center justify-center rounded-[24px] bg-surface-sunken text-text-secondary">
               <Loader2
                 size={21}
@@ -343,6 +459,7 @@ export default function ContactPage() {
                     )
                   }
                   placeholder="What should I call you?"
+                  required
                 />
 
                 <Field
@@ -362,7 +479,7 @@ export default function ContactPage() {
 
               <label className="block">
                 <span className="mb-2 block text-sm font-semibold text-text-primary">
-                  What is this about?
+                  Category
                 </span>
 
                 <select
@@ -373,39 +490,19 @@ export default function ContactPage() {
                       event.target.value
                     )
                   }
+                  required
                   className="w-full rounded-2xl border border-border-subtle bg-white px-4 py-3.5 text-sm text-text-primary outline-none transition focus:border-interaction focus:ring-4 focus:ring-interaction/10"
                 >
-                  <option>
-                    General Question
-                  </option>
-
-                  <option>
-                    Account Support
-                  </option>
-
-                  <option>
-                    Billing
-                  </option>
-
-                  <option>
-                    Technical Issue
-                  </option>
-
-                  <option>
-                    Feature Request
-                  </option>
-
-                  <option>
-                    Bug Report
-                  </option>
-
-                  <option>
-                    Feedback
-                  </option>
-
-                  <option>
-                    Other
-                  </option>
+                  {SUPPORT_CATEGORIES.map(
+                    (category) => (
+                      <option
+                        key={category}
+                        value={category}
+                      >
+                        {category}
+                      </option>
+                    )
+                  )}
                 </select>
               </label>
 
@@ -424,7 +521,7 @@ export default function ContactPage() {
 
               <label className="block">
                 <span className="mb-2 block text-sm font-semibold text-text-primary">
-                  Tell me more
+                  Message
                 </span>
 
                 <textarea
@@ -442,16 +539,21 @@ export default function ContactPage() {
                 />
               </label>
 
-              {successMessage && (
-                <div className="flex items-start gap-3 rounded-[22px] border border-emerald-200 bg-emerald-50 p-4 text-sm leading-6 text-emerald-700">
-                  <CheckCircle2
-                    size={19}
-                    className="mt-0.5 shrink-0"
-                  />
-
-                  {successMessage}
-                </div>
-              )}
+              <input
+                type="text"
+                name="company"
+                value={form.honeypot}
+                onChange={(event) =>
+                  updateField(
+                    "honeypot",
+                    event.target.value
+                  )
+                }
+                autoComplete="off"
+                tabIndex={-1}
+                aria-hidden="true"
+                className="hidden"
+              />
 
               {errorMessage && (
                 <div className="rounded-[22px] border border-red-200 bg-red-50 p-4 text-sm leading-6 text-red-700">
@@ -481,7 +583,7 @@ export default function ContactPage() {
 
                   {submitting
                     ? "Sending..."
-                    : "Send to Jason"}
+                    : "Send Support Request"}
                 </Button>
               </div>
             </form>

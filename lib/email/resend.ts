@@ -8,6 +8,9 @@ const DEFAULT_FROM =
 const DEFAULT_REPLY_TO =
   "support@hometechvault.com";
 
+const DEFAULT_SUPPORT_TO =
+  "support@hometechvault.com";
+
 let resendClient: Resend | null = null;
 
 export function getEmailFromAddress() {
@@ -20,6 +23,13 @@ export function getEmailReplyToAddress() {
   return (
     process.env.EMAIL_REPLY_TO?.trim() ||
     DEFAULT_REPLY_TO
+  );
+}
+
+export function getSupportEmailTo() {
+  return (
+    process.env.SUPPORT_EMAIL_TO?.trim() ||
+    DEFAULT_SUPPORT_TO
   );
 }
 

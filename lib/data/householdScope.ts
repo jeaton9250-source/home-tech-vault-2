@@ -25,6 +25,7 @@ export const TABLE_SCOPE = {
   household_invitations: "household_id_only",
   profiles: "neither",
   contact_messages: "user_id_only",
+  support_tickets: "user_id_only",
 } as const;
 
 export type TableScopeKind =

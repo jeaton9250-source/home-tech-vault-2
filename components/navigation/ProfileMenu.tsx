@@ -11,6 +11,8 @@ import { useRouter } from "next/navigation";
 import {
   ChevronDown,
   CreditCard,
+  LayoutDashboard,
+  LifeBuoy,
   LogOut,
   Settings,
   User,
@@ -44,6 +46,7 @@ export default function ProfileMenu({
     planDisplayName,
     roleDisplayName,
     isPlatformAdmin,
+    isVerifiedPlatformAdmin,
     canManageBilling,
     billingManagedByHousehold,
     billingOwnerName,
@@ -202,6 +205,24 @@ export default function ProfileMenu({
             label="Billing"
             onSelect={closeMenu}
           />
+        )}
+
+        {isVerifiedPlatformAdmin && (
+          <>
+            <ProfileLink
+              href="/admin"
+              icon={LayoutDashboard}
+              label="Platform Overview"
+              onSelect={closeMenu}
+            />
+
+            <ProfileLink
+              href="/admin/support"
+              icon={LifeBuoy}
+              label="Support Inbox"
+              onSelect={closeMenu}
+            />
+          </>
         )}
 
         {!isDemo && user && (
