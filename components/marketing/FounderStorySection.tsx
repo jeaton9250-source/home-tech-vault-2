@@ -17,7 +17,7 @@ const fadeUp = {
 
 export default function FounderStorySection() {
   return (
-    <MarketingContent>
+    <MarketingContent id="founder-story" className="scroll-mt-24">
       <div className="grid items-center gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:gap-14">
         <motion.div
           {...fadeUp}

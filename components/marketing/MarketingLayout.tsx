@@ -42,12 +42,15 @@ export default function MarketingLayout({
 export function MarketingContent({
   children,
   className,
+  id,
 }: {
   children: ReactNode;
   className?: string;
+  id?: string;
 }) {
   return (
     <div
+      id={id}
       className={cn(
         "mx-auto w-full max-w-6xl px-6 py-16 md:px-8 md:py-24",
         className

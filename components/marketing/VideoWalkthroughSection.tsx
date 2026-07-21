@@ -24,7 +24,10 @@ export default function VideoWalkthroughSection() {
     WALKTHROUGH_VIDEO.embedUrl.length > 0;
 
   return (
-    <section className="border-y border-border-subtle bg-surface-card/30">
+    <section
+      id="walkthrough"
+      className="scroll-mt-24 border-y border-border-subtle bg-surface-card/30"
+    >
       <MarketingContent>
         <div className="grid items-center gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:gap-14">
           <motion.div {...fadeUp}>

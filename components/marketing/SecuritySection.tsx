@@ -22,7 +22,10 @@ const fadeUp = {
 
 export default function SecuritySection() {
   return (
-    <section className="border-y border-border-subtle bg-surface-card/30">
+    <section
+      id="security"
+      className="scroll-mt-24 border-y border-border-subtle bg-surface-card/30"
+    >
       <MarketingContent>
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <motion.div {...fadeUp} className="max-w-2xl">

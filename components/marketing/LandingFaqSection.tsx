@@ -19,7 +19,10 @@ export default function LandingFaqSection() {
     );
 
   return (
-    <MarketingContent>
+    <MarketingContent
+      id="faq"
+      className="scroll-mt-24"
+    >
       <div className="mx-auto max-w-3xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
