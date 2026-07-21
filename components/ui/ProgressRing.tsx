@@ -1,4 +1,5 @@
 import CircularProgressRing from "@/components/ui/CircularProgressRing";
+import { colors } from "@/lib/design-system/tokens";
 
 type ProgressRingProps = {
   value: number;
@@ -16,12 +17,12 @@ export default function ProgressRing({
       <CircularProgressRing
         value={value}
         size={size}
-        progressColor="#111827"
-        trackColor="#E5E7EB"
+        progressColor={colors.charcoal}
+        trackColor={colors.borderSubtle}
         ariaLabel={`${label}: ${value} percent`}
       >
         <div className="flex flex-col items-center justify-center text-center">
-          <span className="text-5xl font-semibold tracking-tight text-neutral-950">
+          <span className="text-5xl font-semibold tracking-tight text-text-primary">
             {value}
           </span>
           <span className="text-sm text-text-tertiary">

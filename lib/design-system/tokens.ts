@@ -119,8 +119,11 @@ export const brand = {
   name: "Home Tech Vault",
   tagline: "Organize. Protect. Simplify.",
   taglineLines: ["Organize.", "Protect.", "Simplify."],
+  identity:
+    "The digital home for everything that powers your home.",
   greeting: "Welcome home",
   commandCenter: "Home Command Center",
+  homePulse: "Home Pulse",
 } as const;
 
 /** @deprecated Use `interaction` for links/focus. Kept for gradual migration. */

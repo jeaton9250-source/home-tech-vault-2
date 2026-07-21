@@ -13,6 +13,7 @@ import {
 import type { ReactNode } from "react";
 
 import Button from "@/components/ui/Button";
+import EmptyState from "@/components/ui/EmptyState";
 import IconWell, {
   type IconWellSection,
 } from "@/components/ui/IconWell";
@@ -178,22 +179,12 @@ export function PermissionEmptyState({
   section = "technology",
 }: PermissionEmptyStateProps) {
   return (
-    <section className="rounded-[var(--radius-card)] border border-border-subtle bg-surface-sunken/40 px-6 py-14 text-center shadow-[var(--shadow-sm)]">
-      <IconWell
-        icon={Icon}
-        section={section}
-        size="lg"
-        className="mx-auto h-16 w-16 [&_svg]:size-8"
-      />
-
-      <h2 className="mt-5 text-2xl font-medium tracking-[-0.03em] text-text-primary">
-        {title}
-      </h2>
-
-      <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-text-muted">
-        {description}
-      </p>
-
+    <EmptyState
+      icon={Icon}
+      title={title}
+      description={description}
+      section={section}
+    >
       <div className="mt-6">
         <PageAction
           canCreate={canCreateOverride}
@@ -204,7 +195,7 @@ export function PermissionEmptyState({
           variant="primary"
         />
       </div>
-    </section>
+    </EmptyState>
   );
 }
 

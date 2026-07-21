@@ -8,14 +8,17 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import {
-  CheckCircle2,
-  Eye,
-  EyeOff,
   Loader2,
   LockKeyhole,
-  ShieldCheck,
 } from "lucide-react";
 
+import AuthAlert from "@/components/auth/AuthAlert";
+import AuthCard from "@/components/auth/AuthCard";
+import AuthFormField from "@/components/auth/AuthFormField";
+import AuthLayout from "@/components/auth/AuthLayout";
+import PasswordInput from "@/components/auth/PasswordInput";
+import Button from "@/components/ui/Button";
+import { brand } from "@/lib/design-system/tokens";
 import { supabase } from "@/lib/supabase";
 
 export default function ResetPasswordPage() {
@@ -174,13 +177,13 @@ export default function ResetPasswordPage() {
 
   if (checkingSession) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-surface-sunken px-6">
+      <main className="flex min-h-screen items-center justify-center bg-surface-base px-6">
         <div className="flex items-center gap-3 text-text-secondary">
           <Loader2
             size={22}
             className="animate-spin"
+            aria-hidden
           />
-
           Verifying your reset link...
         </div>
       </main>
@@ -188,196 +191,139 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-surface-sunken px-5 py-8">
-      <div className="w-full max-w-lg rounded-[var(--radius-card)] border border-border-subtle bg-white p-7 shadow-xl md:p-10">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
-          {success ? (
-            <CheckCircle2 size={24} />
-          ) : (
-            <ShieldCheck size={24} />
-          )}
-        </div>
-
+    <AuthLayout
+      overline="Secure recovery"
+      headline={brand.identity}
+      description="Choose a strong password to keep your household vault protected."
+      benefits={[
+        "Encrypted account credentials",
+        "Household permissions stay intact",
+        "Return to Home Pulse when finished",
+      ]}
+    >
+      <AuthCard
+        overline={
+          success
+            ? "Password updated"
+            : recoveryReady
+              ? "Secure password reset"
+              : "Reset link unavailable"
+        }
+        title={
+          success
+            ? "Your new password is ready"
+            : recoveryReady
+              ? "Choose a new password"
+              : "This reset link is invalid or expired"
+        }
+        description={
+          success
+            ? "Your password was updated successfully. Redirecting you to Home Pulse."
+            : recoveryReady
+              ? "Enter a new password for your Home Tech Vault account."
+              : "Request a new password reset email and use the newest link you receive."
+        }
+      >
         {success ? (
-          <>
-            <p className="mt-6 text-overline text-charcoal-soft">
-              Password Updated
-            </p>
-
-            <h1 className="mt-2 text-3xl font-bold text-text-primary">
-              Your new password is ready
-            </h1>
-
-            <p className="mt-3 leading-7 text-text-secondary">
-              Your password was updated successfully. You are
-              being redirected to your Home Tech Vault.
-            </p>
-
-            <div className="mt-7 flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">
+          <AuthAlert variant="success">
+            <div className="flex items-center gap-2">
               <Loader2
-                size={18}
+                size={16}
                 className="animate-spin"
+                aria-hidden
               />
-
-              Opening your dashboard...
+              Opening Home Pulse...
             </div>
-          </>
+          </AuthAlert>
         ) : recoveryReady ? (
-          <>
-            <p className="mt-6 text-overline text-charcoal-soft">
-              Secure Password Reset
-            </p>
-
-            <h1 className="mt-2 text-3xl font-bold text-text-primary">
-              Choose a new password
-            </h1>
-
-            <p className="mt-3 leading-7 text-text-secondary">
-              Enter a new password for your Home Tech Vault
-              account.
-            </p>
-
-            {errorMessage && (
-              <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          <form
+            onSubmit={handleResetPassword}
+            className="space-y-5"
+          >
+            {errorMessage ? (
+              <AuthAlert variant="error">
                 {errorMessage}
-              </div>
-            )}
+              </AuthAlert>
+            ) : null}
 
-            <form
-              onSubmit={handleResetPassword}
-              className="mt-8 space-y-5"
+            <AuthFormField
+              label="New password"
+              htmlFor="password"
+              icon={LockKeyhole}
             >
-              <label className="block">
-                <span className="mb-2 flex items-center gap-2 text-sm font-semibold text-text-primary">
-                  <LockKeyhole
-                    size={16}
-                    className="text-interaction"
-                  />
-                  New Password
-                </span>
+              <PasswordInput
+                id="password"
+                value={password}
+                onChange={setPassword}
+                showPassword={showPassword}
+                onToggleVisibility={() =>
+                  setShowPassword(
+                    (current) => !current
+                  )
+                }
+                autoComplete="new-password"
+                placeholder="At least 8 characters"
+              />
+            </AuthFormField>
 
-                <div className="relative">
-                  <input
-                    type={
-                      showPassword
-                        ? "text"
-                        : "password"
-                    }
-                    value={password}
-                    onChange={(event) =>
-                      setPassword(
-                        event.target.value
-                      )
-                    }
-                    autoComplete="new-password"
-                    placeholder="At least 8 characters"
-                    className={`${inputClassName} pr-12`}
-                  />
+            <AuthFormField
+              label="Confirm new password"
+              htmlFor="confirm-password"
+              icon={LockKeyhole}
+            >
+              <PasswordInput
+                id="confirm-password"
+                value={confirmPassword}
+                onChange={setConfirmPassword}
+                showPassword={showPassword}
+                onToggleVisibility={() =>
+                  setShowPassword(
+                    (current) => !current
+                  )
+                }
+                autoComplete="new-password"
+                placeholder="Enter the password again"
+              />
+            </AuthFormField>
 
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setShowPassword(
-                        (current) => !current
-                      )
-                    }
-                    aria-label={
-                      showPassword
-                        ? "Hide password"
-                        : "Show password"
-                    }
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-primary"
-                  >
-                    {showPassword ? (
-                      <EyeOff size={18} />
-                    ) : (
-                      <Eye size={18} />
-                    )}
-                  </button>
-                </div>
-              </label>
-
-              <label className="block">
-                <span className="mb-2 flex items-center gap-2 text-sm font-semibold text-text-primary">
-                  <LockKeyhole
-                    size={16}
-                    className="text-interaction"
-                  />
-                  Confirm New Password
-                </span>
-
-                <input
-                  type={
-                    showPassword
-                      ? "text"
-                      : "password"
-                  }
-                  value={confirmPassword}
-                  onChange={(event) =>
-                    setConfirmPassword(
-                      event.target.value
-                    )
-                  }
-                  autoComplete="new-password"
-                  placeholder="Enter the password again"
-                  className={inputClassName}
-                />
-              </label>
-
-              <button
-                type="submit"
-                disabled={submitting}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-charcoal px-6 py-4 font-semibold text-surface-card transition hover:bg-charcoal-hover disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {submitting ? (
+            <Button
+              type="submit"
+              disabled={submitting}
+              className="w-full"
+            >
+              {submitting ? (
+                <>
                   <Loader2
-                    size={19}
+                    size={18}
                     className="animate-spin"
+                    aria-hidden
                   />
-                ) : (
-                  <ShieldCheck size={19} />
-                )}
-
-                {submitting
-                  ? "Updating Password..."
-                  : "Update Password"}
-              </button>
-            </form>
-          </>
+                  Updating password...
+                </>
+              ) : (
+                "Update password"
+              )}
+            </Button>
+          </form>
         ) : (
-          <>
-            <p className="mt-6 text-xs font-semibold uppercase tracking-[0.18em] text-red-600">
-              Reset Link Unavailable
-            </p>
-
-            <h1 className="mt-2 text-3xl font-bold text-text-primary">
-              This reset link is invalid or expired
-            </h1>
-
-            <p className="mt-3 leading-7 text-text-secondary">
-              Request a new password reset email and use the
-              newest link you receive.
-            </p>
-
-            <Link
+          <div className="space-y-3">
+            <Button
               href="/forgot-password"
-              className="mt-7 inline-flex w-full items-center justify-center rounded-2xl bg-charcoal px-6 py-4 font-semibold text-surface-card transition hover:bg-charcoal-hover"
+              className="w-full"
             >
-              Request Another Reset Link
-            </Link>
+              Request another reset link
+            </Button>
 
-            <Link
+            <Button
               href="/login"
-              className="mt-3 inline-flex w-full items-center justify-center rounded-2xl border border-border-subtle px-6 py-4 font-semibold text-text-primary hover:bg-surface-sunken"
+              variant="secondary"
+              className="w-full"
             >
-              Back to Sign In
-            </Link>
-          </>
+              Back to sign in
+            </Button>
+          </div>
         )}
-      </div>
-    </main>
+      </AuthCard>
+    </AuthLayout>
   );
 }
-
-const inputClassName =
-  "w-full rounded-2xl border border-border-subtle bg-white px-4 py-3.5 text-text-primary outline-none transition placeholder:text-text-tertiary focus:border-interaction focus:ring-2 focus:ring-interaction/20";

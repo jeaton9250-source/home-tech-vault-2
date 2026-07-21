@@ -70,7 +70,7 @@ export default function DashboardPage() {
         );
 
         setErrorMessage(
-          "Unable to load your Home Health dashboard."
+          "Unable to load your Home Pulse dashboard."
         );
       } finally {
         setLoadingDashboard(false);
@@ -102,7 +102,7 @@ export default function DashboardPage() {
       <PageShell>
         <PageCard className="border-danger/30 bg-danger-soft text-danger">
           <h1 className="text-section-title">
-            Unable to load Home Health
+            Unable to load Home Pulse
           </h1>
           <p className="mt-2 text-sm">
             {errorMessage}

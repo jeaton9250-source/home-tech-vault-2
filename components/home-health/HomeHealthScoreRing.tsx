@@ -41,7 +41,7 @@ export default function HomeHealthScoreRing({
         size={size}
         strokeWidth={11}
         progressColor={progressColor}
-        ariaLabel={`Home Health score: ${score} percent, ${status}`}
+        ariaLabel={`Overall home health score: ${score} percent, ${status}`}
       >
         <div className="flex flex-col items-center justify-center px-2 text-center">
           <span className="text-[clamp(2rem,5vw,2.75rem)] font-medium tabular-nums tracking-[-0.04em] text-text-primary">

@@ -987,7 +987,7 @@ export default function DevicePage() {
               />
             ) : canUpload ? (
               <label className="flex h-full cursor-pointer flex-col items-center justify-center px-6 text-center">
-                <div className="flex h-20 w-20 items-center justify-center rounded-[var(--radius-card)] bg-white text-charcoal shadow-sm">
+                <div className="flex h-20 w-20 items-center justify-center rounded-[var(--radius-card)] bg-surface-card text-charcoal shadow-[var(--shadow-sm)]">
                   <Camera size={32} />
                 </div>
 
@@ -1016,7 +1016,7 @@ export default function DevicePage() {
               </label>
             ) : (
               <div className="flex h-full flex-col items-center justify-center px-6 text-center">
-                <div className="flex h-20 w-20 items-center justify-center rounded-[var(--radius-card)] bg-white text-charcoal shadow-sm">
+                <div className="flex h-20 w-20 items-center justify-center rounded-[var(--radius-card)] bg-surface-card text-charcoal shadow-[var(--shadow-sm)]">
                   <Camera size={32} />
                 </div>
 
@@ -1035,7 +1035,7 @@ export default function DevicePage() {
 
             {images.length > 0 &&
               canUpload && (
-                <label className="absolute bottom-4 right-4 inline-flex cursor-pointer items-center gap-2 rounded-full bg-white/90 px-4 py-2.5 text-sm font-semibold text-text-primary shadow-lg backdrop-blur transition hover:bg-white">
+                <label className="absolute bottom-4 right-4 inline-flex cursor-pointer items-center gap-2 rounded-full bg-surface-card/90 px-4 py-2.5 text-sm font-semibold text-text-primary shadow-lg backdrop-blur transition hover:bg-surface-card">
                   {uploading ? (
                     <Loader2
                       size={16}
@@ -1090,7 +1090,7 @@ export default function DevicePage() {
                       className={
                         "relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl border-2 transition " +
                         (active
-                          ? "border-[#111827]"
+                          ? "border-charcoal"
                           : "border-transparent opacity-70 hover:opacity-100")
                       }
                     >
@@ -1240,7 +1240,7 @@ export default function DevicePage() {
                         image.id
                       }
                       aria-label="Delete photo"
-                      className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full bg-black/65 text-white opacity-100 backdrop-blur transition hover:bg-red-600 md:opacity-0 md:group-hover:opacity-100"
+                      className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full bg-charcoal/65 text-surface-card opacity-100 backdrop-blur transition hover:bg-danger md:opacity-0 md:group-hover:opacity-100"
                     >
                       {deletingImageId ===
                       image.id ? (

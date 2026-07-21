@@ -2,13 +2,15 @@
 
 import { FormEvent, useState } from "react";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  CheckCircle2,
-  Loader2,
-  Mail,
-} from "lucide-react";
+import { Loader2, Mail } from "lucide-react";
 
+import AuthAlert from "@/components/auth/AuthAlert";
+import AuthCard from "@/components/auth/AuthCard";
+import AuthFormField from "@/components/auth/AuthFormField";
+import AuthLayout from "@/components/auth/AuthLayout";
+import Button from "@/components/ui/Button";
+import Input from "@/components/ui/Input";
+import { brand } from "@/lib/design-system/tokens";
 import { supabase } from "@/lib/supabase";
 
 export default function ForgotPasswordPage() {
@@ -18,14 +20,14 @@ export default function ForgotPasswordPage() {
   const [error, setError] = useState("");
 
   async function handleSubmit(
-    e: FormEvent<HTMLFormElement>
+    event: FormEvent<HTMLFormElement>
   ) {
-    e.preventDefault();
+    event.preventDefault();
 
     setLoading(true);
     setError("");
 
-    const { error } =
+    const { error: resetError } =
       await supabase.auth.resetPasswordForEmail(
         email.trim().toLowerCase(),
         {
@@ -33,8 +35,8 @@ export default function ForgotPasswordPage() {
         }
       );
 
-    if (error) {
-      setError(error.message);
+    if (resetError) {
+      setError(resetError.message);
     } else {
       setSent(true);
     }
@@ -43,88 +45,92 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <main className="min-h-screen bg-surface-sunken flex items-center justify-center px-6">
-      <div className="w-full max-w-lg rounded-3xl bg-white p-10 shadow-xl border border-border-subtle">
-
-        <Link
-          href="/login"
-          className="inline-flex items-center gap-2 text-sm text-text-secondary hover:text-black"
-        >
-          <ArrowLeft size={16} />
-          Back to Sign In
-        </Link>
-
-        <h1 className="mt-6 text-3xl font-bold text-text-primary">
-          Reset your password
-        </h1>
-
-        <p className="mt-3 text-text-secondary">
-          Enter your email address and we'll send you a secure password reset link.
-        </p>
-
+    <AuthLayout
+      overline="Account recovery"
+      headline={brand.identity}
+      description="We'll send a secure link so you can choose a new password and get back into your vault."
+      benefits={[
+        "Secure, time-limited reset links",
+        "Your household data stays protected",
+        "Back to your vault in minutes",
+      ]}
+    >
+      <AuthCard
+        overline="Password reset"
+        title="Reset your password"
+        description="Enter the email address associated with your account."
+      >
         {sent ? (
-          <div className="mt-8 rounded-2xl border border-green-200 bg-green-50 p-6">
-            <CheckCircle2
-              className="text-green-600"
-              size={28}
-            />
-
-            <h2 className="mt-3 font-bold text-green-800">
+          <AuthAlert variant="success">
+            <p className="font-medium">
               Check your inbox
-            </h2>
-
-            <p className="mt-2 text-sm text-green-700">
-              If an account exists with that email,
-              you'll receive a password reset link shortly.
             </p>
-          </div>
+            <p className="mt-1">
+              If an account exists with that email, you
+              will receive a password reset link shortly.
+            </p>
+          </AuthAlert>
         ) : (
           <form
             onSubmit={handleSubmit}
-            className="mt-8 space-y-5"
+            className="space-y-5"
           >
-            <div>
-              <label className="mb-2 flex items-center gap-2 text-sm font-semibold">
-                <Mail
-                  size={16}
-                  className="text-interaction"
-                />
-                Email Address
-              </label>
-
-              <input
+            <AuthFormField
+              label="Email address"
+              htmlFor="email"
+              icon={Mail}
+            >
+              <Input
+                id="email"
                 type="email"
                 required
+                autoComplete="email"
                 value={email}
-                onChange={(e) =>
-                  setEmail(e.target.value)
+                onChange={(event) =>
+                  setEmail(event.target.value)
                 }
                 placeholder="you@example.com"
-                className="w-full rounded-2xl border border-border-subtle px-4 py-3 outline-none focus:border-interaction"
+                hasError={Boolean(error)}
               />
-            </div>
+            </AuthFormField>
 
-            {error && (
-              <div className="rounded-xl bg-red-50 border border-red-200 p-3 text-red-700 text-sm">
+            {error ? (
+              <AuthAlert variant="error">
                 {error}
-              </div>
-            )}
+              </AuthAlert>
+            ) : null}
 
-            <button
+            <Button
+              type="submit"
               disabled={loading}
-              className="w-full rounded-2xl bg-charcoal py-4 text-surface-card font-semibold hover:bg-charcoal-hover"
+              className="w-full"
             >
               {loading ? (
-                <span className="flex justify-center">
-                  <Loader2 className="animate-spin" />
-                </span>
+                <>
+                  <Loader2
+                    size={18}
+                    className="animate-spin"
+                    aria-hidden
+                  />
+                  Sending reset link...
+                </>
               ) : (
-                "Send Reset Link"
+                "Send reset link"
               )}
-            </button>
+            </Button>
           </form>
         )}
-      </div>
-    </main>
+
+        <p className="mt-6 text-center text-sm text-text-muted">
+          Remember your password?{" "}
+          <Link
+            href="/login"
+            className="font-medium text-interaction hover:text-interaction-hover"
+          >
+            Back to sign in
+          </Link>
+        </p>
+      </AuthCard>
+    </AuthLayout>
   );
 }

@@ -41,6 +41,7 @@ import PageShell from "@/components/ui/PageShell";
 import PageCard from "@/components/ui/PageCard";
 import PageHero from "@/components/ui/PageHero";
 import Button from "@/components/ui/Button";
+import EmptyState from "@/components/ui/EmptyState";
 import {
   ViewerBanner,
 } from "@/components/ui/PermissionUI";
@@ -895,73 +896,54 @@ export default function DevicesPage() {
           )}
         </section>
       ) : devices.length > 0 ? (
-        <PageCard className="py-14 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
-            <Filter size={28} />
-          </div>
-
-          <h2 className="mt-5 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
-            No matching devices
-          </h2>
-
-          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-text-secondary">
-            Try a different search,
-            category, or location.
-          </p>
-
+        <EmptyState
+          icon={Filter}
+          title="No matching devices"
+          description="Try a different search, category, or location."
+          section="technology"
+        >
           <Button
             variant="secondary"
             className="mt-6"
             onClick={clearFilters}
           >
-            Clear Filters
+            Clear filters
           </Button>
-        </PageCard>
+        </EmptyState>
       ) : (
-        <PageCard className="py-14 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
-            <Laptop size={29} />
-          </div>
-
-          <h2 className="mt-5 text-2xl font-medium tracking-[-0.03em] text-text-primary">
-            Your technology deserves a home.
-          </h2>
-
-          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-text-muted">
-            Add your first device to organize its photos,
-            purchase details, warranty, and documents in
-            one calm place.
-          </p>
-
+        <EmptyState
+          icon={Laptop}
+          title="Your technology deserves a home"
+          description="Add your first device to organize its photos, purchase details, warranty, and documents in one calm place."
+          section="technology"
+        >
           {canCreate ? (
             <Button
               type="button"
               onClick={handleAddDevice}
               className="mt-6"
             >
-              <Plus size={17} />
-
+              <Plus size={17} aria-hidden />
               {deviceLimitReached
-                ? "Upgrade to Add More"
-                : "Add Your First Device"}
+                ? "Upgrade to add more"
+                : "Add your first device"}
             </Button>
           ) : !user ? (
             <Button
               href="/signup"
               className="mt-6"
             >
-              <Plus size={17} />
-              Create Your Vault
+              <Plus size={17} aria-hidden />
+              Create your vault
             </Button>
           ) : (
-            <div className="mx-auto mt-6 max-w-md rounded-2xl bg-surface-sunken px-5 py-4 text-sm text-text-secondary">
-              You have viewer access.
-              You can view shared devices,
-              but you cannot add or change
-              them.
+            <div className="mx-auto mt-6 max-w-md rounded-[var(--radius-button)] bg-surface-sunken px-5 py-4 text-sm text-text-secondary">
+              You have viewer access. You can view
+              shared devices, but you cannot add or
+              change them.
             </div>
           )}
-        </PageCard>
+        </EmptyState>
       )}
 
       {!isDemo &&

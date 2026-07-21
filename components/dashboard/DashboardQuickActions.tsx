@@ -73,7 +73,7 @@ export default function DashboardQuickActions({
       <p className="text-overline">Quick Actions</p>
 
       <h2 className="text-section-title mt-2 text-text-primary">
-        What would you like to do next?
+        Jump back in
       </h2>
 
       <div className="mt-6 grid gap-3 sm:grid-cols-2">

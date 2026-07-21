@@ -33,7 +33,7 @@ export default function HomeHealthScoreCard({
         <div className="space-y-5">
           <div className="space-y-3">
             <p className="text-overline text-home-health">
-              Home Health
+              Overall home health
             </p>
 
             <div>
@@ -47,7 +47,7 @@ export default function HomeHealthScoreCard({
                 </span>
               </p>
               <p className="sr-only">
-                Home Health score:{" "}
+                Overall home health score:{" "}
                 {score} percent, {status}
               </p>
             </div>

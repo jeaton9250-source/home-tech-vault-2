@@ -20,13 +20,13 @@ export default function HomeHealthEmptyState({
       </p>
 
       <h2 className="mt-3 text-3xl font-medium tracking-[-0.03em] text-text-primary">
-        Let&apos;s build your Home Tech Vault.
+        Let&apos;s build your vault.
       </h2>
 
       <p className="mt-4 max-w-2xl text-base leading-8 text-text-muted">
-        Start with one device, a receipt, or your
-        network details. Your Home Health score
-        will appear once real data is in place.
+        Start with one device, a receipt, or your network
+        details. Your Home Pulse score will appear once real
+        data is in place.
       </p>
 
       <div className="mt-8 flex flex-col gap-3 sm:flex-row">

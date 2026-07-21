@@ -2,6 +2,8 @@ export {
   brand,
   colors,
   radius,
+  sections,
+  shadows,
   spacing,
   typography,
 } from "@/lib/design-system/tokens";

@@ -26,7 +26,7 @@ export const PRIMARY_NAV_GROUPS: NavMenuGroup[] =
   [
     {
       id: "overview",
-      label: "Overview",
+      label: "Home Pulse",
       href: "/dashboard",
     },
     {

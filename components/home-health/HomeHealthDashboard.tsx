@@ -1,13 +1,16 @@
 "use client";
 
 import RecentActivity from "@/components/dashboard/RecentActivity";
+import DashboardQuickActions from "@/components/dashboard/DashboardQuickActions";
 import HomeHealthCategoryGrid from "@/components/home-health/HomeHealthCategoryGrid";
 import HomeHealthEmptyState from "@/components/home-health/HomeHealthEmptyState";
 import HomeHealthHeader from "@/components/home-health/HomeHealthHeader";
 import HomeHealthScoreCard from "@/components/home-health/HomeHealthScoreCard";
+import HomePulseAlerts from "@/components/home-health/HomePulseAlerts";
 import HomeSnapshotStrip from "@/components/home-health/HomeSnapshotStrip";
 import NextBestActionCard from "@/components/home-health/NextBestActionCard";
 import VaultCompletenessRing from "@/components/home-health/VaultCompletenessRing";
+import { usePermissions } from "@/hooks/usePermissions";
 import type { HomeHealthResult } from "@/lib/home-health/types";
 
 type HomeHealthDashboardProps = {
@@ -19,6 +22,11 @@ export default function HomeHealthDashboard({
   firstName,
   homeHealth,
 }: HomeHealthDashboardProps) {
+  const {
+    getActionHref,
+    getActionLabel,
+  } = usePermissions();
+
   return (
     <div className="space-y-6 md:space-y-8">
       <HomeHealthHeader firstName={firstName} />
@@ -31,6 +39,10 @@ export default function HomeHealthDashboard({
         />
       ) : (
         <>
+          <HomePulseAlerts
+            highlights={homeHealth.highlights}
+          />
+
           <HomeSnapshotStrip
             homeHealth={homeHealth}
           />
@@ -59,6 +71,11 @@ export default function HomeHealthDashboard({
               />
             ) : null}
           </section>
+
+          <DashboardQuickActions
+            getActionHref={getActionHref}
+            getActionLabel={getActionLabel}
+          />
 
           <VaultCompletenessRing
             percentage={

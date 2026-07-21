@@ -12,7 +12,7 @@ import { MarketingContent } from "@/components/marketing/MarketingLayout";
 const benefits = [
   {
     title: "Organized",
-    copy: "Devices, documents, and network details in one calm home record.",
+    copy: "Every device, document, and subscription in one calm, searchable home record.",
     icon: FolderKanban,
   },
   {
@@ -21,8 +21,8 @@ const benefits = [
     icon: ShieldCheck,
   },
   {
-    title: "Never Miss Important Dates",
-    copy: "Track warranties, maintenance, and renewals before they sneak up.",
+    title: "In control",
+    copy: "Track warranties, maintenance, and renewals before they catch you off guard.",
     icon: CalendarClock,
   },
 ] as const;

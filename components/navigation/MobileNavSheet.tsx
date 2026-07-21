@@ -361,7 +361,7 @@ export default function MobileNavSheet() {
                     setOpen(false)
                   }
                 >
-                  Back to Overview
+                  Back to Home Pulse
                 </Button>
               </div>
             </motion.aside>

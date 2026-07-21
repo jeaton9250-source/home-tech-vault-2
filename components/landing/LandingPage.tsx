@@ -86,14 +86,14 @@ export default function LandingPage({
             }}
           >
             <h1 className="max-w-xl text-4xl font-medium tracking-[-0.04em] md:text-5xl md:leading-[1.05]">
-              Your home technology,
-              organized in one place.
+              The digital home for everything
+              that powers your home.
             </h1>
 
             <p className="mt-4 max-w-lg text-base leading-7 text-text-muted md:text-lg">
-              Track devices, warranties, documents, and
-              subscriptions without digging through drawers
-              or inboxes.
+              Organize devices, warranties, documents,
+              and subscriptions in one secure place — so you
+              stay in control.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
