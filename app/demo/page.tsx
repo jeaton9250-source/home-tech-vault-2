@@ -12,18 +12,20 @@ import {
   Wrench,
 } from "lucide-react";
 
+import { MORGAN_HOUSEHOLD } from "@/lib/demo/morganHousehold";
+
 const demoFeatures = [
   {
     icon: Laptop,
     title: "Device Inventory",
     description:
-      "Browse computers, televisions, smart-home devices, and network equipment.",
+      "Browse computers, TVs, gaming consoles, appliances, and smart-home devices.",
   },
   {
     icon: House,
     title: "Home View",
     description:
-      "See technology organized by rooms throughout a sample home.",
+      "See technology organized by rooms throughout the Morgan Household.",
   },
   {
     icon: ShieldCheck,
@@ -47,24 +49,28 @@ const demoFeatures = [
     icon: FileText,
     title: "Documents",
     description:
-      "View examples of receipts, manuals, and warranty records.",
+      "View receipts, manuals, warranty records, and household files.",
   },
   {
     icon: BarChart3,
     title: "Reports",
     description:
-      "Preview technology health, protected value, and inventory insights.",
+      "Preview insurance, warranty, and home technology summaries.",
   },
   {
     icon: Sparkles,
-    title: "Premium Tools",
+    title: "Home Pulse",
     description:
-      "Explore advanced Home Tech Vault automation and premium features.",
+      "See how a fully organized vault keeps an entire home running smoothly.",
   },
 ];
 
 export default function DemoPage() {
   function enterDemo() {
+    window.localStorage.removeItem(
+      "home-tech-vault-demo-welcome-seen"
+    );
+
     window.localStorage.setItem(
       "home-tech-vault-demo",
       "true"
@@ -78,17 +84,16 @@ export default function DemoPage() {
       <div className="mx-auto max-w-6xl">
         <section className="htv-hero-band overflow-hidden rounded-[36px] px-7 py-12 text-text-primary shadow-xl md:px-12 md:py-16">
           <p className="text-overline text-home-health">
-            Interactive Product Tour
+            Interactive Demo
           </p>
 
           <h1 className="mt-5 max-w-3xl text-4xl font-bold leading-tight md:text-6xl">
-            Explore Home Tech Vault before creating an account.
+            Explore the {MORGAN_HOUSEHOLD.name} before creating your vault.
           </h1>
 
           <p className="mt-6 max-w-2xl text-lg leading-8 text-text-secondary">
-            Click through a complete sample vault containing devices,
-            warranties, subscriptions, maintenance records, documents,
-            and network details.
+            Walk through a fully organized home with 23 devices, warranties,
+            subscriptions, maintenance records, documents, and network details.
           </p>
 
           <button

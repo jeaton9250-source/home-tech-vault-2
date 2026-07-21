@@ -38,6 +38,7 @@ import {
   resolveHouseholdScope,
 } from "@/lib/data/householdScope";
 import { usePermissions } from "@/hooks/usePermissions";
+import { demoNetwork as morganDemoNetwork } from "@/lib/demoData";
 import PageShell from "@/components/ui/PageShell";
 import PageHero from "@/components/ui/PageHero";
 import EmptyState from "@/components/ui/EmptyState";
@@ -81,16 +82,15 @@ type NetworkIcon = ComponentType<{
 }>;
 
 const demoNetwork: NetworkInfo = {
-  isp: "Spectrum",
-  speed_download: 500,
-  speed_upload: 25,
-  router_model: "TP-Link Archer AX55",
-  modem_model: "Arris Surfboard",
-  wifi_name: "HomeTech-Demo",
-  guest_network: "Enabled",
-  admin_url: "192.168.1.1",
-  notes:
-    "This sample network demonstrates how Home Tech Vault organizes provider details, equipment, Wi-Fi information, and scan history.",
+  isp: morganDemoNetwork.isp,
+  speed_download: morganDemoNetwork.speed_download,
+  speed_upload: morganDemoNetwork.speed_upload,
+  router_model: morganDemoNetwork.router_model,
+  modem_model: morganDemoNetwork.modem_model,
+  wifi_name: morganDemoNetwork.wifi_name,
+  guest_network: morganDemoNetwork.guest_network,
+  admin_url: morganDemoNetwork.admin_url,
+  notes: morganDemoNetwork.notes,
 };
 
 const demoScans: NetworkScan[] = [

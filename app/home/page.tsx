@@ -44,6 +44,8 @@ import PageHero from "@/components/ui/PageHero";
 import Button from "@/components/ui/Button";
 import EmptyState from "@/components/ui/EmptyState";
 import { ViewerBanner } from "@/components/ui/PermissionUI";
+import { getDemoHomeDevices } from "@/lib/demo/homeDevices";
+import { MORGAN_HOUSEHOLD } from "@/lib/demo/morganHousehold";
 
 type DeviceRow = {
   id: string;
@@ -87,119 +89,6 @@ type RoomIcon = ComponentType<{
   className?: string;
 }>;
 
-const demoHomeDevices: HomeDevice[] = [
-  {
-    id: "demo-home-1",
-    deviceName: "Samsung OLED TV",
-    brand: "Samsung",
-    category: "TV",
-    location: "Living Room",
-    purchasePrice: 1799,
-    warrantyDate: "2027-04-18",
-    hasPhoto: true,
-    hasDocument: true,
-  },
-  {
-    id: "demo-home-2",
-    deviceName: "Apple TV 4K",
-    brand: "Apple",
-    category: "Streaming Device",
-    location: "Living Room",
-    purchasePrice: 149,
-    warrantyDate: "2027-01-20",
-    hasPhoto: true,
-    hasDocument: true,
-  },
-  {
-    id: "demo-home-3",
-    deviceName: "PlayStation 5",
-    brand: "Sony",
-    category: "Gaming",
-    location: "Living Room",
-    purchasePrice: 499,
-    warrantyDate: "2026-10-12",
-    hasPhoto: true,
-    hasDocument: false,
-  },
-  {
-    id: "demo-home-4",
-    deviceName: "MacBook Pro",
-    brand: "Apple",
-    category: "Computer",
-    location: "Home Office",
-    purchasePrice: 2499,
-    warrantyDate: "2027-03-12",
-    hasPhoto: true,
-    hasDocument: true,
-  },
-  {
-    id: "demo-home-5",
-    deviceName: "Studio Display",
-    brand: "Apple",
-    category: "Monitor",
-    location: "Home Office",
-    purchasePrice: 1599,
-    warrantyDate: "2027-02-09",
-    hasPhoto: true,
-    hasDocument: true,
-  },
-  {
-    id: "demo-home-6",
-    deviceName: "Brother Printer",
-    brand: "Brother",
-    category: "Printer",
-    location: "Home Office",
-    purchasePrice: 329,
-    warrantyDate: "2026-09-15",
-    hasPhoto: false,
-    hasDocument: false,
-  },
-  {
-    id: "demo-home-7",
-    deviceName: "HomePod Mini",
-    brand: "Apple",
-    category: "Audio",
-    location: "Bedroom",
-    purchasePrice: 99,
-    warrantyDate: "2027-05-01",
-    hasPhoto: true,
-    hasDocument: true,
-  },
-  {
-    id: "demo-home-8",
-    deviceName: "Smart Air Purifier",
-    brand: "Levoit",
-    category: "Smart Home",
-    location: "Bedroom",
-    purchasePrice: 229,
-    warrantyDate: "2026-08-01",
-    hasPhoto: false,
-    hasDocument: true,
-  },
-  {
-    id: "demo-home-9",
-    deviceName: "Nest Hub",
-    brand: "Google",
-    category: "Smart Home",
-    location: "Kitchen",
-    purchasePrice: 99,
-    warrantyDate: "2027-06-18",
-    hasPhoto: true,
-    hasDocument: true,
-  },
-  {
-    id: "demo-home-10",
-    deviceName: "Garage Camera",
-    brand: "Ring",
-    category: "Security",
-    location: "Garage",
-    purchasePrice: 179,
-    warrantyDate: "2026-11-12",
-    hasPhoto: true,
-    hasDocument: false,
-  },
-];
-
 function RoomsContent() {
   const {
     user,
@@ -237,10 +126,8 @@ function RoomsContent() {
         setErrorMessage("");
 
         if (isDemo || !user) {
-          setDevices(demoHomeDevices);
-          setHouseholdName(
-            "The Demo Household"
-          );
+          setDevices(getDemoHomeDevices());
+          setHouseholdName(MORGAN_HOUSEHOLD.name);
           return;
         }
 

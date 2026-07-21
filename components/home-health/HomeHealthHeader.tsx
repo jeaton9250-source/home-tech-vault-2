@@ -5,6 +5,8 @@ import {
   formatDisplayDate,
   getTimeGreeting,
 } from "@/lib/home-health/greeting";
+import { usePermissions } from "@/hooks/usePermissions";
+import { MORGAN_HOUSEHOLD } from "@/lib/demo/morganHousehold";
 
 type HomeHealthHeaderProps = {
   firstName: string;
@@ -13,8 +15,10 @@ type HomeHealthHeaderProps = {
 export default function HomeHealthHeader({
   firstName,
 }: HomeHealthHeaderProps) {
+  const { isDemo } = usePermissions();
+
   return (
-    <header className="space-y-2">
+    <header className="space-y-2" data-tour="home-pulse">
       <p className="text-overline text-home-health">
         {brand.homePulse}
       </p>
@@ -23,10 +27,16 @@ export default function HomeHealthHeader({
         {getTimeGreeting(firstName)}
       </h1>
 
-      <p className="text-[0.9375rem] leading-7 text-text-muted md:text-base">
-        Your overall home health, recent activity, and what
-        to do next — all in one calm view.
-      </p>
+      {isDemo ? (
+        <p className="text-[0.9375rem] leading-7 text-text-muted md:text-base">
+          Welcome to the {MORGAN_HOUSEHOLD.name}.
+        </p>
+      ) : (
+        <p className="text-[0.9375rem] leading-7 text-text-muted md:text-base">
+          Your overall home health, recent activity, and what
+          to do next — all in one calm view.
+        </p>
+      )}
 
       <p className="text-sm text-text-secondary">
         {formatDisplayDate()}

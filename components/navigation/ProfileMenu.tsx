@@ -29,6 +29,7 @@ import { usePermissions } from "@/hooks/usePermissions";
 import { NAV_MENU_IDS } from "@/lib/navigation/menuIds";
 
 import { supabase } from "@/lib/supabase";
+import { MORGAN_HOUSEHOLD } from "@/lib/demo/morganHousehold";
 
 type ProfileMenuProps = {
   compact?: boolean;
@@ -62,8 +63,8 @@ export default function ProfileMenu({
   useEffect(() => {
     async function loadProfile() {
       if (isDemo) {
-        setDisplayName("Demo User");
-        setEmail("demo@hometechvault.com");
+        setDisplayName(MORGAN_HOUSEHOLD.fullName);
+        setEmail(MORGAN_HOUSEHOLD.email);
         return;
       }
 

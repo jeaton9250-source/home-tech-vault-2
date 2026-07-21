@@ -17,6 +17,7 @@ import EmptyState from "@/components/ui/EmptyState";
 import IconWell, {
   type IconWellSection,
 } from "@/components/ui/IconWell";
+import { useDemoReadOnlyAction } from "@/components/demo/DemoExperienceProvider";
 import { usePermissions } from "@/hooks/usePermissions";
 
 import type { FeatureKey } from "@/lib/permissions/types";
@@ -49,11 +50,11 @@ export function ViewerBanner({
   }
 
   const resolvedTitle = isDemo
-    ? "Demo Mode"
+    ? "Interactive Demo"
     : title;
 
   const resolvedDescription = isDemo
-    ? "You are browsing a sample vault. Create an account to save and manage your own home technology."
+    ? "You're exploring the Morgan Household. Create your vault to save and manage your own home technology."
     : description;
 
   return (
@@ -117,6 +118,8 @@ export function PageAction({
     canAccessFeature,
   } = usePermissions();
 
+  const showReadOnlyModal = useDemoReadOnlyAction();
+
   const allowed =
     canCreateOverride ?? canCreate;
 
@@ -137,6 +140,21 @@ export function PageAction({
   const buttonLabel = allowed
     ? label
     : getActionLabel(label, lockedLabel);
+
+  if (!allowed && isDemo) {
+    return (
+      <Button
+        type="button"
+        variant={variant}
+        className={cn(className)}
+        onClick={showReadOnlyModal}
+      >
+        <LockKeyhole size={16} />
+        <Icon size={17} />
+        {buttonLabel}
+      </Button>
+    );
+  }
 
   return (
     <Button
@@ -233,6 +251,8 @@ export function CardActions({
     getActionHref,
   } = usePermissions();
 
+  const showReadOnlyModal = useDemoReadOnlyAction();
+
   const editAllowed =
     canEditOverride ?? canEdit;
 
@@ -247,7 +267,7 @@ export function CardActions({
     Boolean(children);
 
   const resolvedMessage = isDemo
-    ? "Demo mode is read-only. Create your vault to edit this item."
+    ? "This vault is read-only while you explore. Create your vault to edit items."
     : isViewer
       ? viewerMessage
       : viewerMessage;
@@ -280,7 +300,17 @@ export function CardActions({
   return (
     <div className="flex flex-wrap items-center gap-3 border-t border-border-subtle pt-5">
       {editAllowed &&
-        resolvedEditHref && (
+        resolvedEditHref &&
+        (isDemo ? (
+          <Button
+            type="button"
+            size="sm"
+            onClick={showReadOnlyModal}
+          >
+            <Pencil size={16} />
+            {editLabel}
+          </Button>
+        ) : (
           <Button
             href={resolvedEditHref}
             size="sm"
@@ -288,7 +318,7 @@ export function CardActions({
             <Pencil size={16} />
             {editLabel}
           </Button>
-        )}
+        ))}
 
       {children}
 
@@ -299,8 +329,7 @@ export function CardActions({
           size="sm"
           onClick={() => {
             if (isDemo) {
-              window.location.href =
-                "/signup";
+              showReadOnlyModal();
               return;
             }
 

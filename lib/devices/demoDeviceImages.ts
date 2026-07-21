@@ -16,14 +16,55 @@ export const DEMO_DEVICE_IMAGE_BY_ID: Record<
 > = {
   "demo-macbook":
     DEMO_DEVICE_IMAGE_PATHS.macbookPro,
+  "demo-iphone":
+    DEMO_DEVICE_IMAGE_PATHS.mobilePhone,
+  "demo-samsung-frame":
+    DEMO_DEVICE_IMAGE_PATHS.samsungTv,
+  "demo-lg-oled":
+    DEMO_DEVICE_IMAGE_PATHS.samsungTv,
+  "demo-ps5":
+    DEMO_DEVICE_IMAGE_PATHS.xboxSeriesX,
+  "demo-xbox":
+    DEMO_DEVICE_IMAGE_PATHS.xboxSeriesX,
+  "demo-switch":
+    DEMO_DEVICE_IMAGE_PATHS.xboxSeriesX,
+  "demo-appletv":
+    DEMO_DEVICE_IMAGE_PATHS.appleTv,
+  "demo-sonos":
+    DEMO_DEVICE_IMAGE_PATHS.ringDoorbell,
+  "demo-nest":
+    DEMO_DEVICE_IMAGE_PATHS.ringDoorbell,
+  "demo-ring":
+    DEMO_DEVICE_IMAGE_PATHS.ringDoorbell,
+  "demo-canon-printer":
+    DEMO_DEVICE_IMAGE_PATHS.hpPrinter,
+  "demo-hp-laptop":
+    DEMO_DEVICE_IMAGE_PATHS.macbookPro,
+  "demo-dyson":
+    DEMO_DEVICE_IMAGE_PATHS.hpPrinter,
+  "demo-lg-washer":
+    DEMO_DEVICE_IMAGE_PATHS.hpPrinter,
+  "demo-lg-dryer":
+    DEMO_DEVICE_IMAGE_PATHS.hpPrinter,
+  "demo-samsung-fridge":
+    DEMO_DEVICE_IMAGE_PATHS.samsungTv,
+  "demo-unifi-router":
+    DEMO_DEVICE_IMAGE_PATHS.asusRouter,
+  "demo-unifi-ap":
+    DEMO_DEVICE_IMAGE_PATHS.asusRouter,
+  "demo-synology":
+    DEMO_DEVICE_IMAGE_PATHS.synologyNas,
+  "demo-cameras":
+    DEMO_DEVICE_IMAGE_PATHS.ringDoorbell,
+  "demo-robot-vacuum":
+    DEMO_DEVICE_IMAGE_PATHS.ringDoorbell,
+  "demo-smart-lock":
+    DEMO_DEVICE_IMAGE_PATHS.ringDoorbell,
+  // Legacy IDs
   "demo-tv":
     DEMO_DEVICE_IMAGE_PATHS.samsungTv,
   "demo-printer":
     DEMO_DEVICE_IMAGE_PATHS.hpPrinter,
-  "demo-xbox":
-    DEMO_DEVICE_IMAGE_PATHS.xboxSeriesX,
-  "demo-iphone":
-    DEMO_DEVICE_IMAGE_PATHS.mobilePhone,
   "demo-router":
     DEMO_DEVICE_IMAGE_PATHS.asusRouter,
 };
@@ -60,7 +101,10 @@ export function getDemoImagePathForCategory(
     return DEMO_DEVICE_IMAGE_PATHS.asusRouter;
   }
 
-  if (normalized.includes("printer")) {
+  if (
+    normalized.includes("printer") ||
+    normalized.includes("appliance")
+  ) {
     return DEMO_DEVICE_IMAGE_PATHS.hpPrinter;
   }
 

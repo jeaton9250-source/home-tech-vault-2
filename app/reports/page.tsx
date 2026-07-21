@@ -213,19 +213,19 @@ export default function ReportsPage() {
 
         if (isDemo || !user) {
           setDevices([]);
-          setDeviceCount(8);
-          setDocumentCount(18);
-          setPhotoCount(16);
-          setSerialNumberCount(14);
-          setRoomCount(5);
-          setProtectedValue(18420);
-          setActiveWarrantyCount(6);
+          setDeviceCount(23);
+          setDocumentCount(20);
+          setPhotoCount(23);
+          setSerialNumberCount(23);
+          setRoomCount(8);
+          setProtectedValue(24837);
+          setActiveWarrantyCount(18);
 
           setReportCoverage({
-            photos: 88,
-            documents: 88,
-            serialNumbers: 75,
-            warranties: 75,
+            photos: 96,
+            documents: 87,
+            serialNumbers: 100,
+            warranties: 78,
           });
 
           return;

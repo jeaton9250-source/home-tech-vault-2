@@ -45,6 +45,7 @@ import EmptyState from "@/components/ui/EmptyState";
 import {
   ViewerBanner,
 } from "@/components/ui/PermissionUI";
+import { useDemoReadOnlyAction } from "@/components/demo/DemoExperienceProvider";
 
 type DeviceRecord = BaseDevice & {
   id: string;
@@ -80,6 +81,8 @@ export default function DevicesPage() {
     hasUnlimitedDevices,
     loading: permissionsLoading,
   } = usePermissions();
+
+  const showReadOnlyModal = useDemoReadOnlyAction();
 
   const [devices, setDevices] =
     useState<DeviceRecord[]>([]);
@@ -580,7 +583,7 @@ export default function DevicesPage() {
 
   function handleAddDevice() {
     if (isDemo) {
-      router.push("/signup");
+      showReadOnlyModal();
       return;
     }
 
@@ -602,11 +605,16 @@ export default function DevicesPage() {
 
   return (
     <PageShell>
+      <div data-tour="devices">
       <PageHero
         section="technology"
-        eyebrow="Personal Vault"
-        title="Your devices."
-        description="Everything you own, organized in one calm and secure place."
+        eyebrow={isDemo ? "Interactive Demo" : "Personal Vault"}
+        title={isDemo ? "Morgan Household devices." : "Your devices."}
+        description={
+          isDemo
+            ? "23 devices organized with photos, warranties, receipts, and notes."
+            : "Everything you own, organized in one calm and secure place."
+        }
       >
         {canCreate ? (
           <Button
@@ -629,12 +637,15 @@ export default function DevicesPage() {
           </div>
         )}
       </PageHero>
+      </div>
 
       <ViewerBanner
         description={
-          user
-            ? "You can view shared devices, search records, and open device details. Viewer access cannot add, edit, upload, or delete devices."
-            : "You are browsing a sample device vault. Create an account to organize and manage your own technology."
+          isDemo || !user
+            ? "Browse, search, and filter devices throughout the Morgan Household. Create your vault to manage your own."
+            : user
+              ? "You can view shared devices, search records, and open device details. Viewer access cannot add, edit, upload, or delete devices."
+              : "You are browsing a sample device vault. Create an account to organize and manage your own technology."
         }
       />
 

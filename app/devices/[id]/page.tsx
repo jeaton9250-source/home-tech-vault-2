@@ -65,6 +65,7 @@ import Button from "@/components/ui/Button";
 import {
   ViewerBanner,
 } from "@/components/ui/PermissionUI";
+import { useDemoReadOnlyAction } from "@/components/demo/DemoExperienceProvider";
 
 type Device = {
   id: string;
@@ -120,6 +121,9 @@ export default function DevicePage() {
     canDelete,
     loading: permissionsLoading,
   } = usePermissions();
+
+  const showReadOnlyModal =
+    useDemoReadOnlyAction();
 
   const deviceId = params.id;
 
@@ -445,9 +449,12 @@ export default function DevicePage() {
   ]);
 
   function redirectViewer() {
-    router.push(
-      user ? "/devices" : "/signup"
-    );
+    if (isDemo || !user) {
+      showReadOnlyModal();
+      return;
+    }
+
+    router.push("/devices");
   }
 
   function handleEditDevice() {
@@ -937,12 +944,14 @@ export default function DevicePage() {
             <Pencil size={16} />
             Edit Device
           </Button>
-        ) : !user ? (
+        ) : isDemo || !user ? (
           <Button
-            href="/signup"
+            type="button"
             variant="secondary"
+            onClick={showReadOnlyModal}
           >
-            Create Your Vault
+            <Pencil size={16} />
+            Edit Device
           </Button>
         ) : (
           <div className="rounded-2xl border border-border-subtle bg-surface-sunken px-4 py-3 text-sm font-semibold text-text-secondary">
@@ -953,9 +962,9 @@ export default function DevicePage() {
 
       <ViewerBanner
         description={
-          user
-            ? "You can view this device, its photos, documents, network details, and history. Viewer access cannot edit, upload, or delete anything."
-            : "This sample profile demonstrates how device photos, documents, network information, and history are organized."
+          isDemo || !user
+            ? "Browse photos, documents, warranty details, network information, and device history for the Morgan Household."
+            : "You can view this device, its photos, documents, network details, and history. Viewer access cannot edit, upload, or delete anything."
         }
       />
 
@@ -1706,7 +1715,7 @@ function DemoDocuments({
                 </div>
 
                 <span className="rounded-full bg-surface-sunken px-3 py-1 text-xs font-semibold text-achievement">
-                  Demo
+                  PDF
                 </span>
               </div>
             )

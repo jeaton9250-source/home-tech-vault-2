@@ -53,7 +53,7 @@ type DeviceValueRow = {
 
 const demoProfile: ProfileRecord = {
   full_name: "Alex Morgan",
-  household_name: "The Morgan Household",
+  household_name: "Morgan Household",
   city: "Wilmington, NC",
   phone: "(910) 555-0148",
   avatar_url: null,
@@ -147,7 +147,7 @@ export default function AccountPage() {
           );
 
           setAvatarUrl(null);
-          setEmail("demo@hometechvault.com");
+          setEmail("alex.morgan@example.com");
 
           setMemberSince(
             new Date(

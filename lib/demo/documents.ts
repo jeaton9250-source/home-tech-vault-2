@@ -1,26 +1,23 @@
-export const demoDocuments = [
-  {
-    id: "demo-1",
-    file_name: "MacBook Pro Receipt.pdf",
-    file_type: "Receipt",
-    file_url: "#",
-    device_id: "demo-1",
-    device_name: "MacBook Pro",
-  },
-  {
-    id: "demo-2",
-    file_name: "Samsung TV Warranty.pdf",
-    file_type: "Warranty",
-    file_url: "#",
-    device_id: "demo-2",
-    device_name: "Samsung Smart TV",
-  },
-  {
-    id: "demo-3",
-    file_name: "Router Manual.pdf",
-    file_type: "Manual",
-    file_url: "#",
-    device_id: "demo-3",
-    device_name: "Home Router",
-  },
-];
+import {
+  demoDocuments as sourceDocuments,
+  demoDevices,
+} from "@/lib/demoData";
+
+export const demoDocuments = sourceDocuments.map(
+  (document) => {
+    const device = demoDevices.find(
+      (item) => item.id === document.device_id
+    );
+
+    return {
+      id: document.id,
+      file_name: document.file_name,
+      file_type: document.document_type,
+      file_url: "#",
+      device_id: document.device_id,
+      device_name: device?.device_name ?? "Household",
+      document_name: document.document_name,
+      created_at: document.created_at,
+    };
+  }
+);
