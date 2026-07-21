@@ -12,6 +12,8 @@ import {
 import PageCard from "@/components/ui/PageCard";
 import Button from "@/components/ui/Button";
 
+import { sections } from "@/lib/design-system/tokens";
+
 import {
   useNotifications,
   type VaultNotification,
@@ -49,15 +51,18 @@ export default function RecentNotifications({
   }
 
   return (
-    <PageCard interactive>
+    <PageCard elevated interactive>
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-overline">
-            Smart Notifications
+          <p
+            className="text-overline"
+            style={{ color: sections.warning.accent }}
+          >
+            Notifications Preview
           </p>
 
           <h2 className="text-section-title mt-2 text-text-primary">
-            Notifications
+            What needs your attention
           </h2>
         </div>
 
@@ -82,20 +87,25 @@ export default function RecentNotifications({
           )}
         </div>
       ) : visible.length === 0 ? (
-        <div className="mt-6 rounded-[var(--radius-card)] border border-border-subtle bg-surface-sunken/60 p-8 text-center">
-          <Bell
-            size={28}
-            className="mx-auto text-charcoal-soft"
-          />
+        <div className="mt-6 rounded-[var(--radius-card)] border border-border-subtle bg-surface-sunken/70 p-8 text-center">
+          <div
+            className="htv-icon-well mx-auto h-14 w-14"
+            style={{
+              background: sections.homeHealth.soft,
+              color: sections.homeHealth.accent,
+            }}
+          >
+            <Bell size={24} />
+          </div>
 
           <p className="mt-4 font-medium text-text-primary">
-            You&apos;re all caught up
+            Everything looks great today.
           </p>
 
-          <p className="mt-2 text-sm text-text-secondary">
-            New alerts about warranties,
-            maintenance, and household changes
-            will appear here.
+          <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-text-muted">
+            New alerts about warranties, maintenance, and
+            household changes will appear here when they
+            need you.
           </p>
 
           <p className="mt-3 text-xs text-text-tertiary">
@@ -121,7 +131,7 @@ export default function RecentNotifications({
                 }`}
               >
                 <div className="flex items-start gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-button)] bg-interaction-soft text-interaction">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-button)] border border-border-subtle bg-surface-sunken shadow-[var(--shadow-well)] text-charcoal-soft">
                     <Icon size={18} />
                   </div>
 

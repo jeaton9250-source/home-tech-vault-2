@@ -29,6 +29,7 @@ export type DashboardMetrics = {
   roomCount: number;
   familyMemberCount: number;
   protectedValue: number;
+  networkConfigured: boolean;
   vaultScore: VaultScoreResult;
 };
 
@@ -105,6 +106,7 @@ export async function loadDashboardMetrics(
     maintenanceResult,
     imagesResult,
     membersResult,
+    networkCountResult,
   ] = await Promise.all([
     applyHouseholdScope(
       supabase
@@ -157,6 +159,17 @@ export async function loadDashboardMetrics(
           count: 1,
           error: null,
         }),
+
+    applyHouseholdScope(
+      supabase
+        .from("network_info")
+        .select("id", {
+          count: "exact",
+          head: true,
+        }),
+      householdId,
+      user.id
+    ),
   ]);
 
   const rooms = new Set(
@@ -237,6 +250,9 @@ export async function loadDashboardMetrics(
         Number(device.purchase_price || 0),
       0
     ),
+    networkConfigured: networkCountResult.error
+      ? false
+      : (networkCountResult.count ?? 0) > 0,
     vaultScore,
   };
 }

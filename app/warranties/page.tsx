@@ -943,19 +943,21 @@ export default function WarrantiesPage() {
             ))
           ) : filteredDevices.length ===
             0 ? (
-            <div className="rounded-[var(--radius-card)] border border-border-subtle bg-surface-card p-10 text-center">
-              <ShieldCheck
-                size={30}
-                className="mx-auto text-text-tertiary"
-              />
+            <div className="rounded-[var(--radius-card)] border border-border-subtle bg-surface-sunken/40 p-10 text-center shadow-[var(--shadow-sm)]">
+              <div className="htv-icon-well mx-auto flex h-14 w-14 items-center justify-center text-home-health">
+                <ShieldCheck size={28} />
+              </div>
 
-              <h2 className="mt-4 font-semibold">
-                No warranties found
+              <h2 className="mt-4 text-lg font-medium text-text-primary">
+                {devices.length === 0
+                  ? "No warranty records yet"
+                  : "No warranties match your search"}
               </h2>
 
-              <p className="mt-2 text-sm text-text-secondary">
-                Try another search or
-                filter.
+              <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-text-muted">
+                {devices.length === 0
+                  ? "Add devices with warranty dates to see coverage at a glance."
+                  : "Try another search or filter to find what you need."}
               </p>
             </div>
           ) : (

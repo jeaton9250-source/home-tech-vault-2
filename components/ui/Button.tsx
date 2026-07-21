@@ -93,7 +93,7 @@ function buildClasses({
   className: string;
 }) {
   return cn(
-    "inline-flex items-center justify-center gap-2 font-medium leading-none outline-none transition-all duration-200 focus-visible:ring-4 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
+    "inline-flex items-center justify-center gap-2 font-medium leading-none outline-none transition-all duration-200 ease-[var(--ease-premium)] focus-visible:ring-4 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
     variantClasses[variant],
     variant !== "link" && sizeClasses[size],
     fullWidth && "w-full",

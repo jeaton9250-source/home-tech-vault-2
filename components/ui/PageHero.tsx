@@ -46,11 +46,11 @@ export default function PageHero({
   return (
     <section
       className={cn(
-        "overflow-hidden rounded-[var(--radius-card)] border border-border-subtle p-8 shadow-[var(--shadow-sm),var(--shadow-md)] md:p-10",
+        "overflow-hidden rounded-[calc(var(--radius-card)+4px)] border border-border-subtle p-8 shadow-[var(--shadow-sm),var(--shadow-md),var(--shadow-inset)] md:p-10",
         className
       )}
       style={{
-        background: `linear-gradient(135deg, ${tint.soft} 0%, ${colors.surfaceCard} 55%, ${colors.surfaceBase} 100%)`,
+        background: `linear-gradient(145deg, color-mix(in srgb, ${tint.soft} 88%, white) 0%, ${colors.surfaceCard} 46%, ${colors.surfaceBase} 100%)`,
       }}
     >
       <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
@@ -74,7 +74,7 @@ export default function PageHero({
           </h1>
 
           {description && (
-            <p className="mt-4 text-base leading-7 text-text-secondary">
+            <p className="mt-4 text-base leading-7 text-text-muted">
               {description}
             </p>
           )}

@@ -6,6 +6,7 @@ import { ArrowRight } from "lucide-react";
 
 import ActivityTimeline from "@/components/activity/ActivityTimeline";
 import PageCard from "@/components/ui/PageCard";
+import { sections } from "@/lib/design-system/tokens";
 
 import { useActivityFeed } from "@/hooks/useActivityFeed";
 
@@ -29,10 +30,13 @@ export default function RecentActivity({
     });
 
   return (
-    <PageCard interactive>
+    <PageCard elevated interactive>
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-overline">
+          <p
+            className="text-overline"
+            style={{ color: sections.technology.accent }}
+          >
             Activity Timeline
           </p>
 

@@ -4,6 +4,9 @@ import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 
 import Button from "@/components/ui/Button";
+import IconWell, {
+  type IconWellSection,
+} from "@/components/ui/IconWell";
 import { cn } from "@/lib/design-system/cn";
 
 type EmptyStateProps = {
@@ -15,6 +18,7 @@ type EmptyStateProps = {
   onAction?: () => void;
   helpLabel?: string;
   helpHref?: string;
+  section?: IconWellSection;
   className?: string;
   children?: ReactNode;
 };
@@ -28,25 +32,29 @@ export default function EmptyState({
   onAction,
   helpLabel,
   helpHref,
+  section = "technology",
   className,
   children,
 }: EmptyStateProps) {
   return (
     <div
       className={cn(
-        "flex flex-col items-center rounded-[var(--radius-card)] border border-dashed border-border-subtle bg-surface-card px-6 py-12 text-center",
+        "flex flex-col items-center rounded-[var(--radius-card)] border border-border-subtle bg-surface-sunken/40 px-6 py-12 text-center shadow-[var(--shadow-sm)]",
         className
       )}
     >
-      <div className="flex h-14 w-14 items-center justify-center rounded-[var(--radius-card)] border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
-        <Icon size={28} strokeWidth={1.75} />
-      </div>
+      <IconWell
+        icon={Icon}
+        section={section}
+        size="lg"
+        className="mx-auto h-14 w-14 [&_svg]:size-7"
+      />
 
       <h3 className="text-card-title mt-5 text-text-primary">
         {title}
       </h3>
 
-      <p className="mt-2 max-w-md text-sm leading-6 text-text-secondary">
+      <p className="mt-2 max-w-md text-sm leading-6 text-text-muted">
         {description}
       </p>
 

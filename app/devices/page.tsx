@@ -917,15 +917,14 @@ export default function DevicesPage() {
             <Laptop size={29} />
           </div>
 
-          <h2 className="mt-5 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
-            Your vault is ready
+          <h2 className="mt-5 text-2xl font-medium tracking-[-0.03em] text-text-primary">
+            Your technology deserves a home.
           </h2>
 
-          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-text-secondary">
-            Add your first device to
-            organize its photos, purchase
-            information, warranty, and
-            documents.
+          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-text-muted">
+            Add your first device to organize its photos,
+            purchase details, warranty, and documents in
+            one calm place.
           </p>
 
           {canCreate ? (

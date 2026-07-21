@@ -501,8 +501,9 @@ export default function SubscriptionsPage() {
       {subscriptions.length === 0 ? (
         <PermissionEmptyState
           icon={CreditCard}
-          title="No subscriptions yet"
-          description="Track streaming services, cloud storage, software, VPNs, domains, internet services, and other recurring technology expenses."
+          section="insights"
+          title="Know where your money goes"
+          description="Track streaming services, cloud storage, software, and other recurring technology expenses in one warm, clear view."
           href="/subscriptions/add"
           buttonLabel="Add Your First Subscription"
         />

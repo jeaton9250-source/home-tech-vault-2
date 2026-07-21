@@ -598,8 +598,9 @@ export default function DocumentsPage() {
       ) : (
         <PermissionEmptyState
           icon={FileText}
-          title="No documents yet"
-          description="Upload receipts, manuals, warranties, invoices, and other important files so they are ready when needed."
+          section="digitalVault"
+          title="Keep what matters close"
+          description="Upload receipts, manuals, warranties, and invoices so the important details are always within reach."
           href="/documents/upload"
           buttonLabel="Upload Your First Document"
         />

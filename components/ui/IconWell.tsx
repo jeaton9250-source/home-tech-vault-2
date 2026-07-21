@@ -33,7 +33,7 @@ export default function IconWell({
   return (
     <div
       className={cn(
-        "flex shrink-0 items-center justify-center rounded-[var(--radius-button)] border border-border-subtle shadow-[var(--shadow-inset)]",
+        "htv-icon-well flex shrink-0 items-center justify-center rounded-[var(--radius-button)] border border-border-subtle",
         sizeClasses[size],
         className
       )}

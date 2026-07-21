@@ -8,7 +8,8 @@ export const colors = {
   surfaceHover: "#F7F5F0",
 
   textPrimary: "#1C1917",
-  textSecondary: "#78716C",
+  textSecondary: "#44403C",
+  textMuted: "#78716C",
   textTertiary: "#A8A29E",
 
   borderSubtle: "#E7E2DA",
@@ -106,11 +107,12 @@ export const typography = {
 } as const;
 
 export const shadows = {
-  sm: "0 1px 2px rgb(28 25 23 / 0.04)",
-  md: "0 4px 16px rgb(28 25 23 / 0.06)",
-  lg: "0 12px 40px rgb(28 25 23 / 0.07)",
-  lift: "0 16px 48px rgb(28 25 23 / 0.08)",
-  inset: "inset 0 1px 0 rgb(255 255 255 / 0.7)",
+  sm: "0 1px 2px rgb(28 25 23 / 0.05)",
+  md: "0 4px 20px rgb(28 25 23 / 0.07)",
+  lg: "0 12px 44px rgb(28 25 23 / 0.09)",
+  lift: "0 20px 56px rgb(28 25 23 / 0.1)",
+  inset: "inset 0 1px 0 rgb(255 255 255 / 0.75)",
+  well: "inset 0 2px 4px rgb(28 25 23 / 0.04)",
 } as const;
 
 export const brand = {
@@ -118,6 +120,7 @@ export const brand = {
   tagline: "Organize. Protect. Simplify.",
   taglineLines: ["Organize.", "Protect.", "Simplify."],
   greeting: "Welcome home",
+  commandCenter: "Home Command Center",
 } as const;
 
 /** @deprecated Use `interaction` for links/focus. Kept for gradual migration. */

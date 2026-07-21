@@ -17,6 +17,7 @@ type Pillar = {
   key: string;
   label: string;
   value: number;
+  angle: number;
 };
 
 function clamp(value: number) {
@@ -30,18 +31,11 @@ function polarToCartesian(
   angleInDegrees: number
 ) {
   const angleInRadians =
-    ((angleInDegrees - 90) * Math.PI) /
-    180;
+    ((angleInDegrees - 90) * Math.PI) / 180;
 
   return {
-    x:
-      cx +
-      radius *
-        Math.cos(angleInRadians),
-    y:
-      cy +
-      radius *
-        Math.sin(angleInRadians),
+    x: cx + radius * Math.cos(angleInRadians),
+    y: cy + radius * Math.sin(angleInRadians),
   };
 }
 
@@ -58,14 +52,12 @@ function describeArc(
     radius,
     endAngle
   );
-
   const end = polarToCartesian(
     cx,
     cy,
     radius,
     startAngle
   );
-
   const largeArcFlag =
     endAngle - startAngle <= 180 ? 0 : 1;
 
@@ -98,36 +90,41 @@ export default function HomeHealth({
 
   const dimensions =
     size === "lg"
-      ? { box: 228, cx: 114, cy: 114, r: 82 }
-      : { box: 188, cx: 94, cy: 94, r: 68 };
+      ? { box: 248, cx: 124, cy: 124, r: 88 }
+      : { box: 200, cx: 100, cy: 100, r: 72 };
 
   const pillars: Pillar[] = [
     {
       key: "protection",
       label: "Protection",
       value: clamp(protection),
+      angle: 225,
     },
     {
       key: "organization",
       label: "Organization",
       value: clamp(organization),
+      angle: 315,
     },
     {
       key: "documentation",
       label: "Documentation",
       value: clamp(documentation),
+      angle: 45,
     },
     {
       key: "maintenance",
       label: "Maintenance",
       value: clamp(maintenance),
+      angle: 135,
     },
   ];
 
-  const sweep =
-    (normalized / 100) * 300;
-  const startAngle = 120;
+  const sweep = (normalized / 100) * 270;
+  const startAngle = 135;
   const endAngle = startAngle + sweep;
+
+  const frameSize = dimensions.box + 32;
 
   return (
     <div
@@ -136,164 +133,226 @@ export default function HomeHealth({
         className
       )}
       role="img"
-      aria-label={`Home Health ${normalized} out of 100. ${label}.`}
+      aria-label={`Vault Health ${normalized} out of 100. ${label}.`}
     >
       <div
-        className="relative rounded-full bg-gradient-to-b from-home-health-soft/50 to-surface-card p-3 shadow-[var(--shadow-sm)]"
+        className="relative"
         style={{
-          width: dimensions.box + 24,
-          height: dimensions.box + 24,
+          width: frameSize,
+          height: frameSize,
         }}
       >
-        <svg
-          viewBox={`0 0 ${dimensions.box} ${dimensions.box}`}
-          className="h-full w-full"
+        {/* Architectural outer frame */}
+        <div
+          className="absolute inset-0 rounded-[28px] border border-border-subtle bg-gradient-to-b from-surface-card to-surface-base/80 shadow-[var(--shadow-md),var(--shadow-inset)]"
+          aria-hidden
+        />
+
+        {/* Corner accents */}
+        {[
+          "top-3 left-3",
+          "top-3 right-3",
+          "bottom-3 left-3",
+          "bottom-3 right-3",
+        ].map((position) => (
+          <span
+            key={position}
+            className={cn(
+              "absolute h-3 w-3 border-home-health/30",
+              position,
+              position.includes("top")
+                ? "border-t"
+                : "border-b",
+              position.includes("left")
+                ? "border-l"
+                : "border-r"
+            )}
+            aria-hidden
+          />
+        ))}
+
+        <div
+          className="absolute inset-4 flex items-center justify-center"
           aria-hidden
         >
-          {/* Outer architectural ring */}
-          <circle
-            cx={dimensions.cx}
-            cy={dimensions.cy}
-            r={dimensions.r + 14}
-            fill="none"
-            stroke="var(--color-border-subtle)"
-            strokeWidth="1"
-          />
-
-          {Array.from({ length: 60 }).map(
-            (_, index) => {
-              const angle =
-                (index / 60) * 360;
-
-              const outer =
-                polarToCartesian(
-                  dimensions.cx,
-                  dimensions.cy,
-                  dimensions.r + 13,
-                  angle
-                );
-
-              const inner =
-                polarToCartesian(
-                  dimensions.cx,
-                  dimensions.cy,
-                  dimensions.r +
-                    (index % 5 === 0
-                      ? 6
-                      : 9),
-                  angle
-                );
-
-              return (
-                <line
-                  key={angle}
-                  x1={outer.x}
-                  y1={outer.y}
-                  x2={inner.x}
-                  y2={inner.y}
-                  stroke="var(--color-border-strong)"
-                  strokeWidth={
-                    index % 5 === 0
-                      ? 1
-                      : 0.5
-                  }
-                  opacity={0.45}
+          <svg
+            viewBox={`0 0 ${dimensions.box} ${dimensions.box}`}
+            className="h-full w-full"
+          >
+            <defs>
+              <linearGradient
+                id="vault-health-arc"
+                x1="0%"
+                y1="0%"
+                x2="100%"
+                y2="100%"
+              >
+                <stop
+                  offset="0%"
+                  stopColor="#1F5C45"
                 />
-              );
-            }
-          )}
+                <stop
+                  offset="100%"
+                  stopColor="#2A7A5A"
+                />
+              </linearGradient>
+            </defs>
 
-          {/* Track */}
-          <path
-            d={describeArc(
-              dimensions.cx,
-              dimensions.cy,
-              dimensions.r,
-              startAngle,
-              startAngle + 300
+            {/* Inner guide rings */}
+            <circle
+              cx={dimensions.cx}
+              cy={dimensions.cy}
+              r={dimensions.r + 10}
+              fill="none"
+              stroke="var(--color-border-subtle)"
+              strokeWidth="0.75"
+              opacity={0.6}
+            />
+
+            {/* Precision tick marks */}
+            {Array.from({ length: 54 }).map(
+              (_, index) => {
+                const angle =
+                  135 + (index / 53) * 270;
+                const isMajor = index % 9 === 0;
+                const outer = polarToCartesian(
+                  dimensions.cx,
+                  dimensions.cy,
+                  dimensions.r + (isMajor ? 8 : 5),
+                  angle
+                );
+                const inner = polarToCartesian(
+                  dimensions.cx,
+                  dimensions.cy,
+                  dimensions.r - (isMajor ? 2 : 0),
+                  angle
+                );
+
+                return (
+                  <line
+                    key={angle}
+                    x1={outer.x}
+                    y1={outer.y}
+                    x2={inner.x}
+                    y2={inner.y}
+                    stroke="var(--color-border-strong)"
+                    strokeWidth={isMajor ? 1 : 0.5}
+                    opacity={isMajor ? 0.55 : 0.3}
+                  />
+                );
+              }
             )}
-            fill="none"
-            stroke="var(--color-home-health-muted)"
-            strokeWidth="11"
-            strokeLinecap="round"
-            opacity={0.35}
-          />
 
-          {/* Score arc */}
-          {normalized > 0 && (
+            {/* Track */}
             <path
               d={describeArc(
                 dimensions.cx,
                 dimensions.cy,
                 dimensions.r,
                 startAngle,
-                endAngle
+                startAngle + 270
               )}
               fill="none"
-              stroke="var(--color-home-health)"
-              strokeWidth="11"
+              stroke="var(--color-home-health-muted)"
+              strokeWidth="10"
               strokeLinecap="round"
-              className="transition-all duration-700 ease-[var(--ease-premium)]"
+              opacity={0.35}
             />
-          )}
-        </svg>
 
+            {/* Score arc */}
+            {normalized > 0 && (
+              <path
+                d={describeArc(
+                  dimensions.cx,
+                  dimensions.cy,
+                  dimensions.r,
+                  startAngle,
+                  endAngle
+                )}
+                fill="none"
+                stroke="url(#vault-health-arc)"
+                strokeWidth="10"
+                strokeLinecap="round"
+                className="transition-all duration-700 ease-[var(--ease-premium)]"
+              />
+            )}
+
+            {/* Pillar indicators */}
+            {pillars.map((pillar) => {
+              const point = polarToCartesian(
+                dimensions.cx,
+                dimensions.cy,
+                dimensions.r + 18,
+                pillar.angle
+              );
+
+              return (
+                <g key={pillar.key}>
+                  <circle
+                    cx={point.x}
+                    cy={point.y}
+                    r={4}
+                    fill="var(--color-surface-card)"
+                    stroke="var(--color-home-health)"
+                    strokeWidth="1.5"
+                    opacity={
+                      0.35 + (pillar.value / 100) * 0.65
+                    }
+                  />
+                </g>
+              );
+            })}
+          </svg>
+        </div>
+
+        {/* Center medallion */}
         <div className="absolute inset-0 flex items-center justify-center">
           <div
-            className="flex flex-col items-center justify-center rounded-full border border-border-subtle bg-surface-card text-center shadow-[var(--shadow-inset)]"
+            className="flex flex-col items-center justify-center rounded-[20px] border border-border-subtle bg-surface-card text-center shadow-[var(--shadow-well),var(--shadow-inset)]"
             style={{
-              width:
-                size === "lg" ? 118 : 96,
-              height:
-                size === "lg" ? 118 : 96,
+              width: size === "lg" ? 128 : 104,
+              height: size === "lg" ? 128 : 104,
             }}
           >
-            <span className="text-[0.625rem] font-semibold uppercase tracking-[0.14em] text-home-health">
-              Home Health
+            <span className="text-[0.625rem] font-semibold uppercase tracking-[0.16em] text-home-health">
+              Vault Health
             </span>
 
             <span
-              className="mt-1 font-medium tabular-nums tracking-[-0.03em] text-text-primary"
+              className="mt-1 font-medium tabular-nums tracking-[-0.04em] text-text-primary"
               style={{
                 fontSize:
-                  size === "lg"
-                    ? "2.25rem"
-                    : "1.875rem",
+                  size === "lg" ? "2.5rem" : "2rem",
                 lineHeight: 1,
               }}
             >
               {normalized}
             </span>
 
-            <span className="mt-1 text-[0.6875rem] font-medium text-text-secondary">
+            <span className="mt-1.5 text-[0.6875rem] font-medium text-text-muted">
               {label}
             </span>
           </div>
         </div>
       </div>
 
-      <div className="mt-5 w-full max-w-[260px] space-y-2.5">
+      {/* Pillar breakdown */}
+      <div className="mt-6 grid w-full max-w-[280px] grid-cols-2 gap-x-4 gap-y-3">
         {pillars.map((pillar) => (
           <div key={pillar.key}>
-            <div className="mb-1 flex items-center justify-between gap-3">
-              <span className="text-[0.6875rem] font-medium text-text-secondary">
+            <div className="mb-1 flex items-center justify-between gap-2">
+              <span className="text-[0.6875rem] font-medium text-text-muted">
                 {pillar.label}
               </span>
-              <span className="text-[0.6875rem] font-medium tabular-nums text-text-primary">
+              <span className="text-[0.6875rem] font-semibold tabular-nums text-text-secondary">
                 {pillar.value}
               </span>
             </div>
 
-            <div className="h-1.5 overflow-hidden rounded-full bg-surface-sunken shadow-[var(--shadow-inset)]">
+            <div className="h-1 overflow-hidden rounded-full bg-surface-sunken shadow-[var(--shadow-well)]">
               <div
-                className="h-full rounded-full bg-home-health transition-all duration-700 ease-[var(--ease-premium)]"
-                style={{
-                  width: `${pillar.value}%`,
-                  opacity:
-                    0.45 +
-                    (pillar.value / 100) *
-                      0.55,
-                }}
+                className="h-full rounded-full bg-gradient-to-r from-home-health/70 to-home-health transition-all duration-700 ease-[var(--ease-premium)]"
+                style={{ width: `${pillar.value}%` }}
               />
             </div>
           </div>

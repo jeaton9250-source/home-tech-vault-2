@@ -22,27 +22,16 @@ export default function PageCard({
       className={cn(
         "rounded-[var(--radius-card)] border border-border-subtle p-6 md:p-8",
         elevated &&
-          "bg-surface-card shadow-[var(--shadow-sm),var(--shadow-inset)]",
-        elevated &&
-          !inset &&
-          "bg-gradient-to-b from-surface-card to-surface-base/30",
+          "bg-gradient-to-b from-surface-card to-surface-base/40 shadow-[var(--shadow-sm),var(--shadow-md),var(--shadow-inset)]",
         inset &&
-          "bg-surface-sunken shadow-[var(--shadow-inset)]",
+          "bg-surface-sunken shadow-[var(--shadow-well),var(--shadow-inset)]",
         !elevated &&
           !inset &&
-          "bg-surface-card",
+          "bg-surface-card shadow-[var(--shadow-sm)]",
         interactive &&
           "htv-card-interactive",
         className
       )}
-      style={
-        elevated && !inset
-          ? {
-              boxShadow:
-                "var(--shadow-sm), var(--shadow-md)",
-            }
-          : undefined
-      }
     >
       {children}
     </section>

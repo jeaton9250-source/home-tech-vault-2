@@ -797,8 +797,9 @@ export default function MaintenancePage() {
       {tasks.length === 0 ? (
         <PermissionEmptyState
           icon={Wrench}
-          title="Nothing scheduled"
-          description="Add your first maintenance task to begin tracking updates, cleaning, repairs, and routine care."
+          section="homeHealth"
+          title="Nothing scheduled yet"
+          description="Add your first maintenance task to track updates, cleaning, repairs, and the quiet care your technology deserves."
           canCreate={canCreate}
           href="/maintenance/new"
           buttonLabel="Add Maintenance Task"

@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 /* ============================================================
-   Home Tech Vault Design System 3.1
-   Warm · Premium · Residential · Crafted
+   Home Tech Vault Design System 3.2
+   Apple simplicity · Sonos warmth · Lutron elegance
    ============================================================ */
 
 @theme inline {
@@ -14,7 +14,8 @@
 
   /* Typography — charcoal warmth */
   --color-text-primary: #1c1917;
-  --color-text-secondary: #78716c;
+  --color-text-secondary: #44403c;
+  --color-text-muted: #78716c;
   --color-text-tertiary: #a8a29e;
 
   /* Borders — architectural hairlines */
@@ -73,12 +74,13 @@
   --radius-dialog: 20px;
   --radius-chip: 9999px;
 
-  /* Shadows — warm charcoal depth */
-  --shadow-sm: 0 1px 2px rgb(28 25 23 / 0.04);
-  --shadow-md: 0 4px 16px rgb(28 25 23 / 0.06);
-  --shadow-lg: 0 12px 40px rgb(28 25 23 / 0.07);
-  --shadow-lift: 0 16px 48px rgb(28 25 23 / 0.08);
-  --shadow-inset: inset 0 1px 0 rgb(255 255 255 / 0.72);
+  /* Shadows — warm layered depth */
+  --shadow-sm: 0 1px 2px rgb(28 25 23 / 0.05);
+  --shadow-md: 0 4px 20px rgb(28 25 23 / 0.07);
+  --shadow-lg: 0 12px 44px rgb(28 25 23 / 0.09);
+  --shadow-lift: 0 20px 56px rgb(28 25 23 / 0.1);
+  --shadow-inset: inset 0 1px 0 rgb(255 255 255 / 0.75);
+  --shadow-well: inset 0 2px 4px rgb(28 25 23 / 0.04);
 
   /* Motion */
   --ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
@@ -217,7 +219,7 @@ textarea::placeholder {
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--color-text-secondary);
+  color: var(--color-text-muted);
 }
 
 .text-link {
@@ -301,6 +303,56 @@ textarea::placeholder {
   cursor: not-allowed;
   background: var(--color-surface-sunken);
   opacity: 0.7;
+}
+
+/* Home Command Center hero */
+.htv-command-hero {
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--color-home-health-soft) 85%, white) 0%,
+      var(--color-surface-card) 42%,
+      var(--color-surface-base) 100%
+    );
+  border: 1px solid var(--color-border-subtle);
+  border-radius: calc(var(--radius-card) + 4px);
+  box-shadow:
+    var(--shadow-sm),
+    var(--shadow-md),
+    var(--shadow-inset);
+}
+
+/* Metric tile — architectural layered card */
+.htv-metric-card {
+  border-radius: var(--radius-card);
+  border: 1px solid var(--color-border-subtle);
+  background: linear-gradient(
+    180deg,
+    var(--color-surface-card) 0%,
+    color-mix(in srgb, var(--color-surface-card) 94%, var(--color-surface-base)) 100%
+  );
+  box-shadow: var(--shadow-sm), var(--shadow-inset);
+  transition:
+    transform var(--duration-normal) var(--ease-premium),
+    box-shadow var(--duration-normal) var(--ease-premium),
+    border-color var(--duration-normal) var(--ease-premium);
+}
+
+.htv-metric-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-md), var(--shadow-lg);
+}
+
+/* Icon well — inset architectural container */
+.htv-icon-well {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-button);
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-sunken);
+  box-shadow: var(--shadow-well), var(--shadow-inset);
 }
 
 /* Home arrival hero band */

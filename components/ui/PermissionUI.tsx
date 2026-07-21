@@ -13,6 +13,9 @@ import {
 import type { ReactNode } from "react";
 
 import Button from "@/components/ui/Button";
+import IconWell, {
+  type IconWellSection,
+} from "@/components/ui/IconWell";
 import { usePermissions } from "@/hooks/usePermissions";
 
 import type { FeatureKey } from "@/lib/permissions/types";
@@ -53,9 +56,16 @@ export function ViewerBanner({
     : description;
 
   return (
-    <section className="rounded-[var(--radius-card)] border border-warning/40 bg-warning-soft p-5">
+    <section className="rounded-[var(--radius-card)] border border-warning/35 bg-warning-soft/80 p-5 shadow-[var(--shadow-sm)]">
       <div className="flex items-start gap-4">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-button)] bg-charcoal text-surface-card">
+        <div
+          className={cn(
+            "htv-icon-well flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-button)]",
+            isDemo
+              ? "border-charcoal/20 bg-charcoal text-surface-card"
+              : "border-warning/30 bg-warning-soft text-warning"
+          )}
+        >
           {isDemo ? (
             <Sparkles size={18} />
           ) : (
@@ -68,7 +78,7 @@ export function ViewerBanner({
             {resolvedTitle}
           </p>
 
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-text-secondary">
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-text-muted">
             {resolvedDescription}
           </p>
         </div>
@@ -153,6 +163,7 @@ type PermissionEmptyStateProps = {
   feature?: FeatureKey;
   lockedLabel?: string;
   canCreate?: boolean;
+  section?: IconWellSection;
 };
 
 export function PermissionEmptyState({
@@ -164,18 +175,22 @@ export function PermissionEmptyState({
   feature,
   lockedLabel = "Create Your Vault",
   canCreate: canCreateOverride,
+  section = "technology",
 }: PermissionEmptyStateProps) {
   return (
-    <section className="rounded-[var(--radius-card)] border border-border-subtle bg-surface-card px-6 py-14 text-center shadow-sm">
-      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-[var(--radius-card)] bg-interaction-soft text-interaction">
-        <Icon size={29} />
-      </div>
+    <section className="rounded-[var(--radius-card)] border border-border-subtle bg-surface-sunken/40 px-6 py-14 text-center shadow-[var(--shadow-sm)]">
+      <IconWell
+        icon={Icon}
+        section={section}
+        size="lg"
+        className="mx-auto h-16 w-16 [&_svg]:size-8"
+      />
 
-      <h2 className="mt-5 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
+      <h2 className="mt-5 text-2xl font-medium tracking-[-0.03em] text-text-primary">
         {title}
       </h2>
 
-      <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-text-secondary">
+      <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-text-muted">
         {description}
       </p>
 

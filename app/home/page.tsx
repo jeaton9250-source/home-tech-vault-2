@@ -806,15 +806,13 @@ function RoomsContent() {
             <Home size={29} />
           </div>
 
-          <h2 className="mt-5 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
-            Your home is ready
+          <h2 className="mt-5 text-2xl font-medium tracking-[-0.03em] text-text-primary">
+            Every room tells a story.
           </h2>
 
-          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-text-secondary">
-            Add your first device
-            and assign it a room to
-            begin building your home
-            view.
+          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-text-muted">
+            Add your first device and assign it a room to
+            begin seeing your home the way you live in it.
           </p>
 
           {canCreate ? (
