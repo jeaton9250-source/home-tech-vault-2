@@ -44,12 +44,27 @@ type DeletionPreview = {
   dataPreserved: string[];
 };
 
-type DeletionJob = {
-  id: string;
+type DeletionJobView = {
+  jobId: string;
   status: string;
-  current_step: string | null;
-  safe_error_message: string | null;
+  currentStep: string | null;
+  safeErrorCode: string | null;
+  safeErrorMessage: string | null;
+  canRetry: boolean;
+  canCancel: boolean;
+  canResume: boolean;
+  isStale: boolean;
+  isActive: boolean;
+  retryCount: number;
+  startedAt: string | null;
+  updatedAt: string;
+  completedAt: string | null;
+  failedAt: string | null;
+  canceledAt: string | null;
+  message: string;
 };
+
+type DeletionJob = DeletionJobView;
 
 type AccountDangerZoneProps = {
   detail: AdminUserDetail;
@@ -57,18 +72,38 @@ type AccountDangerZoneProps = {
 };
 
 function accountStatusLabel(
-  detail: AdminUserDetail
+  detail: AdminUserDetail,
+  jobView: DeletionJobView | null
 ): string {
+  if (detail.deletionJobStatus === "completed") {
+    return "Deleted";
+  }
+
+  if (detail.deletionJobStatus === "canceled") {
+    return "Deletion canceled";
+  }
+
+  if (
+    jobView?.isStale ||
+    detail.deletionJobIsStale
+  ) {
+    return "Deletion stalled";
+  }
+
   if (
     detail.deletionJobStatus === "processing" ||
     detail.deletionJobStatus === "pending" ||
     detail.deletionJobStatus === "validating"
   ) {
-    return "Deletion pending";
+    return "Deletion in progress";
   }
 
   if (detail.deletionJobStatus === "blocked") {
     return "Deletion blocked";
+  }
+
+  if (detail.deletionJobStatus === "failed") {
+    return "Deletion failed";
   }
 
   if (detail.accountStatus === "deactivated") {
@@ -116,21 +151,115 @@ export default function AccountDangerZone({
   const [deleteFinalConfirm, setDeleteFinalConfirm] =
     useState(false);
   const [latestJob, setLatestJob] =
-    useState<DeletionJob | null>(null);
+    useState<DeletionJobView | null>(null);
+  const [jobLoading, setJobLoading] =
+    useState(false);
+
+  const jobView = useMemo(() => {
+    if (latestJob) {
+      return latestJob;
+    }
+
+    if (!detail.deletionJobId) {
+      return null;
+    }
+
+    return {
+      jobId: detail.deletionJobId,
+      status: detail.deletionJobStatus ?? "unknown",
+      currentStep: detail.deletionJobStep,
+      safeErrorCode:
+        detail.deletionJobSafeErrorCode,
+      safeErrorMessage:
+        detail.deletionJobError,
+      canRetry: detail.deletionJobCanRetry,
+      canCancel: detail.deletionJobCanCancel,
+      canResume:
+        detail.deletionJobCanRetry ||
+        detail.deletionJobIsStale,
+      isStale: detail.deletionJobIsStale,
+      isActive:
+        detail.deletionJobStatus ===
+          "pending" ||
+        detail.deletionJobStatus ===
+          "validating" ||
+        detail.deletionJobStatus ===
+          "processing",
+      retryCount: 0,
+      startedAt: detail.deletionJobStartedAt,
+      updatedAt:
+        detail.deletionJobUpdatedAt ??
+        new Date().toISOString(),
+      completedAt: null,
+      failedAt: null,
+      canceledAt: null,
+      message:
+        detail.deletionJobMessage ??
+        "Deletion job status unavailable.",
+    } satisfies DeletionJobView;
+  }, [detail, latestJob]);
 
   const statusLabel = useMemo(
-    () => accountStatusLabel(detail),
-    [detail]
+    () => accountStatusLabel(detail, jobView),
+    [detail, jobView]
   );
 
-  const canRetryDeletion =
-    detail.deletionJobStatus === "failed" ||
-    latestJob?.status === "failed";
+  const deletionCompleted =
+    detail.deletionJobStatus === "completed" ||
+    jobView?.status === "completed";
 
-  const deletionInProgress =
-    detail.deletionJobStatus === "pending" ||
-    detail.deletionJobStatus === "processing" ||
-    detail.deletionJobStatus === "validating";
+  const deletionBlocked =
+    detail.deletionJobStatus === "blocked" ||
+    jobView?.status === "blocked";
+
+  const deletionActive =
+    jobView?.isActive === true &&
+    !jobView.isStale;
+
+  const canRetryDeletion =
+    jobView?.canRetry === true;
+
+  const canCancelDeletion =
+    jobView?.canCancel === true;
+
+  async function refreshDeletionJob() {
+    try {
+      setJobLoading(true);
+      setError("");
+
+      const response = await fetch(
+        `/api/admin/users/${detail.id}/deletion`
+      );
+      const payload =
+        (await response.json()) as {
+          jobView?: DeletionJobView;
+          error?: string;
+        };
+
+      if (!response.ok) {
+        throw new Error(
+          payload.error ||
+            "Unable to refresh deletion status."
+        );
+      }
+
+      setLatestJob(payload.jobView ?? null);
+    } catch (refreshError) {
+      setError(
+        refreshError instanceof Error
+          ? refreshError.message
+          : "Unable to refresh deletion status."
+      );
+    } finally {
+      setJobLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    if (detail.deletionJobId) {
+      void refreshDeletionJob();
+    }
+  }, [detail.deletionJobId, detail.id]);
 
   useEffect(() => {
     if (!deleteOpen) {
@@ -332,18 +461,25 @@ export default function AccountDangerZone({
 
       const createPayload =
         (await createResponse.json()) as {
-          job?: DeletionJob;
+          job?: { id: string };
+          jobView?: DeletionJobView;
           error?: string;
         };
 
       if (!createResponse.ok) {
+        if (createPayload.jobView) {
+          setLatestJob(createPayload.jobView);
+        }
+
         throw new Error(
           createPayload.error ||
             "Unable to start permanent deletion."
         );
       }
 
-      const jobId = createPayload.job?.id;
+      const jobId =
+        createPayload.jobView?.jobId ??
+        createPayload.job?.id;
 
       if (!jobId) {
         throw new Error(
@@ -351,7 +487,9 @@ export default function AccountDangerZone({
         );
       }
 
-      setLatestJob(createPayload.job ?? null);
+      setLatestJob(
+        createPayload.jobView ?? null
+      );
 
       const processResponse = await fetch(
         `/api/admin/users/${detail.id}/deletion/process`,
@@ -370,14 +508,14 @@ export default function AccountDangerZone({
       const processPayload =
         (await processResponse.json()) as {
           deleted?: boolean;
-          job?: DeletionJob;
+          jobView?: DeletionJobView;
           error?: string;
         };
 
       if (!processResponse.ok) {
         setLatestJob(
-          processPayload.job ??
-            createPayload.job ??
+          processPayload.jobView ??
+            createPayload.jobView ??
             null
         );
         throw new Error(
@@ -385,6 +523,10 @@ export default function AccountDangerZone({
             "Deletion could not be completed."
         );
       }
+
+      setLatestJob(
+        processPayload.jobView ?? null
+      );
 
       if (processPayload.deleted) {
         setDeleteOpen(false);
@@ -422,7 +564,9 @@ export default function AccountDangerZone({
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            jobId: detail.deletionJobId,
+            jobId:
+              jobView?.jobId ??
+              detail.deletionJobId,
             confirm: true,
           }),
         }
@@ -431,17 +575,19 @@ export default function AccountDangerZone({
       const payload =
         (await response.json()) as {
           deleted?: boolean;
-          job?: DeletionJob;
+          jobView?: DeletionJobView;
           error?: string;
         };
 
       if (!response.ok) {
-        setLatestJob(payload.job ?? null);
+        setLatestJob(payload.jobView ?? null);
         throw new Error(
           payload.error ||
             "Retry failed."
         );
       }
+
+      setLatestJob(payload.jobView ?? null);
 
       if (payload.deleted) {
         setMessage(
@@ -457,6 +603,64 @@ export default function AccountDangerZone({
         actionError instanceof Error
           ? actionError.message
           : "Unable to retry deletion."
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleCancelDeletion() {
+    const confirmed = window.confirm(
+      "Cancel this deletion request? The account will remain intact."
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      setError("");
+      setMessage("");
+
+      const response = await fetch(
+        `/api/admin/users/${detail.id}/deletion`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            jobId:
+              jobView?.jobId ??
+              detail.deletionJobId,
+            confirm: true,
+          }),
+        }
+      );
+
+      const payload =
+        (await response.json()) as {
+          jobView?: DeletionJobView;
+          error?: string;
+        };
+
+      if (!response.ok) {
+        setLatestJob(payload.jobView ?? null);
+        throw new Error(
+          payload.error ||
+            "Unable to cancel deletion."
+        );
+      }
+
+      setLatestJob(payload.jobView ?? null);
+      setMessage("Deletion request canceled.");
+      await onUpdated();
+    } catch (actionError) {
+      setError(
+        actionError instanceof Error
+          ? actionError.message
+          : "Unable to cancel deletion."
       );
     } finally {
       setSubmitting(false);
@@ -522,7 +726,53 @@ export default function AccountDangerZone({
           </>
         )}
 
-        {detail.deletionJobStatus && (
+        {jobView ? (
+          <div className="rounded-xl border border-red-200 bg-white/70 p-3">
+            <p className="font-medium text-text-primary">
+              {jobView.message}
+            </p>
+
+            {jobView.currentStep ? (
+              <DetailRow
+                label="Current step"
+                value={jobView.currentStep.replaceAll(
+                  "_",
+                  " "
+                )}
+              />
+            ) : null}
+
+            {jobView.startedAt ? (
+              <DetailRow
+                label="Started"
+                value={formatAdminDate(
+                  jobView.startedAt
+                )}
+              />
+            ) : null}
+
+            <DetailRow
+              label="Last updated"
+              value={formatAdminDate(
+                jobView.updatedAt
+              )}
+            />
+
+            {jobView.safeErrorMessage ? (
+              <p className="mt-2 text-sm text-red-700">
+                {jobView.safeErrorMessage}
+              </p>
+            ) : null}
+
+            {jobView.isStale ? (
+              <p className="mt-2 text-sm text-red-700">
+                The deletion process stopped before
+                completing. You can resume safely without
+                creating a duplicate job.
+              </p>
+            ) : null}
+          </div>
+        ) : detail.deletionJobStatus ? (
           <>
             <DetailRow
               label="Deletion job"
@@ -531,9 +781,7 @@ export default function AccountDangerZone({
             {detail.deletionJobStep ? (
               <DetailRow
                 label="Current step"
-                value={
-                  detail.deletionJobStep
-                }
+                value={detail.deletionJobStep}
               />
             ) : null}
             {detail.deletionJobError ? (
@@ -542,7 +790,7 @@ export default function AccountDangerZone({
               </p>
             ) : null}
           </>
-        )}
+        ) : null}
       </div>
 
       {message ? (
@@ -558,8 +806,29 @@ export default function AccountDangerZone({
       ) : null}
 
       <div className="mt-4 flex flex-wrap gap-2">
+        {detail.deletionJobId ? (
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={submitting || jobLoading}
+            onClick={() => {
+              void refreshDeletionJob();
+            }}
+          >
+            {jobLoading ? (
+              <Loader2
+                size={16}
+                className="animate-spin"
+              />
+            ) : (
+              "Refresh status"
+            )}
+          </Button>
+        ) : null}
+
         {detail.accountStatus === "active" &&
-        !deletionInProgress ? (
+        !deletionActive &&
+        !deletionCompleted ? (
           <Button
             type="button"
             variant="secondary"
@@ -577,7 +846,8 @@ export default function AccountDangerZone({
 
         {detail.accountStatus ===
           "deactivated" &&
-        !deletionInProgress ? (
+        !deletionActive &&
+        !deletionCompleted ? (
           <Button
             type="button"
             disabled={submitting}
@@ -589,7 +859,9 @@ export default function AccountDangerZone({
           </Button>
         ) : null}
 
-        {!deletionInProgress ? (
+        {!deletionActive &&
+        !deletionCompleted &&
+        !deletionBlocked ? (
           <Button
             type="button"
             variant="secondary"
@@ -622,7 +894,22 @@ export default function AccountDangerZone({
               void handleRetryDeletion();
             }}
           >
-            Retry failed deletion
+            {jobView?.isStale
+              ? "Resume deletion"
+              : "Retry deletion"}
+          </Button>
+        ) : null}
+
+        {canCancelDeletion ? (
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={submitting}
+            onClick={() => {
+              void handleCancelDeletion();
+            }}
+          >
+            Cancel deletion request
           </Button>
         ) : null}
       </div>

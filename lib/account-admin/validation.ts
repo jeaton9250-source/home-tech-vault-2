@@ -6,7 +6,7 @@ import { countPlatformAdmins } from "@/lib/admin/data/loaders";
 import { isSubscriptionGrantingAccess } from "@/lib/permissions/subscriptionAccess";
 
 import { loadProfileAccountRecord } from "@/lib/account-admin/status";
-import { reconcileActiveDeletionJobsForUser } from "@/lib/account-admin/deletion";
+import { isDeletionJobStale } from "@/lib/account-admin/deletionJobState";
 
 import type {
   DeletionBlockCode,
@@ -41,12 +41,6 @@ export async function buildDeletionPreview(
   if (!profile) {
     return null;
   }
-
-  await reconcileActiveDeletionJobsForUser(
-    admin,
-    targetUserId,
-    actorId
-  );
 
   const email =
     await getAuthEmail(admin, targetUserId);
@@ -124,7 +118,9 @@ export async function buildDeletionPreview(
 
     admin
       .from("admin_account_deletion_jobs")
-      .select("id, status")
+      .select(
+        "id, status, updated_at, processor_lease_expires_at, last_heartbeat_at"
+      )
       .eq("target_user_id", targetUserId)
       .in("status", [
         "pending",
@@ -270,7 +266,21 @@ export async function buildDeletionPreview(
     });
   }
 
-  if (activeJobResult.data?.id) {
+  if (
+    activeJobResult.data?.id &&
+    !isDeletionJobStale({
+      status: activeJobResult.data
+        .status as "pending",
+      updated_at:
+        activeJobResult.data.updated_at,
+      processor_lease_expires_at:
+        activeJobResult.data
+          .processor_lease_expires_at,
+      last_heartbeat_at:
+        activeJobResult.data
+          .last_heartbeat_at,
+    })
+  ) {
     blockers.push({
       code: "ACTIVE_DELETION_JOB",
       message:
