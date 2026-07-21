@@ -7,9 +7,39 @@ export function useAnimatedNumber(
   durationMs = 700
 ) {
   const [displayValue, setDisplayValue] =
-    useState(0);
+    useState(value);
+  const [reduceMotion, setReduceMotion] =
+    useState(false);
 
   useEffect(() => {
+    const media = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    );
+
+    const update = () => {
+      setReduceMotion(media.matches);
+    };
+
+    update();
+    media.addEventListener(
+      "change",
+      update
+    );
+
+    return () => {
+      media.removeEventListener(
+        "change",
+        update
+      );
+    };
+  }, []);
+
+  useEffect(() => {
+    if (reduceMotion) {
+      setDisplayValue(value);
+      return;
+    }
+
     if (value <= 0) {
       setDisplayValue(0);
       return;
@@ -40,7 +70,7 @@ export function useAnimatedNumber(
     return () => {
       cancelAnimationFrame(frame);
     };
-  }, [value, durationMs]);
+  }, [value, durationMs, reduceMotion]);
 
   return displayValue;
 }

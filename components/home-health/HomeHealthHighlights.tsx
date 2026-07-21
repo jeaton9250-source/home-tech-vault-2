@@ -2,7 +2,10 @@
 
 import { cn } from "@/lib/design-system/cn";
 import type { HomeHealthHighlight } from "@/lib/home-health/types";
-import { Check, CircleAlert } from "lucide-react";
+import {
+  AlertTriangle,
+  Check,
+} from "lucide-react";
 
 type HomeHealthHighlightsProps = {
   highlights: HomeHealthHighlight[];
@@ -12,32 +15,50 @@ export default function HomeHealthHighlights({
   highlights,
 }: HomeHealthHighlightsProps) {
   if (highlights.length === 0) {
-    return null;
+    return (
+      <p className="text-sm leading-6 text-text-muted">
+        Add devices, documents, or network
+        details to see highlights here.
+      </p>
+    );
   }
 
   return (
-    <ul className="space-y-2.5">
-      {highlights.map((highlight) => (
-        <li
-          key={highlight.id}
-          className="flex items-start gap-2.5 text-sm leading-6 text-text-secondary"
-        >
-          {highlight.tone === "positive" ? (
-            <Check
-              size={16}
-              className="mt-1 shrink-0 text-home-health"
+    <ul className="space-y-3">
+      {highlights.map((highlight) => {
+        const isPositive =
+          highlight.tone === "positive";
+
+        return (
+          <li
+            key={highlight.id}
+            className="flex items-start gap-2.5"
+          >
+            <span
+              className={cn(
+                "mt-0.5 inline-flex shrink-0",
+                isPositive
+                  ? "text-home-health"
+                  : "text-warning"
+              )}
               aria-hidden
-            />
-          ) : (
-            <CircleAlert
-              size={16}
-              className="mt-1 shrink-0 text-warning"
-              aria-hidden
-            />
-          )}
-          <span>{highlight.message}</span>
-        </li>
-      ))}
+            >
+              {isPositive ? (
+                <Check size={15} strokeWidth={2.5} />
+              ) : (
+                <AlertTriangle
+                  size={15}
+                  strokeWidth={2.25}
+                />
+              )}
+            </span>
+
+            <span className="text-[0.9375rem] leading-6 text-text-secondary">
+              {highlight.message}
+            </span>
+          </li>
+        );
+      })}
     </ul>
   );
 }

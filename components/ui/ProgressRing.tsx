@@ -1,3 +1,5 @@
+import CircularProgressRing from "@/components/ui/CircularProgressRing";
+
 type ProgressRingProps = {
   value: number;
   label?: string;
@@ -9,48 +11,28 @@ export default function ProgressRing({
   label = "Health",
   size = 180,
 }: ProgressRingProps) {
-  const strokeWidth = 12;
-  const radius = (size - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const progress = circumference - (value / 100) * circumference;
-
   return (
     <div className="flex flex-col items-center">
-      <div className="relative" style={{ width: size, height: size }}>
-        <svg width={size} height={size}>
-          <circle
-            cx={size / 2}
-            cy={size / 2}
-            r={radius}
-            fill="none"
-            stroke="#E5E7EB"
-            strokeWidth={strokeWidth}
-          />
-
-          <circle
-            cx={size / 2}
-            cy={size / 2}
-            r={radius}
-            fill="none"
-            stroke="#111827"
-            strokeWidth={strokeWidth}
-            strokeLinecap="round"
-            strokeDasharray={circumference}
-            strokeDashoffset={progress}
-            className="transition-all duration-700"
-            transform={`rotate(-90 ${size / 2} ${size / 2})`}
-          />
-        </svg>
-
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
+      <CircularProgressRing
+        value={value}
+        size={size}
+        progressColor="#111827"
+        trackColor="#E5E7EB"
+        ariaLabel={`${label}: ${value} percent`}
+      >
+        <div className="flex flex-col items-center justify-center text-center">
           <span className="text-5xl font-semibold tracking-tight text-neutral-950">
             {value}
           </span>
-          <span className="text-sm text-text-tertiary">/100</span>
+          <span className="text-sm text-text-tertiary">
+            /100
+          </span>
         </div>
-      </div>
+      </CircularProgressRing>
 
-      <p className="mt-4 text-sm font-medium text-text-secondary">{label}</p>
+      <p className="mt-4 text-sm font-medium text-text-secondary">
+        {label}
+      </p>
     </div>
   );
 }

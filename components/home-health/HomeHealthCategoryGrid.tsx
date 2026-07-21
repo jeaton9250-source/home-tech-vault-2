@@ -67,7 +67,7 @@ export default function HomeHealthCategoryGrid({
             >
               <PageCard
                 interactive
-                className="h-full bg-surface-card transition hover:-translate-y-0.5"
+                className="h-full bg-surface-card p-5 transition hover:-translate-y-0.5 md:p-6"
               >
                 <div className="flex items-start justify-between gap-3">
                   <h3 className="text-lg font-medium tracking-[-0.02em] text-text-primary">

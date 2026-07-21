@@ -14,11 +14,11 @@ export default function HomeHealthHeader({
 }: HomeHealthHeaderProps) {
   return (
     <header className="space-y-2">
-      <h1 className="text-3xl font-medium tracking-[-0.03em] text-text-primary md:text-4xl">
+      <h1 className="text-[clamp(1.875rem,4vw,2.75rem)] font-medium tracking-[-0.03em] text-text-primary">
         {getTimeGreeting(firstName)}
       </h1>
 
-      <p className="text-base text-text-muted">
+      <p className="text-[0.9375rem] leading-7 text-text-muted md:text-base">
         Here&apos;s the current health of your home.
       </p>
 

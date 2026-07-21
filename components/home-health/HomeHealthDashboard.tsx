@@ -5,6 +5,7 @@ import HomeHealthCategoryGrid from "@/components/home-health/HomeHealthCategoryG
 import HomeHealthEmptyState from "@/components/home-health/HomeHealthEmptyState";
 import HomeHealthHeader from "@/components/home-health/HomeHealthHeader";
 import HomeHealthScoreCard from "@/components/home-health/HomeHealthScoreCard";
+import HomeSnapshotStrip from "@/components/home-health/HomeSnapshotStrip";
 import NextBestActionCard from "@/components/home-health/NextBestActionCard";
 import VaultCompletenessRing from "@/components/home-health/VaultCompletenessRing";
 import type { HomeHealthResult } from "@/lib/home-health/types";
@@ -19,7 +20,7 @@ export default function HomeHealthDashboard({
   homeHealth,
 }: HomeHealthDashboardProps) {
   return (
-    <div className="space-y-8 md:space-y-10">
+    <div className="space-y-6 md:space-y-8">
       <HomeHealthHeader firstName={firstName} />
 
       {homeHealth.isEmpty ? (
@@ -30,7 +31,11 @@ export default function HomeHealthDashboard({
         />
       ) : (
         <>
-          <section className="grid gap-6 xl:grid-cols-[1.35fr_0.95fr]">
+          <HomeSnapshotStrip
+            homeHealth={homeHealth}
+          />
+
+          <section className="grid gap-5 xl:grid-cols-[3fr_2fr] xl:items-stretch">
             {homeHealth.score !== null &&
             homeHealth.status &&
             homeHealth.statusMessage ? (
@@ -59,6 +64,7 @@ export default function HomeHealthDashboard({
             percentage={
               homeHealth.vaultCompleteness
             }
+            cards={homeHealth.cards}
           />
         </>
       )}

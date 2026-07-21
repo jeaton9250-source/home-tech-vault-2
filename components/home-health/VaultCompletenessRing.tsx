@@ -1,123 +1,119 @@
 "use client";
 
+import CircularProgressRing from "@/components/ui/CircularProgressRing";
 import { useAnimatedNumber } from "@/components/home-health/useAnimatedNumber";
 import PageCard from "@/components/ui/PageCard";
+import {
+  getVaultCategoryStates,
+  type VaultCategoryState,
+} from "@/lib/home-health/display";
+import { cn } from "@/lib/design-system/cn";
+import type { HomeHealthCategoryCard } from "@/lib/home-health/types";
+import { Check } from "lucide-react";
 
 type VaultCompletenessRingProps = {
   percentage: number;
+  cards: HomeHealthCategoryCard[];
 };
 
-function describeArc(
-  cx: number,
-  cy: number,
-  radius: number,
-  startAngle: number,
-  endAngle: number
-) {
-  const startRadians =
-    ((startAngle - 90) * Math.PI) / 180;
-  const endRadians =
-    ((endAngle - 90) * Math.PI) / 180;
-
-  const start = {
-    x: cx + radius * Math.cos(startRadians),
-    y: cy + radius * Math.sin(startRadians),
-  };
-  const end = {
-    x: cx + radius * Math.cos(endRadians),
-    y: cy + radius * Math.sin(endRadians),
-  };
-
-  const largeArcFlag =
-    endAngle - startAngle <= 180 ? 0 : 1;
-
-  return [
-    "M",
-    start.x,
-    start.y,
-    "A",
-    radius,
-    radius,
-    0,
-    largeArcFlag,
-    0,
-    end.x,
-    end.y,
-  ].join(" ");
+function VaultCategoryItem({
+  category,
+}: {
+  category: VaultCategoryState;
+}) {
+  return (
+    <li className="flex items-center gap-2 text-sm text-text-secondary">
+      <span
+        className={cn(
+          "inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border",
+          category.complete
+            ? "border-home-health/25 bg-home-health-soft text-home-health"
+            : "border-border-subtle bg-surface-sunken text-text-muted"
+        )}
+        aria-hidden
+      >
+        {category.complete ? (
+          <Check size={12} strokeWidth={2.5} />
+        ) : (
+          <span className="h-1.5 w-1.5 rounded-full bg-border-strong" />
+        )}
+      </span>
+      <span>{category.label}</span>
+    </li>
+  );
 }
 
 export default function VaultCompletenessRing({
   percentage,
+  cards,
 }: VaultCompletenessRingProps) {
   const animatedValue = useAnimatedNumber(
     percentage,
     600
   );
-  const normalized = Math.max(
-    0,
-    Math.min(100, percentage)
+  const categories = getVaultCategoryStates(
+    cards
   );
-  const sweep = (normalized / 100) * 360;
-  const startAngle = -90;
-  const endAngle = startAngle + sweep;
+  const completedCount =
+    categories.filter(
+      (category) => category.complete
+    ).length;
 
   return (
     <PageCard className="bg-surface-card">
-      <p className="text-overline text-text-muted">
-        Vault completeness
-      </p>
-
-      <div className="mt-5 flex items-center gap-5">
-        <div className="relative h-[88px] w-[88px] shrink-0">
-          <svg
-            viewBox="0 0 88 88"
-            className="h-full w-full"
-            aria-hidden
+      <div className="grid gap-6 md:grid-cols-[auto_1fr] md:items-center">
+        <div className="flex items-center gap-5">
+          <CircularProgressRing
+            value={percentage}
+            size={96}
+            strokeWidth={7}
+            progressColor="var(--color-home-health)"
+            ariaLabel={`Vault completeness: ${percentage} percent`}
           >
-            <circle
-              cx="44"
-              cy="44"
-              r="34"
-              fill="none"
-              stroke="var(--color-home-health-muted)"
-              strokeWidth="6"
-              opacity={0.35}
-            />
-
-            {normalized > 0 ? (
-              <path
-                d={describeArc(
-                  44,
-                  44,
-                  34,
-                  startAngle,
-                  endAngle
-                )}
-                fill="none"
-                stroke="var(--color-home-health)"
-                strokeWidth="6"
-                strokeLinecap="round"
-                className="transition-all duration-700 ease-[var(--ease-premium)]"
-              />
-            ) : null}
-          </svg>
-
-          <div className="absolute inset-0 flex items-center justify-center">
             <span className="text-lg font-medium tabular-nums text-text-primary">
               {animatedValue}%
             </span>
+          </CircularProgressRing>
+
+          <div className="md:hidden">
+            <p className="text-overline text-text-muted">
+              Vault completeness
+            </p>
+            <p className="mt-1 text-base font-medium text-text-primary">
+              {completedCount} of{" "}
+              {categories.length} areas
+              started
+            </p>
           </div>
         </div>
 
         <div>
-          <p className="text-base font-medium text-text-primary">
-            Vault complete
+          <p className="hidden text-overline text-text-muted md:block">
+            Vault completeness
           </p>
-          <p className="mt-1 text-sm leading-6 text-text-muted">
-            Based on devices, documents,
-            network, maintenance, and
-            subscriptions.
-          </p>
+
+          <div className="mt-0 md:mt-1">
+            <p className="text-base font-medium text-text-primary">
+              Vault complete
+            </p>
+            <p className="mt-1 max-w-2xl text-[0.9375rem] leading-6 text-text-muted">
+              Vault completeness reflects how
+              much of your home technology
+              information has been organized.
+            </p>
+          </div>
+
+          <ul
+            className="mt-4 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5"
+            aria-label="Vault completeness categories"
+          >
+            {categories.map((category) => (
+              <VaultCategoryItem
+                key={category.key}
+                category={category}
+              />
+            ))}
+          </ul>
         </div>
       </div>
     </PageCard>
