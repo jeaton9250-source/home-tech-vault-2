@@ -1,9 +1,9 @@
 import Link from "next/link";
 import {
   ArrowRight,
-  Laptop,
 } from "lucide-react";
 
+import DeviceImageDisplay from "@/components/devices/DeviceImageDisplay";
 import {
   calculateDeviceHealth,
   getDeviceHealthLabel,
@@ -22,6 +22,7 @@ type DeviceCardProps = {
     warranty_date?: string | null;
     location?: string | null;
     photo_url?: string | null;
+    demo_image?: string | null;
     serial_number?: string | null;
     purchase_date?: string | null;
     purchase_price?: number | null;
@@ -74,23 +75,10 @@ export default function DeviceCard({
       aria-label={`View ${device.device_name}`}
     >
       <article className="htv-card-interactive overflow-hidden rounded-[var(--radius-card)] border border-border-subtle bg-surface-card shadow-[var(--shadow-sm),var(--shadow-inset)]">
-        {device.photo_url ? (
-          <img
-            src={device.photo_url}
-            alt={device.device_name}
-            className="h-48 w-full object-cover"
-          />
-        ) : (
-          <div
-            className="flex h-48 items-center justify-center"
-            style={{
-              background: tech.soft,
-              color: tech.accent,
-            }}
-          >
-            <Laptop size={56} />
-          </div>
-        )}
+        <DeviceImageDisplay
+          device={device}
+          variant="card"
+        />
 
         <div className="p-6">
           <div className="flex items-start justify-between gap-4">

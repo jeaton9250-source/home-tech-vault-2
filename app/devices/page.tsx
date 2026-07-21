@@ -15,7 +15,6 @@ import {
   Check,
   ChevronDown,
   Filter,
-  ImageIcon,
   Laptop,
   Loader2,
   MapPin,
@@ -26,12 +25,15 @@ import {
   X,
 } from "lucide-react";
 
+import DeviceImageDisplay from "@/components/devices/DeviceImageDisplay";
+
 import { supabase } from "@/lib/supabase";
 import { applyHouseholdScope } from "@/lib/data/householdScope";
 import type {
   Device as BaseDevice,
 } from "@/lib/calculateTechnologyScore";
 import { demoDevices } from "@/lib/demoData";
+import { withDemoDevicePhoto } from "@/lib/devices/getDeviceImage";
 
 import { usePermissions } from "@/hooks/usePermissions";
 
@@ -49,6 +51,7 @@ type DeviceRecord = BaseDevice & {
   household_id?: string | null;
   device_name: string;
   photo_url?: string;
+  demo_image?: string;
 };
 
 type DeviceImageRecord = {
@@ -136,34 +139,37 @@ export default function DevicesPage() {
         if (isDemo || !user) {
           const sampleDevices: DeviceRecord[] =
             demoDevices.map(
-              (device) => ({
-                id: device.id,
-                device_name:
-                  device.device_name,
-                brand: device.brand,
-                category:
-                  device.category,
-                model_number:
-                  device.model_number,
-                serial_number:
-                  device.serial_number,
-                purchase_date:
-                  device.purchase_date,
-                warranty_date:
-                  device.warranty_date,
-                purchase_price:
-                  device.purchase_price,
-                location:
-                  device.location,
-                notes: device.notes,
-                online: device.online,
-                last_seen_at:
-                  device.last_seen_at,
-                ip_address:
-                  device.ip_address,
-                photo_url:
-                  device.photo_url ?? "",
-              })
+              (device) =>
+                withDemoDevicePhoto({
+                  id: device.id,
+                  device_name:
+                    device.device_name,
+                  brand: device.brand,
+                  category:
+                    device.category,
+                  model_number:
+                    device.model_number,
+                  serial_number:
+                    device.serial_number,
+                  purchase_date:
+                    device.purchase_date,
+                  warranty_date:
+                    device.warranty_date,
+                  purchase_price:
+                    device.purchase_price,
+                  location:
+                    device.location,
+                  notes: device.notes,
+                  online: device.online,
+                  last_seen_at:
+                    device.last_seen_at,
+                  ip_address:
+                    device.ip_address,
+                  demo_image:
+                    device.demo_image,
+                  photo_url:
+                    device.photo_url ?? "",
+                })
             );
 
           if (!mounted) {
@@ -1030,24 +1036,12 @@ function ModernDeviceCard({
       }
       className="group overflow-hidden rounded-[var(--radius-card)] border border-border-subtle bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#D7C79F] hover:shadow-lg"
     >
-      <div className="relative aspect-[4/3] overflow-hidden bg-surface-sunken">
-        {device.photo_url ? (
-          <img
-            src={device.photo_url}
-            alt={device.device_name}
-            className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
-          />
-        ) : (
-          <div className="flex h-full w-full flex-col items-center justify-center text-section-technology">
-            <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-white shadow-sm">
-              <ImageIcon size={28} />
-            </div>
-
-            <p className="mt-3 text-xs font-medium text-text-tertiary">
-              No photo added
-            </p>
-          </div>
-        )}
+      <div className="relative">
+        <DeviceImageDisplay
+          device={device}
+          variant="card"
+          className="transition duration-500 group-hover:scale-[1.01]"
+        />
 
         {device.category && (
           <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1.5 text-xs font-semibold text-text-primary shadow-sm backdrop-blur">

@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
+import DeviceImageDisplay from "@/components/devices/DeviceImageDisplay";
 import { applyHouseholdScope } from "@/lib/data/householdScope";
 import { usePermissions } from "@/hooks/usePermissions";
 
@@ -974,17 +975,19 @@ function RoomCard({
                 href={`/devices/${device.id}`}
                 className="group/device flex items-center gap-3"
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
-                  {device.hasPhoto ? (
-                    <ImageIcon
-                      size={17}
-                    />
-                  ) : (
-                    <Laptop
-                      size={17}
-                    />
-                  )}
-                </div>
+                <DeviceImageDisplay
+                  device={{
+                    id: device.id,
+                    device_name:
+                      device.deviceName,
+                    brand: device.brand,
+                    category:
+                      device.category,
+                  }}
+                  variant="thumbnail"
+                  className="!aspect-auto h-10 w-10 shrink-0 rounded-2xl"
+                  imageClassName="!p-1.5"
+                />
 
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold text-text-primary">

@@ -2,6 +2,8 @@
 
 import type { ReactNode } from "react";
 
+import Image from "next/image";
+
 import {
   FileText,
   Laptop,
@@ -10,6 +12,7 @@ import {
 } from "lucide-react";
 
 import { sections } from "@/lib/design-system/tokens";
+import { DEMO_DEVICE_IMAGE_PATHS } from "@/lib/devices/demoDeviceImages";
 
 export function CommandCenterPreview() {
   return (
@@ -53,12 +56,18 @@ export function CommandCenterPreview() {
         <PreviewDeviceRow
           name="MacBook Pro"
           detail="Home Office"
+          imageSrc={
+            DEMO_DEVICE_IMAGE_PATHS.macbookPro
+          }
           accent={sections.technology.accent}
           soft={sections.technology.soft}
         />
         <PreviewDeviceRow
           name="Living Room TV"
           detail="Living Room"
+          imageSrc={
+            DEMO_DEVICE_IMAGE_PATHS.samsungTv
+          }
           accent={sections.technology.accent}
           soft={sections.technology.soft}
         />
@@ -257,22 +266,36 @@ export function PillarPreview({
 function PreviewDeviceRow({
   name,
   detail,
+  imageSrc,
   accent,
   soft,
 }: {
   name: string;
   detail: string;
+  imageSrc?: string;
   accent: string;
   soft: string;
 }) {
   return (
     <div className="flex items-center gap-3 rounded-[var(--radius-button)] border border-border-subtle bg-surface-card px-3 py-2.5">
-      <div
-        className="htv-icon-well h-9 w-9"
-        style={{ background: soft, color: accent }}
-      >
-        <Laptop size={16} />
-      </div>
+      {imageSrc ? (
+        <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-[var(--radius-button)] bg-surface-sunken">
+          <Image
+            src={imageSrc}
+            alt={`${name} demo device`}
+            fill
+            sizes="36px"
+            className="object-contain p-1"
+          />
+        </div>
+      ) : (
+        <div
+          className="htv-icon-well h-9 w-9"
+          style={{ background: soft, color: accent }}
+        >
+          <Laptop size={16} />
+        </div>
+      )}
 
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium">

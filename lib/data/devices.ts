@@ -1,6 +1,6 @@
 import type { User } from "@supabase/supabase-js";
 
-import { demoDevices } from "@/lib/demo/devices";
+import { demoDevicesWithPhotos } from "@/lib/demo/devices";
 import {
   fetchHouseholdIdForUser,
   resolveHouseholdScope,
@@ -12,7 +12,7 @@ export async function getDevices(
   householdId?: string | null
 ) {
   if (!user) {
-    return demoDevices;
+    return demoDevicesWithPhotos;
   }
 
   const resolvedHouseholdId =

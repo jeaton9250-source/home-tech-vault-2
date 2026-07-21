@@ -1,3 +1,5 @@
+import { DEMO_DEVICE_IMAGE_PATHS } from "@/lib/devices/demoDeviceImages";
+
 export type DemoDevice = {
   id: string;
   device_name: string;
@@ -17,6 +19,7 @@ export type DemoDevice = {
   manufacturer: string;
   discovery_source: string;
   photo_url: string;
+  demo_image: string;
 };
 
 export const demoDevices: DemoDevice[] = [
@@ -40,6 +43,8 @@ export const demoDevices: DemoDevice[] = [
     manufacturer: "Apple",
     discovery_source: "Demo Network Scan",
     photo_url: "",
+    demo_image:
+      DEMO_DEVICE_IMAGE_PATHS.macbookPro,
   },
   {
     id: "demo-tv",
@@ -61,6 +66,8 @@ export const demoDevices: DemoDevice[] = [
     manufacturer: "Samsung",
     discovery_source: "Demo Network Scan",
     photo_url: "",
+    demo_image:
+      DEMO_DEVICE_IMAGE_PATHS.samsungTv,
   },
   {
     id: "demo-printer",
@@ -82,6 +89,8 @@ export const demoDevices: DemoDevice[] = [
     manufacturer: "Brother",
     discovery_source: "Demo Network Scan",
     photo_url: "",
+    demo_image:
+      DEMO_DEVICE_IMAGE_PATHS.hpPrinter,
   },
   {
     id: "demo-xbox",
@@ -103,6 +112,8 @@ export const demoDevices: DemoDevice[] = [
     manufacturer: "Microsoft",
     discovery_source: "Demo Network Scan",
     photo_url: "",
+    demo_image:
+      DEMO_DEVICE_IMAGE_PATHS.xboxSeriesX,
   },
   {
     id: "demo-iphone",
@@ -124,6 +135,8 @@ export const demoDevices: DemoDevice[] = [
     manufacturer: "Apple",
     discovery_source: "Demo Network Scan",
     photo_url: "",
+    demo_image:
+      DEMO_DEVICE_IMAGE_PATHS.mobilePhone,
   },
   {
     id: "demo-router",
@@ -145,6 +158,8 @@ export const demoDevices: DemoDevice[] = [
     manufacturer: "TP-Link",
     discovery_source: "Demo Network Scan",
     photo_url: "",
+    demo_image:
+      DEMO_DEVICE_IMAGE_PATHS.asusRouter,
   },
 ];
 

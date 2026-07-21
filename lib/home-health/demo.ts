@@ -19,8 +19,14 @@ export function buildDemoHomeHealth(): HomeHealthResult {
 
   const deviceIdsWithPhotos = new Set(
     demoDevices
-      .filter((device) =>
-        Boolean(device.photo_url?.trim())
+      .filter(
+        (device) =>
+          Boolean(
+            device.photo_url?.trim()
+          ) ||
+          Boolean(
+            device.demo_image?.trim()
+          )
       )
       .map((device) => device.id)
   );

@@ -50,6 +50,10 @@ import {
   demoTimelineEvents,
 } from "@/lib/demoData";
 
+import {
+  resolveDeviceImage,
+} from "@/lib/devices/getDeviceImage";
+
 import { usePermissions } from "@/hooks/usePermissions";
 
 import DeviceDocuments from "@/components/DeviceDocuments";
@@ -332,7 +336,36 @@ export default function DevicePage() {
               sampleDevice.discovery_source,
           });
 
-          setImages([]);
+          const demoImage =
+            resolveDeviceImage({
+              id: sampleDevice.id,
+              device_name:
+                sampleDevice.device_name,
+              brand:
+                sampleDevice.brand,
+              category:
+                sampleDevice.category,
+              demo_image:
+                sampleDevice.demo_image,
+            });
+
+          if (demoImage.src) {
+            setImages([
+              {
+                id: "demo-image-primary",
+                device_id:
+                  sampleDevice.id,
+                user_id: "demo",
+                image_url:
+                  sampleDevice.demo_image,
+                created_at: null,
+                signedUrl:
+                  demoImage.src,
+              },
+            ]);
+          } else {
+            setImages([]);
+          }
 
           return;
         }
@@ -939,8 +972,18 @@ export default function DevicePage() {
                   "Device photo"
                 }
                 fill
-                unoptimized
-                className="object-cover"
+                unoptimized={
+                  !selectedImage.signedUrl.startsWith(
+                    "/demo-devices/"
+                  )
+                }
+                className={
+                  selectedImage.signedUrl.startsWith(
+                    "/demo-devices/"
+                  )
+                    ? "object-contain p-6 md:p-8"
+                    : "object-cover"
+                }
               />
             ) : canUpload ? (
               <label className="flex h-full cursor-pointer flex-col items-center justify-center px-6 text-center">
@@ -1057,8 +1100,18 @@ export default function DevicePage() {
                         }
                         alt="Device thumbnail"
                         fill
-                        unoptimized
-                        className="object-cover"
+                        unoptimized={
+                          !image.signedUrl.startsWith(
+                            "/demo-devices/"
+                          )
+                        }
+                        className={
+                          image.signedUrl.startsWith(
+                            "/demo-devices/"
+                          )
+                            ? "object-contain bg-surface-sunken p-1"
+                            : "object-cover"
+                        }
                       />
                     </button>
                   );

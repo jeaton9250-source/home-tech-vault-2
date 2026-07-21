@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { Laptop, MapPin } from "lucide-react";
+import { MapPin } from "lucide-react";
+
+import DeviceImageDisplay from "@/components/devices/DeviceImageDisplay";
 
 export type RoomDevice = {
   id: string;
@@ -9,6 +11,7 @@ export type RoomDevice = {
   location: string | null;
   purchase_price: number | null;
   photo_url?: string;
+  demo_image?: string;
 };
 
 type RoomCardProps = {
@@ -58,19 +61,11 @@ export default function RoomCard({
             href={`/devices/${device.id}`}
             className="group overflow-hidden rounded-2xl border border-border-subtle bg-white transition hover:-translate-y-0.5 hover:shadow-md"
           >
-            {device.photo_url ? (
-              <div className="overflow-hidden">
-                <img
-                  src={device.photo_url}
-                  alt={device.device_name || "Device"}
-                  className="h-36 w-full object-cover transition duration-300 group-hover:scale-105"
-                />
-              </div>
-            ) : (
-              <div className="flex h-36 items-center justify-center bg-surface-sunken text-text-primary">
-                <Laptop size={38} />
-              </div>
-            )}
+            <DeviceImageDisplay
+              device={device}
+              variant="room"
+              className="h-36"
+            />
 
             <div className="p-4">
               <p className="text-overline text-charcoal-soft">
