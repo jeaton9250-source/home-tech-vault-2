@@ -1,12 +1,18 @@
 import { NextResponse } from "next/server";
 
-import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { getSupportAdminClient } from "@/lib/support/adminClient";
+import {
+  buildSupportTicketInsertPayload,
+  insertSupportTicket,
+} from "@/lib/support/createTicket";
 import { resolveSupportSubmissionContext } from "@/lib/support/context";
+import { logSupportOperationError } from "@/lib/support/logging";
 import {
   getSubmitterIpHash,
   checkSupportSubmissionRateLimit,
 } from "@/lib/support/rateLimit";
+import { generateSupportTicketNumber } from "@/lib/support/ticketNumber";
 import { sendSupportTicketEmails } from "@/lib/support/sendSupportEmails";
 import {
   normalizeSupportInput,
@@ -19,6 +25,7 @@ export const runtime = "nodejs";
 type SupportTicketResponse = {
   ticketNumber: string;
   customerEmail: string;
+  emailConfirmationSent: boolean;
   emailWarnings?: string[];
 };
 
@@ -26,10 +33,31 @@ function fakeSuccessResponse(email: string) {
   return NextResponse.json({
     ticketNumber: "HTV-RECEIVED",
     customerEmail: email,
+    emailConfirmationSent: true,
   } satisfies SupportTicketResponse);
 }
 
+function configurationErrorResponse(
+  code: "missing_supabase_url" | "missing_service_role_key"
+) {
+  logSupportOperationError(
+    "support_tickets.configuration",
+    new Error(code),
+    { code }
+  );
+
+  return NextResponse.json(
+    {
+      error:
+        "We couldn't save your support request right now. Please try again in a moment.",
+    },
+    { status: 500 }
+  );
+}
+
 export async function POST(request: Request) {
+  const submittedAt = new Date().toISOString();
+
   try {
     const body = (await request.json()) as SupportTicketInput;
     const normalized = normalizeSupportInput(body);
@@ -48,8 +76,16 @@ export async function POST(request: Request) {
       );
     }
 
+    const adminResult = getSupportAdminClient();
+
+    if (!adminResult.ok) {
+      return configurationErrorResponse(
+        adminResult.code
+      );
+    }
+
+    const admin = adminResult.admin;
     const supabase = await createClient();
-    const admin = createAdminClient();
 
     const {
       data: { user },
@@ -74,13 +110,32 @@ export async function POST(request: Request) {
         .maybeSingle();
 
       if (existingTicketError) {
+        logSupportOperationError(
+          "support_tickets.idempotency_lookup",
+          existingTicketError,
+          {
+            authenticated: Boolean(user),
+            category: normalized.category,
+          }
+        );
         throw existingTicketError;
       }
 
       if (existingTicket) {
+        const deliveryStatus =
+          existingTicket.email_delivery_status as
+            | {
+                confirmation?: string;
+              }
+            | null
+            | undefined;
+
         return NextResponse.json({
           ticketNumber: existingTicket.ticket_number,
           customerEmail: existingTicket.email,
+          emailConfirmationSent:
+            deliveryStatus?.confirmation ===
+            "sent",
           emailWarnings: [],
         } satisfies SupportTicketResponse);
       }
@@ -103,6 +158,7 @@ export async function POST(request: Request) {
           ticketNumber:
             rateLimit.existingTicketNumber,
           customerEmail: normalized.email,
+          emailConfirmationSent: true,
           emailWarnings: [],
         } satisfies SupportTicketResponse);
       }
@@ -125,59 +181,28 @@ export async function POST(request: Request) {
         }
       );
 
-    const {
-      data: ticketNumber,
-      error: ticketNumberError,
-    } = await admin.rpc(
-      "generate_support_ticket_number"
-    );
-
-    if (ticketNumberError) {
-      throw ticketNumberError;
-    }
-
-    if (
-      typeof ticketNumber !== "string" ||
-      !ticketNumber
-    ) {
-      throw new Error(
-        "Unable to generate support ticket number."
+    const ticketNumber =
+      await generateSupportTicketNumber(
+        admin
       );
-    }
 
-    const submittedAt = new Date().toISOString();
+    const insertPayload =
+      buildSupportTicketInsertPayload({
+        ticketNumber,
+        normalized,
+        context,
+        submitterIpHash,
+      });
 
     const {
       data: insertedTicket,
       error: insertError,
-    } = await admin
-      .from("support_tickets")
-      .insert({
-        ticket_number: ticketNumber,
-        user_id: context.userId,
-        household_id: context.householdId,
-        name: normalized.name,
-        email: normalized.email,
-        subject: normalized.subject,
-        category: normalized.category,
-        message: normalized.message,
-        status: "new",
-        priority: "normal",
-        effective_plan: context.effectivePlan,
-        household_role: context.householdRole,
-        source_page: normalized.sourcePage,
-        idempotency_key: normalized.idempotencyKey,
-        submitter_ip_hash: submitterIpHash,
-      })
-      .select("id, ticket_number, email")
-      .single();
+    } = await insertSupportTicket(
+      admin,
+      insertPayload
+    );
 
-    if (insertError) {
-      console.error(
-        "Support ticket insert failed:",
-        insertError
-      );
-
+    if (insertError || !insertedTicket) {
       return NextResponse.json(
         {
           error:
@@ -187,38 +212,94 @@ export async function POST(request: Request) {
       );
     }
 
-    const emailResult = await sendSupportTicketEmails({
-      ticketId: insertedTicket.id,
-      ticketNumber: insertedTicket.ticket_number,
-      customerName: normalized.name,
-      customerEmail: normalized.email,
-      subject: normalized.subject,
-      category: normalized.category,
-      message: normalized.message,
-      isSignedIn: context.isSignedIn,
-      effectivePlan: context.effectivePlan,
-      householdRole: context.householdRole,
-      sourcePage: normalized.sourcePage,
-      submittedAt,
-    });
+    let emailWarnings: string[] = [];
+    let emailConfirmationSent = false;
+    let deliveryStatus: Record<string, string> =
+      {
+        internal: "not_attempted",
+        confirmation: "not_attempted",
+      };
 
-    await admin
-      .from("support_tickets")
-      .update({
-        email_delivery_status:
-          emailResult.deliveryStatus,
-      })
-      .eq("id", insertedTicket.id);
+    try {
+      const emailResult =
+        await sendSupportTicketEmails({
+          ticketId: insertedTicket.id,
+          ticketNumber:
+            insertedTicket.ticket_number,
+          customerName: normalized.name,
+          customerEmail: normalized.email,
+          subject: normalized.subject,
+          category: normalized.category,
+          message: normalized.message,
+          isSignedIn: context.isSignedIn,
+          effectivePlan: context.effectivePlan,
+          householdRole: context.householdRole,
+          sourcePage: normalized.sourcePage,
+          submittedAt,
+        });
+
+      emailWarnings = emailResult.warnings;
+      deliveryStatus =
+        emailResult.deliveryStatus;
+      emailConfirmationSent =
+        emailResult.deliveryStatus
+          .confirmation === "sent";
+    } catch (emailError) {
+      logSupportOperationError(
+        "support_tickets.email_delivery",
+        emailError,
+        {
+          ticketId: insertedTicket.id,
+          ticketNumber:
+            insertedTicket.ticket_number,
+          authenticated: context.isSignedIn,
+          category: normalized.category,
+        }
+      );
+
+      emailWarnings = [
+        "Email delivery failed after the ticket was saved.",
+      ];
+      deliveryStatus = {
+        internal: "failed",
+        confirmation: "failed",
+      };
+    }
+
+    const { error: deliveryUpdateError } =
+      await admin
+        .from("support_tickets")
+        .update({
+          email_delivery_status:
+            deliveryStatus,
+        })
+        .eq("id", insertedTicket.id);
+
+    if (deliveryUpdateError) {
+      logSupportOperationError(
+        "support_tickets.email_delivery_status_update",
+        deliveryUpdateError,
+        {
+          ticketId: insertedTicket.id,
+          ticketNumber:
+            insertedTicket.ticket_number,
+        }
+      );
+    }
 
     return NextResponse.json({
       ticketNumber: insertedTicket.ticket_number,
       customerEmail: insertedTicket.email,
-      emailWarnings: emailResult.warnings,
+      emailConfirmationSent,
+      emailWarnings,
     } satisfies SupportTicketResponse);
   } catch (error) {
-    console.error(
-      "Support ticket submission error:",
-      error
+    logSupportOperationError(
+      "support_tickets.submit",
+      error,
+      {
+        timestamp: submittedAt,
+      }
     );
 
     return NextResponse.json(

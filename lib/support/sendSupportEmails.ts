@@ -167,42 +167,57 @@ export async function sendSupportTicketEmails(
     payload.customerName.trim().split(" ")[0] ||
     undefined;
 
-  const confirmationResult = await sendReactEmail({
-    to: payload.customerEmail,
-    subject: supportRequestReceivedSubject,
-    template: SupportRequestReceivedEmail({
-      firstName,
-      customerEmail: payload.customerEmail,
-      ticketNumber: payload.ticketNumber,
-      subject: payload.subject,
-      category: payload.category,
-      contactUrl: `${emailTheme.brand.siteUrl}/contact`,
-    }),
-    text: renderSupportRequestReceivedPlainText({
-      firstName,
-      customerEmail: payload.customerEmail,
-      ticketNumber: payload.ticketNumber,
-      subject: payload.subject,
-      category: payload.category,
-      contactUrl: `${emailTheme.brand.siteUrl}/contact`,
-    }),
-    replyTo: getEmailReplyToAddress(),
-    tags: [
-      {
-        name: "category",
-        value: "support_confirmation",
-      },
-      {
-        name: "ticket_number",
-        value: payload.ticketNumber,
-      },
-    ],
-  });
+  let confirmationSent = false;
 
-  if (!confirmationResult.ok) {
+  try {
+    const confirmationResult = await sendReactEmail({
+      to: payload.customerEmail,
+      subject: supportRequestReceivedSubject,
+      template: SupportRequestReceivedEmail({
+        firstName,
+        customerEmail: payload.customerEmail,
+        ticketNumber: payload.ticketNumber,
+        subject: payload.subject,
+        category: payload.category,
+        contactUrl: `${emailTheme.brand.siteUrl}/contact`,
+      }),
+      text: renderSupportRequestReceivedPlainText({
+        firstName,
+        customerEmail: payload.customerEmail,
+        ticketNumber: payload.ticketNumber,
+        subject: payload.subject,
+        category: payload.category,
+        contactUrl: `${emailTheme.brand.siteUrl}/contact`,
+      }),
+      replyTo: getEmailReplyToAddress(),
+      tags: [
+        {
+          name: "category",
+          value: "support_confirmation",
+        },
+        {
+          name: "ticket_number",
+          value: payload.ticketNumber,
+        },
+      ],
+    });
+
+    confirmationSent = confirmationResult.ok;
+
+    if (!confirmationResult.ok) {
+      warnings.push(
+        confirmationResult.message ||
+          "Customer confirmation email failed."
+      );
+    }
+  } catch (confirmationError) {
     warnings.push(
-      confirmationResult.message ||
-        "Customer confirmation email failed."
+      "Customer confirmation email failed."
+    );
+
+    console.error(
+      "[support] confirmation email error:",
+      confirmationError
     );
   }
 
@@ -214,7 +229,7 @@ export async function sendSupportTicketEmails(
         : internalSent
           ? "sent"
           : "failed",
-      confirmation: confirmationResult.ok
+      confirmation: confirmationSent
         ? "sent"
         : "failed",
     },

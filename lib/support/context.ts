@@ -24,20 +24,35 @@ export async function resolveSupportSubmissionContext(
     };
   }
 
-  const planAccess =
-    await buildServerPlanAccessContext(
-      admin,
-      options.userId
+  try {
+    const planAccess =
+      await buildServerPlanAccessContext(
+        admin,
+        options.userId
+      );
+
+    return {
+      userId: options.userId,
+      householdId:
+        planAccess.input.householdId,
+      effectivePlan:
+        planAccess.result.effectivePlan,
+      householdRole:
+        planAccess.result.householdRole,
+      isSignedIn: true,
+    };
+  } catch (error) {
+    console.error(
+      "[support] Unable to resolve signed-in plan context; using minimal context.",
+      error
     );
 
-  return {
-    userId: options.userId,
-    householdId:
-      planAccess.input.householdId,
-    effectivePlan:
-      planAccess.result.effectivePlan,
-    householdRole:
-      planAccess.result.householdRole,
-    isSignedIn: true,
-  };
+    return {
+      userId: options.userId,
+      householdId: null,
+      effectivePlan: null,
+      householdRole: null,
+      isSignedIn: true,
+    };
+  }
 }

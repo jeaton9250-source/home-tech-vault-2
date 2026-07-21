@@ -43,6 +43,7 @@ type FormState = {
 type SubmissionSuccess = {
   ticketNumber: string;
   customerEmail: string;
+  emailConfirmationSent: boolean;
 };
 
 type ContactIcon = ComponentType<{
@@ -235,6 +236,7 @@ export default function ContactPage() {
         (await response.json()) as {
           ticketNumber?: string;
           customerEmail?: string;
+          emailConfirmationSent?: boolean;
           error?: string;
         };
 
@@ -259,6 +261,9 @@ export default function ContactPage() {
       setSubmission({
         ticketNumber: payload.ticketNumber,
         customerEmail: payload.customerEmail,
+        emailConfirmationSent:
+          payload.emailConfirmationSent !==
+          false,
       });
 
       setForm((current) => ({
@@ -401,12 +406,16 @@ export default function ContactPage() {
                   </p>
 
                   <p className="mt-4 text-sm leading-7 text-emerald-800">
-                    We sent a confirmation to:
+                    {submission.emailConfirmationSent
+                      ? "We sent a confirmation to:"
+                      : "Your request was saved successfully. Email confirmation may be delayed."}
                   </p>
 
-                  <p className="mt-1 text-sm font-semibold text-emerald-900">
-                    {submission.customerEmail}
-                  </p>
+                  {submission.emailConfirmationSent ? (
+                    <p className="mt-1 text-sm font-semibold text-emerald-900">
+                      {submission.customerEmail}
+                    </p>
+                  ) : null}
 
                   <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                     {isSignedIn ? (
