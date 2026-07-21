@@ -1,3 +1,5 @@
+import { FREE_DEVICE_LIMIT } from "@/lib/permissions/plans";
+
 export type FaqCategory =
   | "Accounts"
   | "Devices"
@@ -40,7 +42,7 @@ export const FAQ_ITEMS: FaqItem[] = [
     category: "Devices",
     question: "How many devices can I track?",
     answer:
-      "Free includes up to 10 devices. Pro and Family plans include unlimited devices, warranties, and maintenance records.",
+      `Free includes up to ${FREE_DEVICE_LIMIT} devices. Pro and Family plans include unlimited devices, warranties, and maintenance records.`,
   },
   {
     category: "Devices",
@@ -88,7 +90,7 @@ export const FAQ_ITEMS: FaqItem[] = [
     category: "Billing",
     question: "What's the difference between Free, Pro, and Family?",
     answer:
-      "Free is perfect for getting started with up to 10 devices and 25 documents. Pro unlocks unlimited inventory, AI guidance, and advanced reports. Family includes everything in Pro plus household sharing.",
+      `Free is perfect for getting started with up to ${FREE_DEVICE_LIMIT} devices and 25 documents. Pro unlocks unlimited inventory, AI guidance, and advanced reports. Family includes everything in Pro plus household sharing.`,
   },
   {
     category: "Billing",

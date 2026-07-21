@@ -100,17 +100,29 @@ export function computePermissions(
     Boolean(context.user) &&
     !context.isDemo;
 
+  const hasHouseholdMembership =
+    Boolean(context.householdId);
+
+  const isPersonalVaultOwner =
+    isAuthenticated &&
+    !hasHouseholdMembership;
+
   const isViewer =
+    hasHouseholdMembership &&
     context.role === "viewer";
 
   const isMember =
+    hasHouseholdMembership &&
     context.role === "member";
 
   const isAdmin =
+    hasHouseholdMembership &&
     context.role === "admin";
 
   const roleCanMutate =
-    isMember || isAdmin;
+    isPersonalVaultOwner ||
+    isMember ||
+    isAdmin;
 
   const canView = true;
 
@@ -121,7 +133,8 @@ export function computePermissions(
     !context.isDemo && roleCanMutate;
 
   const canDelete =
-    !context.isDemo && isAdmin;
+    !context.isDemo &&
+    (isPersonalVaultOwner || isAdmin);
 
   const canUpload =
     !context.isDemo && roleCanMutate;

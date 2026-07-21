@@ -2,7 +2,7 @@ import type {
   SubscriptionPlan,
 } from "@/hooks/useSubscription";
 
-export const FREE_DEVICE_LIMIT = 10;
+export const FREE_DEVICE_LIMIT = 8;
 export const FREE_DOCUMENT_LIMIT = 25;
 
 export type PlanLimits = {
@@ -40,7 +40,7 @@ export const PLAN_FEATURES: Record<
   free: {
     label: "Free",
     items: [
-      "Up to 10 devices",
+      `Up to ${FREE_DEVICE_LIMIT} devices`,
       "Up to 25 documents",
       "Basic warranty tracking",
       "Basic maintenance",
