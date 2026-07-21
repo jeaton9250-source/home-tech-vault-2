@@ -58,12 +58,8 @@ export const FOOTER_RESOURCE_LINKS: FooterLink[] =
       href: MARKETING_ROUTES.faq,
     },
     {
-      label: "FAQ",
-      href: `${MARKETING_ROUTES.home}#faq`,
-    },
-    {
       label: "Video Walkthrough",
-      href: `${MARKETING_ROUTES.home}#walkthrough`,
+      href: MARKETING_ROUTES.demo,
     },
     {
       label: "Contact Support",
@@ -83,7 +79,7 @@ export const FOOTER_COMPANY_LINKS: FooterLink[] =
     },
     {
       label: "Founder Story",
-      href: `${MARKETING_ROUTES.home}#founder-story`,
+      href: MARKETING_ROUTES.contact,
     },
     {
       label: "Contact",
@@ -115,7 +111,7 @@ export const FOOTER_LEGAL_LINKS: FooterLink[] =
     },
     {
       label: "Security",
-      href: `${MARKETING_ROUTES.home}#security`,
+      href: MARKETING_ROUTES.trust,
     },
   ];
 

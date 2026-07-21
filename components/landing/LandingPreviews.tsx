@@ -7,6 +7,8 @@ import Image from "next/image";
 import {
   FileText,
   Laptop,
+  ShieldCheck,
+  BarChart3,
   Users,
   Wifi,
 } from "lucide-react";
@@ -119,6 +121,117 @@ export function DocumentsPreview() {
             </p>
             <span className="shrink-0 rounded-md bg-surface-sunken px-2 py-0.5 text-[0.625rem] font-semibold uppercase tracking-wider text-text-muted">
               {doc.type}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function WarrantiesPreview() {
+  const items = [
+    {
+      name: "MacBook Pro",
+      status: "Active",
+      days: "412 days left",
+    },
+    {
+      name: "Living Room TV",
+      status: "Expiring",
+      days: "28 days left",
+    },
+  ];
+
+  return (
+    <div className="bg-surface-base p-5 md:p-6">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <p className="text-overline text-warning">
+            Warranties
+          </p>
+          <p className="mt-1 text-xl font-medium tracking-[-0.02em]">
+            Coverage at a glance
+          </p>
+        </div>
+        <div className="htv-icon-well h-11 w-11 bg-warning-soft text-warning">
+          <ShieldCheck size={18} />
+        </div>
+      </div>
+
+      <div className="mt-5 space-y-2">
+        {items.map((item) => (
+          <div
+            key={item.name}
+            className="flex items-center justify-between gap-3 rounded-[var(--radius-button)] border border-border-subtle bg-surface-card px-4 py-3"
+          >
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium">
+                {item.name}
+              </p>
+              <p className="text-xs text-text-muted">
+                {item.days}
+              </p>
+            </div>
+            <span
+              className={`shrink-0 rounded-md px-2 py-0.5 text-[0.625rem] font-semibold uppercase tracking-wider ${
+                item.status === "Expiring"
+                  ? "bg-warning-soft text-warning"
+                  : "bg-home-health-soft text-home-health"
+              }`}
+            >
+              {item.status}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function ReportsPreview() {
+  const rows = [
+    { label: "Devices tracked", value: "24" },
+    { label: "Warranties active", value: "18" },
+    { label: "Documents stored", value: "47" },
+  ];
+
+  return (
+    <div className="bg-surface-base p-5 md:p-6">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <p
+            className="text-overline"
+            style={{ color: sections.insights.accent }}
+          >
+            Reports
+          </p>
+          <p className="mt-1 text-xl font-medium tracking-[-0.02em]">
+            Household summary
+          </p>
+        </div>
+        <div
+          className="htv-icon-well h-11 w-11"
+          style={{
+            background: sections.insights.soft,
+            color: sections.insights.accent,
+          }}
+        >
+          <BarChart3 size={18} />
+        </div>
+      </div>
+
+      <div className="mt-5 space-y-2">
+        {rows.map((row) => (
+          <div
+            key={row.label}
+            className="flex items-center justify-between rounded-[var(--radius-button)] border border-border-subtle bg-surface-card px-4 py-3"
+          >
+            <span className="text-sm text-text-secondary">
+              {row.label}
+            </span>
+            <span className="text-sm font-medium tabular-nums">
+              {row.value}
             </span>
           </div>
         ))}

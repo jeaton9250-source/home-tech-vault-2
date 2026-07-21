@@ -4,62 +4,33 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
-  Check,
   Laptop,
   Loader2,
+  Play,
 } from "lucide-react";
 
-import FounderStorySection from "@/components/marketing/FounderStorySection";
-import HowItWorksSection from "@/components/marketing/HowItWorksSection";
-import LandingFaqSection from "@/components/marketing/LandingFaqSection";
-import ProductScreenshotsSection from "@/components/marketing/ProductScreenshotsSection";
-import SecuritySection from "@/components/marketing/SecuritySection";
-import TestimonialsSection from "@/components/marketing/TestimonialsSection";
-import TrustBar from "@/components/marketing/TrustBar";
-import VideoWalkthroughSection from "@/components/marketing/VideoWalkthroughSection";
-import WhyTrustSection from "@/components/marketing/WhyTrustSection";
+import LandingBenefitsSection from "@/components/landing/LandingBenefitsSection";
+import LandingProductPreview from "@/components/landing/LandingProductPreview";
+import LandingTrustSection from "@/components/landing/LandingTrustSection";
 import {
   CommandCenterPreview,
   PillarPreview,
 } from "@/components/landing/LandingPreviews";
-import MarketingLayout, {
-  MarketingContent,
-} from "@/components/marketing/MarketingLayout";
+import MarketingLayout from "@/components/marketing/MarketingLayout";
 import { useDemoMode } from "@/hooks/useDemoMode";
 import { MARKETING_ROUTES } from "@/lib/marketing/routes";
 import { sections } from "@/lib/design-system/tokens";
 import type { PublicFoundingProgramSummary } from "@/lib/founding-members/types";
 
 const fadeUp = {
-  initial: { opacity: 0, y: 24 },
+  initial: { opacity: 0, y: 20 },
   whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, margin: "-80px" },
+  viewport: { once: true, margin: "-60px" },
   transition: {
-    duration: 0.55,
+    duration: 0.5,
     ease: [0.22, 1, 0.36, 1] as const,
   },
 };
-
-const outcomes = [
-  {
-    title: "Never lose a warranty again",
-    copy: "See what's protected before a repair becomes expensive.",
-  },
-  {
-    title: "Find any receipt instantly",
-    copy: "Documents stay attached to the devices they protect.",
-  },
-  {
-    title: "Share one trusted home record",
-    copy: "Invite family with roles — without sharing every password.",
-  },
-] as const;
-
-const heroTrustItems = [
-  "Free to get started",
-  "Securely organized",
-  "Built for every home",
-] as const;
 
 type LandingPageProps = {
   foundingSummary?: PublicFoundingProgramSummary | null;
@@ -89,86 +60,70 @@ export default function LandingPage({
   }
 
   const isSignedIn = Boolean(user);
+  const primaryHref = isSignedIn
+    ? "/dashboard"
+    : MARKETING_ROUTES.signup;
+  const primaryLabel = isSignedIn
+    ? "Go to Your Vault"
+    : "Create Your Free Vault";
 
   return (
     <MarketingLayout
       mainClassName="overflow-x-hidden"
       foundingSummary={foundingSummary}
     >
-      <section className="relative px-6 pb-16 pt-16 md:px-8 md:pb-20 md:pt-24">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-gradient-to-b from-home-health-soft/40 to-transparent" />
+      {/* 1. Hero */}
+      <section className="relative px-6 pb-12 pt-14 md:px-8 md:pb-16 md:pt-20">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-gradient-to-b from-home-health-soft/35 to-transparent" />
 
-        <div className="relative mx-auto grid max-w-6xl items-center gap-16 lg:grid-cols-[1.05fr_1fr] lg:gap-20">
-          <motion.div {...fadeUp}>
-            <p className="text-overline text-text-muted">
-              Home technology, finally organized
-            </p>
-
-            <h1 className="mt-5 max-w-xl text-4xl font-medium tracking-[-0.04em] md:text-6xl md:leading-[1.02]">
-              Everything about your home&apos;s
-              technology.
-              <span className="mt-1 block md:mt-2">
-                Organized in one place.
-              </span>
+        <div className="relative mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[1.05fr_1fr] lg:gap-14">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 0.55,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+          >
+            <h1 className="max-w-xl text-4xl font-medium tracking-[-0.04em] md:text-5xl md:leading-[1.05]">
+              Your home technology,
+              organized in one place.
             </h1>
 
-            <p className="mt-6 max-w-xl text-lg leading-8 text-text-muted">
-              Keep your devices, warranties, receipts,
-              documents, network details, and subscriptions
-              together in one calm, secure home.
+            <p className="mt-4 max-w-lg text-base leading-7 text-text-muted md:text-lg">
+              Track devices, warranties, documents, and
+              subscriptions without digging through drawers
+              or inboxes.
             </p>
 
-            <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center">
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
               <Link
-                href={
-                  isSignedIn
-                    ? "/dashboard"
-                    : MARKETING_ROUTES.signup
-                }
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[var(--radius-button)] bg-charcoal px-7 py-3 text-sm font-medium text-surface-card transition hover:bg-charcoal-hover focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-charcoal/20"
+                href={primaryHref}
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[var(--radius-button)] bg-charcoal px-6 py-3 text-sm font-medium text-surface-card transition hover:bg-charcoal-hover focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-charcoal/20"
               >
-                {isSignedIn
-                  ? "Go to Your Vault"
-                  : "Start Free"}
+                {primaryLabel}
                 <ArrowRight size={16} aria-hidden />
               </Link>
 
-              {!isSignedIn && (
+              {!isSignedIn ? (
                 <Link
                   href={MARKETING_ROUTES.demo}
-                  className="inline-flex min-h-12 items-center justify-center px-2 py-3 text-sm font-medium text-interaction transition hover:text-interaction-hover focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-interaction/15 sm:px-4"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[var(--radius-button)] border border-border-subtle bg-surface-card px-6 py-3 text-sm font-medium text-text-primary transition hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-interaction/15"
                 >
-                  Explore the Demo
+                  <Play size={16} aria-hidden />
+                  Watch Demo
                 </Link>
-              )}
+              ) : null}
             </div>
-
-            <ul
-              className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-x-6 sm:gap-y-2"
-              aria-label="Product highlights"
-            >
-              {heroTrustItems.map((item) => (
-                <li
-                  key={item}
-                  className="flex items-center gap-2 text-sm text-text-secondary"
-                >
-                  <Check
-                    size={15}
-                    strokeWidth={2}
-                    className="shrink-0 text-text-muted"
-                    aria-hidden
-                  />
-                  {item}
-                </li>
-              ))}
-            </ul>
           </motion.div>
 
           <motion.div
-            {...fadeUp}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{
-              ...fadeUp.transition,
-              delay: 0.08,
+              duration: 0.55,
+              delay: 0.06,
+              ease: [0.22, 1, 0.36, 1],
             }}
             className="mx-auto w-full max-w-xl lg:max-w-none"
           >
@@ -183,103 +138,51 @@ export default function LandingPage({
         </div>
       </section>
 
-      <TrustBar />
-      <WhyTrustSection />
-      <VideoWalkthroughSection />
-      <ProductScreenshotsSection />
-      <HowItWorksSection />
+      {/* 2. Benefits */}
+      <LandingBenefitsSection />
 
-      <MarketingContent>
-        <motion.div {...fadeUp} className="max-w-2xl">
-          <p className="text-overline text-text-muted">
-            Outcomes
-          </p>
-          <h2 className="mt-4 text-3xl font-medium tracking-[-0.03em] md:text-4xl">
-            Less chaos. More confidence.
-          </h2>
-        </motion.div>
+      {/* 3. Product preview */}
+      <LandingProductPreview />
 
-        <div className="mt-14 grid gap-6 md:grid-cols-3">
-          {outcomes.map((item, index) => (
-            <motion.article
-              key={item.title}
-              {...fadeUp}
-              transition={{
-                ...fadeUp.transition,
-                delay: index * 0.06,
-              }}
-              className="rounded-[var(--radius-card)] border border-border-subtle bg-surface-card p-8"
-            >
-              <h3 className="text-lg font-medium tracking-[-0.02em]">
-                {item.title}
-              </h3>
-              <p className="mt-3 text-sm leading-7 text-text-muted">
-                {item.copy}
-              </p>
-            </motion.article>
-          ))}
-        </div>
+      {/* 4. Trust */}
+      <LandingTrustSection />
 
-        <div className="mt-12 text-center">
-          <Link
-            href={MARKETING_ROUTES.features}
-            className="inline-flex items-center gap-2 text-sm font-medium text-interaction hover:text-interaction-hover"
-          >
-            Explore all four pillars
-            <ArrowRight size={16} aria-hidden />
-          </Link>
-        </div>
-      </MarketingContent>
-
-      <FounderStorySection />
-      <SecuritySection />
-      <TestimonialsSection />
-      <LandingFaqSection />
-
-      <section className="px-6 pb-24 md:px-8 md:pb-32">
+      {/* 5. Final CTA */}
+      <section className="px-6 pb-16 md:px-8 md:pb-20">
         <motion.div
           {...fadeUp}
-          className="mx-auto max-w-4xl overflow-hidden rounded-[var(--radius-card)] bg-charcoal px-8 py-16 text-center text-surface-card md:px-14 md:py-20"
+          className="mx-auto max-w-3xl overflow-hidden rounded-[var(--radius-card)] bg-charcoal px-8 py-12 text-center text-surface-card md:px-12 md:py-14"
         >
-          <p className="text-overline text-home-health">
-            Ready when you are
-          </p>
-
-          <h2 className="mx-auto mt-4 max-w-2xl text-3xl font-medium tracking-[-0.03em] md:text-4xl">
+          <h2 className="text-2xl font-medium tracking-[-0.03em] md:text-3xl">
             {isSignedIn
-              ? "Your vault is waiting."
-              : "Start organizing your home technology today."}
+              ? "Your vault is ready."
+              : "Create your free vault today."}
           </h2>
 
-          <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-white/70 md:text-base">
+          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-white/70">
             {isSignedIn
-              ? "Pick up where you left off with devices, warranties, and documents in one place."
-              : "Create a free account in minutes, or explore the interactive demo with no signup."}
+              ? "Pick up where you left off."
+              : "Start free in minutes. No credit card required."}
           </p>
 
-          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
-              href={
-                isSignedIn
-                  ? "/dashboard"
-                  : MARKETING_ROUTES.signup
-              }
-              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[var(--radius-button)] bg-surface-card px-7 py-3 text-sm font-medium text-charcoal transition hover:brightness-95 sm:w-auto"
+              href={primaryHref}
+              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[var(--radius-button)] bg-surface-card px-6 py-3 text-sm font-medium text-charcoal transition hover:brightness-95 sm:w-auto"
             >
-              {isSignedIn
-                ? "Go to Your Vault"
-                : "Start Free"}
+              {primaryLabel}
               <ArrowRight size={16} aria-hidden />
             </Link>
 
-            {!isSignedIn && (
+            {!isSignedIn ? (
               <Link
-                href={MARKETING_ROUTES.pricing}
-                className="inline-flex min-h-11 w-full items-center justify-center rounded-[var(--radius-button)] border border-white/15 px-7 py-3 text-sm font-medium text-white transition hover:bg-white/10 sm:w-auto"
+                href={MARKETING_ROUTES.demo}
+                className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[var(--radius-button)] border border-white/15 px-6 py-3 text-sm font-medium text-white transition hover:bg-white/10 sm:w-auto"
               >
-                View Pricing
+                <Play size={16} aria-hidden />
+                Watch Demo
               </Link>
-            )}
+            ) : null}
           </div>
         </motion.div>
       </section>
