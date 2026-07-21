@@ -5,6 +5,7 @@ import "./globals.css";
 
 import AuthGuard from "@/components/AuthGuard";
 import AppChrome from "@/components/AppChrome";
+import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 
 import { brand } from "@/lib/design-system/tokens";
 
@@ -28,6 +29,7 @@ export default function RootLayout({
       className={GeistSans.className}
     >
       <body className="bg-surface-base text-text-primary antialiased">
+        <GoogleAnalytics />
         <AuthGuard>
           <AppChrome>{children}</AppChrome>
         </AuthGuard>
