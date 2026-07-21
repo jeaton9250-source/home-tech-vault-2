@@ -8,26 +8,10 @@ export type FooterLink = {
 export const FOOTER_BRAND_DESCRIPTION =
   "The secure home for your devices, warranties, documents, and household technology.";
 
-export const FOOTER_PRODUCT_LINKS: FooterLink[] =
-  [
-    {
-      label: "Features",
-      href: MARKETING_ROUTES.features,
-    },
-    {
-      label: "Demo",
-      href: MARKETING_ROUTES.demo,
-    },
-  ];
-
 export const FOOTER_SUPPORT_LINKS: FooterLink[] =
   [
     {
       label: "Help Center",
-      href: MARKETING_ROUTES.faq,
-    },
-    {
-      label: "FAQ",
       href: MARKETING_ROUTES.faq,
     },
     {
