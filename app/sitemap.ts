@@ -6,19 +6,18 @@ const siteUrl =
     ""
   ) ?? "https://hometechvault.com";
 
-const publicPaths = [
+/** Public marketing pages worth indexing. */
+const indexablePaths = [
   "/",
   "/demo",
   "/contact",
-  "/login",
-  "/signup",
-  "/forgot-password",
-];
+  "/upgrade",
+] as const;
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date();
 
-  return publicPaths.map((path) => ({
+  return indexablePaths.map((path) => ({
     url:
       path === "/"
         ? `${siteUrl}/`
@@ -26,6 +25,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     lastModified,
     changeFrequency:
       path === "/" ? "weekly" : "monthly",
-    priority: path === "/" ? 1 : 0.7,
+    priority:
+      path === "/"
+        ? 1
+        : path === "/upgrade"
+          ? 0.8
+          : 0.7,
   }));
 }
