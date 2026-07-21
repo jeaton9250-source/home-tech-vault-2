@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Loader2 } from "lucide-react";
 
 import {
   type AnchorHTMLAttributes,
@@ -27,6 +28,8 @@ type SharedProps = {
   size?: ButtonSize;
   className?: string;
   fullWidth?: boolean;
+  loading?: boolean;
+  loadingLabel?: string;
 };
 
 type LinkProps =
@@ -54,7 +57,7 @@ const variantClasses: Record<
   string
 > = {
   primary:
-    "border border-charcoal bg-charcoal text-surface-card shadow-sm hover:border-charcoal-hover hover:bg-charcoal-hover hover:shadow-md active:scale-[0.98] focus-visible:ring-charcoal/20",
+    "border border-interaction bg-interaction text-surface-card shadow-sm hover:border-interaction-hover hover:bg-interaction-hover hover:shadow-md active:scale-[0.98] focus-visible:ring-interaction/20",
 
   secondary:
     "border border-border-subtle bg-surface-card text-text-primary shadow-sm hover:border-border-strong hover:bg-surface-hover hover:shadow-md active:scale-[0.98] focus-visible:ring-interaction/15",
@@ -107,6 +110,23 @@ function isLinkProps(
   return typeof (props as LinkProps).href === "string";
 }
 
+function LoadingIndicator({
+  label,
+}: {
+  label?: string;
+}) {
+  return (
+    <>
+      <Loader2
+        size={16}
+        className="animate-spin"
+        aria-hidden
+      />
+      <span>{label ?? "Loading..."}</span>
+    </>
+  );
+}
+
 export default function Button(
   props: ButtonProps
 ) {
@@ -118,6 +138,12 @@ export default function Button(
 
   const fullWidth =
     props.fullWidth ?? false;
+
+  const loading =
+    props.loading ?? false;
+
+  const loadingLabel =
+    props.loadingLabel;
 
   const className =
     props.className ?? "";
@@ -136,6 +162,8 @@ export default function Button(
       variant: _variant,
       size: _size,
       fullWidth: _fullWidth,
+      loading: _loading,
+      loadingLabel: _loadingLabel,
       className: _className,
       ...linkProps
     } = props;
@@ -144,9 +172,16 @@ export default function Button(
       <Link
         href={href}
         className={classes}
+        aria-busy={loading || undefined}
         {...linkProps}
       >
-        {children}
+        {loading ? (
+          <LoadingIndicator
+            label={loadingLabel}
+          />
+        ) : (
+          children
+        )}
       </Link>
     );
   }
@@ -158,18 +193,30 @@ export default function Button(
     variant: _variant,
     size: _size,
     fullWidth: _fullWidth,
+    loading: _loading,
+    loadingLabel: _loadingLabel,
     className: _className,
     ...buttonProps
   } = props as RegularButtonProps;
 
+  const isDisabled =
+    disabled || loading;
+
   return (
     <button
       type={type}
-      disabled={disabled}
+      disabled={isDisabled}
+      aria-busy={loading || undefined}
       className={classes}
       {...buttonProps}
     >
-      {children}
+      {loading ? (
+        <LoadingIndicator
+          label={loadingLabel}
+        />
+      ) : (
+        children
+      )}
     </button>
   );
 }

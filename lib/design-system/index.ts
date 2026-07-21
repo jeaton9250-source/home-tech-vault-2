@@ -1,6 +1,7 @@
 export {
   brand,
   colors,
+  motion,
   radius,
   sections,
   shadows,

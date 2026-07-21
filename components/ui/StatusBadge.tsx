@@ -1,11 +1,15 @@
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import StatusChip from "@/components/ui/StatusChip";
 
-type StatusBadgeVariant =
+export type StatusBadgeVariant =
+  | "active"
+  | "online"
+  | "offline"
+  | "warning"
+  | "expired"
   | "neutral"
   | "success"
-  | "warning"
   | "danger"
   | "accent"
   | "premium"
@@ -14,29 +18,51 @@ type StatusBadgeVariant =
 type StatusBadgeProps = {
   children: ReactNode;
   variant?: StatusBadgeVariant;
+  className?: string;
+  dot?: boolean;
 };
 
 const variantMap: Record<
   StatusBadgeVariant,
-  "neutral" | "success" | "warning" | "danger" | "accent" | "premium"
+  {
+    chip:
+      | "neutral"
+      | "success"
+      | "warning"
+      | "danger"
+      | "accent"
+      | "premium";
+    dot?: boolean;
+  }
 > = {
-  neutral: "neutral",
-  success: "success",
-  warning: "warning",
-  danger: "danger",
-  accent: "accent",
-  premium: "premium",
-  achievement: "warning",
+  active: { chip: "success" },
+  online: { chip: "success" },
+  offline: { chip: "neutral" },
+  warning: { chip: "warning" },
+  expired: { chip: "danger" },
+  neutral: { chip: "neutral", dot: false },
+  success: { chip: "success" },
+  danger: { chip: "danger" },
+  accent: { chip: "accent" },
+  premium: { chip: "premium" },
+  achievement: { chip: "warning" },
 };
 
-/** @deprecated Prefer StatusChip */
 export default function StatusBadge({
   children,
   variant = "neutral",
+  className,
+  dot,
 }: StatusBadgeProps) {
+  const mapped = variantMap[variant];
+  const showDot =
+    dot ?? mapped.dot ?? true;
+
   return (
     <StatusChip
-      variant={variantMap[variant]}
+      variant={mapped.chip}
+      dot={showDot}
+      className={className}
     >
       {children}
     </StatusChip>

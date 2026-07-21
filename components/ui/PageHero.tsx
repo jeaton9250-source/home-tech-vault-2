@@ -46,14 +46,11 @@ export default function PageHero({
   return (
     <section
       className={cn(
-        "overflow-hidden rounded-[calc(var(--radius-card)+4px)] border border-border-subtle p-8 shadow-[var(--shadow-sm),var(--shadow-md),var(--shadow-inset)] md:p-10",
+        "overflow-hidden rounded-[var(--radius-card)] border border-border-subtle bg-surface-card p-8 shadow-[var(--shadow-sm)] md:p-10",
         className
       )}
-      style={{
-        background: `linear-gradient(145deg, color-mix(in srgb, ${tint.soft} 88%, white) 0%, ${colors.surfaceCard} 46%, ${colors.surfaceBase} 100%)`,
-      }}
     >
-      <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
         <div className="max-w-3xl">
           {eyebrow ? (
             <p
@@ -74,13 +71,17 @@ export default function PageHero({
           </h1>
 
           {description && (
-            <p className="mt-4 text-base leading-7 text-text-muted">
+            <p className="mt-4 max-w-2xl text-base leading-7 text-text-muted">
               {description}
             </p>
           )}
         </div>
 
-        {children}
+        {children ? (
+          <div className="flex shrink-0 flex-wrap items-center gap-3">
+            {children}
+          </div>
+        ) : null}
       </div>
     </section>
   );

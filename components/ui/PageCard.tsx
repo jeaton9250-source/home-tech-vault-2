@@ -20,16 +20,16 @@ export default function PageCard({
   return (
     <section
       className={cn(
-        "rounded-[var(--radius-card)] border border-border-subtle p-6 md:p-8",
+        "rounded-[var(--radius-card)] border border-border-subtle bg-surface-card p-6 md:p-8",
         elevated &&
-          "bg-gradient-to-b from-surface-card to-surface-base/40 shadow-[var(--shadow-sm),var(--shadow-md),var(--shadow-inset)]",
+          "shadow-[var(--shadow-sm)]",
         inset &&
-          "bg-surface-sunken shadow-[var(--shadow-well),var(--shadow-inset)]",
+          "bg-surface-sunken shadow-[var(--shadow-well)]",
         !elevated &&
           !inset &&
-          "bg-surface-card shadow-[var(--shadow-sm)]",
+          "shadow-none",
         interactive &&
-          "htv-card-interactive",
+          "htv-card-interactive cursor-pointer",
         className
       )}
     >

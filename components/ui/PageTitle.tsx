@@ -33,3 +33,5 @@ export default function PageTitle({
     </PageHero>
   );
 }
+
+export type { PageHeroSection };

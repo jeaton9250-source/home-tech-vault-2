@@ -39,9 +39,10 @@ export default function EmptyState({
   return (
     <div
       className={cn(
-        "flex flex-col items-center rounded-[var(--radius-card)] border border-border-subtle bg-surface-sunken/40 px-6 py-12 text-center shadow-[var(--shadow-sm)]",
+        "flex flex-col items-center rounded-[var(--radius-card)] border border-border-subtle bg-surface-card px-6 py-12 text-center shadow-[var(--shadow-sm)]",
         className
       )}
+      role="status"
     >
       <IconWell
         icon={Icon}
@@ -81,7 +82,7 @@ export default function EmptyState({
       {helpLabel && helpHref && (
         <Link
           href={helpHref}
-          className="mt-4 text-sm font-medium text-interaction hover:text-interaction-hover"
+          className="mt-4 text-sm font-medium text-interaction hover:text-interaction-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interaction"
         >
           {helpLabel}
         </Link>

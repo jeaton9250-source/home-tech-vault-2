@@ -8,10 +8,11 @@ import {
 
 import { cn } from "@/lib/design-system/cn";
 
-type AlertVariant =
+export type AlertVariant =
   | "info"
   | "success"
   | "warning"
+  | "error"
   | "danger";
 
 type AlertProps = {
@@ -22,7 +23,7 @@ type AlertProps = {
 };
 
 const variantStyles: Record<
-  AlertVariant,
+  Exclude<AlertVariant, "danger">,
   { container: string; icon: typeof Info }
 > = {
   info: {
@@ -32,7 +33,7 @@ const variantStyles: Record<
   },
   success: {
     container:
-      "border-home-health/25 bg-home-health-soft text-home-health",
+      "border-success/25 bg-success-soft text-success",
     icon: CheckCircle2,
   },
   warning: {
@@ -40,12 +41,20 @@ const variantStyles: Record<
       "border-warning/25 bg-warning-soft text-warning",
     icon: AlertTriangle,
   },
-  danger: {
+  error: {
     container:
       "border-danger/25 bg-danger-soft text-danger",
     icon: AlertCircle,
   },
 };
+
+function resolveVariant(
+  variant: AlertVariant
+): Exclude<AlertVariant, "danger"> {
+  return variant === "danger"
+    ? "error"
+    : variant;
+}
 
 export default function Alert({
   variant = "info",
@@ -53,7 +62,10 @@ export default function Alert({
   children,
   className,
 }: AlertProps) {
-  const styles = variantStyles[variant];
+  const resolvedVariant =
+    resolveVariant(variant);
+  const styles =
+    variantStyles[resolvedVariant];
   const Icon = styles.icon;
 
   return (

@@ -68,7 +68,7 @@
   --color-achievement-soft: #f9f3e8;
 
   /* Radius */
-  --radius-card: 16px;
+  --radius-card: 24px;
   --radius-button: 12px;
   --radius-input: 12px;
   --radius-dialog: 20px;
@@ -98,6 +98,11 @@
   --text-card-title: 1.125rem;
   --text-body: 1rem;
   --text-label: 0.8125rem;
+  --text-caption: 0.75rem;
+
+  --spacing-page: 2rem;
+  --spacing-section: 1.5rem;
+  --spacing-card: 1.5rem;
 
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
 }
@@ -213,6 +218,12 @@ textarea::placeholder {
   font-weight: 500;
 }
 
+.text-caption {
+  font-size: var(--text-caption);
+  line-height: 1.33;
+  color: var(--color-text-muted);
+}
+
 .text-overline {
   font-size: 0.6875rem;
   line-height: 1rem;
@@ -236,17 +247,13 @@ textarea::placeholder {
   border-radius: var(--radius-card);
   border: 1px solid var(--color-border-subtle);
   background: var(--color-surface-card);
-  box-shadow: var(--shadow-sm), var(--shadow-inset);
+  box-shadow: var(--shadow-sm);
 }
 
 .htv-card-elevated {
   border-radius: var(--radius-card);
   border: 1px solid var(--color-border-subtle);
-  background: linear-gradient(
-    180deg,
-    var(--color-surface-card) 0%,
-    color-mix(in srgb, var(--color-surface-card) 92%, var(--color-surface-base)) 100%
-  );
+  background: var(--color-surface-card);
   box-shadow: var(--shadow-sm), var(--shadow-md);
 }
 

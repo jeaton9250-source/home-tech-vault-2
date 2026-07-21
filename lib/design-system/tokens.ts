@@ -77,7 +77,7 @@ export const sections = {
 } as const;
 
 export const radius = {
-  card: "16px",
+  card: "24px",
   button: "12px",
   input: "12px",
   dialog: "20px",
@@ -113,6 +113,12 @@ export const shadows = {
   lift: "0 20px 56px rgb(28 25 23 / 0.1)",
   inset: "inset 0 1px 0 rgb(255 255 255 / 0.75)",
   well: "inset 0 2px 4px rgb(28 25 23 / 0.04)",
+} as const;
+
+export const motion = {
+  ease: "cubic-bezier(0.22, 1, 0.36, 1)",
+  durationFast: "160ms",
+  durationNormal: "220ms",
 } as const;
 
 export const brand = {
