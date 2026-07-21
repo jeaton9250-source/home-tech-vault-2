@@ -21,7 +21,6 @@ import {
 import { useDemoMode } from "@/hooks/useDemoMode";
 import { MARKETING_ROUTES } from "@/lib/marketing/routes";
 import { sections } from "@/lib/design-system/tokens";
-import FoundingMembersCallout from "@/components/landing/FoundingMembersCallout";
 import type { PublicFoundingProgramSummary } from "@/lib/founding-members/types";
 
 const fadeUp = {
@@ -85,7 +84,10 @@ export default function LandingPage({
   const isSignedIn = Boolean(user);
 
   return (
-    <MarketingLayout mainClassName="overflow-x-hidden">
+    <MarketingLayout
+      mainClassName="overflow-x-hidden"
+      foundingSummary={foundingSummary}
+    >
       <section className="relative px-6 pb-24 pt-16 md:px-8 md:pb-32 md:pt-24">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-gradient-to-b from-home-health-soft/40 to-transparent" />
 
@@ -153,12 +155,6 @@ export default function LandingPage({
                 </li>
               ))}
             </ul>
-
-            {!isSignedIn && foundingSummary ? (
-              <FoundingMembersCallout
-                summary={foundingSummary}
-              />
-            ) : null}
           </motion.div>
 
           <motion.div

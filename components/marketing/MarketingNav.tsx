@@ -6,7 +6,9 @@ import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 
 import Logo from "@/components/brand/Logo";
+import FoundingMembersBanner from "@/components/landing/FoundingMembersBanner";
 import { useDemoMode } from "@/hooks/useDemoMode";
+import type { PublicFoundingProgramSummary } from "@/lib/founding-members/types";
 import { MARKETING_ROUTES } from "@/lib/marketing/routes";
 import { cn } from "@/lib/design-system/cn";
 
@@ -18,7 +20,13 @@ const navLinks = [
   { href: MARKETING_ROUTES.contact, label: "Contact" },
 ] as const;
 
-export default function MarketingNav() {
+type MarketingNavProps = {
+  foundingSummary?: PublicFoundingProgramSummary | null;
+};
+
+export default function MarketingNav({
+  foundingSummary = null,
+}: MarketingNavProps = {}) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] =
     useState(false);
@@ -38,8 +46,9 @@ export default function MarketingNav() {
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border-subtle/60 bg-surface-base/90 backdrop-blur-xl">
-      <div className="mx-auto flex h-[4.25rem] max-w-6xl items-center justify-between gap-4 px-6 md:px-8">
+    <header className="sticky top-0 z-50 bg-surface-base/90 backdrop-blur-xl">
+      <div className="border-b border-border-subtle/60">
+        <div className="mx-auto flex h-[4.25rem] max-w-6xl items-center justify-between gap-4 px-6 md:px-8">
         <Link
           href={MARKETING_ROUTES.home}
           className="shrink-0"
@@ -105,6 +114,15 @@ export default function MarketingNav() {
           )}
         </button>
       </div>
+      </div>
+
+      {!loading &&
+      !isSignedIn &&
+      foundingSummary ? (
+        <FoundingMembersBanner
+          summary={foundingSummary}
+        />
+      ) : null}
 
       {mobileOpen && (
         <div className="border-t border-border-subtle bg-surface-base px-6 py-4 lg:hidden">

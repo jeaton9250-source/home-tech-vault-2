@@ -4,18 +4,21 @@ import MarketingFooter from "@/components/marketing/MarketingFooter";
 import MarketingNav from "@/components/marketing/MarketingNav";
 import StructuredData from "@/components/marketing/StructuredData";
 import { cn } from "@/lib/design-system/cn";
+import type { PublicFoundingProgramSummary } from "@/lib/founding-members/types";
 import { createOrganizationJsonLd } from "@/lib/marketing/metadata";
 
 type MarketingLayoutProps = {
   children: ReactNode;
   className?: string;
   mainClassName?: string;
+  foundingSummary?: PublicFoundingProgramSummary | null;
 };
 
 export default function MarketingLayout({
   children,
   className,
   mainClassName,
+  foundingSummary = null,
 }: MarketingLayoutProps) {
   return (
     <div
@@ -27,7 +30,9 @@ export default function MarketingLayout({
       <StructuredData
         data={createOrganizationJsonLd()}
       />
-      <MarketingNav />
+      <MarketingNav
+        foundingSummary={foundingSummary}
+      />
       <main className={mainClassName}>{children}</main>
       <MarketingFooter />
     </div>
