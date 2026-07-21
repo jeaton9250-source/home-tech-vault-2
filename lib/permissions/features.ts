@@ -18,7 +18,7 @@ export const FEATURE_REQUIREMENTS: Record<
   settings: "free",
   account: "free",
   notifications: "free",
-  security: "free",
+  securityCenter: "pro",
   audit: "free",
 
   networkDiscover: "pro",
@@ -52,7 +52,7 @@ export const FEATURE_LABELS: Record<
   settings: "Settings",
   account: "Account",
   notifications: "Notifications",
-  security: "Security",
+  securityCenter: "Security Center",
   audit: "Audit",
   billing: "Billing",
 };

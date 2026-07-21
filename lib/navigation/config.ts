@@ -204,8 +204,8 @@ export const PRIMARY_NAV_GROUPS: NavMenuGroup[] =
           href: "/security",
           icon: Shield,
           description:
-            "Security recommendations",
-          feature: "security",
+            "Account security and recovery",
+          feature: "securityCenter",
         },
         {
           label: "Settings",

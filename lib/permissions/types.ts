@@ -27,7 +27,7 @@ export type FeatureKey =
   | "settings"
   | "account"
   | "notifications"
-  | "security"
+  | "securityCenter"
   | "audit"
   | "billing";
 

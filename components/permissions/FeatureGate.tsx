@@ -1,6 +1,8 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
+
+import { usePathname, useRouter } from "next/navigation";
 
 import { usePermissions } from "@/hooks/usePermissions";
 
@@ -16,15 +18,29 @@ type FeatureGateProps = {
   children: ReactNode;
   feature: FeatureKey;
   description?: string;
+  title?: string;
+  features?: string[];
+  upgradeLabel?: string;
+  requireAuthentication?: boolean;
+  redirectPath?: string;
 };
 
 export default function FeatureGate({
   children,
   feature,
   description,
+  title,
+  features: featureList,
+  upgradeLabel = "View Upgrade Options",
+  requireAuthentication = false,
+  redirectPath,
 }: FeatureGateProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+
   const {
     loading,
+    user,
     isDemo,
     isPlatformAdmin,
     billingManagedByHousehold,
@@ -43,7 +59,46 @@ export default function FeatureGate({
     isPlatformAdmin ||
     canViewFeature(feature);
 
+  useEffect(() => {
+    if (
+      !requireAuthentication ||
+      loading ||
+      isDemo
+    ) {
+      return;
+    }
+
+    if (!user) {
+      const destination =
+        redirectPath ?? pathname;
+
+      router.replace(
+        `/login?redirect=${encodeURIComponent(destination)}`
+      );
+    }
+  }, [
+    requireAuthentication,
+    loading,
+    isDemo,
+    user,
+    router,
+    redirectPath,
+    pathname,
+  ]);
+
   if (loading) {
+    return (
+      <PageShell>
+        <DashboardSkeleton />
+      </PageShell>
+    );
+  }
+
+  if (
+    requireAuthentication &&
+    !isDemo &&
+    !user
+  ) {
     return (
       <PageShell>
         <DashboardSkeleton />
@@ -68,25 +123,28 @@ export default function FeatureGate({
         ? "Pro"
         : "Premium";
 
-  const features = isReadOnlyLock
-    ? [
-        "Contact your Family Plan Admin if you need edit access.",
-      ]
-    : [
-        "Unlimited device tracking",
-        "Network device discovery",
-        "Advanced reports and analytics",
-        "Insurance-ready exports",
-        "Smart recommendations",
-        ...(access.requiredPlan === "family"
-          ? ["Household sharing and permissions"]
-          : []),
-      ];
+  const features = featureList ??
+    (isReadOnlyLock
+      ? [
+          "Contact your Family Plan Admin if you need edit access.",
+        ]
+      : [
+          "Unlimited device tracking",
+          "Network device discovery",
+          "Advanced reports and analytics",
+          "Insurance-ready exports",
+          "Smart recommendations",
+          ...(access.requiredPlan === "family"
+            ? ["Household sharing and permissions"]
+            : []),
+        ]);
 
   return (
     <PageShell>
       <PremiumFeatureCard
-        title={`Unlock ${featureLabel}`}
+        title={
+          title ?? `Unlock ${featureLabel}`
+        }
         description={
           description ||
           access.upgradeReason ||
@@ -107,7 +165,7 @@ export default function FeatureGate({
             ? undefined
             : billingManagedByHousehold
               ? "View Household"
-              : "View Upgrade Options"
+              : upgradeLabel
         }
         features={features}
       />
