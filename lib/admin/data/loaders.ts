@@ -1,6 +1,12 @@
 import "server-only";
 
 import { resolveEffectivePlan } from "@/lib/permissions/effectivePlan";
+import {
+  buildServerPlanAccessContext,
+  formatEffectivePlanSourceLabel,
+} from "@/lib/permissions/serverPlanAccess";
+import { isGrantLogicallyExpired } from "@/lib/plan-grants/grantAccess";
+import { loadLatestPlanGrantForUser } from "@/lib/plan-grants/loadActiveGrant";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
   buildPaginationMeta,
@@ -407,38 +413,33 @@ export async function loadAdminUserDetail(
     subscriptionResult.data?.plan
   ) as "free" | "pro" | "family";
 
-  const effective = resolveEffectivePlan({
-    isDemo: false,
-    isPlatformAdmin:
-      profile.is_admin === true,
-    userId,
-    personalPlan,
-    personalStatus:
-      subscriptionResult.data?.status?.trim().toLowerCase() ||
-      "inactive",
-    personalCurrentPeriodEnd:
-      subscriptionResult.data
-        ?.current_period_end ?? null,
-    hasPersonalStripeCustomer: Boolean(
-      subscriptionResult.data
-        ?.stripe_customer_id
+  const [
+    planAccessContext,
+    latestGrant,
+  ] = await Promise.all([
+    buildServerPlanAccessContext(
+      admin,
+      userId
     ),
-    householdId:
-      membershipResult.data?.household_id ??
-      null,
-    householdOwnerId,
-    householdOwnerPlan,
-    householdOwnerStatus,
-    householdOwnerCurrentPeriodEnd,
-    householdOwnerName,
-    rawHouseholdRole:
-      (membershipResult.data?.role as
-        | "owner"
-        | "admin"
-        | "member"
-        | "viewer"
-        | null) ?? null,
+    loadLatestPlanGrantForUser(
+      admin,
+      userId
+    ),
+  ]);
+
+  const effective =
+    planAccessContext.result;
+
+  const inheritedOnly = resolveEffectivePlan({
+    ...planAccessContext.input,
+    adminGrant: null,
   });
+
+  const grantDisplayStatus = latestGrant
+    ? isGrantLogicallyExpired(latestGrant)
+      ? "expired"
+      : latestGrant.status
+    : null;
 
   return {
     id: profile.id,
@@ -469,6 +470,27 @@ export async function loadAdminUserDetail(
     supportTicketCount:
       ticketCountResult.count ?? 0,
     effectivePlan: effective.effectivePlan,
+    effectivePlanSource:
+      formatEffectivePlanSourceLabel(
+        effective.effectivePlanSource
+      ),
+    inheritedHouseholdPlan:
+      inheritedOnly.inheritsFamilyPlan
+        ? "family"
+        : null,
+    hasActiveAdminGrant:
+      effective.hasActiveAdminGrant,
+    adminGrantPlan:
+      latestGrant?.plan ?? null,
+    adminGrantStatus: grantDisplayStatus,
+    adminGrantExpiresAt:
+      latestGrant?.expiresAt ?? null,
+    adminGrantReason:
+      latestGrant?.reason ?? null,
+    adminGrantNotes:
+      latestGrant?.notes ?? null,
+    adminGrantId:
+      latestGrant?.id ?? null,
     householdName,
     stripeCustomerId:
       subscriptionResult.data

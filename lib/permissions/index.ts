@@ -39,6 +39,7 @@ export {
 
 export {
   canSendHouseholdInvitation,
+  householdOwnerHasFamilyProductAccess,
   householdOwnerHasGrantingFamilyPlan,
   isAdminHouseholdRole,
   normalizeSubscriptionPlan,

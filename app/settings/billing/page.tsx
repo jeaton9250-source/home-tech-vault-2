@@ -37,6 +37,8 @@ export default function BillingPage() {
     canManageBilling,
     billingManagedByHousehold,
     isDemo,
+    hasActiveAdminGrant,
+    adminGrant,
   } = usePermissions();
 
   const [openingPortal, setOpeningPortal] =
@@ -93,8 +95,12 @@ export default function BillingPage() {
 
   const planName = planDisplayName;
 
-  const monthlyPrice =
-    plan === "family"
+  const isComplimentaryOnly =
+    hasActiveAdminGrant && !canManageBilling;
+
+  const monthlyPrice = isComplimentaryOnly
+    ? "Complimentary access"
+    : plan === "family"
       ? "$14.99/month"
       : plan === "pro"
         ? "$7.99/month"
@@ -148,7 +154,12 @@ export default function BillingPage() {
 
       {!billingManagedByHousehold && (
         <ReadOnlyNotice
-          show={!loading && !isDemo && !canManageBilling}
+          show={
+            !loading &&
+            !isDemo &&
+            !canManageBilling &&
+            !isComplimentaryOnly
+          }
           message="Only the subscription owner or an authorized household admin can manage billing."
         />
       )}
@@ -220,7 +231,11 @@ export default function BillingPage() {
                       }`}
                     />
 
-                    {formatSubscriptionStatus(effectiveStatus)}
+                    {formatSubscriptionStatus(
+                      isComplimentaryOnly
+                        ? "active"
+                        : effectiveStatus
+                    )}
                   </span>
                 </div>
               </div>
@@ -229,21 +244,33 @@ export default function BillingPage() {
                 <BillingDetail
                   icon={CalendarDays}
                   label={
-                    effectiveStatus === "canceled"
-                      ? "Access Ends"
-                      : "Next Renewal"
+                    isComplimentaryOnly
+                      ? "Access Expires"
+                      : effectiveStatus === "canceled"
+                        ? "Access Ends"
+                        : "Next Renewal"
                   }
                   value={
-                    currentPeriodEnd
-                      ? formatDate(currentPeriodEnd)
-                      : "Not applicable"
+                    isComplimentaryOnly
+                      ? adminGrant?.expiresAt
+                        ? formatDate(
+                            adminGrant.expiresAt
+                          )
+                        : "No expiration"
+                      : currentPeriodEnd
+                        ? formatDate(currentPeriodEnd)
+                        : "Not applicable"
                   }
                 />
 
                 <BillingDetail
                   icon={CreditCard}
                   label="Payment Provider"
-                  value="Stripe secure billing"
+                  value={
+                    isComplimentaryOnly
+                      ? "Not billed through Stripe"
+                      : "Stripe secure billing"
+                  }
                 />
               </div>
             </PageCard>

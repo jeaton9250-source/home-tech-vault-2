@@ -7,6 +7,23 @@ import { usePermissions } from "@/hooks/usePermissions";
 import {
   formatSubscriptionStatus,
 } from "@/lib/permissions/effectivePlan";
+import { getGrantDisplayLabel } from "@/lib/plan-grants/grantAccess";
+
+function formatGrantExpiration(
+  value: string
+) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return date.toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
 
 type PlanAccessSummaryProps = {
   showRole?: boolean;
@@ -29,6 +46,10 @@ export default function PlanAccessSummary({
     billingManagedByHousehold,
     billingOwnerName,
     canManageBilling,
+    hasActiveAdminGrant,
+    adminGrant,
+    personalPlan,
+    personalStatus,
   } = usePermissions();
 
   if (loading) {
@@ -48,6 +69,20 @@ export default function PlanAccessSummary({
     );
   }
 
+  const complimentaryLabel = hasActiveAdminGrant
+    ? getGrantDisplayLabel(adminGrant!.plan)
+    : null;
+
+  const subscriptionStatusLabel =
+    hasActiveAdminGrant &&
+    !canManageBilling
+      ? "Complimentary access"
+      : formatSubscriptionStatus(
+          hasActiveAdminGrant
+            ? personalStatus
+            : effectiveStatus
+        );
+
   return (
     <div className="space-y-3">
       <div
@@ -62,7 +97,8 @@ export default function PlanAccessSummary({
           value={
             isPlatformAdmin
               ? "Master Account"
-              : planDisplayName
+              : complimentaryLabel ||
+                planDisplayName
           }
         />
 
@@ -70,7 +106,9 @@ export default function PlanAccessSummary({
           <SummaryItem
             label={
               billingManagedByHousehold ||
-              planDisplayName === "Family"
+              planDisplayName === "Family" ||
+              planDisplayName ===
+                "Complimentary Family"
                 ? "Role"
                 : "Household Role"
             }
@@ -81,12 +119,35 @@ export default function PlanAccessSummary({
         {!compact && (
           <SummaryItem
             label="Subscription Status"
-            value={formatSubscriptionStatus(
-              effectiveStatus
-            )}
+            value={subscriptionStatusLabel}
           />
         )}
+
+        {hasActiveAdminGrant &&
+          adminGrant?.expiresAt && (
+            <SummaryItem
+              label="Access expires"
+              value={formatGrantExpiration(
+                adminGrant.expiresAt
+              )}
+            />
+          )}
       </div>
+
+      {hasActiveAdminGrant && !canManageBilling && (
+        <div className="rounded-2xl border border-border-subtle bg-surface-sunken p-4 text-sm leading-6 text-text-secondary">
+          {complimentaryLabel} was granted to your
+          account. This is not a paid subscription.
+          {personalPlan !== "free" &&
+          personalStatus !== "inactive" ? (
+            <>
+              {" "}
+              Your personal billing plan remains{" "}
+              {personalPlan}.
+            </>
+          ) : null}
+        </div>
+      )}
 
       {showBillingNote &&
         billingManagedByHousehold && (

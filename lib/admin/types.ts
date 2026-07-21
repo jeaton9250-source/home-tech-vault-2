@@ -56,6 +56,15 @@ export type AdminUserSummary = {
 
 export type AdminUserDetail = AdminUserSummary & {
   effectivePlan: string;
+  effectivePlanSource: string;
+  inheritedHouseholdPlan: string | null;
+  hasActiveAdminGrant: boolean;
+  adminGrantPlan: string | null;
+  adminGrantStatus: string | null;
+  adminGrantExpiresAt: string | null;
+  adminGrantReason: string | null;
+  adminGrantNotes: string | null;
+  adminGrantId: string | null;
   householdName: string | null;
   stripeCustomerId: string | null;
   stripeSubscriptionId: string | null;

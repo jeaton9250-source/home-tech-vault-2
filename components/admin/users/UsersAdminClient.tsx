@@ -13,13 +13,17 @@ import {
   Search,
 } from "lucide-react";
 
+import PlanAccessAdminSection from "@/components/admin/users/PlanAccessAdminSection";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPanel, {
   AdminEmptyState,
   formatAdminDate,
 } from "@/components/admin/AdminPanel";
 import Button from "@/components/ui/Button";
-import type { AdminUserSummary } from "@/lib/admin/types";
+import type {
+  AdminUserDetail,
+  AdminUserSummary,
+} from "@/lib/admin/types";
 
 type UsersResponse = {
   users: AdminUserSummary[];
@@ -52,9 +56,7 @@ export default function UsersAdminClient() {
       null
     );
   const [detail, setDetail] =
-    useState<Record<string, unknown> | null>(
-      null
-    );
+    useState<AdminUserDetail | null>(null);
   const [adminMessage, setAdminMessage] =
     useState("");
 
@@ -132,7 +134,7 @@ export default function UsersAdminClient() {
 
       const payload =
         (await response.json()) as {
-          user?: Record<string, unknown>;
+          user?: AdminUserDetail;
           error?: string;
         };
 
@@ -189,7 +191,7 @@ export default function UsersAdminClient() {
 
     const payload =
       (await response.json()) as {
-        user?: Record<string, unknown>;
+        user?: AdminUserDetail;
         error?: string;
       };
 
@@ -410,67 +412,41 @@ export default function UsersAdminClient() {
             <div className="space-y-4 text-sm">
               <DetailRow
                 label="Name"
-                value={String(
-                  detail.fullName || "—"
-                )}
+                value={detail.fullName || "—"}
               />
               <DetailRow
                 label="Email"
-                value={String(
-                  detail.email || "—"
-                )}
-                copyValue={String(
-                  detail.email || ""
-                )}
+                value={detail.email || "—"}
+                copyValue={detail.email || ""}
               />
               <DetailRow
                 label="User ID"
-                value={String(detail.id)}
-                copyValue={String(detail.id)}
+                value={detail.id}
+                copyValue={detail.id}
               />
               <DetailRow
                 label="Created"
                 value={formatAdminDate(
-                  detail.createdAt as string
+                  detail.createdAt
                 )}
               />
               <DetailRow
                 label="Last sign-in"
                 value={formatAdminDate(
-                  detail.lastSignInAt as string
-                )}
-              />
-              <DetailRow
-                label="Personal plan"
-                value={String(
-                  detail.personalPlan
-                )}
-              />
-              <DetailRow
-                label="Effective plan"
-                value={String(
-                  detail.effectivePlan
-                )}
-              />
-              <DetailRow
-                label="Subscription status"
-                value={String(
-                  detail.subscriptionStatus
+                  detail.lastSignInAt
                 )}
               />
               <DetailRow
                 label="Household"
-                value={String(
+                value={
                   detail.householdName ||
-                    detail.householdId ||
-                    "—"
-                )}
+                  detail.householdId ||
+                  "—"
+                }
               />
               <DetailRow
                 label="Household role"
-                value={String(
-                  detail.householdRole || "—"
-                )}
+                value={detail.householdRole || "—"}
               />
               <DetailRow
                 label="Devices"
@@ -497,6 +473,15 @@ export default function UsersAdminClient() {
                   View household
                 </Link>
               ) : null}
+
+              <PlanAccessAdminSection
+                detail={detail}
+                onUpdated={async () => {
+                  if (selectedId) {
+                    await loadDetail(selectedId);
+                  }
+                }}
+              />
 
               <div className="border-t border-border-subtle pt-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-text-tertiary">

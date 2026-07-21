@@ -1,3 +1,11 @@
+import {
+  isGrantProvidingAccess,
+} from "@/lib/plan-grants/grantAccess";
+
+import type {
+  PlanGrantInput,
+} from "@/lib/plan-grants/types";
+
 export type SubscriptionPlan =
   | "free"
   | "pro"
@@ -123,6 +131,30 @@ export function isAdminHouseholdRole(
   );
 }
 
+export function householdOwnerHasFamilyProductAccess(options: {
+  ownerPlan: string | null | undefined;
+  ownerStatus: string | null | undefined;
+  ownerCurrentPeriodEnd?: string | null;
+  ownerAdminGrant?: PlanGrantInput | null;
+}): boolean {
+  if (
+    householdOwnerHasGrantingFamilyPlan(
+      options.ownerPlan,
+      options.ownerStatus,
+      options.ownerCurrentPeriodEnd
+    )
+  ) {
+    return true;
+  }
+
+  return (
+    isGrantProvidingAccess(
+      options.ownerAdminGrant ?? null
+    ) &&
+    options.ownerAdminGrant?.plan === "family"
+  );
+}
+
 export function canSendHouseholdInvitation(options: {
   isPlatformAdmin: boolean;
   callerRole: string | null | undefined;
@@ -131,6 +163,7 @@ export function canSendHouseholdInvitation(options: {
   ownerPlan: string | null | undefined;
   ownerStatus: string | null | undefined;
   ownerCurrentPeriodEnd?: string | null;
+  ownerAdminGrant?: PlanGrantInput | null;
 }): boolean {
   if (options.isPlatformAdmin) {
     return true;
@@ -146,9 +179,12 @@ export function canSendHouseholdInvitation(options: {
     return false;
   }
 
-  return householdOwnerHasGrantingFamilyPlan(
-    options.ownerPlan,
-    options.ownerStatus,
-    options.ownerCurrentPeriodEnd
-  );
+  return householdOwnerHasFamilyProductAccess({
+    ownerPlan: options.ownerPlan,
+    ownerStatus: options.ownerStatus,
+    ownerCurrentPeriodEnd:
+      options.ownerCurrentPeriodEnd,
+    ownerAdminGrant:
+      options.ownerAdminGrant,
+  });
 }

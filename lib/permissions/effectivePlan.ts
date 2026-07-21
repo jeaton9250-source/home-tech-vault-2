@@ -36,6 +36,19 @@ import type {
 } from "@/lib/permissions/types";
 
 import type {
+  PlanGrantInput,
+} from "@/lib/plan-grants/types";
+
+import {
+  isGrantProvidingAccess,
+} from "@/lib/plan-grants/grantAccess";
+
+import type {
+  AdminGrantPlan,
+  EffectivePlanSource,
+} from "@/lib/plan-grants/types";
+
+import type {
   SubscriptionPlan,
 } from "@/hooks/useSubscription";
 
@@ -68,6 +81,7 @@ export type EffectivePlanInput = {
   householdOwnerCurrentPeriodEnd: string | null;
   householdOwnerName: string | null;
   rawHouseholdRole: RawHouseholdRole | null;
+  adminGrant?: PlanGrantInput | null;
 };
 
 export type EffectivePlanResult = {
@@ -89,6 +103,10 @@ export type EffectivePlanResult = {
   billingOwnerName: string | null;
   inheritsFamilyPlan: boolean;
   effectiveStatus: string;
+  effectivePlanSource: EffectivePlanSource;
+  adminGrantPlan: AdminGrantPlan | null;
+  adminGrantExpiresAt: string | null;
+  hasActiveAdminGrant: boolean;
   usageLimits: UsageLimits;
   featureAccess: Record<FeatureKey, boolean>;
 };
@@ -273,6 +291,7 @@ export function resolveEffectivePlan(
     householdOwnerCurrentPeriodEnd,
     householdOwnerName,
     rawHouseholdRole,
+    adminGrant = null,
   } = input;
 
   const householdPlan =
@@ -301,6 +320,18 @@ export function resolveEffectivePlan(
       personalCurrentPeriodEnd
     );
 
+  const hasActiveAdminGrant =
+    isGrantProvidingAccess(adminGrant);
+
+  const adminGrantPlan = hasActiveAdminGrant
+    ? adminGrant.plan
+    : null;
+
+  const adminGrantExpiresAt =
+    hasActiveAdminGrant
+      ? adminGrant.expiresAt
+      : null;
+
   let effectivePlan: SubscriptionPlan =
     personalGrantsAccess
       ? personalPlan
@@ -310,11 +341,28 @@ export function resolveEffectivePlan(
     ? personalStatus
     : "inactive";
 
+  let effectivePlanSource: EffectivePlanSource =
+    personalGrantsAccess
+      ? personalPlan === "family"
+        ? "personal_family"
+        : "personal_pro"
+      : "free";
+
   if (inheritsFamilyPlan) {
     effectivePlan = "family";
     effectiveStatus =
       householdOwnerStatus ??
       "active";
+    effectivePlanSource = "inherited_family";
+  }
+
+  if (hasActiveAdminGrant) {
+    effectivePlan = adminGrantPlan!;
+    effectiveStatus = "active";
+    effectivePlanSource =
+      adminGrantPlan === "family"
+        ? "admin_grant_family"
+        : "admin_grant_pro";
   }
 
   const emptyUsageLimits =
@@ -329,6 +377,13 @@ export function resolveEffectivePlan(
       "free",
       false
     );
+
+  const emptyAdminGrantFields = {
+    effectivePlanSource: "demo" as EffectivePlanSource,
+    adminGrantPlan: null,
+    adminGrantExpiresAt: null,
+    hasActiveAdminGrant: false,
+  };
 
   if (isDemo) {
     return {
@@ -352,6 +407,8 @@ export function resolveEffectivePlan(
       billingOwnerName: null,
       inheritsFamilyPlan: false,
       effectiveStatus: "inactive",
+      ...emptyAdminGrantFields,
+      effectivePlanSource: "demo",
       usageLimits: emptyUsageLimits,
       featureAccess: emptyFeatureAccess,
     };
@@ -394,6 +451,10 @@ export function resolveEffectivePlan(
       billingOwnerName: null,
       inheritsFamilyPlan,
       effectiveStatus: "active",
+      effectivePlanSource: "platform_admin",
+      adminGrantPlan,
+      adminGrantExpiresAt,
+      hasActiveAdminGrant,
       usageLimits: resolveUsageLimits(
         "family",
         true,
@@ -403,9 +464,14 @@ export function resolveEffectivePlan(
     };
   }
 
+  const adminGrantProvidesFamily =
+    hasActiveAdminGrant &&
+    adminGrantPlan === "family";
+
   const hasFamilyFeatureAccess =
     effectivePlan === "family" &&
     (inheritsFamilyPlan ||
+      adminGrantProvidesFamily ||
       isSubscriptionGrantingAccess(
         personalPlan,
         personalStatus,
@@ -474,9 +540,13 @@ export function resolveEffectivePlan(
     );
 
   const planDisplayName =
-    getPlanDisplayName(
-      effectivePlan
-    );
+    hasActiveAdminGrant
+      ? adminGrantPlan === "family"
+        ? "Complimentary Family"
+        : "Complimentary Pro"
+      : getPlanDisplayName(
+          effectivePlan
+        );
 
   const usageLimits =
     resolveUsageLimits(
@@ -513,6 +583,10 @@ export function resolveEffectivePlan(
         : null,
     inheritsFamilyPlan,
     effectiveStatus,
+    effectivePlanSource,
+    adminGrantPlan,
+    adminGrantExpiresAt,
+    hasActiveAdminGrant,
     usageLimits,
     featureAccess,
   };

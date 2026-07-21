@@ -39,6 +39,10 @@ import type {
 } from "@/lib/permissions/types";
 
 import type {
+  SafePlanGrantSummary,
+} from "@/lib/plan-grants/types";
+
+import type {
   SubscriptionPlan,
 } from "@/hooks/useSubscription";
 
@@ -65,6 +69,10 @@ export {
   getPlanDisplayName,
   getRoleDisplayName,
 } from "@/lib/permissions/effectivePlan";
+
+type PlanGrantPayload = {
+  grant: SafePlanGrantSummary | null;
+};
 
 type HouseholdAccessPayload =
   | { membership: null }
@@ -290,6 +298,13 @@ function usePermissionsState() {
   ] = useState<string | null>(null);
 
   const [
+    adminGrant,
+    setAdminGrant,
+  ] = useState<SafePlanGrantSummary | null>(
+    null
+  );
+
+  const [
     roleLoading,
     setRoleLoading,
   ] = useState(true);
@@ -324,27 +339,36 @@ function usePermissionsState() {
           clearHouseholdState(
             householdSetters
           );
+          setAdminGrant(null);
           return;
         }
 
-        const response = await fetch(
-          "/api/household/access",
-          {
+        const [
+          accessResponse,
+          grantResponse,
+        ] = await Promise.all([
+          fetch("/api/household/access", {
             method: "GET",
             credentials: "include",
             cache: "no-store",
-          }
-        );
+          }),
+          fetch("/api/user/plan-grant", {
+            method: "GET",
+            credentials: "include",
+            cache: "no-store",
+          }),
+        ]);
 
-        if (!response.ok) {
+        if (!accessResponse.ok) {
           console.error(
             "Household access API failed:",
-            response.status
+            accessResponse.status
           );
 
           clearHouseholdState(
             householdSetters
           );
+          setAdminGrant(null);
 
           setRoleError(
             "Unable to verify household access."
@@ -353,8 +377,19 @@ function usePermissionsState() {
           return;
         }
 
+        if (grantResponse.ok) {
+          const grantData =
+            (await grantResponse.json()) as PlanGrantPayload;
+
+          setAdminGrant(
+            grantData.grant ?? null
+          );
+        } else {
+          setAdminGrant(null);
+        }
+
         const accessData =
-          (await response.json()) as HouseholdAccessPayload;
+          (await accessResponse.json()) as HouseholdAccessPayload;
 
         if (
           "membership" in accessData &&
@@ -388,6 +423,7 @@ function usePermissionsState() {
         clearHouseholdState(
           householdSetters
         );
+        setAdminGrant(null);
       } finally {
         if (!demoLoading) {
           setRoleLoading(false);
@@ -427,6 +463,16 @@ function usePermissionsState() {
       householdOwnerCurrentPeriodEnd,
       householdOwnerName,
       rawHouseholdRole,
+      adminGrant: adminGrant
+        ? {
+            plan: adminGrant.plan,
+            status: "active" as const,
+            startsAt: new Date(0).toISOString(),
+            expiresAt: adminGrant.expiresAt,
+            reason: adminGrant.reason,
+            notes: null,
+          }
+        : null,
     }),
     [
       isDemo,
@@ -443,6 +489,7 @@ function usePermissionsState() {
       householdOwnerCurrentPeriodEnd,
       householdOwnerName,
       rawHouseholdRole,
+      adminGrant,
     ]
   );
 
@@ -528,6 +575,10 @@ function usePermissionsState() {
     billingOwnerName,
     inheritsFamilyPlan,
     effectiveStatus,
+    effectivePlanSource,
+    adminGrantPlan,
+    adminGrantExpiresAt,
+    hasActiveAdminGrant,
     usageLimits,
     featureAccess,
   } = effectiveAccess;
@@ -647,6 +698,11 @@ function usePermissionsState() {
     billingManagedByHousehold,
     billingOwnerName,
     inheritsFamilyPlan,
+    effectivePlanSource,
+    adminGrantPlan,
+    adminGrantExpiresAt,
+    hasActiveAdminGrant,
+    adminGrant,
     usageLimits,
     featureAccess,
 

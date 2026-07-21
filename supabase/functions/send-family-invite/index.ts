@@ -392,10 +392,33 @@ Deno.serve(async (request) => {
       .eq("user_id", household.owner_id)
       .maybeSingle();
 
+    const {
+      data: ownerGrantData,
+      error: ownerGrantError,
+    } = await adminClient
+      .from("platform_plan_grants")
+      .select(
+        "plan, status, starts_at, expires_at"
+      )
+      .eq("user_id", household.owner_id)
+      .eq("status", "active")
+      .order("created_at", {
+        ascending: false,
+      })
+      .limit(1)
+      .maybeSingle();
+
     if (ownerSubscriptionError) {
       console.error(
         "Unable to load household owner subscription:",
         ownerSubscriptionError
+      );
+    }
+
+    if (ownerGrantError) {
+      console.error(
+        "Unable to load household owner plan grant:",
+        ownerGrantError
       );
     }
 
@@ -456,8 +479,43 @@ Deno.serve(async (request) => {
       return false;
     }
 
+    function ownerAdminGrantProvidesFamilyAccess(): boolean {
+      if (
+        !ownerGrantData ||
+        ownerGrantData.status !== "active" ||
+        ownerGrantData.plan !== "family"
+      ) {
+        return false;
+      }
+
+      const startsAt = new Date(
+        ownerGrantData.starts_at
+      );
+
+      if (
+        Number.isNaN(startsAt.getTime()) ||
+        startsAt.getTime() > Date.now()
+      ) {
+        return false;
+      }
+
+      if (!ownerGrantData.expires_at) {
+        return true;
+      }
+
+      const expiresAt = new Date(
+        ownerGrantData.expires_at
+      );
+
+      return (
+        !Number.isNaN(expiresAt.getTime()) &&
+        expiresAt.getTime() > Date.now()
+      );
+    }
+
     const householdHasFamilyPlan =
-      ownerSubscriptionGrantsFamilyAccess();
+      ownerSubscriptionGrantsFamilyAccess() ||
+      ownerAdminGrantProvidesFamilyAccess();
 
     if (
       !callerIsAdmin &&
