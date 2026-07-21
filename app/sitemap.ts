@@ -1,35 +1,32 @@
 import type { MetadataRoute } from "next";
 
-const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL?.replace(
-    /\/$/,
-    ""
-  ) ?? "https://hometechvault.com";
+import {
+  INDEXABLE_MARKETING_PATHS,
+} from "@/lib/marketing/routes";
+import { getSiteUrl } from "@/lib/marketing/site";
 
-/** Public marketing pages worth indexing. */
-const indexablePaths = [
-  "/",
-  "/demo",
-  "/contact",
-  "/upgrade",
-] as const;
+const siteUrl = getSiteUrl();
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date();
 
-  return indexablePaths.map((path) => ({
+  return INDEXABLE_MARKETING_PATHS.map((path) => ({
     url:
       path === "/"
         ? `${siteUrl}/`
         : `${siteUrl}${path}`,
     lastModified,
     changeFrequency:
-      path === "/" ? "weekly" : "monthly",
+      path === "/"
+        ? "weekly"
+        : path === "/pricing"
+          ? "monthly"
+          : "monthly",
     priority:
       path === "/"
         ? 1
-        : path === "/upgrade"
-          ? 0.8
+        : path === "/pricing"
+          ? 0.9
           : 0.7,
   }));
 }
