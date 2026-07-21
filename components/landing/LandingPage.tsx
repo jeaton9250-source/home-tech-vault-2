@@ -153,6 +153,12 @@ export default function LandingPage({
                 </li>
               ))}
             </ul>
+
+            {!isSignedIn && foundingSummary ? (
+              <FoundingMembersCallout
+                summary={foundingSummary}
+              />
+            ) : null}
           </motion.div>
 
           <motion.div
@@ -173,12 +179,6 @@ export default function LandingPage({
           </motion.div>
         </div>
       </section>
-
-      {!isSignedIn && foundingSummary ? (
-        <FoundingMembersCallout
-          summary={foundingSummary}
-        />
-      ) : null}
 
       <section className="border-y border-border-subtle bg-surface-card/40 px-6 py-14 md:px-8">
         <MarketingContent className="py-0">
