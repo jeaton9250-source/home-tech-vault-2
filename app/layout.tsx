@@ -3,7 +3,6 @@ import { GeistSans } from "geist/font/sans";
 
 import "./globals.css";
 
-import AuthGuard from "@/components/AuthGuard";
 import AppChrome from "@/components/AppChrome";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 
@@ -30,9 +29,7 @@ export default function RootLayout({
     >
       <body className="bg-surface-base text-text-primary antialiased">
         <GoogleAnalytics />
-        <AuthGuard>
-          <AppChrome>{children}</AppChrome>
-        </AuthGuard>
+        <AppChrome>{children}</AppChrome>
       </body>
     </html>
   );

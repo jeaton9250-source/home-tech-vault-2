@@ -6,7 +6,11 @@ import { usePathname, useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
 import { useDemoMode } from "@/hooks/useDemoMode";
-import { isPublicRoute } from "@/lib/isChromeFreeRoute";
+import {
+  isProtectedRoute,
+  isPublicRoute,
+  normalizePathname,
+} from "@/lib/isChromeFreeRoute";
 
 type AuthGuardProps = {
   children: ReactNode;
@@ -17,6 +21,8 @@ export default function AuthGuard({
 }: AuthGuardProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const normalizedPath =
+    normalizePathname(pathname);
 
   const {
     user,
@@ -24,25 +30,36 @@ export default function AuthGuard({
     loading,
   } = useDemoMode();
 
-  const routeIsPublic = isPublicRoute(pathname);
+  const routeIsPublic =
+    isPublicRoute(normalizedPath);
+  const routeIsProtected =
+    isProtectedRoute(normalizedPath);
 
   useEffect(() => {
+    if (!routeIsProtected) {
+      return;
+    }
+
     if (loading) {
       return;
     }
 
-    if (!user && !isDemo && !routeIsPublic) {
+    if (!user && !isDemo) {
       router.replace("/login");
     }
   }, [
     user,
     isDemo,
     loading,
-    routeIsPublic,
+    routeIsProtected,
     router,
   ]);
 
-  if (loading && !routeIsPublic) {
+  if (routeIsPublic) {
+    return <>{children}</>;
+  }
+
+  if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-surface-sunken">
         <div className="flex items-center gap-3 text-text-secondary">
@@ -56,7 +73,7 @@ export default function AuthGuard({
     );
   }
 
-  if (!user && !isDemo && !routeIsPublic) {
+  if (!user && !isDemo) {
     return null;
   }
 

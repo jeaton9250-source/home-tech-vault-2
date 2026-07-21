@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 import AppHeader from "@/components/navigation/AppHeader";
 import AIAdvisorPopup from "@/components/ai/AIAdvisorPopup";
+import AuthGuard from "@/components/AuthGuard";
 import DemoBanner from "@/components/DemoBanner";
 import AccessTestingPanel from "@/components/dev/AccessTestingPanel";
 import { DevelopmentAccessProvider } from "@/hooks/useDevelopmentAccess";
@@ -36,28 +37,30 @@ export default function AppChrome({
   }
 
   return (
-    <DevelopmentAccessProvider>
-      <PermissionsProvider>
-        <NavMenuProvider>
-          <AIAdvisorProvider>
-            <>
-              <DemoBanner />
+    <AuthGuard>
+      <DevelopmentAccessProvider>
+        <PermissionsProvider>
+          <NavMenuProvider>
+            <AIAdvisorProvider>
+              <>
+                <DemoBanner />
 
-              <div className="flex min-h-screen flex-col bg-surface-base">
-                <AppHeader />
+                <div className="flex min-h-screen flex-col bg-surface-base">
+                  <AppHeader />
 
-                <main className="flex-1">
-                  {children}
-                </main>
-              </div>
+                  <main className="flex-1">
+                    {children}
+                  </main>
+                </div>
 
-              <AIAdvisorPopup />
+                <AIAdvisorPopup />
 
-              <AccessTestingPanel />
-            </>
-          </AIAdvisorProvider>
-        </NavMenuProvider>
-      </PermissionsProvider>
-    </DevelopmentAccessProvider>
+                <AccessTestingPanel />
+              </>
+            </AIAdvisorProvider>
+          </NavMenuProvider>
+        </PermissionsProvider>
+      </DevelopmentAccessProvider>
+    </AuthGuard>
   );
 }
