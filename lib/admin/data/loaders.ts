@@ -29,6 +29,10 @@ import {
   isResendConfigured,
 } from "@/lib/email/resend";
 import type { AdminConfigCheck } from "@/lib/admin/types";
+import {
+  isMissingAdminControlsSchema,
+  normalizeAdminAccountStatus,
+} from "@/lib/admin/data/schemaFallback";
 
 function normalizePlan(value: string | null | undefined) {
   const plan =
@@ -71,6 +75,162 @@ async function getAuthMap(
   return new Map(entries);
 }
 
+type AdminProfileListRow = {
+  id: string;
+  full_name: string | null;
+  is_admin: boolean | null;
+  created_at: string | null;
+  account_status?: string | null;
+};
+
+async function loadAdminProfileListRows(
+  admin: ReturnType<typeof createAdminClient>,
+  options: {
+    pagination: ReturnType<typeof parsePagination>;
+    q?: string;
+    admin?: string;
+  }
+) {
+  const buildQuery = (
+    select: string
+  ) => {
+    let query = admin
+      .from("profiles")
+      .select(select, { count: "exact" })
+      .order("created_at", {
+        ascending: false,
+      });
+
+    if (options.admin === "true") {
+      query = query.eq("is_admin", true);
+    }
+
+    if (options.admin === "false") {
+      query = query.eq("is_admin", false);
+    }
+
+    if (options.q?.trim()) {
+      const term = `%${options.q.trim()}%`;
+      query = query.or(
+        `full_name.ilike.${term},id.eq.${options.q.trim()}`
+      );
+    }
+
+    return query.range(
+      options.pagination.from,
+      options.pagination.to
+    );
+  };
+
+  const withControls = await buildQuery(
+    "id, full_name, is_admin, account_status, created_at"
+  );
+
+  if (!withControls.error) {
+    return {
+      rows:
+        (withControls.data ??
+          []) as unknown as AdminProfileListRow[],
+      count: withControls.count,
+      hasAccountStatus: true,
+    };
+  }
+
+  if (
+    !isMissingAdminControlsSchema(
+      withControls.error
+    )
+  ) {
+    throw withControls.error;
+  }
+
+  const base = await buildQuery(
+    "id, full_name, is_admin, created_at"
+  );
+
+  if (base.error) {
+    throw base.error;
+  }
+
+  return {
+    rows:
+      (base.data ?? []) as unknown as AdminProfileListRow[],
+    count: base.count,
+    hasAccountStatus: false,
+  };
+}
+
+type AdminProfileDetailRow = AdminProfileListRow & {
+  deactivated_at?: string | null;
+  deactivation_reason?: string | null;
+};
+
+async function loadAdminProfileDetailRow(
+  admin: ReturnType<typeof createAdminClient>,
+  userId: string
+): Promise<AdminProfileDetailRow | null> {
+  const withControls = await admin
+    .from("profiles")
+    .select(
+      "id, full_name, is_admin, account_status, deactivated_at, deactivation_reason, created_at"
+    )
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (!withControls.error) {
+    return withControls.data as AdminProfileDetailRow | null;
+  }
+
+  if (
+    !isMissingAdminControlsSchema(
+      withControls.error
+    )
+  ) {
+    throw withControls.error;
+  }
+
+  const base = await admin
+    .from("profiles")
+    .select(
+      "id, full_name, is_admin, created_at"
+    )
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (base.error) {
+    throw base.error;
+  }
+
+  return base.data as AdminProfileDetailRow | null;
+}
+
+async function loadLatestDeletionJobForUser(
+  admin: ReturnType<typeof createAdminClient>,
+  userId: string
+) {
+  const { data, error } = await admin
+    .from("admin_account_deletion_jobs")
+    .select(
+      "id, status, current_step, safe_error_message"
+    )
+    .eq("target_user_id", userId)
+    .order("created_at", {
+      ascending: false,
+    })
+    .limit(1)
+    .maybeSingle();
+
+  if (!error) {
+    return data;
+  }
+
+  if (isMissingAdminControlsSchema(error)) {
+    return null;
+  }
+
+  throw error;
+}
+
 export async function loadAdminUsers(options: {
   pagination?: PaginationInput;
   q?: string;
@@ -82,42 +242,19 @@ export async function loadAdminUsers(options: {
     options.pagination ?? {}
   );
 
-  let query = admin
-    .from("profiles")
-    .select(
-      "id, full_name, is_admin, account_status, created_at",
-      { count: "exact" }
-    )
-    .order("created_at", {
-      ascending: false,
-    });
+  const {
+    rows: profileRows,
+    count,
+    hasAccountStatus,
+  } = await loadAdminProfileListRows(
+    admin,
+    {
+      pagination,
+      q: options.q,
+      admin: options.admin,
+    }
+  );
 
-  if (options.admin === "true") {
-    query = query.eq("is_admin", true);
-  }
-
-  if (options.admin === "false") {
-    query = query.eq("is_admin", false);
-  }
-
-  if (options.q?.trim()) {
-    const term = `%${options.q.trim()}%`;
-    query = query.or(
-      `full_name.ilike.${term},id.eq.${options.q.trim()}`
-    );
-  }
-
-  const { data, error, count } =
-    await query.range(
-      pagination.from,
-      pagination.to
-    );
-
-  if (error) {
-    throw error;
-  }
-
-  const profileRows = data ?? [];
   const userIds = profileRows.map(
     (row) => row.id
   );
@@ -240,11 +377,11 @@ export async function loadAdminUsers(options: {
           "inactive",
         isPlatformAdmin:
           profile.is_admin === true,
-        accountStatus:
-          profile.account_status ===
-          "deactivated"
-            ? "deactivated"
-            : "active",
+        accountStatus: hasAccountStatus
+          ? normalizeAdminAccountStatus(
+              profile.account_status
+            )
+          : "active",
         householdId:
           membership?.household_id ?? null,
         householdRole:
@@ -279,21 +416,18 @@ export async function loadAdminUserDetail(
 ): Promise<AdminUserDetail | null> {
   const admin = createAdminClient();
 
-  const { data: profile, error } = await admin
-    .from("profiles")
-    .select(
-      "id, full_name, is_admin, account_status, deactivated_at, deactivation_reason, created_at"
-    )
-    .eq("id", userId)
-    .maybeSingle();
-
-  if (error) {
-    throw error;
-  }
+  const profile =
+    await loadAdminProfileDetailRow(
+      admin,
+      userId
+    );
 
   if (!profile) {
     return null;
   }
+
+  const hasAccountStatus =
+    "account_status" in profile;
 
   const authMap = await getAuthMap(admin, [
     userId,
@@ -304,7 +438,6 @@ export async function loadAdminUserDetail(
     subscriptionResult,
     membershipResult,
     ownedHouseholdResult,
-    deletionJobResult,
     deviceCountResult,
     documentCountResult,
     ticketCountResult,
@@ -332,18 +465,6 @@ export async function loadAdminUserDetail(
       .maybeSingle(),
 
     admin
-      .from("admin_account_deletion_jobs")
-      .select(
-        "id, status, current_step, safe_error_message"
-      )
-      .eq("target_user_id", userId)
-      .order("created_at", {
-        ascending: false,
-      })
-      .limit(1)
-      .maybeSingle(),
-
-    admin
       .from("devices")
       .select("id", {
         count: "exact",
@@ -367,6 +488,12 @@ export async function loadAdminUserDetail(
       })
       .eq("user_id", userId),
   ]);
+
+  const deletionJob =
+    await loadLatestDeletionJobForUser(
+      admin,
+      userId
+    );
 
   let ownedHouseholdMemberCount = 0;
 
@@ -543,11 +670,11 @@ export async function loadAdminUserDetail(
       "inactive",
     isPlatformAdmin:
       profile.is_admin === true,
-    accountStatus:
-      profile.account_status ===
-      "deactivated"
-        ? "deactivated"
-        : "active",
+    accountStatus: hasAccountStatus
+      ? normalizeAdminAccountStatus(
+          profile.account_status
+        )
+      : "active",
     householdId:
       membershipResult.data?.household_id ??
       null,
@@ -591,25 +718,25 @@ export async function loadAdminUserDetail(
     currentPeriodEnd:
       subscriptionResult.data
         ?.current_period_end ?? null,
-    deactivatedAt:
-      profile.deactivated_at ?? null,
-    deactivationReason:
-      profile.deactivation_reason ?? null,
+    deactivatedAt: hasAccountStatus
+      ? profile.deactivated_at ?? null
+      : null,
+    deactivationReason: hasAccountStatus
+      ? profile.deactivation_reason ?? null
+      : null,
     ownedHouseholdId:
       ownedHouseholdResult.data?.id ?? null,
     ownedHouseholdName:
       ownedHouseholdResult.data?.name ?? null,
     ownedHouseholdMemberCount,
-    deletionJobId:
-      deletionJobResult.data?.id ?? null,
+    deletionJobId: deletionJob?.id ?? null,
     deletionJobStatus:
-      deletionJobResult.data?.status ?? null,
+      deletionJob?.status ?? null,
     deletionJobStep:
-      deletionJobResult.data?.current_step ??
-      null,
+      deletionJob?.current_step ?? null,
     deletionJobError:
-      deletionJobResult.data
-        ?.safe_error_message ?? null,
+      deletionJob?.safe_error_message ??
+      null,
   };
 }
 
