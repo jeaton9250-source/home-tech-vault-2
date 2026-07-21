@@ -6,24 +6,23 @@ import {
   useState,
 } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Loader2,
-  LockKeyhole,
-  Mail,
-  ShieldCheck,
-} from "lucide-react";
 
-import AuthAlert from "@/components/auth/AuthAlert";
 import AuthCard from "@/components/auth/AuthCard";
-import AuthFormField from "@/components/auth/AuthFormField";
 import AuthLayout from "@/components/auth/AuthLayout";
 import PasswordInput from "@/components/auth/PasswordInput";
-import { authInputClassName } from "@/components/auth/authStyles";
+import Alert from "@/components/ui/Alert";
 import Button from "@/components/ui/Button";
+import FormInput from "@/components/ui/FormInput";
 import { brand } from "@/lib/design-system/tokens";
 import { supabase } from "@/lib/supabase";
 import { resolvePostAuthRedirect } from "@/lib/onboarding/redirect";
 import { enforceActiveAccount } from "@/lib/auth/enforceActiveAccount";
+
+const loginBenefits = [
+  "Review every device in one place",
+  "Track warranty coverage and expirations",
+  "Find important documents quickly",
+] as const;
 
 export default function LoginPage() {
   const router = useRouter();
@@ -189,102 +188,76 @@ export default function LoginPage() {
 
   return (
     <AuthLayout
-      overline={
-        isFamilyInvitation
-          ? "Household invitation"
-          : "Welcome back"
-      }
-      headline={
-        isFamilyInvitation
-          ? "Sign in to join your shared household."
-          : brand.identity
-      }
-      description={
-        isFamilyInvitation
-          ? "After signing in, you will return to your invitation and be added to the shared Home Tech Vault household."
-          : "Access warranties, receipts, network details, and maintenance records from one secure vault."
-      }
-      benefits={[
-        "Review every device in one place",
-        "Track warranty coverage",
-        "Find important documents quickly",
-        "Monitor your home technology health",
-      ]}
+      headline={brand.identity}
+      description="Organize your devices, warranties, receipts, subscriptions, and important documents in one secure place."
+      benefits={[...loginBenefits]}
       brandHref="/"
     >
       <AuthCard
-        overline="Sign in"
+        overline={
+          isFamilyInvitation
+            ? "Household invitation"
+            : "Welcome back"
+        }
         title={loginTitle}
         description={loginDescription}
       >
         {isFamilyInvitation ? (
-          <AuthAlert
-            variant="success"
-            className="mb-5 border-warning/30 bg-warning-soft text-achievement"
-          >
-            <p className="font-medium">
-              Family invitation detected
-            </p>
-            <p className="mt-1 text-text-secondary">
-              You will return to the invitation
-              automatically after signing in.
-            </p>
-          </AuthAlert>
-        ) : null}
-
-        {errorMessage ? (
-          <AuthAlert
-            variant="error"
+          <Alert
+            variant="warning"
+            title="Family invitation detected"
             className="mb-5"
           >
-            {errorMessage}
-          </AuthAlert>
+            You will return to the invitation
+            automatically after signing in.
+          </Alert>
         ) : null}
+
+        <div
+          aria-live="polite"
+          aria-atomic="true"
+          className="mb-5 empty:mb-0"
+        >
+          {errorMessage ? (
+            <Alert variant="error">
+              {errorMessage}
+            </Alert>
+          ) : null}
+        </div>
 
         <form
           onSubmit={handleSignIn}
           className="space-y-5"
           noValidate
         >
-          <AuthFormField
+          <FormInput
+            id="login-email"
             label="Email address"
-            htmlFor="login-email"
-            icon={Mail}
-          >
-            <input
-              id="login-email"
-              type="email"
-              value={email}
-              onChange={(event) =>
-                setEmail(event.target.value)
-              }
-              autoComplete="email"
-              placeholder="you@example.com"
-              required
-              className={authInputClassName}
-            />
-          </AuthFormField>
+            type="email"
+            value={email}
+            onChange={(event) =>
+              setEmail(event.target.value)
+            }
+            autoComplete="email"
+            placeholder="you@example.com"
+            required
+          />
 
-          <AuthFormField
+          <PasswordInput
+            id="login-password"
             label="Password"
-            htmlFor="login-password"
-            icon={LockKeyhole}
-          >
-            <PasswordInput
-              id="login-password"
-              value={password}
-              onChange={setPassword}
-              autoComplete="current-password"
-              placeholder="Enter your password"
-              showPassword={showPassword}
-              onToggleVisibility={() =>
-                setShowPassword(
-                  (current) => !current
-                )
-              }
-              required
-            />
-          </AuthFormField>
+            value={password}
+            onChange={setPassword}
+            autoComplete="current-password"
+            placeholder="Enter your password"
+            showPassword={showPassword}
+            onToggleVisibility={() =>
+              setShowPassword(
+                (current) => !current
+              )
+            }
+            required
+          />
 
           <div className="flex items-center justify-end">
             <Link
@@ -299,30 +272,16 @@ export default function LoginPage() {
             type="submit"
             fullWidth
             size="lg"
-            disabled={submitting}
+            loading={submitting}
+            loadingLabel={
+              isFamilyInvitation
+                ? "Returning to invitation..."
+                : "Signing in..."
+            }
           >
-            {submitting ? (
-              <>
-                <Loader2
-                  size={18}
-                  className="animate-spin"
-                  aria-hidden
-                />
-                {isFamilyInvitation
-                  ? "Returning to invitation..."
-                  : "Signing in..."}
-              </>
-            ) : (
-              <>
-                <ShieldCheck
-                  size={18}
-                  aria-hidden
-                />
-                {isFamilyInvitation
-                  ? "Sign in and accept invitation"
-                  : "Sign in"}
-              </>
-            )}
+            {isFamilyInvitation
+              ? "Sign in and accept invitation"
+              : "Sign In"}
           </Button>
         </form>
 
@@ -336,24 +295,8 @@ export default function LoginPage() {
           </Link>
         </p>
 
-        <p className="mt-5 flex items-center justify-center gap-2 text-center text-xs leading-5 text-text-muted">
-          <ShieldCheck
-            size={14}
-            className="shrink-0 text-interaction"
-            aria-hidden
-          />
-          Your vault is protected with secure
-          authentication.
-        </p>
-
-        <p className="mt-5 text-center text-sm text-text-muted">
-          Want to look around first?{" "}
-          <Link
-            href="/demo"
-            className="font-medium text-interaction underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interaction"
-          >
-            Open interactive demo
-          </Link>
+        <p className="mt-5 text-center text-xs leading-5 text-text-muted">
+          Protected with secure authentication.
         </p>
       </AuthCard>
     </AuthLayout>

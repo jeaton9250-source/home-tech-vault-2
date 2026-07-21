@@ -1,67 +1,118 @@
 "use client";
 
-import { authInputClassName } from "@/components/auth/authStyles";
-import { cn } from "@/lib/design-system/cn";
+import { useId } from "react";
 import { Eye, EyeOff } from "lucide-react";
 
+import Input from "@/components/ui/Input";
+import { cn } from "@/lib/design-system/cn";
+
 type PasswordInputProps = {
-  id: string;
+  label: string;
   value: string;
   onChange: (value: string) => void;
   autoComplete: string;
-  placeholder?: string;
   showPassword: boolean;
   onToggleVisibility: () => void;
+  id?: string;
+  placeholder?: string;
+  helperText?: string;
+  error?: string;
   required?: boolean;
-  describedBy?: string;
+  className?: string;
 };
 
 export default function PasswordInput({
-  id,
+  label,
   value,
   onChange,
   autoComplete,
-  placeholder,
   showPassword,
   onToggleVisibility,
+  id,
+  placeholder,
+  helperText,
+  error,
   required = false,
-  describedBy,
+  className,
 }: PasswordInputProps) {
-  return (
-    <div className="relative">
-      <input
-        id={id}
-        type={showPassword ? "text" : "password"}
-        value={value}
-        onChange={(event) =>
-          onChange(event.target.value)
-        }
-        autoComplete={autoComplete}
-        placeholder={placeholder}
-        required={required}
-        aria-describedby={describedBy}
-        className={cn(
-          authInputClassName,
-          "pr-12"
-        )}
-      />
+  const generatedId = useId();
+  const fieldId = id ?? generatedId;
 
-      <button
-        type="button"
-        onClick={onToggleVisibility}
-        aria-label={
-          showPassword
-            ? "Hide password"
-            : "Show password"
-        }
-        className="absolute right-3 top-1/2 inline-flex min-h-10 min-w-10 -translate-y-1/2 items-center justify-center rounded-[10px] text-text-tertiary transition hover:bg-surface-sunken hover:text-text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interaction"
+  const helperId = helperText
+    ? `${fieldId}-helper`
+    : undefined;
+
+  const errorId = error
+    ? `${fieldId}-error`
+    : undefined;
+
+  const describedBy = [
+    helperId,
+    errorId,
+  ]
+    .filter(Boolean)
+    .join(" ") || undefined;
+
+  return (
+    <div className={cn("space-y-2", className)}>
+      <label
+        htmlFor={fieldId}
+        className="text-label block text-text-primary"
       >
-        {showPassword ? (
-          <EyeOff size={18} aria-hidden />
-        ) : (
-          <Eye size={18} aria-hidden />
-        )}
-      </button>
+        {label}
+      </label>
+
+      <div className="relative">
+        <Input
+          id={fieldId}
+          type={showPassword ? "text" : "password"}
+          value={value}
+          onChange={(event) =>
+            onChange(event.target.value)
+          }
+          autoComplete={autoComplete}
+          placeholder={placeholder}
+          required={required}
+          aria-invalid={Boolean(error)}
+          aria-describedby={describedBy}
+          hasError={Boolean(error)}
+          className="pr-12"
+        />
+
+        <button
+          type="button"
+          onClick={onToggleVisibility}
+          aria-label={
+            showPassword
+              ? "Hide password"
+              : "Show password"
+          }
+          className="absolute right-2 top-1/2 inline-flex min-h-10 min-w-10 -translate-y-1/2 items-center justify-center rounded-[var(--radius-button)] text-text-tertiary transition hover:bg-surface-sunken hover:text-text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interaction"
+        >
+          {showPassword ? (
+            <EyeOff size={18} aria-hidden />
+          ) : (
+            <Eye size={18} aria-hidden />
+          )}
+        </button>
+      </div>
+
+      {error ? (
+        <p
+          id={errorId}
+          role="alert"
+          className="text-sm text-danger"
+        >
+          {error}
+        </p>
+      ) : helperText ? (
+        <p
+          id={helperId}
+          className="text-caption"
+        >
+          {helperText}
+        </p>
+      ) : null}
     </div>
   );
 }

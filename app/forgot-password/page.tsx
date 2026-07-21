@@ -46,7 +46,6 @@ export default function ForgotPasswordPage() {
 
   return (
     <AuthLayout
-      overline="Account recovery"
       headline={brand.identity}
       description="We'll send a secure link so you can choose a new password and get back into your vault."
       benefits={[

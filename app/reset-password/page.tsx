@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import {
   FormEvent,
   useEffect,
@@ -9,12 +8,10 @@ import {
 import { useRouter } from "next/navigation";
 import {
   Loader2,
-  LockKeyhole,
 } from "lucide-react";
 
 import AuthAlert from "@/components/auth/AuthAlert";
 import AuthCard from "@/components/auth/AuthCard";
-import AuthFormField from "@/components/auth/AuthFormField";
 import AuthLayout from "@/components/auth/AuthLayout";
 import PasswordInput from "@/components/auth/PasswordInput";
 import Button from "@/components/ui/Button";
@@ -192,7 +189,6 @@ export default function ResetPasswordPage() {
 
   return (
     <AuthLayout
-      overline="Secure recovery"
       headline={brand.identity}
       description="Choose a strong password to keep your household vault protected."
       benefits={[
@@ -246,13 +242,9 @@ export default function ResetPasswordPage() {
               </AuthAlert>
             ) : null}
 
-            <AuthFormField
-              label="New password"
-              htmlFor="password"
-              icon={LockKeyhole}
-            >
-              <PasswordInput
+            <PasswordInput
                 id="password"
+                label="New password"
                 value={password}
                 onChange={setPassword}
                 showPassword={showPassword}
@@ -263,16 +255,12 @@ export default function ResetPasswordPage() {
                 }
                 autoComplete="new-password"
                 placeholder="At least 8 characters"
+                helperText="Use at least 8 characters."
               />
-            </AuthFormField>
 
-            <AuthFormField
-              label="Confirm new password"
-              htmlFor="confirm-password"
-              icon={LockKeyhole}
-            >
-              <PasswordInput
+            <PasswordInput
                 id="confirm-password"
+                label="Confirm new password"
                 value={confirmPassword}
                 onChange={setConfirmPassword}
                 showPassword={showPassword}
@@ -284,7 +272,6 @@ export default function ResetPasswordPage() {
                 autoComplete="new-password"
                 placeholder="Enter the password again"
               />
-            </AuthFormField>
 
             <Button
               type="submit"

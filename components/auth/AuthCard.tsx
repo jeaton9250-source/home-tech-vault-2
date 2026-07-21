@@ -14,19 +14,19 @@ export default function AuthCard({
   children,
 }: AuthCardProps) {
   return (
-    <div className="w-full max-w-[440px] rounded-[28px] border border-border-subtle bg-white p-6 shadow-[var(--shadow-sm),var(--shadow-md),var(--shadow-inset)] md:p-8">
+    <div className="w-full max-w-[440px] rounded-[var(--radius-card)] border border-border-subtle bg-surface-card p-6 shadow-[var(--shadow-sm),var(--shadow-md)] md:p-8">
       {overline ? (
         <p className="text-overline text-interaction">
           {overline}
         </p>
       ) : null}
 
-      <h1 className="mt-2 text-[clamp(1.75rem,4vw,2rem)] font-medium tracking-[-0.03em] text-text-primary">
+      <h1 className="mt-2 text-2xl font-medium tracking-[-0.03em] text-text-primary md:text-[1.75rem]">
         {title}
       </h1>
 
       {description ? (
-        <p className="mt-3 text-[0.9375rem] leading-7 text-text-muted">
+        <p className="mt-3 text-sm leading-6 text-text-muted">
           {description}
         </p>
       ) : null}

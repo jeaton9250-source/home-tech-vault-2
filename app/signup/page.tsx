@@ -6,24 +6,22 @@ import {
   useState,
 } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Loader2,
-  Mail,
-  Sparkles,
-  User,
-  Users,
-} from "lucide-react";
 
-import AuthAlert from "@/components/auth/AuthAlert";
 import AuthCard from "@/components/auth/AuthCard";
-import AuthFormField from "@/components/auth/AuthFormField";
 import AuthLayout from "@/components/auth/AuthLayout";
 import PasswordInput from "@/components/auth/PasswordInput";
-import { authInputClassName } from "@/components/auth/authStyles";
+import Alert from "@/components/ui/Alert";
 import Button from "@/components/ui/Button";
+import FormInput from "@/components/ui/FormInput";
 import { brand } from "@/lib/design-system/tokens";
 import { supabase } from "@/lib/supabase";
 import { resolvePostAuthRedirect } from "@/lib/onboarding/redirect";
+
+const signupBenefits = [
+  "Organize every household device",
+  "Track warranties and important documents",
+  "Share access with trusted household members",
+] as const;
 
 export default function SignupPage() {
   const router = useRouter();
@@ -204,155 +202,124 @@ export default function SignupPage() {
 
   return (
     <AuthLayout
-      overline="Get started"
       headline={brand.identity}
       description="Create one secure place for your household devices, warranties, documents, subscriptions, and maintenance records."
-      benefits={[
-        "Organize every household device",
-        "Track warranties and important documents",
-        "Share access with trusted household members",
-        "Keep network and subscription details together",
-      ]}
+      benefits={[...signupBenefits]}
       brandHref="/"
     >
       <AuthCard
-        overline="Create account"
-        title="Create your vault"
-        description="Start free in minutes. No credit card required."
+        overline="Get started"
+        title="Create your Home Tech Vault"
+        description="Set up one secure place for your household devices, warranties, documents, subscriptions, and maintenance records."
       >
-        {errorMessage ? (
-          <AuthAlert
-            variant="error"
-            className="mb-5"
-          >
-            {errorMessage}
-          </AuthAlert>
-        ) : null}
+        <div
+          aria-live="polite"
+          aria-atomic="true"
+          className="mb-5 space-y-4 empty:mb-0"
+        >
+          {errorMessage ? (
+            <Alert variant="error">
+              {errorMessage}
+            </Alert>
+          ) : null}
 
-        {successMessage ? (
-          <AuthAlert
-            variant="success"
-            className="mb-5"
-          >
-            {successMessage}
-
-            <Link
-              href="/login"
-              className="mt-2 inline-block font-medium underline underline-offset-4"
+          {successMessage ? (
+            <Alert
+              variant="success"
+              title="Check your email"
             >
-              Go to sign in
-            </Link>
-          </AuthAlert>
-        ) : null}
+              {successMessage}{" "}
+              <Link
+                href="/login"
+                className="font-medium underline underline-offset-4"
+              >
+                Go to sign in
+              </Link>
+            </Alert>
+          ) : null}
+        </div>
 
         <form
           onSubmit={handleSignup}
           className="space-y-5"
           noValidate
         >
-          <AuthFormField
+          <FormInput
+            id="signup-full-name"
             label="Full name"
-            htmlFor="signup-full-name"
-            icon={User}
-          >
-            <input
-              id="signup-full-name"
-              type="text"
-              value={fullName}
-              onChange={(event) =>
-                setFullName(
-                  event.target.value
-                )
-              }
-              autoComplete="name"
-              placeholder="Your full name"
-              required
-              className={authInputClassName}
-            />
-          </AuthFormField>
+            type="text"
+            value={fullName}
+            onChange={(event) =>
+              setFullName(
+                event.target.value
+              )
+            }
+            autoComplete="name"
+            placeholder="Your full name"
+            required
+          />
 
-          <AuthFormField
+          <FormInput
+            id="signup-household-name"
             label="Household name"
-            htmlFor="signup-household-name"
-            icon={Users}
-            hint="This is the name your household will see in Home Tech Vault."
-          >
-            <input
-              id="signup-household-name"
-              type="text"
-              value={householdName}
-              onChange={(event) =>
-                setHouseholdName(
-                  event.target.value
-                )
-              }
-              autoComplete="organization"
-              placeholder="My household"
-              required
-              className={authInputClassName}
-            />
-          </AuthFormField>
+            type="text"
+            value={householdName}
+            onChange={(event) =>
+              setHouseholdName(
+                event.target.value
+              )
+            }
+            autoComplete="organization"
+            placeholder="My household"
+            helperText="This is the name your household will see in Home Tech Vault."
+            required
+          />
 
-          <AuthFormField
+          <FormInput
+            id="signup-email"
             label="Email address"
-            htmlFor="signup-email"
-            icon={Mail}
-          >
-            <input
-              id="signup-email"
-              type="email"
-              value={email}
-              onChange={(event) =>
-                setEmail(event.target.value)
-              }
-              autoComplete="email"
-              placeholder="you@example.com"
-              required
-              className={authInputClassName}
-            />
-          </AuthFormField>
+            type="email"
+            value={email}
+            onChange={(event) =>
+              setEmail(event.target.value)
+            }
+            autoComplete="email"
+            placeholder="you@example.com"
+            required
+          />
 
-          <AuthFormField
+          <PasswordInput
+            id="signup-password"
             label="Password"
-            htmlFor="signup-password"
-            hint="Use at least 8 characters."
-          >
-            <PasswordInput
-              id="signup-password"
-              value={password}
-              onChange={setPassword}
-              autoComplete="new-password"
-              placeholder="At least 8 characters"
-              showPassword={showPassword}
-              onToggleVisibility={() =>
-                setShowPassword(
-                  (current) => !current
-                )
-              }
-              required
-              describedBy="signup-password-hint"
-            />
-          </AuthFormField>
+            value={password}
+            onChange={setPassword}
+            autoComplete="new-password"
+            placeholder="At least 8 characters"
+            helperText="Use at least 8 characters."
+            showPassword={showPassword}
+            onToggleVisibility={() =>
+              setShowPassword(
+                (current) => !current
+              )
+            }
+            required
+          />
 
-          <AuthFormField
+          <PasswordInput
+            id="signup-confirm-password"
             label="Confirm password"
-            htmlFor="signup-confirm-password"
-          >
-            <PasswordInput
-              id="signup-confirm-password"
-              value={confirmPassword}
-              onChange={setConfirmPassword}
-              autoComplete="new-password"
-              placeholder="Enter your password again"
-              showPassword={showConfirmPassword}
-              onToggleVisibility={() =>
-                setShowConfirmPassword(
-                  (current) => !current
-                )
-              }
-              required
-            />
-          </AuthFormField>
+            value={confirmPassword}
+            onChange={setConfirmPassword}
+            autoComplete="new-password"
+            placeholder="Enter your password again"
+            showPassword={showConfirmPassword}
+            onToggleVisibility={() =>
+              setShowConfirmPassword(
+                (current) => !current
+              )
+            }
+            required
+          />
 
           <label className="flex cursor-pointer items-start gap-3 rounded-[var(--radius-input)] border border-border-subtle bg-surface-sunken/70 p-4">
             <input
@@ -370,14 +337,14 @@ export default function SignupPage() {
               I agree to the{" "}
               <Link
                 href="/terms"
-                className="font-medium text-interaction underline-offset-4 hover:underline"
+                className="font-medium text-interaction underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interaction"
               >
                 Terms
               </Link>{" "}
               and{" "}
               <Link
                 href="/privacy"
-                className="font-medium text-interaction underline-offset-4 hover:underline"
+                className="font-medium text-interaction underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interaction"
               >
                 Privacy Policy
               </Link>
@@ -389,26 +356,10 @@ export default function SignupPage() {
             type="submit"
             fullWidth
             size="lg"
-            disabled={submitting}
+            loading={submitting}
+            loadingLabel="Creating your vault..."
           >
-            {submitting ? (
-              <>
-                <Loader2
-                  size={18}
-                  className="animate-spin"
-                  aria-hidden
-                />
-                Creating your vault...
-              </>
-            ) : (
-              <>
-                <Sparkles
-                  size={18}
-                  aria-hidden
-                />
-                Create my vault
-              </>
-            )}
+            Create My Vault
           </Button>
         </form>
 
@@ -419,16 +370,6 @@ export default function SignupPage() {
             className="font-medium text-interaction underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interaction"
           >
             Sign in
-          </Link>
-        </p>
-
-        <p className="mt-5 text-center text-sm text-text-muted">
-          Want to look around first?{" "}
-          <Link
-            href="/demo"
-            className="font-medium text-interaction underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interaction"
-          >
-            Open interactive demo
           </Link>
         </p>
       </AuthCard>
