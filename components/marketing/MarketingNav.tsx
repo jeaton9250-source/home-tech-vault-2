@@ -2,32 +2,22 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 
 import Logo from "@/components/brand/Logo";
 import FoundingMembersBanner from "@/components/landing/FoundingMembersBanner";
+import LandingAnnouncementBar from "@/components/marketing/LandingAnnouncementBar";
+import MarketingNavLink from "@/components/marketing/MarketingNavLink";
 import Button from "@/components/ui/Button";
 import { useDemoMode } from "@/hooks/useDemoMode";
 import type { PublicFoundingProgramSummary } from "@/lib/founding-members/types";
+import { LANDING_NAV_LINKS } from "@/lib/marketing/landingNav";
 import {
   marketingPrimaryButtonClass,
   marketingSecondaryButtonClass,
 } from "@/lib/marketing/landingStyles";
 import { MARKETING_ROUTES } from "@/lib/marketing/routes";
 import { cn } from "@/lib/design-system/cn";
-
-const fullNavLinks = [
-  { href: MARKETING_ROUTES.features, label: "Features" },
-  { href: MARKETING_ROUTES.pricing, label: "Pricing" },
-  { href: MARKETING_ROUTES.demo, label: "Demo" },
-  { href: MARKETING_ROUTES.faq, label: "FAQ" },
-  { href: MARKETING_ROUTES.contact, label: "Contact" },
-] as const;
-
-const minimalNavLinks = [
-  { href: MARKETING_ROUTES.features, label: "Features" },
-] as const;
 
 type MarketingNavProps = {
   foundingSummary?: PublicFoundingProgramSummary | null;
@@ -38,7 +28,6 @@ export default function MarketingNav({
   foundingSummary = null,
   minimal = false,
 }: MarketingNavProps = {}) {
-  const pathname = usePathname();
   const [mobileOpen, setMobileOpen] =
     useState(false);
 
@@ -56,16 +45,17 @@ export default function MarketingNav({
       ? "Your Vault"
       : "Start Free";
 
-  const navLinks = minimal
-    ? minimalNavLinks
-    : fullNavLinks;
-
-  function isActive(href: string) {
-    return pathname === href;
-  }
+  const navLinkClassName = cn(
+    "rounded-[var(--radius-button)] px-1 py-2 text-[0.9375rem] font-normal transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interaction",
+    minimal
+      ? "text-text-muted hover:text-text-primary"
+      : "px-3 text-text-muted hover:text-text-primary"
+  );
 
   return (
     <header className="sticky top-0 z-50 border-b border-border-subtle/80 bg-surface-base/90 backdrop-blur-md">
+      {minimal ? <LandingAnnouncementBar /> : null}
+
       <div
         className={cn(
           "mx-auto flex h-[4.25rem] max-w-6xl items-center justify-between px-8 lg:px-10",
@@ -84,28 +74,17 @@ export default function MarketingNav({
         <nav
           className={cn(
             "hidden items-center lg:flex",
-            minimal ? "gap-10" : "gap-0.5"
+            minimal ? "gap-8 xl:gap-10" : "gap-6"
           )}
           aria-label="Primary"
         >
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={cn(
-                "rounded-[var(--radius-button)] px-1 py-2 text-[0.9375rem] transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interaction",
-                minimal
-                  ? "font-normal"
-                  : "px-3 font-medium",
-                isActive(link.href)
-                  ? minimal
-                    ? "text-interaction"
-                    : "text-text-primary"
-                  : "text-text-muted hover:text-text-primary"
-              )}
-            >
-              {link.label}
-            </Link>
+          {LANDING_NAV_LINKS.map((link) => (
+            <MarketingNavLink
+              key={link.sectionId}
+              label={link.label}
+              sectionId={link.sectionId}
+              className={navLinkClassName}
+            />
           ))}
         </nav>
 
@@ -166,22 +145,16 @@ export default function MarketingNav({
             className="flex flex-col gap-1"
             aria-label="Primary mobile"
           >
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() =>
+            {LANDING_NAV_LINKS.map((link) => (
+              <MarketingNavLink
+                key={link.sectionId}
+                label={link.label}
+                sectionId={link.sectionId}
+                onNavigate={() =>
                   setMobileOpen(false)
                 }
-                className={cn(
-                  "rounded-[var(--radius-button)] px-3 py-3 text-sm font-medium",
-                  isActive(link.href)
-                    ? "bg-surface-sunken text-interaction"
-                    : "text-text-muted"
-                )}
-              >
-                {link.label}
-              </Link>
+                className="rounded-[var(--radius-button)] px-3 py-3 text-sm font-medium text-text-muted hover:bg-surface-sunken hover:text-text-primary"
+              />
             ))}
 
             <div className="mt-3 flex flex-col gap-2 border-t border-border-subtle pt-4">

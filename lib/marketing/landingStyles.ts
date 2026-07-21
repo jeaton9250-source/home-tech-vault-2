@@ -15,3 +15,6 @@ export const landingMotionRise =
 
 export const landingPreviewEnter =
   "htv-preview-enter motion-reduce:animate-none";
+
+export const landingSectionAnchor =
+  "scroll-mt-32 md:scroll-mt-36";

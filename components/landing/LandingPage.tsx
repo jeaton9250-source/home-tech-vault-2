@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import {
   ArrowRight,
   Loader2,
@@ -8,6 +9,7 @@ import {
 
 import LandingBenefitsSection from "@/components/landing/LandingBenefitsSection";
 import LandingProductPreview from "@/components/landing/LandingProductPreview";
+import LandingSupportSection from "@/components/landing/LandingSupportSection";
 import LandingTrustSection from "@/components/landing/LandingTrustSection";
 import { HeroAppPreview } from "@/components/landing/LandingPreviews";
 import MarketingLayout, {
@@ -16,6 +18,7 @@ import MarketingLayout, {
 import Button from "@/components/ui/Button";
 import PageCard from "@/components/ui/PageCard";
 import { useDemoMode } from "@/hooks/useDemoMode";
+import type { LandingSectionId } from "@/lib/marketing/landingNav";
 import {
   landingMotionRise,
   landingSectionClass,
@@ -30,6 +33,21 @@ type LandingPageProps = {
   foundingSummary?: PublicFoundingProgramSummary | null;
 };
 
+function scrollToLandingSection(
+  sectionId: LandingSectionId
+) {
+  const target = document.getElementById(sectionId);
+
+  if (!target) {
+    return;
+  }
+
+  target.scrollIntoView({
+    behavior: "smooth",
+    block: "start",
+  });
+}
+
 export default function LandingPage({
   foundingSummary = null,
 }: LandingPageProps) {
@@ -37,6 +55,21 @@ export default function LandingPage({
     user,
     loading,
   } = useDemoMode();
+
+  useEffect(() => {
+    const hash = window.location.hash.replace(
+      "#",
+      ""
+    ) as LandingSectionId;
+
+    if (!hash) {
+      return;
+    }
+
+    window.requestAnimationFrame(() => {
+      scrollToLandingSection(hash);
+    });
+  }, []);
 
   if (loading) {
     return (
@@ -134,6 +167,7 @@ export default function LandingPage({
       <LandingBenefitsSection />
       <LandingProductPreview />
       <LandingTrustSection />
+      <LandingSupportSection />
 
       {/* Final CTA */}
       <MarketingContent

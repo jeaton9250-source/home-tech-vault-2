@@ -6,9 +6,11 @@ import {
 
 import { MarketingContent } from "@/components/marketing/MarketingLayout";
 import PageCard from "@/components/ui/PageCard";
+import { LANDING_SECTION_IDS } from "@/lib/marketing/landingNav";
 import {
   landingCardClass,
   landingMotionRise,
+  landingSectionAnchor,
   landingSectionClass,
 } from "@/lib/marketing/landingStyles";
 import { cn } from "@/lib/design-system/cn";
@@ -33,8 +35,24 @@ const benefits = [
 
 export default function LandingBenefitsSection() {
   return (
-    <MarketingContent className={landingSectionClass}>
-      <div className="grid gap-5 md:grid-cols-3">
+    <MarketingContent
+      id={LANDING_SECTION_IDS.features}
+      className={cn(
+        landingSectionClass,
+        landingSectionAnchor
+      )}
+    >
+      <div className="max-w-2xl">
+        <h2 className="text-section-title text-text-primary">
+          Features
+        </h2>
+        <p className="mt-2 text-sm leading-6 text-text-muted">
+          One calm place for the technology and paperwork
+          that keep your home running.
+        </p>
+      </div>
+
+      <div className="mt-8 grid gap-5 md:grid-cols-3">
         {benefits.map((benefit, index) => (
           <PageCard
             key={benefit.title}
@@ -56,9 +74,9 @@ export default function LandingBenefitsSection() {
               />
             </span>
 
-            <h2 className="text-card-title mt-5 text-text-primary">
+            <h3 className="text-card-title mt-5 text-text-primary">
               {benefit.title}
-            </h2>
+            </h3>
 
             <p className="mt-2.5 text-sm leading-6 text-text-muted">
               {benefit.copy}

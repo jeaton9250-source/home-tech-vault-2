@@ -18,8 +18,10 @@ import {
 import { MarketingContent } from "@/components/marketing/MarketingLayout";
 import {
   landingPreviewEnter,
+  landingSectionAnchor,
   landingSectionClass,
 } from "@/lib/marketing/landingStyles";
+import { LANDING_SECTION_IDS } from "@/lib/marketing/landingNav";
 import { cn } from "@/lib/design-system/cn";
 
 const previews = [
@@ -68,11 +70,17 @@ export default function LandingProductPreview() {
     previews[0];
 
   return (
-    <section className="border-y border-border-subtle/80 bg-surface-card/30">
+    <section
+      id={LANDING_SECTION_IDS.howItWorks}
+      className={cn(
+        "border-y border-border-subtle/80 bg-surface-card/30",
+        landingSectionAnchor
+      )}
+    >
       <MarketingContent className={landingSectionClass}>
         <div className="max-w-xl">
           <h2 className="text-section-title text-text-primary">
-            See your vault in action
+            How it works
           </h2>
           <p
             key={activePreview.id}
