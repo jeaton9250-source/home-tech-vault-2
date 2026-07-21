@@ -11,3 +11,9 @@ export const DEMO_WELCOME_SEEN_KEY =
 
 export const DEMO_TOUR_COMPLETED_KEY =
   "home-tech-vault-demo-tour-completed";
+
+/** Bump when demo content changes so returning visitors get a fresh session. */
+export const DEMO_DATA_VERSION = "morgan-household-v1";
+
+export const DEMO_DATA_VERSION_KEY =
+  "home-tech-vault-demo-data-version";

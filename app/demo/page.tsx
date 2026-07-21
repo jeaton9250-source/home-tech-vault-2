@@ -11,7 +11,12 @@ import {
   Sparkles,
   Wrench,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
+import MarketingLayout, {
+  MarketingContent,
+} from "@/components/marketing/MarketingLayout";
+import { useDemoMode } from "@/hooks/useDemoMode";
 import { MORGAN_HOUSEHOLD } from "@/lib/demo/morganHousehold";
 
 const demoFeatures = [
@@ -66,22 +71,17 @@ const demoFeatures = [
 ];
 
 export default function DemoPage() {
+  const router = useRouter();
+  const { startDemo } = useDemoMode();
+
   function enterDemo() {
-    window.localStorage.removeItem(
-      "home-tech-vault-demo-welcome-seen"
-    );
-
-    window.localStorage.setItem(
-      "home-tech-vault-demo",
-      "true"
-    );
-
-    window.location.assign("/dashboard");
+    startDemo();
+    router.push("/dashboard");
   }
 
   return (
-    <main className="min-h-screen bg-surface-sunken px-5 py-10 md:px-8">
-      <div className="mx-auto max-w-6xl">
+    <MarketingLayout minimalNav>
+      <MarketingContent className="py-10 md:py-14">
         <section className="htv-hero-band overflow-hidden rounded-[36px] px-7 py-12 text-text-primary shadow-xl md:px-12 md:py-16">
           <p className="text-overline text-home-health">
             Interactive Demo
@@ -132,7 +132,7 @@ export default function DemoPage() {
             )
           )}
         </section>
-      </div>
-    </main>
+      </MarketingContent>
+    </MarketingLayout>
   );
 }

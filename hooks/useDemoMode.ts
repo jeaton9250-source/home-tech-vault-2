@@ -4,14 +4,43 @@ import { useCallback, useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 
 import { supabase } from "@/lib/supabase";
+import {
+  DEMO_DATA_VERSION,
+  DEMO_DATA_VERSION_KEY,
+  DEMO_TOUR_COMPLETED_KEY,
+  DEMO_WELCOME_SEEN_KEY,
+} from "@/lib/demo/morganHousehold";
 
 const DEMO_STORAGE_KEY = "home-tech-vault-demo";
 const DEMO_CHANGE_EVENT = "home-tech-vault-demo-change";
+
+function syncDemoDataVersion() {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const storedVersion = window.localStorage.getItem(
+    DEMO_DATA_VERSION_KEY
+  );
+
+  if (storedVersion === DEMO_DATA_VERSION) {
+    return;
+  }
+
+  window.localStorage.removeItem(DEMO_WELCOME_SEEN_KEY);
+  window.localStorage.removeItem(DEMO_TOUR_COMPLETED_KEY);
+  window.localStorage.setItem(
+    DEMO_DATA_VERSION_KEY,
+    DEMO_DATA_VERSION
+  );
+}
 
 function getStoredDemoMode() {
   if (typeof window === "undefined") {
     return false;
   }
+
+  syncDemoDataVersion();
 
   return (
     window.localStorage.getItem(DEMO_STORAGE_KEY) === "true"
@@ -112,6 +141,11 @@ export function useDemoMode() {
   }, [loadMode]);
 
   function startDemo() {
+    syncDemoDataVersion();
+
+    window.localStorage.removeItem(DEMO_WELCOME_SEEN_KEY);
+    window.localStorage.removeItem(DEMO_TOUR_COMPLETED_KEY);
+
     window.localStorage.setItem(
       DEMO_STORAGE_KEY,
       "true"
