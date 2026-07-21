@@ -22,7 +22,7 @@ export function CommandCenterPreview() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-overline text-home-health">
-            Home Command Center
+            Home Pulse
           </p>
           <p className="mt-1 text-xl font-medium tracking-[-0.02em]">
             Good afternoon
@@ -30,7 +30,7 @@ export function CommandCenterPreview() {
         </div>
 
         <div className="rounded-full border border-home-health-muted bg-home-health-soft px-3 py-1 text-xs font-medium text-home-health">
-          92 Vault Health
+          92% home health
         </div>
       </div>
 

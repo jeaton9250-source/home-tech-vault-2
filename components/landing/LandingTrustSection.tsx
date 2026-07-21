@@ -1,47 +1,57 @@
-import Link from "next/link";
+import {
+  KeyRound,
+  Lock,
+  ShieldCheck,
+  Users,
+} from "lucide-react";
 
 import { MarketingContent } from "@/components/marketing/MarketingLayout";
-import { MARKETING_ROUTES } from "@/lib/marketing/routes";
-import { TRUST_BAR_BADGES } from "@/lib/marketing/trust";
+
+const trustItems = [
+  {
+    id: "authentication",
+    label: "Secure authentication",
+    icon: KeyRound,
+  },
+  {
+    id: "access",
+    label: "Private household access",
+    icon: Users,
+  },
+  {
+    id: "https",
+    label: "HTTPS protected",
+    icon: ShieldCheck,
+  },
+  {
+    id: "control",
+    label: "You control your data",
+    icon: Lock,
+  },
+] as const;
 
 export default function LandingTrustSection() {
   return (
-    <MarketingContent className="py-12 md:py-16">
+    <MarketingContent className="py-10 md:py-14">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {TRUST_BAR_BADGES.map(
-          ({ id, label, href, icon: Icon }) => (
-            <Link
-              key={id}
-              href={href}
-              className="flex items-center gap-3 rounded-[var(--radius-button)] border border-border-subtle bg-surface-card px-4 py-3.5 shadow-[var(--shadow-sm)] transition hover:border-interaction/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interaction"
-            >
-              <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-interaction-soft text-interaction">
-                <Icon size={16} aria-hidden />
-              </span>
-              <span className="text-sm font-medium text-text-primary">
-                {label}
-              </span>
-            </Link>
-          )
-        )}
+        {trustItems.map(({ id, label, icon: Icon }) => (
+          <div
+            key={id}
+            className="flex items-center gap-3 rounded-[var(--radius-button)] border border-border-subtle bg-surface-card px-4 py-3.5 shadow-[var(--shadow-sm)]"
+          >
+            <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-button)] bg-interaction-soft text-interaction">
+              <Icon size={16} aria-hidden />
+            </span>
+            <span className="text-sm font-medium text-text-primary">
+              {label}
+            </span>
+          </div>
+        ))}
       </div>
 
       <p className="mt-6 max-w-2xl text-sm leading-6 text-text-muted">
-        Your household data stays private and under your control.{" "}
-        <Link
-          href={MARKETING_ROUTES.privacy}
-          className="font-medium text-interaction underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interaction"
-        >
-          Read our privacy policy
-        </Link>{" "}
-        or visit the{" "}
-        <Link
-          href={MARKETING_ROUTES.trust}
-          className="font-medium text-interaction underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interaction"
-        >
-          Trust Center
-        </Link>
-        .
+        Your information belongs to you. Home Tech Vault
+        does not sell your personal information.
       </p>
     </MarketingContent>
   );

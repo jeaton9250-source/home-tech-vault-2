@@ -12,6 +12,7 @@ type MarketingLayoutProps = {
   className?: string;
   mainClassName?: string;
   foundingSummary?: PublicFoundingProgramSummary | null;
+  minimalNav?: boolean;
 };
 
 export default function MarketingLayout({
@@ -19,6 +20,7 @@ export default function MarketingLayout({
   className,
   mainClassName,
   foundingSummary = null,
+  minimalNav = false,
 }: MarketingLayoutProps) {
   return (
     <div
@@ -32,6 +34,7 @@ export default function MarketingLayout({
       />
       <MarketingNav
         foundingSummary={foundingSummary}
+        minimal={minimalNav}
       />
       <main className={mainClassName}>{children}</main>
       <MarketingFooter />

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
 import {
   BarChart3,
   FileText,
@@ -24,6 +23,8 @@ const previews = [
   {
     id: "devices",
     label: "Devices",
+    description:
+      "Track every device with photos, purchase details, and location.",
     icon: Laptop,
     accent: sections.technology.accent,
     soft: sections.technology.soft,
@@ -32,6 +33,8 @@ const previews = [
   {
     id: "warranties",
     label: "Warranties",
+    description:
+      "See coverage status and upcoming expirations at a glance.",
     icon: ShieldCheck,
     accent: sections.warning.accent,
     soft: sections.warning.soft,
@@ -40,6 +43,8 @@ const previews = [
   {
     id: "documents",
     label: "Documents",
+    description:
+      "Store receipts, manuals, and warranty cards in one vault.",
     icon: FileText,
     accent: sections.digitalVault.accent,
     soft: sections.digitalVault.soft,
@@ -48,6 +53,8 @@ const previews = [
   {
     id: "reports",
     label: "Reports",
+    description:
+      "Review household technology health in a simple summary.",
     icon: BarChart3,
     accent: sections.insights.accent,
     soft: sections.insights.soft,
@@ -66,14 +73,14 @@ export default function LandingProductPreview() {
     previews[0];
 
   return (
-    <section className="border-y border-border-subtle bg-surface-card/30">
-      <MarketingContent className="py-12 md:py-16">
+    <section className="border-y border-border-subtle bg-surface-card/40">
+      <MarketingContent className="py-10 md:py-14">
         <div className="max-w-xl">
-          <h2 className="text-2xl font-medium tracking-[-0.03em] text-text-primary md:text-3xl">
+          <h2 className="text-section-title text-text-primary">
             See your vault in action
           </h2>
-          <p className="mt-2 text-sm leading-6 text-text-muted md:text-base">
-            Browse the areas families use most.
+          <p className="mt-2 text-sm leading-6 text-text-muted">
+            {activePreview.description}
           </p>
         </div>
 
@@ -106,14 +113,7 @@ export default function LandingProductPreview() {
           ))}
         </div>
 
-        <motion.div
-          key={activePreview.id}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{
-            duration: 0.3,
-            ease: [0.22, 1, 0.36, 1],
-          }}
+        <div
           role="tabpanel"
           id={`landing-preview-${activePreview.id}`}
           aria-labelledby={`landing-preview-tab-${activePreview.id}`}
@@ -126,7 +126,7 @@ export default function LandingProductPreview() {
           >
             {activePreview.preview}
           </PillarPreview>
-        </motion.div>
+        </div>
       </MarketingContent>
     </section>
   );

@@ -1,7 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import { motion } from "framer-motion";
 import {
   ArrowRight,
   Laptop,
@@ -16,21 +14,15 @@ import {
   CommandCenterPreview,
   PillarPreview,
 } from "@/components/landing/LandingPreviews";
-import MarketingLayout from "@/components/marketing/MarketingLayout";
+import MarketingLayout, {
+  MarketingContent,
+} from "@/components/marketing/MarketingLayout";
+import Button from "@/components/ui/Button";
+import PageCard from "@/components/ui/PageCard";
 import { useDemoMode } from "@/hooks/useDemoMode";
 import { MARKETING_ROUTES } from "@/lib/marketing/routes";
 import { sections } from "@/lib/design-system/tokens";
 import type { PublicFoundingProgramSummary } from "@/lib/founding-members/types";
-
-const fadeUp = {
-  initial: { opacity: 0, y: 20 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, margin: "-60px" },
-  transition: {
-    duration: 0.5,
-    ease: [0.22, 1, 0.36, 1] as const,
-  },
-};
 
 type LandingPageProps = {
   foundingSummary?: PublicFoundingProgramSummary | null;
@@ -66,67 +58,58 @@ export default function LandingPage({
   const primaryLabel = isSignedIn
     ? "Go to Your Vault"
     : "Create Your Free Vault";
+  const finalCtaLabel = isSignedIn
+    ? "Go to Your Vault"
+    : "Create My Vault";
 
   return (
     <MarketingLayout
       mainClassName="overflow-x-hidden"
       foundingSummary={foundingSummary}
+      minimalNav
     >
-      {/* 1. Hero */}
-      <section className="relative px-6 pb-12 pt-14 md:px-8 md:pb-16 md:pt-20">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-gradient-to-b from-home-health-soft/35 to-transparent" />
+      {/* Hero */}
+      <section className="px-6 pb-10 pt-10 md:px-8 md:pb-14 md:pt-14">
+        <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[1.05fr_1fr] lg:gap-14">
+          <div>
+            <p className="text-overline text-interaction">
+              Home Tech Vault
+            </p>
 
-        <div className="relative mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[1.05fr_1fr] lg:gap-14">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              duration: 0.55,
-              ease: [0.22, 1, 0.36, 1],
-            }}
-          >
-            <h1 className="max-w-xl text-4xl font-medium tracking-[-0.04em] md:text-5xl md:leading-[1.05]">
+            <h1 className="mt-4 max-w-xl text-4xl font-medium tracking-[-0.04em] text-text-primary md:text-5xl md:leading-[1.05]">
               The digital home for everything
-              that powers your home.
+              that powers yours.
             </h1>
 
-            <p className="mt-4 max-w-lg text-base leading-7 text-text-muted md:text-lg">
-              Organize devices, warranties, documents,
-              and subscriptions in one secure place — so you
-              stay in control.
+            <p className="mt-4 max-w-lg text-base leading-7 text-text-muted">
+              Organize your devices, warranties, receipts,
+              subscriptions, and important documents in one
+              secure place.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <Link
+              <Button
                 href={primaryHref}
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[var(--radius-button)] bg-charcoal px-6 py-3 text-sm font-medium text-surface-card transition hover:bg-charcoal-hover focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-charcoal/20"
+                size="lg"
               >
                 {primaryLabel}
                 <ArrowRight size={16} aria-hidden />
-              </Link>
+              </Button>
 
               {!isSignedIn ? (
-                <Link
+                <Button
                   href={MARKETING_ROUTES.demo}
-                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[var(--radius-button)] border border-border-subtle bg-surface-card px-6 py-3 text-sm font-medium text-text-primary transition hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-interaction/15"
+                  variant="secondary"
+                  size="lg"
                 >
                   <Play size={16} aria-hidden />
-                  Watch Demo
-                </Link>
+                  Explore the Demo
+                </Button>
               ) : null}
             </div>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              duration: 0.55,
-              delay: 0.06,
-              ease: [0.22, 1, 0.36, 1],
-            }}
-            className="mx-auto w-full max-w-xl lg:max-w-none"
-          >
+          <div className="mx-auto w-full max-w-xl lg:max-w-none">
             <PillarPreview
               icon={Laptop}
               accent={sections.technology.accent}
@@ -134,58 +117,40 @@ export default function LandingPage({
             >
               <CommandCenterPreview />
             </PillarPreview>
-          </motion.div>
+          </div>
         </div>
       </section>
 
-      {/* 2. Benefits */}
       <LandingBenefitsSection />
-
-      {/* 3. Product preview */}
       <LandingProductPreview />
-
-      {/* 4. Trust */}
       <LandingTrustSection />
 
-      {/* 5. Final CTA */}
-      <section className="px-6 pb-16 md:px-8 md:pb-20">
-        <motion.div
-          {...fadeUp}
-          className="mx-auto max-w-3xl overflow-hidden rounded-[var(--radius-card)] bg-charcoal px-8 py-12 text-center text-surface-card md:px-12 md:py-14"
+      {/* Final CTA */}
+      <MarketingContent className="py-10 md:py-14">
+        <PageCard
+          elevated
+          className="mx-auto max-w-3xl border-interaction/15 bg-gradient-to-br from-interaction to-interaction-hover px-8 py-10 text-center text-surface-card md:px-12 md:py-12"
         >
           <h2 className="text-2xl font-medium tracking-[-0.03em] md:text-3xl">
-            {isSignedIn
-              ? "Your vault is ready."
-              : "Create your free vault today."}
+            Ready to organize your home technology?
           </h2>
 
-          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-white/70">
-            {isSignedIn
-              ? "Pick up where you left off."
-              : "Start free in minutes. No credit card required."}
+          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-surface-card/80">
+            Create your free vault and keep everything
+            important in one place.
           </p>
 
-          <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link
-              href={primaryHref}
-              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[var(--radius-button)] bg-surface-card px-6 py-3 text-sm font-medium text-charcoal transition hover:brightness-95 sm:w-auto"
-            >
-              {primaryLabel}
-              <ArrowRight size={16} aria-hidden />
-            </Link>
-
-            {!isSignedIn ? (
-              <Link
-                href={MARKETING_ROUTES.demo}
-                className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[var(--radius-button)] border border-white/15 px-6 py-3 text-sm font-medium text-white transition hover:bg-white/10 sm:w-auto"
-              >
-                <Play size={16} aria-hidden />
-                Watch Demo
-              </Link>
-            ) : null}
-          </div>
-        </motion.div>
-      </section>
+          <Button
+            href={primaryHref}
+            variant="secondary"
+            size="lg"
+            className="mt-6 border-transparent bg-surface-card text-interaction hover:bg-surface-card/95"
+          >
+            {finalCtaLabel}
+            <ArrowRight size={16} aria-hidden />
+          </Button>
+        </PageCard>
+      </MarketingContent>
     </MarketingLayout>
   );
 }
