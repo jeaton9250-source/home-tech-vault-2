@@ -85,7 +85,7 @@ export async function loadAdminUsers(options: {
   let query = admin
     .from("profiles")
     .select(
-      "id, full_name, is_admin, created_at",
+      "id, full_name, is_admin, account_status, created_at",
       { count: "exact" }
     )
     .order("created_at", {
@@ -240,6 +240,11 @@ export async function loadAdminUsers(options: {
           "inactive",
         isPlatformAdmin:
           profile.is_admin === true,
+        accountStatus:
+          profile.account_status ===
+          "deactivated"
+            ? "deactivated"
+            : "active",
         householdId:
           membership?.household_id ?? null,
         householdRole:
@@ -277,7 +282,7 @@ export async function loadAdminUserDetail(
   const { data: profile, error } = await admin
     .from("profiles")
     .select(
-      "id, full_name, is_admin, created_at"
+      "id, full_name, is_admin, account_status, deactivated_at, deactivation_reason, created_at"
     )
     .eq("id", userId)
     .maybeSingle();
@@ -298,6 +303,8 @@ export async function loadAdminUserDetail(
   const [
     subscriptionResult,
     membershipResult,
+    ownedHouseholdResult,
+    deletionJobResult,
     deviceCountResult,
     documentCountResult,
     ticketCountResult,
@@ -316,6 +323,24 @@ export async function loadAdminUserDetail(
         "household_id, role"
       )
       .eq("user_id", userId)
+      .maybeSingle(),
+
+    admin
+      .from("households")
+      .select("id, name")
+      .eq("owner_id", userId)
+      .maybeSingle(),
+
+    admin
+      .from("admin_account_deletion_jobs")
+      .select(
+        "id, status, current_step, safe_error_message"
+      )
+      .eq("target_user_id", userId)
+      .order("created_at", {
+        ascending: false,
+      })
+      .limit(1)
       .maybeSingle(),
 
     admin
@@ -342,6 +367,23 @@ export async function loadAdminUserDetail(
       })
       .eq("user_id", userId),
   ]);
+
+  let ownedHouseholdMemberCount = 0;
+
+  if (ownedHouseholdResult.data?.id) {
+    const { count } = await admin
+      .from("household_members")
+      .select("id", {
+        count: "exact",
+        head: true,
+      })
+      .eq(
+        "household_id",
+        ownedHouseholdResult.data.id
+      );
+
+    ownedHouseholdMemberCount = count ?? 0;
+  }
 
   let householdName: string | null = null;
   let householdOwnerId: string | null = null;
@@ -501,6 +543,11 @@ export async function loadAdminUserDetail(
       "inactive",
     isPlatformAdmin:
       profile.is_admin === true,
+    accountStatus:
+      profile.account_status ===
+      "deactivated"
+        ? "deactivated"
+        : "active",
     householdId:
       membershipResult.data?.household_id ??
       null,
@@ -544,6 +591,25 @@ export async function loadAdminUserDetail(
     currentPeriodEnd:
       subscriptionResult.data
         ?.current_period_end ?? null,
+    deactivatedAt:
+      profile.deactivated_at ?? null,
+    deactivationReason:
+      profile.deactivation_reason ?? null,
+    ownedHouseholdId:
+      ownedHouseholdResult.data?.id ?? null,
+    ownedHouseholdName:
+      ownedHouseholdResult.data?.name ?? null,
+    ownedHouseholdMemberCount,
+    deletionJobId:
+      deletionJobResult.data?.id ?? null,
+    deletionJobStatus:
+      deletionJobResult.data?.status ?? null,
+    deletionJobStep:
+      deletionJobResult.data?.current_step ??
+      null,
+    deletionJobError:
+      deletionJobResult.data
+        ?.safe_error_message ?? null,
   };
 }
 

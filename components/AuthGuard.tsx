@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
@@ -11,6 +11,7 @@ import {
   isPublicRoute,
   normalizePathname,
 } from "@/lib/isChromeFreeRoute";
+import { enforceActiveAccount } from "@/lib/auth/enforceActiveAccount";
 
 type AuthGuardProps = {
   children: ReactNode;
@@ -29,6 +30,11 @@ export default function AuthGuard({
     isDemo,
     loading,
   } = useDemoMode();
+
+  const [
+    accountBlockedMessage,
+    setAccountBlockedMessage,
+  ] = useState<string | null>(null);
 
   const routeIsPublic =
     isPublicRoute(normalizedPath);
@@ -49,6 +55,46 @@ export default function AuthGuard({
         `/login?redirect=${encodeURIComponent(normalizedPath)}`
       );
     }
+  }, [
+    user,
+    isDemo,
+    loading,
+    routeIsProtected,
+    router,
+    normalizedPath,
+  ]);
+
+  useEffect(() => {
+    if (!routeIsProtected || loading || isDemo || !user) {
+      setAccountBlockedMessage(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    async function verifyAccountStatus() {
+      const result = await enforceActiveAccount(
+        user!.id
+      );
+
+      if (cancelled) {
+        return;
+      }
+
+      if (!result.ok) {
+        setAccountBlockedMessage(result.message);
+        router.replace("/login");
+        return;
+      }
+
+      setAccountBlockedMessage(null);
+    }
+
+    void verifyAccountStatus();
+
+    return () => {
+      cancelled = true;
+    };
   }, [
     user,
     isDemo,
@@ -77,6 +123,16 @@ export default function AuthGuard({
 
   if (!user && !isDemo) {
     return null;
+  }
+
+  if (accountBlockedMessage) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-surface-sunken px-6">
+        <p className="max-w-md text-center text-sm text-text-secondary">
+          {accountBlockedMessage}
+        </p>
+      </div>
+    );
   }
 
   return <>{children}</>;

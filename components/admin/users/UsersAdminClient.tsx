@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import PlanAccessAdminSection from "@/components/admin/users/PlanAccessAdminSection";
+import AccountDangerZone from "@/components/admin/users/AccountDangerZone";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPanel, {
   AdminEmptyState,
@@ -355,6 +356,12 @@ export default function UsersAdminClient() {
                             Platform admin
                           </span>
                         )}
+                        {user.accountStatus ===
+                          "deactivated" && (
+                          <span className="mt-2 ml-2 inline-flex rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-red-800">
+                            Deactivated
+                          </span>
+                        )}
                       </td>
                       <td className="px-3 py-4 capitalize">
                         {user.personalPlan}
@@ -507,6 +514,17 @@ export default function UsersAdminClient() {
                   if (selectedId) {
                     await loadDetail(selectedId);
                   }
+                }}
+              />
+
+              <AccountDangerZone
+                detail={detail}
+                onUpdated={async () => {
+                  if (selectedId) {
+                    await loadDetail(selectedId);
+                  }
+
+                  void loadUsers();
                 }}
               />
 

@@ -47,6 +47,7 @@ export type AdminUserSummary = {
   personalPlan: string;
   subscriptionStatus: string;
   isPlatformAdmin: boolean;
+  accountStatus: "active" | "deactivated";
   householdId: string | null;
   householdRole: string | null;
   deviceCount: number;
@@ -69,6 +70,15 @@ export type AdminUserDetail = AdminUserSummary & {
   stripeCustomerId: string | null;
   stripeSubscriptionId: string | null;
   currentPeriodEnd: string | null;
+  deactivatedAt: string | null;
+  deactivationReason: string | null;
+  ownedHouseholdId: string | null;
+  ownedHouseholdName: string | null;
+  ownedHouseholdMemberCount: number;
+  deletionJobId: string | null;
+  deletionJobStatus: string | null;
+  deletionJobStep: string | null;
+  deletionJobError: string | null;
 };
 
 export type AdminHouseholdSummary = {

@@ -20,6 +20,7 @@ import {
 
 import { supabase } from "@/lib/supabase";
 import { resolvePostAuthRedirect } from "@/lib/onboarding/redirect";
+import { enforceActiveAccount } from "@/lib/auth/enforceActiveAccount";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -120,6 +121,16 @@ export default function LoginPage() {
         throw new Error(
           "Your account could not be loaded."
         );
+      }
+
+      const accountCheck =
+        await enforceActiveAccount(
+          data.user.id
+        );
+
+      if (!accountCheck.ok) {
+        setErrorMessage(accountCheck.message);
+        return;
       }
 
       const destination =
