@@ -22,7 +22,11 @@ import {
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
-import { createDeviceEvent } from "@/lib/deviceEvents";
+import {
+  applyHouseholdMutationScope,
+  applyHouseholdScope,
+} from "@/lib/data/householdScope";
+import { recordActivity } from "@/lib/activity";
 
 import {
   demoDevices,
@@ -33,6 +37,7 @@ import { usePermissions } from "@/hooks/usePermissions";
 
 import PageShell from "@/components/ui/PageShell";
 import PageCard from "@/components/ui/PageCard";
+import PageHero from "@/components/ui/PageHero";
 import Button from "@/components/ui/Button";
 
 import {
@@ -80,30 +85,12 @@ export default function MaintenancePage() {
   const {
     user,
     isDemo,
-    isViewer,
+    householdId,
     canCreate,
     canEdit,
     canDelete,
     loading: permissionsLoading,
   } = usePermissions();
-
-  const maintenanceCanCreate =
-  canCreate &&
-  !isViewer &&
-  !isDemo &&
-  Boolean(user);
-
-const maintenanceCanEdit =
-  canEdit &&
-  !isViewer &&
-  !isDemo &&
-  Boolean(user);
-
-const maintenanceCanDelete =
-  canDelete &&
-  !isViewer &&
-  !isDemo &&
-  Boolean(user);
 
   const [tasks, setTasks] =
     useState<MaintenanceTask[]>([]);
@@ -168,23 +155,27 @@ const maintenanceCanDelete =
         const {
           data,
           error,
-        } = await supabase
-          .from("maintenance_tasks")
-          .select(
-            `
+        } = await applyHouseholdScope(
+          supabase
+            .from("maintenance_tasks")
+            .select(
+              `
               *,
               devices (
                 device_name
               )
             `
-          )
-          .order("completed", {
-            ascending: true,
-          })
-          .order("due_date", {
-            ascending: true,
-            nullsFirst: false,
-          });
+            )
+            .order("completed", {
+              ascending: true,
+            })
+            .order("due_date", {
+              ascending: true,
+              nullsFirst: false,
+            }),
+          householdId,
+          user.id
+        );
 
         if (error) {
           throw error;
@@ -228,6 +219,7 @@ const maintenanceCanDelete =
   }, [
     user,
     isDemo,
+    householdId,
     permissionsLoading,
   ]);
 
@@ -240,23 +232,27 @@ const maintenanceCanDelete =
       const {
         data,
         error,
-      } = await supabase
-        .from("maintenance_tasks")
-        .select(
-          `
+      } = await applyHouseholdScope(
+        supabase
+          .from("maintenance_tasks")
+          .select(
+            `
             *,
             devices (
               device_name
             )
           `
-        )
-        .order("completed", {
-          ascending: true,
-        })
-        .order("due_date", {
-          ascending: true,
-          nullsFirst: false,
-        });
+          )
+          .order("completed", {
+            ascending: true,
+          })
+          .order("due_date", {
+            ascending: true,
+            nullsFirst: false,
+          }),
+        householdId,
+        user.id
+      );
 
       if (error) {
         throw error;
@@ -283,7 +279,7 @@ const maintenanceCanDelete =
   async function toggleComplete(
     task: MaintenanceTask
   ) {
-    if (!maintenanceCanEdit || !user) {
+    if (!canEdit || !user) {
   return;
 }
 
@@ -295,18 +291,22 @@ const maintenanceCanDelete =
 
       const {
         error,
-      } = await supabase
-        .from("maintenance_tasks")
-        .update({
-          completed:
-            nextCompleted,
+      } = await applyHouseholdMutationScope(
+        supabase
+          .from("maintenance_tasks")
+          .update({
+            completed:
+              nextCompleted,
 
-          completed_at:
-            nextCompleted
-              ? new Date().toISOString()
-              : null,
-        })
-        .eq("id", task.id);
+            completed_at:
+              nextCompleted
+                ? new Date().toISOString()
+                : null,
+          })
+          .eq("id", task.id),
+        householdId,
+        user.id
+      );
 
       if (error) {
         throw error;
@@ -316,23 +316,16 @@ const maintenanceCanDelete =
         nextCompleted &&
         task.device_id
       ) {
-        await createDeviceEvent({
-          deviceId:
-            task.device_id,
-
-          userId:
-            user.id,
-
-          eventType:
-            task.task_type ??
-            "Maintenance",
-
-          title:
-            task.title,
-
+        await recordActivity({
+          activityType:
+            "maintenance.completed",
+          title: task.title,
           description:
             task.description ??
             "Maintenance task completed through the Maintenance Center.",
+          userId: user.id,
+          householdId,
+          deviceId: task.device_id,
         });
       }
 
@@ -344,9 +337,7 @@ const maintenanceCanDelete =
       );
 
       window.alert(
-        error instanceof Error
-          ? error.message
-          : "Unable to update the task."
+        "Unable to update the task. Please try again."
       );
     } finally {
       setUpdatingId(null);
@@ -356,7 +347,7 @@ const maintenanceCanDelete =
   async function deleteTask(
     taskId: string
   ) {
-    if (!maintenanceCanDelete || !user) {
+    if (!canDelete || !user) {
   return;
 }
 
@@ -374,10 +365,14 @@ const maintenanceCanDelete =
 
       const {
         error,
-      } = await supabase
-        .from("maintenance_tasks")
-        .delete()
-        .eq("id", taskId);
+      } = await applyHouseholdMutationScope(
+        supabase
+          .from("maintenance_tasks")
+          .delete()
+          .eq("id", taskId),
+        householdId,
+        user.id
+      );
 
       if (error) {
         throw error;
@@ -396,9 +391,7 @@ const maintenanceCanDelete =
       );
 
       window.alert(
-        error instanceof Error
-          ? error.message
-          : "Unable to delete the task."
+        "Unable to delete the task. Please try again."
       );
     } finally {
       setDeletingId(null);
@@ -555,7 +548,7 @@ const maintenanceCanDelete =
     return (
       <PageShell>
         <PageCard className="flex min-h-72 items-center justify-center">
-          <div className="flex items-center gap-3 text-neutral-500">
+          <div className="flex items-center gap-3 text-text-secondary">
             <Loader2
               className="animate-spin"
               size={22}
@@ -586,36 +579,21 @@ const maintenanceCanDelete =
 
   return (
     <PageShell>
-      <section className="rounded-[32px] bg-[#111827] px-6 py-9 text-white shadow-sm md:px-10 md:py-11">
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#C8A96A]">
-              Technology Care
-            </p>
-
-            <h1 className="mt-3 text-4xl font-semibold tracking-[-0.04em] md:text-5xl">
-              Maintenance.
-            </h1>
-
-            <p className="mt-4 max-w-xl text-sm leading-6 text-white/60 md:text-base">
-              Keep updates, cleaning,
-              repairs, and routine care
-              organized across your
-              devices.
-            </p>
-          </div>
-
-          <PageAction
-            canCreate={maintenanceCanCreate}
-            href="/maintenance/new"
-            label="Add Task"
-            variant="light"
-          />
-        </div>
-      </section>
+      <PageHero
+        section="warning"
+        eyebrow="Technology Care"
+        title="Maintenance."
+        description="Keep updates, cleaning, repairs, and routine care organized across your devices."
+      >
+        <PageAction
+          canCreate={canCreate}
+          href="/maintenance/new"
+          label="Add Task"
+          variant="primary"
+        />
+      </PageHero>
 
       <ViewerBanner
-        show={isViewer}
         description={
           user
             ? "You can view shared maintenance tasks and their status. Viewer access cannot add, complete, reopen, edit, or delete tasks."
@@ -660,7 +638,7 @@ const maintenanceCanDelete =
       {tasks.length > 0 && (
         <section className="grid gap-6 xl:grid-cols-[0.8fr_1.2fr]">
           <PageCard className="flex min-h-[350px] flex-col items-center justify-center p-8 text-center">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-secondary">
               Completion
             </p>
 
@@ -670,7 +648,7 @@ const maintenanceCanDelete =
               />
             </div>
 
-            <p className="mt-7 max-w-sm text-sm leading-6 text-neutral-500">
+            <p className="mt-7 max-w-sm text-sm leading-6 text-text-secondary">
               {completedTasks.length} of{" "}
               {tasks.length} maintenance
               tasks have been completed.
@@ -678,15 +656,15 @@ const maintenanceCanDelete =
           </PageCard>
 
           <PageCard className="p-7 md:p-9">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
+            <p className="text-overline text-charcoal-soft">
               Maintenance Overview
             </p>
 
-            <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[#111827]">
+            <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
               What needs attention
             </h2>
 
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-500">
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-text-secondary">
               Review overdue, upcoming,
               and unscheduled maintenance.
             </p>
@@ -729,7 +707,7 @@ const maintenanceCanDelete =
             <div className="relative">
               <Search
                 size={18}
-                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400"
+                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-text-tertiary"
               />
 
               <input
@@ -741,7 +719,7 @@ const maintenanceCanDelete =
                   )
                 }
                 placeholder="Search tasks or devices..."
-                className="w-full rounded-2xl border border-[#E8E2D6] bg-[#FAFAF8] py-3.5 pl-11 pr-11 text-sm text-[#111827] outline-none transition placeholder:text-neutral-400 focus:border-[#C8A96A] focus:bg-white focus:ring-4 focus:ring-[#C8A96A]/10"
+                className="w-full rounded-2xl border border-border-subtle bg-[#FAFAF8] py-3.5 pl-11 pr-11 text-sm text-text-primary outline-none transition placeholder:text-text-tertiary focus:border-interaction focus:bg-white focus:ring-4 focus:ring-interaction/10"
               />
 
               {searchTerm && (
@@ -751,7 +729,7 @@ const maintenanceCanDelete =
                     setSearchTerm("")
                   }
                   aria-label="Clear search"
-                  className="absolute right-4 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-neutral-400 transition hover:bg-white hover:text-[#111827]"
+                  className="absolute right-4 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-text-tertiary transition hover:bg-white hover:text-text-primary"
                 >
                   <X size={15} />
                 </button>
@@ -779,8 +757,8 @@ const maintenanceCanDelete =
                       className={
                         "shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition " +
                         (active
-                          ? "bg-[#111827] text-white"
-                          : "border border-[#E8E2D6] bg-white text-neutral-500 hover:border-[#C8A96A] hover:text-[#111827]")
+                          ? "bg-charcoal text-surface-card"
+                          : "border border-border-subtle bg-white text-text-secondary hover:border-border-strong hover:text-text-primary")
                       }
                     >
                       {filter.label}
@@ -790,8 +768,8 @@ const maintenanceCanDelete =
               )}
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#E8E2D6] pt-4">
-              <p className="text-sm text-neutral-500">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border-subtle pt-4">
+              <p className="text-sm text-text-secondary">
                 {filteredTasks.length}{" "}
                 {filteredTasks.length ===
                 1
@@ -805,7 +783,7 @@ const maintenanceCanDelete =
                   onClick={
                     clearFilters
                   }
-                  className="inline-flex items-center gap-2 text-sm font-semibold text-[#111827] transition hover:text-[#8A6A2F]"
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-text-primary transition hover:text-achievement"
                 >
                   <X size={15} />
                   Clear filters
@@ -821,7 +799,7 @@ const maintenanceCanDelete =
           icon={Wrench}
           title="Nothing scheduled"
           description="Add your first maintenance task to begin tracking updates, cleaning, repairs, and routine care."
-          canCreate={maintenanceCanCreate}
+          canCreate={canCreate}
           href="/maintenance/new"
           buttonLabel="Add Maintenance Task"
         />
@@ -863,15 +841,15 @@ const maintenanceCanDelete =
         </section>
       ) : (
         <PageCard className="py-14 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
             <Search size={28} />
           </div>
 
-          <h2 className="mt-5 text-2xl font-semibold tracking-[-0.03em] text-[#111827]">
+          <h2 className="mt-5 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
             No matching tasks
           </h2>
 
-          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-neutral-500">
+          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-text-secondary">
             Try changing your search
             or maintenance status.
           </p>
@@ -1061,8 +1039,8 @@ function TaskCard({
     );
 
   return (
-    <article className="group overflow-hidden rounded-[28px] border border-[#E8E2D6] bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#D8C69D] hover:shadow-lg">
-      <div className="bg-[#F7F5EF] px-6 py-6">
+    <article className="group overflow-hidden rounded-[var(--radius-card)] border border-border-subtle bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-warning/40 hover:shadow-lg">
+      <div className="bg-surface-sunken px-6 py-6">
         <div className="flex items-start justify-between gap-4">
           {canEdit ? (
             <button
@@ -1078,7 +1056,7 @@ function TaskCard({
                 "flex h-12 w-12 shrink-0 items-center justify-center rounded-[20px] bg-white shadow-sm transition disabled:opacity-50 " +
                 (task.completed
                   ? "text-emerald-700"
-                  : "text-[#C8A96A]")
+                  : "text-interaction")
               }
             >
               {updating ? (
@@ -1102,7 +1080,7 @@ function TaskCard({
                 "flex h-12 w-12 shrink-0 items-center justify-center rounded-[20px] bg-white shadow-sm " +
                 (task.completed
                   ? "text-emerald-700"
-                  : "text-[#C8A96A]")
+                  : "text-interaction")
               }
             >
               {task.completed ? (
@@ -1131,14 +1109,14 @@ function TaskCard({
           className={
             "mt-6 text-2xl font-semibold tracking-[-0.04em] " +
             (task.completed
-              ? "text-neutral-400 line-through"
-              : "text-[#111827]")
+              ? "text-text-tertiary line-through"
+              : "text-text-primary")
           }
         >
           {task.title}
         </h2>
 
-        <p className="mt-2 text-sm text-neutral-500">
+        <p className="mt-2 text-sm text-text-secondary">
           {task.devices
             ?.device_name ||
             "General home task"}
@@ -1147,7 +1125,7 @@ function TaskCard({
 
       <div className="p-6">
         {task.description && (
-          <p className="text-sm leading-6 text-neutral-500">
+          <p className="text-sm leading-6 text-text-secondary">
             {task.description}
           </p>
         )}
@@ -1174,12 +1152,12 @@ function TaskCard({
         </div>
 
         {task.recurring_interval && (
-          <div className="mt-3 rounded-2xl bg-[#F7F5EF] p-4">
-            <p className="text-xs text-neutral-400">
+          <div className="mt-3 rounded-2xl bg-surface-sunken p-4">
+            <p className="text-xs text-text-tertiary">
               Recurring
             </p>
 
-            <p className="mt-1 font-semibold text-[#111827]">
+            <p className="mt-1 font-semibold text-text-primary">
               Repeats{" "}
               {
                 task.recurring_interval
@@ -1188,14 +1166,14 @@ function TaskCard({
           </div>
         )}
 
-        <div className="mt-5 flex items-center gap-3 border-t border-[#E8E2D6] pt-5">
+        <div className="mt-5 flex items-center gap-3 border-t border-border-subtle pt-5">
           {task.device_id ? (
             <Link
               href={
                 "/devices/" +
                 task.device_id
               }
-              className="inline-flex min-h-11 flex-1 items-center justify-center rounded-2xl border border-[#E8E2D6] bg-white px-4 text-sm font-semibold text-[#111827] transition hover:border-[#C8A96A] hover:bg-[#F7F5EF]"
+              className="inline-flex min-h-11 flex-1 items-center justify-center rounded-2xl border border-border-subtle bg-white px-4 text-sm font-semibold text-text-primary transition hover:border-border-strong hover:bg-surface-sunken"
             >
               View Device
             </Link>
@@ -1248,7 +1226,7 @@ function SummaryCard({
 }) {
   const toneClasses = {
     neutral:
-      "bg-[#F7F5EF] text-[#C8A96A]",
+      "border border-border-subtle bg-surface-sunken text-charcoal",
 
     gold:
       "bg-amber-50 text-amber-700",
@@ -1264,15 +1242,15 @@ function SummaryCard({
     <PageCard className="p-5 md:p-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-sm text-neutral-500">
+          <p className="text-sm text-text-secondary">
             {label}
           </p>
 
-          <p className="mt-2 text-3xl font-semibold tracking-[-0.03em] text-[#111827]">
+          <p className="mt-2 text-3xl font-semibold tracking-[-0.03em] text-text-primary">
             {value}
           </p>
 
-          <p className="mt-2 text-xs text-neutral-400">
+          <p className="mt-2 text-xs text-text-tertiary">
             {description}
           </p>
         </div>
@@ -1312,11 +1290,11 @@ function AttentionRow({
       "bg-amber-50 text-amber-700",
 
     neutral:
-      "bg-neutral-100 text-neutral-600",
+      "bg-neutral-100 text-text-secondary",
   };
 
   return (
-    <div className="flex items-center gap-4 rounded-[22px] bg-[#F7F5EF] p-4">
+    <div className="flex items-center gap-4 rounded-[22px] bg-surface-sunken p-4">
       <div
         className={
           "flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl " +
@@ -1326,11 +1304,11 @@ function AttentionRow({
         <Icon size={18} />
       </div>
 
-      <p className="min-w-0 flex-1 text-sm font-semibold text-[#111827]">
+      <p className="min-w-0 flex-1 text-sm font-semibold text-text-primary">
         {label}
       </p>
 
-      <span className="text-xl font-semibold text-[#111827]">
+      <span className="text-xl font-semibold text-text-primary">
         {value}
       </span>
     </div>
@@ -1345,12 +1323,12 @@ function TaskMetric({
   value: string;
 }) {
   return (
-    <div className="rounded-2xl bg-[#F7F5EF] p-4">
-      <p className="text-xs text-neutral-400">
+    <div className="rounded-2xl bg-surface-sunken p-4">
+      <p className="text-xs text-text-tertiary">
         {label}
       </p>
 
-      <p className="mt-2 truncate font-semibold text-[#111827]">
+      <p className="mt-2 truncate font-semibold text-text-primary">
         {value}
       </p>
     </div>
@@ -1402,7 +1380,7 @@ function CompletionRing({
           cy="88"
           r={radius}
           fill="none"
-          stroke="#E8E2D6"
+          stroke="#E5E7EB"
           strokeWidth="12"
         />
 
@@ -1424,15 +1402,15 @@ function CompletionRing({
       </svg>
 
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-5xl font-semibold tracking-[-0.05em] text-[#111827]">
+        <span className="text-5xl font-semibold tracking-[-0.05em] text-text-primary">
           {normalizedScore}
 
-          <span className="ml-0.5 text-2xl text-neutral-400">
+          <span className="ml-0.5 text-2xl text-text-tertiary">
             %
           </span>
         </span>
 
-        <span className="mt-2 text-sm font-semibold text-[#8A6A2F]">
+        <span className="mt-2 text-sm font-semibold text-achievement">
           Complete
         </span>
       </div>
@@ -1465,7 +1443,7 @@ function getTaskStatus(
         "unscheduled" as MaintenanceFilter,
 
       badgeClass:
-        "bg-neutral-100 text-neutral-600",
+        "bg-neutral-100 text-text-secondary",
     };
   }
 
@@ -1488,7 +1466,7 @@ function getTaskStatus(
         "unscheduled" as MaintenanceFilter,
 
       badgeClass:
-        "bg-neutral-100 text-neutral-600",
+        "bg-neutral-100 text-text-secondary",
     };
   }
 
@@ -1561,7 +1539,7 @@ function getTaskStatus(
       "open" as MaintenanceFilter,
 
     badgeClass:
-      "bg-[#FFF8E8] text-[#8A6A2F]",
+      "bg-warning-soft text-achievement",
   };
 }
 

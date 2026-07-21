@@ -18,10 +18,17 @@ import {
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
-import { useSubscription } from "@/hooks/useSubscription";
+import { usePermissions } from "@/hooks/usePermissions";
+import {
+  formatSubscriptionStatus,
+  getPlanDescription,
+} from "@/lib/permissions/effectivePlan";
+import PlanAccessSummary from "@/components/permissions/PlanAccessSummary";
 
 import PageShell from "@/components/ui/PageShell";
 import PageCard from "@/components/ui/PageCard";
+import PageHero from "@/components/ui/PageHero";
+import IconWell from "@/components/ui/IconWell";
 import Button from "@/components/ui/Button";
 import type { ReactNode } from "react";
 
@@ -38,32 +45,26 @@ export default function SettingsPage() {
     useState(false);
 
   const {
-    loading,
+    user,
+    loading: permissionsLoading,
     plan,
-    status,
+    planDisplayName,
+    roleDisplayName,
+    effectiveStatus,
     currentPeriodEnd,
-    isAdmin,
-  } = useSubscription();
+    isFree,
+    isPlatformAdmin,
+    canManageBilling,
+    billingManagedByHousehold,
+  } = usePermissions();
 
   useEffect(() => {
-    async function loadUser() {
-      const {
-        data: { user },
-        error,
-      } = await supabase.auth.getUser();
-
-      if (error) {
-        console.error(
-          "Unable to load settings user:",
-          error
-        );
-      }
-
-      setEmail(user?.email || "");
+    if (permissionsLoading) {
+      return;
     }
 
-    loadUser();
-  }, []);
+    setEmail(user?.email || "");
+  }, [user, permissionsLoading]);
 
   async function signOut() {
     try {
@@ -94,107 +95,101 @@ export default function SettingsPage() {
     }
   }
 
-  const planName = isAdmin
+  const planName = isPlatformAdmin
     ? "Master Account"
-    : `${formatPlanName(plan)} Plan`;
+    : `${planDisplayName} Plan`;
 
   const subscriptionStatus =
-    isAdmin
+    isPlatformAdmin
       ? "Active"
       : formatSubscriptionStatus(
-          status
+          effectiveStatus
         );
 
   const hasActiveAccess =
-    isAdmin ||
-    status === "active" ||
-    status === "trialing";
+    isPlatformAdmin ||
+    effectiveStatus === "active" ||
+    effectiveStatus === "trialing";
 
   return (
     <PageShell>
-      <section className="rounded-[32px] bg-[#111827] px-6 py-9 text-white shadow-sm md:px-10 md:py-11">
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#C8A96A]">
-              Account Preferences
-            </p>
-
-            <h1 className="mt-3 text-4xl font-semibold tracking-[-0.04em] md:text-5xl">
-              Settings.
-            </h1>
-
-            <p className="mt-4 max-w-xl text-sm leading-6 text-white/60 md:text-base">
-              Manage your account,
-              subscription, billing, and
-              Home Tech Vault preferences.
-            </p>
-          </div>
-
-          <Button
-            href="/settings/billing"
-            variant="secondary"
-          >
+      <PageHero
+        section="neutral"
+        eyebrow="Account Preferences"
+        title="Settings."
+        description="Manage your account, subscription, billing, and Home Tech Vault preferences."
+      >
+        {canManageBilling ? (
+          <Button href="/settings/billing">
             <WalletCards size={17} />
             Manage Billing
           </Button>
-        </div>
-      </section>
+        ) : billingManagedByHousehold ? (
+          <Button href="/family">
+            <WalletCards size={17} />
+            View Household
+          </Button>
+        ) : null}
+      </PageHero>
 
       <PageCard className="overflow-hidden p-0">
-        <div className="bg-[#111827] p-7 text-white md:p-9">
+        <div className="border-b border-border-subtle bg-gradient-to-br from-section-insights-soft via-surface-card to-surface-base p-7 md:p-9">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-[#C8A96A]">
-                {plan === "free" &&
-                !isAdmin ? (
-                  <ShieldCheck
-                    size={23}
-                  />
-                ) : (
-                  <Crown size={23} />
-                )}
-              </div>
+              <IconWell
+                icon={
+                  isFree && !isPlatformAdmin
+                    ? ShieldCheck
+                    : Crown
+                }
+                section="insights"
+                size="lg"
+              />
 
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
+                <p className="text-overline text-section-insights">
                   Current Plan
                 </p>
 
-                <h2 className="mt-2 text-3xl font-semibold tracking-[-0.04em]">
-                  {loading
+                <h2 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-text-primary">
+                  {permissionsLoading
                     ? "Loading plan..."
                     : planName}
                 </h2>
 
-                <p className="mt-3 max-w-xl text-sm leading-6 text-white/55">
-                  {loading
+                <p className="mt-3 max-w-xl text-sm leading-6 text-text-secondary">
+                  {permissionsLoading
                     ? "Checking your subscription information."
-                    : isAdmin
+                    : isPlatformAdmin
                       ? "All Home Tech Vault features are unlocked."
-                      : getPlanDescription(
-                          plan
-                        )}
+                      : getPlanDescription(plan)}
                 </p>
+
+                {roleDisplayName && (
+                  <p className="mt-3 text-sm font-semibold text-section-insights">
+                    Household Role: {roleDisplayName}
+                  </p>
+                )}
               </div>
             </div>
 
-            {!loading && (
+            {!permissionsLoading && (
               <span
                 className={`inline-flex w-fit items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold ${
                   hasActiveAccess
-                    ? "bg-emerald-400/10 text-emerald-300"
-                    : "bg-white/10 text-white/60"
+                    ? "bg-home-health-soft text-home-health"
+                    : "bg-surface-sunken text-text-secondary"
                 }`}
               >
                 <span
                   className={`h-2 w-2 rounded-full ${
                     hasActiveAccess
-                      ? "bg-emerald-400"
-                      : "bg-white/40"
+                      ? "bg-home-health"
+                      : "bg-text-tertiary"
                   }`}
                 />
 
-                {isAdmin
+                {isPlatformAdmin
                   ? "Master Access"
                   : subscriptionStatus}
               </span>
@@ -205,20 +200,25 @@ export default function SettingsPage() {
             <PlanDetail
               label="Plan"
               value={
-                loading
+                permissionsLoading
                   ? "Loading..."
-                  : isAdmin
+                  : isPlatformAdmin
                     ? "Master"
-                    : formatPlanName(
-                        plan
-                      )
+                    : planDisplayName
               }
             />
+
+            {roleDisplayName && (
+              <PlanDetail
+                label="Household Role"
+                value={roleDisplayName}
+              />
+            )}
 
             <PlanDetail
               label="Status"
               value={
-                loading
+                permissionsLoading
                   ? "Loading..."
                   : subscriptionStatus
               }
@@ -226,14 +226,14 @@ export default function SettingsPage() {
 
             <PlanDetail
               label={
-                status === "canceled"
+                effectiveStatus === "canceled"
                   ? "Access Ends"
                   : "Renewal Date"
               }
               value={
-                loading
+                permissionsLoading
                   ? "Loading..."
-                  : isAdmin
+                  : isPlatformAdmin
                     ? "No expiration"
                     : currentPeriodEnd
                       ? formatSubscriptionDate(
@@ -245,19 +245,22 @@ export default function SettingsPage() {
           </div>
 
           <div className="mt-7 flex flex-wrap gap-3">
-            <Button
-              href="/settings/billing"
-              variant="secondary"
-            >
-              <ArrowUpRight
-                size={17}
-              />
-              Billing Settings
-            </Button>
+            {canManageBilling && (
+              <Button
+                href="/settings/billing"
+                variant="secondary"
+              >
+                <ArrowUpRight
+                  size={17}
+                />
+                Billing Settings
+              </Button>
+            )}
 
-            {!loading &&
-              !isAdmin &&
-              plan === "free" && (
+            {!permissionsLoading &&
+              !isPlatformAdmin &&
+              isFree &&
+              !billingManagedByHousehold && (
                 <Button
                   href="/upgrade"
                   variant="secondary"
@@ -269,6 +272,13 @@ export default function SettingsPage() {
           </div>
         </div>
       </PageCard>
+
+      {!permissionsLoading &&
+        billingManagedByHousehold && (
+          <PageCard>
+            <PlanAccessSummary compact />
+          </PageCard>
+        )}
 
       <section className="grid gap-6 xl:grid-cols-2">
         <SettingsSection
@@ -290,17 +300,25 @@ export default function SettingsPage() {
             icon={Crown}
             label="Plan"
             value={
-              loading
+              permissionsLoading
                 ? "Loading..."
                 : planName
             }
           />
 
+          {roleDisplayName && (
+            <SettingsRow
+              icon={ShieldCheck}
+              label="Household Role"
+              value={roleDisplayName}
+            />
+          )}
+
           <SettingsRow
             icon={ShieldCheck}
             label="Status"
             value={
-              loading
+              permissionsLoading
                 ? "Loading..."
                 : subscriptionStatus
             }
@@ -344,7 +362,7 @@ export default function SettingsPage() {
             value="MM/DD/YYYY"
           />
 
-          <p className="mt-5 text-xs leading-5 text-neutral-400">
+          <p className="mt-5 text-xs leading-5 text-text-tertiary">
             Additional theme, currency,
             and date preferences can be
             added in a future update.
@@ -355,22 +373,22 @@ export default function SettingsPage() {
       <PageCard className="p-7 md:p-9">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex items-start gap-4">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
               <ShieldCheck
                 size={20}
               />
             </div>
 
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
+              <p className="text-overline text-section-insights">
                 Account Access
               </p>
 
-              <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[#111827]">
+              <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
                 Premium feature access
               </h2>
 
-              <p className="mt-3 max-w-3xl text-sm leading-7 text-neutral-500">
+              <p className="mt-3 max-w-3xl text-sm leading-7 text-text-secondary">
                 Your subscription controls
                 access to features such as
                 network discovery, premium
@@ -383,8 +401,8 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {!isAdmin &&
-            plan === "free" && (
+          {!isPlatformAdmin &&
+            isFree && (
               <Button
                 href="/upgrade"
                 variant="secondary"
@@ -416,20 +434,20 @@ function SettingsSection({
   return (
     <PageCard className="p-7 md:p-8">
       <div className="flex items-start gap-4">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
           <Icon size={20} />
         </div>
 
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
+          <p className="text-overline text-section-insights">
             {eyebrow}
           </p>
 
-          <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[#111827]">
+          <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
             {title}
           </h2>
 
-          <p className="mt-2 text-sm leading-6 text-neutral-500">
+          <p className="mt-2 text-sm leading-6 text-text-secondary">
             {description}
           </p>
         </div>
@@ -452,17 +470,17 @@ function SettingsRow({
   value: string;
 }) {
   return (
-    <div className="flex items-center gap-4 rounded-[22px] bg-[#F7F5EF] p-4">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-[#C8A96A] shadow-sm">
+    <div className="flex items-center gap-4 rounded-[22px] bg-surface-sunken p-4">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-border-subtle bg-surface-card text-charcoal shadow-[var(--shadow-sm)]">
         <Icon size={17} />
       </div>
 
       <div className="min-w-0 flex-1">
-        <p className="text-xs text-neutral-400">
+        <p className="text-xs text-text-tertiary">
           {label}
         </p>
 
-        <p className="mt-1 break-words text-sm font-semibold text-[#111827]">
+        <p className="mt-1 break-words text-sm font-semibold text-text-primary">
           {value}
         </p>
       </div>
@@ -522,71 +540,6 @@ function CalendarIcon({
       <path d="M3 10h18" />
     </svg>
   );
-}
-
-function formatPlanName(
-  plan: string
-) {
-  if (plan === "family") {
-    return "Family";
-  }
-
-  if (plan === "pro") {
-    return "Pro";
-  }
-
-  return "Free";
-}
-
-function getPlanDescription(
-  plan: string
-) {
-  if (plan === "family") {
-    return "Premium reports, insights, network discovery, and household features are unlocked.";
-  }
-
-  if (plan === "pro") {
-    return "Premium reports, insights, network discovery, and advanced tools are unlocked.";
-  }
-
-  return "You currently have access to the free Home Tech Vault features.";
-}
-
-function formatSubscriptionStatus(
-  status: string
-) {
-  if (
-    !status ||
-    status === "inactive"
-  ) {
-    return "Inactive";
-  }
-
-  if (
-    status === "past_due"
-  ) {
-    return "Past Due";
-  }
-
-  if (
-    status === "trialing"
-  ) {
-    return "Trial";
-  }
-
-  if (
-    status === "canceled"
-  ) {
-    return "Canceled";
-  }
-
-  return status
-    .replaceAll("_", " ")
-    .replace(
-      /\b\w/g,
-      (letter) =>
-        letter.toUpperCase()
-    );
 }
 
 function formatSubscriptionDate(

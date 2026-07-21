@@ -14,9 +14,13 @@ import {
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
-import { useDemoMode } from "@/hooks/useDemoMode";
-import { useSubscription } from "@/hooks/useSubscription";
-import { useHouseholdRole } from "@/hooks/useHouseholdRole";
+import { applyHouseholdScope } from "@/lib/data/householdScope";
+import {
+  getDefaultActivityTitle,
+  recordActivity,
+} from "@/lib/activity";
+import { usePermissions } from "@/hooks/usePermissions";
+import { FREE_DEVICE_LIMIT } from "@/lib/permissions/plans";
 
 import PageShell from "@/components/ui/PageShell";
 import PageTitle from "@/components/ui/PageTitle";
@@ -27,22 +31,14 @@ export default function AddDevicePage() {
   const router = useRouter();
 
   const {
-    isViewer,
-    canAdd,
-    loading: roleLoading,
-  } = useHouseholdRole();
-
-  const {
     user,
     isDemo,
-    loading: demoModeLoading,
-  } = useDemoMode();
-
-  const {
+    canCreate,
+    householdId: permissionsHouseholdId,
     deviceLimit,
     hasUnlimitedDevices,
-    loading: subscriptionLoading,
-  } = useSubscription();
+    loading: permissionsLoading,
+  } = usePermissions();
 
   const [deviceCount, setDeviceCount] =
     useState(0);
@@ -51,11 +47,6 @@ export default function AddDevicePage() {
     householdId,
     setHouseholdId,
   ] = useState<string | null>(null);
-
-  const [
-    hasFamilyHouseholdAccess,
-    setHasFamilyHouseholdAccess,
-  ] = useState(false);
 
   const [
     checkingDeviceLimit,
@@ -100,11 +91,7 @@ export default function AddDevicePage() {
 
   useEffect(() => {
     async function loadHouseholdAndDeviceCount() {
-      if (
-        demoModeLoading ||
-        subscriptionLoading ||
-        roleLoading
-      ) {
+      if (permissionsLoading) {
         return;
       }
 
@@ -115,70 +102,24 @@ export default function AddDevicePage() {
         if (isDemo || !user) {
           setHouseholdId(null);
           setDeviceCount(0);
-          setHasFamilyHouseholdAccess(false);
           return;
         }
 
-        const {
-          data: membership,
-          error: membershipError,
-        } = await supabase
-          .from("household_members")
-          .select("household_id")
-          .eq("user_id", user.id)
-          .limit(1)
-          .maybeSingle();
-
-        if (membershipError) {
-          throw membershipError;
-        }
-
-        const currentHouseholdId =
-          membership?.household_id || null;
-
         setHouseholdId(
-          currentHouseholdId
-        );
-
-        const {
-          data: familyAccess,
-          error: familyAccessError,
-        } = await supabase.rpc(
-          "current_household_has_family_access"
-        );
-
-        if (familyAccessError) {
-          console.error(
-            "Unable to check household Family access:",
-            familyAccessError
-          );
-        }
-
-        setHasFamilyHouseholdAccess(
-          familyAccess === true
+          permissionsHouseholdId
         );
 
         let countQuery =
-          supabase
-            .from("devices")
-            .select("*", {
-              count: "exact",
-              head: true,
-            });
-
-        if (currentHouseholdId) {
-          countQuery =
-            countQuery.eq(
-              "household_id",
-              currentHouseholdId
-            );
-        } else {
-          countQuery =
-            countQuery.eq(
-              "user_id",
-              user.id
-            );
-        }
+          applyHouseholdScope(
+            supabase
+              .from("devices")
+              .select("*", {
+                count: "exact",
+                head: true,
+              }),
+            permissionsHouseholdId,
+            user.id
+          );
 
         const {
           count,
@@ -210,23 +151,16 @@ export default function AddDevicePage() {
   }, [
     user,
     isDemo,
-    demoModeLoading,
-    subscriptionLoading,
-    roleLoading,
+    permissionsLoading,
+    permissionsHouseholdId,
   ]);
 
   const loading =
-    demoModeLoading ||
-    subscriptionLoading ||
-    roleLoading ||
+    permissionsLoading ||
     checkingDeviceLimit;
 
-  const householdHasUnlimitedDevices =
-    hasUnlimitedDevices ||
-    hasFamilyHouseholdAccess;
-
   const deviceLimitReached =
-    !householdHasUnlimitedDevices &&
+    !hasUnlimitedDevices &&
     deviceLimit !== null &&
     deviceCount >= deviceLimit;
 
@@ -247,7 +181,7 @@ export default function AddDevicePage() {
       return;
     }
 
-    if (!canAdd || isViewer) {
+    if (!canCreate) {
       setErrorMessage(
         "Viewer access is read-only. You cannot add devices."
       );
@@ -271,35 +205,63 @@ export default function AddDevicePage() {
     try {
       setSaving(true);
 
-      const { error } = await supabase
-        .from("devices")
-        .insert({
-          user_id: user.id,
-          household_id:
-            householdId,
-          device_name:
-            deviceName.trim(),
-          category:
-            category.trim() || null,
-          brand:
-            brand.trim() || null,
-          model_number:
-            modelNumber.trim() || null,
-          serial_number:
-            serialNumber.trim() || null,
-          purchase_date:
-            purchaseDate || null,
-          warranty_date:
-            warrantyDate || null,
-          purchase_price:
-            purchasePrice
-              ? Number(purchasePrice)
-              : null,
-          location:
-            location.trim() || null,
-          notes:
-            notes.trim() || null,
-        });
+      const locationsResult =
+        await applyHouseholdScope(
+          supabase
+            .from("devices")
+            .select("location"),
+          householdId,
+          user.id
+        );
+
+      const existingLocations = new Set(
+        (
+          (locationsResult.data ||
+            []) as {
+            location: string | null;
+          }[]
+        )
+          .map((row) =>
+            row.location?.trim().toLowerCase()
+          )
+          .filter(Boolean)
+      );
+
+      const trimmedLocation =
+        location.trim();
+
+      const { data: createdDevice, error } =
+        await supabase
+          .from("devices")
+          .insert({
+            user_id: user.id,
+            household_id:
+              householdId,
+            device_name:
+              deviceName.trim(),
+            category:
+              category.trim() || null,
+            brand:
+              brand.trim() || null,
+            model_number:
+              modelNumber.trim() || null,
+            serial_number:
+              serialNumber.trim() || null,
+            purchase_date:
+              purchaseDate || null,
+            warranty_date:
+              warrantyDate || null,
+            purchase_price:
+              purchasePrice
+                ? Number(purchasePrice)
+                : null,
+            location:
+              trimmedLocation || null,
+            notes:
+              notes.trim() || null,
+          })
+          .select("id")
+          .single();
 
       if (error) {
         if (
@@ -314,6 +276,62 @@ export default function AddDevicePage() {
         }
 
         throw error;
+      }
+
+      if (createdDevice?.id) {
+        const name =
+          deviceName.trim();
+
+        await recordActivity({
+          activityType: "device.added",
+          title:
+            getDefaultActivityTitle(
+              "device.added",
+              name
+            ),
+          description:
+            "Device saved to your vault.",
+          userId: user.id,
+          householdId,
+          deviceId: createdDevice.id,
+        });
+
+        if (warrantyDate) {
+          await recordActivity({
+            activityType: "warranty.added",
+            title:
+              getDefaultActivityTitle(
+                "warranty.added",
+                name
+              ),
+            description:
+              "Warranty coverage recorded on the device.",
+            userId: user.id,
+            householdId,
+            deviceId: createdDevice.id,
+          });
+        }
+
+        if (
+          trimmedLocation &&
+          !existingLocations.has(
+            trimmedLocation.toLowerCase()
+          )
+        ) {
+          await recordActivity({
+            activityType: "room.created",
+            title:
+              getDefaultActivityTitle(
+                "room.created",
+                trimmedLocation
+              ),
+            description:
+              "A new room was created when this device was assigned a location.",
+            userId: user.id,
+            householdId,
+            entityId: trimmedLocation,
+          });
+        }
       }
 
       router.push("/devices");
@@ -338,7 +356,7 @@ export default function AddDevicePage() {
     return (
       <PageShell>
         <PageCard className="flex min-h-64 items-center justify-center">
-          <div className="flex items-center gap-3 text-neutral-500">
+          <div className="flex items-center gap-3 text-text-secondary">
             <Loader2
               size={22}
               className="animate-spin"
@@ -361,15 +379,15 @@ export default function AddDevicePage() {
         />
 
         <PageCard className="text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
             <Laptop size={30} />
           </div>
 
-          <h2 className="mt-5 text-2xl font-bold text-[#111827]">
+          <h2 className="mt-5 text-2xl font-bold text-text-primary">
             Ready to add your own devices?
           </h2>
 
-          <p className="mx-auto mt-3 max-w-lg text-neutral-500">
+          <p className="mx-auto mt-3 max-w-lg text-text-secondary">
             Create a free Home Tech Vault account and save up to
             eight devices.
           </p>
@@ -389,11 +407,11 @@ export default function AddDevicePage() {
     return (
       <PageShell>
         <PageCard className="text-center">
-          <h1 className="text-2xl font-bold text-[#111827]">
+          <h1 className="text-2xl font-bold text-text-primary">
             Sign in to add a device
           </h1>
 
-          <p className="mt-3 text-neutral-500">
+          <p className="mt-3 text-text-secondary">
             Your device inventory is connected to your account.
           </p>
 
@@ -408,7 +426,7 @@ export default function AddDevicePage() {
     );
   }
 
-  if (isViewer || !canAdd) {
+  if (!canCreate) {
     return (
       <PageShell>
         <PageTitle
@@ -418,15 +436,15 @@ export default function AddDevicePage() {
         />
 
         <PageCard className="text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
             <Laptop size={30} />
           </div>
 
-          <h2 className="mt-5 text-2xl font-semibold text-[#111827]">
+          <h2 className="mt-5 text-2xl font-semibold text-text-primary">
             You cannot add devices
           </h2>
 
-          <p className="mx-auto mt-3 max-w-lg text-neutral-500">
+          <p className="mx-auto mt-3 max-w-lg text-text-secondary">
             Your household role is Viewer. Contact the household
             owner or an administrator if you need permission to add
             or edit information.
@@ -449,19 +467,19 @@ export default function AddDevicePage() {
         <PageTitle
           eyebrow="Device Limit Reached"
           title="Upgrade to add more devices"
-          description="Free accounts can store up to 8 devices. Upgrade to Pro for unlimited device tracking."
+          description={`Free accounts can store up to ${FREE_DEVICE_LIMIT} devices. Upgrade to Pro for unlimited device tracking.`}
         />
 
         <PageCard className="text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
             <Laptop size={30} />
           </div>
 
-          <h2 className="mt-5 text-2xl font-bold text-[#111827]">
-            You have used all 8 free device slots
+          <h2 className="mt-5 text-2xl font-bold text-text-primary">
+            You have used all {FREE_DEVICE_LIMIT} free device slots
           </h2>
 
-          <p className="mx-auto mt-3 max-w-lg text-neutral-500">
+          <p className="mx-auto mt-3 max-w-lg text-text-secondary">
             Your existing devices remain safe. Upgrade your
             account to continue adding devices.
           </p>
@@ -484,7 +502,7 @@ export default function AddDevicePage() {
         onClick={() =>
           router.push("/devices")
         }
-        className="mb-2 inline-flex items-center gap-2 text-sm font-semibold text-[#111827] hover:underline"
+        className="mb-2 inline-flex items-center gap-2 text-sm font-semibold text-text-primary hover:underline"
       >
         <ArrowLeft size={17} />
         Back to Devices
@@ -500,18 +518,18 @@ export default function AddDevicePage() {
         }
       />
 
-      {!householdHasUnlimitedDevices &&
+      {!hasUnlimitedDevices &&
         deviceLimit !== null && (
-          <PageCard className="border-[#D8C69D] bg-[#FFF8E8]">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8A6A2F]">
+          <PageCard className="border-warning/40 bg-warning-soft">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-achievement">
               Free Device Allowance
             </p>
 
-            <h2 className="mt-2 text-xl font-bold text-[#111827]">
+            <h2 className="mt-2 text-xl font-bold text-text-primary">
               {deviceCount} of {deviceLimit} devices used
             </h2>
 
-            <p className="mt-2 text-sm text-neutral-600">
+            <p className="mt-2 text-sm text-text-secondary">
               You have{" "}
               {Math.max(
                 deviceLimit -
@@ -679,7 +697,7 @@ export default function AddDevicePage() {
             />
           </FormField>
 
-          <div className="flex flex-col-reverse gap-3 border-t border-[#E8E2D6] pt-6 sm:flex-row sm:justify-end">
+          <div className="flex flex-col-reverse gap-3 border-t border-border-subtle pt-6 sm:flex-row sm:justify-end">
             <Button
               type="button"
               variant="secondary"
@@ -715,7 +733,7 @@ export default function AddDevicePage() {
 }
 
 const inputClassName =
-  "w-full rounded-2xl border border-[#E8E2D6] bg-white px-4 py-3.5 text-[#111827] outline-none transition placeholder:text-neutral-400 focus:border-[#C8A96A] focus:ring-2 focus:ring-[#C8A96A]/20";
+  "w-full rounded-2xl border border-border-subtle bg-white px-4 py-3.5 text-text-primary outline-none transition placeholder:text-text-tertiary focus:border-interaction focus:ring-2 focus:ring-interaction/15";
 
 function FormField({
   label,
@@ -728,7 +746,7 @@ function FormField({
 }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-sm font-semibold text-[#111827]">
+      <span className="mb-2 block text-sm font-semibold text-text-primary">
         {label}
 
         {required && (

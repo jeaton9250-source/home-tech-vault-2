@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
-import { useDemoMode } from "@/hooks/useDemoMode";
+import { usePermissions } from "@/hooks/usePermissions";
 
 import PageShell from "@/components/ui/PageShell";
 import PageCard from "@/components/ui/PageCard";
@@ -55,8 +55,8 @@ export default function ContactPage() {
   const {
     user,
     isDemo,
-    loading: demoLoading,
-  } = useDemoMode();
+    loading: permissionsLoading,
+  } = usePermissions();
 
   const [form, setForm] =
     useState<FormState>(initialForm);
@@ -81,7 +81,7 @@ export default function ContactPage() {
 
   useEffect(() => {
     async function loadContactDetails() {
-      if (demoLoading) {
+      if (permissionsLoading) {
         return;
       }
 
@@ -124,7 +124,7 @@ export default function ContactPage() {
   }, [
     user,
     isDemo,
-    demoLoading,
+    permissionsLoading,
   ]);
 
   function updateField(
@@ -220,7 +220,7 @@ export default function ContactPage() {
   }
 
   const loading =
-    demoLoading ||
+    permissionsLoading ||
     loadingProfile;
 
   const firstName =
@@ -229,10 +229,10 @@ export default function ContactPage() {
 
   return (
     <PageShell>
-      <section className="overflow-hidden rounded-[32px] bg-[#111827] text-white shadow-sm">
+      <section className="htv-hero-band overflow-hidden shadow-sm">
         <div className="grid gap-8 px-6 py-9 md:px-10 md:py-11 lg:grid-cols-[1fr_auto] lg:items-end">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#C8A96A]">
+            <p className="text-overline text-charcoal-soft">
               Personal Support
             </p>
 
@@ -240,7 +240,7 @@ export default function ContactPage() {
               Let’s figure it out together.
             </h1>
 
-            <p className="mt-4 max-w-2xl text-sm leading-7 text-white/60 md:text-base">
+            <p className="mt-4 max-w-2xl text-sm leading-7 text-text-secondary md:text-base">
               Questions, ideas, bugs, and
               honest feedback are all
               welcome. Your message goes to
@@ -250,7 +250,7 @@ export default function ContactPage() {
           </div>
 
           <div className="flex items-center gap-3 rounded-[24px] bg-white/10 px-4 py-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 text-[#C8A96A]">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border-subtle bg-surface-card text-section-insights shadow-[var(--shadow-sm)]">
               <UserRound size={20} />
             </div>
 
@@ -259,7 +259,7 @@ export default function ContactPage() {
                 You’re reaching Jason
               </p>
 
-              <p className="mt-0.5 text-xs text-white/50">
+              <p className="mt-0.5 text-xs text-text-tertiary">
                 Founder of Home Tech Vault
               </p>
             </div>
@@ -268,18 +268,18 @@ export default function ContactPage() {
       </section>
 
       {isDemo && (
-        <section className="rounded-3xl border border-[#D8C69D] bg-[#FFF8E8] p-5">
+        <section className="rounded-3xl border border-warning/40 bg-warning-soft p-5">
           <div className="flex items-start gap-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#111827] text-[#C8A96A]">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-charcoal text-surface-card">
               <Sparkles size={18} />
             </div>
 
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A6A2F]">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-achievement">
                 Demo Mode
               </p>
 
-              <p className="mt-2 text-sm leading-6 text-neutral-600">
+              <p className="mt-2 text-sm leading-6 text-text-secondary">
                 You can still send a
                 question or share feedback
                 while exploring the demo.
@@ -292,22 +292,22 @@ export default function ContactPage() {
       <section className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
         <PageCard className="p-6 md:p-8">
           <div className="flex items-start gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[20px] bg-[#F7F5EF] text-[#C8A96A]">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[20px] border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
               <MessageSquare size={22} />
             </div>
 
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
+              <p className="text-overline text-charcoal-soft">
                 Send a Message
               </p>
 
-              <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[#111827]">
+              <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
                 {firstName
                   ? `What can I help with, ${firstName}?`
                   : "What can I help with?"}
               </h2>
 
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-500">
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-text-secondary">
                 Tell me what happened,
                 what you were trying to do,
                 or what would make the app
@@ -317,7 +317,7 @@ export default function ContactPage() {
           </div>
 
           {loading ? (
-            <div className="mt-8 flex min-h-52 items-center justify-center rounded-[24px] bg-[#F7F5EF] text-neutral-500">
+            <div className="mt-8 flex min-h-52 items-center justify-center rounded-[24px] bg-surface-sunken text-text-secondary">
               <Loader2
                 size={21}
                 className="mr-3 animate-spin"
@@ -361,7 +361,7 @@ export default function ContactPage() {
               </div>
 
               <label className="block">
-                <span className="mb-2 block text-sm font-semibold text-[#111827]">
+                <span className="mb-2 block text-sm font-semibold text-text-primary">
                   What is this about?
                 </span>
 
@@ -373,7 +373,7 @@ export default function ContactPage() {
                       event.target.value
                     )
                   }
-                  className="w-full rounded-2xl border border-[#E8E2D6] bg-white px-4 py-3.5 text-sm text-[#111827] outline-none transition focus:border-[#C8A96A] focus:ring-4 focus:ring-[#C8A96A]/10"
+                  className="w-full rounded-2xl border border-border-subtle bg-white px-4 py-3.5 text-sm text-text-primary outline-none transition focus:border-interaction focus:ring-4 focus:ring-interaction/10"
                 >
                   <option>
                     General Question
@@ -423,7 +423,7 @@ export default function ContactPage() {
               />
 
               <label className="block">
-                <span className="mb-2 block text-sm font-semibold text-[#111827]">
+                <span className="mb-2 block text-sm font-semibold text-text-primary">
                   Tell me more
                 </span>
 
@@ -438,7 +438,7 @@ export default function ContactPage() {
                   placeholder="Share as much detail as you can. Screens, error messages, and what you expected to happen are especially helpful."
                   required
                   rows={8}
-                  className="w-full resize-y rounded-2xl border border-[#E8E2D6] bg-white px-4 py-3.5 text-sm leading-6 text-[#111827] outline-none transition placeholder:text-neutral-400 focus:border-[#C8A96A] focus:ring-4 focus:ring-[#C8A96A]/10"
+                  className="w-full resize-y rounded-2xl border border-border-subtle bg-white px-4 py-3.5 text-sm leading-6 text-text-primary outline-none transition placeholder:text-text-tertiary focus:border-interaction focus:ring-4 focus:ring-interaction/10"
                 />
               </label>
 
@@ -459,8 +459,8 @@ export default function ContactPage() {
                 </div>
               )}
 
-              <div className="flex flex-col gap-3 border-t border-[#E8E2D6] pt-5 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-xs leading-5 text-neutral-400">
+              <div className="flex flex-col gap-3 border-t border-border-subtle pt-5 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-xs leading-5 text-text-tertiary">
                   Please do not include
                   passwords or full payment
                   information.
@@ -489,12 +489,12 @@ export default function ContactPage() {
         </PageCard>
 
         <div className="space-y-6">
-          <PageCard className="!bg-[#111827] p-7 !text-white md:p-8">
-            <div className="flex h-12 w-12 items-center justify-center rounded-[20px] bg-white/10 text-[#C8A96A]">
+          <PageCard className="overflow-hidden p-0"><div className="htv-plan-band p-7 text-text-primary md:p-8">
+            <div className="flex h-12 w-12 items-center justify-center rounded-[20px] bg-white/10 text-interaction">
               <Mail size={21} />
             </div>
 
-            <p className="mt-6 text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
+            <p className="mt-6 text-overline text-charcoal-soft">
               A Note From Me
             </p>
 
@@ -502,7 +502,7 @@ export default function ContactPage() {
               I read every message.
             </h2>
 
-            <p className="mt-3 text-sm leading-7 text-white/60">
+            <p className="mt-3 text-sm leading-7 text-text-secondary">
               Home Tech Vault started as
               an idea to make home
               technology easier to manage.
@@ -511,17 +511,18 @@ export default function ContactPage() {
               build next.
             </p>
 
-            <p className="mt-5 text-sm font-semibold text-white">
+            <p className="mt-5 text-sm font-semibold text-text-primary">
               — Jason
             </p>
 
             <a
               href="mailto:support@hometechvault.com"
-              className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#C8A96A] transition hover:text-white"
+              className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-interaction transition hover:text-interaction-hover"
             >
               support@hometechvault.com
               <ArrowRight size={15} />
             </a>
+          </div>
           </PageCard>
 
           <PageCard className="p-6 md:p-7">
@@ -545,11 +546,11 @@ export default function ContactPage() {
           </PageCard>
 
           <PageCard className="p-6 md:p-7">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
+            <p className="text-overline text-charcoal-soft">
               Quick Help
             </p>
 
-            <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[#111827]">
+            <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
               You may find it here
             </h2>
 
@@ -598,7 +599,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-sm font-semibold text-[#111827]">
+      <span className="mb-2 block text-sm font-semibold text-text-primary">
         {label}
       </span>
 
@@ -612,7 +613,7 @@ function Field({
         }
         placeholder={placeholder}
         required={required}
-        className="w-full rounded-2xl border border-[#E8E2D6] bg-white px-4 py-3.5 text-sm text-[#111827] outline-none transition placeholder:text-neutral-400 focus:border-[#C8A96A] focus:ring-4 focus:ring-[#C8A96A]/10"
+        className="w-full rounded-2xl border border-border-subtle bg-white px-4 py-3.5 text-sm text-text-primary outline-none transition placeholder:text-text-tertiary focus:border-interaction focus:ring-4 focus:ring-interaction/10"
       />
     </label>
   );
@@ -628,17 +629,17 @@ function SupportItem({
   description: string;
 }) {
   return (
-    <div className="flex items-start gap-4 border-b border-[#E8E2D6] py-5 first:pt-0 last:border-b-0 last:pb-0">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+    <div className="flex items-start gap-4 border-b border-border-subtle py-5 first:pt-0 last:border-b-0 last:pb-0">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
         <Icon size={18} />
       </div>
 
       <div>
-        <p className="font-semibold text-[#111827]">
+        <p className="font-semibold text-text-primary">
           {title}
         </p>
 
-        <p className="mt-1 text-sm leading-6 text-neutral-500">
+        <p className="mt-1 text-sm leading-6 text-text-secondary">
           {description}
         </p>
       </div>
@@ -656,13 +657,13 @@ function QuickLink({
   return (
     <Link
       href={href}
-      className="group flex items-center justify-between rounded-[20px] bg-[#F7F5EF] px-4 py-3.5 text-sm font-semibold text-[#111827] transition hover:bg-[#EEEAE1]"
+      className="group flex items-center justify-between rounded-[20px] bg-surface-sunken px-4 py-3.5 text-sm font-semibold text-text-primary transition hover:bg-[#EEEAE1]"
     >
       {label}
 
       <ArrowRight
         size={15}
-        className="text-neutral-400 transition group-hover:translate-x-0.5 group-hover:text-[#111827]"
+        className="text-text-tertiary transition group-hover:translate-x-0.5 group-hover:text-text-primary"
       />
     </Link>
   );

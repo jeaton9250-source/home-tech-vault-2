@@ -42,31 +42,31 @@ export default function SubscriptionCard({
   );
 
   return (
-    <article className="flex h-full flex-col rounded-[28px] border border-[#E8E2D6] bg-white p-6 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-lg">
+    <article className="flex h-full flex-col rounded-[var(--radius-card)] border border-border-subtle bg-white p-6 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-lg">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
+          <p className="text-overline text-charcoal-soft">
             {subscription.category ||
               "Subscription"}
           </p>
 
-          <h2 className="mt-2 truncate text-2xl font-bold text-[#111827]">
+          <h2 className="mt-2 truncate text-2xl font-bold text-text-primary">
             {subscription.service_name}
           </h2>
         </div>
 
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
           <CreditCard size={23} />
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl bg-[#F7F5EF] p-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#C8A96A]">
+      <div className="mt-6 rounded-2xl bg-surface-sunken p-5">
+        <p className="text-overline text-charcoal-soft">
           Monthly Cost
         </p>
 
         <div className="mt-2 flex items-end gap-2">
-          <p className="text-3xl font-bold text-[#111827]">
+          <p className="text-3xl font-bold text-text-primary">
             $
             {monthlyCost.toLocaleString(
               undefined,
@@ -77,15 +77,15 @@ export default function SubscriptionCard({
             )}
           </p>
 
-          <span className="pb-1 text-sm text-neutral-500">
+          <span className="pb-1 text-sm text-text-secondary">
             / month
           </span>
         </div>
       </div>
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
-        <div className="rounded-2xl border border-[#E8E2D6] p-4">
-          <div className="flex items-center gap-2 text-neutral-400">
+        <div className="rounded-2xl border border-border-subtle p-4">
+          <div className="flex items-center gap-2 text-text-tertiary">
             <Repeat2 size={15} />
 
             <p className="text-xs font-semibold uppercase tracking-[0.14em]">
@@ -93,14 +93,14 @@ export default function SubscriptionCard({
             </p>
           </div>
 
-          <p className="mt-2 text-sm font-semibold text-[#111827]">
+          <p className="mt-2 text-sm font-semibold text-text-primary">
             {subscription.billing_cycle ||
               "Not added"}
           </p>
         </div>
 
-        <div className="rounded-2xl border border-[#E8E2D6] p-4">
-          <div className="flex items-center gap-2 text-neutral-400">
+        <div className="rounded-2xl border border-border-subtle p-4">
+          <div className="flex items-center gap-2 text-text-tertiary">
             <CalendarDays size={15} />
 
             <p className="text-xs font-semibold uppercase tracking-[0.14em]">
@@ -108,7 +108,7 @@ export default function SubscriptionCard({
             </p>
           </div>
 
-          <p className="mt-2 text-sm font-semibold text-[#111827]">
+          <p className="mt-2 text-sm font-semibold text-text-primary">
             {formatRenewalDate(
               subscription.renewal_date
             )}
@@ -117,8 +117,8 @@ export default function SubscriptionCard({
       </div>
 
       {subscription.notes && (
-        <div className="mt-5 rounded-2xl border border-[#E8E2D6] p-4">
-          <div className="flex items-center gap-2 text-neutral-400">
+        <div className="mt-5 rounded-2xl border border-border-subtle p-4">
+          <div className="flex items-center gap-2 text-text-tertiary">
             <StickyNote size={15} />
 
             <p className="text-xs font-semibold uppercase tracking-[0.14em]">
@@ -126,7 +126,7 @@ export default function SubscriptionCard({
             </p>
           </div>
 
-          <p className="mt-2 text-sm leading-6 text-neutral-600">
+          <p className="mt-2 text-sm leading-6 text-text-secondary">
             {subscription.notes}
           </p>
         </div>
@@ -134,18 +134,18 @@ export default function SubscriptionCard({
 
       <div className="mt-auto pt-6">
         {viewerOnly ? (
-          <div className="flex items-start gap-3 rounded-2xl border border-[#E8E2D6] bg-[#F7F5EF] p-4">
+          <div className="flex items-start gap-3 rounded-2xl border border-border-subtle bg-surface-sunken p-4">
             <Eye
               size={18}
-              className="mt-0.5 shrink-0 text-[#C8A96A]"
+              className="mt-0.5 shrink-0 text-interaction"
             />
 
             <div>
-              <p className="text-sm font-semibold text-[#111827]">
+              <p className="text-sm font-semibold text-text-primary">
                 Viewer access
               </p>
 
-              <p className="mt-1 text-sm leading-5 text-neutral-500">
+              <p className="mt-1 text-sm leading-5 text-text-secondary">
                 This subscription is
                 read-only. Viewers cannot
                 edit or delete records.
@@ -153,7 +153,7 @@ export default function SubscriptionCard({
             </div>
           </div>
         ) : (
-          <div className="flex flex-wrap gap-3 border-t border-[#E8E2D6] pt-5">
+          <div className="flex flex-wrap gap-3 border-t border-border-subtle pt-5">
             {canEdit && (
               <Link
                 href={
@@ -161,7 +161,7 @@ export default function SubscriptionCard({
                   subscription.id +
                   "/edit"
                 }
-                className="inline-flex items-center gap-2 rounded-xl bg-[#111827] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#263044]"
+                className="inline-flex items-center gap-2 rounded-xl bg-charcoal px-4 py-2.5 text-sm font-semibold text-surface-card transition hover:bg-charcoal-hover"
               >
                 <Edit3 size={16} />
                 Edit
@@ -177,7 +177,7 @@ export default function SubscriptionCard({
             )}
 
             {!canEdit && !canDelete && (
-              <div className="rounded-2xl bg-[#F7F5EF] p-4 text-sm text-neutral-500">
+              <div className="rounded-2xl bg-surface-sunken p-4 text-sm text-text-secondary">
                 You do not have permission
                 to change this subscription.
               </div>

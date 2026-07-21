@@ -1,12 +1,23 @@
+import { cn } from "@/lib/design-system/cn";
+
 type CardProps = {
   children: React.ReactNode;
   className?: string;
+  interactive?: boolean;
 };
 
-export default function Card({ children, className = "" }: CardProps) {
+export default function Card({
+  children,
+  className = "",
+  interactive = false,
+}: CardProps) {
   return (
     <div
-      className={`rounded-[32px] border border-[#E8E2D6] bg-white/90 p-6 shadow-[0_18px_50px_rgba(17,24,39,0.06)] backdrop-blur ${className}`}
+      className={cn(
+        "rounded-[var(--radius-card)] border border-border-subtle bg-surface-card p-6 shadow-sm",
+        interactive && "htv-card-interactive",
+        className
+      )}
     >
       {children}
     </div>

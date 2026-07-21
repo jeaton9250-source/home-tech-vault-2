@@ -1,39 +1,80 @@
 "use client";
 
 import jsPDF from "jspdf";
+
 import { supabase } from "@/lib/supabase";
+import { loadAuditData } from "@/lib/data/auditData";
 import { calculateTechnologyScore } from "@/lib/calculateTechnologyScore";
+import { usePermissions } from "@/hooks/usePermissions";
+
+type AuditDevice = {
+  serial_number?: string | null;
+  warranty_date?: string | null;
+  photo_url?: string | null;
+  purchase_price?: number | null;
+};
+
+type AuditSubscription = {
+  monthly_cost?: number | null;
+};
 
 export default function DownloadAuditPdfButton() {
+  const {
+    user,
+    householdId,
+    householdOwnerId,
+  } = usePermissions();
+
   async function downloadPdf() {
-    const { data: devices } = await supabase.from("devices").select("*");
-    const { data: subscriptions } = await supabase.from("subscriptions").select("*");
-    const { data: documents } = await supabase.from("documents").select("*");
-    const { data: network } = await supabase
-      .from("network_info")
-      .select("*")
-      .limit(1)
-      .maybeSingle();
+    if (!user) {
+      return;
+    }
 
-    const deviceList = devices ?? [];
-    const subscriptionList = subscriptions ?? [];
-    const documentList = documents ?? [];
+    const audit = await loadAuditData(
+      supabase,
+      user.id,
+      householdId,
+      householdOwnerId
+    );
 
-    const score = calculateTechnologyScore(deviceList);
+    const deviceList =
+      audit.devices as AuditDevice[];
+    const subscriptionList =
+      audit.subscriptions as AuditSubscription[];
+    const documentList = audit.documents;
+    const network = audit.network;
+
+    const score = calculateTechnologyScore(
+      deviceList as Parameters<
+        typeof calculateTechnologyScore
+      >[0]
+    );
 
     const totalValue = deviceList.reduce(
-      (sum, device) => sum + Number(device.purchase_price || 0),
+      (sum, device) =>
+        sum +
+        Number(device.purchase_price || 0),
       0
     );
 
-    const monthlySpend = subscriptionList.reduce(
-      (sum, sub) => sum + Number(sub.monthly_cost || 0),
-      0
-    );
+    const monthlySpend =
+      subscriptionList.reduce(
+        (sum, sub) =>
+          sum +
+          Number(sub.monthly_cost || 0),
+        0
+      );
 
-    const missingSerials = deviceList.filter((d) => !d.serial_number);
-    const missingWarranties = deviceList.filter((d) => !d.warranty_date);
-    const missingPhotos = deviceList.filter((d) => !d.photo_url);
+    const missingSerials = deviceList.filter(
+      (device) => !device.serial_number
+    );
+    const missingWarranties =
+      deviceList.filter(
+        (device) => !device.warranty_date
+      );
+    const missingPhotos = deviceList.filter(
+      (device) => !device.photo_url
+    );
 
     const pdf = new jsPDF();
 
@@ -45,28 +86,72 @@ export default function DownloadAuditPdfButton() {
     pdf.text("Home Tech Vault", 14, 18);
 
     pdf.setFontSize(11);
-    pdf.text("Professional Technology Audit Report", 14, 29);
+    pdf.text(
+      "Professional Technology Audit Report",
+      14,
+      29
+    );
 
     pdf.setTextColor(15, 23, 42);
     pdf.setFontSize(18);
     pdf.text("Technology Overview", 14, 55);
 
     pdf.setFontSize(12);
-    pdf.text(`Technology Score: ${score}/100`, 14, 70);
-    pdf.text(`Devices Tracked: ${deviceList.length}`, 14, 80);
-    pdf.text(`Documents Stored: ${documentList.length}`, 14, 90);
-    pdf.text(`Estimated Technology Value: $${totalValue.toFixed(2)}`, 14, 100);
-    pdf.text(`Monthly Subscription Spend: $${monthlySpend.toFixed(2)}`, 14, 110);
-    pdf.text(`Yearly Subscription Spend: $${(monthlySpend * 12).toFixed(2)}`, 14, 120);
-    pdf.text(`Network Status: ${network ? "Documented" : "Missing"}`, 14, 130);
+    pdf.text(
+      `Technology Score: ${score}/100`,
+      14,
+      70
+    );
+    pdf.text(
+      `Devices Tracked: ${deviceList.length}`,
+      14,
+      80
+    );
+    pdf.text(
+      `Documents Stored: ${documentList.length}`,
+      14,
+      90
+    );
+    pdf.text(
+      `Estimated Technology Value: $${totalValue.toFixed(2)}`,
+      14,
+      100
+    );
+    pdf.text(
+      `Monthly Subscription Spend: $${monthlySpend.toFixed(2)}`,
+      14,
+      110
+    );
+    pdf.text(
+      `Yearly Subscription Spend: $${(monthlySpend * 12).toFixed(2)}`,
+      14,
+      120
+    );
+    pdf.text(
+      `Network Status: ${network ? "Documented" : "Missing"}`,
+      14,
+      130
+    );
 
     pdf.setFontSize(18);
     pdf.text("Items Needing Attention", 14, 155);
 
     pdf.setFontSize(12);
-    pdf.text(`Missing Serial Numbers: ${missingSerials.length}`, 14, 170);
-    pdf.text(`Missing Warranty Dates: ${missingWarranties.length}`, 14, 180);
-    pdf.text(`Missing Device Photos: ${missingPhotos.length}`, 14, 190);
+    pdf.text(
+      `Missing Serial Numbers: ${missingSerials.length}`,
+      14,
+      170
+    );
+    pdf.text(
+      `Missing Warranty Dates: ${missingWarranties.length}`,
+      14,
+      180
+    );
+    pdf.text(
+      `Missing Device Photos: ${missingPhotos.length}`,
+      14,
+      190
+    );
 
     pdf.setFontSize(18);
     pdf.text("Recommended Next Steps", 14, 215);
@@ -98,7 +183,7 @@ export default function DownloadAuditPdfButton() {
   return (
     <button
       onClick={downloadPdf}
-      className="bg-blue-950 text-white px-6 py-3 rounded-xl"
+      className="bg-charcoal text-surface-card px-6 py-3 rounded-xl"
     >
       Download Professional PDF
     </button>

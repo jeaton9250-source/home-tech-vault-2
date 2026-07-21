@@ -9,6 +9,16 @@ import {
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
+import {
+  applyHouseholdMutationScope,
+  applyHouseholdScope,
+} from "@/lib/data/householdScope";
+import {
+  getDefaultActivityTitle,
+  recordActivity,
+} from "@/lib/activity";
+import { usePermissions } from "@/hooks/usePermissions";
+
 import PageShell from "@/components/ui/PageShell";
 import PageTitle from "@/components/ui/PageTitle";
 import PageCard from "@/components/ui/PageCard";
@@ -44,6 +54,12 @@ export default function EditDevicePage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
 
+  const {
+    user,
+    householdId,
+    loading: permissionsLoading,
+  } = usePermissions();
+
   const [form, setForm] = useState<DeviceForm>(emptyForm);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -51,6 +67,10 @@ export default function EditDevicePage() {
 
   useEffect(() => {
     async function loadDevice() {
+      if (permissionsLoading) {
+        return;
+      }
+
       try {
         setLoading(true);
         setErrorMessage("");
@@ -61,26 +81,20 @@ export default function EditDevicePage() {
           throw new Error("Invalid device ID.");
         }
 
-        const {
-          data: { user },
-          error: userError,
-        } = await supabase.auth.getUser();
-
-        if (userError) {
-          throw userError;
-        }
-
         if (!user) {
           router.push("/login");
           return;
         }
 
-        const { data, error } = await supabase
-          .from("devices")
-          .select("*")
-          .eq("id", deviceId)
-          .eq("user_id", user.id)
-          .maybeSingle();
+        const { data, error } =
+          await applyHouseholdScope(
+            supabase
+              .from("devices")
+              .select("*")
+              .eq("id", deviceId),
+            householdId,
+            user.id
+          ).maybeSingle();
 
         if (error) {
           throw error;
@@ -119,8 +133,14 @@ export default function EditDevicePage() {
       }
     }
 
-    loadDevice();
-  }, [params.id, router]);
+    void loadDevice();
+  }, [
+    params.id,
+    router,
+    user,
+    householdId,
+    permissionsLoading,
+  ]);
 
   function updateField(
     field: keyof DeviceForm,
@@ -142,44 +162,78 @@ export default function EditDevicePage() {
       return;
     }
 
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+
     try {
       setSaving(true);
 
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
-
-      if (userError) {
-        throw userError;
-      }
-
-      if (!user) {
-        router.push("/login");
-        return;
-      }
-
-      const { error } = await supabase
-        .from("devices")
-        .update({
-          device_name: form.device_name.trim(),
-          category: form.category.trim() || null,
-          brand: form.brand.trim() || null,
-          model_number: form.model_number.trim() || null,
-          serial_number: form.serial_number.trim() || null,
-          purchase_date: form.purchase_date || null,
-          warranty_date: form.warranty_date || null,
-          purchase_price: form.purchase_price
-            ? Number(form.purchase_price)
-            : null,
-          location: form.location.trim() || null,
-          notes: form.notes.trim() || null,
-        })
-        .eq("id", params.id)
-        .eq("user_id", user.id);
+      const { error } =
+        await applyHouseholdMutationScope(
+          supabase
+            .from("devices")
+            .update({
+              device_name:
+                form.device_name.trim(),
+              category:
+                form.category.trim() || null,
+              brand:
+                form.brand.trim() || null,
+              model_number:
+                form.model_number.trim() ||
+                null,
+              serial_number:
+                form.serial_number.trim() ||
+                null,
+              purchase_date:
+                form.purchase_date || null,
+              warranty_date:
+                form.warranty_date || null,
+              purchase_price: form.purchase_price
+                ? Number(form.purchase_price)
+                : null,
+              location:
+                form.location.trim() || null,
+              notes:
+                form.notes.trim() || null,
+            })
+            .eq("id", params.id),
+          householdId,
+          user.id
+        );
 
       if (error) {
         throw error;
+      }
+
+      await recordActivity({
+        activityType: "device.edited",
+        title: getDefaultActivityTitle(
+          "device.edited",
+          form.device_name.trim()
+        ),
+        description:
+          "Device details were updated.",
+        userId: user.id,
+        householdId,
+        deviceId: params.id as string,
+      });
+
+      if (form.warranty_date) {
+        await recordActivity({
+          activityType: "warranty.added",
+          title: getDefaultActivityTitle(
+            "warranty.added",
+            form.device_name.trim()
+          ),
+          description:
+            "Warranty information was updated on this device.",
+          userId: user.id,
+          householdId,
+          deviceId: params.id as string,
+        });
       }
 
       alert("Device updated successfully.");
@@ -202,7 +256,7 @@ export default function EditDevicePage() {
     return (
       <PageShell>
         <PageCard className="flex min-h-64 items-center justify-center">
-          <div className="flex items-center gap-3 text-neutral-500">
+          <div className="flex items-center gap-3 text-text-secondary">
             <Loader2 className="animate-spin" size={22} />
             Loading device...
           </div>
@@ -343,7 +397,7 @@ export default function EditDevicePage() {
 
           <div className="md:col-span-2">
             <label className="block">
-              <span className="mb-2 block text-sm font-semibold text-[#111827]">
+              <span className="mb-2 block text-sm font-semibold text-text-primary">
                 Notes
               </span>
 
@@ -353,12 +407,12 @@ export default function EditDevicePage() {
                   updateField("notes", event.target.value)
                 }
                 placeholder="Add notes about this device..."
-                className="min-h-32 w-full resize-y rounded-xl border border-[#E8E2D6] bg-white px-4 py-3 text-[#111827] outline-none focus:border-[#C8A96A] focus:ring-2 focus:ring-[#C8A96A]/20"
+                className="min-h-32 w-full resize-y rounded-xl border border-border-subtle bg-white px-4 py-3 text-text-primary outline-none focus:border-interaction focus:ring-2 focus:ring-interaction/15"
               />
             </label>
           </div>
 
-          <div className="flex flex-wrap gap-3 border-t border-[#E8E2D6] pt-6 md:col-span-2">
+          <div className="flex flex-wrap gap-3 border-t border-border-subtle pt-6 md:col-span-2">
             <Button
               type="submit"
               disabled={saving}
@@ -413,7 +467,7 @@ function FormInput({
 }: FormInputProps) {
   return (
     <label className="block">
-      <span className="mb-2 block text-sm font-semibold text-[#111827]">
+      <span className="mb-2 block text-sm font-semibold text-text-primary">
         {label}
       </span>
 
@@ -427,7 +481,7 @@ function FormInput({
           onChange(event.target.value)
         }
         placeholder={placeholder}
-        className="w-full rounded-xl border border-[#E8E2D6] bg-white px-4 py-3 text-[#111827] outline-none focus:border-[#C8A96A] focus:ring-2 focus:ring-[#C8A96A]/20"
+        className="w-full rounded-xl border border-border-subtle bg-white px-4 py-3 text-text-primary outline-none focus:border-interaction focus:ring-2 focus:ring-interaction/15"
       />
     </label>
   );

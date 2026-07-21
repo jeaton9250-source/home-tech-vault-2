@@ -12,7 +12,7 @@ export default function SmartAlertCard({
   const styles = {
     warning: "bg-yellow-50 border-yellow-200 text-yellow-900",
     success: "bg-green-50 border-green-200 text-green-900",
-    info: "bg-blue-50 border-blue-200 text-blue-900",
+    info: "bg-interaction-soft border-interaction/30 text-interaction",
   };
 
   return (

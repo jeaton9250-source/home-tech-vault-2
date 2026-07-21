@@ -27,16 +27,17 @@ import {
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
+import { applyHouseholdScope } from "@/lib/data/householdScope";
 import type {
   Device as BaseDevice,
 } from "@/lib/calculateTechnologyScore";
 import { demoDevices } from "@/lib/demoData";
 
 import { usePermissions } from "@/hooks/usePermissions";
-import { useSubscription } from "@/hooks/useSubscription";
 
 import PageShell from "@/components/ui/PageShell";
 import PageCard from "@/components/ui/PageCard";
+import PageHero from "@/components/ui/PageHero";
 import Button from "@/components/ui/Button";
 import {
   ViewerBanner,
@@ -69,21 +70,12 @@ export default function DevicesPage() {
   const {
     user,
     isDemo,
-    isViewer,
+    householdId,
     canCreate,
-    loading: permissionsLoading,
-  } = usePermissions();
-
-  const {
     deviceLimit,
     hasUnlimitedDevices,
-    loading: subscriptionLoading,
-  } = useSubscription();
-
-  const [
-    hasFamilyHouseholdAccess,
-    setHasFamilyHouseholdAccess,
-  ] = useState(false);
+    loading: permissionsLoading,
+  } = usePermissions();
 
   const [devices, setDevices] =
     useState<DeviceRecord[]>([]);
@@ -179,67 +171,18 @@ export default function DevicesPage() {
           }
 
           setDevices(sampleDevices);
-          setHasFamilyHouseholdAccess(
-            false
-          );
 
           return;
         }
 
-        const {
-          data: membership,
-          error: membershipError,
-        } = await supabase
-          .from("household_members")
-          .select("household_id")
-          .eq("user_id", user.id)
-          .limit(1)
-          .maybeSingle();
-
-        if (membershipError) {
-          throw membershipError;
-        }
-
-        const {
-          data: familyAccess,
-          error: familyAccessError,
-        } = await supabase.rpc(
-          "current_household_has_family_access"
-        );
-
-        if (familyAccessError) {
-          console.error(
-            "Unable to check household Family access:",
-            familyAccessError
+        const deviceQuery =
+          applyHouseholdScope(
+            supabase
+              .from("devices")
+              .select("*"),
+            householdId,
+            user.id
           );
-        }
-
-        if (!mounted) {
-          return;
-        }
-
-        setHasFamilyHouseholdAccess(
-          familyAccess === true
-        );
-
-        let deviceQuery =
-          supabase
-            .from("devices")
-            .select("*");
-
-        if (membership?.household_id) {
-          deviceQuery =
-            deviceQuery.eq(
-              "household_id",
-              membership.household_id
-            );
-        } else {
-          deviceQuery =
-            deviceQuery.eq(
-              "user_id",
-              user.id
-            );
-        }
 
         const {
           data: deviceData,
@@ -415,6 +358,7 @@ export default function DevicesPage() {
   }, [
     user,
     isDemo,
+    householdId,
     permissionsLoading,
   ]);
 
@@ -610,15 +554,10 @@ export default function DevicesPage() {
 
   const loading =
     permissionsLoading ||
-    subscriptionLoading ||
     loadingDevices;
 
-  const householdHasUnlimitedDevices =
-    hasUnlimitedDevices ||
-    hasFamilyHouseholdAccess;
-
   const deviceLimitReached =
-    !householdHasUnlimitedDevices &&
+    !hasUnlimitedDevices &&
     deviceLimit !== null &&
     devices.length >= deviceLimit;
 
@@ -633,11 +572,13 @@ export default function DevicesPage() {
   }
 
   function handleAddDevice() {
-    if (!canCreate) {
-      router.push(
-        user ? "/devices" : "/signup"
-      );
+    if (isDemo) {
+      router.push("/signup");
+      return;
+    }
 
+    if (!canCreate) {
+      router.push("/signup");
       return;
     }
 
@@ -654,54 +595,35 @@ export default function DevicesPage() {
 
   return (
     <PageShell>
-      <section className="rounded-[32px] bg-[#111827] px-6 py-8 text-white shadow-sm md:px-9 md:py-10">
-        <div className="flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#C8A96A]">
-              Personal Vault
-            </p>
-
-            <h1 className="mt-3 text-4xl font-semibold tracking-[-0.04em] md:text-5xl">
-              Your devices.
-            </h1>
-
-            <p className="mt-4 max-w-xl text-sm leading-6 text-white/60 md:text-base">
-              Everything you own,
-              organized in one calm and
-              secure place.
-            </p>
+      <PageHero
+        section="technology"
+        eyebrow="Personal Vault"
+        title="Your devices."
+        description="Everything you own, organized in one calm and secure place."
+      >
+        {canCreate ? (
+          <Button
+            type="button"
+            onClick={handleAddDevice}
+          >
+            <Plus size={17} />
+            {deviceLimitReached
+              ? "Upgrade to Add More"
+              : "Add Device"}
+          </Button>
+        ) : !user ? (
+          <Button href="/signup">
+            <Plus size={17} />
+            Create Your Vault
+          </Button>
+        ) : (
+          <div className="rounded-[var(--radius-button)] border border-border-subtle bg-surface-card/80 px-4 py-3 text-sm font-medium text-text-secondary shadow-[var(--shadow-sm)]">
+            Viewer Access · Read Only
           </div>
-
-          {canCreate ? (
-            <Button
-              type="button"
-              onClick={handleAddDevice}
-              variant="secondary"
-            >
-              <Plus size={17} />
-
-              {deviceLimitReached
-                ? "Upgrade to Add More"
-                : "Add Device"}
-            </Button>
-          ) : !user ? (
-            <Button
-              href="/signup"
-              variant="secondary"
-            >
-              <Plus size={17} />
-              Create Your Vault
-            </Button>
-          ) : (
-            <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm font-semibold text-white/70">
-              Viewer Access · Read Only
-            </div>
-          )}
-        </div>
-      </section>
+        )}
+      </PageHero>
 
       <ViewerBanner
-        show={isViewer}
         description={
           user
             ? "You can view shared devices, search records, and open device details. Viewer access cannot add, edit, upload, or delete devices."
@@ -748,7 +670,7 @@ export default function DevicesPage() {
                 <div className="relative flex-1">
                   <Search
                     size={19}
-                    className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400"
+                    className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-text-tertiary"
                   />
 
                   <input
@@ -760,7 +682,7 @@ export default function DevicesPage() {
                       )
                     }
                     placeholder="Search your devices..."
-                    className="w-full rounded-2xl border border-[#E8E2D6] bg-[#FAFAF8] py-3.5 pl-11 pr-11 text-sm text-[#111827] outline-none transition placeholder:text-neutral-400 focus:border-[#C8A96A] focus:bg-white focus:ring-4 focus:ring-[#C8A96A]/10"
+                    className="w-full rounded-2xl border border-border-subtle bg-surface-sunken py-3.5 pl-11 pr-11 text-sm text-text-primary outline-none transition placeholder:text-text-tertiary htv-focus-ring focus:border-interaction focus:bg-surface-card focus:ring-4 focus:ring-interaction/15"
                   />
 
                   {searchTerm && (
@@ -770,7 +692,7 @@ export default function DevicesPage() {
                         setSearchTerm("")
                       }
                       aria-label="Clear search"
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 transition hover:text-[#111827]"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-text-tertiary transition hover:text-text-primary"
                     >
                       <X size={18} />
                     </button>
@@ -785,7 +707,7 @@ export default function DevicesPage() {
                         !current
                     )
                   }
-                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-[#E8E2D6] bg-white px-5 text-sm font-semibold text-[#111827] transition hover:border-[#C8A96A]"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-border-subtle bg-white px-5 text-sm font-semibold text-text-primary transition hover:border-border-strong"
                 >
                   <SlidersHorizontal
                     size={17}
@@ -794,7 +716,7 @@ export default function DevicesPage() {
                   Filters
 
                   {filtersActive && (
-                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#111827] px-1.5 text-[10px] text-white">
+                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-charcoal px-1.5 text-[10px] text-white">
                       {
                         [
                           selectedCategory !==
@@ -840,8 +762,8 @@ export default function DevicesPage() {
                         className={
                           "shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition " +
                           (active
-                            ? "bg-[#111827] text-white"
-                            : "border border-[#E8E2D6] bg-white text-neutral-500 hover:border-[#C8A96A] hover:text-[#111827]")
+                            ? "bg-charcoal text-surface-card"
+                            : "border border-border-subtle bg-white text-text-secondary hover:border-interaction hover:text-text-primary")
                         }
                       >
                         {category}
@@ -852,9 +774,9 @@ export default function DevicesPage() {
               </div>
 
               {showFilters && (
-                <div className="grid gap-3 border-t border-[#E8E2D6] pt-5 sm:grid-cols-2">
+                <div className="grid gap-3 border-t border-border-subtle pt-5 sm:grid-cols-2">
                   <label className="block">
-                    <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-neutral-500">
+                    <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-text-secondary">
                       Location
                     </span>
 
@@ -867,7 +789,7 @@ export default function DevicesPage() {
                           event.target.value
                         )
                       }
-                      className="w-full rounded-2xl border border-[#E8E2D6] bg-white px-4 py-3 text-sm outline-none transition focus:border-[#C8A96A]"
+                      className="w-full rounded-2xl border border-border-subtle bg-white px-4 py-3 text-sm outline-none transition focus:border-interaction"
                     >
                       {locations.map(
                         (location) => (
@@ -886,7 +808,7 @@ export default function DevicesPage() {
                   </label>
 
                   <label className="block">
-                    <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-neutral-500">
+                    <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-text-secondary">
                       Sort By
                     </span>
 
@@ -898,7 +820,7 @@ export default function DevicesPage() {
                             .value as SortOption
                         )
                       }
-                      className="w-full rounded-2xl border border-[#E8E2D6] bg-white px-4 py-3 text-sm outline-none transition focus:border-[#C8A96A]"
+                      className="w-full rounded-2xl border border-border-subtle bg-white px-4 py-3 text-sm outline-none transition focus:border-interaction"
                     >
                       <option value="name">
                         Device Name
@@ -920,8 +842,8 @@ export default function DevicesPage() {
                 </div>
               )}
 
-              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#E8E2D6] pt-4">
-                <p className="text-sm text-neutral-500">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border-subtle pt-4">
+                <p className="text-sm text-text-secondary">
                   {filteredDevices.length}{" "}
                   {filteredDevices.length ===
                   1
@@ -933,7 +855,7 @@ export default function DevicesPage() {
                   <button
                     type="button"
                     onClick={clearFilters}
-                    className="inline-flex items-center gap-2 text-sm font-semibold text-[#111827] transition hover:text-[#8A6A2F]"
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-text-primary transition hover:text-achievement"
                   >
                     <X size={15} />
                     Clear filters
@@ -946,7 +868,7 @@ export default function DevicesPage() {
 
       {loading ? (
         <PageCard className="flex min-h-72 items-center justify-center">
-          <div className="flex items-center gap-3 text-neutral-500">
+          <div className="flex items-center gap-3 text-text-secondary">
             <Loader2
               className="animate-spin"
               size={22}
@@ -968,15 +890,15 @@ export default function DevicesPage() {
         </section>
       ) : devices.length > 0 ? (
         <PageCard className="py-14 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
             <Filter size={28} />
           </div>
 
-          <h2 className="mt-5 text-2xl font-semibold tracking-[-0.03em] text-[#111827]">
+          <h2 className="mt-5 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
             No matching devices
           </h2>
 
-          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-neutral-500">
+          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-text-secondary">
             Try a different search,
             category, or location.
           </p>
@@ -991,15 +913,15 @@ export default function DevicesPage() {
         </PageCard>
       ) : (
         <PageCard className="py-14 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
             <Laptop size={29} />
           </div>
 
-          <h2 className="mt-5 text-2xl font-semibold tracking-[-0.03em] text-[#111827]">
+          <h2 className="mt-5 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
             Your vault is ready
           </h2>
 
-          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-neutral-500">
+          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-text-secondary">
             Add your first device to
             organize its photos, purchase
             information, warranty, and
@@ -1027,7 +949,7 @@ export default function DevicesPage() {
               Create Your Vault
             </Button>
           ) : (
-            <div className="mx-auto mt-6 max-w-md rounded-2xl bg-[#F7F5EF] px-5 py-4 text-sm text-neutral-500">
+            <div className="mx-auto mt-6 max-w-md rounded-2xl bg-surface-sunken px-5 py-4 text-sm text-text-secondary">
               You have viewer access.
               You can view shared devices,
               but you cannot add or change
@@ -1040,21 +962,21 @@ export default function DevicesPage() {
       {!isDemo &&
         !loading &&
         canCreate &&
-        !householdHasUnlimitedDevices &&
+        !hasUnlimitedDevices &&
         deviceLimit !== null && (
           <PageCard className="p-5 md:p-6">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
+                <p className="text-overline text-section-technology">
                   Your Plan
                 </p>
 
-                <p className="mt-2 text-lg font-semibold text-[#111827]">
+                <p className="mt-2 text-lg font-semibold text-text-primary">
                   {devices.length} of{" "}
                   {deviceLimit} devices used
                 </p>
 
-                <p className="mt-1 text-sm text-neutral-500">
+                <p className="mt-1 text-sm text-text-secondary">
                   Upgrade for unlimited
                   device tracking.
                 </p>
@@ -1069,9 +991,9 @@ export default function DevicesPage() {
               </Button>
             </div>
 
-            <div className="mt-5 h-2 overflow-hidden rounded-full bg-[#E8E2D6]">
+            <div className="mt-5 h-2 overflow-hidden rounded-full bg-border-subtle">
               <div
-                className="h-full rounded-full bg-[#111827] transition-all"
+                className="h-full rounded-full bg-home-health transition-all"
                 style={{
                   width:
                     String(
@@ -1107,9 +1029,9 @@ function ModernDeviceCard({
         "/devices/" +
         device.id
       }
-      className="group overflow-hidden rounded-[28px] border border-[#E8E2D6] bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#D7C79F] hover:shadow-lg"
+      className="group overflow-hidden rounded-[var(--radius-card)] border border-border-subtle bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#D7C79F] hover:shadow-lg"
     >
-      <div className="relative aspect-[4/3] overflow-hidden bg-[#F7F5EF]">
+      <div className="relative aspect-[4/3] overflow-hidden bg-surface-sunken">
         {device.photo_url ? (
           <img
             src={device.photo_url}
@@ -1117,19 +1039,19 @@ function ModernDeviceCard({
             className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
           />
         ) : (
-          <div className="flex h-full w-full flex-col items-center justify-center text-[#C8A96A]">
+          <div className="flex h-full w-full flex-col items-center justify-center text-section-technology">
             <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-white shadow-sm">
               <ImageIcon size={28} />
             </div>
 
-            <p className="mt-3 text-xs font-medium text-neutral-400">
+            <p className="mt-3 text-xs font-medium text-text-tertiary">
               No photo added
             </p>
           </div>
         )}
 
         {device.category && (
-          <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1.5 text-xs font-semibold text-[#111827] shadow-sm backdrop-blur">
+          <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1.5 text-xs font-semibold text-text-primary shadow-sm backdrop-blur">
             {device.category}
           </span>
         )}
@@ -1138,12 +1060,12 @@ function ModernDeviceCard({
       <div className="p-5">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <h2 className="truncate text-xl font-semibold tracking-[-0.03em] text-[#111827]">
+            <h2 className="truncate text-xl font-semibold tracking-[-0.03em] text-text-primary">
               {device.device_name ||
                 "Unnamed Device"}
             </h2>
 
-            <p className="mt-1 truncate text-sm text-neutral-500">
+            <p className="mt-1 truncate text-sm text-text-secondary">
               {[
                 device.brand,
                 device.model_number,
@@ -1154,14 +1076,14 @@ function ModernDeviceCard({
             </p>
           </div>
 
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F7F5EF] text-neutral-400 transition group-hover:bg-[#111827] group-hover:text-white">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border-subtle bg-surface-sunken text-text-tertiary shadow-[var(--shadow-inset)] transition group-hover:bg-charcoal group-hover:text-surface-card">
             <ArrowRight size={17} />
           </div>
         </div>
 
         <div className="mt-5 flex flex-wrap gap-2">
           {device.location && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#F7F5EF] px-3 py-1.5 text-xs font-medium text-neutral-600">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-sunken px-3 py-1.5 text-xs font-medium text-text-secondary">
               <MapPin size={13} />
               {device.location}
             </span>
@@ -1180,11 +1102,11 @@ function ModernDeviceCard({
 
         <div className="mt-5 flex items-end justify-between border-t border-[#EEE9DF] pt-4">
           <div>
-            <p className="text-xs text-neutral-400">
+            <p className="text-xs text-text-tertiary">
               Purchase Value
             </p>
 
-            <p className="mt-1 font-semibold text-[#111827]">
+            <p className="mt-1 font-semibold text-text-primary">
               {device.purchase_price
                 ? formatCurrency(
                     Number(
@@ -1195,7 +1117,7 @@ function ModernDeviceCard({
             </p>
           </div>
 
-          <span className="text-sm font-semibold text-[#8A6A2F]">
+          <span className="text-sm font-semibold text-achievement">
             View device
           </span>
         </div>
@@ -1217,16 +1139,16 @@ function SummaryCard({
     <PageCard className="p-5 md:p-6">
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-sm text-neutral-500">
+          <p className="text-sm text-text-secondary">
             {label}
           </p>
 
-          <p className="mt-2 truncate text-2xl font-semibold tracking-[-0.03em] text-[#111827] md:text-3xl">
+          <p className="mt-2 truncate text-2xl font-semibold tracking-[-0.03em] text-text-primary md:text-3xl">
             {value}
           </p>
         </div>
 
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
           <Icon size={20} />
         </div>
       </div>
@@ -1267,7 +1189,7 @@ function getWarrantyStatus(
     return {
       label: "No warranty",
       className:
-        "bg-neutral-100 text-neutral-500",
+        "bg-neutral-100 text-text-secondary",
     };
   }
 
@@ -1283,7 +1205,7 @@ function getWarrantyStatus(
     return {
       label: "Warranty unknown",
       className:
-        "bg-neutral-100 text-neutral-500",
+        "bg-neutral-100 text-text-secondary",
     };
   }
 

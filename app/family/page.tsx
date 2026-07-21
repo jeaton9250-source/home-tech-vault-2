@@ -28,8 +28,12 @@ import {
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
-import { useDemoMode } from "@/hooks/useDemoMode";
-import { useSubscription } from "@/hooks/useSubscription";
+import {
+  getDefaultActivityTitle,
+  recordActivity,
+} from "@/lib/activity";
+import { usePermissions } from "@/hooks/usePermissions";
+import PlanAccessSummary from "@/components/permissions/PlanAccessSummary";
 
 import PageShell from "@/components/ui/PageShell";
 import PageCard from "@/components/ui/PageCard";
@@ -200,16 +204,16 @@ export default function FamilyPage() {
   const {
     user,
     isDemo,
-    loading: demoLoading,
-  } = useDemoMode();
-
-  const {
-    loading:
-      subscriptionLoading,
+    loading: permissionsLoading,
+    planDisplayName,
+    roleDisplayName,
     canUseFamilySharing,
+    canManageHousehold,
+    canInvite,
+    billingManagedByHousehold,
     familyMemberLimit,
-    isAdmin,
-  } = useSubscription();
+    isPlatformAdmin,
+  } = usePermissions();
 
   const [
     household,
@@ -308,10 +312,7 @@ export default function FamilyPage() {
 
   const loadFamilyData =
     useCallback(async () => {
-      if (
-        demoLoading ||
-        subscriptionLoading
-      ) {
+      if (permissionsLoading) {
         return;
       }
 
@@ -578,8 +579,7 @@ export default function FamilyPage() {
     }, [
       user,
       isDemo,
-      demoLoading,
-      subscriptionLoading,
+      permissionsLoading,
     ]);
 
   useEffect(() => {
@@ -605,17 +605,8 @@ export default function FamilyPage() {
   const isOwner =
     currentRole === "owner";
 
-  const isHouseholdManager =
-    currentRole === "owner" ||
-    currentRole === "admin";
-
-  const canManageSharing =
-    isAdmin ||
-    (canUseFamilySharing &&
-      isHouseholdManager);
-
   const canCreateHousehold =
-    isAdmin ||
+    isPlatformAdmin ||
     canUseFamilySharing;
 
   const hasHouseholdMembership =
@@ -625,8 +616,7 @@ export default function FamilyPage() {
     );
 
   const loading =
-    demoLoading ||
-    subscriptionLoading ||
+    permissionsLoading ||
     loadingFamily;
 
   const ownerMember =
@@ -742,13 +732,13 @@ export default function FamilyPage() {
       return;
     }
 
-    if (!canManageSharing) {
+    if (!canInvite) {
       console.error(
-        "[Family Invite] Stopped: User cannot manage sharing",
+        "[Family Invite] Stopped: User cannot invite household members",
         {
           userId: user.id,
           householdId: household.id,
-          canManageSharing,
+          canInvite,
         }
       );
 
@@ -869,6 +859,19 @@ export default function FamilyPage() {
         invitation,
         ...current,
       ]);
+
+      await recordActivity({
+        activityType:
+          "family.member.invited",
+        title: getDefaultActivityTitle(
+          "family.member.invited",
+          email
+        ),
+        description: `Invitation sent with ${inviteForm.role} access.`,
+        userId: user.id,
+        householdId: household.id,
+        entityId: invitation.id,
+      });
 
       alert(
         `Invitation created. Calling email function now.\n\nInvitation ID: ${invitation.id}`
@@ -1079,7 +1082,7 @@ const {
     }
 
     if (
-      !canManageSharing
+      !canManageHousehold
     ) {
       return;
     }
@@ -1234,6 +1237,22 @@ const {
           )
       );
 
+      if (user && household) {
+        await recordActivity({
+          activityType:
+            "family.member.removed",
+          title: getDefaultActivityTitle(
+            "family.member.removed",
+            member.fullName
+          ),
+          description:
+            "Household membership was removed.",
+          userId: user.id,
+          householdId: household.id,
+          entityId: member.id,
+        });
+      }
+
       setSuccessMessage(
         `${member.fullName} was removed from the household.`
       );
@@ -1266,7 +1285,7 @@ const {
     }
 
     if (
-      !canManageSharing
+      !canManageHousehold
     ) {
       return;
     }
@@ -1344,7 +1363,7 @@ const {
     return (
       <PageShell>
         <PageCard className="flex min-h-72 items-center justify-center">
-          <div className="flex items-center gap-3 text-neutral-500">
+          <div className="flex items-center gap-3 text-text-secondary">
             <Loader2
               size={22}
               className="animate-spin"
@@ -1365,8 +1384,8 @@ const {
   ) {
     return (
       <PageShell>
-        <section className="rounded-[32px] bg-[#111827] px-6 py-9 text-white shadow-sm md:px-10 md:py-11">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#C8A96A]">
+        <section className="htv-hero-band px-6 py-9 shadow-sm md:px-10 md:py-11">
+          <p className="text-overline text-charcoal-soft">
             Family Sharing
           </p>
 
@@ -1374,7 +1393,7 @@ const {
             Share your vault.
           </h1>
 
-          <p className="mt-4 max-w-xl text-sm leading-7 text-white/60 md:text-base">
+          <p className="mt-4 max-w-xl text-sm leading-7 text-text-secondary md:text-base">
             Invite household
             members and manage your
             home technology
@@ -1383,12 +1402,12 @@ const {
         </section>
 
         <PageCard className="overflow-hidden p-0">
-          <div className="bg-[#111827] p-8 text-white md:p-10">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 text-[#C8A96A]">
+          <div className="htv-plan-band p-8 text-text-primary md:p-10">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border-subtle bg-surface-card text-section-insights shadow-[var(--shadow-sm)]">
               <Crown size={27} />
             </div>
 
-            <p className="mt-6 text-xs font-semibold uppercase tracking-[0.2em] text-[#C8A96A]">
+            <p className="mt-6 text-overline text-charcoal-soft">
               Family Plan
               Exclusive
             </p>
@@ -1398,7 +1417,7 @@ const {
               into one shared vault.
             </h2>
 
-            <p className="mt-4 max-w-2xl text-sm leading-7 text-white/60">
+            <p className="mt-4 max-w-2xl text-sm leading-7 text-text-secondary">
               Family Sharing is
               available only with
               the Family plan. Share
@@ -1426,10 +1445,10 @@ const {
 
   return (
     <PageShell>
-      <section className="rounded-[32px] bg-[#111827] px-6 py-9 text-white shadow-sm md:px-10 md:py-11">
+      <section className="htv-hero-band px-6 py-9 shadow-sm md:px-10 md:py-11">
         <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#C8A96A]">
+            <p className="text-overline text-charcoal-soft">
               Household Access
             </p>
 
@@ -1437,15 +1456,34 @@ const {
               Family Sharing.
             </h1>
 
-            <p className="mt-4 max-w-xl text-sm leading-7 text-white/60 md:text-base">
+            <p className="mt-4 max-w-xl text-sm leading-7 text-text-secondary md:text-base">
               Invite trusted people
               and manage your Home
               Tech Vault together.
             </p>
+
+            {!permissionsLoading &&
+              !isDemo &&
+              canUseFamilySharing && (
+                <div className="mt-5 flex flex-wrap items-center gap-3">
+                  <span className="rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold text-white">
+                    Plan:{" "}
+                    {isPlatformAdmin
+                      ? "Master Account"
+                      : planDisplayName}
+                  </span>
+
+                  {roleDisplayName && (
+                    <span className="rounded-full bg-interaction-soft px-3 py-1.5 text-xs font-semibold text-interaction">
+                      {roleDisplayName}
+                    </span>
+                  )}
+                </div>
+              )}
           </div>
 
           {household &&
-            canManageSharing &&
+            canInvite &&
             availableSeats > 0 && (
               <Button
                 variant="secondary"
@@ -1464,21 +1502,27 @@ const {
         </div>
       </section>
 
+      {!isDemo &&
+        canUseFamilySharing &&
+        billingManagedByHousehold && (
+          <PlanAccessSummary />
+        )}
+
       {isDemo && (
-        <section className="rounded-3xl border border-[#D8C69D] bg-[#FFF8E8] p-5">
+        <section className="rounded-3xl border border-warning/40 bg-warning-soft p-5">
           <div className="flex items-start gap-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#111827] text-[#C8A96A]">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-charcoal text-surface-card">
               <Sparkles
                 size={18}
               />
             </div>
 
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A6A2F]">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-achievement">
                 Family Plan Preview
               </p>
 
-              <p className="mt-2 text-sm leading-6 text-neutral-600">
+              <p className="mt-2 text-sm leading-6 text-text-secondary">
                 Explore a sample
                 household. Creating
                 invitations or
@@ -1573,18 +1617,18 @@ const {
           </section>
 
           <PageCard className="overflow-hidden p-0">
-            <div className="!bg-[#111827] p-7 !text-white md:p-9">
+            <div className="htv-plan-band p-7 text-text-primary md:p-9">
               <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
+                  <p className="text-overline text-charcoal-soft">
                     Your Household
                   </p>
 
-                  <h2 className="mt-2 text-3xl font-semibold tracking-[-0.04em] !text-white">
+                  <h2 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-text-primary">
                     {household.name}
                   </h2>
 
-                  <p className="mt-3 text-sm !text-white/55">
+                  <p className="mt-3 text-sm text-text-secondary">
                     Created{" "}
                     {formatDate(
                       household.created_at
@@ -1592,12 +1636,12 @@ const {
                   </p>
                 </div>
 
-                <div className="rounded-[22px] bg-white/10 px-5 py-4">
-                  <p className="text-xs !text-white/40">
+                <div className="rounded-[22px] border border-border-subtle bg-surface-card px-5 py-4 shadow-[var(--shadow-sm)]">
+                  <p className="text-xs text-text-tertiary">
                     Household owner
                   </p>
 
-                  <p className="mt-1 font-semibold !text-white">
+                  <p className="mt-1 font-semibold text-text-primary">
                     {ownerMember?.fullName ||
                       "Owner"}
                   </p>
@@ -1610,22 +1654,22 @@ const {
             <PageCard className="p-7 md:p-8">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
+                  <p className="text-overline text-charcoal-soft">
                     Members
                   </p>
 
-                  <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[#111827]">
+                  <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
                     Household access
                   </h2>
 
-                  <p className="mt-2 text-sm leading-6 text-neutral-500">
+                  <p className="mt-2 text-sm leading-6 text-text-secondary">
                     Control what each
                     person can view or
                     manage.
                   </p>
                 </div>
 
-                {canManageSharing &&
+                {canManageHousehold &&
                   availableSeats >
                     0 && (
                     <Button
@@ -1659,7 +1703,7 @@ const {
                         ""
                       }
                       canManage={
-                        canManageSharing
+                        canManageHousehold
                       }
                       isOwner={
                         isOwner
@@ -1693,18 +1737,18 @@ const {
 
             <PageCard className="p-7 md:p-8">
               <div className="flex items-start gap-4">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
                   <Clock3
                     size={20}
                   />
                 </div>
 
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
+                  <p className="text-overline text-charcoal-soft">
                     Invitations
                   </p>
 
-                  <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[#111827]">
+                  <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
                     Pending invites
                   </h2>
                 </div>
@@ -1712,7 +1756,7 @@ const {
 
               {invitations.length ===
               0 ? (
-                <div className="mt-7 rounded-[22px] bg-[#F7F5EF] p-5 text-sm leading-6 text-neutral-500">
+                <div className="mt-7 rounded-[22px] bg-surface-sunken p-5 text-sm leading-6 text-text-secondary">
                   No invitations are
                   currently pending.
                 </div>
@@ -1730,7 +1774,7 @@ const {
                           invitation
                         }
                         canManage={
-                          canManageSharing
+                          canManageHousehold
                         }
                         canceling={
                           cancelingInvitationId ===
@@ -1752,13 +1796,13 @@ const {
                 </div>
               )}
 
-              <div className="mt-6 rounded-[22px] border border-[#E8E2D6] p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-400">
+              <div className="mt-6 rounded-[22px] border border-border-subtle p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-text-tertiary">
                   Invitation
                   Delivery
                 </p>
 
-                <p className="mt-2 text-sm leading-6 text-neutral-500">
+                <p className="mt-2 text-sm leading-6 text-text-secondary">
                   Use the copy button
                   beside an invitation
                   to share its secure
@@ -1770,11 +1814,11 @@ const {
           </section>
 
           <PageCard className="p-7 md:p-8">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
+            <p className="text-overline text-charcoal-soft">
               Role Permissions
             </p>
 
-            <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[#111827]">
+            <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
               Who can do what?
             </h2>
 
@@ -1851,21 +1895,21 @@ function CreateHouseholdCard({
   return (
     <PageCard className="overflow-hidden p-0">
       <div className="grid lg:grid-cols-[0.8fr_1.2fr]">
-        <div className="!bg-[#111827] p-8 !text-white md:p-10">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 text-[#C8A96A]">
+        <div className="htv-plan-band p-8 text-text-primary md:p-10">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border-subtle bg-surface-card text-section-insights shadow-[var(--shadow-sm)]">
             <Home size={26} />
           </div>
 
-          <p className="mt-6 text-xs font-semibold uppercase tracking-[0.2em] text-[#C8A96A]">
+          <p className="mt-6 text-overline text-charcoal-soft">
             Get Started
           </p>
 
-          <h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em] !text-white">
+          <h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-text-primary">
             Create your
             household.
           </h2>
 
-          <p className="mt-4 text-sm leading-7 !text-white/60">
+          <p className="mt-4 text-sm leading-7 !text-text-secondary">
             Your household is the
             shared space where
             family members will
@@ -1881,7 +1925,7 @@ function CreateHouseholdCard({
           className="p-8 md:p-10"
         >
           <label className="block">
-            <span className="mb-2 block text-sm font-semibold text-[#111827]">
+            <span className="mb-2 block text-sm font-semibold text-text-primary">
               Household name
             </span>
 
@@ -1898,11 +1942,11 @@ function CreateHouseholdCard({
               placeholder="The Eaton Household"
               maxLength={100}
               required
-              className="w-full rounded-2xl border border-[#E8E2D6] bg-white px-4 py-3.5 text-[#111827] outline-none transition focus:border-[#C8A96A] focus:ring-4 focus:ring-[#C8A96A]/10"
+              className="w-full rounded-2xl border border-border-subtle bg-white px-4 py-3.5 text-text-primary outline-none transition focus:border-interaction focus:ring-4 focus:ring-interaction/10"
             />
           </label>
 
-          <p className="mt-3 text-sm leading-6 text-neutral-500">
+          <p className="mt-3 text-sm leading-6 text-text-secondary">
             You can use your family
             name, street name, or
             anything that feels
@@ -1972,7 +2016,7 @@ function MemberRow({
     currentUserId;
 
   return (
-    <div className="flex flex-col gap-4 rounded-[24px] border border-[#E8E2D6] p-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-4 rounded-[24px] border border-border-subtle p-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex min-w-0 items-center gap-3">
         {member.avatarUrl ? (
           <img
@@ -1981,25 +2025,25 @@ function MemberRow({
             className="h-11 w-11 rounded-full object-cover"
           />
         ) : (
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#111827] text-xs font-bold text-white">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-home-health text-xs font-bold text-white">
             {initials || "HT"}
           </div>
         )}
 
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <p className="truncate font-semibold text-[#111827]">
+            <p className="truncate font-semibold text-text-primary">
               {member.fullName}
             </p>
 
             {isCurrentUser && (
-              <span className="rounded-full bg-[#F7F5EF] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-neutral-500">
+              <span className="rounded-full bg-surface-sunken px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-text-secondary">
                 You
               </span>
             )}
           </div>
 
-          <p className="mt-1 text-xs text-neutral-400">
+          <p className="mt-1 text-xs text-text-tertiary">
             Joined{" "}
             {formatDate(
               member.joined_at
@@ -2011,7 +2055,7 @@ function MemberRow({
       <div className="flex items-center gap-2">
         {member.role ===
         "owner" ? (
-          <span className="inline-flex items-center gap-2 rounded-full bg-[#FFF8E8] px-3 py-2 text-xs font-semibold text-[#8A6A2F]">
+          <span className="inline-flex items-center gap-2 rounded-full bg-warning-soft px-3 py-2 text-xs font-semibold text-achievement">
             <Crown size={14} />
             Owner
           </span>
@@ -2028,7 +2072,7 @@ function MemberRow({
                 >
               )
             }
-            className="rounded-xl border border-[#E8E2D6] bg-white px-3 py-2 text-sm font-semibold text-[#111827] outline-none focus:border-[#C8A96A]"
+            className="rounded-xl border border-border-subtle bg-white px-3 py-2 text-sm font-semibold text-text-primary outline-none focus:border-interaction"
           >
             <option value="admin">
               Admin
@@ -2043,7 +2087,7 @@ function MemberRow({
             </option>
           </select>
         ) : (
-          <span className="rounded-full bg-[#F7F5EF] px-3 py-2 text-xs font-semibold text-neutral-600">
+          <span className="rounded-full bg-surface-sunken px-3 py-2 text-xs font-semibold text-text-secondary">
             {formatRole(
               member.role
             )}
@@ -2053,7 +2097,7 @@ function MemberRow({
         {updating && (
           <Loader2
             size={16}
-            className="animate-spin text-neutral-400"
+            className="animate-spin text-text-tertiary"
           />
         )}
 
@@ -2103,14 +2147,14 @@ function InvitationRow({
     ).getTime() < Date.now();
 
   return (
-    <div className="rounded-[22px] bg-[#F7F5EF] p-4">
+    <div className="rounded-[22px] bg-surface-sunken p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="truncate font-semibold text-[#111827]">
+          <p className="truncate font-semibold text-text-primary">
             {invitation.email}
           </p>
 
-          <p className="mt-1 text-xs text-neutral-400">
+          <p className="mt-1 text-xs text-text-tertiary">
             {formatRole(
               invitation.role
             )}{" "}
@@ -2130,7 +2174,7 @@ function InvitationRow({
               onClick={onCopy}
               disabled={expired}
               aria-label={`Copy invitation link for ${invitation.email}`}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-[#8A6A2F] transition hover:bg-[#111827] hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-achievement transition hover:bg-charcoal-hover hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
             >
               <Copy size={15} />
             </button>
@@ -2178,19 +2222,19 @@ function InviteModal({
   ) => void;
 }) {
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[#111827]/60 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-lg rounded-[32px] border border-[#E8E2D6] bg-white shadow-2xl">
-        <div className="flex items-start justify-between gap-4 border-b border-[#E8E2D6] p-6">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-charcoal/40 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-lg rounded-[var(--radius-card)] border border-border-subtle bg-white shadow-2xl">
+        <div className="flex items-start justify-between gap-4 border-b border-border-subtle p-6">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
+            <p className="text-overline text-charcoal-soft">
               Family Sharing
             </p>
 
-            <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[#111827]">
+            <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
               Invite a member
             </h2>
 
-            <p className="mt-2 text-sm text-neutral-500">
+            <p className="mt-2 text-sm text-text-secondary">
               {availableSeats}{" "}
               {availableSeats === 1
                 ? "seat"
@@ -2203,7 +2247,7 @@ function InviteModal({
             type="button"
             onClick={onClose}
             aria-label="Close invitation form"
-            className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#111827]"
+            className="flex h-10 w-10 items-center justify-center rounded-2xl bg-surface-sunken text-text-primary"
           >
             <X size={18} />
           </button>
@@ -2219,7 +2263,7 @@ function InviteModal({
   className="space-y-5 p-6"
 >
           <label className="block">
-            <span className="mb-2 block text-sm font-semibold text-[#111827]">
+            <span className="mb-2 block text-sm font-semibold text-text-primary">
               Email address
             </span>
 
@@ -2236,12 +2280,12 @@ function InviteModal({
               }
               placeholder="family@example.com"
               required
-              className="w-full rounded-2xl border border-[#E8E2D6] bg-white px-4 py-3.5 outline-none focus:border-[#C8A96A] focus:ring-4 focus:ring-[#C8A96A]/10"
+              className="w-full rounded-2xl border border-border-subtle bg-white px-4 py-3.5 outline-none focus:border-interaction focus:ring-4 focus:ring-interaction/10"
             />
           </label>
 
           <label className="block">
-            <span className="mb-2 block text-sm font-semibold text-[#111827]">
+            <span className="mb-2 block text-sm font-semibold text-text-primary">
               Role
             </span>
 
@@ -2254,7 +2298,7 @@ function InviteModal({
                     .value as InviteForm["role"],
                 })
               }
-              className="w-full rounded-2xl border border-[#E8E2D6] bg-white px-4 py-3.5 outline-none focus:border-[#C8A96A]"
+              className="w-full rounded-2xl border border-border-subtle bg-white px-4 py-3.5 outline-none focus:border-interaction"
             >
               <option value="admin">
                 Admin
@@ -2280,7 +2324,7 @@ function InviteModal({
     sending ||
     availableSeats <= 0
   }
-  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-[#111827] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#263044] disabled:cursor-not-allowed disabled:opacity-50"
+  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-charcoal px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-charcoal-hover disabled:cursor-not-allowed disabled:opacity-50"
 >
   {sending ? (
     <Loader2
@@ -2316,13 +2360,13 @@ function RoleExplanation({
   };
 
   return (
-    <div className="flex items-start gap-3 rounded-[22px] bg-[#F7F5EF] p-4">
+    <div className="flex items-start gap-3 rounded-[22px] bg-surface-sunken p-4">
       <UserCog
         size={18}
-        className="mt-0.5 shrink-0 text-[#C8A96A]"
+        className="mt-0.5 shrink-0 text-interaction"
       />
 
-      <p className="text-sm leading-6 text-neutral-500">
+      <p className="text-sm leading-6 text-text-secondary">
         {descriptions[role]}
       </p>
     </div>
@@ -2344,20 +2388,20 @@ function SummaryCard({
     <PageCard className="p-5 md:p-6">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-sm text-neutral-500">
+          <p className="text-sm text-text-secondary">
             {label}
           </p>
 
-          <p className="mt-2 truncate text-2xl font-semibold tracking-[-0.03em] text-[#111827] md:text-3xl">
+          <p className="mt-2 truncate text-2xl font-semibold tracking-[-0.03em] text-text-primary md:text-3xl">
             {value}
           </p>
 
-          <p className="mt-2 text-xs text-neutral-400">
+          <p className="mt-2 text-xs text-text-tertiary">
             {description}
           </p>
         </div>
 
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
           <Icon size={20} />
         </div>
       </div>
@@ -2373,12 +2417,12 @@ function RoleCard({
   description: string;
 }) {
   return (
-    <div className="rounded-[22px] bg-[#F7F5EF] p-5">
-      <p className="font-semibold text-[#111827]">
+    <div className="rounded-[22px] bg-surface-sunken p-5">
+      <p className="font-semibold text-text-primary">
         {role}
       </p>
 
-      <p className="mt-2 text-sm leading-6 text-neutral-500">
+      <p className="mt-2 text-sm leading-6 text-text-secondary">
         {description}
       </p>
     </div>

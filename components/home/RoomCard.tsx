@@ -26,10 +26,10 @@ export default function RoomCard({
   );
 
   return (
-    <section className="overflow-hidden rounded-[32px] border border-[#E8E2D6] bg-white shadow-sm">
-      <div className="flex items-center justify-between border-b border-[#E8E2D6] p-6">
+    <section className="overflow-hidden rounded-[var(--radius-card)] border border-border-subtle bg-white shadow-sm">
+      <div className="flex items-center justify-between border-b border-border-subtle p-6">
         <div>
-          <div className="flex items-center gap-2 text-[#C8A96A]">
+          <div className="flex items-center gap-2 text-interaction">
             <MapPin size={17} />
 
             <p className="text-xs font-semibold uppercase tracking-[0.2em]">
@@ -37,11 +37,11 @@ export default function RoomCard({
             </p>
           </div>
 
-          <h2 className="mt-2 text-2xl font-bold text-[#111827]">
+          <h2 className="mt-2 text-2xl font-bold text-text-primary">
             {roomName}
           </h2>
 
-          <p className="mt-1 text-sm text-neutral-500">
+          <p className="mt-1 text-sm text-text-secondary">
             {devices.length} device{devices.length === 1 ? "" : "s"} ·{" "}
             ${totalValue.toLocaleString(undefined, {
               maximumFractionDigits: 0,
@@ -56,7 +56,7 @@ export default function RoomCard({
           <Link
             key={device.id}
             href={`/devices/${device.id}`}
-            className="group overflow-hidden rounded-2xl border border-[#E8E2D6] bg-white transition hover:-translate-y-0.5 hover:shadow-md"
+            className="group overflow-hidden rounded-2xl border border-border-subtle bg-white transition hover:-translate-y-0.5 hover:shadow-md"
           >
             {device.photo_url ? (
               <div className="overflow-hidden">
@@ -67,21 +67,21 @@ export default function RoomCard({
                 />
               </div>
             ) : (
-              <div className="flex h-36 items-center justify-center bg-[#F7F5EF] text-[#111827]">
+              <div className="flex h-36 items-center justify-center bg-surface-sunken text-text-primary">
                 <Laptop size={38} />
               </div>
             )}
 
             <div className="p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#C8A96A]">
+              <p className="text-overline text-charcoal-soft">
                 {device.category || "Uncategorized"}
               </p>
 
-              <h3 className="mt-2 truncate font-semibold text-[#111827]">
+              <h3 className="mt-2 truncate font-semibold text-text-primary">
                 {device.device_name || "Unnamed Device"}
               </h3>
 
-              <p className="mt-1 truncate text-sm text-neutral-500">
+              <p className="mt-1 truncate text-sm text-text-secondary">
                 {device.brand || "Brand not added"}
               </p>
             </div>

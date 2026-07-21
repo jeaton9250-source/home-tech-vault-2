@@ -5,11 +5,18 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Loader2, Save, Wrench } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
-import { createDeviceEvent } from "@/lib/deviceEvents";
+import { recordActivity } from "@/lib/activity";
+import {
+  applyHouseholdScope,
+  withHouseholdInsertFields,
+} from "@/lib/data/householdScope";
+import { usePermissions } from "@/hooks/usePermissions";
+
 import PageShell from "@/components/ui/PageShell";
 import PageTitle from "@/components/ui/PageTitle";
 import PageCard from "@/components/ui/PageCard";
 import Button from "@/components/ui/Button";
+import { ViewerBanner } from "@/components/ui/PermissionUI";
 
 type DeviceOption = {
   id: string;
@@ -18,6 +25,14 @@ type DeviceOption = {
 
 export default function NewMaintenanceTaskPage() {
   const router = useRouter();
+
+  const {
+    user,
+    isDemo,
+    canCreate,
+    householdId,
+    loading: permissionsLoading,
+  } = usePermissions();
 
   const [devices, setDevices] = useState<DeviceOption[]>([]);
   const [deviceId, setDeviceId] = useState("");
@@ -29,91 +44,121 @@ export default function NewMaintenanceTaskPage() {
 
   const [loadingDevices, setLoadingDevices] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     async function loadDevices() {
+      if (permissionsLoading) {
+        return;
+      }
+
       try {
-        const {
-          data: { user },
-          error: userError,
-        } = await supabase.auth.getUser();
+        setLoadingDevices(true);
+        setErrorMessage("");
 
-        if (userError) throw userError;
-
-        if (!user) {
-          router.push("/login");
+        if (isDemo || !user) {
+          setDevices([]);
           return;
         }
 
-        const { data, error } = await supabase
-          .from("devices")
-          .select("id, device_name")
-          .eq("user_id", user.id)
-          .order("device_name");
+        const { data, error } =
+          await applyHouseholdScope(
+            supabase
+              .from("devices")
+              .select("id, device_name")
+              .order("device_name"),
+            householdId,
+            user.id
+          );
 
-        if (error) throw error;
+        if (error) {
+          throw error;
+        }
 
         setDevices((data || []) as DeviceOption[]);
       } catch (error) {
         console.error("Device loading error:", error);
+
+        setErrorMessage(
+          "Unable to load devices for this task."
+        );
       } finally {
         setLoadingDevices(false);
       }
     }
 
-    loadDevices();
-  }, [router]);
+    void loadDevices();
+  }, [
+    user,
+    isDemo,
+    householdId,
+    permissionsLoading,
+  ]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setErrorMessage("");
+
+    if (isDemo) {
+      router.push("/signup");
+      return;
+    }
+
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+
+    if (!canCreate) {
+      setErrorMessage(
+        "Viewer access is read-only. You cannot add maintenance tasks."
+      );
+      return;
+    }
 
     if (!title.trim()) {
-      alert("Please enter a task title.");
+      setErrorMessage("Please enter a task title.");
       return;
     }
 
     try {
       setSaving(true);
 
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
-
-      if (userError) throw userError;
-
-      if (!user) {
-        router.push("/login");
-        return;
-      }
-
       const { error } = await supabase
         .from("maintenance_tasks")
-        .insert({
-          user_id: user.id,
-          device_id: deviceId || null,
-          title: title.trim(),
-          description: description.trim() || null,
-          task_type: taskType,
-          due_date: dueDate || null,
-          completed: false,
-          recurring_interval:
-            recurringInterval === "None"
-              ? null
-              : recurringInterval,
-        });
+        .insert(
+          withHouseholdInsertFields(
+            {
+              device_id: deviceId || null,
+              title: title.trim(),
+              description: description.trim() || null,
+              task_type: taskType,
+              due_date: dueDate || null,
+              completed: false,
+              recurring_interval:
+                recurringInterval === "None"
+                  ? null
+                  : recurringInterval,
+            },
+            householdId,
+            user.id
+          )
+        );
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       if (deviceId) {
-        await createDeviceEvent({
-          deviceId,
-          userId: user.id,
-          eventType: "Maintenance",
+        await recordActivity({
+          activityType: "maintenance.scheduled",
           title: "Maintenance scheduled",
           description: dueDate
             ? `${title.trim()} scheduled for ${dueDate}.`
             : `${title.trim()} was added as a maintenance task.`,
+          userId: user.id,
+          householdId,
+          deviceId,
         });
       }
 
@@ -122,18 +167,59 @@ export default function NewMaintenanceTaskPage() {
     } catch (error) {
       console.error("Maintenance task error:", error);
 
-      alert(
-        error instanceof Error
-          ? error.message
-          : "Unable to create maintenance task."
+      setErrorMessage(
+        "Unable to create this maintenance task. Please try again."
       );
     } finally {
       setSaving(false);
     }
   }
 
+  if (permissionsLoading) {
+    return (
+      <PageShell>
+        <PageCard className="flex min-h-64 items-center justify-center">
+          <div className="flex items-center gap-3 text-text-secondary">
+            <Loader2 size={22} className="animate-spin" />
+            Loading...
+          </div>
+        </PageCard>
+      </PageShell>
+    );
+  }
+
+  if (isDemo) {
+    return (
+      <PageShell>
+        <PageTitle
+          eyebrow="Interactive Demo"
+          title="Create your vault to schedule maintenance"
+        />
+        <PageCard className="text-center">
+          <Button href="/signup" className="mt-4">
+            Create Your Vault
+          </Button>
+        </PageCard>
+      </PageShell>
+    );
+  }
+
+  if (!user) {
+    return (
+      <PageShell>
+        <PageCard className="text-center">
+          <Button href="/login" className="mt-6">
+            Sign In
+          </Button>
+        </PageCard>
+      </PageShell>
+    );
+  }
+
   return (
     <PageShell>
+      <ViewerBanner />
+
       <PageTitle
         eyebrow="Technology Care"
         title="Add Maintenance Task"
@@ -149,6 +235,12 @@ export default function NewMaintenanceTaskPage() {
         }
       />
 
+      {errorMessage && (
+        <PageCard className="border-red-200 bg-red-50 text-red-700">
+          {errorMessage}
+        </PageCard>
+      )}
+
       <PageCard>
         <form
           onSubmit={handleSubmit}
@@ -160,6 +252,7 @@ export default function NewMaintenanceTaskPage() {
               onChange={(event) => setTitle(event.target.value)}
               placeholder="Clean laptop vents"
               required
+              disabled={!canCreate}
               className={inputClasses}
             />
           </FormField>
@@ -168,7 +261,7 @@ export default function NewMaintenanceTaskPage() {
             <select
               value={deviceId}
               onChange={(event) => setDeviceId(event.target.value)}
-              disabled={loadingDevices}
+              disabled={loadingDevices || !canCreate}
               className={inputClasses}
             >
               <option value="">General home task</option>
@@ -185,6 +278,7 @@ export default function NewMaintenanceTaskPage() {
             <select
               value={taskType}
               onChange={(event) => setTaskType(event.target.value)}
+              disabled={!canCreate}
               className={inputClasses}
             >
               <option>Maintenance</option>
@@ -202,6 +296,7 @@ export default function NewMaintenanceTaskPage() {
               type="date"
               value={dueDate}
               onChange={(event) => setDueDate(event.target.value)}
+              disabled={!canCreate}
               className={inputClasses}
             />
           </FormField>
@@ -212,6 +307,7 @@ export default function NewMaintenanceTaskPage() {
               onChange={(event) =>
                 setRecurringInterval(event.target.value)
               }
+              disabled={!canCreate}
               className={inputClasses}
             >
               <option>None</option>
@@ -231,13 +327,14 @@ export default function NewMaintenanceTaskPage() {
                   setDescription(event.target.value)
                 }
                 placeholder="Add instructions or important notes..."
+                disabled={!canCreate}
                 className={`${inputClasses} min-h-32 resize-y`}
               />
             </FormField>
           </div>
 
-          <div className="flex flex-wrap gap-3 border-t border-[#E8E2D6] pt-6 md:col-span-2">
-            <Button type="submit" disabled={saving}>
+          <div className="flex flex-wrap gap-3 border-t border-border-subtle pt-6 md:col-span-2">
+            <Button type="submit" disabled={saving || !canCreate}>
               {saving ? (
                 <Loader2 size={18} className="animate-spin" />
               ) : (
@@ -261,7 +358,7 @@ export default function NewMaintenanceTaskPage() {
 }
 
 const inputClasses =
-  "w-full rounded-xl border border-[#E8E2D6] bg-white px-4 py-3 text-[#111827] outline-none focus:border-[#C8A96A] focus:ring-2 focus:ring-[#C8A96A]/20";
+  "w-full rounded-xl border border-border-subtle bg-white px-4 py-3 text-text-primary outline-none focus:border-interaction focus:ring-2 focus:ring-interaction/20 disabled:cursor-not-allowed disabled:bg-surface-sunken";
 
 function FormField({
   label,
@@ -272,7 +369,7 @@ function FormField({
 }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-sm font-semibold text-[#111827]">
+      <span className="mb-2 block text-sm font-semibold text-text-primary">
         {label}
       </span>
 

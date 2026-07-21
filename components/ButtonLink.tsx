@@ -12,8 +12,8 @@ export default function ButtonLink({
   variant = "primary",
 }: ButtonLinkProps) {
   const styles = {
-    primary: "bg-blue-950 text-white hover:bg-blue-900",
-    secondary: "bg-white text-blue-950 border hover:bg-gray-50",
+    primary: "bg-charcoal text-surface-card hover:bg-charcoal-hover",
+    secondary: "bg-white text-text-primary border hover:bg-surface-sunken",
     danger: "bg-red-600 text-white hover:bg-red-700",
   };
 

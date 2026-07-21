@@ -17,7 +17,6 @@ import {
   Car,
   ChefHat,
   CircleAlert,
-  FileText,
   Gamepad2,
   Home,
   ImageIcon,
@@ -27,7 +26,6 @@ import {
   Monitor,
   Plus,
   Search,
-  ShieldCheck,
   Sofa,
   Trees,
   Warehouse,
@@ -35,12 +33,15 @@ import {
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
-import { useDemoMode } from "@/hooks/useDemoMode";
+import { applyHouseholdScope } from "@/lib/data/householdScope";
+import { usePermissions } from "@/hooks/usePermissions";
 
-import PremiumGate from "@/components/PremiumGate";
+import FeatureGate from "@/components/permissions/FeatureGate";
 import PageShell from "@/components/ui/PageShell";
 import PageCard from "@/components/ui/PageCard";
+import PageHero from "@/components/ui/PageHero";
 import Button from "@/components/ui/Button";
+import { ViewerBanner } from "@/components/ui/PermissionUI";
 
 type DeviceRow = {
   id: string;
@@ -201,8 +202,12 @@ function RoomsContent() {
   const {
     user,
     isDemo,
-    loading: demoLoading,
-  } = useDemoMode();
+    householdId,
+    canCreate,
+    loading: permissionsLoading,
+    getActionHref,
+    getActionLabel,
+  } = usePermissions();
 
   const [devices, setDevices] =
     useState<HomeDevice[]>([]);
@@ -221,7 +226,7 @@ function RoomsContent() {
 
   useEffect(() => {
     async function loadRooms() {
-      if (demoLoading) {
+      if (permissionsLoading) {
         return;
       }
 
@@ -237,22 +242,33 @@ function RoomsContent() {
           return;
         }
 
-        const [
-          profileResult,
-          devicesResult,
-        ] = await Promise.all([
+        const profilePromise =
           supabase
             .from("profiles")
             .select(
               "full_name, household_name"
             )
             .eq("id", user.id)
-            .maybeSingle(),
+            .maybeSingle();
 
-          supabase
-            .from("devices")
-            .select(
-              `
+        const householdPromise =
+          householdId
+            ? supabase
+                .from("households")
+                .select("name")
+                .eq("id", householdId)
+                .maybeSingle()
+            : Promise.resolve({
+                data: null,
+                error: null,
+              });
+
+        let devicesQuery =
+          applyHouseholdScope(
+            supabase
+              .from("devices")
+              .select(
+                `
                 id,
                 device_name,
                 brand,
@@ -261,8 +277,19 @@ function RoomsContent() {
                 purchase_price,
                 warranty_date
               `
-            )
-            .eq("user_id", user.id),
+              ),
+            householdId,
+            user.id
+          );
+
+        const [
+          profileResult,
+          householdResult,
+          devicesResult,
+        ] = await Promise.all([
+          profilePromise,
+          householdPromise,
+          devicesQuery,
         ]);
 
         if (profileResult.error) {
@@ -272,26 +299,51 @@ function RoomsContent() {
           );
         }
 
-        if (devicesResult.error) {
-          throw devicesResult.error;
+        if (householdResult.error) {
+          console.error(
+            "Unable to load household:",
+            householdResult.error
+          );
         }
 
-        const displayName =
-          profileResult.data
-            ?.full_name
-            ?.trim() ||
-          user.email?.split("@")[0] ||
-          "Homeowner";
+        if (devicesResult.error) {
+          console.error(
+            "Unable to load devices:",
+            devicesResult.error
+          );
+          setDevices([]);
+          setErrorMessage(
+            "Unable to load your rooms."
+          );
+          return;
+        }
 
-        const firstName =
-          displayName.split(" ")[0];
+        const sharedHouseholdName =
+          householdResult.data?.name
+            ?.trim();
 
-        setHouseholdName(
-          profileResult.data
-            ?.household_name
-            ?.trim() ||
-            `${firstName}'s Home`
-        );
+        if (sharedHouseholdName) {
+          setHouseholdName(
+            sharedHouseholdName
+          );
+        } else {
+          const displayName =
+            profileResult.data
+              ?.full_name
+              ?.trim() ||
+            user.email?.split("@")[0] ||
+            "Homeowner";
+
+          const firstName =
+            displayName.split(" ")[0];
+
+          setHouseholdName(
+            profileResult.data
+              ?.household_name
+              ?.trim() ||
+              `${firstName}'s Home`
+          );
+        }
 
         const deviceRows =
           (devicesResult.data ||
@@ -316,7 +368,6 @@ function RoomsContent() {
           supabase
             .from("device_images")
             .select("device_id")
-            .eq("user_id", user.id)
             .in(
               "device_id",
               deviceIds
@@ -327,7 +378,6 @@ function RoomsContent() {
               "device_documents"
             )
             .select("device_id")
-            .eq("user_id", user.id)
             .in(
               "device_id",
               deviceIds
@@ -415,9 +465,7 @@ function RoomsContent() {
         );
 
         setErrorMessage(
-          possibleError.message ||
-            possibleError.details ||
-            "Unable to load your rooms."
+          "Unable to load your rooms."
         );
       } finally {
         setLoadingRooms(false);
@@ -428,7 +476,8 @@ function RoomsContent() {
   }, [
     user,
     isDemo,
-    demoLoading,
+    householdId,
+    permissionsLoading,
   ]);
 
   const rooms = useMemo(() => {
@@ -607,20 +656,6 @@ function RoomsContent() {
       );
     }, [rooms, searchTerm]);
 
-  const totalProtectedValue =
-    devices.reduce(
-      (total, device) =>
-        total +
-        device.purchasePrice,
-      0
-    );
-
-  const documentedDeviceCount =
-    devices.filter(
-      (device) =>
-        device.hasDocument
-    ).length;
-
   const photographedDeviceCount =
     devices.filter(
       (device) =>
@@ -636,14 +671,14 @@ function RoomsContent() {
     );
 
   const loading =
-    demoLoading ||
+    permissionsLoading ||
     loadingRooms;
 
   if (loading) {
     return (
       <PageShell>
         <PageCard className="flex min-h-72 items-center justify-center">
-          <div className="flex items-center gap-3 text-neutral-500">
+          <div className="flex items-center gap-3 text-text-secondary">
             <Loader2
               size={22}
               className="animate-spin"
@@ -674,82 +709,49 @@ function RoomsContent() {
 
   return (
     <PageShell>
-      <section className="rounded-[32px] bg-[#111827] px-6 py-9 text-white shadow-sm md:px-10 md:py-11">
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#C8A96A]">
-              {householdName}
-            </p>
-
-            <h1 className="mt-3 text-4xl font-semibold tracking-[-0.04em] md:text-5xl">
-              Your rooms.
-            </h1>
-
-            <p className="mt-4 max-w-xl text-sm leading-6 text-white/60 md:text-base">
-              Browse your technology
-              the same way you think
-              about your home.
-            </p>
-          </div>
-
+      <PageHero
+        section="technology"
+        eyebrow={householdName}
+        title="Your rooms."
+        description="Browse your technology the same way you think about your home."
+      >
+        {canCreate ? (
           <Button
-            href={
-              isDemo
-                ? "/signup"
-                : "/devices/add"
-            }
-            variant="secondary"
+            href={getActionHref(
+              "/devices/add",
+              "devices"
+            )}
           >
             <Plus size={17} />
-
-            {isDemo
-              ? "Create Your Vault"
-              : "Add Device"}
+            {getActionLabel("Add Device")}
           </Button>
-        </div>
-      </section>
+        ) : !user ? (
+          <Button href="/signup">
+            <Plus size={17} />
+            Create Your Vault
+          </Button>
+        ) : (
+          <div className="rounded-[var(--radius-button)] border border-border-subtle bg-surface-card/80 px-4 py-3 text-sm font-medium text-text-secondary shadow-[var(--shadow-sm)]">
+            Viewer Access · Read Only
+          </div>
+        )}
+      </PageHero>
+
+      <ViewerBanner
+        description="You can browse rooms and shared devices. Viewer access cannot add, edit, move, or delete room content."
+      />
 
       {isDemo && (
-        <section className="rounded-3xl border border-[#D8C69D] bg-[#FFF8E8] p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A6A2F]">
+        <section className="rounded-3xl border border-warning/40 bg-warning-soft p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-achievement">
             Premium Preview
           </p>
 
-          <p className="mt-2 text-sm leading-6 text-neutral-600">
+          <p className="mt-2 text-sm leading-6 text-text-secondary">
             Explore how Home Tech
             Vault organizes an entire
             household by room.
           </p>
-        </section>
-      )}
-
-      {devices.length > 0 && (
-        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <SummaryCard
-            icon={Building2}
-            label="Rooms"
-            value={rooms.length.toLocaleString()}
-          />
-
-          <SummaryCard
-            icon={Laptop}
-            label="Devices"
-            value={devices.length.toLocaleString()}
-          />
-
-          <SummaryCard
-            icon={ShieldCheck}
-            label="Protected Value"
-            value={formatCurrency(
-              totalProtectedValue
-            )}
-          />
-
-          <SummaryCard
-            icon={FileText}
-            label="Documented"
-            value={`${documentedDeviceCount}/${devices.length}`}
-          />
         </section>
       )}
 
@@ -759,7 +761,7 @@ function RoomsContent() {
             <div className="relative flex-1">
               <Search
                 size={18}
-                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400"
+                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-text-tertiary"
               />
 
               <input
@@ -771,7 +773,7 @@ function RoomsContent() {
                   )
                 }
                 placeholder="Search rooms or devices..."
-                className="w-full rounded-2xl border border-[#E8E2D6] bg-[#FAFAF8] py-3.5 pl-11 pr-11 text-sm text-[#111827] outline-none transition placeholder:text-neutral-400 focus:border-[#C8A96A] focus:bg-white focus:ring-4 focus:ring-[#C8A96A]/10"
+                className="w-full rounded-2xl border border-border-subtle bg-[#FAFAF8] py-3.5 pl-11 pr-11 text-sm text-text-primary outline-none transition placeholder:text-text-tertiary focus:border-interaction focus:bg-white focus:ring-4 focus:ring-interaction/10"
               />
 
               {searchTerm && (
@@ -781,14 +783,14 @@ function RoomsContent() {
                     setSearchTerm("")
                   }
                   aria-label="Clear search"
-                  className="absolute right-4 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-neutral-400 transition hover:bg-white hover:text-[#111827]"
+                  className="absolute right-4 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-text-tertiary transition hover:bg-white hover:text-text-primary"
                 >
                   <X size={15} />
                 </button>
               )}
             </div>
 
-            <p className="shrink-0 text-sm text-neutral-500">
+            <p className="shrink-0 text-sm text-text-secondary">
               {filteredRooms.length}{" "}
               {filteredRooms.length === 1
                 ? "room"
@@ -800,48 +802,66 @@ function RoomsContent() {
 
       {rooms.length === 0 ? (
         <PageCard className="py-14 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
             <Home size={29} />
           </div>
 
-          <h2 className="mt-5 text-2xl font-semibold tracking-[-0.03em] text-[#111827]">
+          <h2 className="mt-5 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
             Your home is ready
           </h2>
 
-          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-neutral-500">
+          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-text-secondary">
             Add your first device
             and assign it a room to
             begin building your home
             view.
           </p>
 
-          <Button
-            href={
-              isDemo
-                ? "/signup"
-                : "/devices/add"
-            }
-            className="mt-6"
-          >
-            <Plus size={17} />
-            Add Your First Device
-          </Button>
+          {canCreate ? (
+            <Button
+              href={getActionHref(
+                "/devices/add",
+                "devices"
+              )}
+              className="mt-6"
+            >
+              <Plus size={17} />
+              {getActionLabel(
+                "Add Your First Device"
+              )}
+            </Button>
+          ) : !user ? (
+            <Button
+              href="/signup"
+              className="mt-6"
+            >
+              <Plus size={17} />
+              Create Your Vault
+            </Button>
+          ) : (
+            <div className="mx-auto mt-6 max-w-md rounded-2xl bg-surface-sunken px-5 py-4 text-sm text-text-secondary">
+              You have viewer access.
+              You can browse shared
+              rooms, but you cannot add
+              or change devices.
+            </div>
+          )}
         </PageCard>
       ) : filteredRooms.length >
         0 ? (
         <section>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
+              <p className="text-overline text-charcoal-soft">
                 Room by Room
               </p>
 
-              <h2 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-[#111827]">
+              <h2 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-text-primary">
                 Explore your home
               </h2>
             </div>
 
-            <div className="flex flex-wrap gap-4 text-sm text-neutral-500">
+            <div className="flex flex-wrap gap-4 text-sm text-text-secondary">
               <span>
                 {
                   photographedDeviceCount
@@ -874,15 +894,15 @@ function RoomsContent() {
         </section>
       ) : (
         <PageCard className="py-14 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
             <Search size={28} />
           </div>
 
-          <h2 className="mt-5 text-2xl font-semibold tracking-[-0.03em] text-[#111827]">
+          <h2 className="mt-5 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
             No matching rooms
           </h2>
 
-          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-neutral-500">
+          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-text-secondary">
             Try searching for a
             different room, device,
             brand, or category.
@@ -919,10 +939,10 @@ function RoomCard({
     previewDevices.length;
 
   return (
-    <article className="group overflow-hidden rounded-[28px] border border-[#E8E2D6] bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#D8C69D] hover:shadow-lg">
-      <div className="relative bg-[#F7F5EF] px-6 py-7">
+    <article className="group overflow-hidden rounded-[var(--radius-card)] border border-border-subtle bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-warning/40 hover:shadow-lg">
+      <div className="relative bg-surface-sunken px-6 py-7">
         <div className="flex items-start justify-between gap-4">
-          <div className="flex h-14 w-14 items-center justify-center rounded-[22px] bg-white text-[#C8A96A] shadow-sm">
+          <div className="flex h-14 w-14 items-center justify-center rounded-[22px] border border-border-subtle bg-surface-card text-charcoal shadow-[var(--shadow-sm)]">
             <Icon size={25} />
           </div>
 
@@ -933,11 +953,11 @@ function RoomCard({
           />
         </div>
 
-        <h3 className="mt-7 text-2xl font-semibold tracking-[-0.04em] text-[#111827]">
+        <h3 className="mt-7 text-2xl font-semibold tracking-[-0.04em] text-text-primary">
           {room.name}
         </h3>
 
-        <p className="mt-2 inline-flex items-center gap-2 text-sm text-neutral-500">
+        <p className="mt-2 inline-flex items-center gap-2 text-sm text-text-secondary">
           <MapPin size={14} />
 
           {room.deviceCount}{" "}
@@ -956,7 +976,7 @@ function RoomCard({
                 href={`/devices/${device.id}`}
                 className="group/device flex items-center gap-3"
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
                   {device.hasPhoto ? (
                     <ImageIcon
                       size={17}
@@ -969,13 +989,13 @@ function RoomCard({
                 </div>
 
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold text-[#111827]">
+                  <p className="truncate text-sm font-semibold text-text-primary">
                     {
                       device.deviceName
                     }
                   </p>
 
-                  <p className="mt-0.5 truncate text-xs text-neutral-400">
+                  <p className="mt-0.5 truncate text-xs text-text-tertiary">
                     {[
                       device.brand,
                       device.category,
@@ -988,14 +1008,14 @@ function RoomCard({
 
                 <ArrowRight
                   size={15}
-                  className="shrink-0 text-neutral-300 transition group-hover/device:translate-x-0.5 group-hover/device:text-[#111827]"
+                  className="shrink-0 text-neutral-300 transition group-hover/device:translate-x-0.5 group-hover/device:text-text-primary"
                 />
               </Link>
             )
           )}
 
           {remainingDevices > 0 && (
-            <p className="pl-[52px] text-xs font-medium text-neutral-400">
+            <p className="pl-[52px] text-xs font-medium text-text-tertiary">
               +{remainingDevices}{" "}
               more
             </p>
@@ -1016,8 +1036,8 @@ function RoomCard({
           />
         </div>
 
-        <div className="mt-5 flex items-center justify-between border-t border-[#E8E2D6] pt-5">
-          <div className="flex items-center gap-3 text-xs text-neutral-400">
+        <div className="mt-5 flex items-center justify-between border-t border-border-subtle pt-5">
+          <div className="flex items-center gap-3 text-xs text-text-tertiary">
             <span>
               {room.photoCount} photos
             </span>
@@ -1034,7 +1054,7 @@ function RoomCard({
             href={`/devices?search=${encodeURIComponent(
               room.name
             )}`}
-            className="inline-flex items-center gap-2 text-sm font-semibold text-[#8A6A2F] transition hover:text-[#111827]"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-achievement transition hover:text-text-primary"
           >
             View Room
             <ArrowRight size={15} />
@@ -1060,7 +1080,7 @@ function RoomStatusBadge({
 
   if (completeness >= 60) {
     return (
-      <span className="rounded-full bg-[#FFF8E8] px-3 py-1.5 text-xs font-semibold text-[#8A6A2F]">
+      <span className="rounded-full bg-warning-soft px-3 py-1.5 text-xs font-semibold text-achievement">
         {completeness}% complete
       </span>
     );
@@ -1074,36 +1094,6 @@ function RoomStatusBadge({
   );
 }
 
-function SummaryCard({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: RoomIcon;
-  label: string;
-  value: string;
-}) {
-  return (
-    <PageCard className="p-5 md:p-6">
-      <div className="flex items-center justify-between gap-4">
-        <div className="min-w-0">
-          <p className="text-sm text-neutral-500">
-            {label}
-          </p>
-
-          <p className="mt-2 truncate text-2xl font-semibold tracking-[-0.03em] text-[#111827] md:text-3xl">
-            {value}
-          </p>
-        </div>
-
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
-          <Icon size={20} />
-        </div>
-      </div>
-    </PageCard>
-  );
-}
-
 function RoomMetric({
   label,
   value,
@@ -1112,12 +1102,12 @@ function RoomMetric({
   value: string;
 }) {
   return (
-    <div className="rounded-2xl bg-[#F7F5EF] p-4">
-      <p className="text-xs text-neutral-400">
+    <div className="rounded-2xl bg-surface-sunken p-4">
+      <p className="text-xs text-text-tertiary">
         {label}
       </p>
 
-      <p className="mt-2 truncate font-semibold text-[#111827]">
+      <p className="mt-2 truncate font-semibold text-text-primary">
         {value}
       </p>
     </div>
@@ -1209,38 +1199,12 @@ function formatCurrency(
 }
 
 export default function HomePage() {
-  const {
-    isDemo,
-    loading: demoModeLoading,
-  } = useDemoMode();
-
-  if (demoModeLoading) {
-    return (
-      <PageShell>
-        <PageCard className="flex min-h-72 items-center justify-center">
-          <div className="flex items-center gap-3 text-neutral-500">
-            <Loader2
-              size={22}
-              className="animate-spin"
-            />
-
-            Loading rooms...
-          </div>
-        </PageCard>
-      </PageShell>
-    );
-  }
-
-  if (isDemo) {
-    return <RoomsContent />;
-  }
-
   return (
-    <PremiumGate
-      feature="Rooms"
+    <FeatureGate
+      feature="rooms"
       description="Organize your technology room by room, track protected value, and quickly see what is stored throughout your home."
     >
       <RoomsContent />
-    </PremiumGate>
+    </FeatureGate>
   );
 }

@@ -6,11 +6,15 @@ import {
   type ReactNode,
 } from "react";
 
+import { cn } from "@/lib/design-system/cn";
+
 type ButtonVariant =
   | "primary"
   | "secondary"
   | "ghost"
-  | "danger";
+  | "danger"
+  | "premium"
+  | "link";
 
 type ButtonSize =
   | "sm"
@@ -50,25 +54,31 @@ const variantClasses: Record<
   string
 > = {
   primary:
-    "border border-[#111827] bg-[#111827] text-white shadow-sm hover:bg-[#263044] hover:shadow-md focus-visible:ring-[#111827]/20",
+    "border border-charcoal bg-charcoal text-surface-card shadow-sm hover:border-charcoal-hover hover:bg-charcoal-hover hover:shadow-md active:scale-[0.98] focus-visible:ring-charcoal/20",
 
   secondary:
-    "border border-[#E8E2D6] bg-white text-[#111827] shadow-sm hover:border-[#D8C69D] hover:bg-[#FCFAF6] hover:shadow-md focus-visible:ring-[#C8A96A]/20",
+    "border border-border-subtle bg-surface-card text-text-primary shadow-sm hover:border-border-strong hover:bg-surface-hover hover:shadow-md active:scale-[0.98] focus-visible:ring-interaction/15",
 
   ghost:
-    "border border-transparent bg-transparent text-[#111827] hover:bg-[#F7F5EF] focus-visible:ring-[#111827]/10",
+    "border border-transparent bg-transparent text-text-primary hover:bg-surface-sunken focus-visible:ring-interaction/10",
+
+  link:
+    "border border-transparent bg-transparent p-0 text-interaction hover:text-interaction-hover focus-visible:ring-interaction/15",
 
   danger:
-    "border border-red-600 bg-red-600 text-white shadow-sm hover:bg-red-700 hover:shadow-md focus-visible:ring-red-600/20",
+    "border border-danger bg-danger text-surface-card shadow-sm hover:opacity-90 hover:shadow-md active:scale-[0.98] focus-visible:ring-danger/25",
+
+  premium:
+    "border border-premium bg-premium text-surface-card shadow-sm hover:bg-premium-hover hover:shadow-md active:scale-[0.98] focus-visible:ring-premium/25",
 };
 
 const sizeClasses: Record<
   ButtonSize,
   string
 > = {
-  sm: "min-h-9 rounded-xl px-3.5 py-2 text-xs",
-  md: "min-h-11 rounded-2xl px-5 py-2.5 text-sm",
-  lg: "min-h-13 rounded-2xl px-6 py-3.5 text-base",
+  sm: "min-h-9 rounded-[var(--radius-button)] px-3.5 py-2 text-xs",
+  md: "min-h-11 rounded-[var(--radius-button)] px-5 py-2.5 text-sm",
+  lg: "min-h-12 rounded-[var(--radius-button)] px-6 py-3 text-base",
 };
 
 function buildClasses({
@@ -82,31 +92,14 @@ function buildClasses({
   fullWidth: boolean;
   className: string;
 }) {
-  return [
-    "inline-flex items-center justify-center gap-2",
-    "font-semibold leading-none",
-    "outline-none",
-    "transition-all duration-200",
-    "focus-visible:ring-4",
-    "disabled:pointer-events-none",
-    "disabled:cursor-not-allowed",
-    "disabled:opacity-50",
+  return cn(
+    "inline-flex items-center justify-center gap-2 font-medium leading-none outline-none transition-all duration-200 focus-visible:ring-4 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
     variantClasses[variant],
-    sizeClasses[size],
-    fullWidth ? "w-full" : "",
-    className,
-  ]
-    .filter(Boolean)
-    .join(" ");
+    variant !== "link" && sizeClasses[size],
+    fullWidth && "w-full",
+    className
+  );
 }
-
-type ButtonPropsWithoutTypeAndDisabled =
-  SharedProps & {
-    href?: undefined;
-  } & Omit<
-    ButtonHTMLAttributes<HTMLButtonElement>,
-    "children" | "className"
-  >;
 
 function isLinkProps(
   props: ButtonProps

@@ -12,6 +12,9 @@ import {
   Trash2,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import {
+  recordActivity,
+} from "@/lib/activity";
 
 type DeviceDocumentRow = {
   id: string;
@@ -189,6 +192,23 @@ export default function DeviceDocuments({
 
           throw recordError;
         }
+
+        await recordActivity({
+          activityType:
+            selectedType === "Receipt"
+              ? "receipt.uploaded"
+              : "document.uploaded",
+          title:
+            selectedType === "Receipt"
+              ? `Receipt uploaded (${file.name})`
+              : `Document uploaded (${file.name})`,
+          description:
+            selectedType === "Warranty"
+              ? "Warranty document attached to the device."
+              : `${selectedType} saved to the device record.`,
+          userId: user.id,
+          deviceId,
+        });
       }
 
       event.target.value = "";
@@ -280,18 +300,18 @@ export default function DeviceDocuments({
   }
 
   return (
-    <section className="mt-10 border-t border-[#E8E2D6] pt-10">
+    <section className="mt-10 border-t border-border-subtle pt-10">
       <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#C8A96A]">
+          <p className="text-overline text-charcoal-soft">
             Digital Binder
           </p>
 
-          <h2 className="mt-2 text-2xl font-bold text-[#111827]">
+          <h2 className="mt-2 text-2xl font-bold text-text-primary">
             Documents
           </h2>
 
-          <p className="mt-2 text-sm text-neutral-500">
+          <p className="mt-2 text-sm text-text-secondary">
             Store manuals, receipts, warranties, and important files.
           </p>
         </div>
@@ -302,7 +322,7 @@ export default function DeviceDocuments({
             onChange={(event) =>
               setSelectedType(event.target.value)
             }
-            className="rounded-xl border border-[#E8E2D6] bg-white px-4 py-3 text-sm outline-none focus:border-[#C8A96A]"
+            className="rounded-xl border border-border-subtle bg-white px-4 py-3 text-sm outline-none focus:border-interaction"
           >
             {documentTypes.map((type) => (
               <option key={type} value={type}>
@@ -311,7 +331,7 @@ export default function DeviceDocuments({
             ))}
           </select>
 
-          <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#111827] px-5 py-3 font-semibold text-white transition hover:opacity-90">
+          <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-charcoal px-5 py-3 font-semibold text-surface-card transition hover:opacity-90">
             {uploading ? (
               <Loader2 className="animate-spin" size={18} />
             ) : (
@@ -333,7 +353,7 @@ export default function DeviceDocuments({
       </div>
 
       {loading ? (
-        <div className="mt-6 flex items-center gap-3 rounded-2xl bg-[#F7F5EF] p-6 text-neutral-500">
+        <div className="mt-6 flex items-center gap-3 rounded-2xl bg-surface-sunken p-6 text-text-secondary">
           <Loader2 className="animate-spin" size={20} />
           Loading documents...
         </div>
@@ -342,17 +362,17 @@ export default function DeviceDocuments({
           {errorMessage}
         </div>
       ) : documents.length === 0 ? (
-        <div className="mt-6 rounded-3xl border-2 border-dashed border-[#D8D1C3] bg-[#FBFAF7] p-10 text-center">
+        <div className="mt-6 rounded-3xl border-2 border-dashed border-border-subtle bg-surface-base p-10 text-center">
           <FileText
             size={36}
-            className="mx-auto text-[#C8A96A]"
+            className="mx-auto text-charcoal-soft"
           />
 
-          <h3 className="mt-4 font-semibold text-[#111827]">
+          <h3 className="mt-4 font-semibold text-text-primary">
             Your digital binder is empty
           </h3>
 
-          <p className="mt-2 text-sm text-neutral-500">
+          <p className="mt-2 text-sm text-text-secondary">
             Upload a manual, receipt, warranty, or installation guide.
           </p>
         </div>
@@ -364,19 +384,19 @@ export default function DeviceDocuments({
             return (
               <div
                 key={document.id}
-                className="flex flex-col gap-4 rounded-2xl border border-[#E8E2D6] bg-white p-5 sm:flex-row sm:items-center sm:justify-between"
+                className="flex flex-col gap-4 rounded-2xl border border-border-subtle bg-white p-5 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div className="flex min-w-0 items-center gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
                     <Icon size={22} />
                   </div>
 
                   <div className="min-w-0">
-                    <p className="truncate font-semibold text-[#111827]">
+                    <p className="truncate font-semibold text-text-primary">
                       {document.document_name}
                     </p>
 
-                    <p className="mt-1 text-sm text-neutral-500">
+                    <p className="mt-1 text-sm text-text-secondary">
                       {document.document_type} ·{" "}
                       {formatFileSize(document.file_size)}
                     </p>
@@ -388,7 +408,7 @@ export default function DeviceDocuments({
                     href={document.signedUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-2 rounded-xl bg-[#F7F5EF] px-4 py-2 text-sm font-semibold text-[#111827] transition hover:bg-[#EFECE5]"
+                    className="inline-flex items-center gap-2 rounded-xl bg-surface-sunken px-4 py-2 text-sm font-semibold text-text-primary transition hover:bg-[#EFECE5]"
                   >
                     <Download size={16} />
                     Open

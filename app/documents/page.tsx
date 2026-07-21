@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
+import { applyHouseholdScope } from "@/lib/data/householdScope";
 
 import {
   demoDevices,
@@ -36,6 +37,7 @@ import DeleteDocumentButton from "@/components/DeleteDocumentButton";
 
 import PageShell from "@/components/ui/PageShell";
 import PageCard from "@/components/ui/PageCard";
+import PageHero from "@/components/ui/PageHero";
 import Button from "@/components/ui/Button";
 
 import {
@@ -70,8 +72,7 @@ export default function DocumentsPage() {
   const {
     user,
     isDemo,
-    isViewer,
-    canUpload,
+    householdId,
     canDelete,
     loading: permissionsLoading,
   } = usePermissions();
@@ -170,61 +171,25 @@ export default function DocumentsPage() {
           return;
         }
 
-        const {
-          data: membership,
-          error: membershipError,
-        } = await supabase
-          .from("household_members")
-          .select("household_id")
-          .eq("user_id", user.id)
-          .limit(1)
-          .maybeSingle();
-
-        if (membershipError) {
-          throw membershipError;
-        }
-
-        const currentHouseholdId =
-          membership?.household_id ??
-          null;
-
         let documentQuery =
-          supabase
-            .from("documents")
-            .select("*");
+          applyHouseholdScope(
+            supabase
+              .from("documents")
+              .select("*"),
+            householdId,
+            user.id
+          );
 
         let deviceQuery =
-          supabase
-            .from("devices")
-            .select(
-              "id, device_name"
-            );
-
-        if (currentHouseholdId) {
-          documentQuery =
-            documentQuery.eq(
-              "household_id",
-              currentHouseholdId
-            );
-
-          deviceQuery =
-            deviceQuery.eq(
-              "household_id",
-              currentHouseholdId
-            );
-        } else {
-          documentQuery =
-            documentQuery.eq(
-              "user_id",
-              user.id
-            );
-
-          deviceQuery =
-            deviceQuery.eq(
-              "user_id",
-              user.id
-            );
-        }
+          applyHouseholdScope(
+            supabase
+              .from("devices")
+              .select(
+                "id, device_name"
+              ),
+            householdId,
+            user.id
+          );
 
         const [
           documentResult,
@@ -299,6 +264,7 @@ export default function DocumentsPage() {
   }, [
     user,
     isDemo,
+    householdId,
     permissionsLoading,
   ]);
 
@@ -411,7 +377,7 @@ export default function DocumentsPage() {
     return (
       <PageShell>
         <PageCard className="flex min-h-72 items-center justify-center">
-          <div className="flex items-center gap-3 text-neutral-500">
+          <div className="flex items-center gap-3 text-text-secondary">
             <Loader2
               size={22}
               className="animate-spin"
@@ -442,36 +408,20 @@ export default function DocumentsPage() {
 
   return (
     <PageShell>
-      <section className="rounded-[32px] bg-[#111827] px-6 py-9 text-white shadow-sm md:px-10 md:py-11">
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#C8A96A]">
-              Document Vault
-            </p>
-
-            <h1 className="mt-3 text-4xl font-semibold tracking-[-0.04em] md:text-5xl">
-              Your documents.
-            </h1>
-
-            <p className="mt-4 max-w-xl text-sm leading-6 text-white/60 md:text-base">
-              Keep receipts, manuals,
-              warranties, invoices, and
-              important device files
-              together.
-            </p>
-          </div>
-
-          <PageAction
-            canCreate={canUpload}
-            href="/documents/upload"
-            label="Upload Document"
-            variant="light"
-          />
-        </div>
-      </section>
+      <PageHero
+        section="digitalVault"
+        eyebrow="Document Vault"
+        title="Your documents."
+        description="Keep receipts, manuals, warranties, invoices, and important device files together."
+      >
+        <PageAction
+          href="/documents/upload"
+          label="Upload Document"
+          variant="primary"
+        />
+      </PageHero>
 
       <ViewerBanner
-        show={isViewer}
         description={
           user
             ? "You can view and open shared documents. Viewer access cannot upload, replace, edit, or delete files."
@@ -513,7 +463,7 @@ export default function DocumentsPage() {
             <div className="relative">
               <Search
                 size={18}
-                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400"
+                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-text-tertiary"
               />
 
               <input
@@ -525,7 +475,7 @@ export default function DocumentsPage() {
                   )
                 }
                 placeholder="Search documents or devices..."
-                className="w-full rounded-2xl border border-[#E8E2D6] bg-[#FAFAF8] py-3.5 pl-11 pr-11 text-sm text-[#111827] outline-none transition placeholder:text-neutral-400 focus:border-[#C8A96A] focus:bg-white focus:ring-4 focus:ring-[#C8A96A]/10"
+                className="w-full rounded-2xl border border-border-subtle bg-surface-sunken py-3.5 pl-11 pr-11 text-sm text-text-primary outline-none transition placeholder:text-text-tertiary htv-focus-ring focus:border-interaction focus:bg-surface-card focus:ring-4 focus:ring-interaction/15"
               />
 
               {searchTerm && (
@@ -535,7 +485,7 @@ export default function DocumentsPage() {
                     setSearchTerm("")
                   }
                   aria-label="Clear search"
-                  className="absolute right-4 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-neutral-400 transition hover:bg-white hover:text-[#111827]"
+                  className="absolute right-4 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-text-tertiary transition hover:bg-white hover:text-text-primary"
                 >
                   <X size={15} />
                 </button>
@@ -561,8 +511,8 @@ export default function DocumentsPage() {
                       className={
                         "shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition " +
                         (active
-                          ? "bg-[#111827] text-white"
-                          : "border border-[#E8E2D6] bg-white text-neutral-500 hover:border-[#C8A96A] hover:text-[#111827]")
+                          ? "bg-charcoal text-surface-card"
+                          : "border border-border-subtle bg-white text-text-secondary hover:border-interaction hover:text-text-primary")
                       }
                     >
                       {type === "All"
@@ -574,8 +524,8 @@ export default function DocumentsPage() {
               )}
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#E8E2D6] pt-4">
-              <p className="text-sm text-neutral-500">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border-subtle pt-4">
+              <p className="text-sm text-text-secondary">
                 {filteredDocuments.length}{" "}
                 {filteredDocuments.length ===
                 1
@@ -587,7 +537,7 @@ export default function DocumentsPage() {
                 <button
                   type="button"
                   onClick={clearFilters}
-                  className="inline-flex items-center gap-2 text-sm font-semibold text-[#111827] transition hover:text-[#8A6A2F]"
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-text-primary transition hover:text-achievement"
                 >
                   <X size={15} />
                   Clear filters
@@ -624,15 +574,15 @@ export default function DocumentsPage() {
         </section>
       ) : documents.length > 0 ? (
         <PageCard className="py-14 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
             <Search size={28} />
           </div>
 
-          <h2 className="mt-5 text-2xl font-semibold tracking-[-0.03em] text-[#111827]">
+          <h2 className="mt-5 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
             No matching documents
           </h2>
 
-          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-neutral-500">
+          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-text-secondary">
             Try a different search
             term or document type.
           </p>
@@ -650,7 +600,6 @@ export default function DocumentsPage() {
           icon={FileText}
           title="No documents yet"
           description="Upload receipts, manuals, warranties, invoices, and other important files so they are ready when needed."
-          canCreate={canUpload}
           href="/documents/upload"
           buttonLabel="Upload Your First Document"
         />
@@ -713,8 +662,8 @@ function DocumentCard({
       : "/devices";
 
   return (
-    <article className="group overflow-hidden rounded-[28px] border border-[#E8E2D6] bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#D8C69D] hover:shadow-lg">
-      <div className="relative aspect-[4/3] overflow-hidden bg-[#F7F5EF]">
+    <article className="group overflow-hidden rounded-[var(--radius-card)] border border-border-subtle bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-warning/40 hover:shadow-lg">
+      <div className="relative aspect-[4/3] overflow-hidden bg-surface-sunken">
         {isImage &&
         document.file_url &&
         !isDemo ? (
@@ -727,42 +676,42 @@ function DocumentCard({
           <div className="flex h-full flex-col items-center justify-center px-6 text-center">
             <div
               className={
-                "flex h-20 w-20 items-center justify-center rounded-[28px] bg-white shadow-sm " +
+                "flex h-20 w-20 items-center justify-center rounded-[var(--radius-card)] bg-white shadow-sm " +
                 visual.iconClassName
               }
             >
               <VisualIcon size={32} />
             </div>
 
-            <p className="mt-4 text-xs font-semibold uppercase tracking-[0.16em] text-neutral-400">
+            <p className="mt-4 text-xs font-semibold uppercase tracking-[0.16em] text-text-tertiary">
               {visual.label}
             </p>
           </div>
         )}
 
-        <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1.5 text-xs font-semibold text-[#111827] shadow-sm backdrop-blur">
+        <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1.5 text-xs font-semibold text-text-primary shadow-sm backdrop-blur">
           {document.file_type ||
             "Document"}
         </span>
 
         {isDemo && (
-          <span className="absolute right-4 top-4 rounded-full bg-[#111827]/90 px-3 py-1.5 text-xs font-semibold text-[#C8A96A] shadow-sm backdrop-blur">
+          <span className="absolute right-4 top-4 rounded-full bg-charcoal/90 px-3 py-1.5 text-xs font-semibold text-charcoal shadow-sm backdrop-blur">
             Demo
           </span>
         )}
       </div>
 
       <div className="p-5">
-        <h2 className="line-clamp-2 text-xl font-semibold tracking-[-0.03em] text-[#111827]">
+        <h2 className="line-clamp-2 text-xl font-semibold tracking-[-0.03em] text-text-primary">
           {title}
         </h2>
 
-        <p className="mt-2 truncate text-sm text-neutral-400">
+        <p className="mt-2 truncate text-sm text-text-tertiary">
           {document.file_name}
         </p>
 
-        <div className="mt-5 rounded-[20px] bg-[#F7F5EF] p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-400">
+        <div className="mt-5 rounded-[20px] bg-surface-sunken p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-text-tertiary">
             Connected Device
           </p>
 
@@ -773,7 +722,7 @@ function DocumentCard({
                   ? "/devices"
                   : deviceHref
               }
-              className="mt-2 inline-flex max-w-full items-center gap-2 font-semibold text-[#111827] transition hover:text-[#8A6A2F]"
+              className="mt-2 inline-flex max-w-full items-center gap-2 font-semibold text-text-primary transition hover:text-achievement"
             >
               <span className="truncate">
                 {deviceName}
@@ -785,14 +734,14 @@ function DocumentCard({
               />
             </Link>
           ) : (
-            <p className="mt-2 font-semibold text-neutral-500">
+            <p className="mt-2 font-semibold text-text-secondary">
               Unassigned
             </p>
           )}
         </div>
 
         {document.created_at && (
-          <p className="mt-4 text-xs text-neutral-400">
+          <p className="mt-4 text-xs text-text-tertiary">
             Added{" "}
             {formatDate(
               document.created_at
@@ -800,12 +749,12 @@ function DocumentCard({
           </p>
         )}
 
-        <div className="mt-5 flex items-center gap-3 border-t border-[#E8E2D6] pt-5">
+        <div className="mt-5 flex items-center gap-3 border-t border-border-subtle pt-5">
           {isDemo ? (
             <button
               type="button"
               onClick={onDemoPreview}
-              className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-2xl bg-[#111827] px-4 text-sm font-semibold text-white transition hover:bg-[#263044]"
+              className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-2xl bg-charcoal px-4 text-sm font-semibold text-surface-card transition hover:bg-charcoal-hover"
             >
               <ExternalLink
                 size={16}
@@ -821,7 +770,7 @@ function DocumentCard({
                   }
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-2xl bg-[#111827] px-4 text-sm font-semibold text-white transition hover:bg-[#263044]"
+                  className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-2xl bg-charcoal px-4 text-sm font-semibold text-surface-card transition hover:bg-charcoal-hover"
                 >
                   <ExternalLink
                     size={16}
@@ -832,7 +781,7 @@ function DocumentCard({
                 <button
                   type="button"
                   disabled
-                  className="inline-flex min-h-11 flex-1 cursor-not-allowed items-center justify-center rounded-2xl bg-neutral-100 px-4 text-sm font-semibold text-neutral-400"
+                  className="inline-flex min-h-11 flex-1 cursor-not-allowed items-center justify-center rounded-2xl bg-neutral-100 px-4 text-sm font-semibold text-text-tertiary"
                 >
                   File unavailable
                 </button>
@@ -886,13 +835,13 @@ function DemoPreviewModal({
       }}
     >
       <div className="w-full max-w-lg overflow-hidden rounded-[30px] bg-white shadow-2xl">
-        <div className="flex items-center justify-between border-b border-[#E8E2D6] px-5 py-4">
+        <div className="flex items-center justify-between border-b border-border-subtle px-5 py-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#C8A96A]">
+            <p className="text-overline text-section-vault">
               Sample Preview
             </p>
 
-            <h2 className="mt-1 font-semibold text-[#111827]">
+            <h2 className="mt-1 font-semibold text-text-primary">
               {getDocumentTitle(
                 document
               )}
@@ -903,28 +852,28 @@ function DemoPreviewModal({
             type="button"
             onClick={onClose}
             aria-label="Close preview"
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-[#F7F5EF] text-neutral-500 transition hover:text-[#111827]"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-sunken text-text-secondary transition hover:text-text-primary"
           >
             <X size={18} />
           </button>
         </div>
 
         <div className="p-6">
-          <div className="flex min-h-52 flex-col items-center justify-center rounded-[24px] bg-[#F7F5EF] p-6 text-center">
+          <div className="flex min-h-52 flex-col items-center justify-center rounded-[24px] bg-surface-sunken p-6 text-center">
             <div
               className={
-                "flex h-20 w-20 items-center justify-center rounded-[28px] bg-white shadow-sm " +
+                "flex h-20 w-20 items-center justify-center rounded-[var(--radius-card)] bg-white shadow-sm " +
                 visual.iconClassName
               }
             >
               <VisualIcon size={32} />
             </div>
 
-            <p className="mt-5 text-sm font-semibold text-[#111827]">
+            <p className="mt-5 text-sm font-semibold text-text-primary">
               {document.file_name}
             </p>
 
-            <p className="mt-2 text-sm text-neutral-500">
+            <p className="mt-2 text-sm text-text-secondary">
               {document.file_type}
             </p>
           </div>
@@ -947,8 +896,8 @@ function DemoPreviewModal({
             />
           </div>
 
-          <div className="mt-6 rounded-2xl border border-[#D8C69D] bg-[#FFF8E8] p-4">
-            <p className="text-sm leading-6 text-neutral-600">
+          <div className="mt-6 rounded-2xl border border-warning/40 bg-warning-soft p-4">
+            <p className="text-sm leading-6 text-text-secondary">
               This is a sample
               document preview. Create
               an account to upload and
@@ -986,12 +935,12 @@ function PreviewDetail({
   value: string;
 }) {
   return (
-    <div className="rounded-2xl bg-[#F7F5EF] p-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-400">
+    <div className="rounded-2xl bg-surface-sunken p-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-text-tertiary">
         {label}
       </p>
 
-      <p className="mt-2 truncate text-sm font-semibold text-[#111827]">
+      <p className="mt-2 truncate text-sm font-semibold text-text-primary">
         {value}
       </p>
     </div>
@@ -1011,16 +960,16 @@ function SummaryCard({
     <PageCard className="p-5 md:p-6">
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-sm text-neutral-500">
+          <p className="text-sm text-text-secondary">
             {label}
           </p>
 
-          <p className="mt-2 truncate text-2xl font-semibold tracking-[-0.03em] text-[#111827] md:text-3xl">
+          <p className="mt-2 truncate text-2xl font-semibold tracking-[-0.03em] text-text-primary md:text-3xl">
             {value}
           </p>
         </div>
 
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
           <Icon size={20} />
         </div>
       </div>
@@ -1049,7 +998,7 @@ function getDocumentVisual(
       icon: ShieldCheck,
       label: "Warranty",
       iconClassName:
-        "text-[#C8A96A]",
+        "text-section-vault",
     };
   }
 
@@ -1065,7 +1014,7 @@ function getDocumentVisual(
       icon: ReceiptText,
       label: "Purchase Record",
       iconClassName:
-        "text-[#C8A96A]",
+        "text-section-vault",
     };
   }
 
@@ -1081,7 +1030,7 @@ function getDocumentVisual(
       icon: ImageIcon,
       label: "Image",
       iconClassName:
-        "text-[#C8A96A]",
+        "text-section-vault",
     };
   }
 
@@ -1097,7 +1046,7 @@ function getDocumentVisual(
       icon: FileText,
       label: "Manual",
       iconClassName:
-        "text-[#C8A96A]",
+        "text-section-vault",
     };
   }
 
@@ -1105,7 +1054,7 @@ function getDocumentVisual(
     icon: File,
     label: "Document",
     iconClassName:
-      "text-[#C8A96A]",
+      "text-section-vault",
   };
 }
 

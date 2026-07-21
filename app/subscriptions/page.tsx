@@ -18,6 +18,7 @@ import {
 import SubscriptionCard from "@/components/SubscriptionCard";
 import PageShell from "@/components/ui/PageShell";
 import PageCard from "@/components/ui/PageCard";
+import PageHero from "@/components/ui/PageHero";
 import Button from "@/components/ui/Button";
 
 import {
@@ -44,6 +45,7 @@ export default function SubscriptionsPage() {
   const {
     user,
     loading: permissionsLoading,
+    householdId,
     isViewer,
     canCreate,
     canEdit,
@@ -88,7 +90,10 @@ export default function SubscriptionsPage() {
         setErrorMessage("");
 
         const data =
-          await getSubscriptions(user);
+          await getSubscriptions(
+            user,
+            householdId
+          );
 
         if (!mounted) {
           return;
@@ -125,6 +130,7 @@ export default function SubscriptionsPage() {
   }, [
     user,
     permissionsLoading,
+    householdId,
   ]);
 
   const categories = useMemo(() => {
@@ -258,7 +264,7 @@ export default function SubscriptionsPage() {
     return (
       <PageShell>
         <PageCard className="flex min-h-72 items-center justify-center">
-          <div className="flex items-center gap-3 text-neutral-500">
+          <div className="flex items-center gap-3 text-text-secondary">
             <Loader2
               className="animate-spin"
               size={22}
@@ -289,37 +295,20 @@ export default function SubscriptionsPage() {
 
   return (
     <PageShell>
-      <section className="rounded-[32px] bg-[#111827] px-6 py-9 text-white shadow-sm md:px-10 md:py-11">
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#C8A96A]">
-              Recurring Services
-            </p>
+      <PageHero
+        section="technology"
+        eyebrow="Recurring Services"
+        title="Your subscriptions."
+        description="Track recurring technology expenses, renewal dates, and yearly costs in one place."
+      >
+        <PageAction
+          href="/subscriptions/add"
+          label="Add Subscription"
+          variant="primary"
+        />
+      </PageHero>
 
-            <h1 className="mt-3 text-4xl font-semibold tracking-[-0.04em] md:text-5xl">
-              Your subscriptions.
-            </h1>
-
-            <p className="mt-4 max-w-xl text-sm leading-6 text-white/60 md:text-base">
-              Track recurring technology
-              expenses, renewal dates, and
-              yearly costs in one place.
-            </p>
-          </div>
-
-          <PageAction
-            canCreate={canCreate}
-            href="/subscriptions/add"
-            label="Add Subscription"
-            variant="light"
-          />
-        </div>
-      </section>
-
-      <ViewerBanner
-        show={isViewer}
-        description="Explore sample recurring services, renewal dates, and technology costs. Viewer access is read-only."
-      />
+      <ViewerBanner description="Explore sample recurring services, renewal dates, and technology costs. Viewer access is read-only." />
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <SummaryCard
@@ -358,15 +347,15 @@ export default function SubscriptionsPage() {
       {subscriptions.length > 0 && (
         <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
           <PageCard className="p-7 md:p-9">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
+            <p className="text-overline text-charcoal-soft">
               Spending Overview
             </p>
 
-            <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[#111827]">
+            <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
               Recurring technology costs
             </h2>
 
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-500">
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-text-secondary">
               A simple view of what your
               subscriptions cost over time.
             </p>
@@ -395,8 +384,8 @@ export default function SubscriptionsPage() {
             </div>
           </PageCard>
 
-          <PageCard className="bg-[#111827] p-7 text-white md:p-9">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
+          <PageCard className="overflow-hidden p-0"><div className="htv-plan-band p-7 text-text-primary md:p-9">
+            <p className="text-overline text-charcoal-soft">
               Subscription Insight
             </p>
 
@@ -408,11 +397,12 @@ export default function SubscriptionsPage() {
               )}
             </h2>
 
-            <p className="mt-4 text-sm leading-6 text-white/55">
+            <p className="mt-4 text-sm leading-6 text-text-secondary">
               Review recurring services
               regularly to make sure each
               one still provides value.
             </p>
+          </div>
           </PageCard>
         </section>
       )}
@@ -423,7 +413,7 @@ export default function SubscriptionsPage() {
             <div className="relative">
               <Search
                 size={18}
-                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400"
+                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-text-tertiary"
               />
 
               <input
@@ -435,7 +425,7 @@ export default function SubscriptionsPage() {
                   )
                 }
                 placeholder="Search subscriptions..."
-                className="w-full rounded-2xl border border-[#E8E2D6] bg-[#FAFAF8] py-3.5 pl-11 pr-11 text-sm text-[#111827] outline-none transition placeholder:text-neutral-400 focus:border-[#C8A96A] focus:bg-white focus:ring-4 focus:ring-[#C8A96A]/10"
+                className="w-full rounded-2xl border border-border-subtle bg-[#FAFAF8] py-3.5 pl-11 pr-11 text-sm text-text-primary outline-none transition placeholder:text-text-tertiary focus:border-interaction focus:bg-white focus:ring-4 focus:ring-interaction/10"
               />
 
               {searchTerm && (
@@ -445,7 +435,7 @@ export default function SubscriptionsPage() {
                     setSearchTerm("")
                   }
                   aria-label="Clear search"
-                  className="absolute right-4 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-neutral-400 transition hover:bg-white hover:text-[#111827]"
+                  className="absolute right-4 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-text-tertiary transition hover:bg-white hover:text-text-primary"
                 >
                   <X size={15} />
                 </button>
@@ -471,8 +461,8 @@ export default function SubscriptionsPage() {
                       className={
                         "shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition " +
                         (active
-                          ? "bg-[#111827] text-white"
-                          : "border border-[#E8E2D6] bg-white text-neutral-500 hover:border-[#C8A96A] hover:text-[#111827]")
+                          ? "bg-charcoal text-surface-card"
+                          : "border border-border-subtle bg-white text-text-secondary hover:border-border-strong hover:text-text-primary")
                       }
                     >
                       {category === "All"
@@ -484,8 +474,8 @@ export default function SubscriptionsPage() {
               )}
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#E8E2D6] pt-4">
-              <p className="text-sm text-neutral-500">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border-subtle pt-4">
+              <p className="text-sm text-text-secondary">
                 {filteredSubscriptions.length}{" "}
                 {filteredSubscriptions.length ===
                 1
@@ -497,7 +487,7 @@ export default function SubscriptionsPage() {
                 <button
                   type="button"
                   onClick={clearFilters}
-                  className="inline-flex items-center gap-2 text-sm font-semibold text-[#111827] transition hover:text-[#8A6A2F]"
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-text-primary transition hover:text-achievement"
                 >
                   <X size={15} />
                   Clear filters
@@ -513,7 +503,6 @@ export default function SubscriptionsPage() {
           icon={CreditCard}
           title="No subscriptions yet"
           description="Track streaming services, cloud storage, software, VPNs, domains, internet services, and other recurring technology expenses."
-          canCreate={canCreate}
           href="/subscriptions/add"
           buttonLabel="Add Your First Subscription"
         />
@@ -555,15 +544,15 @@ export default function SubscriptionsPage() {
         </section>
       ) : (
         <PageCard className="py-14 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
             <Search size={28} />
           </div>
 
-          <h2 className="mt-5 text-2xl font-semibold tracking-[-0.03em] text-[#111827]">
+          <h2 className="mt-5 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
             No matching subscriptions
           </h2>
 
-          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-neutral-500">
+          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-text-secondary">
             Try changing your search or
             subscription category.
           </p>
@@ -596,20 +585,20 @@ function SummaryCard({
     <PageCard className="p-5 md:p-6">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-sm text-neutral-500">
+          <p className="text-sm text-text-secondary">
             {label}
           </p>
 
-          <p className="mt-2 truncate text-2xl font-semibold tracking-[-0.03em] text-[#111827] md:text-3xl">
+          <p className="mt-2 truncate text-2xl font-semibold tracking-[-0.03em] text-text-primary md:text-3xl">
             {value}
           </p>
 
-          <p className="mt-2 text-xs text-neutral-400">
+          <p className="mt-2 text-xs text-text-tertiary">
             {description}
           </p>
         </div>
 
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
           <Icon size={20} />
         </div>
       </div>
@@ -625,12 +614,12 @@ function CostTile({
   value: string;
 }) {
   return (
-    <div className="rounded-[22px] bg-[#F7F5EF] p-5">
-      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-400">
+    <div className="rounded-[22px] bg-surface-sunken p-5">
+      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-text-tertiary">
         {label}
       </p>
 
-      <p className="mt-2 text-xl font-semibold tracking-[-0.03em] text-[#111827]">
+      <p className="mt-2 text-xl font-semibold tracking-[-0.03em] text-text-primary">
         {value}
       </p>
     </div>

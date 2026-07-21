@@ -12,20 +12,32 @@ import {
   Sparkles,
 } from "lucide-react";
 
-import { useSubscription } from "@/hooks/useSubscription";
+import { usePermissions } from "@/hooks/usePermissions";
+import PlanAccessSummary from "@/components/permissions/PlanAccessSummary";
+import {
+  formatSubscriptionStatus,
+} from "@/lib/permissions/effectivePlan";
 import PageShell from "@/components/ui/PageShell";
 import PageTitle from "@/components/ui/PageTitle";
 import PageCard from "@/components/ui/PageCard";
+import IconWell from "@/components/ui/IconWell";
 import Button from "@/components/ui/Button";
+import { ReadOnlyNotice, ViewerBanner } from "@/components/ui/PermissionUI";
 
 export default function BillingPage() {
   const {
     loading,
     plan,
-    status,
+    planDisplayName,
+    roleDisplayName,
+    effectiveStatus,
     currentPeriodEnd,
     isActive,
-  } = useSubscription();
+    isFree,
+    canManageBilling,
+    billingManagedByHousehold,
+    isDemo,
+  } = usePermissions();
 
   const [openingPortal, setOpeningPortal] =
     useState(false);
@@ -79,12 +91,7 @@ export default function BillingPage() {
     }
   }
 
-  const planName =
-    plan === "family"
-      ? "Family"
-      : plan === "pro"
-        ? "Pro"
-        : "Free";
+  const planName = planDisplayName;
 
   const monthlyPrice =
     plan === "family"
@@ -100,12 +107,12 @@ export default function BillingPage() {
         title="Billing & Subscription"
         description="Review your current plan and manage your Home Tech Vault subscription."
         action={
-          plan === "free" ? (
+          isFree ? (
             <Button href="/upgrade">
               <Sparkles size={18} />
               View Plans
             </Button>
-          ) : (
+          ) : canManageBilling ? (
             <Button
               onClick={openPortal}
               disabled={openingPortal}
@@ -123,13 +130,32 @@ export default function BillingPage() {
                 ? "Opening..."
                 : "Manage Billing"}
             </Button>
-          )
+          ) : null
         }
       />
 
+      <ViewerBanner />
+
+      <PlanAccessSummary showBillingNote />
+
+      {!canManageBilling &&
+        billingManagedByHousehold && (
+          <ReadOnlyNotice
+            show
+            message="Managed by your Family Plan Admin. Billing changes must be made by the household billing owner."
+          />
+        )}
+
+      {!billingManagedByHousehold && (
+        <ReadOnlyNotice
+          show={!loading && !isDemo && !canManageBilling}
+          message="Only the subscription owner or an authorized household admin can manage billing."
+        />
+      )}
+
       {loading ? (
         <PageCard className="flex min-h-64 items-center justify-center">
-          <div className="flex items-center gap-3 text-neutral-500">
+          <div className="flex items-center gap-3 text-text-secondary">
             <Loader2
               size={22}
               className="animate-spin"
@@ -147,28 +173,32 @@ export default function BillingPage() {
 
           <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
             <PageCard className="overflow-hidden p-0">
-              <div className="bg-[#111827] p-7 text-white md:p-8">
+              <div className="border-b border-border-subtle bg-gradient-to-br from-section-insights-soft via-surface-card to-surface-base p-7 md:p-8">
                 <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#C8A96A]">
+                    <p className="text-overline text-section-insights">
                       Current Plan
                     </p>
 
                     <div className="mt-4 flex items-center gap-3">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-[#C8A96A]">
-                        {plan === "free" ? (
-                          <ShieldCheck size={24} />
-                        ) : (
-                          <Crown size={24} />
-                        )}
-                      </div>
+                      <IconWell
+                        icon={isFree ? ShieldCheck : Crown}
+                        section="insights"
+                        size="lg"
+                      />
 
                       <div>
-                        <h2 className="text-3xl font-bold">
+                        <h2 className="text-3xl font-bold text-text-primary">
                           {planName}
                         </h2>
 
-                        <p className="mt-1 text-sm text-white/60">
+                        {roleDisplayName && (
+                          <p className="mt-1 text-sm font-semibold text-section-insights">
+                            {roleDisplayName}
+                          </p>
+                        )}
+
+                        <p className="mt-1 text-sm text-text-secondary">
                           {monthlyPrice}
                         </p>
                       </div>
@@ -178,19 +208,19 @@ export default function BillingPage() {
                   <span
                     className={`inline-flex w-fit items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold ${
                       isActive
-                        ? "bg-emerald-400/15 text-emerald-300"
-                        : "bg-white/10 text-white/70"
+                        ? "bg-home-health-soft text-home-health"
+                        : "bg-surface-sunken text-text-secondary"
                     }`}
                   >
                     <span
                       className={`h-2 w-2 rounded-full ${
                         isActive
-                          ? "bg-emerald-400"
-                          : "bg-white/40"
+                          ? "bg-home-health"
+                          : "bg-text-tertiary"
                       }`}
                     />
 
-                    {formatStatus(status)}
+                    {formatSubscriptionStatus(effectiveStatus)}
                   </span>
                 </div>
               </div>
@@ -199,7 +229,7 @@ export default function BillingPage() {
                 <BillingDetail
                   icon={CalendarDays}
                   label={
-                    status === "canceled"
+                    effectiveStatus === "canceled"
                       ? "Access Ends"
                       : "Next Renewal"
                   }
@@ -219,18 +249,18 @@ export default function BillingPage() {
             </PageCard>
 
             <PageCard>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
+              <p className="text-overline text-section-insights">
                 Subscription Access
               </p>
 
-              <h2 className="mt-2 text-2xl font-bold text-[#111827]">
-                {plan === "free"
+              <h2 className="mt-2 text-2xl font-bold text-text-primary">
+                {isFree
                   ? "Upgrade your vault"
                   : `${planName} features unlocked`}
               </h2>
 
-              <p className="mt-2 text-sm leading-6 text-neutral-500">
-                {plan === "free"
+              <p className="mt-2 text-sm leading-6 text-text-secondary">
+                {isFree
                   ? "Unlock advanced automation, network discovery, reporting, and premium tools."
                   : "Your account currently has access to the premium tools included with this plan."}
               </p>
@@ -238,7 +268,7 @@ export default function BillingPage() {
               <div className="mt-6 space-y-3">
                 <FeatureRow
                   text={
-                    plan === "free"
+                    isFree
                       ? "Basic device inventory"
                       : "Unlimited device tracking"
                   }
@@ -247,17 +277,17 @@ export default function BillingPage() {
 
                 <FeatureRow
                   text="Network device discovery"
-                  enabled={plan !== "free"}
+                  enabled={!isFree}
                 />
 
                 <FeatureRow
                   text="Advanced reports and analytics"
-                  enabled={plan !== "free"}
+                  enabled={!isFree}
                 />
 
                 <FeatureRow
                   text="Insurance-ready exports"
-                  enabled={plan !== "free"}
+                  enabled={!isFree}
                 />
 
                 <FeatureRow
@@ -268,16 +298,21 @@ export default function BillingPage() {
 
               <Button
                 href={
-                  plan === "free"
+                  isFree
                     ? "/upgrade"
                     : undefined
                 }
                 onClick={
-                  plan === "free"
+                  isFree ||
+                  !canManageBilling
                     ? undefined
                     : openPortal
                 }
-                disabled={openingPortal}
+                disabled={
+                  openingPortal ||
+                  (!isFree &&
+                    !canManageBilling)
+                }
                 className="mt-7 w-full justify-center"
               >
                 {openingPortal ? (
@@ -285,7 +320,7 @@ export default function BillingPage() {
                     size={18}
                     className="animate-spin"
                   />
-                ) : plan === "free" ? (
+                ) : isFree ? (
                   <Sparkles size={18} />
                 ) : (
                   <ArrowUpRight size={18} />
@@ -293,25 +328,29 @@ export default function BillingPage() {
 
                 {openingPortal
                   ? "Opening..."
-                  : plan === "free"
+                  : isFree
                     ? "Upgrade Your Plan"
-                    : "Manage Subscription"}
+                    : canManageBilling
+                      ? "Manage Subscription"
+                      : billingManagedByHousehold
+                        ? "Managed by Family Plan Admin"
+                        : "Admin Access Required"}
               </Button>
             </PageCard>
           </section>
 
           <PageCard>
             <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
                 <CreditCard size={23} />
               </div>
 
               <div>
-                <h2 className="text-2xl font-bold text-[#111827]">
+                <h2 className="text-2xl font-bold text-text-primary">
                   Stripe Customer Portal
                 </h2>
 
-                <p className="mt-2 max-w-2xl text-neutral-500">
+                <p className="mt-2 max-w-2xl text-text-secondary">
                   Paid members can securely update payment
                   methods, download invoices, and manage or
                   cancel their subscription through Stripe.
@@ -335,18 +374,18 @@ function BillingDetail({
   value: string;
 }) {
   return (
-    <div className="rounded-2xl bg-[#F7F5EF] p-5">
+    <div className="rounded-2xl bg-surface-sunken p-5">
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-[#C8A96A]">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border-subtle bg-surface-card text-charcoal shadow-[var(--shadow-sm)]">
           <Icon size={19} />
         </div>
 
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-400">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-text-tertiary">
             {label}
           </p>
 
-          <p className="mt-1 font-semibold text-[#111827]">
+          <p className="mt-1 font-semibold text-text-primary">
             {value}
           </p>
         </div>
@@ -363,12 +402,12 @@ function FeatureRow({
   enabled: boolean;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-2xl bg-[#F7F5EF] p-4">
+    <div className="flex items-center gap-3 rounded-2xl bg-surface-sunken p-4">
       <CheckCircle2
         size={18}
         className={
           enabled
-            ? "text-[#C8A96A]"
+            ? "text-section-vault"
             : "text-neutral-300"
         }
       />
@@ -376,8 +415,8 @@ function FeatureRow({
       <p
         className={
           enabled
-            ? "text-sm font-medium text-[#111827]"
-            : "text-sm text-neutral-400"
+            ? "text-sm font-medium text-text-primary"
+            : "text-sm text-text-tertiary"
         }
       >
         {text}
@@ -398,16 +437,4 @@ function formatDate(value: string) {
     day: "numeric",
     year: "numeric",
   });
-}
-
-function formatStatus(value: string) {
-  if (!value) {
-    return "Inactive";
-  }
-
-  return value
-    .replaceAll("_", " ")
-    .replace(/\b\w/g, (letter) =>
-      letter.toUpperCase()
-    );
 }

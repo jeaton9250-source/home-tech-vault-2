@@ -180,15 +180,15 @@ export default function SignupPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#F7F5EF] px-5 py-8 md:px-8">
-      <div className="mx-auto grid min-h-[calc(100vh-64px)] max-w-7xl overflow-hidden rounded-[36px] border border-[#E8E2D6] bg-white shadow-xl lg:grid-cols-[1.05fr_0.95fr]">
-        <section className="relative overflow-hidden bg-[#111827] px-7 py-10 text-white md:px-12 md:py-14">
+    <main className="min-h-screen bg-surface-sunken px-5 py-8 md:px-8">
+      <div className="mx-auto grid min-h-[calc(100vh-64px)] max-w-7xl overflow-hidden rounded-[36px] border border-border-subtle bg-white shadow-xl lg:grid-cols-[1.05fr_0.95fr]">
+        <section className="htv-auth-panel relative overflow-hidden px-7 py-10 text-text-primary md:px-12 md:py-14">
           <div className="relative z-10">
             <Link
               href="/demo"
               className="inline-flex items-center gap-3"
             >
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 text-[#C8A96A]">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border-subtle bg-surface-card text-section-insights shadow-[var(--shadow-sm)]">
                 <ShieldCheck size={22} />
               </div>
 
@@ -197,13 +197,13 @@ export default function SignupPage() {
                   Home Tech Vault
                 </p>
 
-                <p className="text-xs text-white/50">
+                <p className="text-xs text-text-tertiary">
                   Organize. Protect. Simplify.
                 </p>
               </div>
             </Link>
 
-            <p className="mt-14 text-xs font-semibold uppercase tracking-[0.22em] text-[#C8A96A]">
+            <p className="mt-14 text-overline text-home-health">
               Your home technology, organized
             </p>
 
@@ -211,7 +211,7 @@ export default function SignupPage() {
               Create one secure place for every device in your home.
             </h1>
 
-            <p className="mt-6 max-w-xl text-lg leading-8 text-white/65">
+            <p className="mt-6 max-w-xl text-lg leading-8 text-text-secondary">
               Track devices, warranties, receipts,
               subscriptions, maintenance, and network
               details without searching through drawers,
@@ -226,25 +226,25 @@ export default function SignupPage() {
             </div>
           </div>
 
-          <div className="pointer-events-none absolute -bottom-40 -right-32 h-96 w-96 rounded-full bg-[#C8A96A]/10 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-40 -right-32 h-96 w-96 rounded-full bg-home-health-soft blur-3xl" />
           <div className="pointer-events-none absolute -left-40 top-1/3 h-80 w-80 rounded-full bg-white/5 blur-3xl" />
         </section>
 
         <section className="flex items-center px-6 py-10 md:px-12 md:py-14">
           <div className="mx-auto w-full max-w-lg">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
               <Sparkles size={23} />
             </div>
 
-            <p className="mt-6 text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
+            <p className="mt-6 text-overline text-charcoal-soft">
               Create Your Vault
             </p>
 
-            <h2 className="mt-2 text-3xl font-bold text-[#111827] md:text-4xl">
+            <h2 className="mt-2 text-3xl font-bold text-text-primary md:text-4xl">
               Start organizing your home technology
             </h2>
 
-            <p className="mt-3 text-sm leading-6 text-neutral-500">
+            <p className="mt-3 text-sm leading-6 text-text-secondary">
               Create your account and begin building
               your personal Home Tech Vault.
             </p>
@@ -360,7 +360,7 @@ export default function SignupPage() {
                         ? "Hide password"
                         : "Show password"
                     }
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 transition hover:text-[#111827]"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-text-tertiary transition hover:text-text-primary"
                   >
                     {showPassword ? (
                       <EyeOff size={18} />
@@ -393,7 +393,7 @@ export default function SignupPage() {
                 />
               </FormField>
 
-              <label className="flex cursor-pointer items-start gap-3 rounded-2xl bg-[#F7F5EF] p-4">
+              <label className="flex cursor-pointer items-start gap-3 rounded-2xl bg-surface-sunken p-4">
                 <input
                   type="checkbox"
                   checked={agreedToTerms}
@@ -405,18 +405,18 @@ export default function SignupPage() {
                   className="mt-1 h-4 w-4 accent-[#111827]"
                 />
 
-                <span className="text-sm leading-6 text-neutral-600">
+                <span className="text-sm leading-6 text-text-secondary">
                   I agree to the{" "}
                   <Link
                     href="/terms"
-                    className="font-semibold text-[#111827] underline"
+                    className="font-semibold text-text-primary underline"
                   >
                     Terms
                   </Link>{" "}
                   and{" "}
                   <Link
                     href="/privacy"
-                    className="font-semibold text-[#111827] underline"
+                    className="font-semibold text-text-primary underline"
                   >
                     Privacy Policy
                   </Link>
@@ -427,7 +427,7 @@ export default function SignupPage() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#111827] px-6 py-4 font-semibold text-white transition hover:bg-[#263044] disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-charcoal px-6 py-4 font-semibold text-surface-card transition hover:bg-charcoal-hover disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {submitting ? (
                   <Loader2
@@ -444,21 +444,21 @@ export default function SignupPage() {
               </button>
             </form>
 
-            <p className="mt-7 text-center text-sm text-neutral-500">
+            <p className="mt-7 text-center text-sm text-text-secondary">
               Already have an account?{" "}
               <Link
                 href="/login"
-                className="font-semibold text-[#111827] underline"
+                className="font-semibold text-text-primary underline"
               >
                 Sign In
               </Link>
             </p>
 
-            <p className="mt-4 text-center text-sm text-neutral-500">
+            <p className="mt-4 text-center text-sm text-text-secondary">
               Want to look around first?{" "}
               <Link
                 href="/demo"
-                className="font-semibold text-[#111827] underline"
+                className="font-semibold text-text-primary underline"
               >
                 Open Interactive Demo
               </Link>
@@ -471,7 +471,7 @@ export default function SignupPage() {
 }
 
 const inputClassName =
-  "w-full rounded-2xl border border-[#E8E2D6] bg-white px-4 py-3.5 text-[#111827] outline-none transition placeholder:text-neutral-400 focus:border-[#C8A96A] focus:ring-2 focus:ring-[#C8A96A]/20";
+  "w-full rounded-2xl border border-border-subtle bg-white px-4 py-3.5 text-text-primary outline-none transition placeholder:text-text-tertiary focus:border-interaction focus:ring-2 focus:ring-interaction/20";
 
 function FormField({
   label,
@@ -484,10 +484,10 @@ function FormField({
 }) {
   return (
     <label className="block">
-      <span className="mb-2 flex items-center gap-2 text-sm font-semibold text-[#111827]">
+      <span className="mb-2 flex items-center gap-2 text-sm font-semibold text-text-primary">
         <Icon
           size={16}
-          className="text-[#C8A96A]"
+          className="text-interaction"
         />
         {label}
       </span>
@@ -506,10 +506,10 @@ function SignupBenefit({
     <div className="flex items-center gap-3 rounded-2xl bg-white/5 p-4">
       <CheckCircle2
         size={19}
-        className="shrink-0 text-[#C8A96A]"
+        className="shrink-0 text-interaction"
       />
 
-      <p className="text-sm font-medium text-white/80">
+      <p className="text-sm font-medium text-text-primary">
         {text}
       </p>
     </div>

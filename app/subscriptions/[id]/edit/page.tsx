@@ -1,14 +1,46 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import {
+  FormEvent,
+  use,
+  useEffect,
+  useState,
+} from "react";
+import { useRouter } from "next/navigation";
+import {
+  ArrowLeft,
+  Loader2,
+  Save,
+} from "lucide-react";
 
-export default function EditSubscription({
+import { supabase } from "@/lib/supabase";
+import {
+  applyHouseholdMutationScope,
+  applyHouseholdScope,
+} from "@/lib/data/householdScope";
+import { usePermissions } from "@/hooks/usePermissions";
+
+import PageShell from "@/components/ui/PageShell";
+import PageTitle from "@/components/ui/PageTitle";
+import PageCard from "@/components/ui/PageCard";
+import Button from "@/components/ui/Button";
+import { ViewerBanner } from "@/components/ui/PermissionUI";
+
+export default function EditSubscriptionPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+  const router = useRouter();
+
+  const {
+    user,
+    isDemo,
+    canEdit,
+    householdId,
+    loading: permissionsLoading,
+  } = usePermissions();
 
   const [serviceName, setServiceName] = useState("");
   const [category, setCategory] = useState("");
@@ -16,77 +48,370 @@ export default function EditSubscription({
   const [renewalDate, setRenewalDate] = useState("");
   const [billingCycle, setBillingCycle] = useState("Monthly");
   const [notes, setNotes] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
     async function loadSubscription() {
-      const { data, error } = await supabase
-        .from("subscriptions")
-        .select("*")
-        .eq("id", id)
-        .single();
-
-      if (error) {
-        alert(error.message);
+      if (permissionsLoading) {
         return;
       }
 
-      setServiceName(data.service_name || "");
-      setCategory(data.category || "");
-      setMonthlyCost(data.monthly_cost ? String(data.monthly_cost) : "");
-      setRenewalDate(data.renewal_date || "");
-      setBillingCycle(data.billing_cycle || "Monthly");
-      setNotes(data.notes || "");
+      try {
+        setLoading(true);
+        setErrorMessage("");
+        setNotFound(false);
+
+        if (isDemo || !user) {
+          return;
+        }
+
+        const { data, error } =
+          await applyHouseholdScope(
+            supabase
+              .from("subscriptions")
+              .select("*")
+              .eq("id", id),
+            householdId,
+            user.id
+          ).maybeSingle();
+
+        if (error) {
+          throw error;
+        }
+
+        if (!data) {
+          setNotFound(true);
+          return;
+        }
+
+        setServiceName(data.service_name || "");
+        setCategory(data.category || "");
+        setMonthlyCost(
+          data.monthly_cost
+            ? String(data.monthly_cost)
+            : ""
+        );
+        setRenewalDate(data.renewal_date || "");
+        setBillingCycle(
+          data.billing_cycle || "Monthly"
+        );
+        setNotes(data.notes || "");
+      } catch (error) {
+        console.error(
+          "Unable to load subscription:",
+          error
+        );
+
+        setErrorMessage(
+          "Unable to load this subscription."
+        );
+      } finally {
+        setLoading(false);
+      }
     }
 
-    loadSubscription();
-  }, [id]);
+    void loadSubscription();
+  }, [
+    id,
+    user,
+    isDemo,
+    householdId,
+    permissionsLoading,
+  ]);
 
-  async function updateSubscription() {
-    const { error } = await supabase
-      .from("subscriptions")
-      .update({
-        service_name: serviceName,
-        category,
-        monthly_cost: monthlyCost ? Number(monthlyCost) : 0,
-        renewal_date: renewalDate || null,
-        billing_cycle: billingCycle,
-        notes,
-      })
-      .eq("id", id);
+  async function handleSubmit(
+    event: FormEvent<HTMLFormElement>
+  ) {
+    event.preventDefault();
+    setErrorMessage("");
 
-    if (error) {
-      alert(error.message);
-    } else {
-      alert("Subscription updated!");
-      window.location.href = "/subscriptions";
+    if (isDemo) {
+      router.push("/signup");
+      return;
+    }
+
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+
+    if (!canEdit) {
+      setErrorMessage(
+        "Viewer access is read-only. You cannot edit subscriptions."
+      );
+      return;
+    }
+
+    if (!serviceName.trim()) {
+      setErrorMessage("Enter a service name.");
+      return;
+    }
+
+    try {
+      setSaving(true);
+
+      const { error } =
+        await applyHouseholdMutationScope(
+          supabase
+            .from("subscriptions")
+            .update({
+              service_name: serviceName.trim(),
+              category: category.trim() || null,
+              monthly_cost: monthlyCost
+                ? Number(monthlyCost)
+                : 0,
+              renewal_date: renewalDate || null,
+              billing_cycle: billingCycle,
+              notes: notes.trim() || null,
+            })
+            .eq("id", id),
+          householdId,
+          user.id
+        );
+
+      if (error) {
+        throw error;
+      }
+
+      router.push("/subscriptions");
+      router.refresh();
+    } catch (error) {
+      console.error(
+        "Unable to update subscription:",
+        error
+      );
+
+      setErrorMessage(
+        "Unable to save changes. Please try again."
+      );
+    } finally {
+      setSaving(false);
     }
   }
 
+  if (permissionsLoading || loading) {
+    return (
+      <PageShell>
+        <PageCard className="flex min-h-64 items-center justify-center">
+          <div className="flex items-center gap-3 text-text-secondary">
+            <Loader2
+              size={22}
+              className="animate-spin"
+            />
+            Loading subscription...
+          </div>
+        </PageCard>
+      </PageShell>
+    );
+  }
+
+  if (isDemo) {
+    return (
+      <PageShell>
+        <PageTitle
+          eyebrow="Interactive Demo"
+          title="Create your vault to edit subscriptions"
+        />
+        <PageCard className="text-center">
+          <Button href="/signup" className="mt-4">
+            Create Your Vault
+          </Button>
+        </PageCard>
+      </PageShell>
+    );
+  }
+
+  if (!user) {
+    return (
+      <PageShell>
+        <PageCard className="text-center">
+          <Button href="/login" className="mt-6">
+            Sign In
+          </Button>
+        </PageCard>
+      </PageShell>
+    );
+  }
+
+  if (notFound) {
+    return (
+      <PageShell>
+        <PageCard className="text-center">
+          <h1 className="text-xl font-semibold text-text-primary">
+            Subscription not found
+          </h1>
+          <p className="mt-2 text-sm text-text-secondary">
+            This subscription may have been removed or you
+            do not have access to it.
+          </p>
+          <Button
+            href="/subscriptions"
+            className="mt-6"
+          >
+            Back to Subscriptions
+          </Button>
+        </PageCard>
+      </PageShell>
+    );
+  }
+
   return (
-    <main className="p-8">
-      <h1 className="text-4xl font-bold text-blue-950">Edit Subscription</h1>
+    <PageShell>
+      <ViewerBanner />
 
-      <div className="bg-white mt-8 p-6 rounded-2xl shadow max-w-2xl">
-        <input className="border p-3 rounded-xl w-full mb-4" value={serviceName} placeholder="Service Name" onChange={(e) => setServiceName(e.target.value)} />
-        <input className="border p-3 rounded-xl w-full mb-4" value={category} placeholder="Category" onChange={(e) => setCategory(e.target.value)} />
-        <input type="number" className="border p-3 rounded-xl w-full mb-4" value={monthlyCost} placeholder="Monthly Cost" onChange={(e) => setMonthlyCost(e.target.value)} />
+      <PageTitle
+        eyebrow="Subscription Tracker"
+        title="Edit Subscription"
+        action={
+          <Button
+            variant="secondary"
+            onClick={() =>
+              router.push("/subscriptions")
+            }
+          >
+            <ArrowLeft size={17} />
+            Cancel
+          </Button>
+        }
+      />
 
-        <label className="block mb-2 font-semibold">Renewal Date</label>
-        <input type="date" className="border p-3 rounded-xl w-full mb-4" value={renewalDate} onChange={(e) => setRenewalDate(e.target.value)} />
+      {errorMessage && (
+        <PageCard className="border-red-200 bg-red-50 text-red-700">
+          {errorMessage}
+        </PageCard>
+      )}
 
-        <select className="border p-3 rounded-xl w-full mb-4" value={billingCycle} onChange={(e) => setBillingCycle(e.target.value)}>
-          <option>Monthly</option>
-          <option>Yearly</option>
-          <option>Quarterly</option>
-          <option>Weekly</option>
-        </select>
+      <PageCard>
+        <form
+          onSubmit={handleSubmit}
+          className="grid gap-6 md:grid-cols-2"
+        >
+          <FormField label="Service Name">
+            <input
+              value={serviceName}
+              onChange={(event) =>
+                setServiceName(event.target.value)
+              }
+              required
+              disabled={!canEdit}
+              className={inputClasses}
+            />
+          </FormField>
 
-        <textarea className="border p-3 rounded-xl w-full mb-4" value={notes} placeholder="Notes" onChange={(e) => setNotes(e.target.value)} />
+          <FormField label="Category">
+            <input
+              value={category}
+              onChange={(event) =>
+                setCategory(event.target.value)
+              }
+              disabled={!canEdit}
+              className={inputClasses}
+            />
+          </FormField>
 
-        <button onClick={updateSubscription} className="bg-blue-950 text-white px-6 py-3 rounded-xl">
-          Save Changes
-        </button>
-      </div>
-    </main>
+          <FormField label="Monthly Cost">
+            <input
+              type="number"
+              value={monthlyCost}
+              onChange={(event) =>
+                setMonthlyCost(event.target.value)
+              }
+              disabled={!canEdit}
+              className={inputClasses}
+            />
+          </FormField>
+
+          <FormField label="Renewal Date">
+            <input
+              type="date"
+              value={renewalDate}
+              onChange={(event) =>
+                setRenewalDate(event.target.value)
+              }
+              disabled={!canEdit}
+              className={inputClasses}
+            />
+          </FormField>
+
+          <FormField label="Billing Cycle">
+            <select
+              value={billingCycle}
+              onChange={(event) =>
+                setBillingCycle(event.target.value)
+              }
+              disabled={!canEdit}
+              className={inputClasses}
+            >
+              <option>Monthly</option>
+              <option>Yearly</option>
+              <option>Quarterly</option>
+              <option>Weekly</option>
+            </select>
+          </FormField>
+
+          <div className="md:col-span-2">
+            <FormField label="Notes">
+              <textarea
+                value={notes}
+                onChange={(event) =>
+                  setNotes(event.target.value)
+                }
+                disabled={!canEdit}
+                className={`${inputClasses} min-h-28 resize-y`}
+              />
+            </FormField>
+          </div>
+
+          <div className="flex flex-wrap gap-3 border-t border-border-subtle pt-6 md:col-span-2">
+            <Button
+              type="submit"
+              disabled={saving || !canEdit}
+            >
+              {saving ? (
+                <Loader2
+                  size={18}
+                  className="animate-spin"
+                />
+              ) : (
+                <Save size={18} />
+              )}
+              {saving ? "Saving..." : "Save Changes"}
+            </Button>
+
+            <Button
+              variant="secondary"
+              onClick={() =>
+                router.push("/subscriptions")
+              }
+            >
+              Cancel
+            </Button>
+          </div>
+        </form>
+      </PageCard>
+    </PageShell>
+  );
+}
+
+const inputClasses =
+  "w-full rounded-xl border border-border-subtle bg-white px-4 py-3 text-text-primary outline-none focus:border-interaction focus:ring-2 focus:ring-interaction/20 disabled:cursor-not-allowed disabled:bg-surface-sunken";
+
+function FormField({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <label className="block">
+      <span className="mb-2 block text-sm font-semibold text-text-primary">
+        {label}
+      </span>
+      {children}
+    </label>
   );
 }

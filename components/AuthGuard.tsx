@@ -6,20 +6,11 @@ import { usePathname, useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
 import { useDemoMode } from "@/hooks/useDemoMode";
+import { isPublicRoute } from "@/lib/isChromeFreeRoute";
 
 type AuthGuardProps = {
   children: ReactNode;
 };
-
-const publicRoutes = [
-  "/login",
-  "/signup",
-  "/demo",
-  "/forgot-password",
-  "/reset-password",
-  "/upgrade",
-  "/upgrade/success",
-];
 
 export default function AuthGuard({
   children,
@@ -33,32 +24,28 @@ export default function AuthGuard({
     loading,
   } = useDemoMode();
 
-  const isPublicRoute = publicRoutes.some(
-    (route) =>
-      pathname === route ||
-      pathname.startsWith(`${route}/`)
-  );
+  const routeIsPublic = isPublicRoute(pathname);
 
   useEffect(() => {
     if (loading) {
       return;
     }
 
-    if (!user && !isDemo && !isPublicRoute) {
+    if (!user && !isDemo && !routeIsPublic) {
       router.replace("/login");
     }
   }, [
     user,
     isDemo,
     loading,
-    isPublicRoute,
+    routeIsPublic,
     router,
   ]);
 
-  if (loading && !isPublicRoute) {
+  if (loading && !routeIsPublic) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#F7F5EF]">
-        <div className="flex items-center gap-3 text-neutral-500">
+      <div className="flex min-h-screen items-center justify-center bg-surface-sunken">
+        <div className="flex items-center gap-3 text-text-secondary">
           <Loader2
             size={22}
             className="animate-spin"
@@ -69,7 +56,7 @@ export default function AuthGuard({
     );
   }
 
-  if (!user && !isDemo && !isPublicRoute) {
+  if (!user && !isDemo && !routeIsPublic) {
     return null;
   }
 

@@ -1,5 +1,4 @@
 "use client";
-"use client";
 
 import {
   useEffect,
@@ -26,6 +25,7 @@ import {
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
+import { applyHouseholdScope } from "@/lib/data/householdScope";
 
 import {
   demoDevices,
@@ -34,11 +34,11 @@ import {
   demoSubscriptions,
 } from "@/lib/demoData";
 
-import { useDemoMode } from "@/hooks/useDemoMode";
-import { useSubscription } from "@/hooks/useSubscription";
+import { usePermissions } from "@/hooks/usePermissions";
 
 import PageShell from "@/components/ui/PageShell";
 import PageCard from "@/components/ui/PageCard";
+import PageHero from "@/components/ui/PageHero";
 import Button from "@/components/ui/Button";
 
 type DeviceRecord = {
@@ -89,14 +89,10 @@ export default function InsightsPage() {
   const {
     user,
     isDemo,
-    loading: demoModeLoading,
-  } = useDemoMode();
-
-  const {
-    canUsePremiumFeatures,
-    isAdmin,
-    loading: subscriptionLoading,
-  } = useSubscription();
+    householdId,
+    loading: permissionsLoading,
+    canAccessFeature,
+  } = usePermissions();
 
   const [devices, setDevices] =
     useState<DeviceRecord[]>([]);
@@ -120,7 +116,7 @@ export default function InsightsPage() {
 
   useEffect(() => {
     async function loadInsights() {
-      if (demoModeLoading) {
+      if (permissionsLoading) {
         return;
       }
 
@@ -209,16 +205,12 @@ export default function InsightsPage() {
           return;
         }
 
-        const [
-          deviceResult,
-          documentResult,
-          subscriptionResult,
-          maintenanceResult,
-        ] = await Promise.all([
-          supabase
-            .from("devices")
-            .select(
-              `
+        const deviceResult =
+          await applyHouseholdScope(
+            supabase
+              .from("devices")
+              .select(
+                `
                 id,
                 device_name,
                 brand,
@@ -230,44 +222,78 @@ export default function InsightsPage() {
                 serial_number,
                 notes
               `
-            )
-            .eq("user_id", user.id),
+              ),
+            householdId,
+            user.id
+          );
 
-          supabase
-            .from("device_documents")
-            .select(
-              "id, device_id, document_type"
-            )
-            .eq("user_id", user.id),
+        if (deviceResult.error) {
+          throw deviceResult.error;
+        }
 
-          supabase
-            .from("subscriptions")
-            .select(
-              `
+        const loadedDevices =
+          (deviceResult.data ??
+            []) as DeviceRecord[];
+
+        const deviceIds =
+          loadedDevices.map(
+            (device) => device.id
+          );
+
+        const [
+          documentResult,
+          subscriptionResult,
+          maintenanceResult,
+        ] = await Promise.all([
+          deviceIds.length > 0
+            ? supabase
+                .from(
+                  "device_documents"
+                )
+                .select(
+                  "id, device_id, document_type"
+                )
+                .in(
+                  "device_id",
+                  deviceIds
+                )
+            : Promise.resolve({
+                data: [],
+                error: null,
+              }),
+
+          applyHouseholdScope(
+            supabase
+              .from("subscriptions")
+              .select(
+                `
                 id,
                 service_name,
                 monthly_cost,
                 billing_cycle
               `
-            )
-            .eq("user_id", user.id),
+              ),
+            householdId,
+            user.id
+          ),
 
-          supabase
-            .from("maintenance_tasks")
-            .select(
-              `
+          applyHouseholdScope(
+            supabase
+              .from(
+                "maintenance_tasks"
+              )
+              .select(
+                `
                 id,
                 device_id,
                 completed,
                 due_date
               `
-            )
-            .eq("user_id", user.id),
+              ),
+            householdId,
+            user.id
+          ),
         ]);
-
-        if (deviceResult.error) {
-          throw deviceResult.error;
-        }
 
         if (documentResult.error) {
           console.error(
@@ -291,8 +317,7 @@ export default function InsightsPage() {
         }
 
         setDevices(
-          (deviceResult.data ||
-            []) as DeviceRecord[]
+          loadedDevices as DeviceRecord[]
         );
 
         setDocuments(
@@ -335,7 +360,8 @@ export default function InsightsPage() {
   }, [
     user,
     isDemo,
-    demoModeLoading,
+    householdId,
+    permissionsLoading,
   ]);
 
   const totalValue = useMemo(
@@ -732,20 +758,18 @@ export default function InsightsPage() {
     brandBreakdown[0] || null;
 
   const loading =
-    demoModeLoading ||
-    subscriptionLoading ||
+    permissionsLoading ||
     loadingInsights;
 
   const premiumUnlocked =
     isDemo ||
-    isAdmin ||
-    canUsePremiumFeatures;
+    canAccessFeature("insights");
 
   if (loading) {
     return (
       <PageShell>
         <PageCard className="flex min-h-72 items-center justify-center">
-          <div className="flex items-center gap-3 text-neutral-500">
+          <div className="flex items-center gap-3 text-text-secondary">
             <Loader2
               size={22}
               className="animate-spin"
@@ -776,44 +800,27 @@ export default function InsightsPage() {
 
   return (
     <PageShell>
-      <section className="rounded-[32px] bg-[#111827] px-6 py-9 text-white shadow-sm md:px-10 md:py-11">
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#C8A96A]">
-              Vault Intelligence
-            </p>
-
-            <h1 className="mt-3 text-4xl font-semibold tracking-[-0.04em] md:text-5xl">
-              Your insights.
-            </h1>
-
-            <p className="mt-4 max-w-xl text-sm leading-6 text-white/60 md:text-base">
-              Understand the value,
-              completeness, coverage, and
-              health of your home
-              technology.
-            </p>
-          </div>
-
-          {!premiumUnlocked && (
-            <Button
-              href="/upgrade"
-              variant="secondary"
-            >
-              <Crown size={17} />
-              Unlock Insights
-            </Button>
-          )}
-        </div>
-      </section>
+      <PageHero
+        section="insights"
+        eyebrow="Vault Intelligence"
+        title="Your insights."
+        description="Understand the value, completeness, coverage, and health of your home technology."
+      >
+        {!premiumUnlocked && (
+          <Button href="/upgrade">
+            <Crown size={17} />
+            Unlock Insights
+          </Button>
+        )}
+      </PageHero>
 
       {isDemo && (
-        <section className="rounded-3xl border border-[#D8C69D] bg-[#FFF8E8] p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A6A2F]">
+        <section className="rounded-3xl border border-warning/40 bg-warning-soft p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-achievement">
             Interactive Demo
           </p>
 
-          <p className="mt-2 text-sm leading-6 text-neutral-600">
+          <p className="mt-2 text-sm leading-6 text-text-secondary">
             These insights are calculated
             from sample devices,
             subscriptions, warranties,
@@ -869,7 +876,7 @@ export default function InsightsPage() {
         <>
           <section className="grid gap-6 xl:grid-cols-[0.8fr_1.2fr]">
             <PageCard className="flex min-h-[360px] flex-col items-center justify-center p-8 text-center">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-secondary">
                 Vault Completeness
               </p>
 
@@ -881,7 +888,7 @@ export default function InsightsPage() {
                 />
               </div>
 
-              <p className="mt-7 max-w-sm text-sm leading-6 text-neutral-500">
+              <p className="mt-7 max-w-sm text-sm leading-6 text-text-secondary">
                 Based on documents,
                 serial numbers, and active
                 warranty information.
@@ -891,15 +898,15 @@ export default function InsightsPage() {
             <PageCard className="p-7 md:p-9">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
+                  <p className="text-overline text-charcoal-soft">
                     Recommended Next Steps
                   </p>
 
-                  <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[#111827]">
+                  <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
                     Improve your vault
                   </h2>
 
-                  <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-500">
+                  <p className="mt-2 max-w-2xl text-sm leading-6 text-text-secondary">
                     A few useful actions
                     based on your saved
                     records.
@@ -908,7 +915,7 @@ export default function InsightsPage() {
 
                 <Sparkles
                   size={21}
-                  className="shrink-0 text-[#C8A96A]"
+                  className="shrink-0 text-interaction"
                 />
               </div>
 
@@ -922,22 +929,22 @@ export default function InsightsPage() {
                       href={
                         recommendation.href
                       }
-                      className="group flex items-start gap-4 rounded-[22px] bg-[#F7F5EF] p-4 transition hover:bg-[#F1EEE6]"
+                      className="group flex items-start gap-4 rounded-[22px] bg-surface-sunken p-4 transition hover:bg-[#F1EEE6]"
                     >
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-[#C8A96A] shadow-sm">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-border-subtle bg-surface-card text-charcoal shadow-[var(--shadow-sm)]">
                         <ShieldCheck
                           size={18}
                         />
                       </div>
 
                       <div className="min-w-0 flex-1">
-                        <p className="font-semibold text-[#111827]">
+                        <p className="font-semibold text-text-primary">
                           {
                             recommendation.title
                           }
                         </p>
 
-                        <p className="mt-1 text-sm leading-6 text-neutral-500">
+                        <p className="mt-1 text-sm leading-6 text-text-secondary">
                           {
                             recommendation.description
                           }
@@ -946,7 +953,7 @@ export default function InsightsPage() {
 
                       <ArrowRight
                         size={16}
-                        className="mt-1 shrink-0 text-neutral-300 transition group-hover:translate-x-0.5 group-hover:text-[#111827]"
+                        className="mt-1 shrink-0 text-neutral-300 transition group-hover:translate-x-0.5 group-hover:text-text-primary"
                       />
                     </Link>
                   )
@@ -1012,8 +1019,8 @@ export default function InsightsPage() {
 
           {(strongestRoom ||
             strongestBrand) && (
-            <PageCard className="bg-[#111827] p-7 text-white md:p-9">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
+            <PageCard className="overflow-hidden p-0"><div className="htv-plan-band p-7 text-text-primary md:p-9">
+              <p className="text-overline text-charcoal-soft">
                 What Stands Out
               </p>
 
@@ -1056,6 +1063,7 @@ export default function InsightsPage() {
                   />
                 )}
               </div>
+            </div>
             </PageCard>
           )}
 
@@ -1073,11 +1081,11 @@ export default function InsightsPage() {
                     Replacement Planning
                   </p>
 
-                  <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[#111827]">
+                  <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
                     Aging devices
                   </h2>
 
-                  <p className="mt-2 text-sm leading-6 text-neutral-500">
+                  <p className="mt-2 text-sm leading-6 text-text-secondary">
                     Devices recorded as
                     four years old or older.
                   </p>
@@ -1090,14 +1098,14 @@ export default function InsightsPage() {
                     <Link
                       key={device.id}
                       href={`/devices/${device.id}`}
-                      className="rounded-[24px] bg-[#F7F5EF] p-5 transition hover:bg-[#F1EEE6]"
+                      className="rounded-[24px] bg-surface-sunken p-5 transition hover:bg-[#F1EEE6]"
                     >
-                      <p className="font-semibold text-[#111827]">
+                      <p className="font-semibold text-text-primary">
                         {device.device_name ||
                           "Unnamed Device"}
                       </p>
 
-                      <p className="mt-1 text-sm text-neutral-500">
+                      <p className="mt-1 text-sm text-text-secondary">
                         {device.brand ||
                           "Unknown brand"}
                       </p>
@@ -1109,7 +1117,7 @@ export default function InsightsPage() {
                         years
                       </p>
 
-                      <p className="mt-1 text-xs text-neutral-400">
+                      <p className="mt-1 text-xs text-text-tertiary">
                         Estimated age
                       </p>
                     </Link>
@@ -1139,20 +1147,20 @@ function SummaryCard({
     <PageCard className="p-5 md:p-6">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-sm text-neutral-500">
+          <p className="text-sm text-text-secondary">
             {label}
           </p>
 
-          <p className="mt-2 truncate text-2xl font-semibold tracking-[-0.03em] text-[#111827] md:text-3xl">
+          <p className="mt-2 truncate text-2xl font-semibold tracking-[-0.03em] text-text-primary md:text-3xl">
             {value}
           </p>
 
-          <p className="mt-2 text-xs text-neutral-400">
+          <p className="mt-2 text-xs text-text-tertiary">
             {description}
           </p>
         </div>
 
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
           <Icon size={20} />
         </div>
       </div>
@@ -1202,7 +1210,7 @@ function InsightRing({
           cy="88"
           r={radius}
           fill="none"
-          stroke="#E8E2D6"
+          stroke="#E5E7EB"
           strokeWidth="12"
         />
 
@@ -1223,15 +1231,15 @@ function InsightRing({
       </svg>
 
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-5xl font-semibold tracking-[-0.05em] text-[#111827]">
+        <span className="text-5xl font-semibold tracking-[-0.05em] text-text-primary">
           {normalizedScore}
 
-          <span className="ml-0.5 text-2xl text-neutral-400">
+          <span className="ml-0.5 text-2xl text-text-tertiary">
             %
           </span>
         </span>
 
-        <span className="mt-2 text-sm font-semibold text-[#8A6A2F]">
+        <span className="mt-2 text-sm font-semibold text-achievement">
           {label}
         </span>
       </div>
@@ -1262,23 +1270,23 @@ function BreakdownCard({
   return (
     <PageCard className="p-7 md:p-8">
       <div className="flex items-start gap-4">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
           <Icon size={20} />
         </div>
 
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
+          <p className="text-overline text-charcoal-soft">
             {eyebrow}
           </p>
 
-          <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[#111827]">
+          <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
             {title}
           </h2>
         </div>
       </div>
 
       {items.length === 0 ? (
-        <div className="mt-6 rounded-[22px] bg-[#F7F5EF] p-5 text-sm text-neutral-500">
+        <div className="mt-6 rounded-[22px] bg-surface-sunken p-5 text-sm text-text-secondary">
           {emptyMessage}
         </div>
       ) : (
@@ -1289,11 +1297,11 @@ function BreakdownCard({
               <div key={item.label}>
                 <div className="flex items-center justify-between gap-4">
                   <div className="min-w-0">
-                    <p className="truncate font-semibold text-[#111827]">
+                    <p className="truncate font-semibold text-text-primary">
                       {item.label}
                     </p>
 
-                    <p className="mt-1 text-xs text-neutral-400">
+                    <p className="mt-1 text-xs text-text-tertiary">
                       {item.count}{" "}
                       {item.count === 1
                         ? "device"
@@ -1301,16 +1309,16 @@ function BreakdownCard({
                     </p>
                   </div>
 
-                  <p className="shrink-0 font-semibold text-[#111827]">
+                  <p className="shrink-0 font-semibold text-text-primary">
                     {formatCurrency(
                       item.value
                     )}
                   </p>
                 </div>
 
-                <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#E8E2D6]">
+                <div className="mt-3 h-2 overflow-hidden rounded-full bg-border-subtle">
                   <div
-                    className="h-full rounded-full bg-[#111827]"
+                    className="h-full rounded-full bg-home-health"
                     style={{
                       width: `${Math.max(
                         (item.value /
@@ -1348,25 +1356,25 @@ function SimpleInsightCard({
 }) {
   return (
     <PageCard className="flex h-full flex-col p-6">
-      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+      <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
         <Icon size={20} />
       </div>
 
-      <p className="mt-5 text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
+      <p className="mt-5 text-overline text-charcoal-soft">
         {eyebrow}
       </p>
 
-      <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[#111827]">
+      <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
         {title}
       </h2>
 
-      <p className="mt-3 flex-1 text-sm leading-6 text-neutral-500">
+      <p className="mt-3 flex-1 text-sm leading-6 text-text-secondary">
         {description}
       </p>
 
       <Link
         href={href}
-        className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#8A6A2F] transition hover:text-[#111827]"
+        className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-achievement transition hover:text-text-primary"
       >
         {linkLabel}
         <ArrowRight size={15} />
@@ -1394,7 +1402,7 @@ function HighlightItem({
         {title}
       </h2>
 
-      <p className="mt-2 text-sm leading-6 text-white/55">
+      <p className="mt-2 text-sm leading-6 text-text-secondary">
         {description}
       </p>
     </div>
@@ -1410,12 +1418,12 @@ function PremiumInsightsLock({
 }) {
   return (
     <PageCard className="overflow-hidden p-0">
-      <div className="bg-[#111827] p-8 text-white md:p-10">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-[#C8A96A]">
+      <div className="htv-plan-band p-8 text-text-primary md:p-10">
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-border-subtle bg-surface-card text-section-insights shadow-[var(--shadow-sm)]">
           <Crown size={23} />
         </div>
 
-        <p className="mt-6 text-xs font-semibold uppercase tracking-[0.2em] text-[#C8A96A]">
+        <p className="mt-6 text-overline text-charcoal-soft">
           Home Tech Vault Pro
         </p>
 
@@ -1424,7 +1432,7 @@ function PremiumInsightsLock({
           your technology.
         </h2>
 
-        <p className="mt-4 max-w-2xl text-sm leading-7 text-white/60">
+        <p className="mt-4 max-w-2xl text-sm leading-7 text-text-secondary">
           Your vault contains{" "}
           {deviceCount}{" "}
           {deviceCount === 1

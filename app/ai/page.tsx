@@ -45,13 +45,13 @@ export default function AIPage() {
         <button
           onClick={askAI}
           disabled={loading || !question}
-          className="bg-blue-950 text-white px-6 py-3 rounded-xl mt-4 disabled:opacity-50"
+          className="bg-charcoal text-surface-card px-6 py-3 rounded-xl mt-4 disabled:opacity-50"
         >
           {loading ? "Thinking..." : "Ask Home Tech AI"}
         </button>
 
         {answer && (
-          <div className="bg-blue-50 rounded-xl p-5 mt-6 whitespace-pre-wrap text-gray-800">
+          <div className="bg-interaction-soft rounded-xl p-5 mt-6 whitespace-pre-wrap text-text-primary">
             {answer}
           </div>
         )}

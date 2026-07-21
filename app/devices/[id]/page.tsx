@@ -35,7 +35,14 @@ import {
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
-import { createDeviceEvent } from "@/lib/deviceEvents";
+import {
+  applyHouseholdMutationScope,
+  applyHouseholdScope,
+} from "@/lib/data/householdScope";
+import {
+  getDefaultActivityTitle,
+  recordActivity,
+} from "@/lib/activity";
 
 import {
   demoDevices,
@@ -103,7 +110,7 @@ export default function DevicePage() {
   const {
     user,
     isDemo,
-    isViewer,
+    householdId,
     canEdit,
     canUpload,
     canDelete,
@@ -330,39 +337,15 @@ export default function DevicePage() {
           return;
         }
 
-        const {
-          data: membership,
-          error: membershipError,
-        } = await supabase
-          .from("household_members")
-          .select("household_id")
-          .eq("user_id", user.id)
-          .limit(1)
-          .maybeSingle();
-
-        if (membershipError) {
-          throw membershipError;
-        }
-
-        let deviceQuery =
-          supabase
-            .from("devices")
-            .select("*")
-            .eq("id", deviceId);
-
-        if (membership?.household_id) {
-          deviceQuery =
-            deviceQuery.eq(
-              "household_id",
-              membership.household_id
-            );
-        } else {
-          deviceQuery =
-            deviceQuery.eq(
-              "user_id",
-              user.id
-            );
-        }
+        const deviceQuery =
+          applyHouseholdScope(
+            supabase
+              .from("devices")
+              .select("*")
+              .eq("id", deviceId),
+            householdId,
+            user.id
+          );
 
         const {
           data: deviceData,
@@ -423,6 +406,7 @@ export default function DevicePage() {
     deviceId,
     user,
     isDemo,
+    householdId,
     permissionsLoading,
     loadImages,
   ]);
@@ -554,27 +538,19 @@ export default function DevicePage() {
         }
       }
 
-      await createDeviceEvent({
-        deviceId:
-          device.id,
-        userId:
-          user.id,
-        eventType:
-          "Photo",
+      await recordActivity({
+        activityType: "photo.uploaded",
         title:
           files.length === 1
             ? "Photo uploaded"
-            : String(
-                files.length
-              ) +
-              " photos uploaded",
+            : `${files.length} photos uploaded`,
         description:
           files.length === 1
             ? "A new device photo was added to the vault."
-            : String(
-                files.length
-              ) +
-              " new device photos were added to the vault.",
+            : `${files.length} new device photos were added to the vault.`,
+        userId: user.id,
+        householdId,
+        deviceId: device.id,
       });
 
       event.target.value = "";
@@ -637,10 +613,14 @@ export default function DevicePage() {
 
       const {
         error: databaseError,
-      } = await supabase
-        .from("device_images")
-        .delete()
-        .eq("id", image.id);
+      } = await applyHouseholdMutationScope(
+        supabase
+          .from("device_images")
+          .delete()
+          .eq("id", image.id),
+        householdId,
+        user.id
+      );
 
       if (databaseError) {
         throw databaseError;
@@ -699,6 +679,20 @@ export default function DevicePage() {
 
     try {
       setDeletingDevice(true);
+
+      await recordActivity({
+        activityType: "device.deleted",
+        title: getDefaultActivityTitle(
+          "device.deleted",
+          device.device_name ||
+            "Device"
+        ),
+        description:
+          "Device removed from the vault.",
+        userId: user.id,
+        householdId,
+        deviceId: device.id,
+      });
 
       const imagePaths =
         images.map(
@@ -782,10 +776,14 @@ export default function DevicePage() {
 
       const {
         error: deleteError,
-      } = await supabase
-        .from("devices")
-        .delete()
-        .eq("id", device.id);
+      } = await applyHouseholdMutationScope(
+        supabase
+          .from("devices")
+          .delete()
+          .eq("id", device.id),
+        householdId,
+        user.id
+      );
 
       if (deleteError) {
         throw deleteError;
@@ -817,7 +815,7 @@ export default function DevicePage() {
     return (
       <PageShell>
         <PageCard className="flex min-h-72 items-center justify-center">
-          <div className="flex items-center gap-3 text-neutral-500">
+          <div className="flex items-center gap-3 text-text-secondary">
             <Loader2
               className="animate-spin"
               size={22}
@@ -837,15 +835,15 @@ export default function DevicePage() {
     return (
       <PageShell>
         <PageCard className="py-14 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
             <Laptop size={28} />
           </div>
 
-          <h1 className="mt-5 text-3xl font-semibold tracking-[-0.04em] text-[#111827]">
+          <h1 className="mt-5 text-3xl font-semibold tracking-[-0.04em] text-text-primary">
             Device not found
           </h1>
 
-          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-neutral-500">
+          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-text-secondary">
             {errorMessage ||
               "This device could not be loaded."}
           </p>
@@ -890,7 +888,7 @@ export default function DevicePage() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <Link
           href="/devices"
-          className="inline-flex items-center gap-2 text-sm font-semibold text-neutral-500 transition hover:text-[#111827]"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-text-secondary transition hover:text-text-primary"
         >
           <ArrowLeft size={17} />
           Devices
@@ -914,14 +912,13 @@ export default function DevicePage() {
             Create Your Vault
           </Button>
         ) : (
-          <div className="rounded-2xl border border-[#E8E2D6] bg-[#F7F5EF] px-4 py-3 text-sm font-semibold text-neutral-500">
+          <div className="rounded-2xl border border-border-subtle bg-surface-sunken px-4 py-3 text-sm font-semibold text-text-secondary">
             Viewer Access · Read Only
           </div>
         )}
       </div>
 
       <ViewerBanner
-        show={isViewer}
         description={
           user
             ? "You can view this device, its photos, documents, network details, and history. Viewer access cannot edit, upload, or delete anything."
@@ -931,7 +928,7 @@ export default function DevicePage() {
 
       <section className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
         <PageCard className="overflow-hidden p-0">
-          <div className="relative aspect-[5/4] overflow-hidden bg-[#F7F5EF]">
+          <div className="relative aspect-[5/4] overflow-hidden bg-surface-sunken">
             {selectedImage ? (
               <Image
                 src={
@@ -947,15 +944,15 @@ export default function DevicePage() {
               />
             ) : canUpload ? (
               <label className="flex h-full cursor-pointer flex-col items-center justify-center px-6 text-center">
-                <div className="flex h-20 w-20 items-center justify-center rounded-[28px] bg-white text-[#C8A96A] shadow-sm">
+                <div className="flex h-20 w-20 items-center justify-center rounded-[var(--radius-card)] bg-white text-charcoal shadow-sm">
                   <Camera size={32} />
                 </div>
 
-                <p className="mt-5 text-lg font-semibold text-[#111827]">
+                <p className="mt-5 text-lg font-semibold text-text-primary">
                   Add a device photo
                 </p>
 
-                <p className="mt-2 max-w-sm text-sm leading-6 text-neutral-500">
+                <p className="mt-2 max-w-sm text-sm leading-6 text-text-secondary">
                   Photos make your
                   inventory easier to
                   identify and document.
@@ -976,15 +973,15 @@ export default function DevicePage() {
               </label>
             ) : (
               <div className="flex h-full flex-col items-center justify-center px-6 text-center">
-                <div className="flex h-20 w-20 items-center justify-center rounded-[28px] bg-white text-[#C8A96A] shadow-sm">
+                <div className="flex h-20 w-20 items-center justify-center rounded-[var(--radius-card)] bg-white text-charcoal shadow-sm">
                   <Camera size={32} />
                 </div>
 
-                <p className="mt-5 text-lg font-semibold text-[#111827]">
+                <p className="mt-5 text-lg font-semibold text-text-primary">
                   No device photo
                 </p>
 
-                <p className="mt-2 max-w-sm text-sm leading-6 text-neutral-500">
+                <p className="mt-2 max-w-sm text-sm leading-6 text-text-secondary">
                   Viewer access is
                   read-only. Members and
                   Admins can upload device
@@ -995,7 +992,7 @@ export default function DevicePage() {
 
             {images.length > 0 &&
               canUpload && (
-                <label className="absolute bottom-4 right-4 inline-flex cursor-pointer items-center gap-2 rounded-full bg-white/90 px-4 py-2.5 text-sm font-semibold text-[#111827] shadow-lg backdrop-blur transition hover:bg-white">
+                <label className="absolute bottom-4 right-4 inline-flex cursor-pointer items-center gap-2 rounded-full bg-white/90 px-4 py-2.5 text-sm font-semibold text-text-primary shadow-lg backdrop-blur transition hover:bg-white">
                   {uploading ? (
                     <Loader2
                       size={16}
@@ -1075,7 +1072,7 @@ export default function DevicePage() {
           <div>
             <div className="flex flex-wrap items-center gap-2">
               {device.category && (
-                <span className="rounded-full bg-[#F7F5EF] px-3 py-1.5 text-xs font-semibold text-neutral-600">
+                <span className="rounded-full bg-surface-sunken px-3 py-1.5 text-xs font-semibold text-text-secondary">
                   {device.category}
                 </span>
               )}
@@ -1093,16 +1090,16 @@ export default function DevicePage() {
               </span>
             </div>
 
-            <p className="mt-7 text-xs font-semibold uppercase tracking-[0.2em] text-[#C8A96A]">
+            <p className="mt-7 text-overline text-section-technology">
               Device Profile
             </p>
 
-            <h1 className="mt-3 text-4xl font-semibold tracking-[-0.05em] text-[#111827] md:text-5xl">
+            <h1 className="mt-3 text-4xl font-semibold tracking-[-0.05em] text-text-primary md:text-5xl">
               {device.device_name ||
                 "Unnamed Device"}
             </h1>
 
-            <p className="mt-3 text-base text-neutral-500">
+            <p className="mt-3 text-base text-text-secondary">
               {[
                 device.brand,
                 device.model_number,
@@ -1113,10 +1110,10 @@ export default function DevicePage() {
             </p>
 
             {device.location && (
-              <p className="mt-5 inline-flex items-center gap-2 text-sm text-neutral-500">
+              <p className="mt-5 inline-flex items-center gap-2 text-sm text-text-secondary">
                 <MapPin
                   size={16}
-                  className="text-[#C8A96A]"
+                  className="text-section-vault"
                 />
                 {device.location}
               </p>
@@ -1161,7 +1158,7 @@ export default function DevicePage() {
               (image) => (
                 <div
                   key={image.id}
-                  className="group relative aspect-square overflow-hidden rounded-[24px] bg-[#F7F5EF]"
+                  className="group relative aspect-square overflow-hidden rounded-[24px] bg-surface-sunken"
                 >
                   <Image
                     src={
@@ -1284,12 +1281,12 @@ export default function DevicePage() {
         </div>
 
         {device.notes && (
-          <div className="mt-4 rounded-[24px] bg-[#F7F5EF] p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#C8A96A]">
+          <div className="mt-4 rounded-[24px] bg-surface-sunken p-5">
+            <p className="text-overline text-section-technology">
               Notes
             </p>
 
-            <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-[#111827]">
+            <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-text-primary">
               {device.notes}
             </p>
           </div>
@@ -1415,11 +1412,11 @@ export default function DevicePage() {
 
           <div className="mt-4 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 className="text-xl font-semibold text-[#111827]">
+              <h2 className="text-xl font-semibold text-text-primary">
                 Delete this device
               </h2>
 
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-500">
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-text-secondary">
                 This permanently removes
                 the device and its
                 associated photos and
@@ -1470,16 +1467,16 @@ function SectionHeading({
 }) {
   return (
     <div>
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
+      <p className="text-overline text-section-technology">
         {eyebrow}
       </p>
 
-      <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[#111827]">
+      <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
         {title}
       </h2>
 
       {description && (
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-500">
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-text-secondary">
           {description}
         </p>
       )}
@@ -1495,12 +1492,12 @@ function HeroMetric({
   value: string | null;
 }) {
   return (
-    <div className="rounded-[22px] bg-[#F7F5EF] p-4">
-      <p className="text-xs text-neutral-500">
+    <div className="rounded-[22px] bg-surface-sunken p-4">
+      <p className="text-xs text-text-secondary">
         {label}
       </p>
 
-      <p className="mt-2 truncate text-lg font-semibold text-[#111827]">
+      <p className="mt-2 truncate text-lg font-semibold text-text-primary">
         {value || "Not recorded"}
       </p>
     </div>
@@ -1520,16 +1517,16 @@ function DetailCard({
     | undefined;
 }) {
   return (
-    <div className="rounded-[24px] bg-[#F7F5EF] p-5">
-      <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-[#C8A96A] shadow-sm">
+    <div className="rounded-[24px] bg-surface-sunken p-5">
+      <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-border-subtle bg-surface-card text-charcoal shadow-[var(--shadow-sm)]">
         <Icon size={18} />
       </div>
 
-      <p className="mt-5 text-xs font-semibold uppercase tracking-[0.15em] text-neutral-400">
+      <p className="mt-5 text-xs font-semibold uppercase tracking-[0.15em] text-text-tertiary">
         {label}
       </p>
 
-      <p className="mt-2 break-words font-semibold text-[#111827]">
+      <p className="mt-2 break-words font-semibold text-text-primary">
         {value ||
           "Not provided"}
       </p>
@@ -1563,7 +1560,7 @@ function NetworkStatus({
             label: "Offline",
             dot: "bg-neutral-400",
             className:
-              "bg-neutral-100 text-neutral-600",
+              "bg-neutral-100 text-text-secondary",
           }
         : {
             label:
@@ -1591,7 +1588,7 @@ function NetworkStatus({
         {status.label}
       </span>
 
-      <p className="mt-2 text-right text-xs text-neutral-400">
+      <p className="mt-2 text-right text-xs text-text-tertiary">
         {formatLastSeen(
           lastSeen
         )}
@@ -1616,7 +1613,7 @@ function DemoDocuments({
 
       {documents.length ===
       0 ? (
-        <div className="mt-6 rounded-2xl bg-[#F7F5EF] p-5 text-sm text-neutral-500">
+        <div className="mt-6 rounded-2xl bg-surface-sunken p-5 text-sm text-text-secondary">
           No sample documents
           are attached to this
           device.
@@ -1629,22 +1626,22 @@ function DemoDocuments({
                 key={
                   document.id
                 }
-                className="flex items-center gap-4 rounded-[22px] border border-[#E8E2D6] p-4"
+                className="flex items-center gap-4 rounded-[22px] border border-border-subtle p-4"
               >
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
                   <FileText
                     size={19}
                   />
                 </div>
 
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-semibold text-[#111827]">
+                  <p className="truncate font-semibold text-text-primary">
                     {
                       document.document_name
                     }
                   </p>
 
-                  <p className="mt-1 truncate text-sm text-neutral-500">
+                  <p className="mt-1 truncate text-sm text-text-secondary">
                     {
                       document.document_type
                     }{" "}
@@ -1655,7 +1652,7 @@ function DemoDocuments({
                   </p>
                 </div>
 
-                <span className="rounded-full bg-[#F7F5EF] px-3 py-1 text-xs font-semibold text-[#8A6A2F]">
+                <span className="rounded-full bg-surface-sunken px-3 py-1 text-xs font-semibold text-achievement">
                   Demo
                 </span>
               </div>
@@ -1683,38 +1680,38 @@ function DemoTimeline({
 
       {events.length ===
       0 ? (
-        <div className="mt-6 rounded-2xl bg-[#F7F5EF] p-5 text-sm text-neutral-500">
+        <div className="mt-6 rounded-2xl bg-surface-sunken p-5 text-sm text-text-secondary">
           No sample timeline
           events are recorded for
           this device.
         </div>
       ) : (
-        <div className="relative mt-7 space-y-6 before:absolute before:bottom-2 before:left-[7px] before:top-2 before:w-px before:bg-[#E8E2D6]">
+        <div className="relative mt-7 space-y-6 before:absolute before:bottom-2 before:left-[7px] before:top-2 before:w-px before:bg-border-subtle">
           {events.map(
             (event) => (
               <div
                 key={event.id}
                 className="relative pl-8"
               >
-                <span className="absolute left-0 top-2 h-[15px] w-[15px] rounded-full border-4 border-white bg-[#C8A96A] shadow-sm" />
+                <span className="absolute left-0 top-2 h-[15px] w-[15px] rounded-full border-4 border-surface-card bg-home-health shadow-sm" />
 
-                <div className="rounded-[22px] bg-[#F7F5EF] p-5">
+                <div className="rounded-[22px] bg-surface-sunken p-5">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                      <p className="font-semibold text-[#111827]">
+                      <p className="font-semibold text-text-primary">
                         {
                           event.title
                         }
                       </p>
 
-                      <p className="mt-2 text-sm leading-6 text-neutral-500">
+                      <p className="mt-2 text-sm leading-6 text-text-secondary">
                         {
                           event.description
                         }
                       </p>
                     </div>
 
-                    <span className="shrink-0 text-xs text-neutral-400">
+                    <span className="shrink-0 text-xs text-text-tertiary">
                       {new Date(
                         event.event_date
                       ).toLocaleDateString(
@@ -1753,7 +1750,7 @@ function getWarrantyStatus(
       shortLabel:
         "Not recorded",
       className:
-        "bg-neutral-100 text-neutral-600",
+        "bg-neutral-100 text-text-secondary",
     };
   }
 
@@ -1774,7 +1771,7 @@ function getWarrantyStatus(
       shortLabel:
         "Unknown",
       className:
-        "bg-neutral-100 text-neutral-600",
+        "bg-neutral-100 text-text-secondary",
     };
   }
 

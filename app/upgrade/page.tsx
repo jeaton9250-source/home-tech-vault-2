@@ -14,12 +14,34 @@ import PageShell from "@/components/ui/PageShell";
 import PageTitle from "@/components/ui/PageTitle";
 import PageCard from "@/components/ui/PageCard";
 import Button from "@/components/ui/Button";
+import { PLAN_FEATURES } from "@/lib/permissions/plans";
+import { usePermissions } from "@/hooks/usePermissions";
+import PlanAccessSummary from "@/components/permissions/PlanAccessSummary";
 
 type PaidPlan = "pro" | "family";
 
 export default function UpgradePage() {
+  const {
+    loading: permissionsLoading,
+    plan,
+    planDisplayName,
+    roleDisplayName,
+    isDemo,
+    isFree,
+    isPlatformAdmin,
+    billingManagedByHousehold,
+    canManageBilling,
+    user,
+  } = usePermissions();
+
   const [loadingPlan, setLoadingPlan] =
     useState<PaidPlan | null>(null);
+
+  const canPurchase =
+    Boolean(user) &&
+    !isDemo &&
+    !isPlatformAdmin &&
+    canManageBilling;
 
   async function startCheckout(plan: PaidPlan) {
     try {
@@ -75,20 +97,51 @@ export default function UpgradePage() {
         description="Choose the plan that gives you the right level of protection, automation, and household access."
       />
 
+      {!permissionsLoading &&
+        user &&
+        !isDemo && (
+          <PageCard className="border-warning/40 bg-warning-soft">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-achievement">
+              Your Current Plan
+            </p>
+
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <p className="text-2xl font-bold text-text-primary">
+                {isPlatformAdmin
+                  ? "Master Account"
+                  : planDisplayName}
+              </p>
+
+              {roleDisplayName && (
+                <span className="rounded-full bg-charcoal px-3 py-1 text-xs font-semibold text-surface-card">
+                  {roleDisplayName}
+                </span>
+              )}
+            </div>
+
+            {billingManagedByHousehold && (
+              <div className="mt-4">
+                <PlanAccessSummary
+                  showRole={false}
+                  compact
+                />
+              </div>
+            )}
+          </PageCard>
+        )}
+
       <section className="grid gap-6 xl:grid-cols-3">
         <PlanCard
           name="Free"
           price="$0"
           description="For getting started with your home technology inventory."
           icon={ShieldCheck}
-          features={[
-            "Up to 8 devices",
-            "Basic device inventory",
-            "Photos and documents",
-            "Warranty tracking",
-            "Basic maintenance",
-          ]}
-          buttonText="Free Plan"
+          features={PLAN_FEATURES.free.items}
+          buttonText={
+            isFree && !isPlatformAdmin
+              ? "Current Plan"
+              : "Free Plan"
+          }
           disabled
         />
 
@@ -99,18 +152,23 @@ export default function UpgradePage() {
           description="For homeowners who want automation, reporting, and advanced tools."
           icon={Crown}
           featured
-          features={[
-            "Unlimited devices",
-            "Network device discovery",
-            "Advanced reports and analytics",
-            "Insurance-ready exports",
-            "Smart recommendations",
-            "Home technology health score",
-          ]}
-          buttonText="Upgrade to Pro"
+          features={PLAN_FEATURES.pro.items}
+          buttonText={
+            plan === "pro"
+              ? "Current Plan"
+              : "Upgrade to Pro"
+          }
           loading={loadingPlan === "pro"}
-          disabled={loadingPlan !== null}
-          onClick={() => startCheckout("pro")}
+          disabled={
+            loadingPlan !== null ||
+            plan === "pro" ||
+            !canPurchase
+          }
+          onClick={
+            canPurchase
+              ? () => startCheckout("pro")
+              : undefined
+          }
         />
 
         <PlanCard
@@ -119,33 +177,38 @@ export default function UpgradePage() {
           billingText="/month"
           description="For households that want shared access and multiple users."
           icon={Users}
-          features={[
-            "Everything in Pro",
-            "Household member access",
-            "Shared device management",
-            "Family permissions",
-            "Multiple homes in the future",
-            "Priority support",
-          ]}
-          buttonText="Choose Family"
+          features={PLAN_FEATURES.family.items}
+          buttonText={
+            plan === "family"
+              ? "Current Plan"
+              : "Choose Family"
+          }
           loading={loadingPlan === "family"}
-          disabled={loadingPlan !== null}
-          onClick={() => startCheckout("family")}
+          disabled={
+            loadingPlan !== null ||
+            plan === "family" ||
+            !canPurchase
+          }
+          onClick={
+            canPurchase
+              ? () => startCheckout("family")
+              : undefined
+          }
         />
       </section>
 
       <PageCard>
         <div className="flex items-start gap-4">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
             <Sparkles size={24} />
           </div>
 
           <div>
-            <h2 className="text-2xl font-bold text-[#111827]">
+            <h2 className="text-2xl font-bold text-text-primary">
               Secure Stripe Checkout
             </h2>
 
-            <p className="mt-2 max-w-2xl text-neutral-500">
+            <p className="mt-2 max-w-2xl text-text-secondary">
               Payments are completed through Stripe’s hosted
               checkout page. Use a Stripe test card while your
               account is in test mode.
@@ -188,37 +251,37 @@ function PlanCard({
     <PageCard
       className={
         featured
-          ? "relative border-[#C8A96A] shadow-lg"
+          ? "relative border-accent shadow-lg"
           : ""
       }
     >
       {featured && (
-        <div className="absolute right-5 top-5 rounded-full bg-[#111827] px-3 py-1 text-xs font-semibold text-white">
+        <div className="absolute right-5 top-5 rounded-full bg-charcoal px-3 py-1 text-xs font-semibold text-surface-card">
           Most Popular
         </div>
       )}
 
-      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+      <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
         <Icon size={24} />
       </div>
 
-      <p className="mt-5 text-sm font-semibold uppercase tracking-[0.16em] text-[#C8A96A]">
+      <p className="mt-5 text-overline text-charcoal-soft">
         {name}
       </p>
 
       <div className="mt-3 flex items-end gap-1">
-        <span className="text-4xl font-bold text-[#111827]">
+        <span className="text-4xl font-bold text-text-primary">
           {price}
         </span>
 
         {billingText && (
-          <span className="pb-1 text-neutral-500">
+          <span className="pb-1 text-text-secondary">
             {billingText}
           </span>
         )}
       </div>
 
-      <p className="mt-3 text-sm leading-6 text-neutral-500">
+      <p className="mt-3 text-sm leading-6 text-text-secondary">
         {description}
       </p>
 
@@ -230,10 +293,10 @@ function PlanCard({
           >
             <CheckCircle2
               size={18}
-              className="mt-0.5 shrink-0 text-[#C8A96A]"
+              className="mt-0.5 shrink-0 text-interaction"
             />
 
-            <p className="text-sm text-[#111827]">
+            <p className="text-sm text-text-primary">
               {feature}
             </p>
           </div>

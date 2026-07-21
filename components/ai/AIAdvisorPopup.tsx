@@ -7,7 +7,6 @@ import {
   Maximize2,
   MessageCircle,
   Send,
-  Sparkles,
   X,
 } from "lucide-react";
 import {
@@ -20,7 +19,8 @@ import {
 import { useRouter } from "next/navigation";
 
 import { supabase } from "@/lib/supabase";
-import { useDemoMode } from "@/hooks/useDemoMode";
+import { useAIAdvisor } from "@/hooks/useAIAdvisor";
+import { usePermissions } from "@/hooks/usePermissions";
 
 type ChatMessage = {
   id: string;
@@ -74,13 +74,15 @@ export default function AIAdvisorPopup() {
   const {
     user,
     isDemo,
-    loading: demoModeLoading,
-  } = useDemoMode();
+    loading: permissionsLoading,
+    canViewFeature,
+  } = usePermissions();
+
+  const { isOpen, close } = useAIAdvisor();
 
   const messagesEndRef =
     useRef<HTMLDivElement | null>(null);
 
-  const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
 
@@ -109,7 +111,7 @@ export default function AIAdvisorPopup() {
     ]);
 
   const loadVaultData = useCallback(async () => {
-    if (demoModeLoading) {
+    if (permissionsLoading) {
       return;
     }
 
@@ -264,12 +266,12 @@ export default function AIAdvisorPopup() {
   }, [
     user,
     isDemo,
-    demoModeLoading,
+    permissionsLoading,
   ]);
 
   useEffect(() => {
     if (
-      demoModeLoading ||
+      permissionsLoading ||
       isDemo ||
       !user
     ) {
@@ -280,7 +282,7 @@ export default function AIAdvisorPopup() {
   }, [
     user,
     isDemo,
-    demoModeLoading,
+    permissionsLoading,
     loadVaultData,
   ]);
 
@@ -878,7 +880,7 @@ Try asking:
   }
 
   function closePopup() {
-    setIsOpen(false);
+    close();
   }
 
   function clearChat() {
@@ -887,47 +889,39 @@ Try asking:
     ]);
   }
 
-  // Hide the popup while Demo Mode is active
-  // or when no authenticated user exists.
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    loadVaultData();
+  }, [isOpen, loadVaultData]);
+
+  // Hide the popup while Demo Mode is active,
+  // when no authenticated user exists,
+  // or when AI Advisor is not on the effective plan.
   if (
-    demoModeLoading ||
+    permissionsLoading ||
     isDemo ||
-    !user
+    !user ||
+    !canViewFeature("aiAdvisor")
   ) {
+    return null;
+  }
+
+  if (!isOpen) {
     return null;
   }
 
   return (
     <>
-      {!isOpen && (
-        <button
-          type="button"
-          onClick={() => {
-            setIsOpen(true);
-            loadVaultData();
-          }}
-          aria-label="Open AI Advisor"
-          className="fixed bottom-6 right-6 z-[9999] flex h-14 items-center gap-3 rounded-full bg-[#111827] px-5 text-white shadow-2xl transition hover:-translate-y-1 hover:bg-[#263044]"
-        >
-          <Sparkles
-            size={20}
-            className="text-[#C8A96A]"
-          />
-
-          <span className="hidden font-semibold sm:inline">
-            Ask AI
-          </span>
-        </button>
-      )}
-
-      {isOpen && (
-        <section className="fixed bottom-5 right-5 z-[9999] flex h-[min(680px,calc(100vh-40px))] w-[calc(100vw-40px)] max-w-md flex-col overflow-hidden rounded-[28px] border border-[#E8E2D6] bg-white shadow-2xl">
-          <header className="flex items-center justify-between bg-[#111827] px-5 py-4 text-white">
+      <section className="fixed bottom-5 right-5 z-[9999] flex h-[min(680px,calc(100vh-40px))] w-[calc(100vw-40px)] max-w-md flex-col overflow-hidden rounded-[var(--radius-dialog)] border border-border-subtle bg-surface-card shadow-lg">
+          <header className="flex items-center justify-between border-b border-border-subtle bg-gradient-to-r from-section-insights-soft to-surface-card px-5 py-4 text-text-primary">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10">
                 <Bot
                   size={21}
-                  className="text-[#C8A96A]"
+                  className="text-white"
                 />
               </div>
 
@@ -936,7 +930,7 @@ Try asking:
                   AI Advisor
                 </h2>
 
-                <p className="text-xs text-white/60">
+                <p className="text-xs text-text-secondary">
                   Connected to your vault
                 </p>
               </div>
@@ -947,7 +941,7 @@ Try asking:
                 type="button"
                 onClick={clearChat}
                 aria-label="Clear chat"
-                className="rounded-xl p-2 text-white/70 hover:bg-white/10 hover:text-white"
+                className="rounded-xl p-2 text-text-secondary hover:bg-white/10 hover:text-white"
               >
                 <FileQuestion
                   size={18}
@@ -961,7 +955,7 @@ Try asking:
                   router.push("/ai");
                 }}
                 aria-label="Open full AI page"
-                className="rounded-xl p-2 text-white/70 hover:bg-white/10 hover:text-white"
+                className="rounded-xl p-2 text-text-secondary hover:bg-white/10 hover:text-white"
               >
                 <Maximize2 size={18} />
               </button>
@@ -970,14 +964,14 @@ Try asking:
                 type="button"
                 onClick={closePopup}
                 aria-label="Close AI Advisor"
-                className="rounded-xl p-2 text-white/70 hover:bg-white/10 hover:text-white"
+                className="rounded-xl p-2 text-text-secondary hover:bg-white/10 hover:text-white"
               >
                 <X size={19} />
               </button>
             </div>
           </header>
 
-          <div className="flex-1 overflow-y-auto bg-[#FBFAF7] p-4">
+          <div className="flex-1 overflow-y-auto bg-surface-base p-4">
             <div className="space-y-4">
               {messages.map(
                 (chatMessage) => (
@@ -994,8 +988,8 @@ Try asking:
                       className={`max-w-[88%] whitespace-pre-line rounded-2xl px-4 py-3 text-sm leading-6 ${
                         chatMessage.role ===
                         "user"
-                          ? "rounded-br-md bg-[#111827] text-white"
-                          : "rounded-bl-md border border-[#E8E2D6] bg-white text-neutral-700"
+                          ? "rounded-br-md bg-charcoal text-surface-card"
+                          : "rounded-bl-md border border-border-subtle bg-white text-text-secondary"
                       }`}
                     >
                       {
@@ -1008,7 +1002,7 @@ Try asking:
 
               {sending && (
                 <div className="flex justify-start">
-                  <div className="flex items-center gap-2 rounded-2xl rounded-bl-md border border-[#E8E2D6] bg-white px-4 py-3 text-sm text-neutral-500">
+                  <div className="flex items-center gap-2 rounded-2xl rounded-bl-md border border-border-subtle bg-white px-4 py-3 text-sm text-text-secondary">
                     <Loader2
                       size={16}
                       className="animate-spin"
@@ -1025,7 +1019,7 @@ Try asking:
 
             {messages.length === 1 && (
               <div className="mt-6">
-                <p className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#C8A96A]">
+                <p className="mb-3 text-overline text-charcoal-soft">
                   Try asking
                 </p>
 
@@ -1041,11 +1035,11 @@ Try asking:
                             question
                           )
                         }
-                        className="flex w-full items-center gap-3 rounded-2xl border border-[#E8E2D6] bg-white p-3 text-left text-sm text-[#111827] transition hover:border-[#C8A96A] hover:shadow-sm"
+                        className="flex w-full items-center gap-3 rounded-2xl border border-border-subtle bg-white p-3 text-left text-sm text-text-primary transition hover:border-border-strong hover:shadow-sm"
                       >
                         <MessageCircle
                           size={16}
-                          className="shrink-0 text-[#C8A96A]"
+                          className="shrink-0 text-interaction"
                         />
 
                         {question}
@@ -1059,7 +1053,7 @@ Try asking:
 
           <form
             onSubmit={submitMessage}
-            className="border-t border-[#E8E2D6] bg-white p-4"
+            className="border-t border-border-subtle bg-white p-4"
           >
             <div className="flex items-end gap-2">
               <textarea
@@ -1081,7 +1075,7 @@ Try asking:
                 }}
                 placeholder="Ask about your technology..."
                 rows={1}
-                className="max-h-28 min-h-12 flex-1 resize-none rounded-2xl border border-[#E8E2D6] bg-[#F7F5EF] px-4 py-3 text-sm text-[#111827] outline-none focus:border-[#C8A96A] focus:ring-2 focus:ring-[#C8A96A]/20"
+                className="max-h-28 min-h-12 flex-1 resize-none rounded-2xl border border-border-subtle bg-surface-sunken px-4 py-3 text-sm text-text-primary outline-none focus:border-interaction focus:ring-2 focus:ring-interaction/20"
               />
 
               <button
@@ -1091,7 +1085,7 @@ Try asking:
                   sending
                 }
                 aria-label="Send message"
-                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#111827] text-white transition hover:bg-[#263044] disabled:cursor-not-allowed disabled:opacity-40"
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-charcoal text-surface-card transition hover:bg-charcoal-hover disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {sending ? (
                   <Loader2
@@ -1104,12 +1098,11 @@ Try asking:
               </button>
             </div>
 
-            <p className="mt-2 text-center text-[11px] text-neutral-400">
+            <p className="mt-2 text-center text-[11px] text-text-tertiary">
               Answers are generated from your saved vault information.
             </p>
           </form>
-        </section>
-      )}
+      </section>
     </>
   );
 }

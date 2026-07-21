@@ -174,8 +174,8 @@ export default function ResetPasswordPage() {
 
   if (checkingSession) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#F7F5EF] px-6">
-        <div className="flex items-center gap-3 text-neutral-500">
+      <main className="flex min-h-screen items-center justify-center bg-surface-sunken px-6">
+        <div className="flex items-center gap-3 text-text-secondary">
           <Loader2
             size={22}
             className="animate-spin"
@@ -188,9 +188,9 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#F7F5EF] px-5 py-8">
-      <div className="w-full max-w-lg rounded-[32px] border border-[#E8E2D6] bg-white p-7 shadow-xl md:p-10">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+    <main className="flex min-h-screen items-center justify-center bg-surface-sunken px-5 py-8">
+      <div className="w-full max-w-lg rounded-[var(--radius-card)] border border-border-subtle bg-white p-7 shadow-xl md:p-10">
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
           {success ? (
             <CheckCircle2 size={24} />
           ) : (
@@ -200,15 +200,15 @@ export default function ResetPasswordPage() {
 
         {success ? (
           <>
-            <p className="mt-6 text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
+            <p className="mt-6 text-overline text-charcoal-soft">
               Password Updated
             </p>
 
-            <h1 className="mt-2 text-3xl font-bold text-[#111827]">
+            <h1 className="mt-2 text-3xl font-bold text-text-primary">
               Your new password is ready
             </h1>
 
-            <p className="mt-3 leading-7 text-neutral-500">
+            <p className="mt-3 leading-7 text-text-secondary">
               Your password was updated successfully. You are
               being redirected to your Home Tech Vault.
             </p>
@@ -224,15 +224,15 @@ export default function ResetPasswordPage() {
           </>
         ) : recoveryReady ? (
           <>
-            <p className="mt-6 text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
+            <p className="mt-6 text-overline text-charcoal-soft">
               Secure Password Reset
             </p>
 
-            <h1 className="mt-2 text-3xl font-bold text-[#111827]">
+            <h1 className="mt-2 text-3xl font-bold text-text-primary">
               Choose a new password
             </h1>
 
-            <p className="mt-3 leading-7 text-neutral-500">
+            <p className="mt-3 leading-7 text-text-secondary">
               Enter a new password for your Home Tech Vault
               account.
             </p>
@@ -248,10 +248,10 @@ export default function ResetPasswordPage() {
               className="mt-8 space-y-5"
             >
               <label className="block">
-                <span className="mb-2 flex items-center gap-2 text-sm font-semibold text-[#111827]">
+                <span className="mb-2 flex items-center gap-2 text-sm font-semibold text-text-primary">
                   <LockKeyhole
                     size={16}
-                    className="text-[#C8A96A]"
+                    className="text-interaction"
                   />
                   New Password
                 </span>
@@ -286,7 +286,7 @@ export default function ResetPasswordPage() {
                         ? "Hide password"
                         : "Show password"
                     }
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-[#111827]"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-primary"
                   >
                     {showPassword ? (
                       <EyeOff size={18} />
@@ -298,10 +298,10 @@ export default function ResetPasswordPage() {
               </label>
 
               <label className="block">
-                <span className="mb-2 flex items-center gap-2 text-sm font-semibold text-[#111827]">
+                <span className="mb-2 flex items-center gap-2 text-sm font-semibold text-text-primary">
                   <LockKeyhole
                     size={16}
-                    className="text-[#C8A96A]"
+                    className="text-interaction"
                   />
                   Confirm New Password
                 </span>
@@ -327,7 +327,7 @@ export default function ResetPasswordPage() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#111827] px-6 py-4 font-semibold text-white transition hover:bg-[#263044] disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-charcoal px-6 py-4 font-semibold text-surface-card transition hover:bg-charcoal-hover disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {submitting ? (
                   <Loader2
@@ -350,25 +350,25 @@ export default function ResetPasswordPage() {
               Reset Link Unavailable
             </p>
 
-            <h1 className="mt-2 text-3xl font-bold text-[#111827]">
+            <h1 className="mt-2 text-3xl font-bold text-text-primary">
               This reset link is invalid or expired
             </h1>
 
-            <p className="mt-3 leading-7 text-neutral-500">
+            <p className="mt-3 leading-7 text-text-secondary">
               Request a new password reset email and use the
               newest link you receive.
             </p>
 
             <Link
               href="/forgot-password"
-              className="mt-7 inline-flex w-full items-center justify-center rounded-2xl bg-[#111827] px-6 py-4 font-semibold text-white transition hover:bg-[#263044]"
+              className="mt-7 inline-flex w-full items-center justify-center rounded-2xl bg-charcoal px-6 py-4 font-semibold text-surface-card transition hover:bg-charcoal-hover"
             >
               Request Another Reset Link
             </Link>
 
             <Link
               href="/login"
-              className="mt-3 inline-flex w-full items-center justify-center rounded-2xl border border-[#E8E2D6] px-6 py-4 font-semibold text-[#111827] hover:bg-[#F7F5EF]"
+              className="mt-3 inline-flex w-full items-center justify-center rounded-2xl border border-border-subtle px-6 py-4 font-semibold text-text-primary hover:bg-surface-sunken"
             >
               Back to Sign In
             </Link>
@@ -380,4 +380,4 @@ export default function ResetPasswordPage() {
 }
 
 const inputClassName =
-  "w-full rounded-2xl border border-[#E8E2D6] bg-white px-4 py-3.5 text-[#111827] outline-none transition placeholder:text-neutral-400 focus:border-[#C8A96A] focus:ring-2 focus:ring-[#C8A96A]/20";
+  "w-full rounded-2xl border border-border-subtle bg-white px-4 py-3.5 text-text-primary outline-none transition placeholder:text-text-tertiary focus:border-interaction focus:ring-2 focus:ring-interaction/20";

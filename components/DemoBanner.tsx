@@ -30,19 +30,19 @@ export default function DemoBanner() {
   }
 
   return (
-    <div className="sticky top-0 z-50 border-b border-[#D8C69D] bg-[#FFF8E8] px-4 py-3">
+    <div className="sticky top-0 z-50 border-b border-interaction/20 bg-interaction-soft px-4 py-3">
       <div className="mx-auto flex max-w-7xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#111827] text-[#C8A96A]">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-button)] bg-charcoal text-surface-card">
             <Sparkles size={18} />
           </div>
 
           <div>
-            <p className="text-sm font-semibold text-[#111827]">
+            <p className="text-sm font-medium text-text-primary">
               You are viewing an interactive demo.
             </p>
 
-            <p className="text-xs text-neutral-600">
+            <p className="text-xs text-text-secondary">
               Sample changes are not permanently saved.
             </p>
           </div>
@@ -52,7 +52,7 @@ export default function DemoBanner() {
           <button
             type="button"
             onClick={() => router.push("/signup")}
-            className="inline-flex items-center gap-2 rounded-xl bg-[#111827] px-4 py-2 text-sm font-semibold text-white"
+            className="inline-flex items-center gap-2 rounded-[var(--radius-button)] bg-charcoal px-4 py-2 text-sm font-medium text-surface-card hover:bg-charcoal-hover"
           >
             <LogIn size={16} />
             Create Your Vault
@@ -62,7 +62,7 @@ export default function DemoBanner() {
             type="button"
             onClick={leaveDemo}
             aria-label="Exit demo"
-            className="flex h-9 w-9 items-center justify-center rounded-xl text-neutral-600 hover:bg-black/5"
+            className="flex h-9 w-9 items-center justify-center rounded-[var(--radius-button)] text-text-secondary hover:bg-surface-card"
           >
             <X size={18} />
           </button>

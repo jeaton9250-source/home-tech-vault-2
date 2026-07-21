@@ -1,13 +1,22 @@
+"use client";
+
+import PageShell from "@/components/ui/PageShell";
+import { ViewerBanner } from "@/components/ui/PermissionUI";
+
 export default function SecurityPage() {
   return (
-    <main className="p-8">
-      <h1 className="text-4xl font-bold text-blue-950">
-        Security
-      </h1>
+    <PageShell>
+      <ViewerBanner />
 
-      <p className="text-gray-600 mt-2">
-        This section is coming soon.
-      </p>
-    </main>
+      <section className="rounded-[var(--radius-card)] border border-border-subtle bg-white p-8 shadow-sm">
+        <h1 className="text-4xl font-bold text-text-primary">
+          Security
+        </h1>
+
+        <p className="mt-2 text-text-secondary">
+          This section is coming soon.
+        </p>
+      </section>
+    </PageShell>
   );
 }

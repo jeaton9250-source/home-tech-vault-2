@@ -43,22 +43,22 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#F7F5EF] flex items-center justify-center px-6">
-      <div className="w-full max-w-lg rounded-3xl bg-white p-10 shadow-xl border border-[#E8E2D6]">
+    <main className="min-h-screen bg-surface-sunken flex items-center justify-center px-6">
+      <div className="w-full max-w-lg rounded-3xl bg-white p-10 shadow-xl border border-border-subtle">
 
         <Link
           href="/login"
-          className="inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-black"
+          className="inline-flex items-center gap-2 text-sm text-text-secondary hover:text-black"
         >
           <ArrowLeft size={16} />
           Back to Sign In
         </Link>
 
-        <h1 className="mt-6 text-3xl font-bold text-[#111827]">
+        <h1 className="mt-6 text-3xl font-bold text-text-primary">
           Reset your password
         </h1>
 
-        <p className="mt-3 text-neutral-500">
+        <p className="mt-3 text-text-secondary">
           Enter your email address and we'll send you a secure password reset link.
         </p>
 
@@ -87,7 +87,7 @@ export default function ForgotPasswordPage() {
               <label className="mb-2 flex items-center gap-2 text-sm font-semibold">
                 <Mail
                   size={16}
-                  className="text-[#C8A96A]"
+                  className="text-interaction"
                 />
                 Email Address
               </label>
@@ -100,7 +100,7 @@ export default function ForgotPasswordPage() {
                   setEmail(e.target.value)
                 }
                 placeholder="you@example.com"
-                className="w-full rounded-2xl border border-[#E8E2D6] px-4 py-3 outline-none focus:border-[#C8A96A]"
+                className="w-full rounded-2xl border border-border-subtle px-4 py-3 outline-none focus:border-interaction"
               />
             </div>
 
@@ -112,7 +112,7 @@ export default function ForgotPasswordPage() {
 
             <button
               disabled={loading}
-              className="w-full rounded-2xl bg-[#111827] py-4 text-white font-semibold hover:bg-[#263044]"
+              className="w-full rounded-2xl bg-charcoal py-4 text-surface-card font-semibold hover:bg-charcoal-hover"
             >
               {loading ? (
                 <span className="flex justify-center">

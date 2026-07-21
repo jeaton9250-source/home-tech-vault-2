@@ -26,8 +26,12 @@ import {
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
-import { useDemoMode } from "@/hooks/useDemoMode";
-import { useSubscription } from "@/hooks/useSubscription";
+import { usePermissions } from "@/hooks/usePermissions";
+import {
+  formatSubscriptionStatus,
+  getPlanDescription,
+} from "@/lib/permissions/effectivePlan";
+import PlanAccessSummary from "@/components/permissions/PlanAccessSummary";
 
 import PageShell from "@/components/ui/PageShell";
 import PageTitle from "@/components/ui/PageTitle";
@@ -60,16 +64,17 @@ export default function AccountPage() {
   const {
     user,
     isDemo,
-    loading: demoLoading,
-  } = useDemoMode();
-
-  const {
-    loading: subscriptionLoading,
+    loading: permissionsLoading,
     plan,
-    status,
+    planDisplayName,
+    roleDisplayName,
+    effectiveStatus,
     currentPeriodEnd,
-    isAdmin,
-  } = useSubscription();
+    isFree,
+    isPlatformAdmin,
+    canManageBilling,
+    billingManagedByHousehold,
+  } = usePermissions();
 
   const [fullName, setFullName] =
     useState("");
@@ -115,7 +120,7 @@ export default function AccountPage() {
 
   useEffect(() => {
     async function loadAccount() {
-      if (demoLoading) {
+      if (permissionsLoading) {
         return;
       }
 
@@ -279,13 +284,12 @@ export default function AccountPage() {
   }, [
     user,
     isDemo,
-    demoLoading,
+    permissionsLoading,
   ]);
 
   const loading =
-    demoLoading ||
-    loadingAccount ||
-    subscriptionLoading;
+    permissionsLoading ||
+    loadingAccount;
 
   const displayName =
     fullName.trim() ||
@@ -310,13 +314,9 @@ export default function AccountPage() {
       .join("");
   }, [displayName]);
 
-  const planLabel = isAdmin
+  const planLabel = isPlatformAdmin
     ? "Master Account"
-    : plan === "family"
-      ? "Family Plan"
-      : plan === "pro"
-        ? "Pro Plan"
-        : "Free Plan";
+    : `${planDisplayName} Plan`;
 
   async function saveProfile() {
     if (isDemo) {
@@ -397,7 +397,7 @@ export default function AccountPage() {
 
       {loading ? (
         <PageCard className="flex min-h-64 items-center justify-center">
-          <div className="flex items-center gap-3 text-neutral-500">
+          <div className="flex items-center gap-3 text-text-secondary">
             <Loader2
               size={22}
               className="animate-spin"
@@ -414,16 +414,16 @@ export default function AccountPage() {
           )}
 
           {isDemo && (
-            <PageCard className="border-[#D8C69D] bg-[#FFF8E8]">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A6A2F]">
+            <PageCard className="border-warning/40 bg-warning-soft">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-achievement">
                 Interactive Demo
               </p>
 
-              <h2 className="mt-2 text-xl font-bold text-[#111827]">
+              <h2 className="mt-2 text-xl font-bold text-text-primary">
                 Preview the Account Center
               </h2>
 
-              <p className="mt-2 text-sm leading-6 text-neutral-600">
+              <p className="mt-2 text-sm leading-6 text-text-secondary">
                 These are sample account details.
                 Create an account to personalize
                 your own vault.
@@ -431,79 +431,82 @@ export default function AccountPage() {
             </PageCard>
           )}
 
-          <section className="overflow-hidden rounded-[32px] bg-[#111827] text-white shadow-xl">
-            <div className="relative p-7 md:p-10">
-              <div className="absolute right-0 top-0 h-64 w-64 rounded-full bg-[#C8A96A]/10 blur-3xl" />
+          <section className="htv-hero-band overflow-hidden p-7 md:p-10">
+            <div className="relative flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
+                {avatarUrl && !isDemo ? (
+                  <img
+                    src={avatarUrl}
+                    alt={displayName}
+                    className="h-24 w-24 rounded-[var(--radius-card)] border-4 border-surface-card object-cover shadow-[var(--shadow-md)]"
+                  />
+                ) : (
+                  <div className="flex h-24 w-24 items-center justify-center rounded-[var(--radius-card)] border border-border-subtle bg-surface-card text-3xl font-bold text-home-health shadow-[var(--shadow-sm)]">
+                    {initials || "HT"}
+                  </div>
+                )}
 
-              <div className="relative flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
-                <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-                  {avatarUrl && !isDemo ? (
-                    <img
-                      src={avatarUrl}
-                      alt={displayName}
-                      className="h-24 w-24 rounded-[28px] border-4 border-white/10 object-cover shadow-lg"
-                    />
-                  ) : (
-                    <div className="flex h-24 w-24 items-center justify-center rounded-[28px] bg-white/10 text-3xl font-bold text-[#C8A96A]">
-                      {initials || "HT"}
-                    </div>
-                  )}
+                <div>
+                  <p className="text-overline text-home-health">
+                    Welcome home
+                  </p>
 
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#C8A96A]">
-                      Welcome home
-                    </p>
+                  <h1 className="text-page-title mt-2 text-text-primary">
+                    {firstName}
+                  </h1>
 
-                    <h1 className="mt-2 text-4xl font-bold md:text-5xl">
-                      {firstName}
-                    </h1>
+                  <p className="mt-3 text-lg text-text-secondary">
+                    {displayedHouseholdName}
+                  </p>
 
-                    <p className="mt-3 text-lg text-white/70">
-                      {displayedHouseholdName}
-                    </p>
+                  <div className="mt-4 flex flex-wrap gap-3 text-sm text-text-secondary">
+                    <span className="inline-flex items-center gap-2">
+                      <Mail size={15} />
+                      {email}
+                    </span>
 
-                    <div className="mt-4 flex flex-wrap gap-3 text-sm text-white/60">
+                    {city && (
                       <span className="inline-flex items-center gap-2">
-                        <Mail size={15} />
-                        {email}
+                        <MapPin size={15} />
+                        {city}
                       </span>
-
-                      {city && (
-                        <span className="inline-flex items-center gap-2">
-                          <MapPin size={15} />
-                          {city}
-                        </span>
-                      )}
-                    </div>
+                    )}
                   </div>
                 </div>
+              </div>
 
-                <div className="rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
-                    Membership
+              <div className="rounded-[var(--radius-card)] border border-border-subtle bg-surface-card p-5 shadow-[var(--shadow-sm)]">
+                <p className="text-overline text-section-insights">
+                  Membership
+                </p>
+
+                <p className="mt-2 text-2xl font-bold text-text-primary">
+                  {planLabel}
+                </p>
+
+                {roleDisplayName && (
+                  <p className="mt-2 text-sm font-semibold text-section-insights">
+                    {roleDisplayName}
                   </p>
+                )}
 
-                  <p className="mt-2 text-2xl font-bold">
-                    {planLabel}
-                  </p>
+                <p className="mt-1 text-sm text-text-secondary">
+                  {isPlatformAdmin
+                    ? "All features are unlocked."
+                    : getPlanDescription(plan)}
+                </p>
 
-                  <p className="mt-1 text-sm text-white/60">
-                    {isAdmin
-                      ? "All features are unlocked."
-                      : getPlanDescription(plan)}
-                  </p>
-
-                  {!isAdmin &&
-                    plan === "free" && (
-                      <Button
-                        href="/upgrade"
-                        className="mt-4"
-                      >
-                        <Crown size={17} />
-                        Upgrade Account
-                      </Button>
-                    )}
-                </div>
+                {!isPlatformAdmin &&
+                  isFree &&
+                  !billingManagedByHousehold && (
+                    <Button
+                      href="/upgrade"
+                      className="mt-4"
+                    >
+                      <Crown size={17} />
+                      Upgrade Account
+                    </Button>
+                  )}
               </div>
             </div>
           </section>
@@ -594,12 +597,12 @@ export default function AccountPage() {
                 />
               </div>
 
-              <div className="mt-7 flex flex-wrap items-center gap-4 border-t border-[#E8E2D6] pt-6">
+              <div className="mt-7 flex flex-wrap items-center gap-4 border-t border-border-subtle pt-6">
                 <button
                   type="button"
                   onClick={saveProfile}
                   disabled={saving}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#111827] px-6 py-3 font-semibold text-white transition hover:bg-[#263044] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-charcoal px-6 py-3 font-semibold text-surface-card transition hover:bg-charcoal-hover disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {saving ? (
                     <Loader2
@@ -609,7 +612,7 @@ export default function AccountPage() {
                   ) : saved ? (
                     <CheckCircle2
                       size={18}
-                      className="text-[#C8A96A]"
+                      className="text-section-vault"
                     />
                   ) : (
                     <Save size={18} />
@@ -636,15 +639,15 @@ export default function AccountPage() {
               <PageCard>
                 <SectionHeading
                   icon={
-                    plan === "free" &&
-                    !isAdmin
+                    isFree &&
+                    !isPlatformAdmin
                       ? ShieldCheck
                       : Crown
                   }
                   eyebrow="Subscription"
                   title={planLabel}
                   description={
-                    isAdmin
+                    isPlatformAdmin
                       ? "All Home Tech Vault features are unlocked."
                       : getPlanDescription(plan)
                   }
@@ -654,31 +657,38 @@ export default function AccountPage() {
                   <SettingDetail
                     label="Plan"
                     value={
-                      isAdmin
+                      isPlatformAdmin
                         ? "Master"
-                        : formatPlanName(plan)
+                        : planDisplayName
                     }
                   />
+
+                  {roleDisplayName && (
+                    <SettingDetail
+                      label="Household Role"
+                      value={roleDisplayName}
+                    />
+                  )}
 
                   <SettingDetail
                     label="Status"
                     value={
-                      isAdmin
+                      isPlatformAdmin
                         ? "Active"
                         : formatSubscriptionStatus(
-                            status
+                            effectiveStatus
                           )
                     }
                   />
 
                   <SettingDetail
                     label={
-                      status === "canceled"
+                      effectiveStatus === "canceled"
                         ? "Access Ends"
                         : "Renewal Date"
                     }
                     value={
-                      isAdmin
+                      isPlatformAdmin
                         ? "No expiration"
                         : currentPeriodEnd
                           ? formatSubscriptionDate(
@@ -690,16 +700,26 @@ export default function AccountPage() {
                 </div>
 
                 <div className="mt-5 flex flex-col gap-3">
-                  <Button
-                    href="/settings/billing"
-                    className="w-full"
-                  >
-                    <ArrowUpRight size={17} />
-                    Manage Billing
-                  </Button>
+                  {canManageBilling && (
+                    <Button
+                      href="/settings/billing"
+                      className="w-full"
+                    >
+                      <ArrowUpRight size={17} />
+                      Manage Billing
+                    </Button>
+                  )}
 
-                  {!isAdmin &&
-                    plan === "free" && (
+                  {billingManagedByHousehold && (
+                    <PlanAccessSummary
+                      showRole={false}
+                      compact
+                    />
+                  )}
+
+                  {!isPlatformAdmin &&
+                    isFree &&
+                    !billingManagedByHousehold && (
                       <Button
                         href="/upgrade"
                         variant="secondary"
@@ -807,20 +827,20 @@ function SectionHeading({
 }) {
   return (
     <div className="flex items-start gap-4">
-      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
         <Icon size={21} />
       </div>
 
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
+        <p className="text-overline text-charcoal-soft">
           {eyebrow}
         </p>
 
-        <h2 className="mt-1 text-2xl font-bold text-[#111827]">
+        <h2 className="mt-1 text-2xl font-bold text-text-primary">
           {title}
         </h2>
 
-        <p className="mt-1 text-sm leading-6 text-neutral-500">
+        <p className="mt-1 text-sm leading-6 text-text-secondary">
           {description}
         </p>
       </div>
@@ -841,19 +861,19 @@ function AccountStat({
 }) {
   return (
     <PageCard>
-      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+      <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
         <Icon size={23} />
       </div>
 
-      <p className="mt-5 text-sm text-neutral-500">
+      <p className="mt-5 text-sm text-text-secondary">
         {label}
       </p>
 
-      <p className="mt-2 break-words text-3xl font-bold text-[#111827]">
+      <p className="mt-2 break-words text-3xl font-bold text-text-primary">
         {value}
       </p>
 
-      <p className="mt-2 text-sm text-neutral-400">
+      <p className="mt-2 text-sm text-text-tertiary">
         {description}
       </p>
     </PageCard>
@@ -879,14 +899,14 @@ function AccountField({
 }) {
   return (
     <label>
-      <span className="mb-2 block text-sm font-semibold text-[#111827]">
+      <span className="mb-2 block text-sm font-semibold text-text-primary">
         {label}
       </span>
 
       <div className="relative">
         <Icon
           size={18}
-          className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#C8A96A]"
+          className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-text-tertiary"
         />
 
         <input
@@ -897,7 +917,7 @@ function AccountField({
             onChange(event.target.value)
           }
           placeholder={placeholder}
-          className="w-full rounded-xl border border-[#E8E2D6] bg-white py-3 pl-11 pr-4 text-[#111827] outline-none transition focus:border-[#C8A96A] focus:ring-2 focus:ring-[#C8A96A]/20 disabled:cursor-not-allowed disabled:bg-neutral-100"
+          className="w-full rounded-xl border border-border-subtle bg-white py-3 pl-11 pr-4 text-text-primary outline-none transition focus:border-interaction focus:ring-2 focus:ring-interaction/15 disabled:cursor-not-allowed disabled:bg-neutral-100"
         />
       </div>
     </label>
@@ -912,12 +932,12 @@ function SettingDetail({
   value: string;
 }) {
   return (
-    <div className="rounded-2xl bg-[#F7F5EF] p-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#C8A96A]">
+    <div className="rounded-2xl bg-surface-sunken p-4">
+      <p className="text-overline text-charcoal-soft">
         {label}
       </p>
 
-      <p className="mt-2 font-semibold text-[#111827]">
+      <p className="mt-2 font-semibold text-text-primary">
         {value}
       </p>
     </div>
@@ -932,12 +952,12 @@ function SettingRow({
   value: string;
 }) {
   return (
-    <div className="flex items-start justify-between gap-5 rounded-2xl bg-[#F7F5EF] p-4">
-      <p className="text-sm text-neutral-500">
+    <div className="flex items-start justify-between gap-5 rounded-2xl bg-surface-sunken p-4">
+      <p className="text-sm text-text-secondary">
         {label}
       </p>
 
-      <p className="break-all text-right text-sm font-semibold text-[#111827]">
+      <p className="break-all text-right text-sm font-semibold text-text-primary">
         {value}
       </p>
     </div>
@@ -971,60 +991,6 @@ function formatMemberSince(
     month: "short",
     year: "numeric",
   });
-}
-
-function formatPlanName(
-  plan: string
-) {
-  if (plan === "family") {
-    return "Family";
-  }
-
-  if (plan === "pro") {
-    return "Pro";
-  }
-
-  return "Free";
-}
-
-function getPlanDescription(
-  plan: string
-) {
-  if (plan === "family") {
-    return "Premium tools, network discovery, reports, and household sharing are unlocked.";
-  }
-
-  if (plan === "pro") {
-    return "Premium tools, network discovery, reports, and advanced features are unlocked.";
-  }
-
-  return "Free accounts can save up to 8 devices.";
-}
-
-function formatSubscriptionStatus(
-  status: string
-) {
-  if (!status || status === "inactive") {
-    return "Inactive";
-  }
-
-  if (status === "past_due") {
-    return "Past Due";
-  }
-
-  if (status === "trialing") {
-    return "Trial";
-  }
-
-  if (status === "canceled") {
-    return "Canceled";
-  }
-
-  return status
-    .replaceAll("_", " ")
-    .replace(/\b\w/g, (letter) =>
-      letter.toUpperCase()
-    );
 }
 
 function formatSubscriptionDate(

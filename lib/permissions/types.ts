@@ -1,0 +1,158 @@
+import type { User } from "@supabase/supabase-js";
+
+import type {
+  SubscriptionPlan,
+} from "@/hooks/useSubscription";
+
+export type HouseholdRole =
+  | "viewer"
+  | "member"
+  | "admin";
+
+export type FeatureKey =
+  | "dashboard"
+  | "devices"
+  | "deviceDetails"
+  | "documents"
+  | "warranties"
+  | "maintenance"
+  | "network"
+  | "networkDiscover"
+  | "rooms"
+  | "subscriptions"
+  | "reports"
+  | "insights"
+  | "aiAdvisor"
+  | "family"
+  | "settings"
+  | "account"
+  | "notifications"
+  | "security"
+  | "audit"
+  | "billing";
+
+export type FeaturePlanRequirement =
+  | "free"
+  | "pro"
+  | "family";
+
+export type UpgradeReasonCode =
+  | "demo_read_only"
+  | "viewer_read_only"
+  | "admin_required"
+  | "requires_pro"
+  | "requires_family"
+  | "device_limit_reached"
+  | "document_limit_reached"
+  | "unauthenticated";
+
+export type FeatureAccess = {
+  allowed: boolean;
+  requiresUpgrade: boolean;
+  upgradeReason: string | null;
+  upgradeReasonCode: UpgradeReasonCode | null;
+  lockedReason:
+    | "none"
+    | "demo"
+    | "viewer"
+    | "subscription"
+    | "limit"
+    | "unauthenticated";
+  requiredPlan: FeaturePlanRequirement;
+  upgradeHref: string;
+  blockedHref: string;
+};
+
+export type PermissionContext = {
+  user: User | null;
+  isDemo: boolean;
+  role: HouseholdRole;
+  householdId: string | null;
+  plan: SubscriptionPlan;
+  isPlatformAdmin: boolean;
+  canUsePremiumFeatures: boolean;
+  canUseFamilySharing: boolean;
+  hasFamilyFeatureAccess: boolean;
+  billingManagedByHousehold: boolean;
+  inheritsFamilyPlan: boolean;
+  hasUnlimitedDevices: boolean;
+  hasUnlimitedDocuments: boolean;
+  deviceLimit: number | null;
+  documentLimit: number | null;
+  canManageBilling: boolean;
+  featureAccess: Record<FeatureKey, boolean>;
+};
+
+export type UpgradeReasonOptions = {
+  feature?: FeatureKey;
+  deviceCount?: number;
+  documentCount?: number;
+  needsAdmin?: boolean;
+  requiresWriteAccess?: boolean;
+};
+
+export type ComputedPermissions = {
+  isAuthenticated: boolean;
+  isViewer: boolean;
+  isMember: boolean;
+  isAdmin: boolean;
+
+  canView: boolean;
+  canCreate: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
+  canUpload: boolean;
+  canComplete: boolean;
+  canInvite: boolean;
+  canManageBilling: boolean;
+  canManageHousehold: boolean;
+  canManageSettings: boolean;
+
+  isDeviceLimitReached: (
+    count: number
+  ) => boolean;
+  isDocumentLimitReached: (
+    count: number
+  ) => boolean;
+  canAddDevice: (count: number) => boolean;
+  canAddDocument: (
+    count: number
+  ) => boolean;
+
+  requiresUpgrade: (
+    feature: FeatureKey
+  ) => boolean;
+  upgradeReason: (
+    options?: UpgradeReasonOptions
+  ) => string | null;
+  upgradeReasonCode: (
+    options?: UpgradeReasonOptions
+  ) => UpgradeReasonCode | null;
+
+  canViewFeature: (
+    feature: FeatureKey
+  ) => boolean;
+  canAccessFeature: (
+    feature: FeatureKey
+  ) => boolean;
+  getFeatureAccess: (
+    feature: FeatureKey
+  ) => FeatureAccess;
+  getActionHref: (
+    targetHref: string,
+    feature?: FeatureKey
+  ) => string;
+  getActionLabel: (
+    label: string,
+    lockedLabel?: string
+  ) => string;
+  canPerformCreate: (
+    feature?: FeatureKey
+  ) => boolean;
+  canPerformEdit: (
+    feature?: FeatureKey
+  ) => boolean;
+  canPerformDelete: (
+    feature?: FeatureKey
+  ) => boolean;
+};

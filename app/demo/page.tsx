@@ -74,10 +74,10 @@ export default function DemoPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#F7F5EF] px-5 py-10 md:px-8">
+    <main className="min-h-screen bg-surface-sunken px-5 py-10 md:px-8">
       <div className="mx-auto max-w-6xl">
-        <section className="overflow-hidden rounded-[36px] bg-[#111827] px-7 py-12 text-white shadow-xl md:px-12 md:py-16">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#C8A96A]">
+        <section className="htv-hero-band overflow-hidden rounded-[36px] px-7 py-12 text-text-primary shadow-xl md:px-12 md:py-16">
+          <p className="text-overline text-home-health">
             Interactive Product Tour
           </p>
 
@@ -85,7 +85,7 @@ export default function DemoPage() {
             Explore Home Tech Vault before creating an account.
           </h1>
 
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-white/70">
+          <p className="mt-6 max-w-2xl text-lg leading-8 text-text-secondary">
             Click through a complete sample vault containing devices,
             warranties, subscriptions, maintenance records, documents,
             and network details.
@@ -94,7 +94,7 @@ export default function DemoPage() {
           <button
             type="button"
             onClick={enterDemo}
-            className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-[#C8A96A] px-6 py-4 font-semibold text-[#111827] transition hover:brightness-105"
+            className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-charcoal px-6 py-4 font-semibold text-surface-card transition hover:brightness-105"
           >
             Start Interactive Demo
             <ArrowRight size={19} />
@@ -110,17 +110,17 @@ export default function DemoPage() {
             }) => (
               <article
                 key={title}
-                className="rounded-3xl border border-[#E8E2D6] bg-white p-6 shadow-sm"
+                className="rounded-3xl border border-border-subtle bg-white p-6 shadow-sm"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
                   <Icon size={23} />
                 </div>
 
-                <h2 className="mt-5 text-xl font-bold text-[#111827]">
+                <h2 className="mt-5 text-xl font-bold text-text-primary">
                   {title}
                 </h2>
 
-                <p className="mt-2 text-sm leading-6 text-neutral-500">
+                <p className="mt-2 text-sm leading-6 text-text-secondary">
                   {description}
                 </p>
               </article>

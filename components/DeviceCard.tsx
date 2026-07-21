@@ -9,6 +9,9 @@ import {
   getDeviceHealthLabel,
 } from "@/lib/calculateDeviceHealth";
 
+import { sections } from "@/lib/design-system/tokens";
+import { cn } from "@/lib/design-system/cn";
+
 type DeviceCardProps = {
   device: {
     id: string;
@@ -28,6 +31,8 @@ type DeviceCardProps = {
     ip_address?: string | null;
   };
 };
+
+const tech = sections.technology;
 
 export default function DeviceCard({
   device,
@@ -65,10 +70,10 @@ export default function DeviceCard({
   return (
     <Link
       href={`/devices/${device.id}`}
-      className="block rounded-[28px] focus:outline-none focus:ring-2 focus:ring-[#C8A96A] focus:ring-offset-2"
+      className="htv-focus-ring block rounded-[var(--radius-card)]"
       aria-label={`View ${device.device_name}`}
     >
-      <article className="overflow-hidden rounded-[28px] border border-[#E8E2D6] bg-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-[#C8A96A] hover:shadow-lg">
+      <article className="htv-card-interactive overflow-hidden rounded-[var(--radius-card)] border border-border-subtle bg-surface-card shadow-[var(--shadow-sm),var(--shadow-inset)]">
         {device.photo_url ? (
           <img
             src={device.photo_url}
@@ -76,7 +81,13 @@ export default function DeviceCard({
             className="h-48 w-full object-cover"
           />
         ) : (
-          <div className="flex h-48 items-center justify-center bg-[#F7F5EF] text-[#C8A96A]">
+          <div
+            className="flex h-48 items-center justify-center"
+            style={{
+              background: tech.soft,
+              color: tech.accent,
+            }}
+          >
             <Laptop size={56} />
           </div>
         )}
@@ -84,20 +95,29 @@ export default function DeviceCard({
         <div className="p-6">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#C8A96A]">
+              <p
+                className="text-overline"
+                style={{ color: tech.accent }}
+              >
                 {device.category || "Device"}
               </p>
 
-              <h2 className="mt-2 truncate text-xl font-bold text-[#111827]">
+              <h2 className="mt-2 truncate text-xl font-medium tracking-[-0.02em] text-text-primary">
                 {device.device_name}
               </h2>
 
-              <p className="mt-1 truncate text-sm text-neutral-500">
+              <p className="mt-1 truncate text-sm text-text-secondary">
                 {device.brand || "No brand added"}
               </p>
             </div>
 
-            <span className="shrink-0 rounded-full bg-[#F3EAD7] px-3 py-1 text-xs font-semibold text-[#8A6A2F]">
+            <span
+              className="shrink-0 rounded-full px-3 py-1 text-xs font-semibold"
+              style={{
+                background: tech.soft,
+                color: tech.accent,
+              }}
+            >
               {healthScore}/100
             </span>
           </div>
@@ -105,18 +125,20 @@ export default function DeviceCard({
           {hasNetworkStatus && (
             <div className="mt-5 flex flex-wrap items-center gap-3">
               <span
-                className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold ${
+                className={cn(
+                  "inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold",
                   device.online
-                    ? "bg-emerald-100 text-emerald-700"
-                    : "bg-neutral-100 text-neutral-600"
-                }`}
+                    ? "bg-home-health-soft text-home-health"
+                    : "bg-surface-sunken text-text-secondary"
+                )}
               >
                 <span
-                  className={`h-2 w-2 rounded-full ${
+                  className={cn(
+                    "h-2 w-2 rounded-full",
                     device.online
-                      ? "bg-emerald-500"
-                      : "bg-neutral-400"
-                  }`}
+                      ? "bg-home-health"
+                      : "bg-text-tertiary"
+                  )}
                 />
 
                 {device.online
@@ -124,7 +146,7 @@ export default function DeviceCard({
                   : "Offline"}
               </span>
 
-              <span className="text-xs text-neutral-400">
+              <span className="text-xs text-text-tertiary">
                 {device.online
                   ? "Seen in latest scan"
                   : formatLastSeen(
@@ -134,20 +156,20 @@ export default function DeviceCard({
             </div>
           )}
 
-          <div className="mt-5 rounded-2xl bg-[#F7F5EF] p-4">
+          <div className="mt-5 rounded-[var(--radius-button)] border border-border-subtle bg-surface-sunken p-4 shadow-[var(--shadow-inset)]">
             <div className="flex items-center justify-between gap-3">
-              <p className="text-sm font-semibold text-[#111827]">
+              <p className="text-sm font-medium text-text-primary">
                 Device Health
               </p>
 
-              <p className="text-sm text-neutral-500">
+              <p className="text-sm text-text-secondary">
                 {healthLabel}
               </p>
             </div>
 
-            <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#E8E2D6]">
+            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-surface-base shadow-[var(--shadow-inset)]">
               <div
-                className="h-full rounded-full bg-[#111827]"
+                className="h-full rounded-full bg-home-health transition-all duration-700 ease-[var(--ease-premium)]"
                 style={{
                   width: `${healthScore}%`,
                 }}
@@ -156,35 +178,38 @@ export default function DeviceCard({
           </div>
 
           <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
-            <div className="rounded-2xl border border-[#E8E2D6] p-4">
-              <p className="text-xs uppercase tracking-[0.14em] text-neutral-400">
+            <div className="rounded-[var(--radius-button)] border border-border-subtle bg-surface-card p-4 shadow-[var(--shadow-sm)]">
+              <p className="text-xs uppercase tracking-[0.14em] text-text-tertiary">
                 Location
               </p>
 
-              <p className="mt-2 truncate font-semibold text-[#111827]">
+              <p className="mt-2 truncate font-medium text-text-primary">
                 {device.location ||
                   "Not added"}
               </p>
             </div>
 
-            <div className="rounded-2xl border border-[#E8E2D6] p-4">
-              <p className="text-xs uppercase tracking-[0.14em] text-neutral-400">
+            <div className="rounded-[var(--radius-button)] border border-border-subtle bg-surface-card p-4 shadow-[var(--shadow-sm)]">
+              <p className="text-xs uppercase tracking-[0.14em] text-text-tertiary">
                 Network
               </p>
 
-              <p className="mt-2 truncate font-semibold text-[#111827]">
+              <p className="mt-2 truncate font-medium text-text-primary">
                 {device.ip_address ||
                   "Not connected"}
               </p>
             </div>
           </div>
 
-          <div className="mt-5 flex items-center gap-2 font-semibold text-[#111827]">
+          <div className="mt-5 flex items-center gap-2 font-medium text-text-primary">
             {isDemo
               ? "Demo Preview"
               : "View Details"}
 
-            <ArrowRight size={16} />
+            <ArrowRight
+              size={16}
+              className="text-text-tertiary transition group-hover:translate-x-0.5 group-hover:text-interaction"
+            />
           </div>
         </div>
       </article>

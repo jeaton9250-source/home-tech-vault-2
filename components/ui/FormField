@@ -3,6 +3,8 @@ import {
   TextareaHTMLAttributes,
 } from "react";
 
+import { cn } from "@/lib/design-system/cn";
+
 type BaseProps = {
   label: string;
   error?: string;
@@ -19,7 +21,9 @@ type TextareaProps = BaseProps & {
 
 type FormFieldProps = InputProps | TextareaProps;
 
-export default function FormField(props: FormFieldProps) {
+export default function FormField(
+  props: FormFieldProps
+) {
   const {
     label,
     error,
@@ -29,27 +33,27 @@ export default function FormField(props: FormFieldProps) {
     ...fieldProps
   } = props;
 
-  const fieldClasses = `
-    w-full rounded-xl border bg-white px-4 py-3
-    text-[#111827] outline-none
-    ${
-      error
-        ? "border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-100"
-        : "border-[#E8E2D6] focus:border-[#C8A96A] focus:ring-2 focus:ring-[#C8A96A]/20"
-    }
-    ${className}
-  `;
+  const fieldClasses = cn(
+    "w-full rounded-[var(--radius-input)] border bg-surface-card px-4 py-3 text-text-primary outline-none transition-colors",
+    error
+      ? "border-danger focus:border-danger focus:ring-2 focus:ring-danger/15"
+      : "border-border-subtle focus:border-accent focus:ring-2 focus:ring-accent/15",
+    className
+  );
 
   return (
     <label className="block">
-      <span className="mb-2 block text-sm font-semibold text-[#111827]">
+      <span className="text-label mb-2 block text-text-primary">
         {label}
       </span>
 
       {multiline ? (
         <textarea
           {...(fieldProps as TextareaHTMLAttributes<HTMLTextAreaElement>)}
-          className={`${fieldClasses} min-h-28 resize-y`}
+          className={cn(
+            fieldClasses,
+            "min-h-28 resize-y"
+          )}
         />
       ) : (
         <input
@@ -59,11 +63,11 @@ export default function FormField(props: FormFieldProps) {
       )}
 
       {error ? (
-        <span className="mt-2 block text-sm text-red-600">
+        <span className="mt-2 block text-sm text-danger">
           {error}
         </span>
       ) : helpText ? (
-        <span className="mt-2 block text-sm text-neutral-400">
+        <span className="mt-2 block text-sm text-text-tertiary">
           {helpText}
         </span>
       ) : null}

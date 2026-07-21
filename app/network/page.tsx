@@ -27,9 +27,19 @@ import {
   WifiOff,
 } from "lucide-react";
 
-import { supabase } from "@/lib/supabase";
-import { useDemoMode } from "@/hooks/useDemoMode";
+import {
+  supabase,
+  formatSupabaseError,
+} from "@/lib/supabase";
+import {
+  applyHouseholdScope,
+  applyOwnerUserScope,
+  loadNetworkInfoRows,
+  resolveHouseholdScope,
+} from "@/lib/data/householdScope";
+import { usePermissions } from "@/hooks/usePermissions";
 import PageShell from "@/components/ui/PageShell";
+import PageHero from "@/components/ui/PageHero";
 
 type NetworkInfo = {
   id?: string;
@@ -119,12 +129,77 @@ const demoDiscoverySummary: DiscoverySummary = {
   unprotected: 3,
 };
 
+const emptyDiscoverySummary: DiscoverySummary = {
+  total: 0,
+  protected: 0,
+  unprotected: 0,
+};
+
+function logNetworkLoadFailure(
+  context: Record<string, unknown>,
+  error: unknown
+) {
+  console.error("[Network Overview] load failed:", {
+    ...context,
+    error: formatSupabaseError(error),
+  });
+}
+
+async function loadDiscoverySummaryForScan(
+  scanId: string,
+  householdId: string | null | undefined,
+  userId: string,
+  householdOwnerId: string | null | undefined
+): Promise<DiscoverySummary> {
+  const {
+    data: discoveryRows,
+    error: discoveryError,
+  } = await applyOwnerUserScope(
+    supabase
+      .from("network_discoveries")
+      .select("added_to_vault")
+      .eq("scan_id", scanId),
+    householdId,
+    userId,
+    householdOwnerId
+  );
+
+  if (discoveryError) {
+    logNetworkLoadFailure(
+      {
+        stage: "discovery_summary",
+        scanId,
+      },
+      discoveryError
+    );
+
+    return emptyDiscoverySummary;
+  }
+
+  const rows =
+    (discoveryRows ?? []) as DiscoveryRow[];
+
+  const protectedDevices = rows.filter(
+    (row) => row.added_to_vault === true
+  ).length;
+
+  return {
+    total: rows.length,
+    protected: protectedDevices,
+    unprotected: rows.length - protectedDevices,
+  };
+}
+
 export default function NetworkPage() {
   const {
     user,
     isDemo,
-    loading: demoLoading,
-  } = useDemoMode();
+    householdId,
+    householdOwnerId,
+    loading: permissionsLoading,
+    getActionHref,
+    getActionLabel,
+  } = usePermissions();
 
   const [network, setNetwork] =
     useState<NetworkInfo | null>(null);
@@ -151,15 +226,22 @@ export default function NetworkPage() {
     let mounted = true;
 
     async function loadNetwork() {
-      if (demoLoading) {
+      if (permissionsLoading) {
         return;
       }
+
+      const scope = user
+        ? resolveHouseholdScope(
+            householdId,
+            user.id
+          )
+        : null;
 
       try {
         setLoadingNetwork(true);
         setErrorMessage("");
 
-        if (isDemo || !user) {
+        if (isDemo) {
           if (!mounted) {
             return;
           }
@@ -173,105 +255,120 @@ export default function NetworkPage() {
           return;
         }
 
-        const [
-          networkResult,
-          scansResult,
-        ] = await Promise.all([
-          supabase
-            .from("network_info")
-            .select("*")
-            .eq("user_id", user.id)
-            .limit(1)
-            .maybeSingle(),
+        if (!user) {
+          if (!mounted) {
+            return;
+          }
 
-          supabase
-            .from("network_scans")
-            .select(
-              "id, scanned_at, devices_found, online_devices, offline_devices, new_devices"
+          setNetwork(demoNetwork);
+          setScanHistory(demoScans);
+          setDiscoverySummary(
+            demoDiscoverySummary
+          );
+
+          return;
+        }
+
+        const [networkResult, scansResult] =
+          await Promise.all([
+            loadNetworkInfoRows(
+              supabase,
+              householdId,
+              user.id,
+              householdOwnerId
+            ),
+
+            applyOwnerUserScope(
+              supabase
+                .from("network_scans")
+                .select("*"),
+              householdId,
+              user.id,
+              householdOwnerId
             )
-            .eq("user_id", user.id)
-            .order("scanned_at", {
-              ascending: false,
-            })
-            .limit(6),
-        ]);
+              .order("scanned_at", {
+                ascending: false,
+              })
+              .limit(6),
+          ]);
 
         if (networkResult.error) {
+          logNetworkLoadFailure(
+            {
+              stage: "network_info",
+              scope,
+              userId: user.id,
+              householdId,
+              householdOwnerId,
+            },
+            networkResult.error
+          );
+
           throw networkResult.error;
         }
 
         if (scansResult.error) {
-          throw scansResult.error;
+          logNetworkLoadFailure(
+            {
+              stage: "network_scans",
+              scope,
+              userId: user.id,
+              householdId,
+              householdOwnerId,
+            },
+            scansResult.error
+          );
         }
 
         if (!mounted) {
           return;
         }
 
-        const loadedScans =
-          (scansResult.data ??
-            []) as NetworkScan[];
+        const loadedScans = scansResult.error
+          ? []
+          : ((scansResult.data ??
+              []) as NetworkScan[]);
 
-        setNetwork(
-          (networkResult.data as NetworkInfo) ??
-            null
-        );
+        const networkRows =
+          (networkResult.data ??
+            []) as NetworkInfo[];
 
+        setNetwork(networkRows[0] ?? null);
         setScanHistory(loadedScans);
 
         const latestLoadedScan =
           loadedScans[0];
 
         if (!latestLoadedScan) {
-          setDiscoverySummary({
-            total: 0,
-            protected: 0,
-            unprotected: 0,
-          });
+          setDiscoverySummary(
+            emptyDiscoverySummary
+          );
 
           return;
         }
 
-        const {
-          data: discoveryRows,
-          error: discoveryError,
-        } = await supabase
-          .from("network_discoveries")
-          .select("added_to_vault")
-          .eq("user_id", user.id)
-          .eq(
-            "scan_id",
-            latestLoadedScan.id
+        const summary =
+          await loadDiscoverySummaryForScan(
+            latestLoadedScan.id,
+            householdId,
+            user.id,
+            householdOwnerId
           );
-
-        if (discoveryError) {
-          throw discoveryError;
-        }
 
         if (!mounted) {
           return;
         }
 
-        const rows =
-          (discoveryRows ??
-            []) as DiscoveryRow[];
-
-        const protectedDevices =
-          rows.filter(
-            (row) =>
-              row.added_to_vault === true
-          ).length;
-
-        setDiscoverySummary({
-          total: rows.length,
-          protected: protectedDevices,
-          unprotected:
-            rows.length -
-            protectedDevices,
-        });
+        setDiscoverySummary(summary);
       } catch (error: unknown) {
-        console.error(
-          "Network loading error:",
+        logNetworkLoadFailure(
+          {
+            stage: "network_overview",
+            scope,
+            userId: user?.id ?? null,
+            householdId,
+            isDemo,
+          },
           error
         );
 
@@ -280,9 +377,7 @@ export default function NetworkPage() {
         }
 
         setErrorMessage(
-          error instanceof Error
-            ? error.message
-            : "Unable to load the network dashboard."
+          "We couldn't load your network information. Please try again."
         );
       } finally {
         if (mounted) {
@@ -299,7 +394,9 @@ export default function NetworkPage() {
   }, [
     user,
     isDemo,
-    demoLoading,
+    householdId,
+    householdOwnerId,
+    permissionsLoading,
   ]);
 
   const latestScan =
@@ -369,21 +466,23 @@ export default function NetworkPage() {
           : "Incomplete";
 
   const loading =
-    demoLoading || loadingNetwork;
+    permissionsLoading ||
+    loadingNetwork;
 
-  const scanHref = isDemo
-    ? "/signup"
-    : "/network/discover";
+  const scanHref = getActionHref(
+    "/network/discover",
+    "networkDiscover"
+  );
 
-  const editHref = isDemo
-    ? "/signup"
-    : "/network/edit";
+  const editHref = getActionHref(
+    "/network/edit"
+  );
 
   if (loading) {
     return (
       <PageShell>
         <div className="flex min-h-72 items-center justify-center rounded-3xl border border-neutral-200 bg-white">
-          <div className="flex items-center gap-3 text-neutral-500">
+          <div className="flex items-center gap-3 text-text-secondary">
             <Loader2
               className="animate-spin"
               size={22}
@@ -414,60 +513,45 @@ export default function NetworkPage() {
 
   return (
     <PageShell>
-      <section className="rounded-[32px] bg-[#111827] px-6 py-9 text-white shadow-sm md:px-10 md:py-11">
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#C8A96A]">
-              Connectivity
-            </p>
+      <PageHero
+        section="network"
+        eyebrow="Connectivity"
+        title="Your network."
+        description="See your internet, equipment, connected devices, and recent scans in one place."
+      >
+        <div className="flex flex-wrap gap-3">
+          <ActionLink
+            href={scanHref}
+            variant="secondary"
+          >
+            <Radar size={17} />
+            {getActionLabel(
+              "Scan Network",
+              "Create Vault to Scan"
+            )}
+          </ActionLink>
 
-            <h1 className="mt-3 text-4xl font-semibold tracking-[-0.04em] md:text-5xl">
-              Your network.
-            </h1>
-
-            <p className="mt-4 max-w-xl text-sm leading-6 text-white/60 md:text-base">
-              See your internet,
-              equipment, connected
-              devices, and recent scans
-              in one place.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap gap-3">
-            <ActionLink
-              href={scanHref}
-              variant="light"
-            >
-              <Radar size={17} />
-
-              {isDemo
-                ? "Create Vault to Scan"
-                : "Scan Network"}
-            </ActionLink>
-
-            <ActionLink
-              href={editHref}
-              variant="light"
-            >
-              <Pencil size={17} />
-
-              {isDemo
-                ? "Create Your Vault"
-                : network
-                  ? "Edit Network"
-                  : "Set Up Network"}
-            </ActionLink>
-          </div>
+          <ActionLink
+            href={editHref}
+            variant="secondary"
+          >
+            <Pencil size={17} />
+            {getActionLabel(
+              network
+                ? "Edit Network"
+                : "Set Up Network"
+            )}
+          </ActionLink>
         </div>
-      </section>
+      </PageHero>
 
       {isDemo && (
-        <section className="rounded-3xl border border-[#D8C69D] bg-[#FFF8E8] p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A6A2F]">
+        <section className="rounded-3xl border border-warning/40 bg-warning-soft p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-achievement">
             Viewer Access
           </p>
 
-          <p className="mt-2 text-sm leading-6 text-neutral-600">
+          <p className="mt-2 text-sm leading-6 text-text-secondary">
             You are exploring sample
             network information. Create
             an account to save your own
@@ -523,7 +607,7 @@ export default function NetworkPage() {
 
       <section className="grid gap-6 xl:grid-cols-[0.8fr_1.2fr]">
         <Card className="flex min-h-[370px] flex-col items-center justify-center p-8 text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-secondary">
             Network Health
           </p>
 
@@ -534,7 +618,7 @@ export default function NetworkPage() {
             />
           </div>
 
-          <p className="mt-7 max-w-sm text-sm leading-6 text-neutral-500">
+          <p className="mt-7 max-w-sm text-sm leading-6 text-text-secondary">
             Your score reflects your
             provider, equipment,
             wireless, speed, and
@@ -607,9 +691,10 @@ export default function NetworkPage() {
                 <ActionLink href={scanHref}>
                   <Radar size={17} />
 
-                  {isDemo
-                    ? "Create Vault to Scan"
-                    : "Scan Again"}
+                  {getActionLabel(
+                    "Scan Again",
+                    "Create Vault to Scan"
+                  )}
                 </ActionLink>
 
                 <ActionLink
@@ -624,7 +709,10 @@ export default function NetworkPage() {
           ) : (
             <EmptyScanState
               href={scanHref}
-              isDemo={isDemo}
+              scanLabel={getActionLabel(
+                "Start Network Scan",
+                "Create Vault to Scan"
+              )}
             />
           )}
         </Card>
@@ -819,7 +907,7 @@ export default function NetworkPage() {
               />
 
               {latestScan && (
-                <p className="text-sm text-neutral-500">
+                <p className="text-sm text-text-secondary">
                   Last scanned{" "}
                   {formatRelativeScanDate(
                     latestScan.scanned_at
@@ -846,8 +934,8 @@ export default function NetworkPage() {
                 description="Troubleshooting, placement, and provider information."
               />
 
-              <div className="mt-6 rounded-[24px] bg-[#F7F5EF] p-5">
-                <p className="whitespace-pre-wrap text-sm leading-7 text-neutral-600">
+              <div className="mt-6 rounded-[24px] bg-surface-sunken p-5">
+                <p className="whitespace-pre-wrap text-sm leading-7 text-text-secondary">
                   {network.notes}
                 </p>
               </div>
@@ -856,18 +944,18 @@ export default function NetworkPage() {
         </>
       ) : (
         <Card className="py-14 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
             <Wifi size={29} />
           </div>
 
-          <h2 className="mt-5 text-2xl font-semibold text-[#111827]">
-            Set up your network
+          <h2 className="mt-5 text-2xl font-semibold text-text-primary">
+            No network profile yet
           </h2>
 
-          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-neutral-500">
-            Add your provider, router,
-            modem, Wi-Fi, guest network,
-            and internet speeds.
+          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-text-secondary">
+            Add your provider, router, modem,
+            Wi-Fi, guest network, and internet
+            speeds to get started.
           </p>
 
           <div className="mt-6">
@@ -891,7 +979,7 @@ function Card({
   return (
     <div
       className={
-        "rounded-[28px] border border-[#E8E2D6] bg-white shadow-sm " +
+        "rounded-[var(--radius-card)] border border-border-subtle bg-white shadow-sm " +
         className
       }
     >
@@ -914,10 +1002,10 @@ function ActionLink({
 }) {
   const styles =
     variant === "light"
-      ? "bg-white text-[#111827] hover:bg-neutral-100"
+      ? "bg-white text-text-primary hover:bg-neutral-100"
       : variant === "secondary"
-        ? "border border-[#E8E2D6] bg-white text-[#111827] hover:bg-[#F7F5EF]"
-        : "bg-[#111827] text-white hover:bg-[#1f2937]";
+        ? "border border-border-subtle bg-white text-text-primary hover:bg-surface-sunken"
+        : "bg-charcoal text-surface-card hover:bg-charcoal-hover";
 
   return (
     <Link
@@ -970,7 +1058,7 @@ function NetworkHealthRing({
           cy="88"
           r={radius}
           fill="none"
-          stroke="#E8E2D6"
+          stroke="#E5E7EB"
           strokeWidth="12"
         />
 
@@ -990,14 +1078,14 @@ function NetworkHealthRing({
       </svg>
 
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-5xl font-semibold text-[#111827]">
+        <span className="text-5xl font-semibold text-text-primary">
           {normalizedScore}
-          <span className="text-2xl text-neutral-400">
+          <span className="text-2xl text-text-tertiary">
             %
           </span>
         </span>
 
-        <span className="mt-2 text-sm font-semibold text-[#8A6A2F]">
+        <span className="mt-2 text-sm font-semibold text-achievement">
           {label}
         </span>
       </div>
@@ -1020,20 +1108,20 @@ function SummaryCard({
     <Card className="p-5 md:p-6">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-sm text-neutral-500">
+          <p className="text-sm text-text-secondary">
             {label}
           </p>
 
-          <p className="mt-2 truncate text-3xl font-semibold text-[#111827]">
+          <p className="mt-2 truncate text-3xl font-semibold text-text-primary">
             {value}
           </p>
 
-          <p className="mt-2 text-xs text-neutral-400">
+          <p className="mt-2 text-xs text-text-tertiary">
             {description}
           </p>
         </div>
 
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
           <Icon size={20} />
         </div>
       </div>
@@ -1052,15 +1140,15 @@ function SectionHeading({
 }) {
   return (
     <div>
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
+      <p className="text-overline text-section-network">
         {eyebrow}
       </p>
 
-      <h2 className="mt-2 text-2xl font-semibold text-[#111827]">
+      <h2 className="mt-2 text-2xl font-semibold text-text-primary">
         {title}
       </h2>
 
-      <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-500">
+      <p className="mt-2 max-w-2xl text-sm leading-6 text-text-secondary">
         {description}
       </p>
     </div>
@@ -1075,12 +1163,12 @@ function MetricTile({
   value: number;
 }) {
   return (
-    <div className="rounded-2xl bg-[#F7F5EF] p-4">
-      <p className="text-xs text-neutral-400">
+    <div className="rounded-2xl bg-surface-sunken p-4">
+      <p className="text-xs text-text-tertiary">
         {label}
       </p>
 
-      <p className="mt-2 text-2xl font-semibold text-[#111827]">
+      <p className="mt-2 text-2xl font-semibold text-text-primary">
         {value}
       </p>
     </div>
@@ -1103,10 +1191,10 @@ function StatusCard({
   const iconClasses =
     tone === "green"
       ? "bg-emerald-50 text-emerald-700"
-      : "bg-[#FFF8E8] text-[#8A6A2F]";
+      : "bg-warning-soft text-achievement";
 
   return (
-    <div className="rounded-[24px] border border-[#E8E2D6] p-5">
+    <div className="rounded-[24px] border border-border-subtle p-5">
       <div
         className={
           "flex h-11 w-11 items-center justify-center rounded-2xl " +
@@ -1116,15 +1204,15 @@ function StatusCard({
         <Icon size={20} />
       </div>
 
-      <p className="mt-5 text-sm text-neutral-500">
+      <p className="mt-5 text-sm text-text-secondary">
         {label}
       </p>
 
-      <p className="mt-1 text-3xl font-semibold text-[#111827]">
+      <p className="mt-1 text-3xl font-semibold text-text-primary">
         {value}
       </p>
 
-      <p className="mt-2 text-sm leading-6 text-neutral-500">
+      <p className="mt-2 text-sm leading-6 text-text-secondary">
         {description}
       </p>
     </div>
@@ -1141,16 +1229,16 @@ function DetailCard({
   value?: string | null;
 }) {
   return (
-    <div className="rounded-[24px] bg-[#F7F5EF] p-5">
-      <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-[#C8A96A] shadow-sm">
+    <div className="rounded-[24px] bg-surface-sunken p-5">
+      <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-border-subtle bg-surface-card text-charcoal shadow-[var(--shadow-sm)]">
         <Icon size={18} />
       </div>
 
-      <p className="mt-5 text-xs font-semibold uppercase tracking-[0.15em] text-neutral-400">
+      <p className="mt-5 text-xs font-semibold uppercase tracking-[0.15em] text-text-tertiary">
         {label}
       </p>
 
-      <p className="mt-2 break-words font-semibold text-[#111827]">
+      <p className="mt-2 break-words font-semibold text-text-primary">
         {value || "Not provided"}
       </p>
     </div>
@@ -1167,17 +1255,17 @@ function NetworkRow({
   value: string;
 }) {
   return (
-    <div className="flex items-center gap-4 rounded-[22px] border border-[#E8E2D6] p-4">
-      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+    <div className="flex items-center gap-4 rounded-[22px] border border-border-subtle p-4">
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
         <Icon size={19} />
       </div>
 
       <div className="min-w-0">
-        <p className="text-xs text-neutral-400">
+        <p className="text-xs text-text-tertiary">
           {label}
         </p>
 
-        <p className="mt-1 truncate font-semibold text-[#111827]">
+        <p className="mt-1 truncate font-semibold text-text-primary">
           {value}
         </p>
       </div>
@@ -1193,7 +1281,7 @@ function ChecklistItem({
   label: string;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-[22px] bg-[#F7F5EF] p-4">
+    <div className="flex items-center gap-3 rounded-[22px] bg-surface-sunken p-4">
       <div
         className={
           "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl " +
@@ -1209,7 +1297,7 @@ function ChecklistItem({
         )}
       </div>
 
-      <p className="text-sm font-semibold text-[#111827]">
+      <p className="text-sm font-semibold text-text-primary">
         {label}
       </p>
     </div>
@@ -1222,20 +1310,20 @@ function ScanHistoryRow({
   scan: NetworkScan;
 }) {
   return (
-    <div className="flex flex-col gap-5 rounded-[24px] border border-[#E8E2D6] p-5 lg:flex-row lg:items-center lg:justify-between">
+    <div className="flex flex-col gap-5 rounded-[24px] border border-border-subtle p-5 lg:flex-row lg:items-center lg:justify-between">
       <div className="flex items-start gap-3">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
           <History size={19} />
         </div>
 
         <div>
-          <p className="font-semibold text-[#111827]">
+          <p className="font-semibold text-text-primary">
             {formatScanDate(
               scan.scanned_at
             )}
           </p>
 
-          <p className="mt-1 text-sm text-neutral-500">
+          <p className="mt-1 text-sm text-text-secondary">
             Network scan completed
           </p>
         </div>
@@ -1275,11 +1363,11 @@ function HistoryMetric({
 }) {
   return (
     <div>
-      <p className="text-[10px] uppercase tracking-[0.14em] text-neutral-400">
+      <p className="text-[10px] uppercase tracking-[0.14em] text-text-tertiary">
         {label}
       </p>
 
-      <p className="mt-1 font-semibold text-[#111827]">
+      <p className="mt-1 font-semibold text-text-primary">
         {value}
       </p>
     </div>
@@ -1288,22 +1376,22 @@ function HistoryMetric({
 
 function EmptyScanState({
   href,
-  isDemo,
+  scanLabel,
 }: {
   href: string;
-  isDemo: boolean;
+  scanLabel: string;
 }) {
   return (
-    <div className="mt-7 rounded-[24px] bg-[#F7F5EF] p-6">
-      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#C8A96A] shadow-sm">
+    <div className="mt-7 rounded-[24px] bg-surface-sunken p-6">
+      <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-border-subtle bg-surface-card text-charcoal shadow-[var(--shadow-sm)]">
         <Radar size={22} />
       </div>
 
-      <h3 className="mt-5 text-xl font-semibold text-[#111827]">
+      <h3 className="mt-5 text-xl font-semibold text-text-primary">
         Run your first scan
       </h3>
 
-      <p className="mt-2 max-w-md text-sm leading-6 text-neutral-500">
+      <p className="mt-2 max-w-md text-sm leading-6 text-text-secondary">
         Discover connected devices and
         begin building your network
         history.
@@ -1313,9 +1401,7 @@ function EmptyScanState({
         <ActionLink href={href}>
           <Radar size={17} />
 
-          {isDemo
-            ? "Create Vault to Scan"
-            : "Start Network Scan"}
+          {scanLabel}
         </ActionLink>
       </div>
     </div>

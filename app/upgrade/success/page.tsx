@@ -17,15 +17,15 @@ export default function UpgradeSuccessPage() {
           <CheckCircle2 size={38} />
         </div>
 
-        <p className="mt-6 text-xs font-semibold uppercase tracking-[0.2em] text-[#C8A96A]">
+        <p className="mt-6 text-overline text-charcoal-soft">
           Payment Successful
         </p>
 
-        <h1 className="mt-3 text-4xl font-bold text-[#111827]">
+        <h1 className="mt-3 text-4xl font-bold text-text-primary">
           Welcome to Home Tech Vault Pro
         </h1>
 
-        <p className="mx-auto mt-4 max-w-lg leading-7 text-neutral-500">
+        <p className="mx-auto mt-4 max-w-lg leading-7 text-text-secondary">
           Stripe successfully completed your checkout. Your
           subscription access will activate as soon as the Stripe
           webhook updates your account.

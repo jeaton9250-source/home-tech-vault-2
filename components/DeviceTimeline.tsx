@@ -292,18 +292,18 @@ export default function DeviceTimeline({
   }, [events, purchaseDate, warrantyDate]);
 
   return (
-    <section className="mt-10 border-t border-[#E8E2D6] pt-10">
+    <section className="mt-10 border-t border-border-subtle pt-10">
       <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#C8A96A]">
+          <p className="text-overline text-charcoal-soft">
             Device History
           </p>
 
-          <h2 className="mt-2 text-2xl font-bold text-[#111827]">
+          <h2 className="mt-2 text-2xl font-bold text-text-primary">
             Timeline
           </h2>
 
-          <p className="mt-2 text-sm text-neutral-500">
+          <p className="mt-2 text-sm text-text-secondary">
             Track maintenance, repairs, updates, and important milestones.
           </p>
         </div>
@@ -311,7 +311,7 @@ export default function DeviceTimeline({
         <button
           type="button"
           onClick={() => setShowForm((current) => !current)}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#111827] px-5 py-3 text-sm font-semibold text-white hover:bg-[#263044]"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-charcoal px-5 py-3 text-sm font-semibold text-surface-card hover:bg-charcoal-hover"
         >
           <Plus size={18} />
           Add Event
@@ -321,17 +321,17 @@ export default function DeviceTimeline({
       {showForm && (
         <form
           onSubmit={addEvent}
-          className="mt-6 grid gap-4 rounded-3xl border border-[#E8E2D6] bg-[#F7F5EF] p-6 md:grid-cols-2"
+          className="mt-6 grid gap-4 rounded-3xl border border-border-subtle bg-surface-sunken p-6 md:grid-cols-2"
         >
           <label className="block">
-            <span className="mb-2 block text-sm font-semibold text-[#111827]">
+            <span className="mb-2 block text-sm font-semibold text-text-primary">
               Event Type
             </span>
 
             <select
               value={eventType}
               onChange={(event) => setEventType(event.target.value)}
-              className="w-full rounded-xl border border-[#E8E2D6] bg-white px-4 py-3 outline-none focus:border-[#C8A96A]"
+              className="w-full rounded-xl border border-border-subtle bg-white px-4 py-3 outline-none focus:border-interaction"
             >
               {eventTypes.map((type) => (
                 <option key={type} value={type}>
@@ -342,7 +342,7 @@ export default function DeviceTimeline({
           </label>
 
           <label className="block">
-            <span className="mb-2 block text-sm font-semibold text-[#111827]">
+            <span className="mb-2 block text-sm font-semibold text-text-primary">
               Date
             </span>
 
@@ -350,12 +350,12 @@ export default function DeviceTimeline({
               type="date"
               value={eventDate}
               onChange={(event) => setEventDate(event.target.value)}
-              className="w-full rounded-xl border border-[#E8E2D6] bg-white px-4 py-3 outline-none focus:border-[#C8A96A]"
+              className="w-full rounded-xl border border-border-subtle bg-white px-4 py-3 outline-none focus:border-interaction"
             />
           </label>
 
           <label className="block md:col-span-2">
-            <span className="mb-2 block text-sm font-semibold text-[#111827]">
+            <span className="mb-2 block text-sm font-semibold text-text-primary">
               Title
             </span>
 
@@ -363,12 +363,12 @@ export default function DeviceTimeline({
               value={title}
               onChange={(event) => setTitle(event.target.value)}
               placeholder="Cleaned laptop vents"
-              className="w-full rounded-xl border border-[#E8E2D6] bg-white px-4 py-3 outline-none focus:border-[#C8A96A]"
+              className="w-full rounded-xl border border-border-subtle bg-white px-4 py-3 outline-none focus:border-interaction"
             />
           </label>
 
           <label className="block md:col-span-2">
-            <span className="mb-2 block text-sm font-semibold text-[#111827]">
+            <span className="mb-2 block text-sm font-semibold text-text-primary">
               Description
             </span>
 
@@ -376,7 +376,7 @@ export default function DeviceTimeline({
               value={description}
               onChange={(event) => setDescription(event.target.value)}
               placeholder="Add any details about this event..."
-              className="min-h-28 w-full resize-y rounded-xl border border-[#E8E2D6] bg-white px-4 py-3 outline-none focus:border-[#C8A96A]"
+              className="min-h-28 w-full resize-y rounded-xl border border-border-subtle bg-white px-4 py-3 outline-none focus:border-interaction"
             />
           </label>
 
@@ -384,7 +384,7 @@ export default function DeviceTimeline({
             <button
               type="submit"
               disabled={adding}
-              className="inline-flex items-center gap-2 rounded-xl bg-[#111827] px-5 py-3 text-sm font-semibold text-white disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-xl bg-charcoal px-5 py-3 text-sm font-semibold text-surface-card disabled:opacity-60"
             >
               {adding ? (
                 <Loader2 size={18} className="animate-spin" />
@@ -398,7 +398,7 @@ export default function DeviceTimeline({
             <button
               type="button"
               onClick={() => setShowForm(false)}
-              className="rounded-xl border border-[#E8E2D6] bg-white px-5 py-3 text-sm font-semibold text-[#111827]"
+              className="rounded-xl border border-border-subtle bg-white px-5 py-3 text-sm font-semibold text-text-primary"
             >
               Cancel
             </button>
@@ -407,24 +407,24 @@ export default function DeviceTimeline({
       )}
 
       {loading ? (
-        <div className="mt-6 flex items-center gap-3 rounded-2xl bg-[#F7F5EF] p-6 text-neutral-500">
+        <div className="mt-6 flex items-center gap-3 rounded-2xl bg-surface-sunken p-6 text-text-secondary">
           <Loader2 size={20} className="animate-spin" />
           Loading timeline...
         </div>
       ) : combinedTimeline.length === 0 ? (
-        <div className="mt-6 rounded-3xl border-2 border-dashed border-[#D8D1C3] bg-[#FBFAF7] p-10 text-center">
-          <History size={36} className="mx-auto text-[#C8A96A]" />
+        <div className="mt-6 rounded-3xl border-2 border-dashed border-border-subtle bg-surface-base p-10 text-center">
+          <History size={36} className="mx-auto text-charcoal-soft" />
 
-          <h3 className="mt-4 font-semibold text-[#111827]">
+          <h3 className="mt-4 font-semibold text-text-primary">
             No history yet
           </h3>
 
-          <p className="mt-2 text-sm text-neutral-500">
+          <p className="mt-2 text-sm text-text-secondary">
             Add maintenance, repair, cleaning, or update events.
           </p>
         </div>
       ) : (
-        <div className="relative mt-8 space-y-5 before:absolute before:bottom-3 before:left-[21px] before:top-3 before:w-px before:bg-[#E8E2D6]">
+        <div className="relative mt-8 space-y-5 before:absolute before:bottom-3 before:left-[21px] before:top-3 before:w-px before:bg-border-subtle">
           {combinedTimeline.map((event) => {
             const Icon = getEventIcon(event.event_type);
 
@@ -433,28 +433,28 @@ export default function DeviceTimeline({
                 key={event.id}
                 className="relative flex items-start gap-5"
               >
-                <div className="z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#111827] text-[#C8A96A] shadow-sm">
+                <div className="z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-charcoal text-surface-card shadow-sm">
                   <Icon size={19} />
                 </div>
 
-                <div className="flex-1 rounded-2xl border border-[#E8E2D6] bg-white p-5">
+                <div className="flex-1 rounded-2xl border border-border-subtle bg-white p-5">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#C8A96A]">
+                      <p className="text-overline text-charcoal-soft">
                         {event.event_type}
                       </p>
 
-                      <h3 className="mt-2 font-bold text-[#111827]">
+                      <h3 className="mt-2 font-bold text-text-primary">
                         {event.title}
                       </h3>
 
                       {event.description && (
-                        <p className="mt-2 text-sm leading-6 text-neutral-500">
+                        <p className="mt-2 text-sm leading-6 text-text-secondary">
                           {event.description}
                         </p>
                       )}
 
-                      <div className="mt-3 flex items-center gap-2 text-sm text-neutral-400">
+                      <div className="mt-3 flex items-center gap-2 text-sm text-text-tertiary">
                         <CalendarDays size={15} />
                         {formatEventDate(event.event_date)}
                       </div>

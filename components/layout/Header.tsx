@@ -171,13 +171,13 @@ export default function Header() {
   }
 
   return (
-    <header className="flex flex-col gap-5 border-b border-[#E8E2D6] bg-[#FAFAF8]/95 px-5 py-5 backdrop-blur md:px-8 lg:flex-row lg:items-center lg:justify-between">
+    <header className="flex flex-col gap-5 border-b border-border-subtle bg-[#FAFAF8]/95 px-5 py-5 backdrop-blur md:px-8 lg:flex-row lg:items-center lg:justify-between">
       <div className="min-w-0">
-        <h1 className="truncate text-2xl font-semibold tracking-[-0.03em] text-[#111827]">
+        <h1 className="truncate text-2xl font-semibold tracking-[-0.03em] text-text-primary">
           {pageInfo.title}
         </h1>
 
-        <p className="mt-1 max-w-xl text-sm leading-6 text-neutral-500">
+        <p className="mt-1 max-w-xl text-sm leading-6 text-text-secondary">
           {
             pageInfo.description
           }
@@ -193,7 +193,7 @@ export default function Header() {
         >
           <Search
             size={18}
-            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400"
+            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-text-tertiary"
           />
 
           <input
@@ -209,7 +209,7 @@ export default function Header() {
             }
             placeholder="Search devices..."
             aria-label="Search devices"
-            className="w-full rounded-2xl border border-[#E8E2D6] bg-white py-3 pl-11 pr-11 text-sm text-[#111827] shadow-sm outline-none transition placeholder:text-neutral-400 focus:border-[#C8A96A] focus:ring-4 focus:ring-[#C8A96A]/10"
+            className="w-full rounded-2xl border border-border-subtle bg-white py-3 pl-11 pr-11 text-sm text-text-primary shadow-sm outline-none transition placeholder:text-text-tertiary focus:border-interaction focus:ring-4 focus:ring-interaction/10"
           />
 
           {search && (
@@ -219,7 +219,7 @@ export default function Header() {
                 clearSearch
               }
               aria-label="Clear search"
-              className="absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-neutral-400 transition hover:bg-[#F7F5EF] hover:text-[#111827]"
+              className="absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-text-tertiary transition hover:bg-surface-sunken hover:text-text-primary"
             >
               <X
                 size={15}
@@ -231,11 +231,11 @@ export default function Header() {
         <button
           type="button"
           aria-label="Notifications"
-          className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-[#E8E2D6] bg-white text-neutral-500 shadow-sm transition hover:border-[#D8C69D] hover:text-[#111827]"
+          className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border-subtle bg-white text-text-secondary shadow-sm transition hover:border-warning/40 hover:text-text-primary"
         >
           <Bell size={18} />
 
-          <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full border-2 border-white bg-[#C8A96A]" />
+          <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full border-2 border-surface-card bg-home-health" />
         </button>
       </div>
     </header>

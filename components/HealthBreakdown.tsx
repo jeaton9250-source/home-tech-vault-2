@@ -38,13 +38,13 @@ export default function HealthBreakdown({
           key={item.key}
           className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-sm"
         >
-          <p className="text-sm font-medium text-neutral-500">{item.label}</p>
+          <p className="text-sm font-medium text-text-secondary">{item.label}</p>
           <p className="mt-3 text-4xl font-semibold text-neutral-950">
             {values[item.key]}%
           </p>
           <div className="mt-3 h-2 overflow-hidden rounded-full bg-neutral-100">
             <div
-              className="h-2 rounded-full bg-blue-950 transition-all duration-300"
+              className="h-2 rounded-full bg-charcoal transition-all duration-300"
               style={{ width: `${values[item.key]}%` }}
             />
           </div>

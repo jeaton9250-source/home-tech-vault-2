@@ -1,11 +1,23 @@
 "use client";
 
+/**
+ * Personal Stripe subscription for the signed-in user only.
+ *
+ * Do not use this hook for premium feature gating, device limits, or plan
+ * display. Use `usePermissions()` instead — it resolves the effective plan
+ * (personal subscription plus inherited Family access from the household owner).
+ */
+
 import {
   useCallback,
   useEffect,
   useMemo,
   useState,
 } from "react";
+
+import {
+  getLimitsForPlan,
+} from "@/lib/permissions/plans";
 
 import { supabase } from "@/lib/supabase";
 
@@ -26,12 +38,14 @@ type Subscription = {
   plan: SubscriptionPlan;
   status: SubscriptionStatus;
   current_period_end: string | null;
+  stripe_customer_id: string | null;
 };
 
 const defaultSubscription: Subscription = {
   plan: "free",
   status: "inactive",
   current_period_end: null,
+  stripe_customer_id: null,
 };
 
 export function useSubscription() {
@@ -93,7 +107,8 @@ export function useSubscription() {
               `
                 plan,
                 status,
-                current_period_end
+                current_period_end,
+                stripe_customer_id
               `
             )
             .eq("user_id", user.id)
@@ -141,6 +156,9 @@ export function useSubscription() {
           current_period_end:
             subscriptionData
               ?.current_period_end ||
+            null,
+          stripe_customer_id:
+            subscriptionData?.stripe_customer_id ??
             null,
         });
 
@@ -210,27 +228,34 @@ export function useSubscription() {
     isPro ||
     isFamily;
 
-  /*
-   * Family Sharing is intentionally stricter
-   * than other premium features.
-   *
-   * Pro users do not receive access.
-   */
   const canUseFamilySharing =
     isAdmin || isFamily;
 
   const canManageFamilySharing =
     isAdmin || isFamily;
 
+  const limits = getLimitsForPlan(
+    isAdmin
+      ? "pro"
+      : isFamily
+        ? "family"
+        : isPro
+          ? "pro"
+          : "free",
+    isAdmin
+  );
+
   const hasUnlimitedDevices =
-    isAdmin ||
-    isPro ||
-    isFamily;
+    limits.maxDevices === null;
+
+  const hasUnlimitedDocuments =
+    limits.maxDocuments === null;
 
   const deviceLimit =
-    hasUnlimitedDevices
-      ? null
-      : 8;
+    limits.maxDevices;
+
+  const documentLimit =
+    limits.maxDocuments;
 
   const familyMemberLimit =
     canUseFamilySharing
@@ -241,11 +266,16 @@ export function useSubscription() {
     loading,
 
     plan: subscription.plan,
+    personalPlan: subscription.plan,
 
     status: subscription.status,
 
     currentPeriodEnd:
       subscription.current_period_end,
+
+    hasPersonalStripeCustomer: Boolean(
+      subscription.stripe_customer_id
+    ),
 
     isActive,
     isFree,
@@ -258,7 +288,9 @@ export function useSubscription() {
     canManageFamilySharing,
 
     deviceLimit,
+    documentLimit,
     hasUnlimitedDevices,
+    hasUnlimitedDocuments,
     familyMemberLimit,
 
     refreshSubscription,

@@ -13,12 +13,18 @@ import {
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
-import { useDemoMode } from "@/hooks/useDemoMode";
+import {
+  applyHouseholdScope,
+  withHouseholdInsertFields,
+} from "@/lib/data/householdScope";
+import { recordActivity } from "@/lib/activity";
+import { usePermissions } from "@/hooks/usePermissions";
 
 import PageShell from "@/components/ui/PageShell";
 import PageTitle from "@/components/ui/PageTitle";
 import PageCard from "@/components/ui/PageCard";
 import Button from "@/components/ui/Button";
+import { ViewerBanner } from "@/components/ui/PermissionUI";
 
 type Device = {
   id: string;
@@ -31,16 +37,27 @@ export default function UploadDocumentPage() {
   const {
     user,
     isDemo,
-    loading: demoModeLoading,
-  } = useDemoMode();
+    canCreate,
+    canUpload,
+    canAddDocument,
+    householdId,
+    documentLimit,
+    hasUnlimitedDocuments,
+    loading: permissionsLoading,
+  } = usePermissions();
 
   const [devices, setDevices] =
     useState<Device[]>([]);
 
   const [
-    householdId,
-    setHouseholdId,
-  ] = useState<string | null>(null);
+    documentCount,
+    setDocumentCount,
+  ] = useState(0);
+
+  const [
+    checkingDocumentLimit,
+    setCheckingDocumentLimit,
+  ] = useState(true);
 
   const [
     loadingDevices,
@@ -69,87 +86,68 @@ export default function UploadDocumentPage() {
 
   useEffect(() => {
     async function loadHouseholdDevices() {
-      if (demoModeLoading) {
+      if (permissionsLoading) {
         return;
       }
 
       try {
         setLoadingDevices(true);
+        setCheckingDocumentLimit(true);
         setErrorMessage("");
 
         if (isDemo || !user) {
           setDevices([]);
-          setHouseholdId(null);
+          setDocumentCount(0);
           return;
         }
 
-        const {
-          data: membership,
-          error: membershipError,
-        } = await supabase
-          .from("household_members")
-          .select("household_id")
-          .eq("user_id", user.id)
-          .limit(1)
-          .maybeSingle();
+        const devicesResult =
+          await applyHouseholdScope(
+            supabase
+              .from("devices")
+              .select("id, device_name"),
+            householdId,
+            user.id
+          );
 
-        if (membershipError) {
-          throw membershipError;
-        }
-
-        const currentHouseholdId =
-          membership?.household_id || null;
-
-        setHouseholdId(
-          currentHouseholdId
-        );
-
-        let deviceQuery =
-          supabase
-            .from("devices")
-            .select(
-              "id, device_name"
-            );
-
-        if (currentHouseholdId) {
-          deviceQuery =
-            deviceQuery.eq(
-              "household_id",
-              currentHouseholdId
-            );
-        } else {
-          deviceQuery =
-            deviceQuery.eq(
-              "user_id",
-              user.id
-            );
-        }
-
-        const {
-          data,
-          error,
-        } = await deviceQuery;
-
-        if (error) {
-          throw error;
+        if (devicesResult.error) {
+          throw devicesResult.error;
         }
 
         setDevices(
-          (data || []) as Device[]
+          (devicesResult.data ||
+            []) as Device[]
         );
+
+        const countResult =
+          await applyHouseholdScope(
+            supabase
+              .from("documents")
+              .select("*", {
+                count: "exact",
+                head: true,
+              }),
+            householdId,
+            user.id
+          );
+
+        if (countResult.error) {
+          throw countResult.error;
+        }
+
+        setDocumentCount(countResult.count || 0);
       } catch (error) {
         console.error(
-          "Unable to load devices:",
+          "Unable to load upload options:",
           error
         );
 
         setErrorMessage(
-          error instanceof Error
-            ? error.message
-            : "Unable to load devices."
+          "Unable to load upload options."
         );
       } finally {
         setLoadingDevices(false);
+        setCheckingDocumentLimit(false);
       }
     }
 
@@ -157,8 +155,14 @@ export default function UploadDocumentPage() {
   }, [
     user,
     isDemo,
-    demoModeLoading,
+    permissionsLoading,
+    householdId,
   ]);
+
+  const documentLimitReached =
+    !hasUnlimitedDocuments &&
+    documentLimit !== null &&
+    documentCount >= documentLimit;
 
   async function uploadDocument() {
     setErrorMessage("");
@@ -170,6 +174,23 @@ export default function UploadDocumentPage() {
 
     if (!user) {
       router.push("/login");
+      return;
+    }
+
+    if (!canCreate || !canUpload) {
+      setErrorMessage(
+        "Viewer access is read-only. You cannot upload documents."
+      );
+      return;
+    }
+
+    if (
+      documentLimitReached ||
+      !canAddDocument(documentCount)
+    ) {
+      router.push(
+        "/upgrade?reason=document-limit"
+      );
       return;
     }
 
@@ -225,22 +246,25 @@ export default function UploadDocumentPage() {
         error: dbError,
       } = await supabase
         .from("documents")
-        .insert({
-          user_id: user.id,
-          household_id:
+        .insert(
+          withHouseholdInsertFields(
+            {
+              device_id:
+                deviceId || null,
+              file_name:
+                file.name,
+              document_name:
+                documentName.trim() ||
+                file.name,
+              file_url:
+                publicUrlData.publicUrl,
+              file_type:
+                fileType,
+            },
             householdId,
-          device_id:
-            deviceId || null,
-          file_name:
-            file.name,
-          document_name:
-            documentName.trim() ||
-            file.name,
-          file_url:
-            publicUrlData.publicUrl,
-          file_type:
-            fileType,
-        });
+            user.id
+          )
+        );
 
       if (dbError) {
         await supabase.storage
@@ -249,6 +273,23 @@ export default function UploadDocumentPage() {
 
         throw dbError;
       }
+
+      await recordActivity({
+        activityType:
+          fileType === "Receipt"
+            ? "receipt.uploaded"
+            : "document.uploaded",
+        title:
+          fileType === "Receipt"
+            ? `Receipt uploaded (${file.name})`
+            : `Document uploaded (${documentName.trim() || file.name})`,
+        description: deviceId
+          ? "Document linked to a device in your vault."
+          : "Document saved to your household vault.",
+        userId: user.id,
+        householdId,
+        deviceId: deviceId || undefined,
+      });
 
       router.push("/documents");
       router.refresh();
@@ -259,9 +300,7 @@ export default function UploadDocumentPage() {
       );
 
       setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "Unable to upload this document."
+        "Unable to upload this document. Please try again."
       );
     } finally {
       setUploading(false);
@@ -269,13 +308,14 @@ export default function UploadDocumentPage() {
   }
 
   if (
-    demoModeLoading ||
-    loadingDevices
+    permissionsLoading ||
+    loadingDevices ||
+    checkingDocumentLimit
   ) {
     return (
       <PageShell>
         <PageCard className="flex min-h-64 items-center justify-center">
-          <div className="flex items-center gap-3 text-neutral-500">
+          <div className="flex items-center gap-3 text-text-secondary">
             <Loader2
               size={22}
               className="animate-spin"
@@ -298,15 +338,15 @@ export default function UploadDocumentPage() {
         />
 
         <PageCard className="text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
             <FileText size={30} />
           </div>
 
-          <h2 className="mt-5 text-2xl font-semibold text-[#111827]">
+          <h2 className="mt-5 text-2xl font-semibold text-text-primary">
             Ready to protect your files?
           </h2>
 
-          <p className="mx-auto mt-3 max-w-lg text-neutral-500">
+          <p className="mx-auto mt-3 max-w-lg text-text-secondary">
             Create an account to upload receipts,
             manuals, warranties, invoices, and more.
           </p>
@@ -326,7 +366,7 @@ export default function UploadDocumentPage() {
     return (
       <PageShell>
         <PageCard className="text-center">
-          <h1 className="text-2xl font-semibold text-[#111827]">
+          <h1 className="text-2xl font-semibold text-text-primary">
             Sign in to upload a document
           </h1>
 
@@ -343,12 +383,14 @@ export default function UploadDocumentPage() {
 
   return (
     <PageShell>
+      <ViewerBanner />
+
       <button
         type="button"
         onClick={() =>
           router.push("/documents")
         }
-        className="mb-2 inline-flex items-center gap-2 text-sm font-semibold text-[#111827] hover:underline"
+        className="mb-2 inline-flex items-center gap-2 text-sm font-semibold text-text-primary hover:underline"
       >
         <ArrowLeft size={17} />
         Back to Documents
@@ -369,6 +411,25 @@ export default function UploadDocumentPage() {
           {errorMessage}
         </PageCard>
       )}
+
+      {documentLimitReached &&
+        documentLimit !== null && (
+          <PageCard className="border-warning/40 bg-warning-soft text-text-primary">
+            <p className="font-semibold">
+              Document limit reached
+            </p>
+            <p className="mt-1 text-sm text-text-secondary">
+              You have used all {documentLimit}{" "}
+              document slots on your current plan.
+            </p>
+            <Button
+              href="/upgrade?reason=document-limit"
+              className="mt-4"
+            >
+              Upgrade Plan
+            </Button>
+          </PageCard>
+        )}
 
       <PageCard className="max-w-3xl">
         <div className="space-y-5">
@@ -469,11 +530,11 @@ export default function UploadDocumentPage() {
                     null
                 )
               }
-              className="w-full rounded-2xl border border-dashed border-[#D8C69D] bg-[#FAFAF8] p-4 text-sm text-neutral-600"
+              className="w-full rounded-2xl border border-dashed border-warning/40 bg-surface-sunken p-4 text-sm text-text-secondary"
             />
           </FormField>
 
-          <div className="flex flex-col-reverse gap-3 border-t border-[#E8E2D6] pt-6 sm:flex-row sm:justify-end">
+          <div className="flex flex-col-reverse gap-3 border-t border-border-subtle pt-6 sm:flex-row sm:justify-end">
             <Button
               type="button"
               variant="secondary"
@@ -488,7 +549,11 @@ export default function UploadDocumentPage() {
 
             <Button
               type="button"
-              disabled={uploading}
+              disabled={
+                uploading ||
+                !canUpload ||
+                documentLimitReached
+              }
               onClick={() =>
                 void uploadDocument()
               }
@@ -514,7 +579,7 @@ export default function UploadDocumentPage() {
 }
 
 const inputClassName =
-  "w-full rounded-2xl border border-[#E8E2D6] bg-white px-4 py-3.5 text-[#111827] outline-none transition placeholder:text-neutral-400 focus:border-[#C8A96A] focus:ring-2 focus:ring-[#C8A96A]/20";
+  "w-full rounded-2xl border border-border-subtle bg-white px-4 py-3.5 text-text-primary outline-none transition placeholder:text-text-tertiary focus:border-interaction focus:ring-2 focus:ring-interaction/15";
 
 function FormField({
   label,
@@ -527,7 +592,7 @@ function FormField({
 }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-sm font-semibold text-[#111827]">
+      <span className="mb-2 block text-sm font-semibold text-text-primary">
         {label}
 
         {required && (

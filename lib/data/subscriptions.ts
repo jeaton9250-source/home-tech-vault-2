@@ -1,16 +1,35 @@
-import { supabase } from "@/lib/supabase";
-import { demoSubscriptions } from "@/lib/demo/subscriptions";
 import type { User } from "@supabase/supabase-js";
 
-export async function getSubscriptions(user: User | null) {
+import { demoSubscriptions } from "@/lib/demo/subscriptions";
+import {
+  fetchHouseholdIdForUser,
+  resolveHouseholdScope,
+} from "@/lib/data/householdScope";
+import { supabase } from "@/lib/supabase";
+
+export async function getSubscriptions(
+  user: User | null,
+  householdId?: string | null
+) {
   if (!user) {
     return demoSubscriptions;
   }
 
+  const resolvedHouseholdId =
+    householdId ??
+    (await fetchHouseholdIdForUser(
+      user.id
+    ));
+
+  const scope = resolveHouseholdScope(
+    resolvedHouseholdId,
+    user.id
+  );
+
   const { data, error } = await supabase
     .from("subscriptions")
     .select("*")
-    .eq("user_id", user.id)
+    .eq(scope.column, scope.value)
     .order("service_name");
 
   if (error) {

@@ -1,5 +1,8 @@
 import { ReactNode } from "react";
 
+import PageLayout from "@/components/ui/PageLayout";
+import { cn } from "@/lib/design-system/cn";
+
 type PageShellProps = {
   children: ReactNode;
   className?: string;
@@ -10,10 +13,13 @@ export default function PageShell({
   className = "",
 }: PageShellProps) {
   return (
-    <main
-      className={`min-h-screen space-y-8 bg-[#F7F5EF] text-[#111827] ${className}`}
+    <PageLayout
+      className={cn(
+        "min-h-[calc(100vh-var(--topbar-height))] bg-surface-base text-text-primary",
+        className
+      )}
     >
       {children}
-    </main>
+    </PageLayout>
   );
 }

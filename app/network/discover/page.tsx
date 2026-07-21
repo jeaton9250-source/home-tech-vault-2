@@ -21,9 +21,11 @@ import {
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
-import { useDemoMode } from "@/hooks/useDemoMode";
+import { applyHouseholdScope, applyOwnerUserScope, withHouseholdInsertFields, applyHouseholdMutationScope, withOwnerUserInsertFields } from "@/lib/data/householdScope";
+import { recordActivity } from "@/lib/activity";
+import { usePermissions } from "@/hooks/usePermissions";
 
-import PremiumGate from "@/components/PremiumGate";
+import FeatureGate from "@/components/permissions/FeatureGate";
 import PageShell from "@/components/ui/PageShell";
 import PageTitle from "@/components/ui/PageTitle";
 import PageCard from "@/components/ui/PageCard";
@@ -52,6 +54,8 @@ type ScanHistory = {
 type VaultDevice = {
   id: string;
   device_name: string | null;
+  brand?: string | null;
+  manufacturer?: string | null;
   mac_address: string | null;
   ip_address: string | null;
 };
@@ -62,8 +66,10 @@ function NetworkDiscoveryContent() {
   const {
     user,
     isDemo,
-    loading: demoModeLoading,
-  } = useDemoMode();
+    householdId,
+    householdOwnerId,
+    loading: permissionsLoading,
+  } = usePermissions();
 
   const [rawResults, setRawResults] =
     useState("");
@@ -94,7 +100,7 @@ function NetworkDiscoveryContent() {
 
   useEffect(() => {
     async function loadScanHistory() {
-      if (demoModeLoading) {
+      if (permissionsLoading) {
         return;
       }
 
@@ -107,10 +113,11 @@ function NetworkDiscoveryContent() {
         }
 
         const { data, error } =
-          await supabase
-            .from("network_scans")
-            .select(
-              `
+          await applyOwnerUserScope(
+            supabase
+              .from("network_scans")
+              .select(
+                `
                 id,
                 scanned_at,
                 devices_found,
@@ -118,8 +125,11 @@ function NetworkDiscoveryContent() {
                 offline_devices,
                 new_devices
               `
-            )
-            .eq("user_id", user.id)
+              ),
+            householdId,
+            user.id,
+            householdOwnerId
+          )
             .order("scanned_at", {
               ascending: false,
             })
@@ -152,7 +162,9 @@ function NetworkDiscoveryContent() {
   }, [
     user,
     isDemo,
-    demoModeLoading,
+    householdId,
+    householdOwnerId,
+    permissionsLoading,
   ]);
 
   const filteredDevices = useMemo(() => {
@@ -269,13 +281,15 @@ function NetworkDiscoveryContent() {
         const {
           data,
           error: existingError,
-        } = await supabase
-          .from("devices")
-          .select(
-            "id, device_name, mac_address, ip_address"
-          )
-          .eq("user_id", user.id)
-          .in(
+        } = await applyHouseholdScope(
+          supabase
+            .from("devices")
+            .select(
+              "id, device_name, mac_address, ip_address"
+            ),
+          householdId,
+          user.id
+        ).in(
             "mac_address",
             normalizedMacAddresses
           );
@@ -325,15 +339,21 @@ function NetworkDiscoveryContent() {
         error: scanError,
       } = await supabase
         .from("network_scans")
-        .insert({
-          user_id: user.id,
-          devices_found:
-            comparedDevices.length,
-          online_devices:
-            comparedDevices.length,
-          offline_devices: 0,
-          new_devices: newCount,
-        })
+        .insert(
+          withOwnerUserInsertFields(
+            {
+              devices_found:
+                comparedDevices.length,
+              online_devices:
+                comparedDevices.length,
+              offline_devices: 0,
+              new_devices: newCount,
+            },
+            householdId,
+            user.id,
+            householdOwnerId
+          )
+        )
         .select("id, scanned_at")
         .single();
 
@@ -341,25 +361,48 @@ function NetworkDiscoveryContent() {
         throw scanError;
       }
 
+      await recordActivity({
+        activityType:
+          "network.scan.completed",
+        title: "Network scan completed",
+        description: `Found ${comparedDevices.length} device${
+          comparedDevices.length === 1
+            ? ""
+            : "s"
+        } with ${newCount} new.`,
+        userId: user.id,
+        householdId,
+        entityId: scanRow.id,
+        occurredAt:
+          scanRow.scanned_at ||
+          new Date().toISOString(),
+      });
+
       const discoveryPayload =
-        comparedDevices.map((device) => ({
-          scan_id: scanRow.id,
-          user_id: user.id,
-          device_name:
-            device.deviceName ||
-            `Network Device ${device.ipAddress}`,
-          manufacturer:
-            device.manufacturer || null,
-          ip_address:
-            device.ipAddress || null,
-          mac_address:
-            normalizeMacAddress(
-              device.macAddress
-            ) || null,
-          online: true,
-          added_to_vault:
-            device.alreadyInVault,
-        }));
+        comparedDevices.map((device) =>
+          withOwnerUserInsertFields(
+            {
+              scan_id: scanRow.id,
+              device_name:
+                device.deviceName ||
+                `Network Device ${device.ipAddress}`,
+              manufacturer:
+                device.manufacturer || null,
+              ip_address:
+                device.ipAddress || null,
+              mac_address:
+                normalizeMacAddress(
+                  device.macAddress
+                ) || null,
+              online: true,
+              added_to_vault:
+                device.alreadyInVault,
+            },
+            householdId,
+            user.id,
+            householdOwnerId
+          )
+        );
 
       const {
         data: discoveryRows,
@@ -515,10 +558,11 @@ function NetworkDiscoveryContent() {
       const {
         data: existingRows,
         error: existingError,
-      } = await supabase
-        .from("devices")
-        .select(
-          `
+      } = await applyHouseholdScope(
+        supabase
+          .from("devices")
+          .select(
+            `
             id,
             device_name,
             brand,
@@ -526,9 +570,10 @@ function NetworkDiscoveryContent() {
             mac_address,
             ip_address
           `
-        )
-        .eq("user_id", user.id)
-        .in(
+          ),
+        householdId,
+        user.id
+      ).in(
           "mac_address",
           scannedMacAddresses
         );
@@ -538,7 +583,8 @@ function NetworkDiscoveryContent() {
       }
 
       const existingByMac = new Map(
-        (existingRows || []).map(
+        ((existingRows ||
+          []) as VaultDevice[]).map(
           (device) => [
             normalizeMacAddress(
               device.mac_address || ""
@@ -617,14 +663,17 @@ function NetworkDiscoveryContent() {
 
           const {
             error: updateError,
-          } = await supabase
-            .from("devices")
-            .update(updatePayload)
-            .eq(
-              "id",
-              existingDevice.id
-            )
-            .eq("user_id", user.id);
+          } = await applyHouseholdMutationScope(
+            supabase
+              .from("devices")
+              .update(updatePayload)
+              .eq(
+                "id",
+                existingDevice.id
+              ),
+            householdId,
+            user.id
+          );
 
           if (updateError) {
             throw updateError;
@@ -638,42 +687,47 @@ function NetworkDiscoveryContent() {
           error: insertError,
         } = await supabase
           .from("devices")
-          .insert({
-            user_id: user.id,
-            device_name:
-              discoveredDevice
-                .deviceName
-                .trim() ||
-              `Network Device ${discoveredDevice.ipAddress}`,
-            category:
-              guessCategory(
-                discoveredDevice.deviceName,
-                discoveredDevice.manufacturer
-              ),
-            brand:
-              discoveredDevice
-                .manufacturer
-                .trim() ||
-              null,
-            manufacturer:
-              discoveredDevice
-                .manufacturer
-                .trim() ||
-              null,
-            ip_address:
-              discoveredDevice.ipAddress ||
-              null,
-            mac_address:
-              discoveredDevice.normalizedMac ||
-              null,
-            location: "Network",
-            discovery_source:
-              "ARP Sync",
-            last_seen_at: now,
-            online: true,
-            notes:
-              "Discovered from a local network scan. Review this record and add its correct room, purchase details, warranty information, photos, and documents.",
-          });
+          .insert(
+            withHouseholdInsertFields(
+              {
+                device_name:
+                  discoveredDevice
+                    .deviceName
+                    .trim() ||
+                  `Network Device ${discoveredDevice.ipAddress}`,
+                category:
+                  guessCategory(
+                    discoveredDevice.deviceName,
+                    discoveredDevice.manufacturer
+                  ),
+                brand:
+                  discoveredDevice
+                    .manufacturer
+                    .trim() ||
+                  null,
+                manufacturer:
+                  discoveredDevice
+                    .manufacturer
+                    .trim() ||
+                  null,
+                ip_address:
+                  discoveredDevice.ipAddress ||
+                  null,
+                mac_address:
+                  discoveredDevice.normalizedMac ||
+                  null,
+                location: "Network",
+                discovery_source:
+                  "ARP Sync",
+                last_seen_at: now,
+                online: true,
+                notes:
+                  "Discovered from a local network scan. Review this record and add its correct room, purchase details, warranty information, photos, and documents.",
+              },
+              householdId,
+              user.id
+            )
+          );
 
         if (insertError) {
           if (
@@ -696,18 +750,21 @@ function NetworkDiscoveryContent() {
           const {
             error:
               discoveryUpdateError,
-          } = await supabase
-            .from(
-              "network_discoveries"
-            )
-            .update({
-              added_to_vault: true,
-            })
-            .eq(
-              "id",
-              discoveredDevice.discoveryId
-            )
-            .eq("user_id", user.id);
+          } = await applyHouseholdMutationScope(
+            supabase
+              .from(
+                "network_discoveries"
+              )
+              .update({
+                added_to_vault: true,
+              })
+              .eq(
+                "id",
+                discoveredDevice.discoveryId
+              ),
+            householdId,
+            user.id
+          );
 
           if (
             discoveryUpdateError
@@ -804,13 +861,13 @@ function NetworkDiscoveryContent() {
   }
 
   if (
-    demoModeLoading ||
+    permissionsLoading ||
     loadingHistory
   ) {
     return (
       <PageShell>
         <PageCard className="flex min-h-64 items-center justify-center">
-          <div className="flex items-center gap-3 text-neutral-500">
+          <div className="flex items-center gap-3 text-text-secondary">
             <Loader2
               size={22}
               className="animate-spin"
@@ -848,16 +905,16 @@ function NetworkDiscoveryContent() {
       )}
 
       {isDemo && (
-        <PageCard className="border-[#D8C69D] bg-[#FFF8E8]">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A6A2F]">
+        <PageCard className="border-warning/40 bg-warning-soft">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-achievement">
             Interactive Demo
           </p>
 
-          <h2 className="mt-2 text-xl font-bold text-[#111827]">
+          <h2 className="mt-2 text-xl font-bold text-text-primary">
             Preview network discovery
           </h2>
 
-          <p className="mt-2 text-sm leading-6 text-neutral-600">
+          <p className="mt-2 text-sm leading-6 text-text-secondary">
             Demo scans are not saved. Create an
             account to save scan history and add
             devices to your vault.
@@ -895,16 +952,16 @@ function NetworkDiscoveryContent() {
 
       <PageCard>
         <div className="flex items-start gap-4">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
             <Radar size={23} />
           </div>
 
           <div>
-            <h2 className="text-2xl font-bold text-[#111827]">
+            <h2 className="text-2xl font-bold text-text-primary">
               Run a Local Network Scan
             </h2>
 
-            <p className="mt-2 max-w-3xl text-neutral-500">
+            <p className="mt-2 max-w-3xl text-text-secondary">
               Run the command below on a computer
               connected to your home network, then
               paste the complete results into the
@@ -947,16 +1004,16 @@ function NetworkDiscoveryContent() {
 
       <PageCard>
         <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
             <Network size={21} />
           </div>
 
           <div>
-            <h2 className="text-2xl font-bold text-[#111827]">
+            <h2 className="text-2xl font-bold text-text-primary">
               Paste Scan Results
             </h2>
 
-            <p className="mt-1 text-sm text-neutral-500">
+            <p className="mt-1 text-sm text-text-secondary">
               Paste the full output from your
               network scan.
             </p>
@@ -974,7 +1031,7 @@ function NetworkDiscoveryContent() {
 
 living-room-appletv (192.168.1.10) at aa:bb:cc:dd:ee:ff on en0
 brother-printer (192.168.1.24) at 11:22:33:44:55:66 on en0`}
-          className="mt-6 min-h-64 w-full resize-y rounded-2xl border border-[#E8E2D6] bg-[#FBFAF7] px-5 py-4 font-mono text-sm text-[#111827] outline-none focus:border-[#C8A96A] focus:ring-2 focus:ring-[#C8A96A]/20"
+          className="mt-6 min-h-64 w-full resize-y rounded-2xl border border-border-subtle bg-surface-base px-5 py-4 font-mono text-sm text-text-primary outline-none focus:border-interaction focus:ring-2 focus:ring-interaction/15"
         />
 
         <div className="mt-5 flex flex-wrap gap-3">
@@ -1009,23 +1066,23 @@ brother-printer (192.168.1.24) at 11:22:33:44:55:66 on en0`}
         <PageCard>
           <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
+              <p className="text-overline text-section-network">
                 Discovery Results
               </p>
 
-              <h2 className="mt-2 text-2xl font-bold text-[#111827]">
+              <h2 className="mt-2 text-2xl font-bold text-text-primary">
                 Review Detected Devices
               </h2>
 
-              <p className="mt-2 text-sm text-neutral-500">
+              <p className="mt-2 text-sm text-text-secondary">
                 {protectedCount} already protected
                 and {newDeviceCount} available to
                 add.
               </p>
             </div>
 
-            <div className="rounded-2xl bg-[#F7F5EF] px-5 py-3">
-              <p className="text-sm font-semibold text-[#111827]">
+            <div className="rounded-2xl bg-surface-sunken px-5 py-3">
+              <p className="text-sm font-semibold text-text-primary">
                 {selectedCount} of{" "}
                 {selectableDevices.length} new
                 devices selected
@@ -1037,7 +1094,7 @@ brother-printer (192.168.1.24) at 11:22:33:44:55:66 on en0`}
             <div className="relative w-full max-w-md">
               <Search
                 size={18}
-                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400"
+                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-text-tertiary"
               />
 
               <input
@@ -1049,14 +1106,14 @@ brother-printer (192.168.1.24) at 11:22:33:44:55:66 on en0`}
                   )
                 }
                 placeholder="Search detected devices..."
-                className="w-full rounded-xl border border-[#E8E2D6] bg-white py-3 pl-11 pr-4 outline-none focus:border-[#C8A96A]"
+                className="w-full rounded-xl border border-border-subtle bg-white py-3 pl-11 pr-4 outline-none focus:border-interaction"
               />
             </div>
 
             <button
               type="button"
               onClick={toggleAll}
-              className="rounded-xl bg-[#F7F5EF] px-4 py-3 text-sm font-semibold text-[#111827]"
+              className="rounded-xl bg-surface-sunken px-4 py-3 text-sm font-semibold text-text-primary"
             >
               {selectedCount ===
                 selectableDevices.length &&
@@ -1083,8 +1140,8 @@ brother-printer (192.168.1.24) at 11:22:33:44:55:66 on en0`}
             )}
           </div>
 
-          <div className="mt-8 flex flex-col gap-4 border-t border-[#E8E2D6] pt-6 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-neutral-500">
+          <div className="mt-8 flex flex-col gap-4 border-t border-border-subtle pt-6 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-text-secondary">
               Devices already stored in your
               vault will not be duplicated.
             </p>
@@ -1123,23 +1180,23 @@ brother-printer (192.168.1.24) at 11:22:33:44:55:66 on en0`}
 
       <PageCard>
         <div className="flex items-start gap-4">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
             <History size={21} />
           </div>
 
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
+            <p className="text-overline text-section-network">
               Scan History
             </p>
 
-            <h2 className="mt-1 text-2xl font-bold text-[#111827]">
+            <h2 className="mt-1 text-2xl font-bold text-text-primary">
               Recent network scans
             </h2>
           </div>
         </div>
 
         {scanHistory.length === 0 ? (
-          <div className="mt-6 rounded-2xl bg-[#F7F5EF] p-5 text-sm text-neutral-500">
+          <div className="mt-6 rounded-2xl bg-surface-sunken p-5 text-sm text-text-secondary">
             {isDemo
               ? "Demo scans are not saved."
               : "No saved scans yet. Run your first scan to begin building network history."}
@@ -1149,16 +1206,16 @@ brother-printer (192.168.1.24) at 11:22:33:44:55:66 on en0`}
             {scanHistory.map((scan) => (
               <div
                 key={scan.id}
-                className="grid gap-4 rounded-2xl border border-[#E8E2D6] p-5 sm:grid-cols-[1fr_auto_auto_auto]"
+                className="grid gap-4 rounded-2xl border border-border-subtle p-5 sm:grid-cols-[1fr_auto_auto_auto]"
               >
                 <div>
-                  <p className="font-semibold text-[#111827]">
+                  <p className="font-semibold text-text-primary">
                     {formatScanDate(
                       scan.scanned_at
                     )}
                   </p>
 
-                  <p className="mt-1 text-sm text-neutral-500">
+                  <p className="mt-1 text-sm text-text-secondary">
                     {scan.devices_found} devices
                     found
                   </p>
@@ -1177,7 +1234,7 @@ brother-printer (192.168.1.24) at 11:22:33:44:55:66 on en0`}
                   value={
                     scan.offline_devices
                   }
-                  className="text-neutral-600"
+                  className="text-text-secondary"
                 />
 
                 <HistoryMetric
@@ -1185,7 +1242,7 @@ brother-printer (192.168.1.24) at 11:22:33:44:55:66 on en0`}
                   value={
                     scan.new_devices
                   }
-                  className="text-[#111827]"
+                  className="text-text-primary"
                 />
               </div>
             ))}
@@ -1208,13 +1265,13 @@ function CommandCard({
   onCopy: () => void;
 }) {
   return (
-    <div className="rounded-2xl border border-[#E8E2D6] bg-white p-5">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#C8A96A]">
+    <div className="rounded-2xl border border-border-subtle bg-white p-5">
+      <p className="text-overline text-section-network">
         {title}
       </p>
 
       <div className="mt-3 flex items-center gap-3">
-        <code className="min-w-0 flex-1 rounded-xl bg-[#111827] px-4 py-3 text-sm text-white">
+        <code className="min-w-0 flex-1 rounded-xl bg-charcoal px-4 py-3 text-sm text-white">
           {command}
         </code>
 
@@ -1222,7 +1279,7 @@ function CommandCard({
           type="button"
           onClick={onCopy}
           aria-label={`Copy ${title} command`}
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#F7F5EF] text-[#111827]"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-surface-sunken text-text-primary"
         >
           {copied ? (
             <CheckCircle2
@@ -1253,8 +1310,8 @@ function DiscoveredDeviceRow({
         device.alreadyInVault
           ? "border-emerald-200 bg-emerald-50/40"
           : device.selected
-            ? "border-[#C8A96A] bg-[#FBFAF7]"
-            : "border-[#E8E2D6] bg-white"
+            ? "border-accent bg-surface-base"
+            : "border-border-subtle bg-white"
       }`}
     >
       <div className="flex flex-col gap-5 lg:flex-row lg:items-center">
@@ -1272,8 +1329,8 @@ function DiscoveredDeviceRow({
             device.alreadyInVault
               ? "bg-emerald-100 text-emerald-700"
               : device.selected
-                ? "bg-[#111827] text-[#C8A96A]"
-                : "bg-[#F7F5EF] text-neutral-400"
+                ? "bg-interaction-soft text-interaction"
+                : "bg-surface-sunken text-text-tertiary"
           }`}
           aria-label={
             device.alreadyInVault
@@ -1302,7 +1359,7 @@ function DiscoveredDeviceRow({
 
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <label>
-              <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-[#C8A96A]">
+              <span className="mb-2 block text-overline text-section-network">
                 Device Name
               </span>
 
@@ -1317,7 +1374,7 @@ function DiscoveredDeviceRow({
                       event.target.value,
                   })
                 }
-                className="w-full rounded-xl border border-[#E8E2D6] bg-white px-4 py-3 text-sm outline-none focus:border-[#C8A96A] disabled:cursor-not-allowed disabled:bg-neutral-100"
+                className="w-full rounded-xl border border-border-subtle bg-white px-4 py-3 text-sm outline-none focus:border-interaction disabled:cursor-not-allowed disabled:bg-neutral-100"
               />
             </label>
 
@@ -1332,7 +1389,7 @@ function DiscoveredDeviceRow({
             />
 
             <label>
-              <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-[#C8A96A]">
+              <span className="mb-2 block text-overline text-section-network">
                 Manufacturer
               </span>
 
@@ -1350,7 +1407,7 @@ function DiscoveredDeviceRow({
                   })
                 }
                 placeholder="Unknown"
-                className="w-full rounded-xl border border-[#E8E2D6] bg-white px-4 py-3 text-sm outline-none focus:border-[#C8A96A] disabled:cursor-not-allowed disabled:bg-neutral-100"
+                className="w-full rounded-xl border border-border-subtle bg-white px-4 py-3 text-sm outline-none focus:border-interaction disabled:cursor-not-allowed disabled:bg-neutral-100"
               />
             </label>
           </div>
@@ -1369,11 +1426,11 @@ function InfoField({
 }) {
   return (
     <div>
-      <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-[#C8A96A]">
+      <span className="mb-2 block text-overline text-section-network">
         {label}
       </span>
 
-      <div className="rounded-xl bg-[#F7F5EF] px-4 py-3 text-sm font-medium text-[#111827]">
+      <div className="rounded-xl bg-surface-sunken px-4 py-3 text-sm font-medium text-text-primary">
         {value || "Unknown"}
       </div>
     </div>
@@ -1393,16 +1450,16 @@ function ScanStat({
     <PageCard>
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#C8A96A]">
+          <p className="text-overline text-section-network">
             {label}
           </p>
 
-          <p className="mt-3 text-4xl font-bold text-[#111827]">
+          <p className="mt-3 text-4xl font-bold text-text-primary">
             {value}
           </p>
         </div>
 
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
           <Icon size={21} />
         </div>
       </div>
@@ -1421,7 +1478,7 @@ function HistoryMetric({
 }) {
   return (
     <div>
-      <p className="text-xs uppercase tracking-[0.14em] text-neutral-400">
+      <p className="text-xs uppercase tracking-[0.14em] text-text-tertiary">
         {label}
       </p>
 
@@ -2019,11 +2076,11 @@ function compareIpAddresses(
 
 export default function NetworkDiscoveryPage() {
   return (
-    <PremiumGate
-      feature="Network Discovery"
+    <FeatureGate
+      feature="networkDiscover"
       description="Automatically discover, identify, and sync devices connected to your home network."
     >
       <NetworkDiscoveryContent />
-    </PremiumGate>
+    </FeatureGate>
   );
 }

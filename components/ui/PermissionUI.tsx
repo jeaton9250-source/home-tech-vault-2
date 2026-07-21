@@ -6,15 +6,21 @@ import {
   LockKeyhole,
   Pencil,
   Plus,
+  Sparkles,
   Trash2,
   type LucideIcon,
 } from "lucide-react";
-import type {
-  ReactNode,
-} from "react";
+import type { ReactNode } from "react";
+
+import Button from "@/components/ui/Button";
+import { usePermissions } from "@/hooks/usePermissions";
+
+import type { FeatureKey } from "@/lib/permissions/types";
+
+import { cn } from "@/lib/design-system/cn";
 
 type ViewerBannerProps = {
-  show: boolean;
+  show?: boolean;
   title?: string;
   description?: string;
 };
@@ -24,24 +30,46 @@ export function ViewerBanner({
   title = "Viewer Access",
   description = "This page is read-only. Members can make permitted changes, while Admins have full management access.",
 }: ViewerBannerProps) {
-  if (!show) {
+  const {
+    isDemo,
+    isViewer,
+    loading,
+  } = usePermissions();
+
+  const shouldShow =
+    show ??
+    (!loading && (isDemo || isViewer));
+
+  if (!shouldShow) {
     return null;
   }
 
+  const resolvedTitle = isDemo
+    ? "Demo Mode"
+    : title;
+
+  const resolvedDescription = isDemo
+    ? "You are browsing a sample vault. Create an account to save and manage your own home technology."
+    : description;
+
   return (
-    <section className="rounded-3xl border border-[#D8C69D] bg-[#FFF8E8] p-5">
+    <section className="rounded-[var(--radius-card)] border border-warning/40 bg-warning-soft p-5">
       <div className="flex items-start gap-4">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#111827] text-[#C8A96A]">
-          <Eye size={18} />
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-button)] bg-charcoal text-surface-card">
+          {isDemo ? (
+            <Sparkles size={18} />
+          ) : (
+            <Eye size={18} />
+          )}
         </div>
 
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A6A2F]">
-            {title}
+          <p className="text-overline text-achievement">
+            {resolvedTitle}
           </p>
 
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-neutral-600">
-            {description}
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-text-secondary">
+            {resolvedDescription}
           </p>
         </div>
       </div>
@@ -50,55 +78,69 @@ export function ViewerBanner({
 }
 
 type PageActionProps = {
-  canCreate: boolean;
   href: string;
   label: string;
+  feature?: FeatureKey;
   lockedLabel?: string;
-  lockedHref?: string;
   icon?: LucideIcon;
-  variant?: "dark" | "light" | "secondary";
+  variant?: "primary" | "secondary" | "ghost";
   className?: string;
+  canCreate?: boolean;
 };
 
 export function PageAction({
-  canCreate,
   href,
   label,
+  feature,
   lockedLabel = "Create Your Vault",
-  lockedHref = "/signup",
   icon: Icon = Plus,
-  variant = "light",
+  variant = "secondary",
   className = "",
+  canCreate: canCreateOverride,
 }: PageActionProps) {
-  const destination = canCreate
-    ? href
-    : lockedHref;
+  const {
+    canCreate,
+    isDemo,
+    getActionHref,
+    getActionLabel,
+    canAccessFeature,
+  } = usePermissions();
 
-  const buttonLabel = canCreate
+  const allowed =
+    canCreateOverride ?? canCreate;
+
+  const featureLocked =
+    feature !== undefined &&
+    !canAccessFeature(feature);
+
+  const destination = allowed
+    ? featureLocked
+      ? "/upgrade"
+      : getActionHref(href, feature)
+    : isDemo
+      ? "/signup"
+      : featureLocked
+        ? "/upgrade"
+        : "/signup";
+
+  const buttonLabel = allowed
     ? label
-    : lockedLabel;
-
-  const styles =
-    variant === "dark"
-      ? "bg-[#111827] text-white hover:bg-[#263044]"
-      : variant === "secondary"
-        ? "border border-[#E8E2D6] bg-white text-[#111827] hover:bg-[#F7F5EF]"
-        : "bg-white text-[#111827] hover:bg-neutral-100";
+    : getActionLabel(label, lockedLabel);
 
   return (
-    <Link
+    <Button
       href={destination}
-      className={
-        "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold transition " +
-        styles +
-        " " +
-        className
-      }
+      variant={variant}
+      className={cn(className)}
     >
+      {!allowed && (
+        <LockKeyhole size={16} />
+      )}
+
       <Icon size={17} />
 
       {buttonLabel}
-    </Link>
+    </Button>
   );
 }
 
@@ -106,45 +148,45 @@ type PermissionEmptyStateProps = {
   icon: LucideIcon;
   title: string;
   description: string;
-  canCreate: boolean;
   href: string;
   buttonLabel: string;
+  feature?: FeatureKey;
   lockedLabel?: string;
-  lockedHref?: string;
+  canCreate?: boolean;
 };
 
 export function PermissionEmptyState({
   icon: Icon,
   title,
   description,
-  canCreate,
   href,
   buttonLabel,
+  feature,
   lockedLabel = "Create Your Vault",
-  lockedHref = "/signup",
+  canCreate: canCreateOverride,
 }: PermissionEmptyStateProps) {
   return (
-    <section className="rounded-[28px] border border-[#E8E2D6] bg-white px-6 py-14 text-center shadow-sm">
-      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+    <section className="rounded-[var(--radius-card)] border border-border-subtle bg-surface-card px-6 py-14 text-center shadow-sm">
+      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-[var(--radius-card)] bg-interaction-soft text-interaction">
         <Icon size={29} />
       </div>
 
-      <h2 className="mt-5 text-2xl font-semibold tracking-[-0.03em] text-[#111827]">
+      <h2 className="mt-5 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
         {title}
       </h2>
 
-      <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-neutral-500">
+      <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-text-secondary">
         {description}
       </p>
 
       <div className="mt-6">
         <PageAction
-          canCreate={canCreate}
+          canCreate={canCreateOverride}
           href={href}
           label={buttonLabel}
+          feature={feature}
           lockedLabel={lockedLabel}
-          lockedHref={lockedHref}
-          variant="dark"
+          variant="primary"
         />
       </div>
     </section>
@@ -152,20 +194,19 @@ export function PermissionEmptyState({
 }
 
 type CardActionsProps = {
-  canEdit: boolean;
-  canDelete: boolean;
   editHref?: string;
   onDelete?: () => void;
   deleting?: boolean;
   viewerMessage?: string;
   deleteLabel?: string;
   editLabel?: string;
+  feature?: FeatureKey;
+  canEdit?: boolean;
+  canDelete?: boolean;
   children?: ReactNode;
 };
 
 export function CardActions({
-  canEdit,
-  canDelete,
   editHref,
   onDelete,
   deleting = false,
@@ -173,79 +214,152 @@ export function CardActions({
     "This item is read-only. You do not have permission to make changes.",
   deleteLabel = "Delete",
   editLabel = "Edit",
+  feature,
+  canEdit: canEditOverride,
+  canDelete: canDeleteOverride,
   children,
 }: CardActionsProps) {
+  const {
+    canEdit,
+    canDelete,
+    isDemo,
+    isViewer,
+    getActionHref,
+  } = usePermissions();
+
+  const editAllowed =
+    canEditOverride ?? canEdit;
+
+  const deleteAllowed =
+    canDeleteOverride ?? canDelete;
+
   const hasActions =
-    (canEdit && Boolean(editHref)) ||
-    (canDelete &&
+    (editAllowed &&
+      Boolean(editHref)) ||
+    (deleteAllowed &&
       Boolean(onDelete)) ||
     Boolean(children);
 
+  const resolvedMessage = isDemo
+    ? "Demo mode is read-only. Create your vault to edit this item."
+    : isViewer
+      ? viewerMessage
+      : viewerMessage;
+
   if (!hasActions) {
     return (
-      <div className="flex items-start gap-3 rounded-2xl border border-[#E8E2D6] bg-[#F7F5EF] p-4">
+      <div className="flex items-start gap-3 rounded-[var(--radius-button)] border border-border-subtle bg-surface-sunken p-4">
         <LockKeyhole
           size={18}
-          className="mt-0.5 shrink-0 text-[#C8A96A]"
+          className="mt-0.5 shrink-0 text-interaction"
         />
 
         <div>
-          <p className="text-sm font-semibold text-[#111827]">
+          <p className="text-sm font-semibold text-text-primary">
             Read-only access
           </p>
 
-          <p className="mt-1 text-sm leading-5 text-neutral-500">
-            {viewerMessage}
+          <p className="mt-1 text-sm leading-5 text-text-secondary">
+            {resolvedMessage}
           </p>
         </div>
       </div>
     );
   }
 
+  const resolvedEditHref =
+    editHref &&
+    getActionHref(editHref, feature);
+
   return (
-    <div className="flex flex-wrap items-center gap-3 border-t border-[#E8E2D6] pt-5">
-      {canEdit && editHref && (
-        <Link
-          href={editHref}
-          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#111827] px-4 text-sm font-semibold text-white transition hover:bg-[#263044]"
-        >
-          <Pencil size={16} />
-          {editLabel}
-        </Link>
-      )}
+    <div className="flex flex-wrap items-center gap-3 border-t border-border-subtle pt-5">
+      {editAllowed &&
+        resolvedEditHref && (
+          <Button
+            href={resolvedEditHref}
+            size="sm"
+          >
+            <Pencil size={16} />
+            {editLabel}
+          </Button>
+        )}
 
       {children}
 
-      {canDelete && onDelete && (
-        <button
+      {deleteAllowed && onDelete && (
+        <Button
           type="button"
-          onClick={onDelete}
+          variant="danger"
+          size="sm"
+          onClick={() => {
+            if (isDemo) {
+              window.location.href =
+                "/signup";
+              return;
+            }
+
+            onDelete();
+          }}
           disabled={deleting}
-          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 text-sm font-semibold text-red-700 transition hover:bg-red-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
         >
           <Trash2 size={16} />
 
           {deleting
             ? "Deleting..."
             : deleteLabel}
-        </button>
+        </Button>
       )}
     </div>
   );
 }
 
 type PermissionGateProps = {
-  allowed: boolean;
+  allowed?: boolean;
+  action?: "view" | "create" | "edit" | "delete";
+  feature?: FeatureKey;
   children: ReactNode;
   fallback?: ReactNode;
 };
 
 export function PermissionGate({
   allowed,
+  action = "view",
+  feature,
   children,
   fallback = null,
 }: PermissionGateProps) {
-  if (!allowed) {
+  const permissions = usePermissions();
+
+  let resolvedAllowed = allowed;
+
+  if (resolvedAllowed === undefined) {
+    if (action === "create") {
+      resolvedAllowed =
+        permissions.canPerformCreate(
+          feature
+        );
+    } else if (action === "edit") {
+      resolvedAllowed =
+        permissions.canPerformEdit(
+          feature
+        );
+    } else if (action === "delete") {
+      resolvedAllowed =
+        permissions.canPerformDelete(
+          feature
+        );
+    } else if (feature) {
+      resolvedAllowed =
+        permissions.canAccessFeature(
+          feature
+        );
+    } else {
+      resolvedAllowed =
+        permissions.canView;
+    }
+  }
+
+  if (!resolvedAllowed) {
     return <>{fallback}</>;
   }
 
@@ -253,29 +367,113 @@ export function PermissionGate({
 }
 
 type ReadOnlyNoticeProps = {
-  show: boolean;
+  show?: boolean;
   message?: string;
 };
 
 export function ReadOnlyNotice({
   show,
-  message =
-    "You can view this information, but your role does not allow changes.",
+  message,
 }: ReadOnlyNoticeProps) {
-  if (!show) {
+  const {
+    isDemo,
+    isViewer,
+    loading,
+  } = usePermissions();
+
+  const shouldShow =
+    show ??
+    (!loading && (isDemo || isViewer));
+
+  if (!shouldShow) {
     return null;
   }
 
+  const resolvedMessage =
+    message ??
+    (isDemo
+      ? "Demo mode is read-only. Create your vault to save changes."
+      : "You can view this information, but your role does not allow changes.");
+
   return (
-    <div className="flex items-start gap-3 rounded-2xl border border-[#E8E2D6] bg-[#F7F5EF] p-4">
+    <div className="flex items-start gap-3 rounded-[var(--radius-button)] border border-border-subtle bg-surface-sunken p-4">
       <LockKeyhole
         size={18}
-        className="mt-0.5 shrink-0 text-[#C8A96A]"
+        className="mt-0.5 shrink-0 text-interaction"
       />
 
-      <p className="text-sm leading-6 text-neutral-600">
-        {message}
+      <p className="text-sm leading-6 text-text-secondary">
+        {resolvedMessage}
       </p>
     </div>
+  );
+}
+
+type UpgradeLockProps = {
+  feature: FeatureKey;
+  title?: string;
+  description?: string;
+};
+
+export function UpgradeLock({
+  feature,
+  title,
+  description,
+}: UpgradeLockProps) {
+  const {
+    loading,
+    isDemo,
+    getFeatureAccess,
+  } = usePermissions();
+
+  const access =
+    getFeatureAccess(feature);
+
+  if (
+    loading ||
+    isDemo ||
+    !access.requiresUpgrade
+  ) {
+    return null;
+  }
+
+  const planLabel =
+    access.requiredPlan === "family"
+      ? "Family"
+      : "Pro";
+
+  return (
+    <section className="rounded-[var(--radius-card)] border border-border-subtle bg-surface-card p-8 text-center shadow-sm">
+      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-[var(--radius-card)] bg-premium-soft">
+        <LockKeyhole
+          size={28}
+          className="text-premium"
+        />
+      </div>
+
+      <p className="mt-6 text-overline text-premium">
+        {planLabel} Feature
+      </p>
+
+      <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
+        {title ??
+          `Unlock ${planLabel} access`}
+      </h2>
+
+      <p className="mx-auto mt-3 max-w-lg text-sm leading-6 text-text-secondary">
+        {description ??
+          access.upgradeReason ??
+          `Upgrade to Home Tech Vault ${planLabel} to use this feature.`}
+      </p>
+
+      <Button
+        href={access.upgradeHref}
+        variant="premium"
+        className="mt-6"
+      >
+        <Sparkles size={17} />
+        View Upgrade Options
+      </Button>
+    </section>
   );
 }

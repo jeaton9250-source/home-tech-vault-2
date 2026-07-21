@@ -2,6 +2,10 @@ import type {
   User,
 } from "@supabase/supabase-js";
 
+import {
+  fetchHouseholdIdForUser,
+  resolveHouseholdScope,
+} from "@/lib/data/householdScope";
 import { supabase } from "@/lib/supabase";
 import { demoDevices } from "@/lib/demoData";
 
@@ -11,13 +15,16 @@ export type WarrantyDevice = {
   household_id?: string | null;
   device_name?: string | null;
   brand?: string | null;
+  model?: string | null;
   location?: string | null;
   warranty_date?: string | null;
+  purchase_date?: string | null;
   purchase_price?: number | null;
 };
 
 export async function getWarrantyDevices(
-  user: User | null
+  user: User | null,
+  householdId?: string | null
 ): Promise<WarrantyDevice[]> {
   if (!user) {
     return demoDevices.map(
@@ -30,30 +37,29 @@ export async function getWarrantyDevices(
           device.location,
         warranty_date:
           device.warranty_date,
+        purchase_date:
+          device.purchase_date,
         purchase_price:
           device.purchase_price,
       })
     );
   }
 
+  const resolvedHouseholdId =
+    householdId ??
+    (await fetchHouseholdIdForUser(
+      user.id
+    ));
+
+  const scope = resolveHouseholdScope(
+    resolvedHouseholdId,
+    user.id
+  );
+
   const {
-    data: membership,
-    error: membershipError,
+    data,
+    error,
   } = await supabase
-    .from("household_members")
-    .select("household_id")
-    .eq("user_id", user.id)
-    .limit(1)
-    .maybeSingle();
-
-  if (membershipError) {
-    throw membershipError;
-  }
-
-  const householdId =
-    membership?.household_id || null;
-
-  let query = supabase
     .from("devices")
     .select(
       `
@@ -62,28 +68,17 @@ export async function getWarrantyDevices(
         household_id,
         device_name,
         brand,
+        model,
         location,
         warranty_date,
+        purchase_date,
         purchase_price
       `
-    );
-
-  if (householdId) {
-    query = query.eq(
-      "household_id",
-      householdId
-    );
-  } else {
-    query = query.eq(
-      "user_id",
-      user.id
-    );
-  }
-
-  const {
-    data,
-    error,
-  } = await query;
+    )
+    .eq(scope.column, scope.value)
+    .order("device_name", {
+      ascending: true,
+    });
 
   if (error) {
     throw error;

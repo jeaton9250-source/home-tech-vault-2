@@ -46,11 +46,11 @@ export default function ProgressRing({
           <span className="text-5xl font-semibold tracking-tight text-neutral-950">
             {value}
           </span>
-          <span className="text-sm text-neutral-400">/100</span>
+          <span className="text-sm text-text-tertiary">/100</span>
         </div>
       </div>
 
-      <p className="mt-4 text-sm font-medium text-neutral-500">{label}</p>
+      <p className="mt-4 text-sm font-medium text-text-secondary">{label}</p>
     </div>
   );
 }

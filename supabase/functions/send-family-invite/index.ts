@@ -329,7 +329,6 @@ Deno.serve(async (request) => {
     const [
       householdResult,
       memberResult,
-      subscriptionResult,
       profileResult,
       senderProfileResult,
     ] = await Promise.all([
@@ -356,19 +355,6 @@ Deno.serve(async (request) => {
         .eq(
           "household_id",
           invitation.household_id
-        )
-        .eq(
-          "user_id",
-          user.id
-        )
-        .maybeSingle(),
-
-      adminClient
-        .from(
-          "user_subscriptions"
-        )
-        .select(
-          "plan, status"
         )
         .eq(
           "user_id",
@@ -415,6 +401,27 @@ Deno.serve(async (request) => {
     const household =
       householdResult.data as HouseholdRecord;
 
+    const {
+      data: ownerSubscriptionData,
+      error: ownerSubscriptionError,
+    } = await adminClient
+      .from("user_subscriptions")
+      .select(
+        "plan, status, current_period_end"
+      )
+      .eq(
+        "user_id",
+        household.owner_id
+      )
+      .maybeSingle();
+
+    if (ownerSubscriptionError) {
+      console.error(
+        "Unable to load household owner subscription:",
+        ownerSubscriptionError
+      );
+    }
+
     const callerRole =
       memberResult.data?.role as
         | HouseholdRole
@@ -422,7 +429,8 @@ Deno.serve(async (request) => {
 
     const callerCanManage =
       callerRole === "owner" ||
-      callerRole === "admin";
+      callerRole === "admin" ||
+      user.id === household.owner_id;
 
     const callerProfile =
       profileResult.data as
@@ -433,35 +441,66 @@ Deno.serve(async (request) => {
       callerProfile?.is_admin ===
       true;
 
-    const subscriptionPlan =
-      subscriptionResult.data?.plan
+    const ownerPlan =
+      ownerSubscriptionData?.plan
         ?.trim()
         .toLowerCase();
 
-    const subscriptionStatus =
-      subscriptionResult.data?.status
+    const ownerStatus =
+      ownerSubscriptionData?.status
         ?.trim()
         .toLowerCase();
 
-    const callerHasFamilyPlan =
-      subscriptionPlan ===
-        "family" &&
-      (
-        subscriptionStatus ===
-          "active" ||
-        subscriptionStatus ===
-          "trialing"
-      );
+    const ownerCurrentPeriodEnd =
+      ownerSubscriptionData?.current_period_end ??
+      null;
+
+    function ownerSubscriptionGrantsFamilyAccess(): boolean {
+      if (ownerPlan !== "family") {
+        return false;
+      }
+
+      if (
+        ownerStatus === "active" ||
+        ownerStatus === "trialing"
+      ) {
+        return true;
+      }
+
+      if (
+        ownerStatus === "canceled" &&
+        ownerCurrentPeriodEnd
+      ) {
+        const periodEnd = new Date(
+          ownerCurrentPeriodEnd
+        );
+
+        return (
+          !Number.isNaN(
+            periodEnd.getTime()
+          ) &&
+          periodEnd.getTime() >
+            Date.now()
+        );
+      }
+
+      return false;
+    }
+
+    const householdHasFamilyPlan =
+      ownerSubscriptionGrantsFamilyAccess();
 
     /*
-     * Only Family-plan household managers or
-     * master admins may send invitations.
+     * Only household admins may send invitations when the
+     * billing owner (`households.owner_id`) has a granting
+     * Family subscription. Logic mirrors
+     * lib/permissions/subscriptionAccess.ts.
      */
     if (
       !callerIsAdmin &&
       (
         !callerCanManage ||
-        !callerHasFamilyPlan
+        !householdHasFamilyPlan
       )
     ) {
       return jsonResponse(

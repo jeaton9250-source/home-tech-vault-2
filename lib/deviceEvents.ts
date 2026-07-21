@@ -9,6 +9,7 @@ type DeviceEventInput = {
   eventDate?: string;
 };
 
+/** @deprecated Prefer recordActivity from @/lib/activity */
 export async function createDeviceEvent({
   deviceId,
   userId,

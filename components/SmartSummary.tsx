@@ -15,8 +15,8 @@ export default function SmartSummary({
     warrantiesExpiring + renewalsComing + missingWarranty + missingSerials;
 
   return (
-    <section className="rounded-[32px] border border-neutral-200 bg-white p-8 shadow-[0_8px_30px_rgba(15,23,42,0.04)]">
-      <p className="text-sm uppercase tracking-[0.25em] text-neutral-400">
+    <section className="rounded-[var(--radius-card)] border border-neutral-200 bg-white p-8 shadow-[0_8px_30px_rgba(15,23,42,0.04)]">
+      <p className="text-sm uppercase tracking-[0.25em] text-text-tertiary">
         Smart Summary
       </p>
 
@@ -26,7 +26,7 @@ export default function SmartSummary({
           : "Everything looks organized."}
       </h2>
 
-      <div className="mt-6 space-y-3 text-neutral-600">
+      <div className="mt-6 space-y-3 text-text-secondary">
         <p>• {warrantiesExpiring} warranties expire soon.</p>
         <p>• {renewalsComing} subscriptions renew soon.</p>
         <p>• {missingWarranty} devices are missing warranty dates.</p>

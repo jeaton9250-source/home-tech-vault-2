@@ -12,7 +12,7 @@ export default function PageHeader({
   return (
     <div className="flex items-center justify-between">
       <div>
-        <h1 className="text-4xl font-bold text-blue-950">{title}</h1>
+        <h1 className="text-4xl font-bold text-text-primary">{title}</h1>
         <p className="text-gray-600 mt-2">{description}</p>
       </div>
 

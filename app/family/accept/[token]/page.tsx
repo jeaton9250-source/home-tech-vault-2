@@ -17,6 +17,10 @@ import {
 } from "next/navigation";
 
 import { supabase } from "@/lib/supabase";
+import {
+  getDefaultActivityTitle,
+  recordActivity,
+} from "@/lib/activity";
 
 import PageShell from "@/components/ui/PageShell";
 import PageCard from "@/components/ui/PageCard";
@@ -116,6 +120,18 @@ export default function AcceptFamilyInvitationPage() {
           throw acceptanceError;
         }
 
+        await recordActivity({
+          activityType:
+            "family.member.joined",
+          title: getDefaultActivityTitle(
+            "family.member.joined",
+            user.email || "Member"
+          ),
+          description:
+            "A family invitation was accepted.",
+          userId: user.id,
+        });
+
         if (!active) {
           return;
         }
@@ -175,7 +191,7 @@ export default function AcceptFamilyInvitationPage() {
               ? "bg-red-50 text-red-700"
               : state === "success"
                 ? "bg-emerald-50 text-emerald-700"
-                : "bg-[#F7F5EF] text-[#C8A96A]"
+                : "border border-border-subtle bg-surface-sunken text-charcoal"
           }`}
         >
           {state === "error" ? (
@@ -192,11 +208,11 @@ export default function AcceptFamilyInvitationPage() {
           )}
         </div>
 
-        <p className="mt-6 text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
+        <p className="mt-6 text-overline text-charcoal-soft">
           Family Sharing
         </p>
 
-        <h1 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-[#111827]">
+        <h1 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-text-primary">
           {state === "success"
             ? "Invitation accepted"
             : state === "error"
@@ -204,7 +220,7 @@ export default function AcceptFamilyInvitationPage() {
               : "Joining household"}
         </h1>
 
-        <p className="mt-4 leading-7 text-neutral-500">
+        <p className="mt-4 leading-7 text-text-secondary">
           {message}
         </p>
 
@@ -224,7 +240,7 @@ export default function AcceptFamilyInvitationPage() {
         )}
 
         {state === "success" && (
-          <p className="mt-5 text-sm text-neutral-400">
+          <p className="mt-5 text-sm text-text-tertiary">
             Opening your shared household...
           </p>
         )}

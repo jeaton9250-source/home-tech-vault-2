@@ -1,16 +1,20 @@
 import type { Metadata } from "next";
+import { GeistSans } from "geist/font/sans";
+
 import "./globals.css";
 
-import Sidebar from "@/components/Sidebar";
-import TopBar from "@/components/TopBar";
-import MobileNav from "@/components/MobileNav";
 import AuthGuard from "@/components/AuthGuard";
-import AIAdvisorPopup from "@/components/ai/AIAdvisorPopup";
-import DemoBanner from "@/components/DemoBanner";
+import AppChrome from "@/components/AppChrome";
+
+import { brand } from "@/lib/design-system/tokens";
 
 export const metadata: Metadata = {
-  title: "Home Tech Vault",
-  description: "Organize. Protect. Simplify.",
+  title: brand.name,
+  description: brand.tagline,
+  icons: {
+    icon: "/brand/icon.svg",
+    apple: "/brand/icon.svg",
+  },
 };
 
 export default function RootLayout({
@@ -19,24 +23,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body>
+    <html
+      lang="en"
+      className={GeistSans.className}
+    >
+      <body className="bg-surface-base text-text-primary antialiased">
         <AuthGuard>
-          <DemoBanner />
-
-          <div className="flex min-h-screen bg-[#F7F5EF]">
-            <Sidebar />
-
-            <div className="min-w-0 flex-1 pb-20 lg:pb-0">
-              <TopBar />
-
-              <main>{children}</main>
-
-              <MobileNav />
-            </div>
-
-            <AIAdvisorPopup />
-          </div>
+          <AppChrome>{children}</AppChrome>
         </AuthGuard>
       </body>
     </html>

@@ -23,8 +23,8 @@ import {
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
-import { useDemoMode } from "@/hooks/useDemoMode";
-import { useSubscription } from "@/hooks/useSubscription";
+import { applyHouseholdScope } from "@/lib/data/householdScope";
+import { usePermissions } from "@/hooks/usePermissions";
 
 import {
   generateReportPdf,
@@ -34,6 +34,7 @@ import {
 
 import PageShell from "@/components/ui/PageShell";
 import PageCard from "@/components/ui/PageCard";
+import PageHero from "@/components/ui/PageHero";
 import Button from "@/components/ui/Button";
 
 type ReportIcon = ComponentType<{
@@ -123,15 +124,10 @@ export default function ReportsPage() {
   const {
     user,
     isDemo,
-    loading: demoLoading,
-  } = useDemoMode();
-
-  const {
-    loading: subscriptionLoading,
-    plan,
-    status,
-    isAdmin,
-  } = useSubscription();
+    householdId,
+    loading: permissionsLoading,
+    canAccessFeature,
+  } = usePermissions();
 
   const [devices, setDevices] =
     useState<DeviceRow[]>([]);
@@ -203,17 +199,11 @@ export default function ReportsPage() {
     );
 
   const hasPdfAccess =
-    isAdmin ||
-    (["pro", "family"].includes(
-      plan
-    ) &&
-      ["active", "trialing"].includes(
-        status
-      ));
+    canAccessFeature("reports");
 
   useEffect(() => {
     async function loadReportOverview() {
-      if (demoLoading) {
+      if (permissionsLoading) {
         return;
       }
 
@@ -241,15 +231,12 @@ export default function ReportsPage() {
           return;
         }
 
-        const [
-          devicesResult,
-          documentsResult,
-          photosResult,
-        ] = await Promise.all([
-          supabase
-            .from("devices")
-            .select(
-              `
+        const devicesResult =
+          await applyHouseholdScope(
+            supabase
+              .from("devices")
+              .select(
+                `
                 id,
                 device_name,
                 location,
@@ -257,23 +244,56 @@ export default function ReportsPage() {
                 serial_number,
                 purchase_price
               `
-            )
-            .eq("user_id", user.id),
-
-          supabase
-            .from("device_documents")
-            .select("device_id")
-            .eq("user_id", user.id),
-
-          supabase
-            .from("device_images")
-            .select("device_id")
-            .eq("user_id", user.id),
-        ]);
+              ),
+            householdId,
+            user.id
+          );
 
         if (devicesResult.error) {
           throw devicesResult.error;
         }
+
+        const loadedDevices =
+          (devicesResult.data ||
+            []) as DeviceRow[];
+
+        const deviceIds =
+          loadedDevices.map(
+            (device) => device.id
+          );
+
+        const [
+          documentsResult,
+          photosResult,
+        ] = await Promise.all([
+          deviceIds.length > 0
+            ? supabase
+                .from(
+                  "device_documents"
+                )
+                .select("device_id")
+                .in(
+                  "device_id",
+                  deviceIds
+                )
+            : Promise.resolve({
+                data: [],
+                error: null,
+              }),
+
+          deviceIds.length > 0
+            ? supabase
+                .from("device_images")
+                .select("device_id")
+                .in(
+                  "device_id",
+                  deviceIds
+                )
+            : Promise.resolve({
+                data: [],
+                error: null,
+              }),
+        ]);
 
         if (documentsResult.error) {
           console.error(
@@ -288,10 +308,6 @@ export default function ReportsPage() {
             photosResult.error
           );
         }
-
-        const loadedDevices =
-          (devicesResult.data ||
-            []) as DeviceRow[];
 
         const documentDeviceIds =
           new Set(
@@ -453,7 +469,8 @@ export default function ReportsPage() {
   }, [
     user,
     isDemo,
-    demoLoading,
+    householdId,
+    permissionsLoading,
   ]);
 
   const readinessScore =
@@ -719,7 +736,7 @@ export default function ReportsPage() {
   async function handlePdfRequest(
     type: ReportPdfType
   ) {
-    if (subscriptionLoading) {
+    if (permissionsLoading) {
       return;
     }
 
@@ -773,14 +790,14 @@ export default function ReportsPage() {
   }
 
   const loading =
-    demoLoading ||
+    permissionsLoading ||
     loadingReports;
 
   if (loading) {
     return (
       <PageShell>
         <PageCard className="flex min-h-72 items-center justify-center">
-          <div className="flex items-center gap-3 text-neutral-500">
+          <div className="flex items-center gap-3 text-text-secondary">
             <Loader2
               size={22}
               className="animate-spin"
@@ -811,46 +828,25 @@ export default function ReportsPage() {
 
   return (
     <PageShell>
-      <section className="rounded-[32px] bg-[#111827] px-6 py-9 text-white shadow-sm md:px-10 md:py-11">
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#C8A96A]">
-              Reports
-            </p>
+      <PageHero
+        section="insights"
+        eyebrow="Reports"
+        title="Export your vault."
+        description="Create clear PDF reports for insurance, organization, warranties, maintenance, and planning."
+      >
+        {!hasPdfAccess && !isDemo && (
+          <Button href="/upgrade">
+            <Crown size={17} />
+            Upgrade to Pro
+          </Button>
+        )}
 
-            <h1 className="mt-3 text-4xl font-semibold tracking-[-0.04em] md:text-5xl">
-              Export your vault.
-            </h1>
-
-            <p className="mt-4 max-w-xl text-sm leading-6 text-white/60 md:text-base">
-              Create clear PDF reports
-              for insurance, organization,
-              warranties, maintenance, and
-              planning.
-            </p>
-          </div>
-
-          {!hasPdfAccess &&
-            !isDemo && (
-              <Button
-                href="/upgrade"
-                variant="secondary"
-              >
-                <Crown size={17} />
-                Upgrade to Pro
-              </Button>
-            )}
-
-          {isDemo && (
-            <Button
-              href="/signup"
-              variant="secondary"
-            >
-              Create Your Vault
-            </Button>
-          )}
-        </div>
-      </section>
+        {isDemo && (
+          <Button href="/signup">
+            Create Your Vault
+          </Button>
+        )}
+      </PageHero>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <SummaryCard
@@ -882,7 +878,7 @@ export default function ReportsPage() {
 
       <section className="grid gap-6 xl:grid-cols-[0.75fr_1.25fr]">
         <PageCard className="flex min-h-[350px] flex-col items-center justify-center p-8 text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-secondary">
             Report Readiness
           </p>
 
@@ -893,7 +889,7 @@ export default function ReportsPage() {
             />
           </div>
 
-          <p className="mt-7 max-w-sm text-sm leading-6 text-neutral-500">
+          <p className="mt-7 max-w-sm text-sm leading-6 text-text-secondary">
             Your score is based on photo,
             document, serial-number, and
             warranty coverage.
@@ -901,15 +897,15 @@ export default function ReportsPage() {
         </PageCard>
 
         <PageCard className="p-7 md:p-9">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
+          <p className="text-overline text-charcoal-soft">
             Choose a Report
           </p>
 
-          <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[#111827]">
+          <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
             What would you like to export?
           </h2>
 
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-500">
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-text-secondary">
             Select one report, review its
             summary, and download the PDF.
           </p>
@@ -917,7 +913,7 @@ export default function ReportsPage() {
           <div className="mt-7">
             <label
               htmlFor="report-type"
-              className="text-xs font-semibold uppercase tracking-[0.15em] text-neutral-400"
+              className="text-xs font-semibold uppercase tracking-[0.15em] text-text-tertiary"
             >
               Report Type
             </label>
@@ -931,7 +927,7 @@ export default function ReportsPage() {
                     .value as ReportPdfType
                 )
               }
-              className="mt-2 w-full rounded-2xl border border-[#E8E2D6] bg-white px-4 py-3.5 text-sm font-semibold text-[#111827] outline-none transition focus:border-[#C8A96A] focus:ring-4 focus:ring-[#C8A96A]/10"
+              className="mt-2 w-full rounded-2xl border border-border-subtle bg-white px-4 py-3.5 text-sm font-semibold text-text-primary outline-none transition focus:border-interaction focus:ring-4 focus:ring-interaction/10"
             >
               {reportOptions.map(
                 (report) => (
@@ -998,19 +994,19 @@ export default function ReportsPage() {
       </section>
 
       {previewReport && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[#111827]/60 p-4 backdrop-blur-sm">
-          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[32px] border border-[#E8E2D6] bg-white shadow-2xl">
-            <div className="flex items-start justify-between gap-5 border-b border-[#E8E2D6] p-6 md:p-8">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-charcoal/40 p-4 backdrop-blur-sm">
+          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[var(--radius-card)] border border-border-subtle bg-white shadow-2xl">
+            <div className="flex items-start justify-between gap-5 border-b border-border-subtle p-6 md:p-8">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A96A]">
+                <p className="text-overline text-charcoal-soft">
                   Report Preview
                 </p>
 
-                <h2 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-[#111827]">
+                <h2 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-text-primary">
                   {previewReport.title}
                 </h2>
 
-                <p className="mt-2 max-w-xl text-sm leading-6 text-neutral-500">
+                <p className="mt-2 max-w-xl text-sm leading-6 text-text-secondary">
                   {
                     previewReport.description
                   }
@@ -1023,7 +1019,7 @@ export default function ReportsPage() {
                   setPreviewReport(null)
                 }
                 aria-label="Close preview"
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#111827] transition hover:bg-[#EEEAE1]"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-surface-sunken text-text-primary transition hover:bg-[#EEEAE1]"
               >
                 <X size={18} />
               </button>
@@ -1035,13 +1031,13 @@ export default function ReportsPage() {
                   (row) => (
                     <div
                       key={row.label}
-                      className="flex items-center justify-between gap-4 rounded-[22px] bg-[#F7F5EF] p-4"
+                      className="flex items-center justify-between gap-4 rounded-[22px] bg-surface-sunken p-4"
                     >
-                      <p className="text-sm text-neutral-500">
+                      <p className="text-sm text-text-secondary">
                         {row.label}
                       </p>
 
-                      <p className="text-right text-sm font-semibold text-[#111827]">
+                      <p className="text-right text-sm font-semibold text-text-primary">
                         {row.value}
                       </p>
                     </div>
@@ -1110,17 +1106,17 @@ function SelectedReportCard({
   const Icon = report.icon;
 
   return (
-    <div className="mt-5 flex items-start gap-4 rounded-[24px] bg-[#F7F5EF] p-5">
-      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-[#C8A96A] shadow-sm">
+    <div className="mt-5 flex items-start gap-4 rounded-[24px] bg-surface-sunken p-5">
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-border-subtle bg-surface-card text-charcoal shadow-[var(--shadow-sm)]">
         <Icon size={21} />
       </div>
 
       <div>
-        <h3 className="font-semibold text-[#111827]">
+        <h3 className="font-semibold text-text-primary">
           {report.title}
         </h3>
 
-        <p className="mt-2 text-sm leading-6 text-neutral-500">
+        <p className="mt-2 text-sm leading-6 text-text-secondary">
           {report.description}
         </p>
       </div>
@@ -1141,16 +1137,16 @@ function SummaryCard({
     <PageCard className="p-5 md:p-6">
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-sm text-neutral-500">
+          <p className="text-sm text-text-secondary">
             {title}
           </p>
 
-          <p className="mt-2 truncate text-2xl font-semibold tracking-[-0.03em] text-[#111827] md:text-3xl">
+          <p className="mt-2 truncate text-2xl font-semibold tracking-[-0.03em] text-text-primary md:text-3xl">
             {value}
           </p>
         </div>
 
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#F7F5EF] text-[#C8A96A]">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
           <Icon size={20} />
         </div>
       </div>
@@ -1193,7 +1189,7 @@ function ReadinessRing({
           cy="88"
           r={radius}
           fill="none"
-          stroke="#E8E2D6"
+          stroke="#E5E7EB"
           strokeWidth="12"
         />
 
@@ -1214,15 +1210,15 @@ function ReadinessRing({
       </svg>
 
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-5xl font-semibold tracking-[-0.05em] text-[#111827]">
+        <span className="text-5xl font-semibold tracking-[-0.05em] text-text-primary">
           {normalizedScore}
 
-          <span className="ml-0.5 text-2xl text-neutral-400">
+          <span className="ml-0.5 text-2xl text-text-tertiary">
             %
           </span>
         </span>
 
-        <span className="mt-2 max-w-28 text-sm font-semibold text-[#8A6A2F]">
+        <span className="mt-2 max-w-28 text-sm font-semibold text-achievement">
           {label}
         </span>
       </div>
