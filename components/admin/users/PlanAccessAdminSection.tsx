@@ -15,6 +15,7 @@ import {
   PLAN_GRANT_DURATIONS,
   PLAN_GRANT_REASONS,
 } from "@/lib/plan-grants/types";
+import type { GrantNotificationResult } from "@/lib/plan-grants/notificationTypes";
 
 type PlanAccessDetail = {
   id: string;
@@ -29,6 +30,7 @@ type PlanAccessDetail = {
   adminGrantExpiresAt: string | null;
   adminGrantReason: string | null;
   adminGrantNotes: string | null;
+  adminGrantId: string | null;
 };
 
 type PlanAccessAdminSectionProps = {
@@ -61,6 +63,14 @@ export default function PlanAccessAdminSection({
   const [submitting, setSubmitting] =
     useState(false);
   const [message, setMessage] = useState("");
+  const [
+    retryNotification,
+    setRetryNotification,
+  ] = useState<
+    (GrantNotificationResult & {
+      grantId: string;
+    }) | null
+  >(null);
 
   const dialogPlan = useMemo(() => {
     if (dialogMode === "grant_pro") {
@@ -97,6 +107,98 @@ export default function PlanAccessAdminSection({
     setDialogMode(null);
     setConfirmed(false);
     setMessage("");
+  }
+
+  function applyNotificationResult(payload: {
+    message?: string;
+    notification?: GrantNotificationResult;
+    grantId?: string | null;
+    previousPlan?: "pro" | "family" | null;
+  }) {
+    setMessage(payload.message || "");
+
+    if (
+      payload.notification?.canRetry &&
+      payload.grantId
+    ) {
+      setRetryNotification({
+        ...payload.notification,
+        grantId: payload.grantId,
+        previousPlan:
+          payload.previousPlan ??
+          payload.notification.previousPlan ??
+          null,
+      });
+      return;
+    }
+
+    setRetryNotification(null);
+  }
+
+  async function retryFailedNotification() {
+    if (
+      !retryNotification ||
+      !retryNotification.grantId
+    ) {
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      setMessage("");
+
+      const response = await fetch(
+        `/api/admin/users/${detail.id}/plan-grants/notifications/retry`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            grantId: retryNotification.grantId,
+            eventType:
+              retryNotification.eventType,
+            eventVersion:
+              retryNotification.eventVersion,
+            previousPlan:
+              retryNotification.previousPlan ??
+              null,
+          }),
+        }
+      );
+
+      const payload =
+        (await response.json()) as {
+          message?: string;
+          notification?: GrantNotificationResult;
+          error?: string;
+        };
+
+      if (!response.ok) {
+        throw new Error(
+          payload.error ||
+            "Unable to retry notification."
+        );
+      }
+
+      applyNotificationResult(payload);
+
+      if (
+        payload.notification?.status ===
+        "sent"
+      ) {
+        setRetryNotification(null);
+      }
+    } catch (retryError) {
+      setMessage(
+        retryError instanceof Error
+          ? retryError.message
+          : "Unable to retry notification."
+      );
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   async function submitGrant(
@@ -143,6 +245,10 @@ export default function PlanAccessAdminSection({
       const payload =
         (await response.json()) as {
           error?: string;
+          message?: string;
+          notification?: GrantNotificationResult;
+          grant?: { id: string };
+          previousPlan?: "pro" | "family" | null;
         };
 
       if (!response.ok) {
@@ -153,6 +259,12 @@ export default function PlanAccessAdminSection({
       }
 
       closeDialog();
+      applyNotificationResult({
+        message: payload.message,
+        notification: payload.notification,
+        grantId: payload.grant?.id ?? null,
+        previousPlan: payload.previousPlan,
+      });
       await onUpdated();
     } catch (submitError) {
       setMessage(
@@ -197,6 +309,10 @@ export default function PlanAccessAdminSection({
       const payload =
         (await response.json()) as {
           error?: string;
+          message?: string;
+          notification?: GrantNotificationResult;
+          grant?: { id: string };
+          previousPlan?: "pro" | "family" | null;
         };
 
       if (!response.ok) {
@@ -206,6 +322,11 @@ export default function PlanAccessAdminSection({
         );
       }
 
+      applyNotificationResult({
+        message: payload.message,
+        notification: payload.notification,
+        grantId: payload.grant?.id ?? null,
+      });
       await onUpdated();
     } catch (revokeError) {
       setMessage(
@@ -290,6 +411,22 @@ export default function PlanAccessAdminSection({
         <p className="mt-3 text-sm text-text-secondary">
           {message}
         </p>
+      ) : null}
+
+      {retryNotification ? (
+        <div className="mt-3">
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            disabled={submitting}
+            onClick={() => {
+              void retryFailedNotification();
+            }}
+          >
+            Retry notification
+          </Button>
+        </div>
       ) : null}
 
       <div className="mt-4 flex flex-wrap gap-2">

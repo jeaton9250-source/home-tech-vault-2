@@ -4,13 +4,20 @@ import {
   platformAdminAccessResponse,
   requirePlatformAdminSession,
 } from "@/lib/auth/platformAdmin";
-import { isGrantLogicallyExpired } from "@/lib/plan-grants/grantAccess";
-import { loadLatestPlanGrantForUser } from "@/lib/plan-grants/loadActiveGrant";
+import { mapGrantRow } from "@/lib/plan-grants/grantAccess";
+import {
+  notifyAfterPlanGrantCreated,
+  notifyAfterPlanGrantRevoked,
+  buildCreateGrantResponseMessage,
+  buildRevokeGrantResponseMessage,
+} from "@/lib/plan-grants/notifyAfterMutation";
 import {
   createPlatformPlanGrant,
   PlanGrantValidationError,
   revokePlatformPlanGrant,
 } from "@/lib/plan-grants/mutations";
+import { isGrantLogicallyExpired } from "@/lib/plan-grants/grantAccess";
+import { loadLatestPlanGrantForUser } from "@/lib/plan-grants/loadActiveGrant";
 import {
   isAdminGrantPlan,
   PLAN_GRANT_DURATIONS,
@@ -81,7 +88,7 @@ export async function POST(
 
     const supabase = await createClient();
 
-    const grant =
+    const result =
       await createPlatformPlanGrant(
         supabase,
         {
@@ -97,8 +104,46 @@ export async function POST(
         }
       );
 
+    let notification;
+
+    try {
+      notification =
+        await notifyAfterPlanGrantCreated({
+          actorId: adminSession.userId,
+          targetUserId,
+          result,
+        });
+    } catch (notificationError) {
+      console.error(
+        "Plan grant notification error:",
+        notificationError
+      );
+
+      notification = {
+        status: "failed" as const,
+        message:
+          "Access was updated, but the notification email could not be delivered.",
+        deliveryId: null,
+        canRetry: true,
+        eventType:
+          result.eventType === "replaced"
+            ? ("grant_replaced" as const)
+            : ("grant_created" as const),
+        eventVersion: result.grant.createdAt,
+        providerMessageId: null,
+        previousPlan: result.previousPlan,
+      };
+    }
+
     return NextResponse.json({
-      grant,
+      grant: result.grant,
+      notification,
+      previousPlan: result.previousPlan,
+      message:
+        buildCreateGrantResponseMessage(
+          result,
+          notification
+        ),
     });
   } catch (error) {
     const accessResponse =
@@ -152,7 +197,7 @@ export async function DELETE(
 
     const supabase = await createClient();
 
-    const revokedGrant =
+    const result =
       await revokePlatformPlanGrant(
         supabase,
         {
@@ -164,7 +209,7 @@ export async function DELETE(
         }
       );
 
-    if (!revokedGrant) {
+    if (!result) {
       const latestGrant =
         await loadLatestPlanGrantForUser(
           supabase,
@@ -193,8 +238,43 @@ export async function DELETE(
       );
     }
 
+    let notification;
+
+    try {
+      notification =
+        await notifyAfterPlanGrantRevoked({
+          actorId: adminSession.userId,
+          targetUserId,
+          result,
+        });
+    } catch (notificationError) {
+      console.error(
+        "Plan grant notification error:",
+        notificationError
+      );
+
+      notification = {
+        status: "failed" as const,
+        message:
+          "Access was updated, but the notification email could not be delivered.",
+        deliveryId: null,
+        canRetry: true,
+        eventType: "grant_revoked" as const,
+        eventVersion:
+          result.grant.revokedAt ||
+          result.grant.createdAt,
+        providerMessageId: null,
+      };
+    }
+
     return NextResponse.json({
-      grant: revokedGrant,
+      grant: result.grant,
+      notification,
+      message:
+        buildRevokeGrantResponseMessage(
+          result,
+          notification
+        ),
     });
   } catch (error) {
     const accessResponse =

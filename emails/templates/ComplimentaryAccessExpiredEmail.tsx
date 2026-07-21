@@ -1,38 +1,37 @@
 import { EmailButton } from "@/emails/components/EmailButton";
 import {
   EmailCard,
-  EmailDetailBlock,
   EmailParagraph,
 } from "@/emails/components/EmailCard";
 import { EmailHeader } from "@/emails/components/EmailHeader";
 import { EmailLayout } from "@/emails/components/EmailLayout";
 import { emailTheme } from "@/emails/styles/emailTheme";
 
-export type ComplimentaryAccessRevokedEmailProps = {
+export type ComplimentaryAccessExpiredEmailProps = {
   firstName: string;
   planLabel: "Pro" | "Family";
   accountUrl: string;
-  effectiveEndLabel: string;
+  expiredAtLabel: string;
   retainsPremiumAccess: boolean;
 };
 
-export const complimentaryAccessRevokedSubject =
-  "Your complimentary Home Tech Vault access has changed";
+export const complimentaryAccessExpiredSubject = (
+  planLabel: "Pro" | "Family"
+) =>
+  `Your complimentary ${planLabel} access has ended`;
 
-export function renderComplimentaryAccessRevokedPlainText(
-  props: ComplimentaryAccessRevokedEmailProps
+export function renderComplimentaryAccessExpiredPlainText(
+  props: ComplimentaryAccessExpiredEmailProps
 ) {
   const followUp = props.retainsPremiumAccess
     ? "Your account continues to include access through your personal subscription or eligible Family household access."
     : "Your account and stored data remain available. Your current features will now follow your personal subscription and any eligible Family household access.";
 
-  return `${complimentaryAccessRevokedSubject}
+  return `${complimentaryAccessExpiredSubject(props.planLabel)}
 
 Hi ${props.firstName},
 
-Your complimentary ${props.planLabel} access has ended.
-
-Effective end date: ${props.effectiveEndLabel}
+Your complimentary ${props.planLabel} access ended on ${props.expiredAtLabel}.
 
 ${followUp}
 
@@ -43,18 +42,20 @@ ${emailTheme.brand.name}
 ${emailTheme.brand.supportEmail}`;
 }
 
-export default function ComplimentaryAccessRevokedEmail({
+export default function ComplimentaryAccessExpiredEmail({
   firstName,
   planLabel,
   accountUrl,
-  effectiveEndLabel,
+  expiredAtLabel,
   retainsPremiumAccess,
-}: ComplimentaryAccessRevokedEmailProps) {
+}: ComplimentaryAccessExpiredEmailProps) {
   return (
-    <EmailLayout preview="Your complimentary Home Tech Vault access has changed.">
+    <EmailLayout
+      preview={`Your complimentary ${planLabel} access has ended.`}
+    >
       <EmailHeader
-        headline="Your complimentary access has changed."
-        subheading={`Complimentary ${planLabel} access is no longer active on your account.`}
+        headline="Complimentary access has ended."
+        subheading={`Your complimentary ${planLabel} access expired on ${expiredAtLabel}.`}
       />
 
       <EmailCard>
@@ -63,14 +64,9 @@ export default function ComplimentaryAccessRevokedEmail({
         </EmailParagraph>
 
         <EmailParagraph>
-          Your complimentary {planLabel} access has
-          ended.
+          Your complimentary {planLabel} access ended on{" "}
+          {expiredAtLabel}.
         </EmailParagraph>
-
-        <EmailDetailBlock
-          label="Effective end date"
-          value={effectiveEndLabel}
-        />
 
         <EmailParagraph>
           {retainsPremiumAccess
@@ -87,10 +83,10 @@ export default function ComplimentaryAccessRevokedEmail({
   );
 }
 
-ComplimentaryAccessRevokedEmail.PreviewProps = {
+ComplimentaryAccessExpiredEmail.PreviewProps = {
   firstName: "Alex",
-  planLabel: "Pro",
+  planLabel: "Family",
   accountUrl: "https://hometechvault.com/account",
-  effectiveEndLabel: "July 21, 2026",
+  expiredAtLabel: "July 21, 2026",
   retainsPremiumAccess: false,
-} satisfies ComplimentaryAccessRevokedEmailProps;
+} satisfies ComplimentaryAccessExpiredEmailProps;

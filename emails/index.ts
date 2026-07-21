@@ -63,7 +63,36 @@ export {
 } from "@/emails/templates/MaintenanceReminderEmail";
 
 export {
-  default as MonthlyVaultReportEmail,
-  monthlyVaultReportSubject,
-  type MonthlyVaultReportEmailProps,
-} from "@/emails/templates/MonthlyVaultReportEmail";
+  default as ComplimentaryAccessGrantedEmail,
+  complimentaryAccessGrantedSubject,
+  renderComplimentaryAccessGrantedPlainText,
+  type ComplimentaryAccessGrantedEmailProps,
+} from "@/emails/templates/ComplimentaryAccessGrantedEmail";
+
+export {
+  default as ComplimentaryAccessChangedEmail,
+  complimentaryAccessChangedSubject,
+  renderComplimentaryAccessChangedPlainText,
+  type ComplimentaryAccessChangedEmailProps,
+} from "@/emails/templates/ComplimentaryAccessChangedEmail";
+
+export {
+  default as ComplimentaryAccessRevokedEmail,
+  complimentaryAccessRevokedSubject,
+  renderComplimentaryAccessRevokedPlainText,
+  type ComplimentaryAccessRevokedEmailProps,
+} from "@/emails/templates/ComplimentaryAccessRevokedEmail";
+
+export {
+  default as ComplimentaryAccessExpiringEmail,
+  complimentaryAccessExpiringSubject,
+  renderComplimentaryAccessExpiringPlainText,
+  type ComplimentaryAccessExpiringEmailProps,
+} from "@/emails/templates/ComplimentaryAccessExpiringEmail";
+
+export {
+  default as ComplimentaryAccessExpiredEmail,
+  complimentaryAccessExpiredSubject,
+  renderComplimentaryAccessExpiredPlainText,
+  type ComplimentaryAccessExpiredEmailProps,
+} from "@/emails/templates/ComplimentaryAccessExpiredEmail";

@@ -44,6 +44,17 @@ export type RevokePlanGrantInput = {
   confirm: boolean;
 };
 
+export type CreatePlanGrantResult = {
+  grant: ActivePlanGrant;
+  eventType: "created" | "replaced";
+  previousPlan: AdminGrantPlan | null;
+};
+
+export type RevokePlanGrantResult = {
+  grant: ActivePlanGrant;
+  eventType: "revoked";
+};
+
 function assertValidReason(reason: string) {
   const trimmed = reason.trim();
 
@@ -202,7 +213,7 @@ async function revokeActiveGrant(
 export async function createPlatformPlanGrant(
   client: SupabaseClient,
   input: CreatePlanGrantInput
-): Promise<ActivePlanGrant> {
+): Promise<CreatePlanGrantResult> {
   if (!input.confirm) {
     throw new PlanGrantValidationError(
       "Confirmation is required."
@@ -245,6 +256,9 @@ export async function createPlatformPlanGrant(
       client,
       input.targetUserId
     );
+
+  const previousPlan =
+    hadActiveGrant?.plan ?? null;
 
   if (hadActiveGrant) {
     await revokeActiveGrant(client, {
@@ -294,24 +308,42 @@ export async function createPlatformPlanGrant(
     },
   });
 
-  return grant;
+  return {
+    grant,
+    eventType: hadActiveGrant
+      ? "replaced"
+      : "created",
+    previousPlan,
+  };
 }
 
 export async function revokePlatformPlanGrant(
   client: SupabaseClient,
   input: RevokePlanGrantInput
-): Promise<ActivePlanGrant | null> {
+): Promise<RevokePlanGrantResult | null> {
   if (!input.confirm) {
     throw new PlanGrantValidationError(
       "Confirmation is required."
     );
   }
 
-  return revokeActiveGrant(client, {
-    userId: input.targetUserId,
-    actorId: input.actorId,
-    revocationReason:
-      input.revocationReason,
+  const revokedGrant = await revokeActiveGrant(
+    client,
+    {
+      userId: input.targetUserId,
+      actorId: input.actorId,
+      revocationReason:
+        input.revocationReason,
+      eventType: "revoked",
+    }
+  );
+
+  if (!revokedGrant) {
+    return null;
+  }
+
+  return {
+    grant: revokedGrant,
     eventType: "revoked",
-  });
+  };
 }
