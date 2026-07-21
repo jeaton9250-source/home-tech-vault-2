@@ -2,7 +2,6 @@
 
 import {
   ArrowRight,
-  Laptop,
   Loader2,
   Play,
 } from "lucide-react";
@@ -10,10 +9,7 @@ import {
 import LandingBenefitsSection from "@/components/landing/LandingBenefitsSection";
 import LandingProductPreview from "@/components/landing/LandingProductPreview";
 import LandingTrustSection from "@/components/landing/LandingTrustSection";
-import {
-  CommandCenterPreview,
-  PillarPreview,
-} from "@/components/landing/LandingPreviews";
+import { HeroAppPreview } from "@/components/landing/LandingPreviews";
 import MarketingLayout, {
   MarketingContent,
 } from "@/components/marketing/MarketingLayout";
@@ -21,8 +17,10 @@ import Button from "@/components/ui/Button";
 import PageCard from "@/components/ui/PageCard";
 import { useDemoMode } from "@/hooks/useDemoMode";
 import { MARKETING_ROUTES } from "@/lib/marketing/routes";
-import { sections } from "@/lib/design-system/tokens";
 import type { PublicFoundingProgramSummary } from "@/lib/founding-members/types";
+
+const landingPrimaryButtonClass =
+  "border-charcoal bg-charcoal text-surface-card hover:border-charcoal-hover hover:bg-charcoal-hover focus-visible:ring-charcoal/20";
 
 type LandingPageProps = {
   foundingSummary?: PublicFoundingProgramSummary | null;
@@ -91,6 +89,7 @@ export default function LandingPage({
               <Button
                 href={primaryHref}
                 size="lg"
+                className={landingPrimaryButtonClass}
               >
                 {primaryLabel}
                 <ArrowRight size={16} aria-hidden />
@@ -110,13 +109,7 @@ export default function LandingPage({
           </div>
 
           <div className="mx-auto w-full max-w-xl lg:max-w-none">
-            <PillarPreview
-              icon={Laptop}
-              accent={sections.technology.accent}
-              soft={sections.technology.soft}
-            >
-              <CommandCenterPreview />
-            </PillarPreview>
+            <HeroAppPreview />
           </div>
         </div>
       </section>
@@ -129,22 +122,21 @@ export default function LandingPage({
       <MarketingContent className="py-10 md:py-14">
         <PageCard
           elevated
-          className="mx-auto max-w-3xl border-interaction/15 bg-gradient-to-br from-interaction to-interaction-hover px-8 py-10 text-center text-surface-card md:px-12 md:py-12"
+          className="mx-auto max-w-3xl px-8 py-12 text-center md:px-14 md:py-14"
         >
-          <h2 className="text-2xl font-medium tracking-[-0.03em] md:text-3xl">
+          <h2 className="text-2xl font-medium tracking-[-0.03em] text-text-primary md:text-3xl">
             Ready to organize your home technology?
           </h2>
 
-          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-surface-card/80">
+          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-text-muted">
             Create your free vault and keep everything
             important in one place.
           </p>
 
           <Button
             href={primaryHref}
-            variant="secondary"
             size="lg"
-            className="mt-6 border-transparent bg-surface-card text-interaction hover:bg-surface-card/95"
+            className={`mt-8 ${landingPrimaryButtonClass}`}
           >
             {finalCtaLabel}
             <ArrowRight size={16} aria-hidden />

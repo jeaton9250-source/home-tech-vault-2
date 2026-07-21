@@ -5,10 +5,16 @@ import type { ReactNode } from "react";
 import Image from "next/image";
 
 import {
-  FileText,
-  Laptop,
-  ShieldCheck,
   BarChart3,
+  Bell,
+  FileText,
+  Home,
+  Laptop,
+  LayoutGrid,
+  Plus,
+  Search,
+  Settings,
+  ShieldCheck,
   Users,
   Wifi,
 } from "lucide-react";
@@ -25,7 +31,10 @@ export function CommandCenterPreview() {
             Home Pulse
           </p>
           <p className="mt-1 text-xl font-medium tracking-[-0.02em]">
-            Good afternoon
+            Good afternoon, Alex
+          </p>
+          <p className="mt-0.5 text-xs text-text-muted">
+            The Morgan Household
           </p>
         </div>
 
@@ -34,7 +43,19 @@ export function CommandCenterPreview() {
         </div>
       </div>
 
-      <div className="mt-5 grid grid-cols-3 gap-2">
+      <div className="mt-4 flex items-start gap-2 rounded-[var(--radius-button)] border border-warning/20 bg-warning-soft/70 px-3 py-2.5">
+        <Bell
+          size={14}
+          className="mt-0.5 shrink-0 text-warning"
+          aria-hidden
+        />
+        <p className="text-xs leading-5 text-text-secondary">
+          TV warranty expires in 28 days. Review coverage
+          before it lapses.
+        </p>
+      </div>
+
+      <div className="mt-4 grid grid-cols-3 gap-2">
         {[
           { label: "Devices", value: "24" },
           { label: "Protected", value: "$18k" },
@@ -54,10 +75,27 @@ export function CommandCenterPreview() {
         ))}
       </div>
 
+      <div className="mt-4 flex flex-wrap gap-2">
+        {["Add device", "Upload receipt", "Add warranty"].map(
+          (action) => (
+            <span
+              key={action}
+              className="inline-flex items-center gap-1 rounded-full border border-border-subtle bg-surface-card px-2.5 py-1 text-[0.6875rem] font-medium text-text-secondary"
+            >
+              <Plus size={11} aria-hidden />
+              {action}
+            </span>
+          )
+        )}
+      </div>
+
       <div className="mt-4 space-y-2">
+        <p className="text-[0.625rem] font-semibold uppercase tracking-wider text-text-muted">
+          Recent devices
+        </p>
         <PreviewDeviceRow
           name="MacBook Pro"
-          detail="Home Office"
+          detail="Home Office · AppleCare+ active"
           imageSrc={
             DEMO_DEVICE_IMAGE_PATHS.macbookPro
           }
@@ -66,13 +104,104 @@ export function CommandCenterPreview() {
         />
         <PreviewDeviceRow
           name="Living Room TV"
-          detail="Living Room"
+          detail="Living Room · Warranty expiring"
           imageSrc={
             DEMO_DEVICE_IMAGE_PATHS.samsungTv
           }
           accent={sections.technology.accent}
           soft={sections.technology.soft}
         />
+      </div>
+    </div>
+  );
+}
+
+const heroNavItems = [
+  { label: "Home Pulse", icon: Home, active: true },
+  { label: "Devices", icon: Laptop, active: false },
+  { label: "Documents", icon: FileText, active: false },
+  { label: "Warranties", icon: ShieldCheck, active: false },
+  { label: "Reports", icon: BarChart3, active: false },
+] as const;
+
+export function HeroAppPreview() {
+  return (
+    <div
+      className="overflow-hidden rounded-[var(--radius-card)] border border-border-subtle bg-surface-card shadow-[var(--shadow-md),0_24px_48px_-16px_rgb(28_25_23_/_0.14)]"
+      role="img"
+      aria-label="Preview of the Home Tech Vault Home Pulse dashboard"
+    >
+      <div className="flex items-center gap-2 border-b border-border-subtle bg-surface-sunken/90 px-4 py-2.5">
+        <div className="flex gap-1.5" aria-hidden>
+          <span className="h-2.5 w-2.5 rounded-full bg-border-strong/35" />
+          <span className="h-2.5 w-2.5 rounded-full bg-border-strong/35" />
+          <span className="h-2.5 w-2.5 rounded-full bg-border-strong/35" />
+        </div>
+
+        <div className="mx-auto flex h-7 min-w-0 flex-1 max-w-[180px] items-center justify-center gap-1.5 rounded-md border border-border-subtle bg-surface-card px-3 text-[10px] text-text-muted">
+          <span className="truncate">
+            app.hometechvault.com/home
+          </span>
+        </div>
+
+        <Search
+          size={14}
+          className="shrink-0 text-text-tertiary"
+          aria-hidden
+        />
+      </div>
+
+      <div className="flex">
+        <aside
+          className="hidden w-[148px] shrink-0 border-r border-border-subtle bg-surface-sunken/55 p-3 sm:block"
+          aria-hidden
+        >
+          <p className="px-2 text-[0.625rem] font-semibold uppercase tracking-wider text-text-muted">
+            Vault
+          </p>
+
+          <nav className="mt-3 space-y-0.5">
+            {heroNavItems.map(({ label, icon: Icon, active }) => (
+              <div
+                key={label}
+                className={`flex items-center gap-2 rounded-[10px] px-2 py-2 text-[11px] font-medium ${
+                  active
+                    ? "bg-surface-card text-text-primary shadow-[var(--shadow-sm)]"
+                    : "text-text-muted"
+                }`}
+              >
+                <Icon size={13} aria-hidden />
+                {label}
+              </div>
+            ))}
+          </nav>
+        </aside>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-between border-b border-border-subtle bg-surface-card px-4 py-2.5 sm:px-5">
+            <div className="flex items-center gap-2">
+              <LayoutGrid
+                size={14}
+                className="text-text-tertiary sm:hidden"
+                aria-hidden
+              />
+              <p className="text-xs font-medium text-text-primary">
+                Home Pulse
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2" aria-hidden>
+              <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-interaction-soft text-interaction">
+                <Users size={12} />
+              </span>
+              <span className="inline-flex h-7 w-7 items-center justify-center rounded-[10px] text-text-tertiary">
+                <Settings size={12} />
+              </span>
+            </div>
+          </div>
+
+          <CommandCenterPreview />
+        </div>
       </div>
     </div>
   );
