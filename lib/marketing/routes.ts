@@ -5,6 +5,7 @@ export const MARKETING_ROUTES = {
   demo: "/demo",
   faq: "/faq",
   contact: "/contact",
+  trust: "/trust",
   privacy: "/privacy",
   terms: "/terms",
   signup: "/signup",
@@ -26,6 +27,7 @@ export const PUBLIC_MARKETING_PATHS = [
   MARKETING_ROUTES.demo,
   MARKETING_ROUTES.faq,
   MARKETING_ROUTES.contact,
+  MARKETING_ROUTES.trust,
   MARKETING_ROUTES.privacy,
   MARKETING_ROUTES.terms,
 ] as const;
@@ -55,6 +57,7 @@ export const INDEXABLE_MARKETING_PATHS = [
   MARKETING_ROUTES.demo,
   MARKETING_ROUTES.faq,
   MARKETING_ROUTES.contact,
+  MARKETING_ROUTES.trust,
   MARKETING_ROUTES.privacy,
   MARKETING_ROUTES.terms,
 ] as const;

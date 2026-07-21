@@ -9,15 +9,22 @@ import {
   Loader2,
 } from "lucide-react";
 
-import MarketingLayout, {
-  MarketingContent,
-} from "@/components/marketing/MarketingLayout";
+import FounderStorySection from "@/components/marketing/FounderStorySection";
+import HowItWorksSection from "@/components/marketing/HowItWorksSection";
+import LandingFaqSection from "@/components/marketing/LandingFaqSection";
+import ProductScreenshotsSection from "@/components/marketing/ProductScreenshotsSection";
+import SecuritySection from "@/components/marketing/SecuritySection";
 import TestimonialsSection from "@/components/marketing/TestimonialsSection";
-import { TrustBadgeGrid } from "@/components/marketing/TrustIndicators";
+import TrustBar from "@/components/marketing/TrustBar";
+import VideoWalkthroughSection from "@/components/marketing/VideoWalkthroughSection";
+import WhyTrustSection from "@/components/marketing/WhyTrustSection";
 import {
   CommandCenterPreview,
   PillarPreview,
 } from "@/components/landing/LandingPreviews";
+import MarketingLayout, {
+  MarketingContent,
+} from "@/components/marketing/MarketingLayout";
 import { useDemoMode } from "@/hooks/useDemoMode";
 import { MARKETING_ROUTES } from "@/lib/marketing/routes";
 import { sections } from "@/lib/design-system/tokens";
@@ -88,7 +95,7 @@ export default function LandingPage({
       mainClassName="overflow-x-hidden"
       foundingSummary={foundingSummary}
     >
-      <section className="relative px-6 pb-24 pt-16 md:px-8 md:pb-32 md:pt-24">
+      <section className="relative px-6 pb-16 pt-16 md:px-8 md:pb-20 md:pt-24">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-gradient-to-b from-home-health-soft/40 to-transparent" />
 
         <div className="relative mx-auto grid max-w-6xl items-center gap-16 lg:grid-cols-[1.05fr_1fr] lg:gap-20">
@@ -176,11 +183,11 @@ export default function LandingPage({
         </div>
       </section>
 
-      <section className="border-y border-border-subtle bg-surface-card/40 px-6 py-14 md:px-8">
-        <MarketingContent className="py-0">
-          <TrustBadgeGrid />
-        </MarketingContent>
-      </section>
+      <TrustBar />
+      <WhyTrustSection />
+      <VideoWalkthroughSection />
+      <ProductScreenshotsSection />
+      <HowItWorksSection />
 
       <MarketingContent>
         <motion.div {...fadeUp} className="max-w-2xl">
@@ -224,7 +231,10 @@ export default function LandingPage({
         </div>
       </MarketingContent>
 
+      <FounderStorySection />
+      <SecuritySection />
       <TestimonialsSection />
+      <LandingFaqSection />
 
       <section className="px-6 pb-24 md:px-8 md:pb-32">
         <motion.div

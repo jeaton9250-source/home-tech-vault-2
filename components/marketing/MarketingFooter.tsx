@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import Logo from "@/components/brand/Logo";
 import { MARKETING_ROUTES } from "@/lib/marketing/routes";
+import { SUPPORT_EMAIL } from "@/lib/marketing/trust";
 
 const productLinks = [
   { href: MARKETING_ROUTES.features, label: "Features" },
@@ -11,17 +12,20 @@ const productLinks = [
 
 const resourceLinks = [
   { href: MARKETING_ROUTES.faq, label: "FAQ" },
+  { href: MARKETING_ROUTES.trust, label: "Trust Center" },
   { href: MARKETING_ROUTES.contact, label: "Contact" },
 ] as const;
 
 const companyLinks = [
   { href: MARKETING_ROUTES.home, label: "About" },
+  { href: MARKETING_ROUTES.trust, label: "Trust Center" },
   { href: MARKETING_ROUTES.contact, label: "Contact" },
 ] as const;
 
 const legalLinks = [
   { href: MARKETING_ROUTES.privacy, label: "Privacy" },
   { href: MARKETING_ROUTES.terms, label: "Terms" },
+  { href: MARKETING_ROUTES.contact, label: "Contact" },
 ] as const;
 
 export default function MarketingFooter() {
@@ -39,6 +43,13 @@ export default function MarketingFooter() {
               <br />
               Simplify.
             </p>
+
+            <a
+              href={`mailto:${SUPPORT_EMAIL}`}
+              className="mt-5 inline-block text-sm text-interaction transition hover:text-interaction-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interaction"
+            >
+              {SUPPORT_EMAIL}
+            </a>
           </div>
 
           <FooterColumn
@@ -85,10 +96,10 @@ function FooterColumn({
 
       <ul className="mt-4 space-y-2.5">
         {links.map((link) => (
-          <li key={`${title}-${link.href}`}>
+          <li key={`${title}-${link.href}-${link.label}`}>
             <Link
               href={link.href}
-              className="text-sm text-text-secondary transition hover:text-text-primary"
+              className="text-sm text-text-secondary transition hover:text-text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interaction"
             >
               {link.label}
             </Link>

@@ -1,18 +1,4 @@
-import {
-  Cloud,
-  Lock,
-  MonitorSmartphone,
-  ShieldCheck,
-  Users,
-} from "lucide-react";
-
-const indicators = [
-  { icon: Cloud, label: "Secure Cloud Storage" },
-  { icon: Lock, label: "Encrypted" },
-  { icon: Users, label: "Family Sharing" },
-  { icon: MonitorSmartphone, label: "Cross-device Access" },
-  { icon: ShieldCheck, label: "Role-based Access" },
-] as const;
+import { TRUST_INDICATORS } from "@/lib/marketing/trust";
 
 type TrustIndicatorsProps = {
   className?: string;
@@ -37,19 +23,21 @@ export default function TrustIndicators({
         }`}
         aria-label="Trust indicators"
       >
-        {indicators.map(({ icon: Icon, label }) => (
-          <li
-            key={label}
-            className="flex items-center gap-2 text-sm font-medium text-text-secondary"
-          >
-            <Icon
-              size={16}
-              className="text-home-health"
-              aria-hidden
-            />
-            {label}
-          </li>
-        ))}
+        {TRUST_INDICATORS.map(
+          ({ icon: Icon, label }) => (
+            <li
+              key={label}
+              className="flex items-center gap-2 text-sm font-medium text-text-secondary"
+            >
+              <Icon
+                size={16}
+                className="text-home-health"
+                aria-hidden
+              />
+              {label}
+            </li>
+          )
+        )}
       </ul>
     </div>
   );
@@ -57,20 +45,22 @@ export default function TrustIndicators({
 
 export function TrustBadgeGrid() {
   return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-      {indicators.map(({ icon: Icon, label }) => (
-        <div
-          key={label}
-          className="flex items-center gap-2.5 rounded-[var(--radius-button)] border border-border-subtle bg-surface-card px-4 py-3.5 text-sm text-text-secondary"
-        >
-          <Icon
-            size={15}
-            className="shrink-0 text-home-health"
-            aria-hidden
-          />
-          {label}
-        </div>
-      ))}
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {TRUST_INDICATORS.map(
+        ({ icon: Icon, label }) => (
+          <div
+            key={label}
+            className="flex items-center gap-2.5 rounded-[var(--radius-button)] border border-border-subtle bg-surface-card px-4 py-3.5 text-sm text-text-secondary"
+          >
+            <Icon
+              size={15}
+              className="shrink-0 text-home-health"
+              aria-hidden
+            />
+            {label}
+          </div>
+        )
+      )}
     </div>
   );
 }

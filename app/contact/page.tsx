@@ -20,14 +20,18 @@ import {
   Send,
   ShieldCheck,
   Sparkles,
-  UserRound,
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
 import { usePermissions } from "@/hooks/usePermissions";
 import { SUPPORT_CATEGORIES } from "@/lib/support/categories";
+import { MARKETING_ROUTES } from "@/lib/marketing/routes";
+import { SUPPORT_EMAIL } from "@/lib/marketing/trust";
 
-import PageShell from "@/components/ui/PageShell";
+import MarketingLayout, {
+  MarketingContent,
+  MarketingPageHero,
+} from "@/components/marketing/MarketingLayout";
 import PageCard from "@/components/ui/PageCard";
 import Button from "@/components/ui/Button";
 
@@ -295,48 +299,63 @@ export default function ContactPage() {
 
   const isSignedIn = Boolean(user) && !isDemo;
 
+  const quickHelpLinks = isSignedIn
+    ? [
+        {
+          href: "/settings",
+          label: "Account settings",
+        },
+        {
+          href: "/settings/billing",
+          label: "Billing and subscription",
+        },
+        {
+          href: "/devices",
+          label: "Device library",
+        },
+        {
+          href: "/network",
+          label: "Network center",
+        },
+      ]
+    : [
+        {
+          href: MARKETING_ROUTES.faq,
+          label: "FAQ",
+        },
+        {
+          href: MARKETING_ROUTES.trust,
+          label: "Trust Center",
+        },
+        {
+          href: MARKETING_ROUTES.demo,
+          label: "Interactive demo",
+        },
+        {
+          href: MARKETING_ROUTES.pricing,
+          label: "Pricing",
+        },
+      ];
+
   return (
-    <PageShell>
-      <section className="htv-hero-band overflow-hidden shadow-sm">
-        <div className="grid gap-8 px-6 py-9 md:px-10 md:py-11 lg:grid-cols-[1fr_auto] lg:items-end">
-          <div>
-            <p className="text-overline text-charcoal-soft">
-              Personal Support
-            </p>
+    <MarketingLayout>
+      <MarketingPageHero
+        eyebrow="Contact"
+        title="We’re here to help."
+        description="Send a support message, share feedback, or ask a question about your household vault. Every message is read by a real person."
+      >
+        <a
+          href={`mailto:${SUPPORT_EMAIL}`}
+          className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-interaction hover:text-interaction-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interaction"
+        >
+          <Mail size={16} aria-hidden />
+          {SUPPORT_EMAIL}
+        </a>
+      </MarketingPageHero>
 
-            <h1 className="mt-3 max-w-3xl text-4xl font-semibold tracking-[-0.04em] md:text-5xl">
-              Let’s figure it out together.
-            </h1>
-
-            <p className="mt-4 max-w-2xl text-sm leading-7 text-text-secondary md:text-base">
-              Questions, ideas, bugs, and
-              honest feedback are all
-              welcome. Your message goes to
-              a real person who cares about
-              making Home Tech Vault better.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3 rounded-[24px] bg-white/10 px-4 py-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border-subtle bg-surface-card text-section-insights shadow-[var(--shadow-sm)]">
-              <UserRound size={20} />
-            </div>
-
-            <div>
-              <p className="text-sm font-semibold">
-                You’re reaching Jason
-              </p>
-
-              <p className="mt-0.5 text-xs text-text-tertiary">
-                Founder of Home Tech Vault
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {isDemo && (
-        <section className="rounded-3xl border border-warning/40 bg-warning-soft p-5">
+      <MarketingContent className="pt-0">
+        {isDemo ? (
+        <section className="mb-6 rounded-3xl border border-warning/40 bg-warning-soft p-5">
           <div className="flex items-start gap-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-charcoal text-surface-card">
               <Sparkles size={18} />
@@ -355,7 +374,7 @@ export default function ContactPage() {
             </div>
           </div>
         </section>
-      )}
+      ) : null}
 
       <section className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
         <PageCard className="p-6 md:p-8">
@@ -627,10 +646,10 @@ export default function ContactPage() {
             </p>
 
             <a
-              href="mailto:support@hometechvault.com"
+              href={`mailto:${SUPPORT_EMAIL}`}
               className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-interaction transition hover:text-interaction-hover"
             >
-              support@hometechvault.com
+              {SUPPORT_EMAIL}
               <ArrowRight size={15} />
             </a>
           </div>
@@ -666,30 +685,19 @@ export default function ContactPage() {
             </h2>
 
             <div className="mt-6 space-y-3">
-              <QuickLink
-                href="/settings"
-                label="Account settings"
-              />
-
-              <QuickLink
-                href="/settings/billing"
-                label="Billing and subscription"
-              />
-
-              <QuickLink
-                href="/devices"
-                label="Device library"
-              />
-
-              <QuickLink
-                href="/network"
-                label="Network center"
-              />
+              {quickHelpLinks.map((link) => (
+                <QuickLink
+                  key={link.href}
+                  href={link.href}
+                  label={link.label}
+                />
+              ))}
             </div>
           </PageCard>
         </div>
       </section>
-    </PageShell>
+      </MarketingContent>
+    </MarketingLayout>
   );
 }
 
