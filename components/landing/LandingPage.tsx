@@ -1,13 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
+  Check,
   Laptop,
   Loader2,
-  Sparkles,
 } from "lucide-react";
 
 import MarketingLayout, {
@@ -48,18 +47,17 @@ const outcomes = [
   },
 ] as const;
 
+const heroTrustItems = [
+  "Free to get started",
+  "Securely organized",
+  "Built for every home",
+] as const;
+
 export default function LandingPage() {
-  const router = useRouter();
   const {
     user,
     loading,
-    startDemo,
   } = useDemoMode();
-
-  function handleExploreDemo() {
-    startDemo();
-    router.push("/dashboard");
-  }
 
   if (loading) {
     return (
@@ -89,24 +87,28 @@ export default function LandingPage() {
               Home technology, finally organized
             </p>
 
-            <h1 className="mt-5 text-4xl font-medium tracking-[-0.04em] md:text-6xl md:leading-[1.02]">
-              One vault for every device in your home.
+            <h1 className="mt-5 max-w-xl text-4xl font-medium tracking-[-0.04em] md:text-6xl md:leading-[1.02]">
+              Everything about your home&apos;s
+              technology.
+              <span className="mt-1 block md:mt-2">
+                Organized in one place.
+              </span>
             </h1>
 
             <p className="mt-6 max-w-xl text-lg leading-8 text-text-muted">
-              Track warranties, store receipts, and protect
-              your entire home technology inventory — calmly,
-              clearly, in one place.
+              Keep your devices, warranties, receipts,
+              documents, network details, and subscriptions
+              together in one calm, secure home.
             </p>
 
-            <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center">
               <Link
                 href={
                   isSignedIn
                     ? "/dashboard"
                     : MARKETING_ROUTES.signup
                 }
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[var(--radius-button)] bg-charcoal px-7 py-3 text-sm font-medium text-surface-card transition hover:bg-charcoal-hover"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[var(--radius-button)] bg-charcoal px-7 py-3 text-sm font-medium text-surface-card transition hover:bg-charcoal-hover focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-charcoal/20"
               >
                 {isSignedIn
                   ? "Go to Your Vault"
@@ -115,25 +117,34 @@ export default function LandingPage() {
               </Link>
 
               {!isSignedIn && (
-                <>
-                  <Link
-                    href={MARKETING_ROUTES.demo}
-                    className="inline-flex min-h-12 items-center justify-center rounded-[var(--radius-button)] border border-border-subtle px-7 py-3 text-sm font-medium transition hover:bg-surface-hover"
-                  >
-                    View Demo
-                  </Link>
-
-                  <button
-                    type="button"
-                    onClick={handleExploreDemo}
-                    className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[var(--radius-button)] border border-warning/30 bg-warning-soft px-7 py-3 text-sm font-medium text-achievement transition hover:brightness-[0.98]"
-                  >
-                    <Sparkles size={16} aria-hidden />
-                    Interactive Demo
-                  </button>
-                </>
+                <Link
+                  href={MARKETING_ROUTES.demo}
+                  className="inline-flex min-h-12 items-center justify-center px-2 py-3 text-sm font-medium text-interaction transition hover:text-interaction-hover focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-interaction/15 sm:px-4"
+                >
+                  Explore the Demo
+                </Link>
               )}
             </div>
+
+            <ul
+              className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-x-6 sm:gap-y-2"
+              aria-label="Product highlights"
+            >
+              {heroTrustItems.map((item) => (
+                <li
+                  key={item}
+                  className="flex items-center gap-2 text-sm text-text-secondary"
+                >
+                  <Check
+                    size={15}
+                    strokeWidth={2}
+                    className="shrink-0 text-text-muted"
+                    aria-hidden
+                  />
+                  {item}
+                </li>
+              ))}
+            </ul>
           </motion.div>
 
           <motion.div
