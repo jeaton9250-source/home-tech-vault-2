@@ -1,8 +1,17 @@
 import type { User } from "@supabase/supabase-js";
 
 import type {
+  RawHouseholdRole,
+} from "@/lib/permissions/effectivePlan";
+
+import type {
   SubscriptionPlan,
 } from "@/hooks/useSubscription";
+
+export type AccessContext =
+  | "personal"
+  | "household"
+  | "demo";
 
 export type HouseholdRole =
   | "viewer"
@@ -66,7 +75,8 @@ export type FeatureAccess = {
 export type PermissionContext = {
   user: User | null;
   isDemo: boolean;
-  role: HouseholdRole;
+  role: HouseholdRole | null;
+  rawHouseholdRole: RawHouseholdRole | null;
   householdId: string | null;
   plan: SubscriptionPlan;
   isPlatformAdmin: boolean;
@@ -92,6 +102,11 @@ export type UpgradeReasonOptions = {
 };
 
 export type ComputedPermissions = {
+  accessContext: AccessContext;
+  householdRole: RawHouseholdRole | null;
+  isPersonalVault: boolean;
+  isHouseholdMember: boolean;
+
   isAuthenticated: boolean;
   isViewer: boolean;
   isMember: boolean;

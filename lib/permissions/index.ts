@@ -6,9 +6,14 @@ export {
 export {
   computePermissions,
   normalizeHouseholdRole,
+  normalizeRawHouseholdRole,
   buildUpgradeReasonMessage,
   resolveUpgradeReason,
 } from "@/lib/permissions/computePermissions";
+
+export {
+  hasHouseholdViewerRestrictions,
+} from "@/lib/permissions/householdRole";
 
 export {
   buildPlanFeatureAccess,
@@ -62,6 +67,7 @@ export {
 export type { HouseholdScope } from "@/lib/data/householdScope";
 
 export type {
+  AccessContext,
   ComputedPermissions,
   FeatureAccess,
   FeatureKey,

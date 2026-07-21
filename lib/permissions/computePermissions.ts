@@ -2,6 +2,9 @@ import {
   FEATURE_REQUIREMENTS,
 } from "@/lib/permissions/features";
 import {
+  hasHouseholdViewerRestrictions,
+} from "@/lib/permissions/householdRole";
+import {
   buildUpgradeReasonMessage,
   resolveUpgradeReason,
 } from "@/lib/permissions/upgradeReasons";
@@ -11,33 +14,20 @@ import type {
   FeatureAccess,
   FeatureKey,
   FeaturePlanRequirement,
-  HouseholdRole,
   PermissionContext,
   UpgradeReasonCode,
   UpgradeReasonOptions,
 } from "@/lib/permissions/types";
 
-export function normalizeHouseholdRole(
-  value: string | null | undefined
-): HouseholdRole {
-  if (
-    value === "admin" ||
-    value === "owner"
-  ) {
-    return "admin";
-  }
-
-  if (value === "member") {
-    return "member";
-  }
-
-  return "viewer";
-}
-
 export {
   buildUpgradeReasonMessage,
   resolveUpgradeReason,
 } from "@/lib/permissions/upgradeReasons";
+
+export {
+  normalizeHouseholdRole,
+  normalizeRawHouseholdRole,
+} from "@/lib/permissions/householdRole";
 
 function meetsPlanRequirement(
   requiredPlan: FeaturePlanRequirement,
@@ -103,13 +93,25 @@ export function computePermissions(
   const hasHouseholdMembership =
     Boolean(context.householdId);
 
-  const isPersonalVaultOwner =
+  const isPersonalVault =
     isAuthenticated &&
     !hasHouseholdMembership;
 
-  const isViewer =
-    hasHouseholdMembership &&
-    context.role === "viewer";
+  const isHouseholdMember =
+    hasHouseholdMembership;
+
+  const accessContext = context.isDemo
+    ? "demo"
+    : hasHouseholdMembership
+      ? "household"
+      : "personal";
+
+  const isViewer = hasHouseholdViewerRestrictions(
+    {
+      householdId: context.householdId,
+      role: context.role,
+    }
+  );
 
   const isMember =
     hasHouseholdMembership &&
@@ -120,7 +122,7 @@ export function computePermissions(
     context.role === "admin";
 
   const roleCanMutate =
-    isPersonalVaultOwner ||
+    isPersonalVault ||
     isMember ||
     isAdmin;
 
@@ -134,7 +136,7 @@ export function computePermissions(
 
   const canDelete =
     !context.isDemo &&
-    (isPersonalVaultOwner || isAdmin);
+    (isPersonalVault || isAdmin);
 
   const canUpload =
     !context.isDemo && roleCanMutate;
@@ -488,6 +490,13 @@ export function computePermissions(
   }
 
   return {
+    accessContext,
+    householdRole: hasHouseholdMembership
+      ? context.rawHouseholdRole
+      : null,
+    isPersonalVault,
+    isHouseholdMember,
+
     isAuthenticated,
     isViewer,
     isMember,

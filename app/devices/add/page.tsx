@@ -34,6 +34,7 @@ export default function AddDevicePage() {
     user,
     isDemo,
     canCreate,
+    isPersonalVault,
     householdId: permissionsHouseholdId,
     deviceLimit,
     hasUnlimitedDevices,
@@ -430,9 +431,13 @@ export default function AddDevicePage() {
     return (
       <PageShell>
         <PageTitle
-          eyebrow="Viewer Access"
-          title="This household is read-only"
-          description="Viewers can review shared devices, warranties, documents, and other household information, but cannot add or change records."
+          eyebrow="Read-only access"
+          title="You cannot add devices"
+          description={
+            isPersonalVault
+              ? "Your account does not currently have permission to add devices."
+              : "Viewers can review shared devices, warranties, documents, and other household information, but cannot add or change records."
+          }
         />
 
         <PageCard className="text-center">

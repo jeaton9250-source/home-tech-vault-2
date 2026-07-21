@@ -45,6 +45,7 @@ export default function ProfileMenu({
   const {
     planDisplayName,
     roleDisplayName,
+    vaultContextLabel,
     isPlatformAdmin,
     isVerifiedPlatformAdmin,
     canManageBilling,
@@ -160,9 +161,9 @@ export default function ProfileMenu({
             {effectivePlanLabel}
           </Badge>
 
-          {roleDisplayName && (
+          {vaultContextLabel && (
             <Badge variant="accent">
-              {roleDisplayName}
+              {vaultContextLabel}
             </Badge>
           )}
         </div>

@@ -3,6 +3,9 @@ import {
   FEATURE_REQUIREMENTS,
 } from "@/lib/permissions/features";
 import {
+  hasHouseholdViewerRestrictions,
+} from "@/lib/permissions/householdRole";
+import {
   FREE_DEVICE_LIMIT,
   FREE_DOCUMENT_LIMIT,
 } from "@/lib/permissions/plans";
@@ -10,28 +13,10 @@ import {
 import type {
   FeatureKey,
   FeaturePlanRequirement,
-  HouseholdRole,
   PermissionContext,
   UpgradeReasonCode,
   UpgradeReasonOptions,
 } from "@/lib/permissions/types";
-
-export function normalizeHouseholdRole(
-  value: string | null | undefined
-): HouseholdRole {
-  if (
-    value === "admin" ||
-    value === "owner"
-  ) {
-    return "admin";
-  }
-
-  if (value === "member") {
-    return "member";
-  }
-
-  return "viewer";
-}
 
 function meetsPlanRequirement(
   requiredPlan: FeaturePlanRequirement,
@@ -171,7 +156,10 @@ export function resolveUpgradeReason(
 
   if (
     options?.requiresWriteAccess &&
-    context.role === "viewer"
+    hasHouseholdViewerRestrictions({
+      householdId: context.householdId,
+      role: context.role,
+    })
   ) {
     return "viewer_read_only";
   }

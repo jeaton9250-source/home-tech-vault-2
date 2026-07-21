@@ -22,6 +22,7 @@ import {
 import {
   computePermissions,
   normalizeHouseholdRole,
+  normalizeRawHouseholdRole,
 } from "@/lib/permissions/computePermissions";
 
 import {
@@ -95,19 +96,10 @@ const PermissionsContext =
     null
   );
 
-function normalizeRawHouseholdRole(
+function normalizeRawHouseholdRoleValue(
   value: string | null | undefined
-): RawHouseholdRole | null {
-  if (
-    value === "owner" ||
-    value === "admin" ||
-    value === "member" ||
-    value === "viewer"
-  ) {
-    return value;
-  }
-
-  return null;
+) {
+  return normalizeRawHouseholdRole(value);
 }
 
 function normalizeSubscriptionPlan(
@@ -128,7 +120,7 @@ function normalizeSubscriptionPlan(
 }
 
 function clearHouseholdState(setters: {
-  setRole: (role: HouseholdRole) => void;
+  setRole: (role: HouseholdRole | null) => void;
   setRawHouseholdRole: (
     role: RawHouseholdRole | null
   ) => void;
@@ -149,7 +141,7 @@ function clearHouseholdState(setters: {
     name: string | null
   ) => void;
 }) {
-  setters.setRole("viewer");
+  setters.setRole(null);
   setters.setRawHouseholdRole(null);
   setters.setHouseholdId(null);
   setters.setHouseholdOwnerId(null);
@@ -167,7 +159,7 @@ function applyHouseholdAccess(
     { membership: null }
   >,
   setters: {
-    setRole: (role: HouseholdRole) => void;
+    setRole: (role: HouseholdRole | null) => void;
     setRawHouseholdRole: (
       role: RawHouseholdRole | null
     ) => void;
@@ -190,7 +182,7 @@ function applyHouseholdAccess(
   }
 ) {
   const resolvedRawRole =
-    normalizeRawHouseholdRole(
+    normalizeRawHouseholdRoleValue(
       accessData.rawHouseholdRole
     );
 
@@ -258,7 +250,7 @@ function usePermissionsState() {
   } = useSubscription();
 
   const [role, setRole] =
-    useState<HouseholdRole>("viewer");
+    useState<HouseholdRole | null>(null);
 
   const [
     rawHouseholdRole,
@@ -617,6 +609,8 @@ function usePermissionsState() {
         user,
         isDemo: effectiveIsDemo,
         role: effectiveRole,
+        rawHouseholdRole:
+          effectiveRawHouseholdRole,
         householdId:
           permissionHouseholdId,
         plan: effectivePlan,
@@ -641,6 +635,7 @@ function usePermissionsState() {
       user,
       effectiveIsDemo,
       effectiveRole,
+      effectiveRawHouseholdRole,
       permissionHouseholdId,
       effectivePlan,
       effectiveIsPlatformAdmin,
@@ -665,10 +660,18 @@ function usePermissionsState() {
       loadHouseholdContext,
     ]);
 
+  const vaultContextLabel =
+    effectiveIsDemo
+      ? null
+      : permissions.isPersonalVault
+        ? "Personal Vault"
+        : roleDisplayName;
+
   return {
     user,
     isDemo: effectiveIsDemo,
     role: effectiveRole,
+    vaultContextLabel,
     rawHouseholdRole:
       effectiveRawHouseholdRole,
     householdId: realHouseholdId,
@@ -685,8 +688,6 @@ function usePermissionsState() {
     effectivePlan,
     householdPlan,
     planDisplayName,
-    householdRole:
-      effectiveRawHouseholdRole,
     roleDisplayName,
     hasFamilyFeatureAccess,
     hasPremiumFeatureAccess,

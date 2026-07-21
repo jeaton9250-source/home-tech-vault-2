@@ -40,8 +40,10 @@ export default function PlanAccessSummary({
     loading,
     isDemo,
     isPlatformAdmin,
+    isPersonalVault,
     planDisplayName,
     roleDisplayName,
+    vaultContextLabel,
     effectiveStatus,
     billingManagedByHousehold,
     billingOwnerName,
@@ -102,17 +104,26 @@ export default function PlanAccessSummary({
           }
         />
 
-        {showRole && roleDisplayName && (
+        {(showRole &&
+          (vaultContextLabel ||
+            roleDisplayName)) && (
           <SummaryItem
             label={
-              billingManagedByHousehold ||
-              planDisplayName === "Family" ||
-              planDisplayName ===
-                "Complimentary Family"
-                ? "Role"
-                : "Household Role"
+              isPersonalVault
+                ? "Vault"
+                : billingManagedByHousehold ||
+                    planDisplayName ===
+                      "Family" ||
+                    planDisplayName ===
+                      "Complimentary Family"
+                  ? "Role"
+                  : "Household Role"
             }
-            value={roleDisplayName}
+            value={
+              vaultContextLabel ||
+              roleDisplayName ||
+              "—"
+            }
           />
         )}
 
