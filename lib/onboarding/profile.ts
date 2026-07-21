@@ -1,9 +1,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import {
+  clearLocalOnboardingState,
   getErrorMessage,
   isOnboardingSchemaError,
-  readLocalOnboardingState,
+  type LocalOnboardingState,
   writeLocalOnboardingState,
 } from "@/lib/onboarding/clientStorage";
 
@@ -14,37 +15,71 @@ async function upsertOnboardingProfile(
   userId: string,
   patch: Record<string, unknown>
 ) {
-  const { error } = await supabase
+  const localPatch =
+    patch as Partial<LocalOnboardingState>;
+
+  const { data, error } = await supabase
     .from("profiles")
-    .upsert(
-      {
-        id: userId,
-        ...patch,
-      },
-      {
-        onConflict: "id",
-      }
-    );
+    .update(patch)
+    .eq("id", userId)
+    .select("id")
+    .maybeSingle();
 
   if (error) {
     if (isOnboardingSchemaError(error)) {
       writeLocalOnboardingState(
         userId,
-        patch as {
-          onboarding_completed_at?:
-            | string
-            | null;
-          onboarding_step?: OnboardingStep | null;
-          onboarding_skipped_at?:
-            | string
-            | null;
-        }
+        localPatch
       );
       return;
     }
 
     throw error;
   }
+
+  if (!data) {
+    const { error: upsertError } =
+      await supabase
+        .from("profiles")
+        .upsert(
+          {
+            id: userId,
+            ...patch,
+          },
+          {
+            onConflict: "id",
+          }
+        );
+
+    if (upsertError) {
+      if (
+        isOnboardingSchemaError(
+          upsertError
+        )
+      ) {
+        writeLocalOnboardingState(
+          userId,
+          localPatch
+        );
+        return;
+      }
+
+      writeLocalOnboardingState(
+        userId,
+        localPatch
+      );
+      console.error(
+        "Unable to persist onboarding profile:",
+        upsertError
+      );
+      return;
+    }
+  }
+
+  writeLocalOnboardingState(
+    userId,
+    localPatch
+  );
 }
 
 export async function saveOnboardingStep(
@@ -97,6 +132,8 @@ export async function restartOnboardingProfile(
   supabase: SupabaseClient,
   userId: string
 ) {
+  clearLocalOnboardingState(userId);
+
   await upsertOnboardingProfile(
     supabase,
     userId,

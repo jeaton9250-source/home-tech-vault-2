@@ -220,11 +220,25 @@ function OnboardingFlow() {
           );
 
         if (
-          profile?.onboarding_completed_at &&
+          (profile?.onboarding_completed_at ||
+            profile?.onboarding_skipped_at) &&
           !restart
         ) {
           router.replace("/dashboard");
           return;
+        }
+
+        if (
+          !restart &&
+          !profile?.onboarding_step &&
+          !profile?.onboarding_completed_at &&
+          !profile?.onboarding_skipped_at
+        ) {
+          await saveOnboardingStep(
+            supabase,
+            userId,
+            "welcome"
+          );
         }
 
         const dataSnapshot =

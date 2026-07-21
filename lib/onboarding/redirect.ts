@@ -25,16 +25,38 @@ export function shouldBypassOnboardingRedirect(
   );
 }
 
+export function hasSeenOnboarding(
+  profile: Pick<
+    OnboardingProfileState,
+    | "onboarding_completed_at"
+    | "onboarding_skipped_at"
+    | "onboarding_step"
+  > | null
+): boolean {
+  if (!profile) {
+    return false;
+  }
+
+  if (profile.onboarding_completed_at) {
+    return true;
+  }
+
+  if (profile.onboarding_skipped_at) {
+    return true;
+  }
+
+  return profile.onboarding_step !== null;
+}
+
 export function isOnboardingFinished(
   profile: Pick<
     OnboardingProfileState,
     | "onboarding_completed_at"
     | "onboarding_skipped_at"
+    | "onboarding_step"
   > | null
 ): boolean {
-  return Boolean(
-    profile?.onboarding_completed_at
-  );
+  return hasSeenOnboarding(profile);
 }
 
 export function shouldShowOnboarding(
@@ -42,21 +64,56 @@ export function shouldShowOnboarding(
     OnboardingProfileState,
     | "onboarding_completed_at"
     | "onboarding_skipped_at"
+    | "onboarding_step"
   > | null
 ): boolean {
   if (!profile) {
     return true;
   }
 
-  if (profile.onboarding_completed_at) {
-    return false;
+  return !hasSeenOnboarding(profile);
+}
+
+function mergeWithLocalOnboardingState(
+  userId: string,
+  profile: OnboardingProfileState | null
+): OnboardingProfileState | null {
+  const localState =
+    readLocalOnboardingState(userId);
+
+  if (!localState) {
+    return profile;
   }
 
-  if (profile.onboarding_skipped_at) {
-    return false;
+  const localStep = isOnboardingStep(
+    localState.onboarding_step
+  )
+    ? localState.onboarding_step
+    : null;
+
+  if (!profile) {
+    return {
+      onboarding_completed_at:
+        localState.onboarding_completed_at,
+      onboarding_step: localStep,
+      onboarding_skipped_at:
+        localState.onboarding_skipped_at,
+      full_name: null,
+      household_name: null,
+    };
   }
 
-  return true;
+  return {
+    ...profile,
+    onboarding_completed_at:
+      profile.onboarding_completed_at ??
+      localState.onboarding_completed_at,
+    onboarding_skipped_at:
+      profile.onboarding_skipped_at ??
+      localState.onboarding_skipped_at,
+    onboarding_step:
+      profile.onboarding_step ?? localStep,
+  };
 }
 
 export async function loadOnboardingProfile(
@@ -99,27 +156,36 @@ export async function loadOnboardingProfile(
       "Unable to load onboarding profile:",
       error
     );
-    return null;
+
+    return mergeWithLocalOnboardingState(
+      userId,
+      null
+    );
   }
 
-  if (!data) {
-    return null;
-  }
+  const profile = data
+    ? {
+        onboarding_completed_at:
+          data.onboarding_completed_at ??
+          null,
+        onboarding_step: isOnboardingStep(
+          data.onboarding_step
+        )
+          ? data.onboarding_step
+          : null,
+        onboarding_skipped_at:
+          data.onboarding_skipped_at ??
+          null,
+        full_name: data.full_name ?? null,
+        household_name:
+          data.household_name ?? null,
+      }
+    : null;
 
-  return {
-    onboarding_completed_at:
-      data.onboarding_completed_at ?? null,
-    onboarding_step: isOnboardingStep(
-      data.onboarding_step
-    )
-      ? data.onboarding_step
-      : null,
-    onboarding_skipped_at:
-      data.onboarding_skipped_at ?? null,
-    full_name: data.full_name ?? null,
-    household_name:
-      data.household_name ?? null,
-  };
+  return mergeWithLocalOnboardingState(
+    userId,
+    profile
+  );
 }
 
 export async function resolvePostAuthRedirect(
@@ -144,16 +210,7 @@ export async function resolvePostAuthRedirect(
     return "/onboarding";
   }
 
-  if (
-    isOnboardingFinished(profile)
-  ) {
-    return path;
-  }
-
-  if (
-    profile?.onboarding_skipped_at &&
-    path !== "/onboarding"
-  ) {
+  if (!shouldShowOnboarding(profile)) {
     return path;
   }
 
