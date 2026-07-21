@@ -6,6 +6,7 @@ import {
   useEffect,
   useState,
 } from "react";
+import { useSearchParams } from "next/navigation";
 
 import {
   Copy,
@@ -37,6 +38,7 @@ type UsersResponse = {
 };
 
 export default function UsersAdminClient() {
+  const searchParams = useSearchParams();
   const [users, setUsers] = useState<
     AdminUserSummary[]
   >([]);
@@ -46,6 +48,8 @@ export default function UsersAdminClient() {
   const [detailLoading, setDetailLoading] =
     useState(false);
   const [error, setError] = useState("");
+  const [detailError, setDetailError] =
+    useState("");
   const [search, setSearch] = useState("");
   const [plan, setPlan] = useState("");
   const [adminFilter, setAdminFilter] =
@@ -127,6 +131,7 @@ export default function UsersAdminClient() {
       setDetailLoading(true);
       setSelectedId(userId);
       setAdminMessage("");
+      setDetailError("");
 
       const response = await fetch(
         `/api/admin/users/${userId}`
@@ -145,18 +150,35 @@ export default function UsersAdminClient() {
         );
       }
 
-      setDetail(payload.user ?? null);
-    } catch (detailError) {
+      if (!payload.user) {
+        throw new Error(
+          "Unable to load user details."
+        );
+      }
+
+      setDetail(payload.user);
+    } catch (loadDetailError) {
       setDetail(null);
-      setError(
-        detailError instanceof Error
-          ? detailError.message
+      setDetailError(
+        loadDetailError instanceof Error
+          ? loadDetailError.message
           : "Unable to load user details."
       );
     } finally {
       setDetailLoading(false);
     }
   }
+
+  useEffect(() => {
+    const selectedFromUrl =
+      searchParams.get("selected");
+
+    if (!selectedFromUrl) {
+      return;
+    }
+
+    void loadDetail(selectedFromUrl);
+  }, [searchParams]);
 
   async function togglePlatformAdmin(
     nextValue: boolean
@@ -408,6 +430,11 @@ export default function UsersAdminClient() {
               />
               Loading details...
             </div>
+          ) : detailError ? (
+            <AdminEmptyState
+              title="User unavailable"
+              description={detailError}
+            />
           ) : detail ? (
             <div className="space-y-4 text-sm">
               <DetailRow

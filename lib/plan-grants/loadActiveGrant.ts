@@ -6,7 +6,21 @@ import {
   isGrantProvidingAccess,
   mapGrantRow,
 } from "@/lib/plan-grants/grantAccess";
+import { isMissingPlanGrantsTableError } from "@/lib/plan-grants/grantErrors";
 import type { ActivePlanGrant } from "@/lib/plan-grants/types";
+
+function handlePlanGrantQueryError(
+  error: unknown
+): null {
+  if (isMissingPlanGrantsTableError(error)) {
+    console.warn(
+      "platform_plan_grants unavailable; treating as no grant."
+    );
+    return null;
+  }
+
+  throw error;
+}
 
 export async function loadActivePlanGrantForUser(
   client: SupabaseClient,
@@ -26,7 +40,7 @@ export async function loadActivePlanGrantForUser(
     .maybeSingle();
 
   if (error) {
-    throw error;
+    return handlePlanGrantQueryError(error);
   }
 
   if (!data) {
@@ -59,7 +73,7 @@ export async function loadLatestPlanGrantForUser(
     .maybeSingle();
 
   if (error) {
-    throw error;
+    return handlePlanGrantQueryError(error);
   }
 
   return data ? mapGrantRow(data) : null;

@@ -413,27 +413,70 @@ export async function loadAdminUserDetail(
     subscriptionResult.data?.plan
   ) as "free" | "pro" | "family";
 
-  const [
-    planAccessContext,
-    latestGrant,
-  ] = await Promise.all([
-    buildServerPlanAccessContext(
-      admin,
-      userId
+  let effective = resolveEffectivePlan({
+    isDemo: false,
+    isPlatformAdmin:
+      profile.is_admin === true,
+    userId,
+    personalPlan,
+    personalStatus:
+      subscriptionResult.data?.status?.trim().toLowerCase() ||
+      "inactive",
+    personalCurrentPeriodEnd:
+      subscriptionResult.data
+        ?.current_period_end ?? null,
+    hasPersonalStripeCustomer: Boolean(
+      subscriptionResult.data
+        ?.stripe_customer_id
     ),
-    loadLatestPlanGrantForUser(
-      admin,
-      userId
-    ),
-  ]);
-
-  const effective =
-    planAccessContext.result;
-
-  const inheritedOnly = resolveEffectivePlan({
-    ...planAccessContext.input,
+    householdId:
+      membershipResult.data?.household_id ??
+      null,
+    householdOwnerId,
+    householdOwnerPlan,
+    householdOwnerStatus,
+    householdOwnerCurrentPeriodEnd,
+    householdOwnerName,
+    rawHouseholdRole:
+      (membershipResult.data?.role as
+        | "owner"
+        | "admin"
+        | "member"
+        | "viewer"
+        | null) ?? null,
     adminGrant: null,
   });
+
+  let inheritedOnly = effective;
+  let latestGrant: Awaited<
+    ReturnType<typeof loadLatestPlanGrantForUser>
+  > = null;
+
+  try {
+    const [planAccessContext, grant] =
+      await Promise.all([
+        buildServerPlanAccessContext(
+          admin,
+          userId
+        ),
+        loadLatestPlanGrantForUser(
+          admin,
+          userId
+        ),
+      ]);
+
+    latestGrant = grant;
+    effective = planAccessContext.result;
+    inheritedOnly = resolveEffectivePlan({
+      ...planAccessContext.input,
+      adminGrant: null,
+    });
+  } catch (planAccessError) {
+    console.error(
+      "Admin user plan access lookup failed; falling back without grants:",
+      planAccessError
+    );
+  }
 
   const grantDisplayStatus = latestGrant
     ? isGrantLogicallyExpired(latestGrant)

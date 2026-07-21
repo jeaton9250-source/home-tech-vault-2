@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+
 import UsersAdminClient from "@/components/admin/users/UsersAdminClient";
 
 export const metadata = {
@@ -5,5 +7,15 @@ export const metadata = {
 };
 
 export default function AdminUsersPage() {
-  return <UsersAdminClient />;
+  return (
+    <Suspense
+      fallback={
+        <p className="text-sm text-text-secondary">
+          Loading users...
+        </p>
+      }
+    >
+      <UsersAdminClient />
+    </Suspense>
+  );
 }
