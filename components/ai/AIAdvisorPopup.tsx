@@ -4,7 +4,6 @@ import {
   Bot,
   FileQuestion,
   Loader2,
-  Maximize2,
   MessageCircle,
   Send,
   X,
@@ -16,7 +15,6 @@ import {
   useRef,
   useState,
 } from "react";
-import { useRouter } from "next/navigation";
 
 import { supabase } from "@/lib/supabase";
 import { useAIAdvisor } from "@/hooks/useAIAdvisor";
@@ -69,8 +67,6 @@ const welcomeMessage: ChatMessage = {
 };
 
 export default function AIAdvisorPopup() {
-  const router = useRouter();
-
   const {
     user,
     isDemo,
@@ -946,18 +942,6 @@ Try asking:
                 <FileQuestion
                   size={18}
                 />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  closePopup();
-                  router.push("/ai");
-                }}
-                aria-label="Open full AI page"
-                className="rounded-xl p-2 text-text-secondary hover:bg-white/10 hover:text-white"
-              >
-                <Maximize2 size={18} />
               </button>
 
               <button

@@ -18,7 +18,6 @@ export const NAV_GROUP_ROUTE_PREFIXES: Record<
   insights: [
     "/reports",
     "/insights",
-    "/ai",
     "/audit",
     "/activity",
   ],

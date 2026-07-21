@@ -148,14 +148,6 @@ export const PRIMARY_NAV_GROUPS: NavMenuGroup[] =
           feature: "insights",
         },
         {
-          label: "AI Advisor",
-          href: "/ai",
-          icon: Sparkles,
-          description:
-            "Intelligent home guidance",
-          feature: "aiAdvisor",
-        },
-        {
           label: "Audit Log",
           href: "/audit",
           icon: Shield,
