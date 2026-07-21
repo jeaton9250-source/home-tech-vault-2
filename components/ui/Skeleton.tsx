@@ -62,21 +62,18 @@ export function SkeletonCard() {
 export function DashboardSkeleton() {
   return (
     <div className="space-y-8 md:space-y-10">
-      <div className="htv-command-hero p-8 md:p-10">
-        <div className="flex flex-col gap-8 xl:flex-row xl:items-center xl:justify-between">
-          <div className="max-w-xl flex-1">
-            <Skeleton className="h-3 w-36" />
-            <Skeleton className="mt-4 h-12 w-80 max-w-full" />
-            <Skeleton className="mt-3 h-5 w-48" />
-            <SkeletonText
-              lines={2}
-              className="mt-5"
-            />
-          </div>
-
-          <Skeleton className="mx-auto h-[280px] w-[280px] rounded-[28px] xl:mx-0" />
-        </div>
+      <div className="space-y-3">
+        <Skeleton className="h-10 w-72 max-w-full" />
+        <Skeleton className="h-5 w-80 max-w-full" />
+        <Skeleton className="h-4 w-40" />
       </div>
+
+      <div className="grid gap-6 xl:grid-cols-[1.35fr_0.95fr]">
+        <SkeletonCard />
+        <SkeletonCard />
+      </div>
+
+      <SkeletonCard />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {Array.from({ length: 6 }).map(
@@ -85,15 +82,6 @@ export function DashboardSkeleton() {
           )
         )}
       </div>
-
-      <SkeletonCard />
-
-      <div className="grid gap-6 xl:grid-cols-2">
-        <SkeletonCard />
-        <SkeletonCard />
-      </div>
-
-      <SkeletonCard />
 
       <SkeletonCard />
     </div>

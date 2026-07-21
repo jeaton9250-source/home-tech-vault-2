@@ -2,6 +2,12 @@ import type { User } from "@supabase/supabase-js";
 
 import { applyHouseholdScope } from "@/lib/data/householdScope";
 import {
+  calculateHomeHealth,
+  type HomeHealthInput,
+  type HomeHealthMaintenanceTask,
+  type HomeHealthResult,
+} from "@/lib/home-health";
+import {
   calculateVaultScore,
   type VaultDevice,
   type VaultScoreResult,
@@ -31,6 +37,7 @@ export type DashboardMetrics = {
   protectedValue: number;
   networkConfigured: boolean;
   vaultScore: VaultScoreResult;
+  homeHealth: HomeHealthResult;
 };
 
 const defaultVaultScore: VaultScoreResult = {
@@ -42,6 +49,12 @@ const defaultVaultScore: VaultScoreResult = {
   label: "Get Started",
   recommendations: [],
 };
+
+function getRecentActivityCutoff() {
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - 30);
+  return cutoff.toISOString();
+}
 
 export async function loadDashboardMetrics(
   user: User,
@@ -107,6 +120,8 @@ export async function loadDashboardMetrics(
     imagesResult,
     membersResult,
     networkCountResult,
+    subscriptionsCountResult,
+    recentActivityResult,
   ] = await Promise.all([
     applyHouseholdScope(
       supabase
@@ -132,7 +147,9 @@ export async function loadDashboardMetrics(
     applyHouseholdScope(
       supabase
         .from("maintenance_tasks")
-        .select("device_id"),
+        .select(
+          "id, device_id, title, due_date, completed"
+        ),
       householdId,
       user.id
     ),
@@ -170,6 +187,34 @@ export async function loadDashboardMetrics(
       householdId,
       user.id
     ),
+
+    applyHouseholdScope(
+      supabase
+        .from("subscriptions")
+        .select("id", {
+          count: "exact",
+          head: true,
+        }),
+      householdId,
+      user.id
+    ),
+
+    deviceIds.length > 0
+      ? supabase
+          .from("device_events")
+          .select("id", {
+            count: "exact",
+            head: true,
+          })
+          .in("device_id", deviceIds)
+          .gte(
+            "event_date",
+            getRecentActivityCutoff()
+          )
+      : Promise.resolve({
+          count: 0,
+          error: null,
+        }),
   ]);
 
   const rooms = new Set(
@@ -213,15 +258,66 @@ export async function loadDashboardMetrics(
     ).map((document) => document.device_id)
   );
 
+  const maintenanceTasks =
+    (maintenanceResult.data ??
+      []) as HomeHealthMaintenanceTask[];
+
   const deviceIdsWithMaintenance = new Set(
-    (
-      (maintenanceResult.data ?? []) as {
-        device_id: string;
-      }[]
-    ).map(
-      (maintenance) => maintenance.device_id
-    )
+    maintenanceTasks
+      .map((task) => task.device_id)
+      .filter(
+        (deviceId): deviceId is string =>
+          Boolean(deviceId)
+      )
   );
+
+  const documentCount =
+    documentsCountResult.error
+      ? 0
+      : documentsCountResult.count || 0;
+
+  const networkConfigured =
+    networkCountResult.error
+      ? false
+      : (networkCountResult.count ?? 0) > 0;
+
+  const subscriptionCount =
+    subscriptionsCountResult.error
+      ? 0
+      : subscriptionsCountResult.count || 0;
+
+  const hasRecentActivity =
+    !recentActivityResult.error &&
+    (recentActivityResult.count ?? 0) > 0;
+
+  const familyMemberCount =
+    membersResult.error
+      ? 1
+      : membersResult.count || 1;
+
+  const homeHealthInput: HomeHealthInput = {
+    devices: deviceRows.map((device) => ({
+      id: device.id,
+      device_name:
+        device.device_name?.trim() ||
+        "Unnamed Device",
+      warranty_date: device.warranty_date,
+      serial_number: device.serial_number,
+      purchase_date: device.purchase_date,
+    })),
+    documentCount,
+    subscriptionCount,
+    networkConfigured,
+    deviceIdsWithDocuments,
+    deviceIdsWithPhotos,
+    deviceIdsWithMaintenance,
+    maintenanceTasks,
+    hasRecentActivity,
+    householdName,
+    familyMemberCount,
+    profileHouseholdName:
+      profile?.household_name ?? null,
+  };
 
   const vaultScore =
     deviceRows.length === 0
@@ -237,22 +333,18 @@ export async function loadDashboardMetrics(
     firstName,
     householdName,
     deviceCount: deviceRows.length,
-    documentCount: documentsCountResult.error
-      ? 0
-      : documentsCountResult.count || 0,
+    documentCount,
     roomCount: rooms.size,
-    familyMemberCount: membersResult.error
-      ? 1
-      : membersResult.count || 1,
+    familyMemberCount,
     protectedValue: deviceRows.reduce(
       (total, device) =>
         total +
         Number(device.purchase_price || 0),
       0
     ),
-    networkConfigured: networkCountResult.error
-      ? false
-      : (networkCountResult.count ?? 0) > 0,
+    networkConfigured,
     vaultScore,
+    homeHealth:
+      calculateHomeHealth(homeHealthInput),
   };
 }
