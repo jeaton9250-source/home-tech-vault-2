@@ -45,7 +45,9 @@ export default function AuthGuard({
     }
 
     if (!user && !isDemo) {
-      router.replace("/login");
+      router.replace(
+        `/login?redirect=${encodeURIComponent(normalizedPath)}`
+      );
     }
   }, [
     user,

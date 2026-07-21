@@ -4,10 +4,14 @@ import {
   useEffect,
   useState,
   type ComponentType,
+  type ReactNode,
 } from "react";
+
+import { useRouter } from "next/navigation";
 
 import {
   ArrowUpRight,
+  Compass,
   Crown,
   LogOut,
   Mail,
@@ -18,6 +22,7 @@ import {
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
+import { restartOnboardingProfile } from "@/lib/onboarding";
 import { usePermissions } from "@/hooks/usePermissions";
 import {
   formatSubscriptionStatus,
@@ -30,7 +35,6 @@ import PageCard from "@/components/ui/PageCard";
 import PageHero from "@/components/ui/PageHero";
 import IconWell from "@/components/ui/IconWell";
 import Button from "@/components/ui/Button";
-import type { ReactNode } from "react";
 
 type SettingsIcon = ComponentType<{
   size?: number;
@@ -38,11 +42,18 @@ type SettingsIcon = ComponentType<{
 }>;
 
 export default function SettingsPage() {
+  const router = useRouter();
+
   const [email, setEmail] =
     useState("");
 
   const [signingOut, setSigningOut] =
     useState(false);
+
+  const [
+    restartingOnboarding,
+    setRestartingOnboarding,
+  ] = useState(false);
 
   const {
     user,
@@ -92,6 +103,38 @@ export default function SettingsPage() {
       );
     } finally {
       setSigningOut(false);
+    }
+  }
+
+  async function handleRestartOnboarding() {
+    if (!user) {
+      return;
+    }
+
+    try {
+      setRestartingOnboarding(true);
+
+      await restartOnboardingProfile(
+        supabase,
+        user.id
+      );
+
+      router.push(
+        "/onboarding?restart=1"
+      );
+    } catch (error) {
+      console.error(
+        "Unable to restart onboarding:",
+        error
+      );
+
+      window.alert(
+        error instanceof Error
+          ? error.message
+          : "Unable to restart onboarding."
+      );
+    } finally {
+      setRestartingOnboarding(false);
     }
   }
 
@@ -367,6 +410,24 @@ export default function SettingsPage() {
             and date preferences can be
             added in a future update.
           </p>
+
+          <button
+            type="button"
+            onClick={() =>
+              void handleRestartOnboarding()
+            }
+            disabled={
+              restartingOnboarding ||
+              permissionsLoading ||
+              !user
+            }
+            className="mt-5 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl border border-border-subtle bg-surface-card px-5 text-sm font-semibold text-text-primary transition hover:bg-surface-sunken disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Compass size={17} />
+            {restartingOnboarding
+              ? "Restarting..."
+              : "Restart onboarding"}
+          </button>
         </SettingsSection>
       </section>
 

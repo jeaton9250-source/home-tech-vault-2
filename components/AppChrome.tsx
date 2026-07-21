@@ -14,6 +14,12 @@ import { NavMenuProvider } from "@/hooks/useNavMenu";
 import { PermissionsProvider } from "@/hooks/usePermissions";
 import { isChromeFreeRoute } from "@/lib/isChromeFreeRoute";
 
+function isOnboardingRoute(
+  pathname: string | null | undefined
+): boolean {
+  return pathname === "/onboarding";
+}
+
 type AppChromeProps = {
   children: ReactNode;
 };
@@ -22,6 +28,21 @@ export default function AppChrome({
   children,
 }: AppChromeProps) {
   const pathname = usePathname();
+
+  if (isOnboardingRoute(pathname)) {
+    return (
+      <AuthGuard>
+        <DevelopmentAccessProvider>
+          <PermissionsProvider>
+            <div className="min-h-screen bg-surface-base">
+              {children}
+            </div>
+            <AccessTestingPanel />
+          </PermissionsProvider>
+        </DevelopmentAccessProvider>
+      </AuthGuard>
+    );
+  }
 
   if (isChromeFreeRoute(pathname)) {
     return (

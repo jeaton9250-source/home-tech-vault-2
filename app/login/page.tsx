@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
+import { resolvePostAuthRedirect } from "@/lib/onboarding/redirect";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -121,9 +122,14 @@ export default function LoginPage() {
         );
       }
 
-      router.replace(
-        redirectPath
-      );
+      const destination =
+        await resolvePostAuthRedirect(
+          supabase,
+          data.user.id,
+          redirectPath
+        );
+
+      router.replace(destination);
 
       router.refresh();
     } catch (error) {
