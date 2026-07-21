@@ -22,7 +22,6 @@ import type { LandingSectionId } from "@/lib/marketing/landingNav";
 import {
   landingMotionRise,
   landingSectionClass,
-  marketingPrimaryButtonClass,
   marketingSecondaryButtonClass,
 } from "@/lib/marketing/landingStyles";
 import { MARKETING_ROUTES } from "@/lib/marketing/routes";
@@ -132,7 +131,6 @@ export default function LandingPage({
               <Button
                 href={primaryHref}
                 size="lg"
-                className={marketingPrimaryButtonClass}
               >
                 {primaryLabel}
                 <ArrowRight size={16} aria-hidden />
@@ -192,10 +190,7 @@ export default function LandingPage({
           <Button
             href={primaryHref}
             size="lg"
-            className={cn(
-              "mt-9",
-              marketingPrimaryButtonClass
-            )}
+            className="mt-9"
           >
             {finalCtaLabel}
             <ArrowRight size={16} aria-hidden />

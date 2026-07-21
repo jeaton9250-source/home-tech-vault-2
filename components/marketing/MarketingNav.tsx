@@ -12,10 +12,7 @@ import Button from "@/components/ui/Button";
 import { useDemoMode } from "@/hooks/useDemoMode";
 import type { PublicFoundingProgramSummary } from "@/lib/founding-members/types";
 import { LANDING_NAV_LINKS } from "@/lib/marketing/landingNav";
-import {
-  marketingPrimaryButtonClass,
-  marketingSecondaryButtonClass,
-} from "@/lib/marketing/landingStyles";
+import { marketingSecondaryButtonClass } from "@/lib/marketing/landingStyles";
 import { MARKETING_ROUTES } from "@/lib/marketing/routes";
 import { cn } from "@/lib/design-system/cn";
 
@@ -98,15 +95,7 @@ export default function MarketingNav({
             </Link>
           )}
 
-          <Button
-            href={startHref}
-            size="sm"
-            className={
-              minimal
-                ? marketingPrimaryButtonClass
-                : undefined
-            }
-          >
+          <Button href={startHref} size="sm">
             {startLabel}
           </Button>
         </div>
@@ -175,11 +164,6 @@ export default function MarketingNav({
               <Button
                 href={startHref}
                 fullWidth
-                className={
-                  minimal
-                    ? marketingPrimaryButtonClass
-                    : undefined
-                }
                 onClick={() =>
                   setMobileOpen(false)
                 }

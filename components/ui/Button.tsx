@@ -57,7 +57,7 @@ const variantClasses: Record<
   string
 > = {
   primary:
-    "border border-interaction bg-interaction text-surface-card shadow-sm hover:border-interaction-hover hover:bg-interaction-hover hover:shadow-md active:scale-[0.98] focus-visible:ring-interaction/20",
+    "border border-charcoal bg-charcoal text-surface-card shadow-sm hover:-translate-y-px hover:border-charcoal-hover hover:bg-charcoal-hover hover:shadow-md active:translate-y-0 active:scale-[0.98] focus-visible:ring-interaction/20",
 
   secondary:
     "border border-border-subtle bg-surface-card text-text-primary shadow-sm hover:border-border-strong hover:bg-surface-hover hover:shadow-md active:scale-[0.98] focus-visible:ring-interaction/15",

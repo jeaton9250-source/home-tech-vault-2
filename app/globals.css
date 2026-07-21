@@ -23,11 +23,11 @@
   --color-border-strong: #d6d0c4;
 
   /* Charcoal — primary actions */
-  --color-charcoal: #1c1917;
-  --color-charcoal-hover: #292524;
-  --color-charcoal-soft: #44403c;
+  --color-charcoal: #111827;
+  --color-charcoal-hover: #1f2937;
+  --color-charcoal-soft: #374151;
 
-  /* Interaction — links, focus, progress, selected (never large surfaces) */
+  /* Interaction — links, focus, progress, selected (never primary buttons) */
   --color-accent: #4a6fa5;
   --color-accent-hover: #3d5d8c;
   --color-accent-soft: #e8eef4;

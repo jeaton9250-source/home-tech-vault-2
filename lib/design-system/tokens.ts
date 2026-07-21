@@ -15,10 +15,10 @@ export const colors = {
   borderSubtle: "#E7E2DA",
   borderStrong: "#D6D0C4",
 
-  /** Charcoal — primary actions, never large fills except buttons */
-  charcoal: "#1C1917",
-  charcoalHover: "#292524",
-  charcoalSoft: "#44403C",
+  /** Charcoal — primary actions (buttons, key CTAs) */
+  charcoal: "#111827",
+  charcoalHover: "#1F2937",
+  charcoalSoft: "#374151",
 
   /** Interaction blue — links, focus, progress, selected controls only */
   interaction: "#4A6FA5",
