@@ -21,6 +21,7 @@ import AuthLayout from "@/components/auth/AuthLayout";
 import PasswordInput from "@/components/auth/PasswordInput";
 import { authInputClassName } from "@/components/auth/authStyles";
 import Button from "@/components/ui/Button";
+import { brand } from "@/lib/design-system/tokens";
 import { supabase } from "@/lib/supabase";
 import { resolvePostAuthRedirect } from "@/lib/onboarding/redirect";
 
@@ -204,8 +205,8 @@ export default function SignupPage() {
   return (
     <AuthLayout
       overline="Get started"
-      headline="Create your Home Tech Vault"
-      description="Set up one secure place for your household devices, warranties, documents, subscriptions, and maintenance records."
+      headline={brand.identity}
+      description="Create one secure place for your household devices, warranties, documents, subscriptions, and maintenance records."
       benefits={[
         "Organize every household device",
         "Track warranties and important documents",
@@ -215,26 +216,10 @@ export default function SignupPage() {
       brandHref="/"
     >
       <AuthCard
-        overline="Get started"
-        title="Create your Home Tech Vault"
-        description="Set up one secure place for your household devices, warranties, documents, subscriptions, and maintenance records."
+        overline="Create account"
+        title="Create your vault"
+        description="Start free in minutes. No credit card required."
       >
-        <ul className="mb-6 space-y-2.5">
-          {[
-            "Organize every household device",
-            "Track warranties and important documents",
-            "Share access with trusted household members",
-          ].map((benefit) => (
-            <li
-              key={benefit}
-              className="flex items-start gap-2.5 text-sm leading-6 text-text-secondary"
-            >
-              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-interaction" />
-              {benefit}
-            </li>
-          ))}
-        </ul>
-
         {errorMessage ? (
           <AuthAlert
             variant="error"

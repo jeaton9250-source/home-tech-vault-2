@@ -639,7 +639,7 @@ export default function DevicesPage() {
       />
 
       {errorMessage && (
-        <PageCard className="border-red-200 bg-red-50 p-5 text-red-700">
+        <PageCard className="border-danger/30 bg-danger-soft text-danger">
           {errorMessage}
         </PageCard>
       )}
@@ -1016,7 +1016,7 @@ function ModernDeviceCard({
         "/devices/" +
         device.id
       }
-      className="group overflow-hidden rounded-[var(--radius-card)] border border-border-subtle bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#D7C79F] hover:shadow-lg"
+      className="group overflow-hidden rounded-[var(--radius-card)] border border-border-subtle bg-surface-card shadow-[var(--shadow-sm)] transition duration-300 hover:-translate-y-1 hover:border-warning/40 hover:shadow-[var(--shadow-md)]"
     >
       <div className="relative">
         <DeviceImageDisplay
@@ -1164,7 +1164,7 @@ function getWarrantyStatus(
     return {
       label: "No warranty",
       className:
-        "bg-neutral-100 text-text-secondary",
+        "bg-surface-sunken text-text-secondary",
     };
   }
 
@@ -1180,7 +1180,7 @@ function getWarrantyStatus(
     return {
       label: "Warranty unknown",
       className:
-        "bg-neutral-100 text-text-secondary",
+        "bg-surface-sunken text-text-secondary",
     };
   }
 
@@ -1194,7 +1194,7 @@ function getWarrantyStatus(
     return {
       label: "Warranty expired",
       className:
-        "bg-red-50 text-red-700",
+        "bg-danger-soft text-danger",
     };
   }
 
@@ -1204,14 +1204,14 @@ function getWarrantyStatus(
         String(daysRemaining) +
         " days left",
       className:
-        "bg-amber-50 text-amber-700",
+        "bg-warning-soft text-warning",
     };
   }
 
   return {
     label: "Warranty active",
     className:
-      "bg-emerald-50 text-emerald-700",
+      "bg-home-health-soft text-home-health",
   };
 }
 

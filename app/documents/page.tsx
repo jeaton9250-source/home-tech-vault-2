@@ -39,6 +39,7 @@ import PageShell from "@/components/ui/PageShell";
 import PageCard from "@/components/ui/PageCard";
 import PageHero from "@/components/ui/PageHero";
 import Button from "@/components/ui/Button";
+import EmptyState from "@/components/ui/EmptyState";
 
 import {
   PageAction,
@@ -573,28 +574,20 @@ export default function DocumentsPage() {
           )}
         </section>
       ) : documents.length > 0 ? (
-        <PageCard className="py-14 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
-            <Search size={28} />
-          </div>
-
-          <h2 className="mt-5 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
-            No matching documents
-          </h2>
-
-          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-text-secondary">
-            Try a different search
-            term or document type.
-          </p>
-
+        <EmptyState
+          icon={Search}
+          title="No matching documents"
+          description="Try a different search term or document type."
+          section="digitalVault"
+        >
           <Button
             variant="secondary"
             className="mt-6"
             onClick={clearFilters}
           >
-            Clear Filters
+            Clear filters
           </Button>
-        </PageCard>
+        </EmptyState>
       ) : (
         <PermissionEmptyState
           icon={FileText}

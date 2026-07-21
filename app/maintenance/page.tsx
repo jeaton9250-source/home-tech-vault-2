@@ -39,6 +39,7 @@ import PageShell from "@/components/ui/PageShell";
 import PageCard from "@/components/ui/PageCard";
 import PageHero from "@/components/ui/PageHero";
 import Button from "@/components/ui/Button";
+import EmptyState from "@/components/ui/EmptyState";
 
 import {
   PageAction,
@@ -841,29 +842,21 @@ export default function MaintenancePage() {
           )}
         </section>
       ) : (
-        <PageCard className="py-14 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
-            <Search size={28} />
-          </div>
-
-          <h2 className="mt-5 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
-            No matching tasks
-          </h2>
-
-          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-text-secondary">
-            Try changing your search
-            or maintenance status.
-          </p>
-
+        <EmptyState
+          icon={Search}
+          title="No matching tasks"
+          description="Try changing your search or maintenance status."
+          section="homeHealth"
+        >
           <Button
             type="button"
             variant="secondary"
             className="mt-6"
             onClick={clearFilters}
           >
-            Clear Filters
+            Clear filters
           </Button>
-        </PageCard>
+        </EmptyState>
       )}
     </PageShell>
   );

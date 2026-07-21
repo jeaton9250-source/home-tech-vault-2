@@ -1458,9 +1458,9 @@ export default function DevicePage() {
       )}
 
       {canDelete && (
-        <PageCard className="border-red-100 p-6 md:p-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-red-600">
-            Danger Zone
+        <PageCard className="border-danger/20 bg-danger-soft/30 p-6 md:p-8">
+          <p className="text-overline text-danger">
+            Danger zone
           </p>
 
           <div className="mt-4 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
@@ -1470,38 +1470,38 @@ export default function DevicePage() {
               </h2>
 
               <p className="mt-2 max-w-2xl text-sm leading-6 text-text-secondary">
-                This permanently removes
-                the device and its
-                associated photos and
-                records.
+                This permanently removes the device and its
+                associated photos and records.
               </p>
             </div>
 
-            <button
+            <Button
               type="button"
+              variant="danger"
               onClick={() =>
                 void deleteDevice()
               }
               disabled={
                 deletingDevice
               }
-              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl border border-red-200 bg-red-50 px-5 py-3 text-sm font-semibold text-red-700 transition hover:bg-red-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
             >
               {deletingDevice ? (
                 <Loader2
                   className="animate-spin"
                   size={17}
+                  aria-hidden
                 />
               ) : (
                 <Trash2
                   size={17}
+                  aria-hidden
                 />
               )}
 
               {deletingDevice
                 ? "Deleting..."
-                : "Delete Device"}
-            </button>
+                : "Delete device"}
+            </Button>
           </div>
         </PageCard>
       )}
@@ -1604,23 +1604,23 @@ function NetworkStatus({
     online === true
       ? {
           label: "Online",
-          dot: "bg-emerald-500",
+          dot: "bg-home-health",
           className:
-            "bg-emerald-50 text-emerald-700",
+            "bg-home-health-soft text-home-health",
         }
       : online === false
         ? {
             label: "Offline",
-            dot: "bg-neutral-400",
+            dot: "bg-text-tertiary",
             className:
-              "bg-neutral-100 text-text-secondary",
+              "bg-surface-sunken text-text-secondary",
           }
         : {
             label:
               "Status unknown",
-            dot: "bg-amber-500",
+            dot: "bg-warning",
             className:
-              "bg-amber-50 text-amber-700",
+              "bg-warning-soft text-warning",
           };
 
   return (
@@ -1803,7 +1803,7 @@ function getWarrantyStatus(
       shortLabel:
         "Not recorded",
       className:
-        "bg-neutral-100 text-text-secondary",
+        "bg-surface-sunken text-text-secondary",
     };
   }
 
@@ -1824,7 +1824,7 @@ function getWarrantyStatus(
       shortLabel:
         "Unknown",
       className:
-        "bg-neutral-100 text-text-secondary",
+        "bg-surface-sunken text-text-secondary",
     };
   }
 
@@ -1845,7 +1845,7 @@ function getWarrantyStatus(
       shortLabel:
         "Expired",
       className:
-        "bg-red-50 text-red-700",
+        "bg-danger-soft text-danger",
     };
   }
 
@@ -1858,7 +1858,7 @@ function getWarrantyStatus(
       shortLabel:
         "Today",
       className:
-        "bg-amber-50 text-amber-700",
+        "bg-warning-soft text-warning",
     };
   }
 
@@ -1877,7 +1877,7 @@ function getWarrantyStatus(
         ) +
         " days",
       className:
-        "bg-amber-50 text-amber-700",
+        "bg-warning-soft text-warning",
     };
   }
 
@@ -1890,7 +1890,7 @@ function getWarrantyStatus(
       ) +
       " days",
     className:
-      "bg-emerald-50 text-emerald-700",
+      "bg-home-health-soft text-home-health",
   };
 }
 

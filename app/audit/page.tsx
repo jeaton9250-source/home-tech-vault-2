@@ -1,9 +1,10 @@
-import Link from "next/link";
-
-import PageHeader from "@/components/PageHeader";
-import StatCard from "@/components/StatCard";
-import DownloadAuditPdfButton from "@/components/DownloadAuditPdfButton";
 import AuditAccessNotice from "@/components/audit/AuditAccessNotice";
+import DownloadAuditPdfButton from "@/components/DownloadAuditPdfButton";
+import StatCard from "@/components/StatCard";
+import Button from "@/components/ui/Button";
+import PageCard from "@/components/ui/PageCard";
+import PageHero from "@/components/ui/PageHero";
+import PageShell from "@/components/ui/PageShell";
 import { calculateTechnologyScore } from "@/lib/calculateTechnologyScore";
 import { loadAuditData } from "@/lib/data/auditData";
 import { createClient } from "@/lib/supabase/server";
@@ -79,32 +80,34 @@ export default async function AuditPage() {
   );
 
   return (
-    <main className="min-h-screen bg-gray-100 p-8 print:bg-white">
-      <div className="print:hidden mb-8">
+    <PageShell className="print:bg-surface-card">
+      <div className="print:hidden">
         <AuditAccessNotice />
       </div>
 
-      <div className="print:hidden flex items-center justify-between">
-        <PageHeader
-          title="Technology Audit"
-          description="A complete snapshot of your home technology health."
+      <div className="print:hidden flex flex-wrap items-start justify-between gap-4">
+        <PageHero
+          section="insights"
+          eyebrow="Vault health"
+          title="Technology audit"
+          description="A complete snapshot of your home technology health and completeness."
         />
 
         <DownloadAuditPdfButton />
       </div>
 
-      <div className="hidden print:block mb-8">
-        <h1 className="text-4xl font-bold text-text-primary">
-          Home Tech Vault™
+      <div className="hidden print:block">
+        <h1 className="text-page-title font-medium text-text-primary">
+          Home Tech Vault
         </h1>
-        <p className="text-gray-600 mt-2">
-          Technology Audit Report
+        <p className="mt-2 text-sm text-text-muted">
+          Technology audit report
         </p>
       </div>
 
-      <div className="grid md:grid-cols-4 gap-6 mt-8 print:grid-cols-4">
+      <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-4 print:grid-cols-4">
         <StatCard
-          title="Tech Score"
+          title="Tech score"
           value={`${score}/100`}
           description="Overall health"
         />
@@ -122,41 +125,41 @@ export default async function AuditPage() {
         />
 
         <StatCard
-          title="Monthly Spend"
+          title="Monthly spend"
           value={`$${monthlySpend.toFixed(2)}`}
           description="Subscriptions"
         />
       </div>
 
-      <div className="bg-white rounded-3xl shadow p-8 mt-8 print:shadow-none print:border">
-        <h2 className="text-2xl font-bold text-text-primary">
-          Audit Summary
+      <PageCard className="mt-8 p-6 md:p-8 print:border print:shadow-none">
+        <h2 className="text-section-title text-text-primary">
+          Audit summary
         </h2>
 
-        <div className="grid md:grid-cols-2 gap-6 mt-6">
-          <div className="bg-interaction-soft rounded-2xl p-6">
-            <p className="text-gray-600">
-              Estimated Technology Value
+        <div className="mt-6 grid gap-6 md:grid-cols-2">
+          <div className="rounded-[var(--radius-button)] bg-interaction-soft p-6">
+            <p className="text-sm text-text-muted">
+              Estimated technology value
             </p>
-            <h3 className="text-3xl font-bold text-text-primary mt-2">
+            <h3 className="mt-2 text-3xl font-semibold tracking-tight text-text-primary">
               ${totalValue.toFixed(2)}
             </h3>
           </div>
 
-          <div className="bg-interaction-soft rounded-2xl p-6">
-            <p className="text-gray-600">
-              Network Status
+          <div className="rounded-[var(--radius-button)] bg-interaction-soft p-6">
+            <p className="text-sm text-text-muted">
+              Network status
             </p>
-            <h3 className="text-3xl font-bold text-text-primary mt-2">
+            <h3 className="mt-2 text-3xl font-semibold tracking-tight text-text-primary">
               {network ? "Documented" : "Missing"}
             </h3>
           </div>
         </div>
-      </div>
+      </PageCard>
 
-      <div className="grid md:grid-cols-3 gap-6 mt-8">
+      <div className="mt-8 grid gap-6 md:grid-cols-3">
         <AuditCard
-          title="Missing Serial Numbers"
+          title="Missing serial numbers"
           count={missingSerials.length}
           items={missingSerials.map(
             (device) =>
@@ -165,7 +168,7 @@ export default async function AuditPage() {
         />
 
         <AuditCard
-          title="Missing Warranties"
+          title="Missing warranties"
           count={missingWarranties.length}
           items={missingWarranties.map(
             (device) =>
@@ -174,7 +177,7 @@ export default async function AuditPage() {
         />
 
         <AuditCard
-          title="Missing Photos"
+          title="Missing photos"
           count={missingPhotos.length}
           items={missingPhotos.map(
             (device) =>
@@ -183,42 +186,41 @@ export default async function AuditPage() {
         />
       </div>
 
-      <div className="bg-white rounded-3xl shadow p-8 mt-8 print:shadow-none print:border">
-        <h2 className="text-2xl font-bold text-text-primary">
-          Recommended Next Steps
+      <PageCard className="mt-8 p-6 md:p-8 print:border print:shadow-none">
+        <h2 className="text-section-title text-text-primary">
+          Recommended next steps
         </h2>
 
-        <ul className="mt-5 space-y-3 text-gray-700">
+        <ul className="mt-5 space-y-3 text-sm leading-6 text-text-secondary">
           <li>
-            ✓ Add missing serial numbers for
-            better insurance documentation.
+            Add missing serial numbers for better
+            insurance documentation.
           </li>
           <li>
-            ✓ Upload receipts and warranty
-            documents for high-value devices.
+            Upload receipts and warranty documents for
+            high-value devices.
           </li>
           <li>
-            ✓ Add device photos to improve
-            your inventory quality.
+            Add device photos to improve your inventory
+            quality.
           </li>
           <li>
-            ✓ Keep subscription renewal dates
-            updated.
+            Keep subscription renewal dates updated.
           </li>
           <li>
-            ✓ Review your network information
-            at least twice per year.
+            Review your network information at least twice
+            per year.
           </li>
         </ul>
 
-        <Link
+        <Button
           href="/devices"
-          className="inline-block mt-6 bg-charcoal text-surface-card px-6 py-3 rounded-xl print:hidden"
+          className="mt-6 print:hidden"
         >
-          Improve My Vault
-        </Link>
-      </div>
-    </main>
+          Improve my vault
+        </Button>
+      </PageCard>
+    </PageShell>
   );
 }
 
@@ -232,24 +234,26 @@ function AuditCard({
   items: string[];
 }) {
   return (
-    <div className="bg-white rounded-2xl shadow p-6 print:shadow-none print:border">
-      <p className="text-gray-500">{title}</p>
+    <PageCard className="p-6 print:border print:shadow-none">
+      <p className="text-sm text-text-muted">
+        {title}
+      </p>
 
-      <h2 className="text-4xl font-bold text-text-primary mt-2">
+      <h2 className="mt-2 text-4xl font-semibold tracking-tight text-text-primary">
         {count}
       </h2>
 
       {items.length === 0 ? (
-        <p className="text-gray-600 mt-4">
-          Nothing missing here.
+        <p className="mt-4 text-sm leading-6 text-text-secondary">
+          Everything looks complete here.
         </p>
       ) : (
-        <ul className="mt-4 space-y-2 text-gray-700">
+        <ul className="mt-4 space-y-2 text-sm leading-6 text-text-secondary">
           {items.slice(0, 5).map((item) => (
-            <li key={item}>• {item}</li>
+            <li key={item}>{item}</li>
           ))}
         </ul>
       )}
-    </div>
+    </PageCard>
   );
 }

@@ -20,6 +20,7 @@ import AuthLayout from "@/components/auth/AuthLayout";
 import PasswordInput from "@/components/auth/PasswordInput";
 import { authInputClassName } from "@/components/auth/authStyles";
 import Button from "@/components/ui/Button";
+import { brand } from "@/lib/design-system/tokens";
 import { supabase } from "@/lib/supabase";
 import { resolvePostAuthRedirect } from "@/lib/onboarding/redirect";
 import { enforceActiveAccount } from "@/lib/auth/enforceActiveAccount";
@@ -196,7 +197,7 @@ export default function LoginPage() {
       headline={
         isFamilyInvitation
           ? "Sign in to join your shared household."
-          : "Your home technology, organized and protected."
+          : brand.identity
       }
       description={
         isFamilyInvitation

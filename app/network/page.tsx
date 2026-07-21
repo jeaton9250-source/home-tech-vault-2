@@ -40,6 +40,7 @@ import {
 import { usePermissions } from "@/hooks/usePermissions";
 import PageShell from "@/components/ui/PageShell";
 import PageHero from "@/components/ui/PageHero";
+import EmptyState from "@/components/ui/EmptyState";
 
 type NetworkInfo = {
   id?: string;
@@ -943,27 +944,14 @@ export default function NetworkPage() {
           )}
         </>
       ) : (
-        <Card className="py-14 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
-            <Wifi size={29} />
-          </div>
-
-          <h2 className="mt-5 text-2xl font-semibold text-text-primary">
-            No network profile yet
-          </h2>
-
-          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-text-secondary">
-            Add your provider, router, modem,
-            Wi-Fi, guest network, and internet
-            speeds to get started.
-          </p>
-
-          <div className="mt-6">
-            <ActionLink href={editHref}>
-              Set Up Network
-            </ActionLink>
-          </div>
-        </Card>
+        <EmptyState
+          icon={Wifi}
+          title="No network profile yet"
+          description="Add your provider, router, modem, Wi‑Fi, guest network, and internet speeds to get started."
+          section="network"
+          actionLabel="Set up network"
+          actionHref={editHref}
+        />
       )}
     </PageShell>
   );
@@ -979,7 +967,7 @@ function Card({
   return (
     <div
       className={
-        "rounded-[var(--radius-card)] border border-border-subtle bg-white shadow-sm " +
+        "rounded-[var(--radius-card)] border border-border-subtle bg-surface-card shadow-[var(--shadow-sm)] " +
         className
       }
     >

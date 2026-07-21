@@ -42,6 +42,7 @@ import PageShell from "@/components/ui/PageShell";
 import PageCard from "@/components/ui/PageCard";
 import PageHero from "@/components/ui/PageHero";
 import Button from "@/components/ui/Button";
+import EmptyState from "@/components/ui/EmptyState";
 import { ViewerBanner } from "@/components/ui/PermissionUI";
 
 type DeviceRow = {
@@ -695,7 +696,7 @@ function RoomsContent() {
   if (errorMessage) {
     return (
       <PageShell>
-        <PageCard className="border-red-200 bg-red-50 text-red-700">
+        <PageCard className="border-danger/30 bg-danger-soft text-danger">
           <h1 className="text-xl font-semibold">
             Unable to load rooms
           </h1>
@@ -774,7 +775,7 @@ function RoomsContent() {
                   )
                 }
                 placeholder="Search rooms or devices..."
-                className="w-full rounded-2xl border border-border-subtle bg-[#FAFAF8] py-3.5 pl-11 pr-11 text-sm text-text-primary outline-none transition placeholder:text-text-tertiary focus:border-interaction focus:bg-white focus:ring-4 focus:ring-interaction/10"
+                className="w-full rounded-[var(--radius-input)] border border-border-subtle bg-surface-sunken py-3.5 pl-11 pr-11 text-sm text-text-primary outline-none transition placeholder:text-text-tertiary focus:border-interaction focus:bg-surface-card focus:ring-4 focus:ring-interaction/10"
               />
 
               {searchTerm && (
@@ -784,7 +785,7 @@ function RoomsContent() {
                     setSearchTerm("")
                   }
                   aria-label="Clear search"
-                  className="absolute right-4 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-text-tertiary transition hover:bg-white hover:text-text-primary"
+                  className="absolute right-4 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-text-tertiary transition hover:bg-surface-card hover:text-text-primary"
                 >
                   <X size={15} />
                 </button>
@@ -802,20 +803,12 @@ function RoomsContent() {
       )}
 
       {rooms.length === 0 ? (
-        <PageCard className="py-14 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
-            <Home size={29} />
-          </div>
-
-          <h2 className="mt-5 text-2xl font-medium tracking-[-0.03em] text-text-primary">
-            Every room tells a story.
-          </h2>
-
-          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-text-muted">
-            Add your first device and assign it a room to
-            begin seeing your home the way you live in it.
-          </p>
-
+        <EmptyState
+          icon={Home}
+          title="Every room tells a story"
+          description="Add your first device and assign it a room to begin seeing your home the way you live in it."
+          section="technology"
+        >
           {canCreate ? (
             <Button
               href={getActionHref(
@@ -824,9 +817,9 @@ function RoomsContent() {
               )}
               className="mt-6"
             >
-              <Plus size={17} />
+              <Plus size={17} aria-hidden />
               {getActionLabel(
-                "Add Your First Device"
+                "Add your first device"
               )}
             </Button>
           ) : !user ? (
@@ -834,18 +827,17 @@ function RoomsContent() {
               href="/signup"
               className="mt-6"
             >
-              <Plus size={17} />
-              Create Your Vault
+              <Plus size={17} aria-hidden />
+              Create your vault
             </Button>
           ) : (
-            <div className="mx-auto mt-6 max-w-md rounded-2xl bg-surface-sunken px-5 py-4 text-sm text-text-secondary">
-              You have viewer access.
-              You can browse shared
-              rooms, but you cannot add
-              or change devices.
+            <div className="mx-auto mt-6 max-w-md rounded-[var(--radius-button)] bg-surface-sunken px-5 py-4 text-sm text-text-secondary">
+              You have viewer access. You can browse
+              shared rooms, but you cannot add or change
+              devices.
             </div>
           )}
-        </PageCard>
+        </EmptyState>
       ) : filteredRooms.length >
         0 ? (
         <section>
@@ -892,21 +884,12 @@ function RoomsContent() {
           </div>
         </section>
       ) : (
-        <PageCard className="py-14 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
-            <Search size={28} />
-          </div>
-
-          <h2 className="mt-5 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
-            No matching rooms
-          </h2>
-
-          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-text-secondary">
-            Try searching for a
-            different room, device,
-            brand, or category.
-          </p>
-
+        <EmptyState
+          icon={Search}
+          title="No matching rooms"
+          description="Try searching for a different room, device, brand, or category."
+          section="technology"
+        >
           <Button
             variant="secondary"
             className="mt-6"
@@ -914,9 +897,9 @@ function RoomsContent() {
               setSearchTerm("")
             }
           >
-            Clear Search
+            Clear search
           </Button>
-        </PageCard>
+        </EmptyState>
       )}
     </PageShell>
   );
@@ -938,7 +921,7 @@ function RoomCard({
     previewDevices.length;
 
   return (
-    <article className="group overflow-hidden rounded-[var(--radius-card)] border border-border-subtle bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-warning/40 hover:shadow-lg">
+    <article className="group overflow-hidden rounded-[var(--radius-card)] border border-border-subtle bg-surface-card shadow-[var(--shadow-sm)] transition duration-300 hover:-translate-y-1 hover:border-warning/40 hover:shadow-[var(--shadow-md)]">
       <div className="relative bg-surface-sunken px-6 py-7">
         <div className="flex items-start justify-between gap-4">
           <div className="flex h-14 w-14 items-center justify-center rounded-[22px] border border-border-subtle bg-surface-card text-charcoal shadow-[var(--shadow-sm)]">
@@ -1009,7 +992,7 @@ function RoomCard({
 
                 <ArrowRight
                   size={15}
-                  className="shrink-0 text-neutral-300 transition group-hover/device:translate-x-0.5 group-hover/device:text-text-primary"
+                  className="shrink-0 text-text-tertiary transition group-hover/device:translate-x-0.5 group-hover/device:text-text-primary"
                 />
               </Link>
             )

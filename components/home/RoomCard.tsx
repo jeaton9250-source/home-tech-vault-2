@@ -29,7 +29,7 @@ export default function RoomCard({
   );
 
   return (
-    <section className="overflow-hidden rounded-[var(--radius-card)] border border-border-subtle bg-white shadow-sm">
+    <section className="overflow-hidden rounded-[var(--radius-card)] border border-border-subtle bg-surface-card shadow-[var(--shadow-sm)]">
       <div className="flex items-center justify-between border-b border-border-subtle p-6">
         <div>
           <div className="flex items-center gap-2 text-interaction">
@@ -59,7 +59,7 @@ export default function RoomCard({
           <Link
             key={device.id}
             href={`/devices/${device.id}`}
-            className="group overflow-hidden rounded-2xl border border-border-subtle bg-white transition hover:-translate-y-0.5 hover:shadow-md"
+            className="group overflow-hidden rounded-[var(--radius-button)] border border-border-subtle bg-surface-card transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)]"
           >
             <DeviceImageDisplay
               device={device}

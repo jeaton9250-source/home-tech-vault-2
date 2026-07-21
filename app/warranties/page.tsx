@@ -26,6 +26,7 @@ import { usePermissions } from "@/hooks/usePermissions";
 
 import PageShell from "@/components/ui/PageShell";
 import PageHero from "@/components/ui/PageHero";
+import EmptyState from "@/components/ui/EmptyState";
 import { ViewerBanner } from "@/components/ui/PermissionUI";
 
 type WarrantyFilter =
@@ -920,8 +921,8 @@ export default function WarrantiesPage() {
                 }
                 className={
                   activeFilter === filter.id
-                    ? "shrink-0 rounded-xl bg-neutral-950 px-4 py-2 text-sm font-medium text-white"
-                    : "shrink-0 rounded-xl border border-border-subtle bg-white px-4 py-2 text-sm font-medium text-text-secondary"
+                    ? "shrink-0 rounded-xl bg-charcoal px-4 py-2 text-sm font-medium text-surface-card"
+                    : "shrink-0 rounded-xl border border-border-subtle bg-surface-card px-4 py-2 text-sm font-medium text-text-secondary"
                 }
               >
                 {filter.label +
@@ -943,23 +944,30 @@ export default function WarrantiesPage() {
             ))
           ) : filteredDevices.length ===
             0 ? (
-            <div className="rounded-[var(--radius-card)] border border-border-subtle bg-surface-sunken/40 p-10 text-center shadow-[var(--shadow-sm)]">
-              <div className="htv-icon-well mx-auto flex h-14 w-14 items-center justify-center text-home-health">
-                <ShieldCheck size={28} />
-              </div>
-
-              <h2 className="mt-4 text-lg font-medium text-text-primary">
-                {devices.length === 0
+            <EmptyState
+              icon={ShieldCheck}
+              title={
+                devices.length === 0
                   ? "No warranty records yet"
-                  : "No warranties match your search"}
-              </h2>
-
-              <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-text-muted">
-                {devices.length === 0
+                  : "No warranties match your search"
+              }
+              description={
+                devices.length === 0
                   ? "Add devices with warranty dates to see coverage at a glance."
-                  : "Try another search or filter to find what you need."}
-              </p>
-            </div>
+                  : "Try another search or filter to find what you need."
+              }
+              section="homeHealth"
+              actionLabel={
+                devices.length === 0
+                  ? "Add a device"
+                  : undefined
+              }
+              actionHref={
+                devices.length === 0
+                  ? "/devices/add"
+                  : undefined
+              }
+            />
           ) : (
             filteredDevices.map(
               (device) => {
