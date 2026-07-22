@@ -160,14 +160,18 @@ export default function DemoDeviceProfile({
       {/* Hero */}
       <PageCard className="overflow-hidden p-0">
         <div className="grid gap-0 md:grid-cols-[1.1fr_0.9fr]">
-          <div className="relative aspect-[4/3] bg-surface-sunken md:aspect-auto md:min-h-[320px]">
+          <div className="relative aspect-[4/3] overflow-hidden bg-[#F3F1EC] md:aspect-auto md:min-h-[320px]">
+            <div
+              className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#FAF9F7]/40 via-transparent to-[#E7E2DA]/60"
+              aria-hidden
+            />
             {imageSrc ? (
               <Image
                 src={imageSrc}
                 alt={device.device_name}
                 fill
                 unoptimized
-                className="object-contain p-6 md:p-10"
+                className="object-cover object-center"
               />
             ) : null}
           </div>
@@ -334,7 +338,7 @@ export default function DemoDeviceProfile({
       {/* Photos */}
       <PageCard className="p-6 md:p-8">
         <p className="text-overline text-section-technology">Photos</p>
-        <div className="mt-4 overflow-hidden rounded-[24px] bg-surface-sunken">
+        <div className="mt-4 overflow-hidden rounded-[24px] bg-[#F3F1EC]">
           {imageSrc ? (
             <div className="relative aspect-[16/10]">
               <Image
@@ -342,7 +346,7 @@ export default function DemoDeviceProfile({
                 alt={`${device.device_name} photo`}
                 fill
                 unoptimized
-                className="object-contain p-4"
+                className="object-cover object-center"
               />
             </div>
           ) : null}

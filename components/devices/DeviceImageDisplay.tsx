@@ -169,15 +169,26 @@ export default function DeviceImageDisplay({
 
   const showImage =
     Boolean(resolved.src) && !failed;
+  const isDemoAsset = resolved.isDemoAsset;
 
   return (
     <div
       className={cn(
-        "relative overflow-hidden bg-surface-sunken",
+        "relative overflow-hidden",
+        isDemoAsset
+          ? "bg-[#F3F1EC]"
+          : "bg-surface-sunken",
         styles.aspect,
         className
       )}
     >
+      {isDemoAsset && showImage && (
+        <div
+          className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#FAF9F7]/40 via-transparent to-[#E7E2DA]/60"
+          aria-hidden
+        />
+      )}
+
       {showImage ? (
         <Image
           src={resolved.src!}
@@ -186,14 +197,20 @@ export default function DeviceImageDisplay({
           priority={priority}
           sizes={styles.sizes}
           unoptimized={
-            resolved.isDemoAsset ||
+            isDemoAsset ||
             resolved.src!.startsWith("http")
           }
           className={cn(
-            resolved.isDemoAsset ||
-              styles.containDemo
-              ? "object-contain p-4 md:p-6"
-              : "object-cover",
+            isDemoAsset
+              ? cn(
+                  "object-cover object-center",
+                  variant === "thumbnail"
+                    ? "scale-110"
+                    : "scale-[1.03]"
+                )
+              : styles.containDemo
+                ? "object-contain p-4 md:p-6"
+                : "object-cover",
             "transition duration-500",
             imageClassName
           )}

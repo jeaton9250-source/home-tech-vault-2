@@ -2,7 +2,7 @@
 export const DEMO_DEVICE_IMAGE_BASE = "/demo/devices";
 
 /** Bump when demo image assets change to bust browser/CDN caches. */
-export const DEMO_IMAGE_CACHE_VERSION = "3";
+export const DEMO_IMAGE_CACHE_VERSION = "4";
 
 /**
  * Device ID → local webp asset under /public/demo/devices/
