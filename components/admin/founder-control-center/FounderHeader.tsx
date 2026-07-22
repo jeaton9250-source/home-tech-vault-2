@@ -3,7 +3,6 @@ import type { ReactNode } from "react";
 import { ArrowUpRight } from "lucide-react";
 
 import Button from "@/components/ui/Button";
-import AdminGlobalSearch from "@/components/admin/founder-control-center/AdminGlobalSearch";
 import { getTimeGreeting } from "@/lib/home-health/greeting";
 
 type FounderHeaderProps = {
@@ -36,10 +35,6 @@ export default function FounderHeader({
         <Button href="/admin/users" size="md">
           Manage Users
         </Button>
-      </div>
-
-      <div className="mt-8">
-        <AdminGlobalSearch />
       </div>
     </header>
   );

@@ -14,6 +14,7 @@ import { AIAdvisorProvider } from "@/hooks/useAIAdvisor";
 import { NavMenuProvider } from "@/hooks/useNavMenu";
 import { PermissionsProvider } from "@/hooks/usePermissions";
 import { isChromeFreeRoute } from "@/lib/isChromeFreeRoute";
+import { isAdminRoute } from "@/lib/admin/navigation";
 
 function isOnboardingRoute(
   pathname: string | null | undefined
@@ -29,6 +30,7 @@ export default function AppChrome({
   children,
 }: AppChromeProps) {
   const pathname = usePathname();
+  const hideHomeownerHeader = isAdminRoute(pathname);
 
   if (isOnboardingRoute(pathname)) {
     return (
@@ -69,7 +71,9 @@ export default function AppChrome({
                   <DemoBanner />
 
                   <div className="flex min-h-screen flex-col bg-surface-base">
-                    <AppHeader />
+                    {!hideHomeownerHeader ? (
+                      <AppHeader />
+                    ) : null}
 
                     <main className="flex-1">
                       {children}

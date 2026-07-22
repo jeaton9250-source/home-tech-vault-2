@@ -91,3 +91,90 @@ export const ADMIN_PLATFORM_LINKS = [
     description: "Billing overview",
   },
 ] as const;
+
+export const ADMIN_APP_HOME_HREF = "/dashboard";
+
+export type AdminHeaderNavItem = {
+  id: string;
+  href: string;
+  label: string;
+  isActive: (pathname: string) => boolean;
+};
+
+export const ADMIN_HEADER_NAV_ITEMS: AdminHeaderNavItem[] = [
+  {
+    id: "overview",
+    href: "/admin",
+    label: "Overview",
+    isActive: (pathname) => pathname === "/admin",
+  },
+  {
+    id: "users",
+    href: "/admin/users",
+    label: "Users",
+    isActive: (pathname) =>
+      pathname === "/admin/users" ||
+      pathname.startsWith("/admin/users/"),
+  },
+  {
+    id: "households",
+    href: "/admin/households",
+    label: "Households",
+    isActive: (pathname) =>
+      pathname === "/admin/households" ||
+      pathname.startsWith("/admin/households/"),
+  },
+  {
+    id: "devices",
+    href: "/admin/analytics",
+    label: "Devices",
+    isActive: (pathname) =>
+      pathname === "/admin/analytics" ||
+      pathname.startsWith("/admin/analytics/"),
+  },
+  {
+    id: "reports",
+    href: "/admin/analytics",
+    label: "Reports",
+    isActive: (pathname) =>
+      pathname === "/admin/analytics" ||
+      pathname.startsWith("/admin/analytics/"),
+  },
+  {
+    id: "email",
+    href: "/admin/emails",
+    label: "Email",
+    isActive: (pathname) =>
+      pathname === "/admin/emails" ||
+      pathname.startsWith("/admin/emails/"),
+  },
+  {
+    id: "platform",
+    href: "/admin/platform",
+    label: "Platform",
+    isActive: (pathname) =>
+      pathname === "/admin/platform" ||
+      pathname.startsWith("/admin/platform/") ||
+      pathname === "/admin/system" ||
+      pathname.startsWith("/admin/system/") ||
+      pathname === "/admin/support" ||
+      pathname.startsWith("/admin/support/") ||
+      pathname === "/admin/founding-members" ||
+      pathname.startsWith("/admin/founding-members/") ||
+      pathname === "/admin/subscriptions" ||
+      pathname.startsWith("/admin/subscriptions/"),
+  },
+];
+
+export function isAdminRoute(
+  pathname: string | null | undefined
+): boolean {
+  if (!pathname) {
+    return false;
+  }
+
+  return (
+    pathname === "/admin" ||
+    pathname.startsWith("/admin/")
+  );
+}
