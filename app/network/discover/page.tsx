@@ -24,6 +24,7 @@ import { supabase } from "@/lib/supabase";
 import { applyHouseholdScope, applyOwnerUserScope, withHouseholdInsertFields, applyHouseholdMutationScope, withOwnerUserInsertFields } from "@/lib/data/householdScope";
 import { recordActivity } from "@/lib/activity";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useDemoReadOnlyAction } from "@/components/demo/DemoExperienceProvider";
 
 import FeatureGate from "@/components/permissions/FeatureGate";
 import PageShell from "@/components/ui/PageShell";
@@ -70,6 +71,8 @@ function NetworkDiscoveryContent() {
     householdOwnerId,
     loading: permissionsLoading,
   } = usePermissions();
+
+  const showReadOnlyModal = useDemoReadOnlyAction();
 
   const [rawResults, setRawResults] =
     useState("");
@@ -526,7 +529,7 @@ function NetworkDiscoveryContent() {
       setErrorMessage("");
 
       if (isDemo) {
-        router.push("/signup");
+        showReadOnlyModal();
         return;
       }
 
@@ -904,24 +907,6 @@ function NetworkDiscoveryContent() {
         </PageCard>
       )}
 
-      {isDemo && (
-        <PageCard className="border-warning/40 bg-warning-soft">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-achievement">
-            Interactive Demo
-          </p>
-
-          <h2 className="mt-2 text-xl font-bold text-text-primary">
-            Preview network discovery
-          </h2>
-
-          <p className="mt-2 text-sm leading-6 text-text-secondary">
-            Demo scans are not saved. Create an
-            account to save scan history and add
-            devices to your vault.
-          </p>
-        </PageCard>
-      )}
-
       {devices.length > 0 && (
         <section className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
           <ScanStat
@@ -1164,15 +1149,13 @@ brother-printer (192.168.1.24) at 11:22:33:44:55:66 on en0`}
                 <Plus size={18} />
               )}
 
-              {isDemo
-                ? "Create Vault to Add"
-                : importing
-                  ? "Syncing..."
-                  : `Sync ${selectedCount} Device${
-                      selectedCount === 1
-                        ? ""
-                        : "s"
-                    }`}
+              {importing
+                ? "Syncing..."
+                : `Sync ${selectedCount} Device${
+                    selectedCount === 1
+                      ? ""
+                      : "s"
+                  }`}
             </Button>
           </div>
         </PageCard>

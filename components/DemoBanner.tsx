@@ -1,7 +1,5 @@
 "use client";
 
-import Link from "next/link";
-
 import { useDemoMode } from "@/hooks/useDemoMode";
 import { MORGAN_HOUSEHOLD } from "@/lib/demo/morganHousehold";
 
@@ -28,14 +26,7 @@ export default function DemoBanner() {
             Interactive Demo
           </span>
           {" · "}
-          You&apos;re exploring the {MORGAN_HOUSEHOLD.name}.{" "}
-          <Link
-            href="/signup"
-            className="font-medium text-interaction underline-offset-2 hover:underline"
-          >
-            Create your own Home Tech Vault
-          </Link>{" "}
-          whenever you&apos;re ready.
+          You&apos;re exploring the {MORGAN_HOUSEHOLD.name}.
         </p>
       </div>
     </div>

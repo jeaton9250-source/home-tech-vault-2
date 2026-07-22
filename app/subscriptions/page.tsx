@@ -48,6 +48,7 @@ export default function SubscriptionsPage() {
     loading: permissionsLoading,
     householdId,
     isViewer,
+    isDemo,
     canCreate,
     canEdit,
     canDelete,
@@ -309,7 +310,10 @@ export default function SubscriptionsPage() {
         />
       </PageHero>
 
-      <ViewerBanner description="Explore sample recurring services, renewal dates, and technology costs. Viewer access is read-only." />
+      <ViewerBanner
+        show={!isDemo && (isViewer || Boolean(user)) && !canCreate}
+        description="You can view shared recurring services and renewal dates. Viewer access is read-only."
+      />
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <SummaryCard
@@ -349,7 +353,7 @@ export default function SubscriptionsPage() {
         <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
           <PageCard className="p-7 md:p-9">
             <p className="text-overline text-charcoal-soft">
-              Spending Overview
+              At a Glance
             </p>
 
             <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-text-primary">

@@ -75,6 +75,7 @@ export default function DocumentsPage() {
     isDemo,
     householdId,
     canDelete,
+    canCreate,
     loading: permissionsLoading,
   } = usePermissions();
 
@@ -423,10 +424,11 @@ export default function DocumentsPage() {
       </PageHero>
 
       <ViewerBanner
+        show={Boolean(user) && !canCreate}
         description={
           user
             ? "You can view and open shared documents. Viewer access cannot upload, replace, edit, or delete files."
-            : "Explore sample receipts, manuals, warranties, and device files. Create an account to upload and manage your own documents."
+            : undefined
         }
       />
 
@@ -890,27 +892,10 @@ function DemoPreviewModal({
             />
           </div>
 
-          <div className="mt-6 rounded-2xl border border-warning/40 bg-warning-soft p-4">
-            <p className="text-sm leading-6 text-text-secondary">
-              This is a sample
-              document preview. Create
-              an account to upload and
-              manage your own files.
-            </p>
-          </div>
-
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <Button
-              href="/signup"
-              className="flex-1"
-            >
-              Create Your Vault
-            </Button>
-
+          <div className="mt-6 flex justify-end">
             <Button
               variant="secondary"
               onClick={onClose}
-              className="flex-1"
             >
               Continue Exploring
             </Button>

@@ -595,10 +595,11 @@ export default function MaintenancePage() {
       </PageHero>
 
       <ViewerBanner
+        show={!isDemo && Boolean(user)}
         description={
           user
             ? "You can view shared maintenance tasks and their status. Viewer access cannot add, complete, reopen, edit, or delete tasks."
-            : "Explore sample maintenance tasks. Create an account to track updates, cleaning, repairs, and routine device care."
+            : undefined
         }
       />
 
@@ -658,7 +659,7 @@ export default function MaintenancePage() {
 
           <PageCard className="p-7 md:p-9">
             <p className="text-overline text-charcoal-soft">
-              Maintenance Overview
+              At a Glance
             </p>
 
             <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-text-primary">

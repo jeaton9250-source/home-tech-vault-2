@@ -445,7 +445,7 @@ export function computePermissions(
     feature?: FeatureKey
   ): string {
     if (context.isDemo) {
-      return "/signup";
+      return targetHref;
     }
 
     if (feature && requiresUpgrade(feature)) {
@@ -479,7 +479,7 @@ export function computePermissions(
     }
 
     if (context.isDemo) {
-      return lockedLabel;
+      return label;
     }
 
     if (isViewer) {

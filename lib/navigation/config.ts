@@ -102,7 +102,7 @@ export const PRIMARY_NAV_GROUPS: NavMenuGroup[] =
       label: "Network",
       items: [
         {
-          label: "Network Overview",
+          label: "Your Network",
           href: "/network",
           icon: Network,
           description:

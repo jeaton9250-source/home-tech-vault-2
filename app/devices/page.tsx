@@ -626,6 +626,14 @@ export default function DevicesPage() {
               ? "Upgrade to Add More"
               : "Add Device"}
           </Button>
+        ) : isDemo ? (
+          <Button
+            type="button"
+            onClick={handleAddDevice}
+          >
+            <Plus size={17} />
+            Add Device
+          </Button>
         ) : !user ? (
           <Button href="/signup">
             <Plus size={17} />
@@ -640,12 +648,11 @@ export default function DevicesPage() {
       </div>
 
       <ViewerBanner
+        show={!isDemo && Boolean(user)}
         description={
-          isDemo || !user
-            ? "Browse, search, and filter devices throughout the Morgan Household. Create your vault to manage your own."
-            : user
-              ? "You can view shared devices, search records, and open device details. Viewer access cannot add, edit, upload, or delete devices."
-              : "You are browsing a sample device vault. Create an account to organize and manage your own technology."
+          user
+            ? "You can view shared devices, search records, and open device details. Viewer access cannot add, edit, upload, or delete devices."
+            : undefined
         }
       />
 
@@ -938,6 +945,15 @@ export default function DevicesPage() {
               {deviceLimitReached
                 ? "Upgrade to add more"
                 : "Add your first device"}
+            </Button>
+          ) : isDemo ? (
+            <Button
+              type="button"
+              onClick={handleAddDevice}
+              className="mt-6"
+            >
+              <Plus size={17} aria-hidden />
+              Add your first device
             </Button>
           ) : !user ? (
             <Button

@@ -527,8 +527,7 @@ export default function NetworkPage() {
           >
             <Radar size={17} />
             {getActionLabel(
-              "Scan Network",
-              "Create Vault to Scan"
+              "Scan Network"
             )}
           </ActionLink>
 
@@ -545,22 +544,6 @@ export default function NetworkPage() {
           </ActionLink>
         </div>
       </PageHero>
-
-      {isDemo && (
-        <section className="rounded-3xl border border-warning/40 bg-warning-soft p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-achievement">
-            Viewer Access
-          </p>
-
-          <p className="mt-2 text-sm leading-6 text-text-secondary">
-            You are exploring sample
-            network information. Create
-            an account to save your own
-            equipment, Wi-Fi details,
-            and scan history.
-          </p>
-        </section>
-      )}
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <SummaryCard
@@ -693,8 +676,7 @@ export default function NetworkPage() {
                   <Radar size={17} />
 
                   {getActionLabel(
-                    "Scan Again",
-                    "Create Vault to Scan"
+                    "Scan Again"
                   )}
                 </ActionLink>
 
@@ -711,8 +693,7 @@ export default function NetworkPage() {
             <EmptyScanState
               href={scanHref}
               scanLabel={getActionLabel(
-                "Start Network Scan",
-                "Create Vault to Scan"
+                "Start Network Scan"
               )}
             />
           )}

@@ -1,15 +1,11 @@
 "use client";
 
-import RecentActivity from "@/components/dashboard/RecentActivity";
 import DashboardQuickActions from "@/components/dashboard/DashboardQuickActions";
-import HomeHealthCategoryGrid from "@/components/home-health/HomeHealthCategoryGrid";
 import HomeHealthEmptyState from "@/components/home-health/HomeHealthEmptyState";
 import HomeHealthHeader from "@/components/home-health/HomeHealthHeader";
 import HomeHealthScoreCard from "@/components/home-health/HomeHealthScoreCard";
 import HomePulseAlerts from "@/components/home-health/HomePulseAlerts";
-import HomeSnapshotStrip from "@/components/home-health/HomeSnapshotStrip";
 import NextBestActionCard from "@/components/home-health/NextBestActionCard";
-import VaultCompletenessRing from "@/components/home-health/VaultCompletenessRing";
 import { usePermissions } from "@/hooks/usePermissions";
 import type { HomeHealthResult } from "@/lib/home-health/types";
 
@@ -43,10 +39,6 @@ export default function HomeHealthDashboard({
             highlights={homeHealth.highlights}
           />
 
-          <HomeSnapshotStrip
-            homeHealth={homeHealth}
-          />
-
           <section className="grid gap-5 xl:grid-cols-[3fr_2fr] xl:items-stretch">
             {homeHealth.score !== null &&
             homeHealth.status &&
@@ -76,25 +68,8 @@ export default function HomeHealthDashboard({
             getActionHref={getActionHref}
             getActionLabel={getActionLabel}
           />
-
-          <VaultCompletenessRing
-            percentage={
-              homeHealth.vaultCompleteness
-            }
-            cards={homeHealth.cards}
-          />
         </>
       )}
-
-      <HomeHealthCategoryGrid
-        cards={homeHealth.cards}
-      />
-
-      <RecentActivity
-        title="Recent activity"
-        viewAllHref="/activity"
-        limit={5}
-      />
     </div>
   );
 }

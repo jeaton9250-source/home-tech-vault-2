@@ -940,11 +940,9 @@ export default function DevicePage() {
       deletingDevice={deletingDevice}
       deletingPhotoId={deletingImageId}
       viewerBannerDescription={
-        isGuestDemo
-          ? "Browse photos, documents, warranty details, network information, and device history for the Morgan Household."
-          : !canEdit
-            ? "You can view this device, its photos, documents, network details, and history. Viewer access cannot edit, upload, or delete anything."
-            : undefined
+        !canEdit && !isGuestDemo
+          ? "You can view this device, its photos, documents, network details, and history. Viewer access cannot edit, upload, or delete anything."
+          : undefined
       }
       onEdit={handleEditDevice}
       onDelete={() => void deleteDevice()}

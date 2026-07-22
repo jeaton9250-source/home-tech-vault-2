@@ -1752,7 +1752,7 @@ function OnboardingFlow() {
               }
               disabled={submitting}
             >
-              Go to Dashboard
+              Go to Home Pulse
             </Button>
           </OnboardingActions>
         </>

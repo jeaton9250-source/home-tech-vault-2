@@ -20,6 +20,7 @@ import {
   recordActivity,
 } from "@/lib/activity";
 import { usePermissions } from "@/hooks/usePermissions";
+import DemoWriteGate from "@/components/demo/DemoWriteGate";
 import { FREE_DEVICE_LIMIT } from "@/lib/permissions/plans";
 
 import PageShell from "@/components/ui/PageShell";
@@ -372,35 +373,10 @@ export default function AddDevicePage() {
 
   if (isDemo) {
     return (
-      <PageShell>
-        <PageTitle
-          eyebrow="Interactive Demo"
-          title="Create your vault to add devices"
-          description="Demo Mode lets you explore sample devices, but changes are not saved."
-        />
-
-        <PageCard className="text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
-            <Laptop size={30} />
-          </div>
-
-          <h2 className="mt-5 text-2xl font-bold text-text-primary">
-            Ready to add your own devices?
-          </h2>
-
-          <p className="mx-auto mt-3 max-w-lg text-text-secondary">
-            Create a free Home Tech Vault account and save up to
-            eight devices.
-          </p>
-
-          <Button
-            href="/signup"
-            className="mt-6"
-          >
-            Create Your Vault
-          </Button>
-        </PageCard>
-      </PageShell>
+      <DemoWriteGate
+        backHref="/devices"
+        backLabel="Back to Devices"
+      />
     );
   }
 

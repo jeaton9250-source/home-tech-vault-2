@@ -25,6 +25,7 @@ import {
 import { supabase } from "@/lib/supabase";
 import { applyHouseholdScope } from "@/lib/data/householdScope";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useDemoReadOnlyAction } from "@/components/demo/DemoExperienceProvider";
 
 import {
   generateReportPdf,
@@ -128,6 +129,8 @@ export default function ReportsPage() {
     loading: permissionsLoading,
     canAccessFeature,
   } = usePermissions();
+
+  const showReadOnlyModal = useDemoReadOnlyAction();
 
   const [devices, setDevices] =
     useState<DeviceRow[]>([]);
@@ -740,8 +743,7 @@ export default function ReportsPage() {
     }
 
     if (isDemo) {
-      window.location.href =
-        "/signup";
+      showReadOnlyModal();
       return;
     }
 
@@ -837,12 +839,6 @@ export default function ReportsPage() {
           <Button href="/upgrade">
             <Crown size={17} />
             Upgrade to Pro
-          </Button>
-        )}
-
-        {isDemo && (
-          <Button href="/signup">
-            Create Your Vault
           </Button>
         )}
       </PageHero>
@@ -983,7 +979,7 @@ export default function ReportsPage() {
               selectedReportType
                 ? "Generating..."
                 : isDemo
-                  ? "Create Vault to Download"
+                  ? "Download PDF"
                   : hasPdfAccess
                     ? "Download PDF"
                     : "Unlock with Pro"}
@@ -1074,7 +1070,7 @@ export default function ReportsPage() {
                   previewReport.type
                     ? "Generating..."
                     : isDemo
-                      ? "Create Vault to Download"
+                      ? "Download PDF"
                       : hasPdfAccess
                         ? "Download PDF"
                         : "Unlock with Pro"}

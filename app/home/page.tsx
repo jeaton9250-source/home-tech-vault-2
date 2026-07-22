@@ -44,6 +44,7 @@ import PageHero from "@/components/ui/PageHero";
 import Button from "@/components/ui/Button";
 import EmptyState from "@/components/ui/EmptyState";
 import { ViewerBanner } from "@/components/ui/PermissionUI";
+import { useDemoReadOnlyAction } from "@/components/demo/DemoExperienceProvider";
 import { getDemoHomeDevices } from "@/lib/demo/homeDevices";
 import { MORGAN_HOUSEHOLD } from "@/lib/demo/morganHousehold";
 
@@ -100,6 +101,15 @@ function RoomsContent() {
     getActionHref,
     getActionLabel,
   } = usePermissions();
+
+  const showReadOnlyModal = useDemoReadOnlyAction();
+
+  function handleAddDevice() {
+    if (isDemo) {
+      showReadOnlyModal();
+      return;
+    }
+  }
 
   const [devices, setDevices] =
     useState<HomeDevice[]>([]);
@@ -615,6 +625,11 @@ function RoomsContent() {
             <Plus size={17} />
             {getActionLabel("Add Device")}
           </Button>
+        ) : isDemo ? (
+          <Button type="button" onClick={handleAddDevice}>
+            <Plus size={17} />
+            Add Device
+          </Button>
         ) : !user ? (
           <Button href="/signup">
             <Plus size={17} />
@@ -628,22 +643,9 @@ function RoomsContent() {
       </PageHero>
 
       <ViewerBanner
+        show={!isDemo && !canCreate && Boolean(user)}
         description="You can browse rooms and shared devices. Viewer access cannot add, edit, move, or delete room content."
       />
-
-      {isDemo && (
-        <section className="rounded-3xl border border-warning/40 bg-warning-soft p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-achievement">
-            Premium Preview
-          </p>
-
-          <p className="mt-2 text-sm leading-6 text-text-secondary">
-            Explore how Home Tech
-            Vault organizes an entire
-            household by room.
-          </p>
-        </section>
-      )}
 
       {devices.length > 0 && (
         <PageCard className="p-5 md:p-6">
@@ -709,6 +711,15 @@ function RoomsContent() {
               {getActionLabel(
                 "Add your first device"
               )}
+            </Button>
+          ) : isDemo ? (
+            <Button
+              type="button"
+              onClick={handleAddDevice}
+              className="mt-6"
+            >
+              <Plus size={17} aria-hidden />
+              Add your first device
             </Button>
           ) : !user ? (
             <Button

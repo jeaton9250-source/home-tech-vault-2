@@ -35,7 +35,7 @@ export const FEATURE_LABELS: Record<
   FeatureKey,
   string
 > = {
-  dashboard: "Dashboard",
+  dashboard: "Home Pulse",
   devices: "Devices",
   deviceDetails: "Device Details",
   documents: "Documents",

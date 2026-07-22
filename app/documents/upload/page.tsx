@@ -19,6 +19,7 @@ import {
 } from "@/lib/data/householdScope";
 import { recordActivity } from "@/lib/activity";
 import { usePermissions } from "@/hooks/usePermissions";
+import DemoWriteGate from "@/components/demo/DemoWriteGate";
 
 import PageShell from "@/components/ui/PageShell";
 import PageTitle from "@/components/ui/PageTitle";
@@ -330,35 +331,10 @@ export default function UploadDocumentPage() {
 
   if (isDemo) {
     return (
-      <PageShell>
-        <PageTitle
-          eyebrow="Interactive Demo"
-          title="Create your vault to upload files"
-          description="Demo Mode lets you explore sample documents, but uploads are not saved."
-        />
-
-        <PageCard className="text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
-            <FileText size={30} />
-          </div>
-
-          <h2 className="mt-5 text-2xl font-semibold text-text-primary">
-            Ready to protect your files?
-          </h2>
-
-          <p className="mx-auto mt-3 max-w-lg text-text-secondary">
-            Create an account to upload receipts,
-            manuals, warranties, invoices, and more.
-          </p>
-
-          <Button
-            href="/signup"
-            className="mt-6"
-          >
-            Create Your Vault
-          </Button>
-        </PageCard>
-      </PageShell>
+      <DemoWriteGate
+        backHref="/documents"
+        backLabel="Back to Documents"
+      />
     );
   }
 

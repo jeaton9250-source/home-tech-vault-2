@@ -43,19 +43,15 @@ export function ViewerBanner({
 
   const shouldShow =
     show ??
-    (!loading && (isDemo || isViewer));
+    (!loading && isViewer);
 
   if (!shouldShow) {
     return null;
   }
 
-  const resolvedTitle = isDemo
-    ? "Interactive Demo"
-    : title;
+  const resolvedTitle = title;
 
-  const resolvedDescription = isDemo
-    ? "You're exploring the Morgan Household. Create your vault to save and manage your own home technology."
-    : description;
+  const resolvedDescription = description;
 
   return (
     <section className="rounded-[var(--radius-card)] border border-warning/35 bg-warning-soft/80 p-5 shadow-[var(--shadow-sm)]">
@@ -149,9 +145,8 @@ export function PageAction({
         className={cn(className)}
         onClick={showReadOnlyModal}
       >
-        <LockKeyhole size={16} />
         <Icon size={17} />
-        {buttonLabel}
+        {label}
       </Button>
     );
   }
@@ -267,7 +262,7 @@ export function CardActions({
     Boolean(children);
 
   const resolvedMessage = isDemo
-    ? "This vault is read-only while you explore. Create your vault to edit items."
+    ? "This vault is read-only while you explore."
     : isViewer
       ? viewerMessage
       : viewerMessage;
@@ -427,7 +422,7 @@ export function ReadOnlyNotice({
   const resolvedMessage =
     message ??
     (isDemo
-      ? "Demo mode is read-only. Create your vault to save changes."
+      ? "Demo mode is read-only."
       : "You can view this information, but your role does not allow changes.");
 
   return (

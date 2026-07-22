@@ -38,8 +38,7 @@ export default function HomeHealthHeader({
             {getTimeGreeting(firstName)}
           </h1>
           <p className="text-[0.9375rem] leading-7 text-text-muted md:text-base">
-            Your overall home health, recent activity, and what
-            to do next — all in one calm view.
+            How is your home, what needs attention, and what to do next.
           </p>
         </>
       )}

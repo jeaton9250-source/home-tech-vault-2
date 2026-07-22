@@ -123,26 +123,7 @@ function SecurityCenterContent() {
         title="Security Center"
         description="Advanced account security for your Home Tech Vault."
       >
-        {isDemo && (
-          <Button href="/signup">
-            Create Your Vault
-          </Button>
-        )}
       </PageHero>
-
-      {isDemo && (
-        <section className="rounded-[var(--radius-card)] border border-warning/35 bg-warning-soft/80 p-5 shadow-[var(--shadow-sm)]">
-          <p className="text-overline text-achievement">
-            Interactive Demo
-          </p>
-
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-text-secondary">
-            This preview uses sample account security
-            information. Create your vault to manage your
-            own password, sessions, and recovery options.
-          </p>
-        </section>
-      )}
 
       <section className="grid gap-6">
         <SecuritySection

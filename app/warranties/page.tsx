@@ -880,7 +880,7 @@ export default function WarrantiesPage() {
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <h2 className="text-lg font-semibold text-text-primary">
-                Warranty Overview
+                At a Glance
               </h2>
 
               <p className="mt-1 text-sm text-text-secondary">

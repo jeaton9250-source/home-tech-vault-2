@@ -36,7 +36,7 @@ export default function UpgradeSuccessPage() {
           className="mt-8 justify-center"
         >
           <LayoutDashboard size={18} />
-          Return to Dashboard
+          Return to Home Pulse
         </Button>
       </PageCard>
     </PageShell>

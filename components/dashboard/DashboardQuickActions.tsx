@@ -11,7 +11,9 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
+import { useDemoReadOnlyAction } from "@/components/demo/DemoExperienceProvider";
 import PageCard from "@/components/ui/PageCard";
+import { usePermissions } from "@/hooks/usePermissions";
 
 import { sections } from "@/lib/design-system/tokens";
 
@@ -68,12 +70,14 @@ export default function DashboardQuickActions({
   getActionHref,
   getActionLabel,
 }: DashboardQuickActionsProps) {
+  const { isDemo, canCreate } = usePermissions();
+  const showReadOnlyModal = useDemoReadOnlyAction();
+  const writeBlockedInDemo = isDemo && !canCreate;
+
   return (
     <PageCard elevated interactive>
-      <p className="text-overline">Quick Actions</p>
-
-      <h2 className="text-section-title mt-2 text-text-primary">
-        Jump back in
+      <h2 className="text-section-title text-text-primary">
+        What would you like to do?
       </h2>
 
       <div className="mt-6 grid gap-3 sm:grid-cols-2">
@@ -89,6 +93,13 @@ export default function DashboardQuickActions({
             description={action.description}
             tint={action.tint}
             accent={action.accent}
+            onDemoWrite={
+              writeBlockedInDemo &&
+              (action.href === "/devices/add" ||
+                action.href === "/documents/upload")
+                ? showReadOnlyModal
+                : undefined
+            }
           />
         ))}
       </div>
@@ -103,6 +114,7 @@ function QuickAction({
   description,
   tint,
   accent,
+  onDemoWrite,
 }: {
   href: string;
   icon: LucideIcon;
@@ -110,12 +122,13 @@ function QuickAction({
   description: string;
   tint: string;
   accent: string;
+  onDemoWrite?: () => void;
 }) {
-  return (
-    <Link
-      href={href}
-      className="htv-card-interactive group flex items-start gap-4 rounded-[var(--radius-card)] border border-border-subtle bg-surface-card p-4 shadow-[var(--shadow-sm)]"
-    >
+  const className =
+    "htv-card-interactive group flex w-full items-start gap-4 rounded-[var(--radius-card)] border border-border-subtle bg-surface-card p-4 text-left shadow-[var(--shadow-sm)]";
+
+  const content = (
+    <>
       <div
         className="htv-icon-well h-10 w-10 shrink-0"
         style={{
@@ -140,6 +153,24 @@ function QuickAction({
         size={16}
         className="mt-1 shrink-0 text-text-tertiary transition group-hover:translate-x-0.5 group-hover:text-interaction"
       />
+    </>
+  );
+
+  if (onDemoWrite) {
+    return (
+      <button
+        type="button"
+        onClick={onDemoWrite}
+        className={className}
+      >
+        {content}
+      </button>
+    );
+  }
+
+  return (
+    <Link href={href} className={className}>
+      {content}
     </Link>
   );
 }

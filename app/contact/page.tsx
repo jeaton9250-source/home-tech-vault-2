@@ -439,7 +439,7 @@ export default function ContactPage() {
                   <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                     {isSignedIn ? (
                       <Button href="/dashboard">
-                        Return to Dashboard
+                        Return to Home Pulse
                       </Button>
                     ) : (
                       <Button href="/">

@@ -11,6 +11,7 @@ import {
   withHouseholdInsertFields,
 } from "@/lib/data/householdScope";
 import { usePermissions } from "@/hooks/usePermissions";
+import DemoWriteGate from "@/components/demo/DemoWriteGate";
 
 import PageShell from "@/components/ui/PageShell";
 import PageTitle from "@/components/ui/PageTitle";
@@ -190,17 +191,10 @@ export default function NewMaintenanceTaskPage() {
 
   if (isDemo) {
     return (
-      <PageShell>
-        <PageTitle
-          eyebrow="Interactive Demo"
-          title="Create your vault to schedule maintenance"
-        />
-        <PageCard className="text-center">
-          <Button href="/signup" className="mt-4">
-            Create Your Vault
-          </Button>
-        </PageCard>
-      </PageShell>
+      <DemoWriteGate
+        backHref="/maintenance"
+        backLabel="Back to Maintenance"
+      />
     );
   }
 
