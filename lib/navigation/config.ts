@@ -1,16 +1,10 @@
 import {
-  Bell,
-  Building2,
   CreditCard,
   HelpCircle,
   Laptop,
-  LayoutDashboard,
-  LifeBuoy,
   MessageSquare,
   Radar,
   Settings,
-  Shield,
-  Sparkles,
   Upload,
   User,
   Users,
@@ -66,94 +60,21 @@ export const PRIMARY_NAV_ITEMS: PrimaryNavItem[] = [
 /** Secondary destinations in the avatar menu */
 export const PROFILE_MENU_ITEMS: ProfileNavItem[] = [
   {
+    label: "Account & Settings",
+    href: "/settings",
+    icon: Settings,
+    feature: "settings",
+  },
+  {
     label: "Household",
     href: "/family",
     icon: Users,
     feature: "family",
   },
   {
-    label: "Services",
-    href: "/subscriptions",
-    icon: CreditCard,
-    feature: "subscriptions",
-  },
-  {
-    label: "Rooms",
-    href: "/home",
-    icon: Building2,
-    feature: "rooms",
-  },
-  {
-    label: "Maintenance",
-    href: "/maintenance",
-    icon: Wrench,
-    feature: "maintenance",
-  },
-  {
-    label: "Insights",
-    href: "/insights",
-    icon: Sparkles,
-    feature: "insights",
-  },
-  {
-    label: "Audit Log",
-    href: "/audit",
-    icon: Shield,
-    feature: "audit",
-  },
-  {
-    label: "Notifications",
-    href: "/notifications",
-    icon: Bell,
-    feature: "notifications",
-  },
-  {
-    label: "Security",
-    href: "/security",
-    icon: Shield,
-    feature: "securityCenter",
-  },
-  {
-    label: "Account",
-    href: "/account",
-    icon: User,
-    feature: "account",
-  },
-  {
-    label: "Settings",
-    href: "/settings",
-    icon: Settings,
-    feature: "settings",
-  },
-  {
-    label: "Billing",
-    href: "/settings/billing",
-    icon: CreditCard,
-    feature: "billing",
-    requiresBillingAccess: true,
-  },
-  {
     label: "Help Center",
     href: "/faq",
     icon: HelpCircle,
-  },
-  {
-    label: "Contact Support",
-    href: "/contact",
-    icon: MessageSquare,
-    feature: "settings",
-  },
-  {
-    label: "Platform Overview",
-    href: "/admin",
-    icon: LayoutDashboard,
-    adminOnly: true,
-  },
-  {
-    label: "Support Inbox",
-    href: "/admin/support",
-    icon: LifeBuoy,
-    adminOnly: true,
   },
 ];
 
@@ -179,7 +100,7 @@ export const SECONDARY_ROUTE_ITEMS: ProfileNavItem[] = [
   },
   {
     label: "Profile",
-    href: "/profile",
+    href: "/settings",
     icon: User,
     feature: "account",
   },
@@ -238,7 +159,7 @@ export const MOBILE_NAV_ITEMS: Array<
     feature: "subscriptions",
   },
   {
-    label: "Settings",
+    label: "Account & Settings",
     href: "/settings",
     icon: Settings,
     feature: "settings",

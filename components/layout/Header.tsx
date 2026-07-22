@@ -86,16 +86,10 @@ const pageTitles: Record<
       "See what needs your attention.",
   },
 
-  "/account": {
-    title: "Account",
-    description:
-      "Manage your personal information and preferences.",
-  },
-
   "/settings": {
-    title: "Settings",
+    title: "Account & Settings",
     description:
-      "Customize how Home Tech Vault works for you.",
+      "Manage your profile, preferences, security, and subscription.",
   },
 
   "/contact": {

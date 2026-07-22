@@ -303,10 +303,10 @@ export default function ContactPage() {
     ? [
         {
           href: "/settings",
-          label: "Account settings",
+          label: "Account & Settings",
         },
         {
-          href: "/settings/billing",
+          href: "/settings?tab=billing",
           label: "Billing and subscription",
         },
         {

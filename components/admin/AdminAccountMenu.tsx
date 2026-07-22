@@ -168,9 +168,9 @@ export default function AdminAccountMenu({
 
           <div className="p-2">
             <AdminMenuLink
-              href="/account"
+              href="/settings"
               icon={User}
-              label="My Account"
+              label="Account & Settings"
               onSelect={() => {
                 setOpen(false);
               }}

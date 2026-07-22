@@ -74,7 +74,7 @@ export async function POST(request: Request) {
         customer:
           subscription.stripe_customer_id,
         return_url:
-          `${appUrl}/settings/billing`,
+          `${appUrl}/settings?tab=billing`,
       });
 
     return NextResponse.json({

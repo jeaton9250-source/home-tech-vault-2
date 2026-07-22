@@ -88,8 +88,11 @@ export default function NotificationsPage() {
               Household Activity
             </Button>
 
-            <Button href="/settings" variant="secondary">
-              Notification Settings
+            <Button
+              href="/settings?tab=preferences"
+              variant="secondary"
+            >
+              Account & Settings
             </Button>
           </div>
         }
