@@ -5,6 +5,7 @@ import "./globals.css";
 
 import AppChrome from "@/components/AppChrome";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
+import { Analytics } from "@vercel/analytics/next";
 
 import { brand } from "@/lib/design-system/tokens";
 
@@ -30,6 +31,7 @@ export default function RootLayout({
       <body className="bg-surface-base text-text-primary antialiased">
         <GoogleAnalytics />
         <AppChrome>{children}</AppChrome>
+        <Analytics />
       </body>
     </html>
   );
