@@ -3,6 +3,7 @@
 import { ChangeEvent, useEffect, useState } from "react";
 import {
   Download,
+  Eye,
   File,
   FileText,
   Loader2,
@@ -34,6 +35,7 @@ type DeviceDocument = DeviceDocumentRow & {
 
 type DeviceDocumentsProps = {
   deviceId: string;
+  embedded?: boolean;
 };
 
 const documentTypes = [
@@ -46,6 +48,7 @@ const documentTypes = [
 
 export default function DeviceDocuments({
   deviceId,
+  embedded = false,
 }: DeviceDocumentsProps) {
   const [documents, setDocuments] = useState<DeviceDocument[]>([]);
   const [selectedType, setSelectedType] = useState("Manual");
@@ -299,58 +302,104 @@ export default function DeviceDocuments({
     }
   }
 
-  return (
-    <section className="mt-10 border-t border-border-subtle pt-10">
-      <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-        <div>
-          <p className="text-overline text-charcoal-soft">
-            Digital Binder
-          </p>
+  const content = (
+    <>
+      {!embedded ? (
+        <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="text-overline text-charcoal-soft">
+              Digital Binder
+            </p>
 
-          <h2 className="mt-2 text-2xl font-bold text-text-primary">
-            Documents
-          </h2>
+            <h2 className="mt-2 text-2xl font-bold text-text-primary">
+              Documents
+            </h2>
 
-          <p className="mt-2 text-sm text-text-secondary">
-            Store manuals, receipts, warranties, and important files.
-          </p>
+            <p className="mt-2 text-sm text-text-secondary">
+              Store manuals, receipts, warranties, and important files.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <select
+              value={selectedType}
+              onChange={(event) =>
+                setSelectedType(event.target.value)
+              }
+              className="rounded-xl border border-border-subtle bg-white px-4 py-3 text-sm outline-none focus:border-interaction"
+            >
+              {documentTypes.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
+
+            <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-charcoal px-5 py-3 font-semibold text-surface-card transition hover:opacity-90">
+              {uploading ? (
+                <Loader2 className="animate-spin" size={18} />
+              ) : (
+                <Plus size={18} />
+              )}
+
+              {uploading ? "Uploading..." : "Add Document"}
+
+              <input
+                type="file"
+                multiple
+                disabled={uploading}
+                onChange={uploadDocuments}
+                accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
+                className="hidden"
+              />
+            </label>
+          </div>
         </div>
+      ) : (
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-overline text-section-technology">Documents</p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
+              Files & records
+            </h2>
+          </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <select
-            value={selectedType}
-            onChange={(event) =>
-              setSelectedType(event.target.value)
-            }
-            className="rounded-xl border border-border-subtle bg-white px-4 py-3 text-sm outline-none focus:border-interaction"
-          >
-            {documentTypes.map((type) => (
-              <option key={type} value={type}>
-                {type}
-              </option>
-            ))}
-          </select>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <select
+              value={selectedType}
+              onChange={(event) =>
+                setSelectedType(event.target.value)
+              }
+              className="rounded-xl border border-border-subtle bg-surface-card px-4 py-3 text-sm outline-none focus:border-interaction"
+            >
+              {documentTypes.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
 
-          <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-charcoal px-5 py-3 font-semibold text-surface-card transition hover:opacity-90">
-            {uploading ? (
-              <Loader2 className="animate-spin" size={18} />
-            ) : (
-              <Plus size={18} />
-            )}
+            <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border border-border-subtle bg-surface-card px-5 py-2.5 text-sm font-semibold text-text-primary shadow-[var(--shadow-sm)] transition hover:bg-surface-hover">
+              {uploading ? (
+                <Loader2 className="animate-spin" size={18} />
+              ) : (
+                <Plus size={18} />
+              )}
 
-            {uploading ? "Uploading..." : "Add Document"}
+              {uploading ? "Uploading..." : "Add Document"}
 
-            <input
-              type="file"
-              multiple
-              disabled={uploading}
-              onChange={uploadDocuments}
-              accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
-              className="hidden"
-            />
-          </label>
+              <input
+                type="file"
+                multiple
+                disabled={uploading}
+                onChange={uploadDocuments}
+                accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
+                className="hidden"
+              />
+            </label>
+          </div>
         </div>
-      </div>
+      )}
 
       {loading ? (
         <div className="mt-6 flex items-center gap-3 rounded-2xl bg-surface-sunken p-6 text-text-secondary">
@@ -369,74 +418,139 @@ export default function DeviceDocuments({
           />
 
           <h3 className="mt-4 font-semibold text-text-primary">
-            Your digital binder is empty
+            No documents have been added yet.
           </h3>
 
           <p className="mt-2 text-sm text-text-secondary">
-            Upload a manual, receipt, warranty, or installation guide.
+            Upload receipts or manuals to keep everything in one place.
           </p>
         </div>
       ) : (
-        <div className="mt-6 grid gap-4">
+        <div
+          className={
+            embedded
+              ? "mt-6 grid gap-4 md:grid-cols-2"
+              : "mt-6 grid gap-4"
+          }
+        >
           {documents.map((document) => {
             const Icon = getDocumentIcon(document.document_type);
 
             return (
-              <div
+              <article
                 key={document.id}
-                className="flex flex-col gap-4 rounded-2xl border border-border-subtle bg-white p-5 sm:flex-row sm:items-center sm:justify-between"
+                className={
+                  embedded
+                    ? "rounded-[24px] border border-border-subtle bg-surface-card p-5 shadow-[var(--shadow-sm)]"
+                    : "flex flex-col gap-4 rounded-2xl border border-border-subtle bg-white p-5 sm:flex-row sm:items-center sm:justify-between"
+                }
               >
-                <div className="flex min-w-0 items-center gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
-                    <Icon size={22} />
+                <div
+                  className={
+                    embedded
+                      ? "flex items-start gap-4"
+                      : "flex min-w-0 items-center gap-4"
+                  }
+                >
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal">
+                    <Icon size={18} />
                   </div>
 
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p className="truncate font-semibold text-text-primary">
                       {document.document_name}
                     </p>
 
                     <p className="mt-1 text-sm text-text-secondary">
-                      {document.document_type} ·{" "}
-                      {formatFileSize(document.file_size)}
+                      {document.document_type}
+                      {!embedded ? ` · ${formatFileSize(document.file_size)}` : null}
                     </p>
+
+                    {embedded ? (
+                      <p className="mt-1 text-xs text-text-tertiary">
+                        Added{" "}
+                        {new Date(document.created_at).toLocaleDateString(
+                          undefined,
+                          {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          }
+                        )}
+                      </p>
+                    ) : null}
                   </div>
                 </div>
 
-                <div className="flex gap-2">
+                <div
+                  className={
+                    embedded
+                      ? "mt-4 flex flex-wrap gap-2"
+                      : "flex gap-2"
+                  }
+                >
                   <a
                     href={document.signedUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-2 rounded-xl bg-surface-sunken px-4 py-2 text-sm font-semibold text-text-primary transition hover:bg-[#EFECE5]"
+                    className={
+                      embedded
+                        ? "htv-focus-ring inline-flex items-center gap-2 rounded-full border border-border-subtle bg-surface-sunken px-4 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-hover"
+                        : "inline-flex items-center gap-2 rounded-xl bg-surface-sunken px-4 py-2 text-sm font-semibold text-text-primary transition hover:bg-[#EFECE5]"
+                    }
                   >
-                    <Download size={16} />
-                    Open
+                    {embedded ? <Eye size={15} /> : <Download size={16} />}
+                    {embedded ? "Preview" : "Open"}
                   </a>
 
-                  <button
-                    type="button"
-                    onClick={() => deleteDocument(document)}
-                    disabled={deletingId === document.id}
-                    className="inline-flex items-center gap-2 rounded-xl bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100 disabled:opacity-60"
+                  <a
+                    href={document.signedUrl}
+                    download
+                    className={
+                      embedded
+                        ? "htv-focus-ring inline-flex items-center gap-2 rounded-full border border-border-subtle bg-surface-sunken px-4 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-hover"
+                        : "inline-flex items-center gap-2 rounded-xl bg-surface-sunken px-4 py-2 text-sm font-semibold text-text-primary transition hover:bg-[#EFECE5]"
+                    }
                   >
-                    {deletingId === document.id ? (
-                      <Loader2
-                        size={16}
-                        className="animate-spin"
-                      />
-                    ) : (
-                      <Trash2 size={16} />
-                    )}
+                    <Download size={embedded ? 15 : 16} />
+                    Download
+                  </a>
 
-                    Delete
-                  </button>
+                  {!embedded ? (
+                    <button
+                      type="button"
+                      onClick={() => deleteDocument(document)}
+                      disabled={deletingId === document.id}
+                      className="inline-flex items-center gap-2 rounded-xl bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100 disabled:opacity-60"
+                    >
+                      {deletingId === document.id ? (
+                        <Loader2
+                          size={16}
+                          className="animate-spin"
+                        />
+                      ) : (
+                        <Trash2 size={16} />
+                      )}
+
+                      Delete
+                    </button>
+                  ) : null}
                 </div>
-              </div>
+              </article>
             );
           })}
         </div>
       )}
+    </>
+  );
+
+  if (embedded) {
+    return content;
+  }
+
+  return (
+    <section className="mt-10 border-t border-border-subtle pt-10">
+      {content}
     </section>
   );
 }

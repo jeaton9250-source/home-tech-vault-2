@@ -23,6 +23,7 @@ type DeviceTimelineProps = {
   deviceId: string;
   purchaseDate?: string | null;
   warrantyDate?: string | null;
+  embedded?: boolean;
 };
 
 type DeviceEvent = {
@@ -58,6 +59,7 @@ export default function DeviceTimeline({
   deviceId,
   purchaseDate,
   warrantyDate,
+  embedded = false,
 }: DeviceTimelineProps) {
   const [events, setEvents] = useState<DeviceEvent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -291,32 +293,45 @@ export default function DeviceTimeline({
     );
   }, [events, purchaseDate, warrantyDate]);
 
-  return (
-    <section className="mt-10 border-t border-border-subtle pt-10">
-      <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="text-overline text-charcoal-soft">
-            Device History
-          </p>
+  const content = (
+    <>
+      {!embedded ? (
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-overline text-charcoal-soft">
+              Device History
+            </p>
 
-          <h2 className="mt-2 text-2xl font-bold text-text-primary">
-            Timeline
-          </h2>
+            <h2 className="mt-2 text-2xl font-bold text-text-primary">
+              Timeline
+            </h2>
 
-          <p className="mt-2 text-sm text-text-secondary">
-            Track maintenance, repairs, updates, and important milestones.
-          </p>
+            <p className="mt-2 text-sm text-text-secondary">
+              Track maintenance, repairs, updates, and important milestones.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setShowForm((current) => !current)}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-charcoal px-5 py-3 text-sm font-semibold text-surface-card hover:bg-charcoal-hover"
+          >
+            <Plus size={18} />
+            Add Event
+          </button>
         </div>
-
-        <button
-          type="button"
-          onClick={() => setShowForm((current) => !current)}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-charcoal px-5 py-3 text-sm font-semibold text-surface-card hover:bg-charcoal-hover"
-        >
-          <Plus size={18} />
-          Add Event
-        </button>
-      </div>
+      ) : (
+        <div className="mb-6 flex justify-end">
+          <button
+            type="button"
+            onClick={() => setShowForm((current) => !current)}
+            className="inline-flex items-center justify-center gap-2 rounded-full border border-border-subtle bg-surface-card px-4 py-2 text-sm font-semibold text-text-primary shadow-[var(--shadow-sm)] transition hover:bg-surface-hover"
+          >
+            <Plus size={18} />
+            Add Event
+          </button>
+        </div>
+      )}
 
       {showForm && (
         <form
@@ -416,11 +431,11 @@ export default function DeviceTimeline({
           <History size={36} className="mx-auto text-charcoal-soft" />
 
           <h3 className="mt-4 font-semibold text-text-primary">
-            No history yet
+            No timeline events have been recorded yet.
           </h3>
 
           <p className="mt-2 text-sm text-text-secondary">
-            Add maintenance, repair, cleaning, or update events.
+            Purchases, uploads, and maintenance will appear here over time.
           </p>
         </div>
       ) : (
@@ -485,6 +500,16 @@ export default function DeviceTimeline({
           })}
         </div>
       )}
+    </>
+  );
+
+  if (embedded) {
+    return content;
+  }
+
+  return (
+    <section className="mt-10 border-t border-border-subtle pt-10">
+      {content}
     </section>
   );
 }
