@@ -1,6 +1,9 @@
 /** Demo device image registry — single source of truth for Morgan Household assets. */
 export const DEMO_DEVICE_IMAGE_BASE = "/demo/devices";
 
+/** Bump when demo image assets change to bust browser/CDN caches. */
+export const DEMO_IMAGE_CACHE_VERSION = "3";
+
 /**
  * Device ID → local webp asset under /public/demo/devices/
  * Filename must match the physical product shown in the Morgan Household demo.
@@ -67,12 +70,18 @@ export function isDemoDeviceAssetPath(
     return false;
   }
 
-  const normalized = src.trim();
+  const normalized = src.trim().split("?")[0];
 
   return (
     normalized.startsWith(`${DEMO_DEVICE_IMAGE_BASE}/`) ||
     normalized.startsWith("/demo-devices/")
   );
+}
+
+function withDemoImageCacheBust(
+  path: string
+): string {
+  return `${path}?v=${DEMO_IMAGE_CACHE_VERSION}`;
 }
 
 export function getDemoImagePathForDeviceId(
@@ -82,7 +91,14 @@ export function getDemoImagePathForDeviceId(
     return null;
   }
 
-  return DEMO_DEVICE_IMAGE_BY_ID[deviceId.trim()] ?? null;
+  const path =
+    DEMO_DEVICE_IMAGE_BY_ID[deviceId.trim()];
+
+  if (!path) {
+    return null;
+  }
+
+  return withDemoImageCacheBust(path);
 }
 
 export function getDemoImagePathForDevice(device: {
