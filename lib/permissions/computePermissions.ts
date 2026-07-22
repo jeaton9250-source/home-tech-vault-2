@@ -231,6 +231,12 @@ export function computePermissions(
       {
         feature: options?.feature,
         requiredPlan,
+        inheritsHouseholdPlan:
+          context.inheritsHouseholdPlan,
+        inheritsProPlan:
+          context.inheritsProPlan,
+        inheritsFamilyPlan:
+          context.inheritsFamilyPlan,
       }
     );
   }

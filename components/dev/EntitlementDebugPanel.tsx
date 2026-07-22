@@ -3,10 +3,11 @@
 import { useState } from "react";
 
 import { usePermissions } from "@/hooks/usePermissions";
+import { useHouseholdLimits } from "@/hooks/useHouseholdLimits";
 import { isDevelopmentEnvironment } from "@/lib/permissions/developmentAccess";
 
 function formatValue(
-  value: string | boolean | null | undefined
+  value: string | boolean | number | null | undefined
 ): string {
   if (value === null || value === undefined) {
     return "—";
@@ -14,6 +15,10 @@ function formatValue(
 
   if (typeof value === "boolean") {
     return value ? "true" : "false";
+  }
+
+  if (typeof value === "number") {
+    return String(value);
   }
 
   return value;
@@ -28,6 +33,7 @@ export default function EntitlementDebugPanel() {
     useState(false);
 
   const permissions = usePermissions();
+  const quota = useHouseholdLimits();
 
   const canViewPanel =
     isDevelopmentEnvironment() ||
@@ -164,6 +170,92 @@ export default function EntitlementDebugPanel() {
         permissions.error
       ),
     },
+    {
+      label: "quota.loading",
+      value: formatValue(quota.loading),
+    },
+    {
+      label: "quota.usageLoading",
+      value: formatValue(
+        quota.usageLoading
+      ),
+    },
+    {
+      label: "quota.effectivePlan",
+      value: formatValue(
+        quota.effectivePlan
+      ),
+    },
+    {
+      label: "quota.canUseProFeatures",
+      value: formatValue(
+        quota.canUseProFeatures
+      ),
+    },
+    {
+      label: "quota.deviceLimit",
+      value: formatValue(
+        quota.limits.maxDevices
+      ),
+    },
+    {
+      label: "quota.documentLimit",
+      value: formatValue(
+        quota.limits.maxDocuments
+      ),
+    },
+    {
+      label: "quota.usage.devices",
+      value: formatValue(
+        String(quota.usage.devices)
+      ),
+    },
+    {
+      label: "quota.usage.documents",
+      value: formatValue(
+        String(quota.usage.documents)
+      ),
+    },
+    {
+      label: "quota.remaining.devices",
+      value: formatValue(
+        quota.remaining.devices === null
+          ? "unlimited"
+          : String(
+              quota.remaining.devices
+            )
+      ),
+    },
+    {
+      label: "quota.canAddDevice",
+      value: formatValue(
+        quota.canAddDevice
+      ),
+    },
+    {
+      label: "quota.canAddDocument",
+      value: formatValue(
+        quota.canAddDocument
+      ),
+    },
+    {
+      label: "quota.limitReason",
+      value: formatValue(
+        quota.limitReason
+      ),
+    },
+    {
+      label: "hasUnlimitedDevices",
+      value: formatValue(
+        permissions.hasUnlimitedDevices
+      ),
+    },
+    {
+      label: "deviceLimit",
+      value: formatValue(
+        permissions.deviceLimit
+      ),
+    },
   ];
 
   return (
@@ -194,6 +286,7 @@ export default function EntitlementDebugPanel() {
               type="button"
               onClick={() => {
                 void permissions.refreshPermissions();
+                void quota.refreshUsage();
               }}
               className="rounded-lg border border-border-subtle px-2 py-1 text-xs font-medium text-text-secondary"
             >

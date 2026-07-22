@@ -56,6 +56,9 @@ export function buildUpgradeReasonMessage(
   context?: {
     feature?: FeatureKey;
     requiredPlan?: FeaturePlanRequirement;
+    inheritsHouseholdPlan?: boolean;
+    inheritsProPlan?: boolean;
+    inheritsFamilyPlan?: boolean;
   }
 ): string {
   const featureName = context?.feature
@@ -70,7 +73,7 @@ export function buildUpgradeReasonMessage(
       return "Demo mode is read-only. Create your vault to save and manage your own home technology.";
 
     case "viewer_read_only":
-      return "Your household role is read-only. You can view this Pro feature, but members and admins make changes.";
+      return "Your Viewer role is read-only. Contact a household admin if you need permission to add or edit content.";
 
     case "admin_required":
       return "Only household admins can manage billing, members, and household settings.";
@@ -82,10 +85,26 @@ export function buildUpgradeReasonMessage(
       return `${featureName} requires Home Tech Vault Family. Upgrade to create a shared household with invitations and role-based access.`;
 
     case "device_limit_reached":
-      return `Free accounts can store up to ${FREE_DEVICE_LIMIT} devices. Upgrade to Pro for unlimited device tracking.`;
+      if (
+        context?.inheritsHouseholdPlan ||
+        context?.inheritsProPlan ||
+        context?.inheritsFamilyPlan
+      ) {
+        return "This household has reached its device limit.";
+      }
+
+      return `This household has reached the Free plan limit of ${FREE_DEVICE_LIMIT} devices. Upgrade the household to add more.`;
 
     case "document_limit_reached":
-      return `Free accounts can store up to ${FREE_DOCUMENT_LIMIT} documents. Upgrade to Pro for unlimited uploads.`;
+      if (
+        context?.inheritsHouseholdPlan ||
+        context?.inheritsProPlan ||
+        context?.inheritsFamilyPlan
+      ) {
+        return "This household has reached its document limit.";
+      }
+
+      return `This household has reached the Free plan limit of ${FREE_DOCUMENT_LIMIT} documents. Upgrade the household to upload more.`;
 
     case "unauthenticated":
       return "Sign in to access this feature.";

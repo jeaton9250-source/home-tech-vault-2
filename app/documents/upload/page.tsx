@@ -18,6 +18,10 @@ import {
   withHouseholdInsertFields,
 } from "@/lib/data/householdScope";
 import { recordActivity } from "@/lib/activity";
+import {
+  getHouseholdLimitMessage,
+  useHouseholdLimits,
+} from "@/hooks/useHouseholdLimits";
 import { usePermissions } from "@/hooks/usePermissions";
 import DemoWriteGate from "@/components/demo/DemoWriteGate";
 
@@ -40,25 +44,14 @@ export default function UploadDocumentPage() {
     isDemo,
     canCreate,
     canUpload,
-    canAddDocument,
     householdId,
-    documentLimit,
-    hasUnlimitedDocuments,
-    loading: permissionsLoading,
+    isViewer,
   } = usePermissions();
+
+  const quota = useHouseholdLimits();
 
   const [devices, setDevices] =
     useState<Device[]>([]);
-
-  const [
-    documentCount,
-    setDocumentCount,
-  ] = useState(0);
-
-  const [
-    checkingDocumentLimit,
-    setCheckingDocumentLimit,
-  ] = useState(true);
 
   const [
     loadingDevices,
@@ -87,18 +80,16 @@ export default function UploadDocumentPage() {
 
   useEffect(() => {
     async function loadHouseholdDevices() {
-      if (permissionsLoading) {
+      if (quota.loading) {
         return;
       }
 
       try {
         setLoadingDevices(true);
-        setCheckingDocumentLimit(true);
         setErrorMessage("");
 
         if (isDemo || !user) {
           setDevices([]);
-          setDocumentCount(0);
           return;
         }
 
@@ -119,24 +110,6 @@ export default function UploadDocumentPage() {
           (devicesResult.data ||
             []) as Device[]
         );
-
-        const countResult =
-          await applyHouseholdScope(
-            supabase
-              .from("documents")
-              .select("*", {
-                count: "exact",
-                head: true,
-              }),
-            householdId,
-            user.id
-          );
-
-        if (countResult.error) {
-          throw countResult.error;
-        }
-
-        setDocumentCount(countResult.count || 0);
       } catch (error) {
         console.error(
           "Unable to load upload options:",
@@ -148,7 +121,6 @@ export default function UploadDocumentPage() {
         );
       } finally {
         setLoadingDevices(false);
-        setCheckingDocumentLimit(false);
       }
     }
 
@@ -156,14 +128,29 @@ export default function UploadDocumentPage() {
   }, [
     user,
     isDemo,
-    permissionsLoading,
+    quota.loading,
     householdId,
   ]);
 
+  const loading =
+    quota.loading || loadingDevices;
+
   const documentLimitReached =
-    !hasUnlimitedDocuments &&
-    documentLimit !== null &&
-    documentCount >= documentLimit;
+    quota.documentLimitReached;
+
+  const limitMessage = getHouseholdLimitMessage(
+    quota.limitReason === "allowed"
+      ? documentLimitReached
+        ? quota.canUseProFeatures
+          ? "household_document_limit"
+          : "free_document_limit"
+        : "allowed"
+      : quota.limitReason,
+    {
+      canManageBilling:
+        quota.canManageBilling,
+    }
+  );
 
   async function uploadDocument() {
     setErrorMessage("");
@@ -178,7 +165,11 @@ export default function UploadDocumentPage() {
       return;
     }
 
-    if (!canCreate || !canUpload) {
+    if (loading) {
+      return;
+    }
+
+    if (!canCreate || !canUpload || isViewer) {
       setErrorMessage(
         "Viewer access is read-only. You cannot upload documents."
       );
@@ -187,8 +178,16 @@ export default function UploadDocumentPage() {
 
     if (
       documentLimitReached ||
-      !canAddDocument(documentCount)
+      !quota.canAddDocument
     ) {
+      if (
+        quota.canUseProFeatures ||
+        quota.billingManagedByHousehold
+      ) {
+        router.push("/family");
+        return;
+      }
+
       router.push(
         "/upgrade?reason=document-limit"
       );
@@ -308,11 +307,7 @@ export default function UploadDocumentPage() {
     }
   }
 
-  if (
-    permissionsLoading ||
-    loadingDevices ||
-    checkingDocumentLimit
-  ) {
+  if (loading) {
     return (
       <PageShell>
         <PageCard className="flex min-h-64 items-center justify-center">
@@ -388,22 +383,23 @@ export default function UploadDocumentPage() {
         </PageCard>
       )}
 
-      {documentLimitReached &&
-        documentLimit !== null && (
+      {documentLimitReached && (
           <PageCard className="border-warning/40 bg-warning-soft text-text-primary">
             <p className="font-semibold">
-              Document limit reached
+              {limitMessage.title}
             </p>
             <p className="mt-1 text-sm text-text-secondary">
-              You have used all {documentLimit}{" "}
-              document slots on your current plan.
+              {limitMessage.description}
             </p>
-            <Button
-              href="/upgrade?reason=document-limit"
-              className="mt-4"
-            >
-              Upgrade Plan
-            </Button>
+            {limitMessage.actionHref &&
+              limitMessage.actionLabel && (
+                <Button
+                  href={limitMessage.actionHref}
+                  className="mt-4"
+                >
+                  {limitMessage.actionLabel}
+                </Button>
+              )}
           </PageCard>
         )}
 
@@ -527,6 +523,7 @@ export default function UploadDocumentPage() {
               type="button"
               disabled={
                 uploading ||
+                loading ||
                 !canUpload ||
                 documentLimitReached
               }

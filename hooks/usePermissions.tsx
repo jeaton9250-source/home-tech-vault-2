@@ -29,6 +29,7 @@ import {
 import {
   isActiveSubscriptionStatus,
   resolveEffectivePlan,
+  resolveUsageLimits,
 } from "@/lib/permissions/effectivePlan";
 
 import type {
@@ -729,9 +730,49 @@ function usePermissionsState() {
     adminGrantPlan,
     adminGrantExpiresAt,
     hasActiveAdminGrant,
-    usageLimits,
     featureAccess,
   } = effectiveAccess;
+
+  const authoritativeEntitlement =
+    useMemo(() => {
+      const apiCanUsePro =
+        apiEntitlementSnapshot.canUseProFeatures;
+      const apiPlan =
+        apiEntitlementSnapshot.effectivePlan;
+
+      return {
+        canUseProFeatures:
+          apiCanUsePro ??
+          canUseProFeatures,
+        effectivePlan:
+          apiPlan ?? effectivePlan,
+      };
+    }, [
+      apiEntitlementSnapshot.canUseProFeatures,
+      apiEntitlementSnapshot.effectivePlan,
+      canUseProFeatures,
+      effectivePlan,
+    ]);
+
+  const usageLimits = useMemo(
+    () =>
+      resolveUsageLimits(
+        authoritativeEntitlement.effectivePlan,
+        effectiveIsPlatformAdmin,
+        hasFamilyFeatureAccess ||
+          authoritativeEntitlement.effectivePlan ===
+            "family",
+        authoritativeEntitlement.canUseProFeatures ||
+          hasPremiumFeatureAccess
+      ),
+    [
+      authoritativeEntitlement.effectivePlan,
+      authoritativeEntitlement.canUseProFeatures,
+      effectiveIsPlatformAdmin,
+      hasFamilyFeatureAccess,
+      hasPremiumFeatureAccess,
+    ]
+  );
 
   const isActive =
     isActiveSubscriptionStatus(
@@ -741,22 +782,23 @@ function usePermissionsState() {
     hasPremiumFeatureAccess;
 
   const isPro =
-    effectivePlan === "pro" &&
-    canUseProFeatures;
+    authoritativeEntitlement.effectivePlan ===
+      "pro" &&
+    authoritativeEntitlement.canUseProFeatures;
 
   const isFamily =
     hasFamilyFeatureAccess;
 
   const isFree =
     !effectiveIsPlatformAdmin &&
-    !canUseProFeatures;
+    !authoritativeEntitlement.canUseProFeatures;
 
   const isTrial =
     effectiveStatus === "trialing";
 
   const canUsePremiumFeatures =
     effectiveIsPlatformAdmin ||
-    canUseProFeatures;
+    authoritativeEntitlement.canUseProFeatures;
 
   const canUseFamilySharing =
     effectiveIsPlatformAdmin ||
@@ -774,7 +816,7 @@ function usePermissionsState() {
           effectiveRawHouseholdRole,
         householdId:
           permissionHouseholdId,
-        plan: effectivePlan,
+        plan: authoritativeEntitlement.effectivePlan,
         isPlatformAdmin:
           effectiveIsPlatformAdmin,
         canUsePremiumFeatures,
@@ -800,7 +842,7 @@ function usePermissionsState() {
       effectiveRole,
       effectiveRawHouseholdRole,
       permissionHouseholdId,
-      effectivePlan,
+      authoritativeEntitlement.effectivePlan,
       effectiveIsPlatformAdmin,
       canUsePremiumFeatures,
       canUseFamilySharing,
@@ -853,8 +895,9 @@ function usePermissionsState() {
     isDevelopmentAccessOverrideActive,
 
     personalPlan,
-    plan: effectivePlan,
-    effectivePlan,
+    plan: authoritativeEntitlement.effectivePlan,
+    effectivePlan:
+      authoritativeEntitlement.effectivePlan,
     householdPlan,
     planDisplayName,
     roleDisplayName,
@@ -871,7 +914,8 @@ function usePermissionsState() {
     inheritsProPlan,
     inheritsHouseholdPlan,
     householdSubscriptionOwnerId,
-    canUseProFeatures,
+    canUseProFeatures:
+      authoritativeEntitlement.canUseProFeatures,
     effectivePlanSource,
     adminGrantPlan,
     adminGrantExpiresAt,

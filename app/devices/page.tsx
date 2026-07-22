@@ -36,6 +36,7 @@ import { demoDevices } from "@/lib/demoData";
 import { withDemoDevicePhoto } from "@/lib/devices/getDeviceImage";
 
 import { usePermissions } from "@/hooks/usePermissions";
+import { useHouseholdLimits } from "@/hooks/useHouseholdLimits";
 
 import PageShell from "@/components/ui/PageShell";
 import PageCard from "@/components/ui/PageCard";
@@ -77,10 +78,11 @@ export default function DevicesPage() {
     isDemo,
     householdId,
     canCreate,
-    deviceLimit,
-    hasUnlimitedDevices,
+    isViewer,
     loading: permissionsLoading,
   } = usePermissions();
+
+  const quota = useHouseholdLimits();
 
   const showReadOnlyModal = useDemoReadOnlyAction();
 
@@ -564,12 +566,36 @@ export default function DevicesPage() {
 
   const loading =
     permissionsLoading ||
-    loadingDevices;
+    loadingDevices ||
+    quota.usageLoading;
+
+  const deviceCount = Math.max(
+    devices.length,
+    quota.usage.devices
+  );
 
   const deviceLimitReached =
-    !hasUnlimitedDevices &&
-    deviceLimit !== null &&
-    devices.length >= deviceLimit;
+    !loading &&
+    quota.limits.maxDevices !== null &&
+    deviceCount >= quota.limits.maxDevices;
+
+  function getAddDeviceButtonLabel() {
+    if (loading) {
+      return "Checking allowance…";
+    }
+
+    if (isViewer) {
+      return "Viewer · Read Only";
+    }
+
+    if (deviceLimitReached) {
+      return quota.canUseProFeatures
+        ? "Household limit reached"
+        : "Upgrade Household";
+    }
+
+    return "Add Device";
+  }
 
   function clearFilters() {
     setSearchTerm("");
@@ -588,11 +614,28 @@ export default function DevicesPage() {
     }
 
     if (!canCreate) {
+      if (isViewer) {
+        router.push("/family");
+        return;
+      }
+
       router.push("/signup");
       return;
     }
 
+    if (loading) {
+      return;
+    }
+
     if (deviceLimitReached) {
+      if (
+        quota.canUseProFeatures ||
+        quota.billingManagedByHousehold
+      ) {
+        router.push("/family");
+        return;
+      }
+
       router.push(
         "/upgrade?reason=device-limit"
       );
@@ -620,11 +663,17 @@ export default function DevicesPage() {
           <Button
             type="button"
             onClick={handleAddDevice}
+            disabled={loading}
           >
-            <Plus size={17} />
-            {deviceLimitReached
-              ? "Upgrade to Add More"
-              : "Add Device"}
+            {loading ? (
+              <Loader2
+                size={17}
+                className="animate-spin"
+              />
+            ) : (
+              <Plus size={17} />
+            )}
+            {getAddDeviceButtonLabel()}
           </Button>
         ) : isDemo ? (
           <Button
@@ -940,11 +989,16 @@ export default function DevicesPage() {
               type="button"
               onClick={handleAddDevice}
               className="mt-6"
+              disabled={loading}
             >
               <Plus size={17} aria-hidden />
-              {deviceLimitReached
-                ? "Upgrade to add more"
-                : "Add your first device"}
+              {loading
+                ? "Checking allowance…"
+                : deviceLimitReached
+                  ? quota.canUseProFeatures
+                    ? "Household limit reached"
+                    : "Upgrade Household"
+                  : "Add your first device"}
             </Button>
           ) : isDemo ? (
             <Button
@@ -976,33 +1030,37 @@ export default function DevicesPage() {
       {!isDemo &&
         !loading &&
         canCreate &&
-        !hasUnlimitedDevices &&
-        deviceLimit !== null && (
+        quota.limits.maxDevices !== null && (
           <PageCard className="p-5 md:p-6">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-overline text-section-technology">
-                  Your Plan
+                  Household Allowance
                 </p>
 
                 <p className="mt-2 text-lg font-semibold text-text-primary">
-                  {devices.length} of{" "}
-                  {deviceLimit} devices used
+                  {deviceCount} of{" "}
+                  {quota.limits.maxDevices} devices
+                  used
                 </p>
 
                 <p className="mt-1 text-sm text-text-secondary">
-                  Upgrade for unlimited
-                  device tracking.
+                  {quota.canUseProFeatures
+                    ? "This household is on a Pro plan."
+                    : "Upgrade the household for unlimited device tracking."}
                 </p>
               </div>
 
-              <Button
-                href="/upgrade"
-                variant="secondary"
-              >
-                View Upgrade
-                <ArrowRight size={16} />
-              </Button>
+              {!quota.canUseProFeatures &&
+                quota.canManageBilling && (
+                  <Button
+                    href="/upgrade?reason=device-limit"
+                    variant="secondary"
+                  >
+                    Upgrade Household
+                    <ArrowRight size={16} />
+                  </Button>
+                )}
             </div>
 
             <div className="mt-5 h-2 overflow-hidden rounded-full bg-border-subtle">
@@ -1012,8 +1070,8 @@ export default function DevicesPage() {
                   width:
                     String(
                       Math.min(
-                        (devices.length /
-                          deviceLimit) *
+                        (deviceCount /
+                          quota.limits.maxDevices) *
                           100,
                         100
                       )

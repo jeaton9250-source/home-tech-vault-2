@@ -28,6 +28,7 @@ import OnboardingShell, {
 import Button from "@/components/ui/Button";
 
 import { usePermissions } from "@/hooks/usePermissions";
+import { useHouseholdLimits } from "@/hooks/useHouseholdLimits";
 
 import {
   getDefaultActivityTitle,
@@ -102,13 +103,11 @@ function OnboardingFlow() {
     canEdit,
     householdId,
     householdOwnerId,
-    deviceLimit,
-    documentLimit,
-    hasUnlimitedDevices,
-    hasUnlimitedDocuments,
     hasFamilyFeatureAccess,
     loading: permissionsLoading,
   } = usePermissions();
+
+  const quota = useHouseholdLimits();
 
   const [initializing, setInitializing] =
     useState(true);
@@ -441,14 +440,20 @@ function OnboardingFlow() {
   }, [snapshot, homeName]);
 
   const deviceLimitReached =
-    !hasUnlimitedDevices &&
-    deviceLimit !== null &&
-    deviceCount >= deviceLimit;
+    !quota.loading &&
+    quota.limits.maxDevices !== null &&
+    Math.max(
+      deviceCount,
+      quota.usage.devices
+    ) >= quota.limits.maxDevices;
 
   const documentLimitReached =
-    !hasUnlimitedDocuments &&
-    documentLimit !== null &&
-    documentCount >= documentLimit;
+    !quota.loading &&
+    quota.limits.maxDocuments !== null &&
+    Math.max(
+      documentCount,
+      quota.usage.documents
+    ) >= quota.limits.maxDocuments;
 
   const sharedHouseholdLocked =
     Boolean(
@@ -588,6 +593,14 @@ function OnboardingFlow() {
     }
 
     if (deviceLimitReached) {
+      if (
+        quota.canUseProFeatures ||
+        quota.billingManagedByHousehold
+      ) {
+        router.push("/family");
+        return;
+      }
+
       router.push(
         "/upgrade?reason=device-limit"
       );
@@ -736,6 +749,14 @@ function OnboardingFlow() {
     }
 
     if (documentLimitReached) {
+      if (
+        quota.canUseProFeatures ||
+        quota.billingManagedByHousehold
+      ) {
+        router.push("/family");
+        return;
+      }
+
       router.push(
         "/upgrade?reason=document-limit"
       );
@@ -1240,10 +1261,9 @@ function OnboardingFlow() {
 
           {deviceLimitReached && (
             <div className="mt-6 rounded-2xl border border-warning/40 bg-warning-soft p-4 text-sm text-text-secondary">
-              You&apos;ve reached your
-              device limit. Upgrade for
-              unlimited devices, or skip
-              this step for now.
+              {quota.canUseProFeatures
+                ? "This household has reached its device limit. Skip this step for now or contact a household admin."
+                : "This household has reached the Free plan device limit. Upgrade the household for unlimited devices, or skip this step for now."}
             </div>
           )}
 
@@ -1430,10 +1450,9 @@ function OnboardingFlow() {
 
           {documentLimitReached && (
             <div className="mt-6 rounded-2xl border border-warning/40 bg-warning-soft p-4 text-sm text-text-secondary">
-              You&apos;ve reached your
-              document limit. Upgrade for
-              unlimited uploads, or skip
-              this step for now.
+              {quota.canUseProFeatures
+                ? "This household has reached its document limit. Skip this step for now or contact a household admin."
+                : "This household has reached the Free plan document limit. Upgrade the household for unlimited uploads, or skip this step for now."}
             </div>
           )}
 

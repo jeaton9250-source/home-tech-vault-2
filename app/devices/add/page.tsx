@@ -2,7 +2,6 @@
 
 import {
   FormEvent,
-  useEffect,
   useState,
 } from "react";
 import { useRouter } from "next/navigation";
@@ -19,9 +18,12 @@ import {
   getDefaultActivityTitle,
   recordActivity,
 } from "@/lib/activity";
+import {
+  getHouseholdLimitMessage,
+  useHouseholdLimits,
+} from "@/hooks/useHouseholdLimits";
 import { usePermissions } from "@/hooks/usePermissions";
 import DemoWriteGate from "@/components/demo/DemoWriteGate";
-import { FREE_DEVICE_LIMIT } from "@/lib/permissions/plans";
 
 import PageShell from "@/components/ui/PageShell";
 import PageTitle from "@/components/ui/PageTitle";
@@ -36,24 +38,31 @@ export default function AddDevicePage() {
     isDemo,
     canCreate,
     isPersonalVault,
-    householdId: permissionsHouseholdId,
-    deviceLimit,
-    hasUnlimitedDevices,
-    loading: permissionsLoading,
+    isViewer,
   } = usePermissions();
 
-  const [deviceCount, setDeviceCount] =
-    useState(0);
+  const quota = useHouseholdLimits();
 
-  const [
-    householdId,
-    setHouseholdId,
-  ] = useState<string | null>(null);
+  const householdId = quota.householdId;
 
-  const [
-    checkingDeviceLimit,
-    setCheckingDeviceLimit,
-  ] = useState(true);
+  const loading = quota.loading;
+
+  const deviceLimitReached =
+    quota.deviceLimitReached;
+
+  const limitMessage = getHouseholdLimitMessage(
+    quota.limitReason === "allowed"
+      ? deviceLimitReached
+        ? quota.canUseProFeatures
+          ? "household_device_limit"
+          : "free_device_limit"
+        : "allowed"
+      : quota.limitReason,
+    {
+      canManageBilling:
+        quota.canManageBilling,
+    }
+  );
 
   const [saving, setSaving] =
     useState(false);
@@ -91,81 +100,6 @@ export default function AddDevicePage() {
   const [notes, setNotes] =
     useState("");
 
-  useEffect(() => {
-    async function loadHouseholdAndDeviceCount() {
-      if (permissionsLoading) {
-        return;
-      }
-
-      try {
-        setCheckingDeviceLimit(true);
-        setErrorMessage("");
-
-        if (isDemo || !user) {
-          setHouseholdId(null);
-          setDeviceCount(0);
-          return;
-        }
-
-        setHouseholdId(
-          permissionsHouseholdId
-        );
-
-        let countQuery =
-          applyHouseholdScope(
-            supabase
-              .from("devices")
-              .select("*", {
-                count: "exact",
-                head: true,
-              }),
-            permissionsHouseholdId,
-            user.id
-          );
-
-        const {
-          count,
-          error: countError,
-        } = await countQuery;
-
-        if (countError) {
-          throw countError;
-        }
-
-        setDeviceCount(count || 0);
-      } catch (error) {
-        console.error(
-          "Unable to check device limit:",
-          error
-        );
-
-        setErrorMessage(
-          error instanceof Error
-            ? error.message
-            : "Unable to check your device allowance."
-        );
-      } finally {
-        setCheckingDeviceLimit(false);
-      }
-    }
-
-    void loadHouseholdAndDeviceCount();
-  }, [
-    user,
-    isDemo,
-    permissionsLoading,
-    permissionsHouseholdId,
-  ]);
-
-  const loading =
-    permissionsLoading ||
-    checkingDeviceLimit;
-
-  const deviceLimitReached =
-    !hasUnlimitedDevices &&
-    deviceLimit !== null &&
-    deviceCount >= deviceLimit;
-
   async function saveDevice(
     event: FormEvent<HTMLFormElement>
   ) {
@@ -183,7 +117,11 @@ export default function AddDevicePage() {
       return;
     }
 
-    if (!canCreate) {
+    if (loading) {
+      return;
+    }
+
+    if (!canCreate || isViewer) {
       setErrorMessage(
         "Viewer access is read-only. You cannot add devices."
       );
@@ -191,6 +129,14 @@ export default function AddDevicePage() {
     }
 
     if (deviceLimitReached) {
+      if (
+        quota.canUseProFeatures ||
+        quota.billingManagedByHousehold
+      ) {
+        router.push("/family");
+        return;
+      }
+
       router.push(
         "/upgrade?reason=device-limit"
       );
@@ -403,7 +349,7 @@ export default function AddDevicePage() {
     );
   }
 
-  if (!canCreate) {
+  if (!loading && !canCreate) {
     return (
       <PageShell>
         <PageTitle
@@ -442,13 +388,13 @@ export default function AddDevicePage() {
     );
   }
 
-  if (deviceLimitReached) {
+  if (!loading && deviceLimitReached) {
     return (
       <PageShell>
         <PageTitle
           eyebrow="Device Limit Reached"
-          title="Upgrade to add more devices"
-          description={`Free accounts can store up to ${FREE_DEVICE_LIMIT} devices. Upgrade to Pro for unlimited device tracking.`}
+          title={limitMessage.title}
+          description={limitMessage.description}
         />
 
         <PageCard className="text-center">
@@ -457,20 +403,22 @@ export default function AddDevicePage() {
           </div>
 
           <h2 className="mt-5 text-2xl font-bold text-text-primary">
-            You have used all {FREE_DEVICE_LIMIT} free device slots
+            {limitMessage.title}
           </h2>
 
           <p className="mx-auto mt-3 max-w-lg text-text-secondary">
-            Your existing devices remain safe. Upgrade your
-            account to continue adding devices.
+            {limitMessage.description}
           </p>
 
-          <Button
-            href="/upgrade?reason=device-limit"
-            className="mt-6"
-          >
-            View Upgrade Options
-          </Button>
+          {limitMessage.actionHref &&
+            limitMessage.actionLabel && (
+              <Button
+                href={limitMessage.actionHref}
+                className="mt-6"
+              >
+                {limitMessage.actionLabel}
+              </Button>
+            )}
         </PageCard>
       </PageShell>
     );
@@ -499,31 +447,25 @@ export default function AddDevicePage() {
         }
       />
 
-      {!hasUnlimitedDevices &&
-        deviceLimit !== null && (
+      {quota.limits.maxDevices !== null && (
           <PageCard className="border-warning/40 bg-warning-soft">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-achievement">
-              Free Device Allowance
+              Household Device Allowance
             </p>
 
             <h2 className="mt-2 text-xl font-bold text-text-primary">
-              {deviceCount} of {deviceLimit} devices used
+              {quota.usage.devices} of{" "}
+              {quota.limits.maxDevices} devices used
             </h2>
 
             <p className="mt-2 text-sm text-text-secondary">
               You have{" "}
-              {Math.max(
-                deviceLimit -
-                  deviceCount,
-                0
-              )}{" "}
+              {quota.remaining.devices ?? 0}{" "}
               device slot
-              {deviceLimit -
-                deviceCount ===
-              1
+              {quota.remaining.devices === 1
                 ? ""
                 : "s"}{" "}
-              remaining.
+              remaining in this household.
             </p>
           </PageCard>
         )}

@@ -176,19 +176,25 @@ export function buildPlanFeatureAccess(
 export function resolveUsageLimits(
   effectivePlan: SubscriptionPlan,
   isPlatformAdmin: boolean,
-  hasFamilyFeatureAccess: boolean
+  hasFamilyFeatureAccess: boolean,
+  hasPremiumFeatureAccess = false
 ): UsageLimits {
+  const hasPremiumAccess =
+    isPlatformAdmin ||
+    hasPremiumFeatureAccess ||
+    effectivePlan === "pro" ||
+    effectivePlan === "family";
+
   const limits = getLimitsForPlan(
     isPlatformAdmin
       ? "pro"
-      : effectivePlan,
+      : hasPremiumAccess
+        ? effectivePlan === "family"
+          ? "family"
+          : "pro"
+        : effectivePlan,
     isPlatformAdmin
   );
-
-  const hasPremiumAccess =
-    isPlatformAdmin ||
-    effectivePlan === "pro" ||
-    effectivePlan === "family";
 
   return {
     maxDevices: limits.maxDevices,
@@ -591,7 +597,8 @@ export function resolveEffectivePlan(
     resolveUsageLimits(
       effectivePlan,
       false,
-      hasFamilyFeatureAccess
+      hasFamilyFeatureAccess,
+      hasPremiumFeatureAccess
     );
 
   const featureAccess =

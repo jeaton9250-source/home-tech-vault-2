@@ -64,7 +64,18 @@ export {
   withOwnerUserInsertFields,
 } from "@/lib/data/householdScope";
 
-export type { HouseholdScope } from "@/lib/data/householdScope";
+export {
+  evaluateHouseholdQuota,
+  getHouseholdLimitMessage,
+  loadHouseholdUsageCounts,
+  resolveHouseholdQuotaLimits,
+} from "@/lib/permissions/householdQuota";
+
+export type {
+  HouseholdLimitReason,
+  HouseholdQuotaState,
+  HouseholdUsageCounts,
+} from "@/lib/permissions/householdQuota";
 
 export type {
   AccessContext,

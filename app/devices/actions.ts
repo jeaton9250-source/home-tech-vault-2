@@ -5,6 +5,11 @@ import {
   fetchHouseholdIdForUser,
   withHouseholdInsertFields,
 } from "@/lib/data/householdScope";
+import {
+  assertCanAddDevice,
+  HouseholdQuotaError,
+} from "@/lib/permissions/serverQuota";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 
 export async function addDevice(formData: FormData) {
@@ -17,6 +22,18 @@ export async function addDevice(formData: FormData) {
 
   if (userError || !user) {
     throw new Error("You must be signed in to add a device.");
+  }
+
+  const admin = createAdminClient();
+
+  try {
+    await assertCanAddDevice(admin, user.id);
+  } catch (error) {
+    if (error instanceof HouseholdQuotaError) {
+      throw new Error(error.message);
+    }
+
+    throw error;
   }
 
   const householdId =
