@@ -44,7 +44,7 @@ export function createPageMetadata({
         url: siteConfig.defaultOgImage,
         width: 1200,
         height: 630,
-        alt: siteConfig.name,
+        alt: siteConfig.defaultOgImageAlt,
       },
     ],
     ...(type === "article" && publishedTime
@@ -106,7 +106,7 @@ export function createOrganizationJsonLd() {
     name: siteConfig.name,
     url: absoluteUrl("/"),
     description: siteConfig.tagline,
-    logo: siteConfig.defaultOgImage,
+    logo: siteConfig.logo,
   };
 }
 
