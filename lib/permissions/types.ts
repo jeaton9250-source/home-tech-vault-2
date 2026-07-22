@@ -118,9 +118,15 @@ export type ComputedPermissions = {
   canDelete: boolean;
   canUpload: boolean;
   canComplete: boolean;
+  /** Alias for maintenance and task completion permissions. */
+  canCompleteMaintenance: boolean;
+  /** Alias for destructive household content deletion. */
+  canDeleteContent: boolean;
   canInvite: boolean;
   canManageBilling: boolean;
   canManageHousehold: boolean;
+  /** Alias for household member and role management. */
+  canManageMembers: boolean;
   canManageSettings: boolean;
 
   isDeviceLimitReached: (

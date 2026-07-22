@@ -1,5 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { loadHouseholdMembershipForUser } from "@/lib/permissions/householdMembership";
+
 import { supabase } from "@/lib/supabase";
 
 /**
@@ -194,23 +196,17 @@ export function applyHouseholdMutationScope(
  */
 export async function fetchHouseholdIdForUser(
   userId: string,
-  client: SupabaseClient = supabase
+  client: SupabaseClient = supabase,
+  householdId?: string | null
 ): Promise<string | null> {
-  const {
-    data: membership,
-    error,
-  } = await client
-    .from("household_members")
-    .select("household_id")
-    .eq("user_id", userId)
-    .limit(1)
-    .maybeSingle();
+  const membership =
+    await loadHouseholdMembershipForUser(
+      client,
+      userId,
+      householdId
+    );
 
-  if (error) {
-    throw error;
-  }
-
-  return membership?.household_id ?? null;
+  return membership.householdId;
 }
 
 export type ResolvedHouseholdAccess = {

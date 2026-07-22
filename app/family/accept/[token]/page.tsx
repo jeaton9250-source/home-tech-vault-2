@@ -21,6 +21,7 @@ import {
   getDefaultActivityTitle,
   recordActivity,
 } from "@/lib/activity";
+import { usePermissions } from "@/hooks/usePermissions";
 
 import PageShell from "@/components/ui/PageShell";
 import PageCard from "@/components/ui/PageCard";
@@ -38,6 +39,8 @@ export default function AcceptFamilyInvitationPage() {
   }>();
 
   const router = useRouter();
+  const { refreshPermissions } =
+    usePermissions();
 
   const token =
     typeof params.token === "string"
@@ -141,6 +144,8 @@ export default function AcceptFamilyInvitationPage() {
           "You have joined the shared household."
         );
 
+        await refreshPermissions();
+
         window.setTimeout(() => {
           router.replace("/family");
           router.refresh();
@@ -180,6 +185,7 @@ export default function AcceptFamilyInvitationPage() {
   }, [
     token,
     router,
+    refreshPermissions,
   ]);
 
   return (

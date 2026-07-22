@@ -2,16 +2,44 @@ import type { RawHouseholdRole } from "@/lib/permissions/effectivePlan";
 
 import type { HouseholdRole } from "@/lib/permissions/types";
 
+function normalizeRoleToken(
+  value: string
+): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[\s-]+/g, "_");
+}
+
 export function normalizeRawHouseholdRole(
   value: string | null | undefined
 ): RawHouseholdRole | null {
+  if (!value) {
+    return null;
+  }
+
+  const token = normalizeRoleToken(value);
+
   if (
-    value === "owner" ||
-    value === "admin" ||
-    value === "member" ||
-    value === "viewer"
+    token === "owner" ||
+    token === "household_owner"
   ) {
-    return value;
+    return "owner";
+  }
+
+  if (
+    token === "admin" ||
+    token === "household_admin"
+  ) {
+    return "admin";
+  }
+
+  if (token === "member") {
+    return "member";
+  }
+
+  if (token === "viewer") {
+    return "viewer";
   }
 
   return null;
@@ -24,23 +52,22 @@ export function normalizeRawHouseholdRole(
 export function normalizeHouseholdRole(
   value: string | null | undefined
 ): HouseholdRole | null {
-  if (!value) {
+  const rawRole =
+    normalizeRawHouseholdRole(value);
+
+  if (!rawRole) {
     return null;
   }
 
-  if (value === "admin" || value === "owner") {
+  if (rawRole === "admin" || rawRole === "owner") {
     return "admin";
   }
 
-  if (value === "member") {
+  if (rawRole === "member") {
     return "member";
   }
 
-  if (value === "viewer") {
-    return "viewer";
-  }
-
-  return null;
+  return "viewer";
 }
 
 export function hasHouseholdViewerRestrictions(options: {

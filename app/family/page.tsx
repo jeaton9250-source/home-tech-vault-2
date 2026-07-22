@@ -213,6 +213,8 @@ export default function FamilyPage() {
     billingManagedByHousehold,
     familyMemberLimit,
     isPlatformAdmin,
+    householdId: permissionsHouseholdId,
+    refreshPermissions,
   } = usePermissions();
 
   const [
@@ -340,12 +342,7 @@ export default function FamilyPage() {
           return;
         }
 
-        const {
-          data:
-            membershipData,
-          error:
-            membershipError,
-        } = await supabase
+        let membershipQuery = supabase
           .from(
             "household_members"
           )
@@ -363,9 +360,30 @@ export default function FamilyPage() {
           .eq(
             "user_id",
             user.id
-          )
-          .limit(1)
-          .maybeSingle();
+          );
+
+        if (permissionsHouseholdId) {
+          membershipQuery =
+            membershipQuery.eq(
+              "household_id",
+              permissionsHouseholdId
+            );
+        } else {
+          membershipQuery =
+            membershipQuery
+              .order("joined_at", {
+                ascending: false,
+              })
+              .limit(1);
+        }
+
+        const {
+          data:
+            membershipData,
+          error:
+            membershipError,
+        } =
+          await membershipQuery.maybeSingle();
 
         if (membershipError) {
           throw membershipError;
@@ -580,10 +598,17 @@ export default function FamilyPage() {
       user,
       isDemo,
       permissionsLoading,
+      permissionsHouseholdId,
     ]);
 
   useEffect(() => {
-    void loadFamilyData();
+    const timer = window.setTimeout(() => {
+      void loadFamilyData();
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
   }, [loadFamilyData]);
 
   const memberLimit =
@@ -601,9 +626,6 @@ export default function FamilyPage() {
         occupiedSeats,
       0
     );
-
-  const isOwner =
-    currentRole === "owner";
 
   const canCreateHousehold =
     isPlatformAdmin ||
@@ -684,6 +706,7 @@ export default function FamilyPage() {
         "Your household was created successfully."
       );
 
+      await refreshPermissions();
       await loadFamilyData();
     } catch (error: unknown) {
       const possibleError =
@@ -1004,6 +1027,8 @@ const {
       setSuccessMessage(
         `Invitation emailed successfully to ${email}.`
       );
+
+      await refreshPermissions();
     } catch (error: unknown) {
       const possibleError =
         error as {
@@ -1146,6 +1171,8 @@ const {
           role
         )}.`
       );
+
+      await refreshPermissions();
     } catch (error: unknown) {
       const possibleError =
         error as {
@@ -1174,9 +1201,9 @@ const {
       return;
     }
 
-    if (!isOwner) {
+    if (!canManageHousehold) {
       setErrorMessage(
-        "Only the household owner can remove members."
+        "Only household admins can remove members."
       );
       return;
     }
@@ -1256,6 +1283,8 @@ const {
       setSuccessMessage(
         `${member.fullName} was removed from the household.`
       );
+
+      await refreshPermissions();
     } catch (error: unknown) {
       const possibleError =
         error as {
@@ -1705,9 +1734,6 @@ const {
                       canManage={
                         canManageHousehold
                       }
-                      isOwner={
-                        isOwner
-                      }
                       updating={
                         updatingMemberId ===
                         member.id
@@ -1981,7 +2007,6 @@ function MemberRow({
   member,
   currentUserId,
   canManage,
-  isOwner,
   updating,
   removing,
   onRoleChange,
@@ -1990,7 +2015,6 @@ function MemberRow({
   member: HouseholdMember;
   currentUserId: string;
   canManage: boolean;
-  isOwner: boolean;
   updating: boolean;
   removing: boolean;
   onRoleChange: (
@@ -2101,7 +2125,7 @@ function MemberRow({
           />
         )}
 
-        {isOwner &&
+        {canManage &&
           member.role !==
             "owner" && (
             <button

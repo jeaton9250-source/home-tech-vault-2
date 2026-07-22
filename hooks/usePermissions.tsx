@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -35,7 +36,6 @@ import type {
 } from "@/lib/permissions/effectivePlan";
 
 import type {
-  FeatureKey,
   HouseholdRole,
 } from "@/lib/permissions/types";
 
@@ -46,6 +46,8 @@ import type {
 import type {
   SubscriptionPlan,
 } from "@/hooks/useSubscription";
+
+import { supabase } from "@/lib/supabase";
 
 export type {
   FeatureKey,
@@ -428,13 +430,92 @@ function usePermissionsState() {
     ]);
 
   useEffect(() => {
-    void loadHouseholdContext();
+    const timer = window.setTimeout(() => {
+      void loadHouseholdContext();
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
   }, [loadHouseholdContext]);
+
+  useEffect(() => {
+    if (!user?.id || isDemo) {
+      return;
+    }
+
+    const channel = supabase
+      .channel(
+        `household-membership-${user.id}`
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "household_members",
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          void loadHouseholdContext();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [
+    user?.id,
+    isDemo,
+    loadHouseholdContext,
+  ]);
+
+  const lastFocusRefreshRef =
+    useRef(0);
+
+  useEffect(() => {
+    if (!user?.id || isDemo) {
+      return;
+    }
+
+    function handleWindowFocus() {
+      const now = Date.now();
+
+      if (
+        now - lastFocusRefreshRef.current <
+        5000
+      ) {
+        return;
+      }
+
+      lastFocusRefreshRef.current = now;
+      void loadHouseholdContext();
+    }
+
+    window.addEventListener(
+      "focus",
+      handleWindowFocus
+    );
+
+    return () => {
+      window.removeEventListener(
+        "focus",
+        handleWindowFocus
+      );
+    };
+  }, [
+    user?.id,
+    isDemo,
+    loadHouseholdContext,
+  ]);
 
   const loading =
     demoLoading ||
     subscriptionLoading ||
     roleLoading;
+
+  const permissionsReady = !loading;
 
   const realHouseholdId = householdId;
 
@@ -678,6 +759,7 @@ function usePermissionsState() {
     realHouseholdId,
     householdOwnerId,
     loading,
+    permissionsReady,
     error: roleError,
 
     developmentAccessProfile,

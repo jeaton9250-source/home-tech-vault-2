@@ -7,6 +7,7 @@
  */
 import { NextResponse } from "next/server";
 
+import { loadHouseholdMembershipForUser } from "@/lib/permissions/householdMembership";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -22,7 +23,7 @@ type HouseholdAccessResponse = {
   ownerName: string | null;
 };
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const supabase = await createClient();
 
@@ -42,23 +43,23 @@ export async function GET() {
       );
     }
 
+    const url = new URL(request.url);
+    const requestedHouseholdId =
+      url.searchParams.get("householdId");
+
     const admin = createAdminClient();
 
-    const {
-      data: membership,
-      error: membershipError,
-    } = await admin
-      .from("household_members")
-      .select("household_id, role")
-      .eq("user_id", user.id)
-      .limit(1)
-      .maybeSingle();
+    const membershipResult =
+      await loadHouseholdMembershipForUser(
+        admin,
+        user.id,
+        requestedHouseholdId
+      );
 
-    if (membershipError) {
-      throw membershipError;
-    }
-
-    if (!membership) {
+    if (
+      !membershipResult.membership ||
+      !membershipResult.householdId
+    ) {
       return NextResponse.json({
         membership: null,
       });
@@ -70,7 +71,7 @@ export async function GET() {
     } = await admin
       .from("households")
       .select("id, owner_id")
-      .eq("id", membership.household_id)
+      .eq("id", membershipResult.householdId)
       .maybeSingle();
 
     if (householdError) {
@@ -115,7 +116,8 @@ export async function GET() {
         householdOwnerId:
           household.owner_id,
         rawHouseholdRole:
-          membership.role ?? "viewer",
+          membershipResult.rawHouseholdRole ??
+          "viewer",
         ownerPlan:
           subscriptionResult.data?.plan ??
           null,

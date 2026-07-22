@@ -508,9 +508,12 @@ export function computePermissions(
     canDelete,
     canUpload,
     canComplete,
+    canCompleteMaintenance: canComplete,
+    canDeleteContent: canDelete,
     canInvite,
     canManageBilling,
     canManageHousehold,
+    canManageMembers: canManageHousehold,
     canManageSettings,
 
     isDeviceLimitReached,

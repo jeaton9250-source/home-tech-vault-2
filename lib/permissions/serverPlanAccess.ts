@@ -4,11 +4,11 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { loadActivePlanGrantForUser } from "@/lib/plan-grants/loadActiveGrant";
 import type { PlanGrantInput } from "@/lib/plan-grants/types";
+import { loadHouseholdMembershipForUser } from "@/lib/permissions/householdMembership";
 import {
   resolveEffectivePlan,
   type EffectivePlanInput,
   type EffectivePlanResult,
-  type RawHouseholdRole,
 } from "@/lib/permissions/effectivePlan";
 import type { SubscriptionPlan } from "@/hooks/useSubscription";
 
@@ -41,7 +41,7 @@ export async function buildServerPlanAccessContext(
   const [
     profileResult,
     subscriptionResult,
-    membershipResult,
+    resolvedMembership,
     adminGrant,
   ] = await Promise.all([
     admin
@@ -58,12 +58,10 @@ export async function buildServerPlanAccessContext(
       .eq("user_id", userId)
       .maybeSingle(),
 
-    admin
-      .from("household_members")
-      .select("household_id, role")
-      .eq("user_id", userId)
-      .limit(1)
-      .maybeSingle(),
+    loadHouseholdMembershipForUser(
+      admin,
+      userId
+    ),
 
     loadActivePlanGrantForUser(admin, userId),
   ]);
@@ -76,9 +74,8 @@ export async function buildServerPlanAccessContext(
     throw subscriptionResult.error;
   }
 
-  if (membershipResult.error) {
-    throw membershipResult.error;
-  }
+  const membershipRow =
+    resolvedMembership.membership;
 
   let householdOwnerId: string | null = null;
   let householdOwnerPlan:
@@ -94,7 +91,7 @@ export async function buildServerPlanAccessContext(
     | string
     | null = null;
 
-  if (membershipResult.data?.household_id) {
+  if (membershipRow?.household_id) {
     const {
       data: household,
       error: householdError,
@@ -103,7 +100,7 @@ export async function buildServerPlanAccessContext(
       .select("owner_id")
       .eq(
         "id",
-        membershipResult.data.household_id
+        membershipRow.household_id
       )
       .maybeSingle();
 
@@ -182,16 +179,14 @@ export async function buildServerPlanAccessContext(
         ?.stripe_customer_id
     ),
     householdId:
-      membershipResult.data?.household_id ??
-      null,
+      resolvedMembership.householdId,
     householdOwnerId,
     householdOwnerPlan,
     householdOwnerStatus,
     householdOwnerCurrentPeriodEnd,
     householdOwnerName,
     rawHouseholdRole:
-      (membershipResult.data?.role as RawHouseholdRole | null) ??
-      null,
+      resolvedMembership.rawHouseholdRole,
     adminGrant: adminGrantInput,
   };
 
