@@ -24,7 +24,7 @@ export default function AdminNav() {
 
         return (
           <Link
-            key={item.href}
+            key={item.id}
             href={item.href}
             className={cn(
               "flex items-start gap-3 rounded-[18px] border px-3 py-3 transition",

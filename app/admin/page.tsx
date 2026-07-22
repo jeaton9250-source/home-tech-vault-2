@@ -1,196 +1,211 @@
-import Link from "next/link";
+import {
+  FileText,
+  HardDrive,
+  Home,
+  Users,
+} from "lucide-react";
 
-import AdminPageHeader from "@/components/admin/AdminPageHeader";
-import FoundingMembersDashboardCard from "@/components/admin/founding-members/FoundingMembersDashboardCard";
-import AdminPanel, {
-  formatAdminDate,
-} from "@/components/admin/AdminPanel";
-import AdminStatCard from "@/components/admin/AdminStatCard";
-import { loadFoundingMembersDashboardMetrics } from "@/lib/admin/data/foundingMembers";
+import { createClient } from "@/lib/supabase/server";
+import { loadAdminAnalytics } from "@/lib/admin/data/loaders";
 import { loadAdminDashboardMetrics } from "@/lib/admin/data/dashboard";
+import { loadAdminSystemHealth } from "@/lib/admin/data/loaders";
+import { loadFoundingMembersDashboardMetrics } from "@/lib/admin/data/foundingMembers";
+import {
+  buildNeedsAttention,
+  buildPlatformActivity,
+  buildTodaysPriorities,
+  getFounderFirstName,
+} from "@/lib/admin/founderControlCenter";
+import FounderHeader, {
+  FounderSection,
+} from "@/components/admin/founder-control-center/FounderHeader";
+import FounderPriorities, {
+  FounderAttentionList,
+  FounderFeedbackEmptyState,
+} from "@/components/admin/founder-control-center/FounderPriorities";
+import {
+  FounderGrowthGrid,
+  FounderMetricCard,
+} from "@/components/admin/founder-control-center/FounderMetricCards";
+import {
+  FounderActivityTimeline,
+  FounderQuickActions,
+  FounderRecentSignups,
+} from "@/components/admin/founder-control-center/FounderLists";
 
 export const metadata = {
-  title: "Platform Overview — Home Tech Vault Admin",
+  title: "Founder Control Center — Home Tech Vault Admin",
 };
 
 export default async function AdminDashboardPage() {
-  const [metrics, foundingMetricsResult] =
-    await Promise.all([
-      loadAdminDashboardMetrics(),
-      loadFoundingMembersDashboardMetrics().catch(
-        () => null
-      ),
-    ]);
+  const [
+    metrics,
+    analytics,
+    health,
+    foundingMetricsResult,
+  ] = await Promise.all([
+    loadAdminDashboardMetrics(),
+    loadAdminAnalytics(),
+    loadAdminSystemHealth(),
+    loadFoundingMembersDashboardMetrics().catch(
+      () => null
+    ),
+  ]);
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  let adminFullName: string | null = null;
+
+  if (user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    adminFullName = profile?.full_name ?? null;
+  }
+
+  const firstName = getFounderFirstName(
+    adminFullName,
+    user?.email ?? null
+  );
+
+  const priorities = buildTodaysPriorities(
+    metrics,
+    health,
+    foundingMetricsResult
+  );
+
+  const priorityIds = new Set(
+    priorities.map((item) => item.id)
+  );
+
+  const attentionItems = buildNeedsAttention(
+    metrics,
+    health,
+    foundingMetricsResult,
+    priorityIds
+  );
+
+  const activity = buildPlatformActivity(
+    metrics.recentSignups,
+    metrics.recentUpgrades,
+    metrics.recentSupportActivity
+  );
+
+  const paidMembers =
+    metrics.proUsers + metrics.familyUsers;
 
   return (
     <>
-      <AdminPageHeader
-        title="Platform Overview"
-        description="Operational summary for users, subscriptions, households, and support activity."
-      />
+      <FounderHeader firstName={firstName} />
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <AdminStatCard
-          label="Total users"
-          value={metrics.totalUsers}
-        />
-        <AdminStatCard
-          label="New today"
-          value={metrics.newUsersToday}
-        />
-        <AdminStatCard
-          label="New this week"
-          value={metrics.newUsersThisWeek}
-        />
-        <AdminStatCard
-          label="Active subscriptions"
-          value={metrics.activeSubscriptions}
-        />
-        <AdminStatCard
-          label="Free users"
-          value={metrics.freeUsers}
-        />
-        <AdminStatCard
-          label="Pro users"
-          value={metrics.proUsers}
-        />
-        <AdminStatCard
-          label="Family users"
-          value={metrics.familyUsers}
-        />
-        <AdminStatCard
-          label="Households"
-          value={metrics.totalHouseholds}
-        />
-        <AdminStatCard
-          label="Open support tickets"
-          value={metrics.openSupportTickets}
-        />
-        <AdminStatCard
-          label="New tickets today"
-          value={metrics.newSupportTickets}
-        />
-      </section>
+      <FounderPriorities items={priorities} />
 
-      {metrics.systemWarnings.length > 0 && (
-        <AdminPanel
-          title="System warnings"
-          className="mt-6"
-        >
-          <ul className="space-y-2 text-sm leading-6 text-warning">
-            {metrics.systemWarnings.map(
-              (warning) => (
-                <li key={warning}>{warning}</li>
-              )
-            )}
-          </ul>
-        </AdminPanel>
-      )}
+      <FounderSection
+        id="founder-platform-snapshot-heading"
+        title="Platform Snapshot"
+        subtitle="Core inventory across the platform."
+      >
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <FounderMetricCard
+            label="Users"
+            value={analytics.totalUsers}
+            hint={`${metrics.newUsersThisWeek} added this week`}
+            href="/admin/users"
+            icon={
+              <Users
+                aria-hidden="true"
+                className="h-5 w-5"
+              />
+            }
+          />
+          <FounderMetricCard
+            label="Households"
+            value={analytics.totalHouseholds}
+            href="/admin/households"
+            icon={
+              <Home
+                aria-hidden="true"
+                className="h-5 w-5"
+              />
+            }
+          />
+          <FounderMetricCard
+            label="Devices"
+            value={analytics.totalDevices}
+            href="/admin/analytics"
+            icon={
+              <HardDrive
+                aria-hidden="true"
+                className="h-5 w-5"
+              />
+            }
+          />
+          <FounderMetricCard
+            label="Documents"
+            value={analytics.totalDocuments}
+            href="/admin/analytics"
+            icon={
+              <FileText
+                aria-hidden="true"
+                className="h-5 w-5"
+              />
+            }
+          />
+        </div>
+      </FounderSection>
 
-      <section className="mt-6 grid gap-6 xl:grid-cols-3">
-        <FoundingMembersDashboardCard
-          metrics={foundingMetricsResult}
+      <FounderSection
+        id="founder-growth-snapshot-heading"
+        title="Growth Snapshot"
+        subtitle="Signup and subscription activity currently tracked."
+      >
+        <FounderGrowthGrid
+          metrics={[
+            {
+              label: "New users today",
+              value: metrics.newUsersToday,
+            },
+            {
+              label: "New users this week",
+              value: metrics.newUsersThisWeek,
+            },
+            {
+              label: "Active subscriptions",
+              value: metrics.activeSubscriptions,
+              hint: "Active or trialing plans",
+            },
+            {
+              label: "Paid members",
+              value: paidMembers,
+              hint: `${metrics.proUsers} Pro · ${metrics.familyUsers} Family`,
+            },
+          ]}
         />
+      </FounderSection>
 
-        <AdminPanel title="Recent signups">
-          <div className="space-y-3">
-            {metrics.recentSignups.length ===
-            0 ? (
-              <p className="text-sm text-text-secondary">
-                No recent signups.
-              </p>
-            ) : (
-              metrics.recentSignups.map(
-                (signup) => (
-                  <div
-                    key={signup.id}
-                    className="rounded-[18px] border border-border-subtle bg-surface-sunken px-4 py-3"
-                  >
-                    <p className="font-medium text-text-primary">
-                      {signup.fullName ||
-                        signup.email ||
-                        signup.id}
-                    </p>
-                    <p className="mt-1 text-xs text-text-secondary">
-                      {formatAdminDate(
-                        signup.createdAt
-                      )}
-                    </p>
-                  </div>
-                )
-              )
-            )}
-          </div>
-        </AdminPanel>
+      <div className="grid gap-6 xl:grid-cols-2">
+        <FounderAttentionList
+          items={attentionItems}
+        />
+        <FounderRecentSignups
+          signups={metrics.recentSignups}
+        />
+      </div>
 
-        <AdminPanel title="Recent upgrades">
-          <div className="space-y-3">
-            {metrics.recentUpgrades.length ===
-            0 ? (
-              <p className="text-sm text-text-secondary">
-                No recent paid plan activity.
-              </p>
-            ) : (
-              metrics.recentUpgrades.map(
-                (upgrade) => (
-                  <div
-                    key={`${upgrade.userId}-${upgrade.updatedAt}`}
-                    className="rounded-[18px] border border-border-subtle bg-surface-sunken px-4 py-3"
-                  >
-                    <p className="font-medium capitalize text-text-primary">
-                      {upgrade.plan} ·{" "}
-                      {upgrade.status}
-                    </p>
-                    <p className="mt-1 text-xs text-text-secondary">
-                      {upgrade.email ||
-                        upgrade.userId}
-                    </p>
-                    <p className="mt-1 text-xs text-text-tertiary">
-                      {formatAdminDate(
-                        upgrade.updatedAt
-                      )}
-                    </p>
-                  </div>
-                )
-              )
-            )}
-          </div>
-        </AdminPanel>
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+        <FounderActivityTimeline
+          events={activity}
+        />
+        <FounderFeedbackEmptyState />
+      </div>
 
-        <AdminPanel title="Recent support activity">
-          <div className="space-y-3">
-            {metrics.recentSupportActivity
-              .length === 0 ? (
-              <p className="text-sm text-text-secondary">
-                No support tickets yet.
-              </p>
-            ) : (
-              metrics.recentSupportActivity.map(
-                (ticket) => (
-                  <Link
-                    key={ticket.id}
-                    href={`/admin/support/${ticket.id}`}
-                    className="block rounded-[18px] border border-border-subtle bg-surface-sunken px-4 py-3 transition hover:bg-[#EEEAE1]"
-                  >
-                    <p className="font-medium text-text-primary">
-                      {ticket.ticketNumber}
-                    </p>
-                    <p className="mt-1 text-sm text-text-secondary">
-                      {ticket.subject}
-                    </p>
-                    <p className="mt-1 text-xs capitalize text-text-tertiary">
-                      {ticket.status.replaceAll(
-                        "_",
-                        " "
-                      )}
-                    </p>
-                  </Link>
-                )
-              )
-            )}
-          </div>
-        </AdminPanel>
-      </section>
+      <FounderQuickActions />
     </>
   );
 }
