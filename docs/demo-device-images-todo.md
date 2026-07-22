@@ -9,9 +9,17 @@ Public assets: `/public/demo/devices/*.webp`
 | Device | Problem | Resolution |
 |--------|---------|------------|
 | Xbox Series X | PNG showed a PlayStation 5 | Replaced with Xbox Series X product photo |
-| Nintendo Switch OLED | PNG showed retail packaging box | Replaced with handheld console product photo |
 | Samsung Frame TV | PNG showed generic black TV | Replaced with Samsung The Frame art-mode TV |
 | Security Cameras | PNG showed Arlo 3-pack retail box | Replaced with single outdoor camera product photo |
+| Air Purifier (Dyson) | Stale/mismatched product shot | Regenerated Dyson Purifier Cool tower |
+| Sonos Beam | Stale/mismatched product shot | Regenerated black Beam soundbar |
+| Yale Smart Lock | In-door lifestyle shot | Regenerated isolated Assure Lock product photo |
+| Samsung Refrigerator | Stale Family Hub shot | Regenerated stainless Family Hub fridge |
+| Robot Vacuum Dock | In-room lifestyle shot | Regenerated Roborock dock + robot product photo |
+| Nintendo Switch OLED | AI-looking detached Joy-Cons | Regenerated handheld with Joy-Cons attached |
+| Nest Thermostat | Wall-mounted lifestyle shot | Regenerated isolated Nest dial product photo |
+| LG Washer | Dark graphite finish mismatch | Regenerated white ThinQ front-load washer |
+| LG Dryer | AI artifacts / mismatched look | Regenerated white ThinQ front-load dryer |
 
 ## Remaining assets to review (optional quality pass)
 
