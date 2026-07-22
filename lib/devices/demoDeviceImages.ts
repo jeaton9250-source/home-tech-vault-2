@@ -1,32 +1,35 @@
 /** Demo device image registry — single source of truth for Morgan Household assets. */
 export const DEMO_DEVICE_IMAGE_BASE = "/demo/devices";
 
-/** Device ID → local webp asset under /public/demo/devices/ */
+/**
+ * Device ID → local webp asset under /public/demo/devices/
+ * Filename must match the physical product shown in the Morgan Household demo.
+ */
 export const DEMO_DEVICE_IMAGE_BY_ID: Record<string, string> = {
-  "demo-samsung-frame": `${DEMO_DEVICE_IMAGE_BASE}/samsung-frame-tv.webp`,
-  "demo-appletv": `${DEMO_DEVICE_IMAGE_BASE}/apple-tv-4k.webp`,
-  "demo-sonos": `${DEMO_DEVICE_IMAGE_BASE}/sonos-beam.webp`,
-  "demo-switch": `${DEMO_DEVICE_IMAGE_BASE}/nintendo-switch-oled.webp`,
-  "demo-ps5": `${DEMO_DEVICE_IMAGE_BASE}/playstation-5.webp`,
-  "demo-xbox": `${DEMO_DEVICE_IMAGE_BASE}/xbox-series-x.webp`,
-  "demo-macbook": `${DEMO_DEVICE_IMAGE_BASE}/macbook-pro.webp`,
-  "demo-studio-display": `${DEMO_DEVICE_IMAGE_BASE}/studio-display.webp`,
-  "demo-canon-printer": `${DEMO_DEVICE_IMAGE_BASE}/canon-printer.webp`,
-  "demo-unifi-router": `${DEMO_DEVICE_IMAGE_BASE}/unifi-dream-router.webp`,
-  "demo-synology": `${DEMO_DEVICE_IMAGE_BASE}/synology-nas.webp`,
-  "demo-iphone": `${DEMO_DEVICE_IMAGE_BASE}/iphone.webp`,
-  "demo-samsung-fridge": `${DEMO_DEVICE_IMAGE_BASE}/samsung-refrigerator.webp`,
-  "demo-echo-show": `${DEMO_DEVICE_IMAGE_BASE}/echo-show.webp`,
-  "demo-lg-washer": `${DEMO_DEVICE_IMAGE_BASE}/lg-washer.webp`,
-  "demo-lg-dryer": `${DEMO_DEVICE_IMAGE_BASE}/lg-dryer.webp`,
-  "demo-robot-vacuum": `${DEMO_DEVICE_IMAGE_BASE}/robot-vacuum.webp`,
-  "demo-air-purifier": `${DEMO_DEVICE_IMAGE_BASE}/air-purifier.webp`,
-  "demo-lg-oled": `${DEMO_DEVICE_IMAGE_BASE}/lg-oled-tv.webp`,
-  "demo-ring": `${DEMO_DEVICE_IMAGE_BASE}/ring-doorbell.webp`,
-  "demo-smart-lock": `${DEMO_DEVICE_IMAGE_BASE}/yale-smart-lock.webp`,
-  "demo-nest": `${DEMO_DEVICE_IMAGE_BASE}/nest-thermostat.webp`,
-  "demo-unifi-ap": `${DEMO_DEVICE_IMAGE_BASE}/unifi-access-point.webp`,
-  "demo-cameras": `${DEMO_DEVICE_IMAGE_BASE}/security-camera.webp`,
+  "demo-samsung-frame": `${DEMO_DEVICE_IMAGE_BASE}/samsung-frame-tv.webp`, // Samsung Frame TV
+  "demo-appletv": `${DEMO_DEVICE_IMAGE_BASE}/apple-tv-4k.webp`, // Apple TV 4K
+  "demo-sonos": `${DEMO_DEVICE_IMAGE_BASE}/sonos-beam.webp`, // Sonos Beam
+  "demo-switch": `${DEMO_DEVICE_IMAGE_BASE}/nintendo-switch-oled.webp`, // Nintendo Switch OLED
+  "demo-ps5": `${DEMO_DEVICE_IMAGE_BASE}/playstation-5.webp`, // PlayStation 5
+  "demo-xbox": `${DEMO_DEVICE_IMAGE_BASE}/xbox-series-x.webp`, // Xbox Series X
+  "demo-macbook": `${DEMO_DEVICE_IMAGE_BASE}/macbook-pro.webp`, // MacBook Pro
+  "demo-studio-display": `${DEMO_DEVICE_IMAGE_BASE}/studio-display.webp`, // Studio Display
+  "demo-canon-printer": `${DEMO_DEVICE_IMAGE_BASE}/canon-printer.webp`, // Canon Printer
+  "demo-unifi-router": `${DEMO_DEVICE_IMAGE_BASE}/unifi-dream-router.webp`, // UniFi Dream Router
+  "demo-synology": `${DEMO_DEVICE_IMAGE_BASE}/synology-nas.webp`, // Synology NAS
+  "demo-iphone": `${DEMO_DEVICE_IMAGE_BASE}/iphone.webp`, // iPhone 16 Pro
+  "demo-samsung-fridge": `${DEMO_DEVICE_IMAGE_BASE}/samsung-refrigerator.webp`, // Samsung Refrigerator
+  "demo-echo-show": `${DEMO_DEVICE_IMAGE_BASE}/echo-show.webp`, // Echo Show
+  "demo-lg-washer": `${DEMO_DEVICE_IMAGE_BASE}/lg-washer.webp`, // LG Washer
+  "demo-lg-dryer": `${DEMO_DEVICE_IMAGE_BASE}/lg-dryer.webp`, // LG Dryer
+  "demo-robot-vacuum": `${DEMO_DEVICE_IMAGE_BASE}/robot-vacuum.webp`, // Robot Vacuum Dock
+  "demo-air-purifier": `${DEMO_DEVICE_IMAGE_BASE}/air-purifier.webp`, // Air Purifier
+  "demo-lg-oled": `${DEMO_DEVICE_IMAGE_BASE}/lg-oled-tv.webp`, // LG OLED TV
+  "demo-ring": `${DEMO_DEVICE_IMAGE_BASE}/ring-doorbell.webp`, // Ring Doorbell
+  "demo-smart-lock": `${DEMO_DEVICE_IMAGE_BASE}/yale-smart-lock.webp`, // Yale Smart Lock
+  "demo-nest": `${DEMO_DEVICE_IMAGE_BASE}/nest-thermostat.webp`, // Nest Thermostat
+  "demo-unifi-ap": `${DEMO_DEVICE_IMAGE_BASE}/unifi-access-point.webp`, // UniFi Access Point
+  "demo-cameras": `${DEMO_DEVICE_IMAGE_BASE}/security-camera.webp`, // Security Cameras
 };
 
 /** @deprecated Use DEMO_DEVICE_IMAGE_BY_ID. Kept for landing preview imports. */

@@ -7,13 +7,102 @@ import {
 
 import Image from "next/image";
 
+import {
+  Camera,
+  Gamepad2,
+  HardDrive,
+  Laptop,
+  Printer,
+  Router,
+  Smartphone,
+  Tv,
+  Wifi,
+} from "lucide-react";
+
 import { cn } from "@/lib/design-system/cn";
 import {
-  getCategoryFallbackIcon,
   resolveDeviceImage,
   type DeviceImageInput,
 } from "@/lib/devices/getDeviceImage";
 import { sections } from "@/lib/design-system/tokens";
+
+function CategoryFallbackIcon({
+  category,
+  size,
+}: {
+  category?: string | null;
+  size: number;
+}) {
+  const normalized =
+    category?.trim().toLowerCase() ?? "";
+
+  if (
+    normalized.includes("computer") ||
+    normalized.includes("laptop") ||
+    normalized.includes("monitor")
+  ) {
+    return <Laptop size={size} />;
+  }
+
+  if (
+    normalized.includes("television") ||
+    normalized === "tv"
+  ) {
+    return <Tv size={size} />;
+  }
+
+  if (
+    normalized.includes("router") ||
+    normalized.includes("network")
+  ) {
+    return <Router size={size} />;
+  }
+
+  if (normalized.includes("printer")) {
+    return <Printer size={size} />;
+  }
+
+  if (
+    normalized.includes("game") ||
+    normalized.includes("gaming") ||
+    normalized.includes("console")
+  ) {
+    return <Gamepad2 size={size} />;
+  }
+
+  if (
+    normalized.includes("mobile") ||
+    normalized.includes("phone") ||
+    normalized.includes("tablet")
+  ) {
+    return <Smartphone size={size} />;
+  }
+
+  if (
+    normalized.includes("camera") ||
+    normalized.includes("security") ||
+    normalized.includes("doorbell")
+  ) {
+    return <Camera size={size} />;
+  }
+
+  if (
+    normalized.includes("storage") ||
+    normalized.includes("nas")
+  ) {
+    return <HardDrive size={size} />;
+  }
+
+  if (
+    normalized.includes("stream") ||
+    normalized.includes("wifi") ||
+    normalized.includes("smart home")
+  ) {
+    return <Wifi size={size} />;
+  }
+
+  return <Laptop size={size} />;
+}
 
 type DeviceImageVariant =
   | "card"
@@ -76,10 +165,6 @@ export default function DeviceImageDisplay({
     device
   );
   const styles = variantStyles[variant];
-  const FallbackIcon =
-    getCategoryFallbackIcon(
-      device.category
-    );
   const tech = sections.technology;
 
   const showImage =
@@ -126,7 +211,10 @@ export default function DeviceImageDisplay({
           aria-hidden={variant === "thumbnail"}
         >
           <div className="flex h-16 w-16 items-center justify-center rounded-[var(--radius-card)] border border-border-subtle bg-surface-card shadow-[var(--shadow-sm)]">
-            <FallbackIcon size={28} />
+            <CategoryFallbackIcon
+              category={device.category}
+              size={28}
+            />
           </div>
 
           {variant !== "thumbnail" && (
