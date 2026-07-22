@@ -2,6 +2,7 @@
 
 import {
   useEffect,
+  useMemo,
   useState,
 } from "react";
 
@@ -10,12 +11,8 @@ import { useRouter } from "next/navigation";
 
 import {
   ChevronDown,
-  CreditCard,
-  LayoutDashboard,
-  LifeBuoy,
   LogOut,
-  Settings,
-  User,
+  type LucideIcon,
 } from "lucide-react";
 
 import Badge from "@/components/ui/Badge";
@@ -26,7 +23,9 @@ import { useDemoMode } from "@/hooks/useDemoMode";
 import { useNavMenu } from "@/hooks/useNavMenu";
 import { usePermissions } from "@/hooks/usePermissions";
 
+import { PROFILE_MENU_ITEMS } from "@/lib/navigation/config";
 import { NAV_MENU_IDS } from "@/lib/navigation/menuIds";
+import { shouldShowPremiumBadge } from "@/lib/navigation/navVisibility";
 
 import { supabase } from "@/lib/supabase";
 import { MORGAN_HOUSEHOLD } from "@/lib/demo/morganHousehold";
@@ -45,20 +44,21 @@ export default function ProfileMenu({
 
   const {
     planDisplayName,
-    roleDisplayName,
     vaultContextLabel,
     isPlatformAdmin,
     isVerifiedPlatformAdmin,
     canManageBilling,
     billingManagedByHousehold,
     billingOwnerName,
+    canViewFeature,
+    inheritsFamilyPlan,
+    hasFamilyFeatureAccess,
   } = usePermissions();
 
   const [displayName, setDisplayName] =
     useState("Account");
 
-  const [email, setEmail] =
-    useState("");
+  const [email, setEmail] = useState("");
 
   useEffect(() => {
     async function loadProfile() {
@@ -104,10 +104,36 @@ export default function ProfileMenu({
     .map((part) => part[0]?.toUpperCase())
     .join("");
 
-  const effectivePlanLabel =
-    isPlatformAdmin
-      ? "Platform Admin"
-      : planDisplayName || "Free";
+  const effectivePlanLabel = isPlatformAdmin
+    ? "Platform Admin"
+    : planDisplayName || "Free";
+
+  const visibleItems = useMemo(
+    () =>
+      PROFILE_MENU_ITEMS.filter((item) => {
+        if (item.adminOnly) {
+          return isVerifiedPlatformAdmin;
+        }
+
+        if (item.requiresBillingAccess) {
+          return canManageBilling;
+        }
+
+        if (
+          item.feature &&
+          !canViewFeature(item.feature)
+        ) {
+          return false;
+        }
+
+        return true;
+      }),
+    [
+      canManageBilling,
+      canViewFeature,
+      isVerifiedPlatformAdmin,
+    ]
+  );
 
   return (
     <DropdownMenu
@@ -119,12 +145,13 @@ export default function ProfileMenu({
           type="button"
           {...triggerProps}
           className="htv-focus-ring flex items-center gap-2 rounded-[var(--radius-button)] border border-border-subtle bg-surface-card px-2 py-1.5 text-sm hover:bg-surface-sunken"
+          aria-label="Open account menu"
         >
           <span className="flex h-8 w-8 items-center justify-center rounded-full border border-border-subtle bg-surface-sunken text-xs font-semibold text-charcoal shadow-[var(--shadow-inset)]">
             {initials || "HT"}
           </span>
 
-          {!compact && (
+          {!compact ? (
             <>
               <span className="hidden max-w-[120px] truncate font-medium text-text-primary md:inline">
                 {displayName}
@@ -135,7 +162,7 @@ export default function ProfileMenu({
                 className="hidden text-text-tertiary md:block"
               />
             </>
-          )}
+          ) : null}
         </button>
       )}
     >
@@ -144,11 +171,11 @@ export default function ProfileMenu({
           {displayName}
         </p>
 
-        {email && (
+        {email ? (
           <p className="truncate text-xs text-text-secondary">
             {email}
           </p>
-        )}
+        ) : null}
 
         <div className="mt-3 flex flex-wrap gap-2">
           <Badge
@@ -162,72 +189,46 @@ export default function ProfileMenu({
             {effectivePlanLabel}
           </Badge>
 
-          {vaultContextLabel && (
+          {vaultContextLabel ? (
             <Badge variant="accent">
               {vaultContextLabel}
             </Badge>
-          )}
+          ) : null}
         </div>
 
         {billingManagedByHousehold &&
-          !canManageBilling && (
+          !canManageBilling ? (
             <p className="mt-3 text-xs leading-5 text-text-secondary">
-              Managed by your Family Plan
-              Admin
+              Managed by your Family Plan Admin
               {billingOwnerName
                 ? ` (${billingOwnerName})`
                 : ""}
             </p>
-          )}
+          ) : null}
       </div>
 
       <div className="p-2">
-        <ProfileLink
-          href={
-            isDemo
-              ? "/signup"
-              : "/account"
-          }
-          icon={User}
-          label="Account"
-          onSelect={closeMenu}
-        />
+        {visibleItems.map((item) => {
+          const badge = shouldShowPremiumBadge(
+            item.feature,
+            canViewFeature,
+            inheritsFamilyPlan,
+            hasFamilyFeatureAccess
+          );
 
-        <ProfileLink
-          href="/settings"
-          icon={Settings}
-          label="Settings"
-          onSelect={closeMenu}
-        />
-
-        {canManageBilling && (
-          <ProfileLink
-            href="/settings/billing"
-            icon={CreditCard}
-            label="Billing"
-            onSelect={closeMenu}
-          />
-        )}
-
-        {isVerifiedPlatformAdmin && (
-          <>
+          return (
             <ProfileLink
-              href="/admin"
-              icon={LayoutDashboard}
-              label="Platform Overview"
+              key={item.href}
+              href={item.href}
+              icon={item.icon}
+              label={item.label}
+              badge={badge}
               onSelect={closeMenu}
             />
+          );
+        })}
 
-            <ProfileLink
-              href="/admin/support"
-              icon={LifeBuoy}
-              label="Support Inbox"
-              onSelect={closeMenu}
-            />
-          </>
-        )}
-
-        {!isDemo && user && (
+        {!isDemo && user ? (
           <button
             type="button"
             role="menuitem"
@@ -241,7 +242,7 @@ export default function ProfileMenu({
             <LogOut size={16} />
             Sign Out
           </button>
-        )}
+        ) : null}
       </div>
     </DropdownMenu>
   );
@@ -251,11 +252,13 @@ function ProfileLink({
   href,
   icon: Icon,
   label,
+  badge,
   onSelect,
 }: {
   href: string;
-  icon: typeof User;
+  icon: LucideIcon;
   label: string;
+  badge?: string | null;
   onSelect: () => void;
 }) {
   return (
@@ -267,7 +270,10 @@ function ProfileLink({
       className="flex items-center gap-2 rounded-[var(--radius-button)] px-3 py-2.5 text-sm text-text-secondary hover:bg-surface-sunken hover:text-text-primary focus-visible:bg-surface-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/25"
     >
       <Icon size={16} />
-      {label}
+      <span className="flex-1">{label}</span>
+      {badge ? (
+        <Badge variant="premium">{badge}</Badge>
+      ) : null}
     </Link>
   );
 }

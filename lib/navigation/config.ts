@@ -1,12 +1,12 @@
 import {
-  BarChart3,
   Bell,
   Building2,
   CreditCard,
-  FileText,
+  HelpCircle,
   Laptop,
+  LayoutDashboard,
+  LifeBuoy,
   MessageSquare,
-  Network,
   Radar,
   Settings,
   Shield,
@@ -18,259 +18,240 @@ import {
 } from "lucide-react";
 
 import type {
-  NavMenuGroup,
+  PrimaryNavItem,
+  ProfileNavItem,
   QuickAddItem,
 } from "@/lib/navigation/types";
 
-export const PRIMARY_NAV_GROUPS: NavMenuGroup[] =
-  [
-    {
-      id: "overview",
-      label: "Home Pulse",
-      href: "/dashboard",
-    },
-    {
-      id: "technology",
-      label: "Technology",
-      items: [
-        {
-          label: "Devices",
-          href: "/devices",
-          icon: Laptop,
-          description:
-            "Inventory and device records",
-          feature: "devices",
-        },
-        {
-          label: "Rooms",
-          href: "/home",
-          icon: Building2,
-          description:
-            "Organize by room",
-          feature: "rooms",
-        },
-        {
-          label: "Warranties",
-          href: "/warranties",
-          icon: Shield,
-          description:
-            "Coverage and expiration dates",
-          feature: "warranties",
-        },
-        {
-          label: "Maintenance",
-          href: "/maintenance",
-          icon: Wrench,
-          description:
-            "Tasks and service history",
-          feature: "maintenance",
-        },
-      ],
-    },
-    {
-      id: "digitalVault",
-      label: "Digital Vault",
-      items: [
-        {
-          label: "Documents",
-          href: "/documents",
-          icon: FileText,
-          description:
-            "Receipts, manuals, and files",
-          feature: "documents",
-        },
-        {
-          label: "Upload Document",
-          href: "/documents/upload",
-          icon: Upload,
-          description:
-            "Add a new vault document",
-          feature: "documents",
-        },
-        {
-          label: "Subscriptions",
-          href: "/subscriptions",
-          icon: CreditCard,
-          description:
-            "Streaming and service costs",
-          feature: "subscriptions",
-        },
-      ],
-    },
-    {
-      id: "network",
-      label: "Network",
-      items: [
-        {
-          label: "Your Network",
-          href: "/network",
-          icon: Network,
-          description:
-            "ISP, router, and Wi‑Fi details",
-          feature: "network",
-        },
-        {
-          label: "Discover Devices",
-          href: "/network/discover",
-          icon: Radar,
-          description:
-            "Scan and import network devices",
-          feature: "networkDiscover",
-        },
-        {
-          label: "Edit Network",
-          href: "/network/edit",
-          icon: Settings,
-          description:
-            "Update network information",
-          feature: "network",
-        },
-      ],
-    },
-    {
-      id: "insights",
-      label: "Insights",
-      items: [
-        {
-          label: "Reports",
-          href: "/reports",
-          icon: BarChart3,
-          description:
-            "Household technology reports",
-          feature: "reports",
-        },
-        {
-          label: "Insights",
-          href: "/insights",
-          icon: Sparkles,
-          description:
-            "Recommendations and trends",
-          feature: "insights",
-        },
-        {
-          label: "Audit Log",
-          href: "/audit",
-          icon: Shield,
-          description:
-            "Vault health and completeness",
-          feature: "audit",
-        },
-      ],
-    },
-    {
-      id: "family",
-      label: "Family",
-      items: [
-        {
-          label: "Household",
-          href: "/family",
-          icon: Users,
-          description:
-            "Members, roles, and invites",
-          feature: "family",
-        },
-        {
-          label: "Account",
-          href: "/account",
-          icon: User,
-          description:
-            "Profile and plan summary",
-          feature: "account",
-        },
-        {
-          label: "Profile",
-          href: "/profile",
-          icon: User,
-          description:
-            "Personal profile settings",
-          feature: "account",
-        },
-      ],
-    },
-    {
-      id: "more",
-      label: "More",
-      items: [
-        {
-          label: "Notifications",
-          href: "/notifications",
-          icon: Bell,
-          description:
-            "Alerts and activity center",
-          feature: "notifications",
-        },
-        {
-          label: "Security",
-          href: "/security",
-          icon: Shield,
-          description:
-            "Account security and recovery",
-          feature: "securityCenter",
-        },
-        {
-          label: "Settings",
-          href: "/settings",
-          icon: Settings,
-          description:
-            "Application preferences",
-          feature: "settings",
-        },
-        {
-          label: "Billing",
-          href: "/settings/billing",
-          icon: CreditCard,
-          description:
-            "Subscription and payments",
-          feature: "billing",
-        },
-        {
-          label: "Contact",
-          href: "/contact",
-          icon: MessageSquare,
-          description:
-            "Support and feedback",
-          feature: "settings",
-        },
-      ],
-    },
-  ];
+/** Flat desktop and mobile primary navigation */
+export const PRIMARY_NAV_ITEMS: PrimaryNavItem[] = [
+  {
+    label: "Home",
+    href: "/dashboard",
+    feature: "dashboard",
+    activePrefixes: ["/dashboard"],
+  },
+  {
+    label: "Devices",
+    href: "/devices",
+    feature: "devices",
+    activePrefixes: ["/devices"],
+  },
+  {
+    label: "Documents",
+    href: "/documents",
+    feature: "documents",
+    activePrefixes: ["/documents"],
+  },
+  {
+    label: "Warranties",
+    href: "/warranties",
+    feature: "warranties",
+    activePrefixes: ["/warranties"],
+  },
+  {
+    label: "Network",
+    href: "/network",
+    feature: "network",
+    activePrefixes: ["/network"],
+  },
+  {
+    label: "Export",
+    href: "/reports",
+    feature: "reports",
+    activePrefixes: ["/reports"],
+  },
+];
 
-export const QUICK_ADD_ITEMS: QuickAddItem[] =
-  [
-    {
-      label: "Add Device",
-      href: "/devices/add",
-      icon: Laptop,
-      description:
-        "Record a new device",
-      feature: "devices",
-      actionFeature: "devices",
-    },
-    {
-      label: "Upload Document",
-      href: "/documents/upload",
-      icon: Upload,
-      description:
-        "Attach receipts and files",
-      feature: "documents",
-      actionFeature: "documents",
-    },
-    {
-      label: "Add Maintenance Task",
-      href: "/maintenance/new",
-      icon: Wrench,
-      description:
-        "Schedule service or upkeep",
-      feature: "maintenance",
-      actionFeature: "maintenance",
-    },
-    {
-      label: "Add Subscription",
-      href: "/subscriptions/add",
-      icon: CreditCard,
-      description:
-        "Track a recurring service",
-      feature: "subscriptions",
-      actionFeature: "subscriptions",
-    },
-  ];
+/** Secondary destinations in the avatar menu */
+export const PROFILE_MENU_ITEMS: ProfileNavItem[] = [
+  {
+    label: "Household",
+    href: "/family",
+    icon: Users,
+    feature: "family",
+  },
+  {
+    label: "Services",
+    href: "/subscriptions",
+    icon: CreditCard,
+    feature: "subscriptions",
+  },
+  {
+    label: "Rooms",
+    href: "/home",
+    icon: Building2,
+    feature: "rooms",
+  },
+  {
+    label: "Maintenance",
+    href: "/maintenance",
+    icon: Wrench,
+    feature: "maintenance",
+  },
+  {
+    label: "Insights",
+    href: "/insights",
+    icon: Sparkles,
+    feature: "insights",
+  },
+  {
+    label: "Audit Log",
+    href: "/audit",
+    icon: Shield,
+    feature: "audit",
+  },
+  {
+    label: "Notifications",
+    href: "/notifications",
+    icon: Bell,
+    feature: "notifications",
+  },
+  {
+    label: "Security",
+    href: "/security",
+    icon: Shield,
+    feature: "securityCenter",
+  },
+  {
+    label: "Account",
+    href: "/account",
+    icon: User,
+    feature: "account",
+  },
+  {
+    label: "Settings",
+    href: "/settings",
+    icon: Settings,
+    feature: "settings",
+  },
+  {
+    label: "Billing",
+    href: "/settings/billing",
+    icon: CreditCard,
+    feature: "billing",
+    requiresBillingAccess: true,
+  },
+  {
+    label: "Help Center",
+    href: "/faq",
+    icon: HelpCircle,
+  },
+  {
+    label: "Contact Support",
+    href: "/contact",
+    icon: MessageSquare,
+    feature: "settings",
+  },
+  {
+    label: "Platform Overview",
+    href: "/admin",
+    icon: LayoutDashboard,
+    adminOnly: true,
+  },
+  {
+    label: "Support Inbox",
+    href: "/admin/support",
+    icon: LifeBuoy,
+    adminOnly: true,
+  },
+];
+
+/** Additional routes preserved from former dropdowns (deep links, quick add targets) */
+export const SECONDARY_ROUTE_ITEMS: ProfileNavItem[] = [
+  {
+    label: "Upload Document",
+    href: "/documents/upload",
+    icon: Upload,
+    feature: "documents",
+  },
+  {
+    label: "Discover Devices",
+    href: "/network/discover",
+    icon: Radar,
+    feature: "networkDiscover",
+  },
+  {
+    label: "Edit Network",
+    href: "/network/edit",
+    icon: Settings,
+    feature: "network",
+  },
+  {
+    label: "Profile",
+    href: "/profile",
+    icon: User,
+    feature: "account",
+  },
+];
+
+export const QUICK_ADD_ITEMS: QuickAddItem[] = [
+  {
+    label: "Add Device",
+    href: "/devices/add",
+    icon: Laptop,
+    description: "Record a new device",
+    feature: "devices",
+    actionFeature: "devices",
+  },
+  {
+    label: "Upload Document",
+    href: "/documents/upload",
+    icon: Upload,
+    description: "Attach receipts and files",
+    feature: "documents",
+    actionFeature: "documents",
+  },
+  {
+    label: "Add Maintenance Task",
+    href: "/maintenance/new",
+    icon: Wrench,
+    description: "Schedule service or upkeep",
+    feature: "maintenance",
+    actionFeature: "maintenance",
+  },
+  {
+    label: "Add Subscription",
+    href: "/subscriptions/add",
+    icon: CreditCard,
+    description: "Track a recurring service",
+    feature: "subscriptions",
+    actionFeature: "subscriptions",
+  },
+];
+
+/** Mobile sheet: primary links plus key secondary destinations */
+export const MOBILE_NAV_ITEMS: Array<
+  PrimaryNavItem | ProfileNavItem
+> = [
+  ...PRIMARY_NAV_ITEMS,
+  {
+    label: "Household",
+    href: "/family",
+    icon: Users,
+    feature: "family",
+  },
+  {
+    label: "Services",
+    href: "/subscriptions",
+    icon: CreditCard,
+    feature: "subscriptions",
+  },
+  {
+    label: "Settings",
+    href: "/settings",
+    icon: Settings,
+    feature: "settings",
+  },
+  {
+    label: "Help Center",
+    href: "/faq",
+    icon: HelpCircle,
+  },
+  {
+    label: "Contact Support",
+    href: "/contact",
+    icon: MessageSquare,
+    feature: "settings",
+  },
+];

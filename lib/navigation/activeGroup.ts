@@ -1,55 +1,16 @@
-import type { NavGroupId } from "@/lib/navigation/types";
+import { PRIMARY_NAV_ITEMS } from "@/lib/navigation/config";
 
-export const NAV_GROUP_ROUTE_PREFIXES: Record<
-  Exclude<NavGroupId, "overview">,
-  string[]
-> = {
-  technology: [
-    "/devices",
-    "/home",
-    "/warranties",
-    "/maintenance",
-  ],
-  digitalVault: [
-    "/documents",
-    "/subscriptions",
-  ],
-  network: ["/network"],
-  insights: [
-    "/reports",
-    "/insights",
-    "/audit",
-    "/activity",
-  ],
-  family: [
-    "/family",
-    "/account",
-    "/profile",
-  ],
-  more: [
-    "/notifications",
-    "/security",
-    "/settings",
-    "/contact",
-  ],
-};
-
-export function resolveActiveNavGroup(
+/**
+ * Returns the href of the active primary nav item, if any.
+ */
+export function resolveActivePrimaryNav(
   pathname: string
-): NavGroupId | null {
-  if (
-    pathname === "/dashboard" ||
-    pathname.startsWith("/dashboard/")
-  ) {
-    return "overview";
-  }
+): string | null {
+  for (const item of PRIMARY_NAV_ITEMS) {
+    const prefixes = item.activePrefixes ?? [
+      item.href,
+    ];
 
-  for (const [groupId, prefixes] of Object.entries(
-    NAV_GROUP_ROUTE_PREFIXES
-  ) as [
-    Exclude<NavGroupId, "overview">,
-    string[],
-  ][]) {
     if (
       prefixes.some(
         (prefix) =>
@@ -57,8 +18,48 @@ export function resolveActiveNavGroup(
           pathname.startsWith(`${prefix}/`)
       )
     ) {
-      return groupId;
+      return item.href;
     }
+  }
+
+  return null;
+}
+
+export function isPrimaryNavActive(
+  pathname: string,
+  href: string
+): boolean {
+  return resolveActivePrimaryNav(pathname) === href;
+}
+
+/** @deprecated Use resolveActivePrimaryNav */
+export function resolveActiveNavGroup(
+  pathname: string
+): string | null {
+  const active = resolveActivePrimaryNav(pathname);
+
+  if (active === "/dashboard") {
+    return "overview";
+  }
+
+  if (active === "/devices") {
+    return "technology";
+  }
+
+  if (active === "/documents") {
+    return "digitalVault";
+  }
+
+  if (active === "/network") {
+    return "network";
+  }
+
+  if (active === "/reports") {
+    return "insights";
+  }
+
+  if (active === "/warranties") {
+    return "technology";
   }
 
   return null;

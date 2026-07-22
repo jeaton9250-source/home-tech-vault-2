@@ -11,9 +11,7 @@ import DropdownMenu from "@/components/navigation/DropdownMenu";
 import { useNavMenu } from "@/hooks/useNavMenu";
 import { usePermissions } from "@/hooks/usePermissions";
 
-import { FEATURE_REQUIREMENTS } from "@/lib/permissions/features";
-
-import type { FeatureKey } from "@/lib/permissions/types";
+import { shouldShowPremiumBadge } from "@/lib/navigation/navVisibility";
 
 import type {
   NavMenuItem,
@@ -28,23 +26,7 @@ type NavDropdownProps = {
   isActive?: boolean;
 };
 
-function planBadgeLabel(
-  feature: FeatureKey
-): string | null {
-  const required =
-    FEATURE_REQUIREMENTS[feature];
-
-  if (required === "pro") {
-    return "Pro";
-  }
-
-  if (required === "family") {
-    return "Family";
-  }
-
-  return null;
-}
-
+/** @deprecated Primary navigation is flat. Kept for any legacy references. */
 export default function NavDropdown({
   menuId,
   label,
@@ -59,33 +41,6 @@ export default function NavDropdown({
     hasFamilyFeatureAccess,
   } = usePermissions();
 
-  function showPremiumBadge(
-    feature?: FeatureKey
-  ) {
-    if (!feature) {
-      return false;
-    }
-
-    if (canViewFeature(feature)) {
-      return false;
-    }
-
-    const required =
-      FEATURE_REQUIREMENTS[feature];
-
-    if (
-      required === "family" &&
-      inheritsFamilyPlan &&
-      hasFamilyFeatureAccess
-    ) {
-      return false;
-    }
-
-    return (
-      planBadgeLabel(feature) !== null
-    );
-  }
-
   return (
     <DropdownMenu
       menuId={menuId}
@@ -96,7 +51,7 @@ export default function NavDropdown({
           className={cn(
             "relative inline-flex items-center gap-1.5 rounded-[var(--radius-button)] px-3 py-2 text-sm font-medium transition",
             isActive
-              ? "bg-surface-sunken font-semibold text-text-primary"
+              ? "font-semibold text-text-primary"
               : "text-text-secondary hover:bg-surface-sunken hover:text-text-primary"
           )}
         >
@@ -106,18 +61,16 @@ export default function NavDropdown({
             size={16}
             className={cn(
               "transition-transform duration-200",
-              triggerProps[
-                "aria-expanded"
-              ] && "rotate-180"
+              triggerProps["aria-expanded"] && "rotate-180"
             )}
           />
 
-          {isActive && (
+          {isActive ? (
             <span
-              className="absolute inset-x-2 -bottom-2 h-0.5 rounded-full bg-charcoal"
+              className="absolute inset-x-2 -bottom-0.5 h-0.5 rounded-full bg-charcoal"
               aria-hidden
             />
-          )}
+          ) : null}
         </button>
       )}
     >
@@ -125,15 +78,12 @@ export default function NavDropdown({
         {items.map((item) => {
           const Icon = item.icon;
 
-          const badge =
-            item.feature &&
-            showPremiumBadge(
-              item.feature
-            )
-              ? planBadgeLabel(
-                  item.feature
-                )
-              : null;
+          const badge = shouldShowPremiumBadge(
+            item.feature,
+            canViewFeature,
+            inheritsFamilyPlan,
+            hasFamilyFeatureAccess
+          );
 
           return (
             <li key={item.href}>
@@ -141,9 +91,7 @@ export default function NavDropdown({
                 href={item.href}
                 role="menuitem"
                 tabIndex={-1}
-                onClick={() =>
-                  closeMenu()
-                }
+                onClick={() => closeMenu()}
                 className="flex items-start gap-3 rounded-[var(--radius-button)] px-3 py-3 transition hover:bg-surface-sunken focus-visible:bg-surface-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interaction/20"
               >
                 <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-button)] border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
@@ -156,20 +104,16 @@ export default function NavDropdown({
                       {item.label}
                     </span>
 
-                    {badge && (
-                      <Badge variant="premium">
-                        {badge}
-                      </Badge>
-                    )}
+                    {badge ? (
+                      <Badge variant="premium">{badge}</Badge>
+                    ) : null}
                   </span>
 
-                  {item.description && (
+                  {item.description ? (
                     <span className="mt-0.5 block text-xs leading-5 text-text-secondary">
-                      {
-                        item.description
-                      }
+                      {item.description}
                     </span>
-                  )}
+                  ) : null}
                 </span>
               </Link>
             </li>
@@ -180,33 +124,4 @@ export default function NavDropdown({
   );
 }
 
-export function NavLink({
-  href,
-  label,
-  isActive,
-}: {
-  href: string;
-  label: string;
-  isActive: boolean;
-}) {
-  return (
-    <Link
-      href={href}
-      className={cn(
-        "relative inline-flex items-center rounded-[var(--radius-button)] px-3 py-2 text-sm font-medium transition",
-        isActive
-          ? "bg-surface-sunken font-semibold text-text-primary"
-          : "text-text-secondary hover:bg-surface-sunken hover:text-text-primary"
-      )}
-    >
-      {label}
-
-      {isActive && (
-        <span
-          className="absolute inset-x-2 -bottom-2 h-0.5 rounded-full bg-charcoal"
-          aria-hidden
-        />
-      )}
-    </Link>
-  );
-}
+export { NavLink } from "@/components/navigation/PrimaryNavLink";

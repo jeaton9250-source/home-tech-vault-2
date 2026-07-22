@@ -6,64 +6,44 @@ import {
 } from "react";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
-import { Menu, Sparkles, X } from "lucide-react";
+import { LogOut, Menu, Search, Sparkles, X } from "lucide-react";
 import {
   AnimatePresence,
   motion,
 } from "framer-motion";
 
 import Logo from "@/components/brand/Logo";
-import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 
-import NotificationBell from "@/components/NotificationBell";
-import ProfileMenu from "@/components/navigation/ProfileMenu";
+import { MobileNavLink } from "@/components/navigation/PrimaryNavLink";
 import QuickAddMenu from "@/components/navigation/QuickAddMenu";
 import SearchField from "@/components/navigation/SearchField";
 
 import { useAIAdvisor } from "@/hooks/useAIAdvisor";
+import { useDemoMode } from "@/hooks/useDemoMode";
 import { usePermissions } from "@/hooks/usePermissions";
 
-import { resolveActiveNavGroup } from "@/lib/navigation/activeGroup";
-import { PRIMARY_NAV_GROUPS } from "@/lib/navigation/config";
+import { isPrimaryNavActive } from "@/lib/navigation/activeGroup";
+import { MOBILE_NAV_ITEMS } from "@/lib/navigation/config";
+import { shouldShowPremiumBadge } from "@/lib/navigation/navVisibility";
 
-import { FEATURE_REQUIREMENTS } from "@/lib/permissions/features";
-
-import type { FeatureKey } from "@/lib/permissions/types";
+import { supabase } from "@/lib/supabase";
 
 import { cn } from "@/lib/design-system/cn";
 
-function planBadgeLabel(
-  feature: FeatureKey
-): string | null {
-  const required =
-    FEATURE_REQUIREMENTS[feature];
-
-  if (required === "pro") {
-    return "Pro";
-  }
-
-  if (required === "family") {
-    return "Family";
-  }
-
-  return null;
-}
-
 export default function MobileNavSheet() {
   const pathname = usePathname();
+  const router = useRouter();
 
-  const [open, setOpen] =
-    useState(false);
+  const [open, setOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
-  const activeGroup =
-    resolveActiveNavGroup(pathname);
+  const { user, isDemo } = useDemoMode();
 
   const {
     canViewFeature,
-    canManageBilling,
     inheritsFamilyPlan,
     hasFamilyFeatureAccess,
   } = usePermissions();
@@ -72,109 +52,98 @@ export default function MobileNavSheet() {
 
   useEffect(() => {
     setOpen(false);
+    setSearchOpen(false);
   }, [pathname]);
 
   useEffect(() => {
     if (!open) {
-      document.body.style.overflow =
-        "";
+      document.body.style.overflow = "";
       return;
     }
 
-    document.body.style.overflow =
-      "hidden";
+    document.body.style.overflow = "hidden";
 
-    function handleKeyDown(
-      event: KeyboardEvent
-    ) {
+    function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
         setOpen(false);
       }
     }
 
-    document.addEventListener(
-      "keydown",
-      handleKeyDown
-    );
+    document.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      document.body.style.overflow =
-        "";
-      document.removeEventListener(
-        "keydown",
-        handleKeyDown
-      );
+      document.body.style.overflow = "";
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, [open]);
 
-  function showPremiumBadge(
-    feature?: FeatureKey
-  ) {
-    if (!feature || canViewFeature(feature)) {
-      return false;
-    }
+  async function signOut() {
+    await supabase.auth.signOut();
+    router.push("/login");
+  }
 
-    const required =
-      FEATURE_REQUIREMENTS[feature];
-
-    if (
-      required === "family" &&
-      inheritsFamilyPlan &&
-      hasFamilyFeatureAccess
-    ) {
+  const visibleItems = MOBILE_NAV_ITEMS.filter((item) => {
+    if (item.feature && !canViewFeature(item.feature)) {
       return false;
     }
 
     return true;
+  });
+
+  function isItemActive(href: string) {
+    if (href === "/dashboard") {
+      return isPrimaryNavActive(pathname, href);
+    }
+
+    return (
+      pathname === href ||
+      pathname.startsWith(`${href}/`)
+    );
   }
 
-  const groups =
-    PRIMARY_NAV_GROUPS.map((group) => {
-      if (group.id !== "more") {
-        return group;
-      }
-
-      return {
-        ...group,
-        items: group.items?.filter(
-          (item) =>
-            item.href !==
-              "/settings/billing" ||
-            canManageBilling
-        ),
-      };
-    });
+  function openSheet() {
+    setOpen(true);
+  }
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-border-subtle bg-surface-card/95 backdrop-blur-sm lg:hidden">
+      <header className="sticky top-0 z-40 border-b border-border-subtle bg-surface-card/90 backdrop-blur-md lg:hidden">
         <div className="flex h-14 items-center gap-2 px-4">
           <button
             type="button"
-            onClick={() =>
-              setOpen(true)
-            }
+            onClick={openSheet}
             className="htv-focus-ring flex h-10 w-10 items-center justify-center rounded-[var(--radius-button)] text-text-primary hover:bg-surface-sunken"
             aria-label="Open navigation menu"
           >
             <Menu size={20} />
           </button>
 
-          <Link
-            href="/dashboard"
-            className="min-w-0 flex-1"
-          >
+          <Link href="/dashboard" className="min-w-0 flex-1">
             <Logo collapsed />
           </Link>
 
-          <NotificationBell />
-
-          <ProfileMenu compact />
+          <button
+            type="button"
+            onClick={() => {
+              setSearchOpen((current) => !current);
+              setOpen(true);
+            }}
+            className="htv-focus-ring flex h-10 w-10 items-center justify-center rounded-[var(--radius-button)] text-text-primary hover:bg-surface-sunken"
+            aria-label="Open search"
+          >
+            <Search size={20} />
+          </button>
         </div>
+
+        {searchOpen && !open ? (
+          <div className="border-t border-border-subtle px-4 py-3">
+            <SearchField compact />
+          </div>
+        ) : null}
       </header>
 
       <AnimatePresence>
-        {open && (
+        {open ? (
           <>
             <motion.button
               type="button"
@@ -183,9 +152,7 @@ export default function MobileNavSheet() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="fixed inset-0 z-50 bg-text-primary/20 lg:hidden"
-              onClick={() =>
-                setOpen(false)
-              }
+              onClick={() => setOpen(false)}
             />
 
             <motion.aside
@@ -193,16 +160,10 @@ export default function MobileNavSheet() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               drag="x"
-              dragConstraints={{
-                left: 0,
-                right: 0,
-              }}
+              dragConstraints={{ left: 0, right: 0 }}
               dragElastic={0.08}
               onDragEnd={(_, info) => {
-                if (
-                  info.offset.x > 80 ||
-                  info.velocity.x > 400
-                ) {
+                if (info.offset.x > 80 || info.velocity.x > 400) {
                   setOpen(false);
                 }
               }}
@@ -222,9 +183,7 @@ export default function MobileNavSheet() {
 
                 <button
                   type="button"
-                  onClick={() =>
-                    setOpen(false)
-                  }
+                  onClick={() => setOpen(false)}
                   className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-button)] hover:bg-surface-sunken"
                   aria-label="Close menu"
                 >
@@ -238,9 +197,7 @@ export default function MobileNavSheet() {
                 <div className="flex flex-wrap gap-2">
                   <QuickAddMenu compact />
 
-                  {canViewFeature(
-                    "aiAdvisor"
-                  ) && (
+                  {canViewFeature("aiAdvisor") ? (
                     <Button
                       type="button"
                       variant="secondary"
@@ -253,120 +210,62 @@ export default function MobileNavSheet() {
                       <Sparkles size={16} />
                       AI Advisor
                     </Button>
-                  )}
+                  ) : null}
                 </div>
               </div>
 
-              <nav className="flex-1 overflow-y-auto p-4">
-                <div className="space-y-6">
-                  {groups.map((group) => (
-                    <section key={group.id}>
-                      {group.href ? (
-                        <Link
-                          href={group.href}
-                          className={cn(
-                            "block rounded-[var(--radius-button)] px-3 py-2 text-base font-medium",
-                            activeGroup ===
-                              group.id
-                              ? "bg-interaction-soft text-interaction"
-                              : "text-text-primary hover:bg-surface-sunken"
-                          )}
-                        >
-                          {group.label}
-                        </Link>
-                      ) : (
-                        <>
-                          <p className="text-overline px-3">
-                            {group.label}
-                          </p>
+              <nav
+                aria-label="Mobile primary"
+                className="flex-1 overflow-y-auto p-4"
+              >
+                <ul className="space-y-1">
+                  {visibleItems.map((item) => {
+                    const badge = shouldShowPremiumBadge(
+                      item.feature,
+                      canViewFeature,
+                      inheritsFamilyPlan,
+                      hasFamilyFeatureAccess
+                    );
 
-                          <ul className="mt-2 space-y-1">
-                            {group.items?.map(
-                              (item) => {
-                                const Icon =
-                                  item.icon;
+                    const icon =
+                      "icon" in item ? item.icon : undefined;
 
-                                const badge =
-                                  item.feature &&
-                                  showPremiumBadge(
-                                    item.feature
-                                  )
-                                    ? planBadgeLabel(
-                                        item.feature!
-                                      )
-                                    : null;
-
-                                const itemActive =
-                                  pathname ===
-                                    item.href ||
-                                  pathname.startsWith(
-                                    `${item.href}/`
-                                  );
-
-                                return (
-                                  <li
-                                    key={
-                                      item.href
-                                    }
-                                  >
-                                    <Link
-                                      href={
-                                        item.href
-                                      }
-                                      className={cn(
-                                        "flex items-center gap-3 rounded-[var(--radius-button)] px-3 py-3",
-                                        itemActive
-                                          ? "bg-interaction-soft text-interaction"
-                                          : "text-text-primary hover:bg-surface-sunken"
-                                      )}
-                                    >
-                                      <Icon
-                                        size={
-                                          18
-                                        }
-                                      />
-
-                                      <span className="flex-1 text-sm font-medium">
-                                        {
-                                          item.label
-                                        }
-                                      </span>
-
-                                      {badge && (
-                                        <Badge variant="premium">
-                                          {
-                                            badge
-                                          }
-                                        </Badge>
-                                      )}
-                                    </Link>
-                                  </li>
-                                );
-                              }
-                            )}
-                          </ul>
-                        </>
-                      )}
-                    </section>
-                  ))}
-                </div>
+                    return (
+                      <li key={item.href}>
+                        <MobileNavLink
+                          href={item.href}
+                          label={item.label}
+                          isActive={isItemActive(item.href)}
+                          badge={badge}
+                          icon={icon}
+                          onClick={() => setOpen(false)}
+                        />
+                      </li>
+                    );
+                  })}
+                </ul>
               </nav>
 
               <div className="border-t border-border-subtle p-4">
-                <Button
-                  href="/dashboard"
-                  variant="secondary"
-                  fullWidth
-                  onClick={() =>
-                    setOpen(false)
-                  }
-                >
-                  Back to Home Pulse
-                </Button>
+                {!isDemo && user ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOpen(false);
+                      void signOut();
+                    }}
+                    className={cn(
+                      "flex w-full items-center gap-3 rounded-[var(--radius-button)] px-3 py-3 text-sm font-medium text-text-primary hover:bg-surface-sunken"
+                    )}
+                  >
+                    <LogOut size={18} />
+                    Sign Out
+                  </button>
+                ) : null}
               </div>
             </motion.aside>
           </>
-        )}
+        ) : null}
       </AnimatePresence>
     </>
   );
