@@ -647,6 +647,10 @@ function usePermissionsState() {
     billingManagedByHousehold,
     billingOwnerName,
     inheritsFamilyPlan,
+    inheritsProPlan,
+    inheritsHouseholdPlan,
+    householdSubscriptionOwnerId,
+    canUseProFeatures,
     effectiveStatus,
     effectivePlanSource,
     adminGrantPlan,
@@ -665,18 +669,21 @@ function usePermissionsState() {
 
   const isPro =
     effectivePlan === "pro" &&
-    (isActive || hasPremiumFeatureAccess);
+    canUseProFeatures;
 
   const isFamily =
     hasFamilyFeatureAccess;
 
   const isFree =
     !effectiveIsPlatformAdmin &&
-    !hasPremiumFeatureAccess;
+    !canUseProFeatures;
+
+  const isTrial =
+    effectiveStatus === "trialing";
 
   const canUsePremiumFeatures =
     effectiveIsPlatformAdmin ||
-    hasPremiumFeatureAccess;
+    canUseProFeatures;
 
   const canUseFamilySharing =
     effectiveIsPlatformAdmin ||
@@ -781,6 +788,10 @@ function usePermissionsState() {
     billingManagedByHousehold,
     billingOwnerName,
     inheritsFamilyPlan,
+    inheritsProPlan,
+    inheritsHouseholdPlan,
+    householdSubscriptionOwnerId,
+    canUseProFeatures,
     effectivePlanSource,
     adminGrantPlan,
     adminGrantExpiresAt,
@@ -796,6 +807,12 @@ function usePermissionsState() {
     isFree,
     isPro,
     isFamily,
+    isTrial,
+    trialEndsAt: isTrial
+      ? inheritsHouseholdPlan
+        ? householdOwnerCurrentPeriodEnd
+        : currentPeriodEnd
+      : null,
     isPlatformAdmin:
       effectiveIsPlatformAdmin,
     /** Real `profiles.is_admin` only — never development-access simulation. */

@@ -44,6 +44,8 @@ export default function FeatureGate({
     isDemo,
     isPlatformAdmin,
     billingManagedByHousehold,
+    inheritsProPlan,
+    inheritsFamilyPlan,
     canViewFeature,
     getFeatureAccess,
   } = usePermissions();
@@ -123,10 +125,18 @@ export default function FeatureGate({
         ? "Pro"
         : "Premium";
 
+  const householdPlanLabel = inheritsFamilyPlan
+    ? "Family"
+    : inheritsProPlan
+      ? "Pro"
+      : "household";
+
   const features = featureList ??
     (isReadOnlyLock
       ? [
-          "Contact your Family Plan Admin if you need edit access.",
+          inheritsProPlan || inheritsFamilyPlan
+            ? `This Pro feature is included with your ${householdPlanLabel} plan, but your household role is read-only.`
+            : "Contact your household admin if you need edit access.",
         ]
       : [
           "Unlimited device tracking",
@@ -149,7 +159,9 @@ export default function FeatureGate({
           description ||
           access.upgradeReason ||
           (isReadOnlyLock
-            ? `${featureLabel} is available on your Family plan, but your household role is read-only.`
+            ? inheritsProPlan || inheritsFamilyPlan
+              ? `${featureLabel} is included with your ${householdPlanLabel} plan, but your household role is read-only.`
+              : `${featureLabel} is available on your plan, but your household role is read-only.`
             : `${featureLabel} requires a Home Tech Vault ${planLabel} subscription.`)
         }
         planLabel={`${planLabel} Feature`}

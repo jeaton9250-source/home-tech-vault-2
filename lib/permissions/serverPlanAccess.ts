@@ -209,6 +209,8 @@ export function formatEffectivePlanSourceLabel(
       return "Admin Grant — Family";
     case "inherited_family":
       return "Inherited Family";
+    case "inherited_pro":
+      return "Inherited Pro";
     case "personal_pro":
       return "Personal Pro";
     case "personal_family":

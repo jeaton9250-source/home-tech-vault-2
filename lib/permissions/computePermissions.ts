@@ -68,6 +68,7 @@ function blockedHrefForReason(
   ) {
     if (
       context.billingManagedByHousehold ||
+      context.inheritsFamilyPlan ||
       context.hasFamilyFeatureAccess
     ) {
       return "/family";

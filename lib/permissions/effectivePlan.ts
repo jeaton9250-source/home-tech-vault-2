@@ -1,14 +1,15 @@
 /**
  * Effective plan resolution for Home Tech Vault.
  *
- * Product rules (no schema changes in this stage):
- * - The household owner (`households.owner_id`) is the Family plan billing owner.
+ * Product rules:
+ * - The household owner (`households.owner_id`) holds the household subscription.
+ * - When that owner has an active or trialing Pro subscription, every active
+ *   household member receives inherited Pro entitlement (`effectivePlan = "pro"`).
  * - When that owner has an active or trialing Family subscription, every active
- *   user in `household_members` for that household receives `effectivePlan =
- *   "family"`.
- * - When the owner's Family subscription is canceled, expired, past_due, or
- *   otherwise not granting access, members fall back to their personal
- *   subscription or Free.
+ *   household member receives inherited Family entitlement (`effectivePlan =
+ *   "family"`).
+ * - When the owner's subscription is canceled, expired, past_due, or otherwise
+ *   not granting access, members fall back to their personal subscription or Free.
  *
  * Limitation: billing ownership cannot yet be transferred separately from
  * household ownership. `canManageBilling` requires the caller to be the
@@ -102,6 +103,10 @@ export type EffectivePlanResult = {
   billingManagedByHousehold: boolean;
   billingOwnerName: string | null;
   inheritsFamilyPlan: boolean;
+  inheritsProPlan: boolean;
+  inheritsHouseholdPlan: boolean;
+  householdSubscriptionOwnerId: string | null;
+  canUseProFeatures: boolean;
   effectiveStatus: string;
   effectivePlanSource: EffectivePlanSource;
   adminGrantPlan: AdminGrantPlan | null;
@@ -114,6 +119,7 @@ export type EffectivePlanResult = {
 import {
   isActiveSubscriptionStatus,
   isSubscriptionGrantingAccess,
+  normalizeSubscriptionPlan,
 } from "@/lib/permissions/subscriptionAccess";
 
 export {
@@ -301,17 +307,35 @@ export function resolveEffectivePlan(
     Boolean(householdId) &&
     Boolean(rawHouseholdRole);
 
-  const ownerHasActiveFamily =
-    householdOwnerPlan === "family" &&
+  const normalizedOwnerPlan =
+    normalizeSubscriptionPlan(
+      householdOwnerPlan
+    );
+
+  const ownerGrantsHouseholdAccess =
     isSubscriptionGrantingAccess(
-      householdOwnerPlan,
+      normalizedOwnerPlan,
       householdOwnerStatus,
       householdOwnerCurrentPeriodEnd
     );
 
-  const inheritsFamilyPlan =
+  const inheritsHouseholdPlan =
     hasActiveMembership &&
-    ownerHasActiveFamily;
+    ownerGrantsHouseholdAccess &&
+    normalizedOwnerPlan !== "free";
+
+  const inheritsFamilyPlan =
+    inheritsHouseholdPlan &&
+    normalizedOwnerPlan === "family";
+
+  const inheritsProPlan =
+    inheritsHouseholdPlan &&
+    normalizedOwnerPlan === "pro";
+
+  const householdSubscriptionOwnerId =
+    inheritsHouseholdPlan
+      ? householdOwnerId
+      : null;
 
   const personalGrantsAccess =
     isSubscriptionGrantingAccess(
@@ -348,12 +372,15 @@ export function resolveEffectivePlan(
         : "personal_pro"
       : "free";
 
-  if (inheritsFamilyPlan) {
-    effectivePlan = "family";
+  if (inheritsHouseholdPlan) {
+    effectivePlan = normalizedOwnerPlan;
     effectiveStatus =
       householdOwnerStatus ??
       "active";
-    effectivePlanSource = "inherited_family";
+    effectivePlanSource =
+      inheritsFamilyPlan
+        ? "inherited_family"
+        : "inherited_pro";
   }
 
   if (hasActiveAdminGrant) {
@@ -406,6 +433,10 @@ export function resolveEffectivePlan(
       billingManagedByHousehold: false,
       billingOwnerName: null,
       inheritsFamilyPlan: false,
+      inheritsProPlan: false,
+      inheritsHouseholdPlan: false,
+      householdSubscriptionOwnerId: null,
+      canUseProFeatures: false,
       effectiveStatus: "inactive",
       ...emptyAdminGrantFields,
       effectivePlanSource: "demo",
@@ -438,8 +469,9 @@ export function resolveEffectivePlan(
         ),
       hasFamilyFeatureAccess: true,
       hasPremiumFeatureAccess: true,
+      canUseProFeatures: true,
       isFamilyPlanMember:
-        inheritsFamilyPlan,
+        inheritsHouseholdPlan,
       isFamilyPlanAdmin: true,
       isFamilyMember:
         rawHouseholdRole === "member",
@@ -450,6 +482,9 @@ export function resolveEffectivePlan(
       billingManagedByHousehold: false,
       billingOwnerName: null,
       inheritsFamilyPlan,
+      inheritsProPlan,
+      inheritsHouseholdPlan,
+      householdSubscriptionOwnerId,
       effectiveStatus: "active",
       effectivePlanSource: "platform_admin",
       adminGrantPlan,
@@ -502,9 +537,13 @@ export function resolveEffectivePlan(
     isBillingOwner &&
     isAuthorizedBillingRole;
 
+  const isHouseholdPlanMember =
+    hasActiveMembership &&
+    inheritsHouseholdPlan;
+
   const isFamilyPlanMember =
-    hasFamilyFeatureAccess &&
-    hasActiveMembership;
+    isHouseholdPlanMember &&
+    inheritsFamilyPlan;
 
   const isFamilyPlanAdmin =
     isFamilyPlanMember &&
@@ -525,8 +564,8 @@ export function resolveEffectivePlan(
     rawHouseholdRole === "viewer";
 
   const billingManagedByHousehold =
-    isFamilyPlanMember &&
-    inheritsFamilyPlan &&
+    isHouseholdPlanMember &&
+    inheritsHouseholdPlan &&
     !canManageBilling;
 
   const roleDisplayName =
@@ -561,6 +600,9 @@ export function resolveEffectivePlan(
       false
     );
 
+  const canUseProFeatures =
+    hasPremiumFeatureAccess;
+
   return {
     personalPlan,
     effectivePlan,
@@ -570,6 +612,7 @@ export function resolveEffectivePlan(
     roleDisplayName,
     hasFamilyFeatureAccess,
     hasPremiumFeatureAccess,
+    canUseProFeatures,
     isFamilyPlanMember,
     isFamilyPlanAdmin,
     isFamilyMember,
@@ -582,6 +625,9 @@ export function resolveEffectivePlan(
         ? householdOwnerName
         : null,
     inheritsFamilyPlan,
+    inheritsProPlan,
+    inheritsHouseholdPlan,
+    householdSubscriptionOwnerId,
     effectiveStatus,
     effectivePlanSource,
     adminGrantPlan,

@@ -23,6 +23,9 @@ export function useHouseholdRole() {
     canInvite,
     canManageHousehold,
     canManageMembers,
+    canUseProFeatures,
+    inheritsHouseholdPlan,
+    inheritsProPlan,
   } = usePermissions();
 
   return {
@@ -44,5 +47,8 @@ export function useHouseholdRole() {
     canInvite,
     canManageHousehold,
     canManageMembers,
+    canUseProFeatures,
+    inheritsHouseholdPlan,
+    inheritsProPlan,
   };
 }

@@ -102,6 +102,50 @@ export function householdOwnerHasGrantingFamilyPlan(
   );
 }
 
+export function householdOwnerHasGrantingProPlan(
+  ownerPlan: string | null | undefined,
+  ownerStatus: string | null | undefined,
+  ownerCurrentPeriodEnd?: string | null
+): boolean {
+  const plan =
+    normalizeSubscriptionPlan(
+      ownerPlan
+    );
+
+  return (
+    plan === "pro" &&
+    isSubscriptionGrantingAccess(
+      plan,
+      ownerStatus,
+      ownerCurrentPeriodEnd
+    )
+  );
+}
+
+/**
+ * Whether the household billing owner has an active Pro or Family subscription
+ * that should entitle active household members.
+ */
+export function householdOwnerHasGrantingPremiumPlan(
+  ownerPlan: string | null | undefined,
+  ownerStatus: string | null | undefined,
+  ownerCurrentPeriodEnd?: string | null
+): boolean {
+  const plan =
+    normalizeSubscriptionPlan(
+      ownerPlan
+    );
+
+  return (
+    (plan === "pro" || plan === "family") &&
+    isSubscriptionGrantingAccess(
+      plan,
+      ownerStatus,
+      ownerCurrentPeriodEnd
+    )
+  );
+}
+
 export type RawHouseholdRole =
   | "owner"
   | "admin"

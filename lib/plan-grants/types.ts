@@ -13,6 +13,7 @@ export type EffectivePlanSource =
   | "admin_grant_pro"
   | "admin_grant_family"
   | "inherited_family"
+  | "inherited_pro"
   | "personal_pro"
   | "personal_family"
   | "free";

@@ -70,7 +70,7 @@ export function buildUpgradeReasonMessage(
       return "Demo mode is read-only. Create your vault to save and manage your own home technology.";
 
     case "viewer_read_only":
-      return "Your household role is read-only. Contact an admin if you need permission to make changes.";
+      return "Your household role is read-only. You can view this Pro feature, but members and admins make changes.";
 
     case "admin_required":
       return "Only household admins can manage billing, members, and household settings.";
