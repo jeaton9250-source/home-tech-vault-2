@@ -5,6 +5,7 @@ import "./globals.css";
 
 import AppChrome from "@/components/AppChrome";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
+import { Analytics } from "@vercel/analytics/next";
 
 const siteDescription =
   "Stop searching through drawers and emails. Organize your home devices, warranties, documents, subscriptions, maintenance, Wi-Fi information, and receipts in one secure place.";
@@ -54,6 +55,7 @@ export default function RootLayout({
       <body className="bg-surface-base text-text-primary antialiased">
         <GoogleAnalytics />
         <AppChrome>{children}</AppChrome>
+        <Analytics />
       </body>
     </html>
   );
