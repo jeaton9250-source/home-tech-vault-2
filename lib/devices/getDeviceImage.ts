@@ -13,6 +13,7 @@ import {
 
 import {
   getDemoImagePathForDevice,
+  isDemoDeviceAssetPath,
 } from "@/lib/devices/demoDeviceImages";
 
 export type DeviceImageInput = {
@@ -69,10 +70,16 @@ export function resolveDeviceImage(
     device.photo_url?.trim();
 
   if (uploadedPhoto) {
+    const isDemoAsset =
+      isDemoDeviceAssetPath(uploadedPhoto);
+
     return {
       src: uploadedPhoto,
-      alt: buildDeviceImageAlt(device),
-      isDemoAsset: false,
+      alt: buildDeviceImageAlt(
+        device,
+        isDemoAsset
+      ),
+      isDemoAsset,
       useCategoryFallback: false,
     };
   }

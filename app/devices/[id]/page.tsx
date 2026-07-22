@@ -56,6 +56,7 @@ import DemoDeviceProfile from "@/components/demo/DemoDeviceProfile";
 import {
   resolveDeviceImage,
 } from "@/lib/devices/getDeviceImage";
+import { isDemoDeviceAssetPath } from "@/lib/devices/demoDeviceImages";
 
 import { usePermissions } from "@/hooks/usePermissions";
 
@@ -1009,13 +1010,13 @@ export default function DevicePage() {
                 }
                 fill
                 unoptimized={
-                  !selectedImage.signedUrl.startsWith(
-                    "/demo-devices/"
+                  isDemoDeviceAssetPath(
+                    selectedImage.signedUrl
                   )
                 }
                 className={
-                  selectedImage.signedUrl.startsWith(
-                    "/demo-devices/"
+                  isDemoDeviceAssetPath(
+                    selectedImage.signedUrl
                   )
                     ? "object-contain p-6 md:p-8"
                     : "object-cover"
@@ -1137,13 +1138,13 @@ export default function DevicePage() {
                         alt="Device thumbnail"
                         fill
                         unoptimized={
-                          !image.signedUrl.startsWith(
-                            "/demo-devices/"
+                          isDemoDeviceAssetPath(
+                            image.signedUrl
                           )
                         }
                         className={
-                          image.signedUrl.startsWith(
-                            "/demo-devices/"
+                          isDemoDeviceAssetPath(
+                            image.signedUrl
                           )
                             ? "object-contain bg-surface-sunken p-1"
                             : "object-cover"

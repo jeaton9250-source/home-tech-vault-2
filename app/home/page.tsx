@@ -69,6 +69,7 @@ type HomeDevice = {
   location: string;
   purchasePrice: number;
   warrantyDate: string;
+  demoImage?: string;
   hasPhoto: boolean;
   hasDocument: boolean;
 };
@@ -853,6 +854,8 @@ function RoomCard({
                     brand: device.brand,
                     category:
                       device.category,
+                    demo_image:
+                      device.demoImage,
                   }}
                   variant="thumbnail"
                   className="!aspect-auto h-10 w-10 shrink-0 rounded-2xl"

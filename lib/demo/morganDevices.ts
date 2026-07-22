@@ -1,4 +1,4 @@
-import { DEMO_DEVICE_IMAGE_PATHS } from "@/lib/devices/demoDeviceImages";
+import { getDemoImagePathForDeviceId } from "@/lib/devices/demoDeviceImages";
 import type { DemoDevice } from "@/lib/demo/types";
 
 type DeviceSeed = Omit<
@@ -12,7 +12,6 @@ type DeviceSeed = Omit<
   | "photo_url"
   | "demo_image"
 > & {
-  demo_image: string;
   online?: boolean;
   ip_suffix?: number;
 };
@@ -20,6 +19,8 @@ type DeviceSeed = Omit<
 function buildDevice(seed: DeviceSeed): DemoDevice {
   const ipSuffix = seed.ip_suffix ?? 20;
   const online = seed.online ?? true;
+  const demoImage =
+    getDemoImagePathForDeviceId(seed.id) ?? "";
 
   return {
     ...seed,
@@ -35,7 +36,7 @@ function buildDevice(seed: DeviceSeed): DemoDevice {
     manufacturer: seed.brand,
     discovery_source: "Network Scan",
     photo_url: "",
-    demo_image: seed.demo_image,
+    demo_image: demoImage,
   };
 }
 
@@ -53,7 +54,6 @@ export const morganDevices: DemoDevice[] = [
     location: "Living Room",
     notes:
       "Art mode enabled in the living room. Extended Best Buy protection expires in 28 days.",
-    demo_image: DEMO_DEVICE_IMAGE_PATHS.samsungFrameTv,
     ip_suffix: 25,
   }),
   buildDevice({
@@ -68,7 +68,6 @@ export const morganDevices: DemoDevice[] = [
     purchase_price: 149,
     location: "Living Room",
     notes: "Primary streaming hub for the Samsung Frame TV.",
-    demo_image: DEMO_DEVICE_IMAGE_PATHS.appleTv4k,
     ip_suffix: 26,
   }),
   buildDevice({
@@ -83,7 +82,6 @@ export const morganDevices: DemoDevice[] = [
     purchase_price: 499,
     location: "Living Room",
     notes: "Soundbar paired with the Frame TV. Alexa voice control enabled.",
-    demo_image: DEMO_DEVICE_IMAGE_PATHS.sonosBeam,
     ip_suffix: 28,
   }),
   buildDevice({
@@ -98,7 +96,6 @@ export const morganDevices: DemoDevice[] = [
     purchase_price: 349,
     location: "Living Room",
     notes: "Dock stays in the media console. Joy-Cons stored in the drawer.",
-    demo_image: DEMO_DEVICE_IMAGE_PATHS.nintendoSwitchOled,
     ip_suffix: 42,
   }),
   buildDevice({
@@ -113,7 +110,6 @@ export const morganDevices: DemoDevice[] = [
     purchase_price: 499,
     location: "Living Room",
     notes: "Connected to the Frame TV. DualSense charging dock in the cabinet.",
-    demo_image: DEMO_DEVICE_IMAGE_PATHS.playstation5,
     ip_suffix: 40,
   }),
   buildDevice({
@@ -128,7 +124,6 @@ export const morganDevices: DemoDevice[] = [
     purchase_price: 499,
     location: "Living Room",
     notes: "Game Pass Ultimate active. Shares the Frame TV with the PS5.",
-    demo_image: DEMO_DEVICE_IMAGE_PATHS.xboxSeriesX,
     ip_suffix: 41,
   }),
   buildDevice({
@@ -144,7 +139,6 @@ export const morganDevices: DemoDevice[] = [
     location: "Office",
     notes:
       "Alex's primary work computer. AppleCare+ through March 2027. Time Machine backup to Synology nightly.",
-    demo_image: DEMO_DEVICE_IMAGE_PATHS.macbookPro,
     ip_suffix: 14,
   }),
   buildDevice({
@@ -159,7 +153,6 @@ export const morganDevices: DemoDevice[] = [
     purchase_price: 1599,
     location: "Office",
     notes: "Paired with the MacBook Pro on the standing desk.",
-    demo_image: DEMO_DEVICE_IMAGE_PATHS.studioDisplay,
     ip_suffix: 16,
   }),
   buildDevice({
@@ -174,7 +167,6 @@ export const morganDevices: DemoDevice[] = [
     purchase_price: 199,
     location: "Office",
     notes: "All-in-one inkjet for school forms and shipping labels.",
-    demo_image: DEMO_DEVICE_IMAGE_PATHS.canonPrinter,
     ip_suffix: 31,
     online: false,
   }),
@@ -190,7 +182,6 @@ export const morganDevices: DemoDevice[] = [
     purchase_price: 199,
     location: "Office",
     notes: "Main home router on the office shelf. Firmware 3.2.7 available.",
-    demo_image: DEMO_DEVICE_IMAGE_PATHS.unifiDreamRouter,
     ip_suffix: 1,
   }),
   buildDevice({
@@ -206,7 +197,6 @@ export const morganDevices: DemoDevice[] = [
     location: "Office",
     notes:
       "Family photos, documents, and Time Machine backups. RAID 1 with 8 TB drives.",
-    demo_image: DEMO_DEVICE_IMAGE_PATHS.synologyNas,
     ip_suffix: 10,
   }),
   buildDevice({
@@ -221,7 +211,6 @@ export const morganDevices: DemoDevice[] = [
     purchase_price: 1199,
     location: "Office",
     notes: "Primary mobile device. AppleCare+ and iCloud backup enabled.",
-    demo_image: DEMO_DEVICE_IMAGE_PATHS.iphone16Pro,
     ip_suffix: 19,
   }),
   buildDevice({
@@ -236,7 +225,6 @@ export const morganDevices: DemoDevice[] = [
     purchase_price: 3299,
     location: "Kitchen",
     notes: "Family Hub display. Extended Samsung Care+ warranty on file.",
-    demo_image: DEMO_DEVICE_IMAGE_PATHS.samsungRefrigerator,
     ip_suffix: 0,
     online: false,
   }),
@@ -252,7 +240,6 @@ export const morganDevices: DemoDevice[] = [
     purchase_price: 279,
     location: "Kitchen",
     notes: "Kitchen hub for timers, recipes, and Ring camera feeds.",
-    demo_image: DEMO_DEVICE_IMAGE_PATHS.echoShow,
     ip_suffix: 55,
   }),
   buildDevice({
@@ -267,7 +254,6 @@ export const morganDevices: DemoDevice[] = [
     purchase_price: 1099,
     location: "Laundry Room",
     notes: "Front-load washer with ThinQ app. Manual added yesterday.",
-    demo_image: DEMO_DEVICE_IMAGE_PATHS.lgWasher,
     ip_suffix: 0,
     online: false,
   }),
@@ -283,7 +269,6 @@ export const morganDevices: DemoDevice[] = [
     purchase_price: 999,
     location: "Laundry Room",
     notes: "Matching LG dryer installed alongside the washer.",
-    demo_image: DEMO_DEVICE_IMAGE_PATHS.lgDryer,
     ip_suffix: 0,
     online: false,
   }),
@@ -299,7 +284,6 @@ export const morganDevices: DemoDevice[] = [
     purchase_price: 1599,
     location: "Bedroom",
     notes: "Self-emptying dock in the primary bedroom closet. Daily 7 AM schedule.",
-    demo_image: DEMO_DEVICE_IMAGE_PATHS.robotVacuumDock,
     ip_suffix: 53,
   }),
   buildDevice({
@@ -314,7 +298,6 @@ export const morganDevices: DemoDevice[] = [
     purchase_price: 549,
     location: "Bedroom",
     notes: "HEPA filter replaced every 12 months. Auto mode overnight.",
-    demo_image: DEMO_DEVICE_IMAGE_PATHS.airPurifier,
     ip_suffix: 0,
     online: false,
   }),
@@ -330,7 +313,6 @@ export const morganDevices: DemoDevice[] = [
     purchase_price: 1799,
     location: "Bedroom",
     notes: "Wall-mounted in the primary bedroom.",
-    demo_image: DEMO_DEVICE_IMAGE_PATHS.lgOledTv,
     ip_suffix: 27,
   }),
   buildDevice({
@@ -345,7 +327,6 @@ export const morganDevices: DemoDevice[] = [
     purchase_price: 249,
     location: "Entryway",
     notes: "Hardwired at the front door. Firmware update available.",
-    demo_image: DEMO_DEVICE_IMAGE_PATHS.ringDoorbell,
     ip_suffix: 51,
   }),
   buildDevice({
@@ -360,7 +341,6 @@ export const morganDevices: DemoDevice[] = [
     purchase_price: 279,
     location: "Entryway",
     notes: "Apple Home Key enabled. Paired with Ring Doorbell.",
-    demo_image: DEMO_DEVICE_IMAGE_PATHS.yaleSmartLock,
     ip_suffix: 54,
   }),
   buildDevice({
@@ -375,7 +355,6 @@ export const morganDevices: DemoDevice[] = [
     purchase_price: 249,
     location: "Hallway",
     notes: "Controls main-floor HVAC. Google Home routines integrated.",
-    demo_image: DEMO_DEVICE_IMAGE_PATHS.nestThermostat,
     ip_suffix: 50,
   }),
   buildDevice({
@@ -390,7 +369,6 @@ export const morganDevices: DemoDevice[] = [
     purchase_price: 149,
     location: "Hallway",
     notes: "Ceiling-mounted access point. Excellent whole-home coverage.",
-    demo_image: DEMO_DEVICE_IMAGE_PATHS.unifiAccessPoint,
     ip_suffix: 2,
   }),
   buildDevice({
@@ -405,7 +383,6 @@ export const morganDevices: DemoDevice[] = [
     purchase_price: 599,
     location: "Garage",
     notes: "Three outdoor cameras: driveway, backyard, and garage.",
-    demo_image: DEMO_DEVICE_IMAGE_PATHS.securityCameras,
     ip_suffix: 52,
   }),
 ];

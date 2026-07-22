@@ -12,6 +12,7 @@ export type DemoHomeDevice = {
   location: string;
   purchasePrice: number;
   warrantyDate: string;
+  demoImage: string;
   hasPhoto: boolean;
   hasDocument: boolean;
 };
@@ -45,6 +46,7 @@ export function getDemoHomeDevices(): DemoHomeDevice[] {
         location: device.location,
         purchasePrice: device.purchase_price,
         warrantyDate: device.warranty_date,
+        demoImage: device.demo_image,
         hasPhoto: Boolean(device.demo_image?.trim()),
         hasDocument: documentDeviceIds.has(device.id),
       });

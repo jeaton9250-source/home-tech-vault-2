@@ -101,7 +101,7 @@ export default function DeviceImageDisplay({
           priority={priority}
           sizes={styles.sizes}
           unoptimized={
-            !resolved.isDemoAsset &&
+            resolved.isDemoAsset ||
             resolved.src!.startsWith("http")
           }
           className={cn(
