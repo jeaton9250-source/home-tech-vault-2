@@ -9,6 +9,7 @@ import AuthGuard from "@/components/AuthGuard";
 import { DemoExperienceProvider } from "@/components/demo/DemoExperienceProvider";
 import DemoBanner from "@/components/DemoBanner";
 import AccessTestingPanel from "@/components/dev/AccessTestingPanel";
+import EntitlementDebugPanel from "@/components/dev/EntitlementDebugPanel";
 import { DevelopmentAccessProvider } from "@/hooks/useDevelopmentAccess";
 import { AIAdvisorProvider } from "@/hooks/useAIAdvisor";
 import { NavMenuProvider } from "@/hooks/useNavMenu";
@@ -41,6 +42,7 @@ export default function AppChrome({
               {children}
             </div>
             <AccessTestingPanel />
+            <EntitlementDebugPanel />
           </PermissionsProvider>
         </DevelopmentAccessProvider>
       </AuthGuard>
@@ -55,6 +57,7 @@ export default function AppChrome({
             {children}
           </div>
           <AccessTestingPanel />
+          <EntitlementDebugPanel />
         </PermissionsProvider>
       </DevelopmentAccessProvider>
     );
@@ -83,6 +86,7 @@ export default function AppChrome({
                   <AIAdvisorPopup />
 
                   <AccessTestingPanel />
+                  <EntitlementDebugPanel />
                 </>
               </DemoExperienceProvider>
             </AIAdvisorProvider>

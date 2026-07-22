@@ -85,6 +85,8 @@ export type PermissionContext = {
   hasFamilyFeatureAccess: boolean;
   billingManagedByHousehold: boolean;
   inheritsFamilyPlan: boolean;
+  inheritsProPlan: boolean;
+  inheritsHouseholdPlan: boolean;
   hasUnlimitedDevices: boolean;
   hasUnlimitedDocuments: boolean;
   deviceLimit: number | null;

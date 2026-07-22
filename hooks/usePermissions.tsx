@@ -87,6 +87,16 @@ type HouseholdAccessPayload =
       ownerStatus: string | null;
       ownerCurrentPeriodEnd: string | null;
       ownerName: string | null;
+      ownerPlanSource?:
+        | "subscription"
+        | "admin_grant"
+        | "none";
+      ownerGrantsPro?: boolean;
+      ownerGrantsPremium?: boolean;
+      effectivePlan?: SubscriptionPlan;
+      inheritsProPlan?: boolean;
+      inheritsFamilyPlan?: boolean;
+      canUseProFeatures?: boolean;
     };
 
 type PermissionsContextValue = ReturnType<
@@ -308,6 +318,28 @@ function usePermissionsState() {
     setRoleError,
   ] = useState<string | null>(null);
 
+  const [
+    householdContextLoaded,
+    setHouseholdContextLoaded,
+  ] = useState(false);
+
+  const [
+    apiEntitlementSnapshot,
+    setApiEntitlementSnapshot,
+  ] = useState<{
+    ownerPlanSource:
+      | "subscription"
+      | "admin_grant"
+      | "none"
+      | null;
+    effectivePlan: SubscriptionPlan | null;
+    canUseProFeatures: boolean | null;
+  }>({
+    ownerPlanSource: null,
+    effectivePlan: null,
+    canUseProFeatures: null,
+  });
+
   const householdSetters = {
     setRole,
     setRawHouseholdRole,
@@ -323,6 +355,7 @@ function usePermissionsState() {
     useCallback(async () => {
       try {
         setRoleLoading(true);
+        setHouseholdContextLoaded(false);
         setRoleError(null);
 
         if (demoLoading) {
@@ -334,6 +367,12 @@ function usePermissionsState() {
             householdSetters
           );
           setAdminGrant(null);
+          setApiEntitlementSnapshot({
+            ownerPlanSource: null,
+            effectivePlan: null,
+            canUseProFeatures: null,
+          });
+          setHouseholdContextLoaded(true);
           return;
         }
 
@@ -363,6 +402,12 @@ function usePermissionsState() {
             householdSetters
           );
           setAdminGrant(null);
+          setApiEntitlementSnapshot({
+            ownerPlanSource: null,
+            effectivePlan: null,
+            canUseProFeatures: null,
+          });
+          setHouseholdContextLoaded(true);
 
           setRoleError(
             "Unable to verify household access."
@@ -392,6 +437,12 @@ function usePermissionsState() {
           clearHouseholdState(
             householdSetters
           );
+          setApiEntitlementSnapshot({
+            ownerPlanSource: null,
+            effectivePlan: "free",
+            canUseProFeatures: false,
+          });
+          setHouseholdContextLoaded(true);
 
           return;
         }
@@ -401,6 +452,19 @@ function usePermissionsState() {
             accessData,
             householdSetters
           );
+
+          setApiEntitlementSnapshot({
+            ownerPlanSource:
+              accessData.ownerPlanSource ??
+              null,
+            effectivePlan:
+              accessData.effectivePlan ??
+              null,
+            canUseProFeatures:
+              accessData.canUseProFeatures ??
+              null,
+          });
+          setHouseholdContextLoaded(true);
         }
       } catch (caughtError) {
         const message =
@@ -418,6 +482,12 @@ function usePermissionsState() {
           householdSetters
         );
         setAdminGrant(null);
+        setApiEntitlementSnapshot({
+          ownerPlanSource: null,
+          effectivePlan: null,
+          canUseProFeatures: null,
+        });
+        setHouseholdContextLoaded(true);
       } finally {
         if (!demoLoading) {
           setRoleLoading(false);
@@ -513,7 +583,10 @@ function usePermissionsState() {
   const loading =
     demoLoading ||
     subscriptionLoading ||
-    roleLoading;
+    roleLoading ||
+    (Boolean(user) &&
+      !isDemo &&
+      !householdContextLoaded);
 
   const permissionsReady = !loading;
 
@@ -709,6 +782,8 @@ function usePermissionsState() {
         hasFamilyFeatureAccess,
         billingManagedByHousehold,
         inheritsFamilyPlan,
+        inheritsProPlan,
+        inheritsHouseholdPlan,
         featureAccess,
         hasUnlimitedDevices:
           limits.maxDevices === null,
@@ -732,6 +807,8 @@ function usePermissionsState() {
       hasFamilyFeatureAccess,
       billingManagedByHousehold,
       inheritsFamilyPlan,
+      inheritsProPlan,
+      inheritsHouseholdPlan,
       featureAccess,
       limits.maxDevices,
       limits.maxDocuments,
@@ -765,9 +842,12 @@ function usePermissionsState() {
     householdId: realHouseholdId,
     realHouseholdId,
     householdOwnerId,
+    householdOwnerPlan,
+    householdOwnerStatus,
     loading,
     permissionsReady,
     error: roleError,
+    apiEntitlementSnapshot,
 
     developmentAccessProfile,
     isDevelopmentAccessOverrideActive,

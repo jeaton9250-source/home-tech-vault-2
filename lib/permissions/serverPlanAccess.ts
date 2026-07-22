@@ -5,6 +5,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { loadActivePlanGrantForUser } from "@/lib/plan-grants/loadActiveGrant";
 import type { PlanGrantInput } from "@/lib/plan-grants/types";
 import { loadHouseholdMembershipForUser } from "@/lib/permissions/householdMembership";
+import { resolveHouseholdOwnerBilling } from "@/lib/permissions/householdOwnerBilling";
 import {
   resolveEffectivePlan,
   type EffectivePlanInput,
@@ -113,16 +114,13 @@ export async function buildServerPlanAccessContext(
 
     if (householdOwnerId) {
       const [
-        ownerSubscription,
+        ownerBilling,
         ownerProfile,
       ] = await Promise.all([
-        admin
-          .from("user_subscriptions")
-          .select(
-            "plan, status, current_period_end"
-          )
-          .eq("user_id", householdOwnerId)
-          .maybeSingle(),
+        resolveHouseholdOwnerBilling(
+          admin,
+          householdOwnerId
+        ),
 
         admin
           .from("profiles")
@@ -131,15 +129,13 @@ export async function buildServerPlanAccessContext(
           .maybeSingle(),
       ]);
 
-      householdOwnerPlan = normalizePlan(
-        ownerSubscription.data?.plan
-      );
+      householdOwnerPlan =
+        ownerBilling.ownerPlan;
       householdOwnerStatus =
-        ownerSubscription.data?.status?.trim().toLowerCase() ||
+        ownerBilling.ownerStatus ??
         "inactive";
       householdOwnerCurrentPeriodEnd =
-        ownerSubscription.data
-          ?.current_period_end ?? null;
+        ownerBilling.ownerCurrentPeriodEnd;
       householdOwnerName =
         ownerProfile.data?.full_name?.trim() ??
         null;
