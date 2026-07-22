@@ -46,6 +46,8 @@ export default function MobileNavSheet() {
     canViewFeature,
     inheritsFamilyPlan,
     hasFamilyFeatureAccess,
+    isVerifiedPlatformAdmin,
+    permissionsReady,
   } = usePermissions();
 
   const { open: openAdvisor } = useAIAdvisor();
@@ -83,6 +85,13 @@ export default function MobileNavSheet() {
   }
 
   const visibleItems = MOBILE_NAV_ITEMS.filter((item) => {
+    if ("adminOnly" in item && item.adminOnly) {
+      return (
+        permissionsReady &&
+        isVerifiedPlatformAdmin
+      );
+    }
+
     if (item.feature && !canViewFeature(item.feature)) {
       return false;
     }

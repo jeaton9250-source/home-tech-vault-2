@@ -2,6 +2,7 @@ import {
   CreditCard,
   HelpCircle,
   Laptop,
+  LayoutDashboard,
   MessageSquare,
   Radar,
   Settings,
@@ -59,6 +60,14 @@ export const PRIMARY_NAV_ITEMS: PrimaryNavItem[] = [
 
 /** Secondary destinations in the avatar menu */
 export const PROFILE_MENU_ITEMS: ProfileNavItem[] = [
+  {
+    label: "Control Center",
+    href: "/admin",
+    icon: LayoutDashboard,
+    description:
+      "Manage the Home Tech Vault platform",
+    adminOnly: true,
+  },
   {
     label: "Account & Settings",
     href: "/settings",
@@ -157,6 +166,14 @@ export const MOBILE_NAV_ITEMS: Array<
     href: "/subscriptions",
     icon: CreditCard,
     feature: "subscriptions",
+  },
+  {
+    label: "Control Center",
+    href: "/admin",
+    icon: LayoutDashboard,
+    description:
+      "Manage the Home Tech Vault platform",
+    adminOnly: true,
   },
   {
     label: "Account & Settings",
