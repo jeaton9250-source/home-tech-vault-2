@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { useRouter } from "next/navigation";
 
@@ -30,7 +30,7 @@ const tourSteps: TourStep[] = [
     id: "home-pulse",
     title: "This is Home Pulse",
     description:
-      "Your entire home at a glance.",
+      "Everything important about your home in one place.",
     icon: Home,
     href: "/dashboard",
   },
@@ -38,32 +38,32 @@ const tourSteps: TourStep[] = [
     id: "devices",
     title: "Every device has its own profile",
     description:
-      "Photos, warranties, receipts, and notes — all in one place.",
+      "Photos, warranties, receipts, and notes — together on one page.",
     icon: Laptop,
     href: "/devices",
   },
   {
     id: "documents",
-    title: "Store receipts, warranties, manuals and photos together",
+    title: "Store receipts, manuals and warranties together",
     description:
-      "Everything you need when something breaks or coverage expires.",
+      "Every document stays connected to the device it belongs to.",
     icon: FileText,
     href: "/documents",
   },
   {
     id: "reports",
-    title: "Generate reports for insurance and moving",
+    title: "Generate professional insurance reports",
     description:
-      "Export inventory, warranty, and insurance-ready summaries in seconds.",
+      "Export inventory and coverage summaries whenever you need them.",
     icon: Sparkles,
     href: "/reports",
   },
   {
     id: "create",
-    title: "Now imagine this is your own home",
-    description: `The ${MORGAN_HOUSEHOLD.name} took time to organize. Yours can look just like this.`,
+    title: "Imagine replacing the Morgan Household with your own",
+    description: `The ${MORGAN_HOUSEHOLD.name} took time to organize. Your home can look just like this.`,
     icon: Home,
-    cta: "Create Your Vault",
+    cta: "Create My Home Tech Vault",
   },
 ];
 
@@ -78,12 +78,6 @@ export default function DemoGuidedTour({
 }: DemoGuidedTourProps) {
   const router = useRouter();
   const [stepIndex, setStepIndex] = useState(0);
-
-  useEffect(() => {
-    if (active) {
-      setStepIndex(0);
-    }
-  }, [active]);
 
   if (!active) {
     return null;
@@ -161,11 +155,7 @@ export default function DemoGuidedTour({
 
         <div className="mt-6 flex items-center gap-3">
           {!isLast ? (
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={skipTour}
-            >
+            <Button type="button" variant="ghost" onClick={skipTour}>
               Skip
             </Button>
           ) : null}
@@ -176,7 +166,7 @@ export default function DemoGuidedTour({
             className="ml-auto"
             onClick={goNext}
           >
-            {step.cta ?? (isLast ? "Create Your Vault" : "Next")}
+            {step.cta ?? (isLast ? "Create My Home Tech Vault" : "Next")}
           </Button>
         </div>
 

@@ -23,19 +23,25 @@ export default function HomeHealthHeader({
         {brand.homePulse}
       </p>
 
-      <h1 className="text-[clamp(1.875rem,4vw,2.75rem)] font-medium tracking-[-0.03em] text-text-primary">
-        {getTimeGreeting(firstName)}
-      </h1>
-
       {isDemo ? (
-        <p className="text-[0.9375rem] leading-7 text-text-muted md:text-base">
-          Welcome to the {MORGAN_HOUSEHOLD.name}.
-        </p>
+        <>
+          <h1 className="text-[clamp(1.875rem,4vw,2.75rem)] font-medium tracking-[-0.03em] text-text-primary">
+            Welcome to the {MORGAN_HOUSEHOLD.name}.
+          </h1>
+          <p className="text-[0.9375rem] leading-7 text-text-muted md:text-base">
+            Everything is running smoothly today.
+          </p>
+        </>
       ) : (
-        <p className="text-[0.9375rem] leading-7 text-text-muted md:text-base">
-          Your overall home health, recent activity, and what
-          to do next — all in one calm view.
-        </p>
+        <>
+          <h1 className="text-[clamp(1.875rem,4vw,2.75rem)] font-medium tracking-[-0.03em] text-text-primary">
+            {getTimeGreeting(firstName)}
+          </h1>
+          <p className="text-[0.9375rem] leading-7 text-text-muted md:text-base">
+            Your overall home health, recent activity, and what
+            to do next — all in one calm view.
+          </p>
+        </>
       )}
 
       <p className="text-sm text-text-secondary">

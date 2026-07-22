@@ -1,15 +1,34 @@
 "use client";
 
-import { Home } from "lucide-react";
+import { Home, Laptop, FileText, ShieldCheck } from "lucide-react";
 
 import Button from "@/components/ui/Button";
-import { MORGAN_HOUSEHOLD } from "@/lib/demo/morganHousehold";
+import { MORGAN_DEMO_STATS, MORGAN_HOUSEHOLD } from "@/lib/demo/morganHousehold";
 
 type DemoWelcomeModalProps = {
   open: boolean;
   onExplore: () => void;
   onStartTour: () => void;
 };
+
+const statItems = [
+  { label: "Devices", value: MORGAN_DEMO_STATS.devices, icon: Laptop },
+  {
+    label: "Documents",
+    value: MORGAN_DEMO_STATS.documents,
+    icon: FileText,
+  },
+  {
+    label: "Active Warranties",
+    value: MORGAN_DEMO_STATS.activeWarranties,
+    icon: ShieldCheck,
+  },
+  {
+    label: "Subscriptions",
+    value: MORGAN_DEMO_STATS.subscriptions,
+    icon: Home,
+  },
+];
 
 export default function DemoWelcomeModal({
   open,
@@ -23,7 +42,7 @@ export default function DemoWelcomeModal({
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-charcoal/40 p-4 backdrop-blur-[2px]">
       <div
-        className="w-full max-w-md rounded-[28px] border border-border-subtle bg-surface-card p-8 shadow-2xl"
+        className="w-full max-w-lg rounded-[28px] border border-border-subtle bg-surface-card p-8 shadow-2xl"
         role="dialog"
         aria-modal="true"
         aria-labelledby="demo-welcome-title"
@@ -40,9 +59,26 @@ export default function DemoWelcomeModal({
         </h2>
 
         <p className="mt-3 text-sm leading-7 text-text-secondary">
-          You&apos;re exploring a fully organized Home Tech Vault.
-          Take a guided tour or explore at your own pace.
+          Explore how one family keeps every piece of home technology
+          organized.
         </p>
+
+        <div className="mt-6 grid grid-cols-2 gap-3">
+          {statItems.map(({ label, value, icon: Icon }) => (
+            <div
+              key={label}
+              className="rounded-[20px] bg-surface-sunken px-4 py-3.5"
+            >
+              <div className="flex items-center gap-2 text-text-tertiary">
+                <Icon size={14} aria-hidden />
+                <span className="text-xs font-medium">{label}</span>
+              </div>
+              <p className="mt-1 text-2xl font-semibold tabular-nums text-text-primary">
+                {value}
+              </p>
+            </div>
+          ))}
+        </div>
 
         <div className="mt-8 flex flex-col gap-3">
           <Button
@@ -51,7 +87,7 @@ export default function DemoWelcomeModal({
             fullWidth
             onClick={onStartTour}
           >
-            Start Tour
+            Start Guided Tour
           </Button>
 
           <Button
@@ -60,14 +96,9 @@ export default function DemoWelcomeModal({
             fullWidth
             onClick={onExplore}
           >
-            Explore on My Own
+            Explore Freely
           </Button>
         </div>
-
-        <p className="mt-6 flex items-center justify-center gap-1.5 text-xs text-text-tertiary">
-          <Home size={13} aria-hidden />
-          Interactive Demo
-        </p>
       </div>
     </div>
   );

@@ -92,8 +92,8 @@ export default function DemoPage() {
           </h1>
 
           <p className="mt-6 max-w-2xl text-lg leading-8 text-text-secondary">
-            Walk through a fully organized home with 23 devices, warranties,
-            subscriptions, maintenance records, documents, and network details.
+            Walk through the Morgan Household — 24 devices, 47 documents,
+            18 active warranties, and 8 subscriptions.
           </p>
 
           <button

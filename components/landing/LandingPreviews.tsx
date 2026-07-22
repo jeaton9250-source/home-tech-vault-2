@@ -150,7 +150,7 @@ export function CommandCenterPreview({
           name="Living Room TV"
           detail="Living Room · Warranty expiring"
           imageSrc={
-            DEMO_DEVICE_IMAGE_PATHS.samsungTv
+            DEMO_DEVICE_IMAGE_PATHS.samsungFrameTv
           }
           accent={sections.technology.accent}
           soft={sections.technology.soft}

@@ -2,6 +2,7 @@ import {
   demoDevices,
   demoDocuments,
 } from "@/lib/demoData";
+import { MORGAN_ROOMS } from "@/lib/demo/morganRooms";
 
 export type DemoHomeDevice = {
   id: string;
@@ -21,16 +22,36 @@ const documentDeviceIds = new Set(
     .filter(Boolean)
 );
 
+const deviceById = new Map(
+  demoDevices.map((device) => [device.id, device])
+);
+
 export function getDemoHomeDevices(): DemoHomeDevice[] {
-  return demoDevices.map((device) => ({
-    id: device.id,
-    deviceName: device.device_name,
-    brand: device.brand,
-    category: device.category,
-    location: device.location,
-    purchasePrice: device.purchase_price,
-    warrantyDate: device.warranty_date,
-    hasPhoto: Boolean(device.demo_image?.trim()),
-    hasDocument: documentDeviceIds.has(device.id),
-  }));
+  const ordered: DemoHomeDevice[] = [];
+
+  for (const room of MORGAN_ROOMS) {
+    for (const deviceId of room.deviceIds) {
+      const device = deviceById.get(deviceId);
+
+      if (!device) {
+        continue;
+      }
+
+      ordered.push({
+        id: device.id,
+        deviceName: device.device_name,
+        brand: device.brand,
+        category: device.category,
+        location: device.location,
+        purchasePrice: device.purchase_price,
+        warrantyDate: device.warranty_date,
+        hasPhoto: Boolean(device.demo_image?.trim()),
+        hasDocument: documentDeviceIds.has(device.id),
+      });
+    }
+  }
+
+  return ordered;
 }
+
+export { MORGAN_ROOMS };

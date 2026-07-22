@@ -47,8 +47,11 @@ import {
 import {
   demoDevices,
   demoDocuments,
-  demoTimelineEvents,
+  getDemoTimelineForDevice,
+  type DemoTimelineEvent,
 } from "@/lib/demoData";
+
+import DemoDeviceProfile from "@/components/demo/DemoDeviceProfile";
 
 import {
   resolveDeviceImage,
@@ -165,21 +168,25 @@ export default function DevicePage() {
     () =>
       demoDocuments.filter(
         (document) =>
-          document.device_id ===
-          deviceId
+          document.device_id === deviceId
       ),
     [deviceId]
   );
 
-  const sampleTimeline = useMemo(
+  const demoDeviceRecord = useMemo(
     () =>
-      demoTimelineEvents.filter(
-        (event) =>
-          event.device_id ===
-          deviceId
-      ),
+      demoDevices.find((item) => item.id === deviceId) ??
+      null,
     [deviceId]
   );
+
+  const demoTimeline = useMemo(() => {
+    if (!demoDeviceRecord) {
+      return [];
+    }
+
+    return getDemoTimelineForDevice(demoDeviceRecord);
+  }, [demoDeviceRecord]);
 
   const loadImages = useCallback(
     async (
@@ -923,6 +930,26 @@ export default function DevicePage() {
       device.warranty_date
     );
 
+  if ((isDemo || !user) && demoDeviceRecord) {
+    const demoImage = resolveDeviceImage({
+      id: demoDeviceRecord.id,
+      device_name: demoDeviceRecord.device_name,
+      brand: demoDeviceRecord.brand,
+      category: demoDeviceRecord.category,
+      demo_image: demoDeviceRecord.demo_image,
+    });
+
+    return (
+      <DemoDeviceProfile
+        device={demoDeviceRecord}
+        imageSrc={demoImage.src ?? ""}
+        documents={sampleDocuments}
+        timeline={demoTimeline}
+        onReadOnlyAction={showReadOnlyModal}
+      />
+    );
+  }
+
   return (
     <PageShell>
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -1444,7 +1471,7 @@ export default function DevicePage() {
 
           <DemoTimeline
             events={
-              sampleTimeline
+              demoTimeline
             }
           />
         </>
@@ -1729,8 +1756,7 @@ function DemoDocuments({
 function DemoTimeline({
   events,
 }: {
-  events:
-    typeof demoTimelineEvents;
+  events: DemoTimelineEvent[];
 }) {
   return (
     <PageCard className="p-6 md:p-8">

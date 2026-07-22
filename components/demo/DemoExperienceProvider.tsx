@@ -4,13 +4,10 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState,
   type ReactNode,
 } from "react";
-
-import { usePathname } from "next/navigation";
 
 import { useDemoMode } from "@/hooks/useDemoMode";
 import {
@@ -49,10 +46,9 @@ export function DemoExperienceProvider({
 }: {
   children: ReactNode;
 }) {
-  const pathname = usePathname();
   const { isDemo, user, loading } = useDemoMode();
 
-  const [welcomeOpen, setWelcomeOpen] =
+  const [welcomeDismissed, setWelcomeDismissed] =
     useState(false);
 
   const [readOnlyOpen, setReadOnlyOpen] =
@@ -61,23 +57,15 @@ export function DemoExperienceProvider({
   const [tourActive, setTourActive] =
     useState(false);
 
+  const [tourKey, setTourKey] = useState(0);
+
   const isDemoVisitor =
     !loading && isDemo && !user;
 
-  useEffect(() => {
-    if (!isDemoVisitor) {
-      setWelcomeOpen(false);
-      return;
-    }
-
-    const welcomeSeen = getStoredFlag(
-      DEMO_WELCOME_SEEN_KEY
-    );
-
-    if (!welcomeSeen) {
-      setWelcomeOpen(true);
-    }
-  }, [isDemoVisitor, pathname]);
+  const welcomeOpen =
+    isDemoVisitor &&
+    !getStoredFlag(DEMO_WELCOME_SEEN_KEY) &&
+    !welcomeDismissed;
 
   const dismissWelcome = useCallback(() => {
     window.localStorage.setItem(
@@ -85,7 +73,7 @@ export function DemoExperienceProvider({
       "true"
     );
 
-    setWelcomeOpen(false);
+    setWelcomeDismissed(true);
   }, []);
 
   const startTour = useCallback(() => {
@@ -95,6 +83,7 @@ export function DemoExperienceProvider({
       DEMO_TOUR_COMPLETED_KEY
     );
 
+    setTourKey((current) => current + 1);
     setTourActive(true);
   }, [dismissWelcome]);
 
@@ -144,6 +133,7 @@ export function DemoExperienceProvider({
           />
 
           <DemoGuidedTour
+            key={tourKey}
             active={tourActive}
             onFinish={finishTour}
           />

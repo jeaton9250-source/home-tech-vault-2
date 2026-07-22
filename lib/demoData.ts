@@ -7,14 +7,19 @@ export type {
   DemoTimelineEvent,
 } from "@/lib/demo/types";
 
-import { MORGAN_HOUSEHOLD } from "@/lib/demo/morganHousehold";
+import { MORGAN_HOUSEHOLD, MORGAN_DEMO_STATS } from "@/lib/demo/morganHousehold";
 import { morganDevices } from "@/lib/demo/morganDevices";
 import { morganDocuments } from "@/lib/demo/morganDocuments";
 import { morganSubscriptions } from "@/lib/demo/morganSubscriptions";
 import { morganMaintenance } from "@/lib/demo/morganMaintenance";
-import { morganTimelineEvents } from "@/lib/demo/morganTimeline";
+import {
+  getDemoTimelineForDevice,
+  morganTimelineEvents,
+} from "@/lib/demo/morganTimeline";
 import { morganNetwork } from "@/lib/demo/morganNetwork";
 import type { DemoWarranty } from "@/lib/demo/types";
+
+export { getDemoTimelineForDevice };
 
 export const demoDevices = morganDevices;
 
@@ -46,19 +51,9 @@ export const demoProfile = {
 export const demoDashboard = {
   firstName: MORGAN_HOUSEHOLD.firstName,
   householdName: MORGAN_HOUSEHOLD.name,
-  deviceCount: demoDevices.length,
-  documentCount: demoDocuments.length,
-  activeWarrantyCount: demoDevices.filter((device) => {
-    if (!device.warranty_date) {
-      return false;
-    }
-
-    const warrantyDate = new Date(
-      `${device.warranty_date}T23:59:59`
-    );
-
-    return warrantyDate >= new Date();
-  }).length,
+  deviceCount: MORGAN_DEMO_STATS.devices,
+  documentCount: MORGAN_DEMO_STATS.documents,
+  activeWarrantyCount: MORGAN_DEMO_STATS.activeWarranties,
   protectedValue: demoDevices.reduce(
     (total, device) => total + device.purchase_price,
     0

@@ -44,17 +44,17 @@ export default function DemoReadOnlyModal({
           id="demo-readonly-title"
           className="mt-5 text-xl font-semibold tracking-[-0.02em] text-text-primary"
         >
-          Ready to build your own Home Tech Vault?
+          Ready to organize your own home?
         </h2>
 
         <p className="mt-3 text-sm leading-7 text-text-secondary">
-          Create your free vault to save and manage your own
-          information.
+          Create your free Home Tech Vault to save your own devices,
+          documents and warranties.
         </p>
 
         <div className="mt-8 flex flex-col gap-3">
           <Button href="/signup" variant="primary" fullWidth>
-            Create Your Vault
+            Create My Vault
           </Button>
 
           <Button

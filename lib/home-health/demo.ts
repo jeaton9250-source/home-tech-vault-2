@@ -6,44 +6,15 @@ import {
   demoSubscriptions,
 } from "@/lib/demoData";
 import { MORGAN_HOUSEHOLD } from "@/lib/demo/morganHousehold";
+import { demoHomePulseHighlights } from "@/lib/demo/demoHomePulse";
 import {
   calculateHomeHealth,
   type HomeHealthResult,
 } from "@/lib/home-health";
 import type { HomeHealthHighlight } from "@/lib/home-health/types";
 
-const demoHighlights: HomeHealthHighlight[] = [
-  {
-    id: "demo-highlight-tv-warranty",
-    tone: "warning",
-    message:
-      "Samsung Frame TV warranty expires in 28 days.",
-  },
-  {
-    id: "demo-highlight-router-firmware",
-    tone: "warning",
-    message:
-      "UniFi Dream Router firmware update available.",
-  },
-  {
-    id: "demo-highlight-receipt",
-    tone: "positive",
-    message:
-      "Last receipt uploaded yesterday.",
-  },
-  {
-    id: "demo-highlight-maintenance",
-    tone: "warning",
-    message:
-      "Two maintenance reminders this month.",
-  },
-  {
-    id: "demo-highlight-software",
-    tone: "warning",
-    message:
-      "One software update available.",
-  },
-];
+const demoHighlights: HomeHealthHighlight[] =
+  demoHomePulseHighlights;
 
 export function buildDemoHomeHealth(): HomeHealthResult {
   const deviceIdsWithDocuments = new Set(

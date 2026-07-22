@@ -1,6 +1,6 @@
 export const morganNetwork = {
   id: "demo-network",
-  isp: "AT&T Fiber",
+  isp: "Spectrum",
   speed_download: 1000,
   speed_upload: 1000,
   router_model: "UniFi Dream Router (UDR)",

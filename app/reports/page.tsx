@@ -212,13 +212,12 @@ export default function ReportsPage() {
         setErrorMessage("");
 
         if (isDemo || !user) {
-          setDevices([]);
-          setDeviceCount(23);
-          setDocumentCount(20);
-          setPhotoCount(23);
-          setSerialNumberCount(23);
+          setDeviceCount(24);
+          setDocumentCount(47);
+          setPhotoCount(24);
+          setSerialNumberCount(24);
           setRoomCount(8);
-          setProtectedValue(24837);
+          setProtectedValue(27200);
           setActiveWarrantyCount(18);
 
           setReportCoverage({
