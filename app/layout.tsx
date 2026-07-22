@@ -6,38 +6,41 @@ import "./globals.css";
 import AppChrome from "@/components/AppChrome";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 
+const siteTitle = "Home Tech Vault — Organize. Protect. Simplify.";
 const siteDescription =
-  "Stop searching through drawers and emails. Organize your home devices, warranties, documents, subscriptions, maintenance, Wi-Fi information, and receipts in one secure place.";
+  "The digital home for everything that powers yours. Organize your devices, warranties, receipts, subscriptions, and important documents in one secure place.";
+
+const ogImage = {
+  url: "/opengraph-image.png",
+  width: 1200,
+  height: 630,
+  alt: "Home Tech Vault — The digital home for everything that powers yours",
+} as const;
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://hometechvault.com"),
-  title: "Home Tech Vault",
+  title: siteTitle,
   description: siteDescription,
+  alternates: {
+    canonical: "https://hometechvault.com",
+  },
   icons: {
     icon: "/brand/icon.svg",
     apple: "/brand/icon.svg",
   },
   openGraph: {
-    title: "Home Tech Vault",
+    title: siteTitle,
     description: siteDescription,
     url: "https://hometechvault.com",
     siteName: "Home Tech Vault",
     type: "website",
-    images: [
-      {
-        url: "/social-preview.png",
-        width: 1200,
-        height: 630,
-        alt: "Home Tech Vault Dashboard",
-      },
-    ],
+    images: [ogImage],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Home Tech Vault",
-    description:
-      "Organize your entire home's technology in one secure place.",
-    images: ["/social-preview.png"],
+    title: siteTitle,
+    description: siteDescription,
+    images: [ogImage.url],
   },
 };
 

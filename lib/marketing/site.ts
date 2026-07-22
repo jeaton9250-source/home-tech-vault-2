@@ -25,9 +25,10 @@ export function absoluteUrl(path: string): string {
 export const siteConfig = {
   name: brand.name,
   tagline: brand.tagline,
-  /** Relative to metadataBase — PNG required for Facebook/LinkedIn/X/iMessage */
-  defaultOgImage: "/social-preview.png",
-  defaultOgImageAlt: "Home Tech Vault Dashboard",
+  /** App Router file convention: app/opengraph-image.png */
+  defaultOgImage: "/opengraph-image.png",
+  defaultOgImageAlt:
+    "Home Tech Vault — The digital home for everything that powers yours",
   logo: absoluteUrl("/brand/logo.svg"),
   twitterHandle: "@hometechvault",
 } as const;

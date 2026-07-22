@@ -42,11 +42,18 @@ export const PUBLIC_METADATA_PATHS = [
   "/sitemap.xml",
   "/favicon.ico",
   "/manifest.webmanifest",
+  "/opengraph-image",
+  "/opengraph-image.png",
+  "/twitter-image",
+  "/twitter-image.png",
+  "/social-preview.png",
 ] as const;
 
 export const PUBLIC_STATIC_PREFIXES = [
   "/brand/",
   "/_next/",
+  "/demo/",
+  "/demo-devices/",
 ] as const;
 
 /** Indexable marketing URLs for sitemap generation. */
