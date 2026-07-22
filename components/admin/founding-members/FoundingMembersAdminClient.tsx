@@ -8,16 +8,23 @@ import {
   useState,
 } from "react";
 
-import {
-  Download,
-  Loader2,
-  Search,
-} from "lucide-react";
+import { Download } from "lucide-react";
 
-import AdminPageHeader from "@/components/admin/AdminPageHeader";
-import AdminPanel, {
-  formatAdminDate,
-} from "@/components/admin/AdminPanel";
+import {
+  AdminContentSection,
+  AdminEmptyState,
+  AdminFilterSelect,
+  AdminList,
+  AdminListItem,
+  AdminLoadingState,
+  AdminPageHero,
+  AdminSearchField,
+  AdminSearchFilters,
+  AdminStatusBadge,
+  AdminSummaryCard,
+  AdminSummaryGrid,
+} from "@/components/admin/layout/AdminPageLayout";
+import { formatAdminDate } from "@/components/admin/AdminPanel";
 import Button from "@/components/ui/Button";
 import type {
   FoundingMemberAdminRow,
@@ -43,7 +50,7 @@ export default function FoundingMembersAdminClient({
     );
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] =
-    useState<"all" | "active" | "removed">(
+    useState<"" | "active" | "removed">(
       "active"
     );
   const [loading, setLoading] = useState(false);
@@ -72,7 +79,7 @@ export default function FoundingMembersAdminClient({
     try {
       const params = new URLSearchParams();
 
-      if (statusFilter !== "all") {
+      if (statusFilter) {
         params.set("status", statusFilter);
       }
 
@@ -109,15 +116,7 @@ export default function FoundingMembersAdminClient({
   }, [refresh, initialMetrics]);
 
   if (!metrics) {
-    return (
-      <div className="flex items-center gap-2 py-8 text-sm text-text-secondary">
-        <Loader2
-          size={16}
-          className="animate-spin"
-        />
-        Loading founding members...
-      </div>
-    );
+    return <AdminLoadingState label="Loading founding members…" />;
   }
 
   async function updateProgramSettings(
@@ -161,29 +160,77 @@ export default function FoundingMembersAdminClient({
     await refresh();
   }
 
+  const exportHref = `/api/admin/founding-members?format=csv&status=${statusFilter}${search.trim() ? `&search=${encodeURIComponent(search.trim())}` : ""}`;
+
   return (
     <>
-      <AdminPageHeader
+      <AdminPageHero
         title="Founding Members"
         description="Manage the first 50 Home Tech Vault Founding Members and complimentary Pro enrollment."
+        badge={
+          <AdminStatusBadge
+            tone={
+              metrics.programStatus === "paused"
+                ? "warning"
+                : "success"
+            }
+          >
+            {metrics.programStatus}
+          </AdminStatusBadge>
+        }
+        primaryAction={{
+          label: "Export CSV",
+          href: exportHref,
+        }}
       />
 
+      <AdminSummaryGrid>
+        <AdminSummaryCard
+          label="Enrolled"
+          value={metrics.capacity - metrics.remainingSpots}
+          hint={`${metrics.remainingSpots} spots left`}
+        />
+        <AdminSummaryCard
+          label="Active members"
+          value={metrics.activeCount}
+        />
+        <AdminSummaryCard
+          label="Linked Pro grants"
+          value={metrics.linkedGrantCount}
+        />
+        <AdminSummaryCard
+          label="Paid plan members"
+          value={metrics.paidPlanCount}
+        />
+      </AdminSummaryGrid>
+
       <section className="grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-        <AdminPanel title="Program status">
+        <AdminContentSection
+          id="founding-status-heading"
+          title="Program status"
+          subtitle="Enrollment progress and program availability."
+        >
           <div className="space-y-4">
             <div>
-              <p className="text-sm capitalize text-text-secondary">
-                {metrics.programStatus}
-              </p>
-              <p className="mt-1 text-2xl font-semibold text-text-primary">
+              <p className="text-2xl font-semibold tracking-[-0.03em] text-text-primary">
                 {metrics.capacity -
                   metrics.remainingSpots}{" "}
                 of {metrics.capacity} enrolled
               </p>
               <p className="mt-1 text-sm text-text-secondary">
-                {metrics.remainingSpots} spots
-                remaining
+                {metrics.remainingSpots} spots remaining
+                {metrics.latestMemberNumber
+                  ? ` · Latest #${metrics.latestMemberNumber}`
+                  : ""}
               </p>
+              {metrics.latestEnrollmentDate ? (
+                <p className="mt-1 text-xs text-text-tertiary">
+                  Last enrollment{" "}
+                  {formatAdminDate(
+                    metrics.latestEnrollmentDate
+                  )}
+                </p>
+              ) : null}
             </div>
 
             <div className="h-2 overflow-hidden rounded-full bg-surface-sunken">
@@ -195,61 +242,20 @@ export default function FoundingMembersAdminClient({
               />
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-[18px] border border-border-subtle bg-surface-sunken px-4 py-3">
-                <p className="text-xs uppercase tracking-wide text-text-tertiary">
-                  Active members
-                </p>
-                <p className="mt-1 text-lg font-semibold text-text-primary">
-                  {metrics.activeCount}
-                </p>
-              </div>
-              <div className="rounded-[18px] border border-border-subtle bg-surface-sunken px-4 py-3">
-                <p className="text-xs uppercase tracking-wide text-text-tertiary">
-                  Linked Pro grants
-                </p>
-                <p className="mt-1 text-lg font-semibold text-text-primary">
-                  {metrics.linkedGrantCount}
-                </p>
-              </div>
-              <div className="rounded-[18px] border border-border-subtle bg-surface-sunken px-4 py-3">
-                <p className="text-xs uppercase tracking-wide text-text-tertiary">
-                  Paid plan members
-                </p>
-                <p className="mt-1 text-lg font-semibold text-text-primary">
-                  {metrics.paidPlanCount}
-                </p>
-              </div>
-              <div className="rounded-[18px] border border-border-subtle bg-surface-sunken px-4 py-3">
-                <p className="text-xs uppercase tracking-wide text-text-tertiary">
-                  Latest enrollment
-                </p>
-                <p className="mt-1 text-sm font-medium text-text-primary">
-                  {metrics.latestMemberNumber
-                    ? `#${metrics.latestMemberNumber}`
-                    : "None yet"}
-                </p>
-                {metrics.latestEnrollmentDate ? (
-                  <p className="mt-1 text-xs text-text-tertiary">
-                    {formatAdminDate(
-                      metrics.latestEnrollmentDate
-                    )}
-                  </p>
-                ) : null}
-              </div>
-            </div>
-          </div>
-        </AdminPanel>
-
-        <AdminPanel title="Program controls">
-          <div className="space-y-3">
             <p className="text-sm leading-6 text-text-secondary">
               {metrics.settings.publicMessage}
             </p>
+          </div>
+        </AdminContentSection>
 
+        <AdminContentSection
+          id="founding-controls-heading"
+          title="Program controls"
+          subtitle="Pause or resume founding member enrollment."
+        >
+          <div className="space-y-3">
             <div className="flex flex-wrap gap-2">
-              {metrics.programStatus ===
-              "paused" ? (
+              {metrics.programStatus === "paused" ? (
                 <Button
                   type="button"
                   variant="secondary"
@@ -282,138 +288,95 @@ export default function FoundingMembersAdminClient({
               </p>
             ) : null}
           </div>
-        </AdminPanel>
+        </AdminContentSection>
       </section>
 
-      <AdminPanel
-        title="Members"
-        className="mt-6"
-      >
-        <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <label className="relative block max-w-md flex-1">
-            <Search
-              size={16}
-              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary"
-            />
-            <input
-              value={search}
-              onChange={(event) =>
-                setSearch(event.target.value)
-              }
-              placeholder="Search by name, email, or number"
-              className="w-full rounded-full border border-border-subtle bg-surface-sunken py-2 pl-9 pr-3 text-sm"
-            />
-          </label>
-
-          <div className="flex items-center gap-3">
-            <a
-              href={`/api/admin/founding-members?format=csv&status=${statusFilter}${search.trim() ? `&search=${encodeURIComponent(search.trim())}` : ""}`}
-              className="inline-flex items-center gap-2 text-sm font-medium text-accent hover:underline"
-            >
-              <Download size={16} />
-              Export CSV
-            </a>
-
-            <select
-            value={statusFilter}
-            onChange={(event) =>
-              setStatusFilter(
-                event.target
-                  .value as typeof statusFilter
-              )
-            }
-            className="rounded-full border border-border-subtle bg-surface-sunken px-4 py-2 text-sm"
+      <AdminSearchFilters>
+        <AdminSearchField
+          className="md:col-span-2"
+          value={search}
+          onChange={setSearch}
+          placeholder="Search by name, email, or number"
+        />
+        <AdminFilterSelect
+          label="Status"
+          value={statusFilter}
+          onChange={(value) =>
+            setStatusFilter(
+              value as typeof statusFilter
+            )
+          }
+          options={[
+            { value: "active", label: "Active" },
+            { value: "removed", label: "Removed" },
+          ]}
+        />
+        <div className="flex items-end">
+          <a
+            href={exportHref}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-[20px] border border-border-subtle bg-surface-card px-4 py-3.5 text-sm font-medium text-text-primary shadow-[var(--shadow-sm)] transition hover:bg-surface-sunken"
           >
-            <option value="active">Active</option>
-            <option value="removed">Removed</option>
-            <option value="all">All</option>
-          </select>
-          </div>
+            <Download size={16} />
+            Export CSV
+          </a>
         </div>
+      </AdminSearchFilters>
 
+      <AdminContentSection
+        id="founding-members-heading"
+        title="Members"
+        subtitle="Founding member roster and enrollment details."
+      >
         {loading ? (
-          <div className="flex items-center gap-2 py-8 text-sm text-text-secondary">
-            <Loader2
-              size={16}
-              className="animate-spin"
-            />
-            Refreshing members...
-          </div>
+          <AdminLoadingState label="Refreshing members…" />
         ) : members.length === 0 ? (
-          <p className="py-8 text-sm text-text-secondary">
-            No founding members match this filter.
-          </p>
+          <AdminEmptyState
+            title="No founding members found"
+            description="Try a different search or status filter."
+          />
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-left text-sm">
-              <thead>
-                <tr className="border-b border-border-subtle text-xs uppercase tracking-wide text-text-tertiary">
-                  <th className="px-3 py-3">#</th>
-                  <th className="px-3 py-3">Name</th>
-                  <th className="px-3 py-3">Email</th>
-                  <th className="px-3 py-3">
-                    Enrolled
-                  </th>
-                  <th className="px-3 py-3">
-                    Effective
-                  </th>
-                  <th className="px-3 py-3">
-                    Billing
-                  </th>
-                  <th className="px-3 py-3">
-                    Grant
-                  </th>
-                  <th className="px-3 py-3">
-                    Status
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {members.map((member) => (
-                  <tr
-                    key={member.id}
-                    className="border-b border-border-subtle/70"
-                  >
-                    <td className="px-3 py-3 font-medium">
-                      {member.memberNumber}
-                    </td>
-                    <td className="px-3 py-3">
-                      {member.fullName || "—"}
-                    </td>
-                    <td className="px-3 py-3">
-                      {member.email || "—"}
-                    </td>
-                    <td className="px-3 py-3">
-                      {formatAdminDate(
-                        member.enrolledAt
-                      )}
-                    </td>
-                    <td className="px-3 py-3 capitalize">
-                      {member.effectivePlan}
-                    </td>
-                    <td className="px-3 py-3 capitalize">
-                      {member.billingPlan}
-                    </td>
-                    <td className="px-3 py-3">
+          <AdminList>
+            {members.map((member) => (
+              <AdminListItem key={member.id}>
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                  <div>
+                    <p className="font-medium text-text-primary">
+                      #{member.memberNumber}{" "}
+                      {member.fullName || "Unnamed member"}
+                    </p>
+                    <p className="mt-1 text-sm text-text-secondary">
+                      {member.email || "No email on file"}
+                    </p>
+                  </div>
+                  <div className="grid gap-2 text-sm sm:grid-cols-2 lg:text-right">
+                    <p className="capitalize text-text-primary">
+                      {member.effectivePlan} plan ·{" "}
+                      {member.billingPlan} billing
+                    </p>
+                    <p className="text-text-secondary">
+                      Enrolled{" "}
+                      {formatAdminDate(member.enrolledAt)}
+                    </p>
+                    <p className="text-text-secondary">
                       {member.grantPlan
-                        ? `${member.grantPlan} · ${member.grantStatus}`
-                        : "—"}
-                    </td>
-                    <td className="px-3 py-3 capitalize">
+                        ? `${member.grantPlan} grant · ${member.grantStatus}`
+                        : "No grant linked"}
+                    </p>
+                    <p>
                       <Link
                         href={`/admin/users?selected=${member.userId}`}
-                        className="text-accent hover:underline"
+                        className="font-medium text-accent hover:underline"
                       >
-                        {member.status}
+                        View user · {member.status}
                       </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    </p>
+                  </div>
+                </div>
+              </AdminListItem>
+            ))}
+          </AdminList>
         )}
-      </AdminPanel>
+      </AdminContentSection>
     </>
   );
 }

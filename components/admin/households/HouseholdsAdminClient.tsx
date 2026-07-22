@@ -7,14 +7,24 @@ import {
   useState,
 } from "react";
 
-import { Copy, Loader2, Search } from "lucide-react";
+import { Home } from "lucide-react";
 
-import AdminPageHeader from "@/components/admin/AdminPageHeader";
-import AdminPanel, {
+import {
+  AdminContentSection,
+  AdminDetailField,
   AdminEmptyState,
-  formatAdminDate,
-} from "@/components/admin/AdminPanel";
-import Button from "@/components/ui/Button";
+  AdminErrorState,
+  AdminList,
+  AdminListItem,
+  AdminLoadingState,
+  AdminPageHero,
+  AdminPagination,
+  AdminSearchField,
+  AdminSearchFilters,
+  AdminSummaryCard,
+  AdminSummaryGrid,
+} from "@/components/admin/layout/AdminPageLayout";
+import { formatAdminDate } from "@/components/admin/AdminPanel";
 import type {
   AdminHouseholdDetail,
   AdminHouseholdSummary,
@@ -31,7 +41,18 @@ type HouseholdsResponse = {
   };
 };
 
-export default function HouseholdsAdminClient() {
+type HouseholdsAdminClientProps = {
+  summary: {
+    totalHouseholds: number;
+    totalDevices: number;
+    totalDocuments: number;
+    openSupportTickets: number;
+  };
+};
+
+export default function HouseholdsAdminClient({
+  summary,
+}: HouseholdsAdminClientProps) {
   const [households, setHouseholds] = useState<
     AdminHouseholdSummary[]
   >([]);
@@ -146,248 +167,203 @@ export default function HouseholdsAdminClient() {
 
   return (
     <>
-      <AdminPageHeader
+      <AdminPageHero
         title="Households"
-        description="Operational visibility into household ownership, membership, and shared vault activity."
+        description="Review household ownership, membership, and shared vault activity."
       />
 
+      <AdminSummaryGrid>
+        <AdminSummaryCard
+          label="Households"
+          value={summary.totalHouseholds}
+          icon={
+            <Home
+              aria-hidden="true"
+              className="h-5 w-5"
+            />
+          }
+        />
+        <AdminSummaryCard
+          label="Devices"
+          value={summary.totalDevices}
+        />
+        <AdminSummaryCard
+          label="Documents"
+          value={summary.totalDocuments}
+        />
+        <AdminSummaryCard
+          label="Open support"
+          value={summary.openSupportTickets}
+        />
+      </AdminSummaryGrid>
+
+      <AdminSearchFilters>
+        <AdminSearchField
+          className="md:col-span-2 xl:col-span-4"
+          value={search}
+          onChange={(value) => {
+            setPage(1);
+            setSearch(value);
+          }}
+          placeholder="Search household name or ID"
+        />
+      </AdminSearchFilters>
+
       <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-        <AdminPanel title="Household directory">
-          <label className="block">
-            <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-text-tertiary">
-              Search
-            </span>
-            <div className="relative">
-              <Search
-                size={16}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-text-tertiary"
-              />
-              <input
-                value={search}
-                onChange={(event) => {
-                  setPage(1);
-                  setSearch(event.target.value);
-                }}
-                placeholder="Household name or ID"
-                className="w-full rounded-2xl border border-border-subtle bg-white py-3.5 pl-11 pr-4 text-sm outline-none transition focus:border-interaction focus:ring-4 focus:ring-interaction/10"
-              />
-            </div>
-          </label>
-
+        <AdminContentSection
+          id="households-directory-heading"
+          title="Household directory"
+          subtitle="Select a household to inspect members and counts."
+        >
           {loading ? (
-            <div className="mt-8 flex items-center justify-center text-text-secondary">
-              <Loader2
-                size={20}
-                className="mr-3 animate-spin"
-              />
-              Loading households...
-            </div>
+            <AdminLoadingState label="Loading households…" />
           ) : error ? (
-            <p className="mt-6 text-sm text-red-700">
-              {error}
-            </p>
+            <AdminErrorState message={error} />
           ) : households.length === 0 ? (
-            <div className="mt-6">
-              <AdminEmptyState
-                title="No households found"
-                description="Try a different search."
-              />
-            </div>
+            <AdminEmptyState
+              title="No households found"
+              description="Try a different search."
+            />
           ) : (
-            <div className="mt-6 overflow-x-auto">
-              <table className="min-w-full text-left text-sm">
-                <thead>
-                  <tr className="border-b border-border-subtle text-xs uppercase tracking-[0.14em] text-text-tertiary">
-                    <th className="px-3 py-3">
-                      Household
-                    </th>
-                    <th className="px-3 py-3">
-                      Owner
-                    </th>
-                    <th className="px-3 py-3">
-                      Members
-                    </th>
-                    <th className="px-3 py-3">
-                      Plan
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {households.map((household) => (
-                    <tr
-                      key={household.id}
-                      className="cursor-pointer border-b border-border-subtle/70 hover:bg-surface-sunken/60"
-                      onClick={() => {
-                        void loadDetail(
-                          household.id
-                        );
-                      }}
-                    >
-                      <td className="px-3 py-4">
-                        <p className="font-medium text-text-primary">
-                          {household.name}
-                        </p>
-                        <p className="mt-1 text-xs text-text-secondary">
-                          {formatAdminDate(
-                            household.createdAt
-                          )}
-                        </p>
-                      </td>
-                      <td className="px-3 py-4">
-                        <p className="text-text-primary">
-                          {household.ownerName ||
-                            household.ownerEmail ||
-                            household.ownerId}
-                        </p>
-                      </td>
-                      <td className="px-3 py-4">
-                        {household.memberCount}
-                      </td>
-                      <td className="px-3 py-4 capitalize">
-                        {
-                          household.inheritedPlan
-                        }
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <AdminList>
+              {households.map((household) => (
+                <AdminListItem
+                  key={household.id}
+                  selected={selectedId === household.id}
+                  onClick={() => {
+                    void loadDetail(household.id);
+                  }}
+                >
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <p className="font-medium text-text-primary">
+                        {household.name}
+                      </p>
+                      <p className="mt-1 text-sm text-text-secondary">
+                        {household.ownerName ||
+                          household.ownerEmail ||
+                          household.ownerId}
+                      </p>
+                      <p className="mt-1 text-xs text-text-tertiary">
+                        {formatAdminDate(
+                          household.createdAt
+                        )}
+                      </p>
+                    </div>
+                    <div className="text-left sm:text-right">
+                      <p className="text-sm text-text-primary">
+                        {household.memberCount} members
+                      </p>
+                      <p className="mt-1 text-sm capitalize text-text-secondary">
+                        {household.inheritedPlan}
+                      </p>
+                      <p className="mt-1 text-xs text-text-tertiary">
+                        {household.deviceCount} devices
+                      </p>
+                    </div>
+                  </div>
+                </AdminListItem>
+              ))}
+            </AdminList>
           )}
 
-          {pagination && (
-            <div className="mt-4 flex items-center justify-between text-sm">
-              <p className="text-text-secondary">
-                Page {pagination.page} of{" "}
-                {pagination.totalPages}
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  disabled={
-                    !pagination.hasPreviousPage
-                  }
-                  onClick={() =>
-                    setPage((current) =>
-                      Math.max(1, current - 1)
-                    )
-                  }
-                >
-                  Previous
-                </Button>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  disabled={
-                    !pagination.hasNextPage
-                  }
-                  onClick={() =>
-                    setPage((current) =>
-                      current + 1
-                    )
-                  }
-                >
-                  Next
-                </Button>
-              </div>
-            </div>
-          )}
-        </AdminPanel>
+          {pagination ? (
+            <AdminPagination
+              page={pagination.page}
+              totalPages={pagination.totalPages}
+              totalLabel={`${pagination.total} households`}
+              hasPreviousPage={
+                pagination.hasPreviousPage
+              }
+              hasNextPage={pagination.hasNextPage}
+              onPrevious={() =>
+                setPage((current) =>
+                  Math.max(1, current - 1)
+                )
+              }
+              onNext={() =>
+                setPage((current) => current + 1)
+              }
+            />
+          ) : null}
+        </AdminContentSection>
 
-        <AdminPanel title="Household detail">
+        <AdminContentSection
+          id="households-detail-heading"
+          title="Household detail"
+          subtitle="Membership and inventory context."
+        >
           {!selectedId ? (
             <AdminEmptyState
               title="Select a household"
-              description="Choose a row to inspect members and counts."
+              description="Choose a household to inspect members and counts."
             />
           ) : detailLoading ? (
-            <div className="flex items-center text-text-secondary">
-              <Loader2
-                size={18}
-                className="mr-2 animate-spin"
-              />
-              Loading details...
-            </div>
+            <AdminLoadingState label="Loading details…" />
           ) : detail ? (
-            <div className="space-y-4 text-sm">
-              <CopyRow
+            <div className="space-y-4">
+              <AdminDetailField
                 label="Household ID"
                 value={detail.id}
+                copyValue={detail.id}
+                onCopy={() => {
+                  void navigator.clipboard.writeText(
+                    detail.id
+                  );
+                }}
               />
-              <p>
-                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-text-tertiary">
-                  Name
-                </span>
-                <span className="mt-1 block text-text-primary">
-                  {detail.name}
-                </span>
-              </p>
-              <p>
-                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-text-tertiary">
+              <AdminDetailField
+                label="Name"
+                value={detail.name}
+              />
+              <div>
+                <p className="text-xs font-medium uppercase tracking-[0.14em] text-text-tertiary">
                   Owner
-                </span>
-                <span className="mt-1 block text-text-primary">
+                </p>
+                <p className="mt-1 text-sm text-text-primary">
                   {detail.ownerName ||
                     detail.ownerEmail ||
                     detail.ownerId}
-                </span>
+                </p>
                 <Link
                   href={`/admin/users?selected=${detail.ownerId}`}
-                  className="mt-1 inline-flex text-sm font-semibold text-interaction"
+                  className="mt-2 inline-flex text-sm font-medium text-interaction"
                 >
                   View owner profile
                 </Link>
-              </p>
-              <p>
-                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-text-tertiary">
-                  Inherited plan
-                </span>
-                <span className="mt-1 block capitalize text-text-primary">
-                  {detail.inheritedPlan}
-                </span>
-              </p>
-              <p>
-                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-text-tertiary">
-                  Devices / documents
-                </span>
-                <span className="mt-1 block text-text-primary">
-                  {detail.deviceCount} devices ·{" "}
-                  {detail.documentCount}{" "}
-                  documents
-                </span>
-              </p>
-              <p>
-                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-text-tertiary">
-                  Open support tickets
-                </span>
-                <span className="mt-1 block text-text-primary">
-                  {detail.openSupportTickets}
-                </span>
-              </p>
-
+              </div>
+              <AdminDetailField
+                label="Inherited plan"
+                value={detail.inheritedPlan}
+              />
+              <AdminDetailField
+                label="Devices / documents"
+                value={`${detail.deviceCount} devices · ${detail.documentCount} documents`}
+              />
+              <AdminDetailField
+                label="Open support tickets"
+                value={String(detail.openSupportTickets)}
+              />
               <div className="border-t border-border-subtle pt-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-text-tertiary">
+                <p className="text-xs font-medium uppercase tracking-[0.14em] text-text-tertiary">
                   Members
                 </p>
                 <div className="mt-3 space-y-3">
-                  {detail.members.map(
-                    (member) => (
-                      <div
-                        key={member.userId}
-                        className="rounded-[18px] border border-border-subtle bg-surface-sunken px-4 py-3"
-                      >
-                        <p className="font-medium text-text-primary">
-                          {member.fullName ||
-                            member.email ||
-                            member.userId}
-                        </p>
-                        <p className="mt-1 capitalize text-text-secondary">
-                          {member.role}
-                        </p>
-                      </div>
-                    )
-                  )}
+                  {detail.members.map((member) => (
+                    <div
+                      key={member.userId}
+                      className="rounded-[18px] border border-border-subtle bg-surface-sunken px-4 py-3"
+                    >
+                      <p className="font-medium text-text-primary">
+                        {member.fullName ||
+                          member.email ||
+                          member.userId}
+                      </p>
+                      <p className="mt-1 capitalize text-sm text-text-secondary">
+                        {member.role}
+                      </p>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -397,41 +373,8 @@ export default function HouseholdsAdminClient() {
               description="This household could not be loaded."
             />
           )}
-        </AdminPanel>
+        </AdminContentSection>
       </section>
     </>
-  );
-}
-
-function CopyRow({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="flex items-start justify-between gap-3">
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-text-tertiary">
-          {label}
-        </p>
-        <p className="mt-1 break-all text-text-primary">
-          {value}
-        </p>
-      </div>
-      <button
-        type="button"
-        onClick={() => {
-          void navigator.clipboard.writeText(
-            value
-          );
-        }}
-        className="rounded-xl border border-border-subtle p-2 text-text-secondary transition hover:bg-surface-sunken"
-        aria-label={`Copy ${label}`}
-      >
-        <Copy size={15} />
-      </button>
-    </div>
   );
 }

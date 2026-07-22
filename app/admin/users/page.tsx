@@ -1,21 +1,30 @@
 import { Suspense } from "react";
 
 import UsersAdminClient from "@/components/admin/users/UsersAdminClient";
+import { AdminLoadingState } from "@/components/admin/layout/AdminPageLayout";
+import { loadAdminDashboardMetrics } from "@/lib/admin/data/dashboard";
 
 export const metadata = {
   title: "Users — Home Tech Vault Admin",
 };
 
-export default function AdminUsersPage() {
+export default async function AdminUsersPage() {
+  const metrics = await loadAdminDashboardMetrics();
+
   return (
     <Suspense
-      fallback={
-        <p className="text-sm text-text-secondary">
-          Loading users...
-        </p>
-      }
+      fallback={<AdminLoadingState label="Loading users…" />}
     >
-      <UsersAdminClient />
+      <UsersAdminClient
+        summary={{
+          totalUsers: metrics.totalUsers,
+          newUsersToday: metrics.newUsersToday,
+          activeSubscriptions:
+            metrics.activeSubscriptions,
+          paidMembers:
+            metrics.proUsers + metrics.familyUsers,
+        }}
+      />
     </Suspense>
   );
 }

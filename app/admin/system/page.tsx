@@ -1,5 +1,10 @@
-import AdminPageHeader from "@/components/admin/AdminPageHeader";
-import AdminPanel from "@/components/admin/AdminPanel";
+import {
+  AdminContentSection,
+  AdminPageHero,
+  AdminStatusBadge,
+  AdminSummaryCard,
+  AdminSummaryGrid,
+} from "@/components/admin/layout/AdminPageLayout";
 import type { AdminConfigCheck } from "@/lib/admin/types";
 import { loadAdminSystemHealth } from "@/lib/admin/data/loaders";
 
@@ -10,35 +15,31 @@ export const metadata = {
 export default async function AdminSystemPage() {
   const health = await loadAdminSystemHealth();
 
+  const configuredCount = health.checks.filter(
+    (check) => check.status === "configured"
+  ).length;
+
   return (
     <>
-      <AdminPageHeader
+      <AdminPageHero
         title="System Health"
         description="Safe configuration checks for production operations. Secret values are never displayed."
       />
 
-      <section className="grid gap-4 md:grid-cols-3">
-        <HealthCard
+      <AdminSummaryGrid>
+        <AdminSummaryCard
           label="Environment"
           value={health.environment}
         />
-        <HealthCard
-          label="Public URL"
-          value={health.publicUrl}
-        />
-        <HealthCard
-          label="App version"
-          value={health.appVersion}
-        />
-        <HealthCard
-          label="Supabase connection"
+        <AdminSummaryCard
+          label="Supabase"
           value={
             health.supabaseConnected
               ? "Connected"
               : "Unavailable"
           }
         />
-        <HealthCard
+        <AdminSummaryCard
           label="Resend"
           value={
             health.resendConfigured
@@ -46,49 +47,51 @@ export default async function AdminSystemPage() {
               : "Missing"
           }
         />
-        <HealthCard
-          label="Stripe"
-          value={
-            health.stripeConfigured
-              ? "Configured"
-              : "Missing"
-          }
+        <AdminSummaryCard
+          label="Checks passing"
+          value={`${configuredCount}/${health.checks.length}`}
         />
-      </section>
+      </AdminSummaryGrid>
 
-      <AdminPanel
+      <AdminContentSection
+        id="system-checks-heading"
         title="Configuration checks"
-        className="mt-6"
+        subtitle="Integration and environment validation."
       >
-        <div className="space-y-3">
+        <ul className="space-y-3">
           {health.checks.map((check) => (
-            <ConfigCheckRow
-              key={check.id}
-              check={check}
-            />
+            <li key={check.id}>
+              <ConfigCheckRow check={check} />
+            </li>
           ))}
-        </div>
-      </AdminPanel>
-    </>
-  );
-}
+        </ul>
+      </AdminContentSection>
 
-function HealthCard({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="rounded-[24px] border border-border-subtle bg-surface-card p-5 shadow-[var(--shadow-sm)]">
-      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-text-tertiary">
-        {label}
-      </p>
-      <p className="mt-3 text-lg font-semibold text-text-primary">
-        {value}
-      </p>
-    </div>
+      <AdminContentSection
+        id="system-meta-heading"
+        title="Deployment context"
+        subtitle="Non-secret operational metadata."
+      >
+        <dl className="grid gap-4 sm:grid-cols-2">
+          <div className="rounded-[20px] border border-border-subtle bg-surface-sunken px-4 py-4">
+            <dt className="text-xs font-medium uppercase tracking-[0.14em] text-text-tertiary">
+              Public URL
+            </dt>
+            <dd className="mt-2 text-sm text-text-primary">
+              {health.publicUrl}
+            </dd>
+          </div>
+          <div className="rounded-[20px] border border-border-subtle bg-surface-sunken px-4 py-4">
+            <dt className="text-xs font-medium uppercase tracking-[0.14em] text-text-tertiary">
+              App version
+            </dt>
+            <dd className="mt-2 text-sm text-text-primary">
+              {health.appVersion}
+            </dd>
+          </div>
+        </dl>
+      </AdminContentSection>
+    </>
   );
 }
 
@@ -97,41 +100,30 @@ function ConfigCheckRow({
 }: {
   check: AdminConfigCheck;
 }) {
+  const tone = {
+    configured: "success",
+    missing: "danger",
+    optional: "neutral",
+    warning: "warning",
+  }[check.status] as
+    | "success"
+    | "danger"
+    | "neutral"
+    | "warning";
+
   return (
-    <div className="flex items-start justify-between gap-4 rounded-[18px] border border-border-subtle bg-surface-sunken px-4 py-3">
+    <div className="flex items-start justify-between gap-4 rounded-[20px] border border-border-subtle bg-surface-sunken px-4 py-4">
       <div>
         <p className="font-medium text-text-primary">
           {check.label}
         </p>
-        <p className="mt-1 text-sm text-text-secondary">
+        <p className="mt-1 text-sm leading-6 text-text-secondary">
           {check.detail}
         </p>
       </div>
-      <StatusBadge status={check.status} />
+      <AdminStatusBadge tone={tone}>
+        {check.status}
+      </AdminStatusBadge>
     </div>
-  );
-}
-
-function StatusBadge({
-  status,
-}: {
-  status: AdminConfigCheck["status"];
-}) {
-  const classes = {
-    configured:
-      "bg-emerald-50 text-emerald-700",
-    missing: "bg-red-50 text-red-700",
-    optional:
-      "bg-surface-card text-text-tertiary",
-    warning:
-      "bg-warning-soft text-achievement",
-  }[status];
-
-  return (
-    <span
-      className={`rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] ${classes}`}
-    >
-      {status}
-    </span>
   );
 }

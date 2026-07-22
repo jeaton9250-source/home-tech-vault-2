@@ -2,7 +2,7 @@ import AnalyticsAdminClient from "@/components/admin/analytics/AnalyticsAdminCli
 import { loadAdminAnalytics } from "@/lib/admin/data/loaders";
 
 export const metadata = {
-  title: "Analytics — Home Tech Vault Admin",
+  title: "Reports — Home Tech Vault Admin",
 };
 
 export default async function AdminAnalyticsPage() {

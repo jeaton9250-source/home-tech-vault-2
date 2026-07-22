@@ -1,21 +1,21 @@
 "use client";
 
+import Link from "next/link";
 import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+  Activity,
+  ExternalLink,
+  FileText,
+  HardDrive,
+  Users,
+} from "lucide-react";
 
-import AdminPageHeader from "@/components/admin/AdminPageHeader";
-import AdminPanel, {
+import {
+  AdminContentSection,
   AdminEmptyState,
-} from "@/components/admin/AdminPanel";
-import AdminStatCard from "@/components/admin/AdminStatCard";
-import Button from "@/components/ui/Button";
+  AdminPageHero,
+  AdminSummaryCard,
+  AdminSummaryGrid,
+} from "@/components/admin/layout/AdminPageLayout";
 import type { AdminAnalyticsSnapshot } from "@/lib/admin/types";
 
 const EXTERNAL_LINKS = [
@@ -52,80 +52,99 @@ export default function AnalyticsAdminClient({
 }) {
   return (
     <>
-      <AdminPageHeader
-        title="Analytics"
-        description="Supabase-derived product metrics. External analytics dashboards open separately."
+      <AdminPageHero
+        title="Reports"
+        description="Platform inventory and signup trends from Supabase. External dashboards open separately."
+        primaryAction={{
+          label: "Open Stripe",
+          href: "https://dashboard.stripe.com/",
+        }}
       />
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <AdminStatCard
-          label="Total users"
+      <AdminSummaryGrid>
+        <AdminSummaryCard
+          label="Users"
           value={analytics.totalUsers}
+          icon={
+            <Users
+              aria-hidden="true"
+              className="h-5 w-5"
+            />
+          }
         />
-        <AdminStatCard
-          label="Households"
-          value={analytics.totalHouseholds}
-        />
-        <AdminStatCard
+        <AdminSummaryCard
           label="Devices"
           value={analytics.totalDevices}
+          icon={
+            <HardDrive
+              aria-hidden="true"
+              className="h-5 w-5"
+            />
+          }
         />
-        <AdminStatCard
+        <AdminSummaryCard
           label="Documents"
           value={analytics.totalDocuments}
+          icon={
+            <FileText
+              aria-hidden="true"
+              className="h-5 w-5"
+            />
+          }
         />
-        <AdminStatCard
-          label="Support tickets"
-          value={analytics.totalSupportTickets}
-        />
-        <AdminStatCard
+        <AdminSummaryCard
           label="Open support"
           value={analytics.openSupportTickets}
+          icon={
+            <Activity
+              aria-hidden="true"
+              className="h-5 w-5"
+            />
+          }
         />
-        <AdminStatCard
-          label="Family invitations"
-          value={analytics.familyInvitationsTotal}
-        />
-      </section>
+      </AdminSummaryGrid>
 
-      <section className="mt-6 grid gap-6 xl:grid-cols-2">
-        <AdminPanel title="Signups by day (30 days)">
+      <div className="grid gap-6 xl:grid-cols-2">
+        <AdminContentSection
+          id="reports-signups-heading"
+          title="Signups by day"
+          subtitle="Profile creations over the last 30 days."
+        >
           {analytics.signupsByDay.length === 0 ? (
             <AdminEmptyState
               title="No signup data"
               description="No profile records were created in the last 30 days."
             />
           ) : (
-            <div className="h-72">
-              <ResponsiveContainer
-                width="100%"
-                height="100%"
-              >
-                <BarChart
-                  data={analytics.signupsByDay}
+            <ul className="space-y-2">
+              {analytics.signupsByDay.map((entry) => (
+                <li
+                  key={entry.date}
+                  className="flex items-center justify-between rounded-[18px] border border-border-subtle bg-surface-sunken px-4 py-3 text-sm"
                 >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis allowDecimals={false} />
-                  <Tooltip />
-                  <Bar
-                    dataKey="count"
-                    fill="#1C1917"
-                    radius={[6, 6, 0, 0]}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+                  <span className="text-text-secondary">
+                    {entry.date}
+                  </span>
+                  <span className="font-semibold text-text-primary">
+                    {entry.count}
+                  </span>
+                </li>
+              ))}
+            </ul>
           )}
-        </AdminPanel>
+        </AdminContentSection>
 
-        <AdminPanel title="Plan distribution">
-          <div className="space-y-3">
+        <AdminContentSection
+          id="reports-plans-heading"
+          title="Plan distribution"
+          subtitle="Current subscription plan counts."
+        >
+          <ul className="space-y-2">
             {analytics.planDistribution.map(
               (entry) => (
-                <div
+                <li
                   key={entry.plan}
-                  className="flex items-center justify-between rounded-[18px] border border-border-subtle bg-surface-sunken px-4 py-3"
+                  className="flex items-center justify-between rounded-[18px] border border-border-subtle bg-surface-sunken px-4 py-3 text-sm"
                 >
                   <span className="capitalize text-text-primary">
                     {entry.plan}
@@ -133,42 +152,58 @@ export default function AnalyticsAdminClient({
                   <span className="font-semibold text-text-primary">
                     {entry.count}
                   </span>
-                </div>
+                </li>
               )
             )}
-          </div>
-        </AdminPanel>
-      </section>
+          </ul>
+        </AdminContentSection>
+      </div>
 
-      <AdminPanel
+      <AdminContentSection
+        id="reports-external-heading"
         title="External analytics"
-        className="mt-6"
+        subtitle="Open third-party dashboards in a new tab."
       >
-        <div className="flex flex-wrap gap-3">
+        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {EXTERNAL_LINKS.map((link) => (
-            <Button
-              key={link.label}
-              href={link.href}
-              variant="secondary"
-            >
-              {link.label}
-            </Button>
+            <li key={link.label}>
+              <Link
+                href={link.href}
+                target="_blank"
+                rel="noreferrer"
+                className="group flex items-center justify-between rounded-[20px] border border-border-subtle bg-surface-sunken px-4 py-4 transition hover:bg-surface-card"
+              >
+                <span className="font-medium text-text-primary">
+                  {link.label}
+                </span>
+                <ExternalLink
+                  aria-hidden="true"
+                  className="h-4 w-4 text-text-tertiary transition group-hover:text-charcoal"
+                />
+              </Link>
+            </li>
           ))}
-        </div>
-      </AdminPanel>
+        </ul>
+      </AdminContentSection>
 
-      <AdminPanel
+      <AdminContentSection
+        id="reports-deferred-heading"
         title="Deferred metrics"
-        className="mt-6"
+        subtitle="Metrics not yet tracked in the platform database."
       >
         <ul className="space-y-2 text-sm leading-6 text-text-secondary">
           {analytics.deferredMetrics.map(
             (metric) => (
-              <li key={metric}>{metric}</li>
+              <li
+                key={metric}
+                className="rounded-[18px] border border-border-subtle bg-surface-sunken px-4 py-3"
+              >
+                {metric}
+              </li>
             )
           )}
         </ul>
-      </AdminPanel>
+      </AdminContentSection>
     </>
   );
 }

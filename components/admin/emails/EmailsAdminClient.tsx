@@ -1,8 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import { Mail } from "lucide-react";
 
-import AdminPanel from "@/components/admin/AdminPanel";
+import {
+  AdminContentSection,
+  AdminDetailField,
+  AdminPageHero,
+  AdminStatusBadge,
+  AdminSummaryCard,
+  AdminSummaryGrid,
+} from "@/components/admin/layout/AdminPageLayout";
 import Button from "@/components/ui/Button";
 import type { AdminEmailTemplateEntry } from "@/lib/admin/emailCatalog";
 
@@ -23,6 +31,10 @@ export default function EmailsAdminClient({
 }: EmailsAdminClientProps) {
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
+
+  const liveTemplates = templates.filter(
+    (template) => template.live
+  ).length;
 
   async function sendTestEmail() {
     const confirmed = window.confirm(
@@ -64,8 +76,7 @@ export default function EmailsAdminClient({
       }
 
       setMessage(
-        payload.message ||
-          "Test email sent."
+        payload.message || "Test email sent."
       );
     } catch (error) {
       setMessage(
@@ -79,123 +90,119 @@ export default function EmailsAdminClient({
   }
 
   return (
-    <section className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
-      <AdminPanel title="Configuration">
-        <dl className="space-y-4 text-sm">
-          <ConfigRow
-            label="Resend"
-            value={
-              resendConfigured
-                ? "Configured"
-                : "Missing"
-            }
-          />
-          <ConfigRow
-            label="Sender"
-            value={senderAddress}
-          />
-          <ConfigRow
-            label="Reply-to"
-            value={replyToAddress}
-          />
-          <ConfigRow
-            label="Support destination"
-            value={supportDestination}
-          />
-        </dl>
+    <>
+      <AdminPageHero
+        title="Email"
+        description="Review live templates, sender configuration, and send a safe admin test."
+      />
 
-        <div className="mt-6 border-t border-border-subtle pt-4">
-          <p className="text-sm text-text-secondary">
-            React Email preview server:{" "}
-            <code className="rounded bg-surface-sunken px-2 py-1 text-xs">
-              npm run email:dev
-            </code>
-          </p>
+      <AdminSummaryGrid>
+        <AdminSummaryCard
+          label="Templates"
+          value={templates.length}
+          hint={`${liveTemplates} live`}
+          icon={
+            <Mail
+              aria-hidden="true"
+              className="h-5 w-5"
+            />
+          }
+        />
+        <AdminSummaryCard
+          label="Resend"
+          value={
+            resendConfigured ? "Configured" : "Missing"
+          }
+        />
+        <AdminSummaryCard
+          label="Sender"
+          value={senderAddress}
+        />
+        <AdminSummaryCard
+          label="Support inbox"
+          value={supportDestination}
+        />
+      </AdminSummaryGrid>
 
-          <Button
-            type="button"
-            className="mt-4"
-            disabled={
-              sending || !resendConfigured
-            }
-            onClick={() => {
-              void sendTestEmail();
-            }}
+      <section className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
+        <AdminContentSection
+          id="email-config-heading"
+          title="Configuration"
+          subtitle="Delivery settings currently in use."
+        >
+          <div className="space-y-4">
+            <AdminDetailField
+              label="Reply-to"
+              value={replyToAddress}
+            />
+            <AdminDetailField
+              label="Preview server"
+              value="npm run email:dev"
+            />
+          </div>
+
+          <div
+            id="send-test-email"
+            className="mt-6 border-t border-border-subtle pt-6"
           >
-            {sending
-              ? "Sending..."
-              : "Send Welcome test to my admin email"}
-          </Button>
-
-          {message ? (
-            <p className="mt-3 text-sm text-text-secondary">
-              {message}
-            </p>
-          ) : null}
-        </div>
-      </AdminPanel>
-
-      <AdminPanel title="Template catalog">
-        <div className="space-y-3">
-          {templates.map((template) => (
-            <div
-              key={template.id}
-              className="rounded-[18px] border border-border-subtle bg-surface-sunken px-4 py-3"
+            <Button
+              type="button"
+              disabled={sending || !resendConfigured}
+              onClick={() => {
+                void sendTestEmail();
+              }}
             >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="font-medium text-text-primary">
-                    {template.name}
-                  </p>
-                  <p className="mt-1 text-xs uppercase tracking-[0.12em] text-text-tertiary">
-                    {template.category}
-                  </p>
-                </div>
-                <span
-                  className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] ${
-                    template.live
-                      ? "bg-emerald-50 text-emerald-700"
-                      : "bg-surface-card text-text-tertiary"
-                  }`}
-                >
-                  {template.live
-                    ? "Live"
-                    : "Deferred"}
-                </span>
-              </div>
-              {template.notes ? (
-                <p className="mt-2 text-xs leading-5 text-text-secondary">
-                  {template.notes}
-                </p>
-              ) : null}
-              {template.previewPath ? (
-                <p className="mt-2 text-xs text-text-tertiary">
-                  {template.previewPath}
-                </p>
-              ) : null}
-            </div>
-          ))}
-        </div>
-      </AdminPanel>
-    </section>
-  );
-}
+              {sending
+                ? "Sending…"
+                : "Send Welcome test to my admin email"}
+            </Button>
 
-function ConfigRow({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
-  return (
-    <div>
-      <dt className="text-xs font-semibold uppercase tracking-[0.14em] text-text-tertiary">
-        {label}
-      </dt>
-      <dd className="mt-1 text-text-primary">
-        {value}
-      </dd>
-    </div>
+            {message ? (
+              <p className="mt-3 text-sm text-text-secondary">
+                {message}
+              </p>
+            ) : null}
+          </div>
+        </AdminContentSection>
+
+        <AdminContentSection
+          id="email-templates-heading"
+          title="Template catalog"
+          subtitle="Live and deferred transactional templates."
+        >
+          <ul className="space-y-3">
+            {templates.map((template) => (
+              <li
+                key={template.id}
+                className="rounded-[20px] border border-border-subtle bg-surface-sunken px-4 py-4"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-medium text-text-primary">
+                      {template.name}
+                    </p>
+                    <p className="mt-1 text-xs uppercase tracking-[0.12em] text-text-tertiary">
+                      {template.category}
+                    </p>
+                  </div>
+                  <AdminStatusBadge
+                    tone={
+                      template.live ? "success" : "neutral"
+                    }
+                  >
+                    {template.live ? "Live" : "Deferred"}
+                  </AdminStatusBadge>
+                </div>
+                {template.notes ? (
+                  <p className="mt-2 text-sm leading-6 text-text-secondary">
+                    {template.notes}
+                  </p>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </AdminContentSection>
+      </section>
+    </>
   );
 }

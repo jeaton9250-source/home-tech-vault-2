@@ -1,19 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import {
   ArrowLeft,
   CheckCircle2,
   Copy,
-  Loader2,
-  Mail,
 } from "lucide-react";
 
+import {
+  AdminContentSection,
+  AdminDetailField,
+  AdminErrorState,
+  AdminFilterSelect,
+  AdminLoadingState,
+  AdminPageHero,
+  AdminStatusBadge,
+  AdminSummaryCard,
+  AdminSummaryGrid,
+} from "@/components/admin/layout/AdminPageLayout";
 import Button from "@/components/ui/Button";
-import PageCard from "@/components/ui/PageCard";
-import PageShell from "@/components/ui/PageShell";
 import {
   SUPPORT_TICKET_PRIORITIES,
   SUPPORT_TICKET_STATUSES,
@@ -49,6 +56,26 @@ function statusLabel(status: SupportTicketStatus) {
     .join(" ");
 }
 
+function statusTone(
+  status: SupportTicketStatus
+): "neutral" | "success" | "warning" | "danger" | "info" {
+  switch (status) {
+    case "new":
+      return "warning";
+    case "open":
+    case "in_progress":
+      return "info";
+    case "waiting_on_customer":
+      return "neutral";
+    case "resolved":
+      return "success";
+    case "closed":
+      return "neutral";
+    default:
+      return "neutral";
+  }
+}
+
 export default function SupportTicketDetailClient({
   ticketId,
 }: {
@@ -68,7 +95,7 @@ export default function SupportTicketDetailClient({
   const [success, setSuccess] = useState("");
   const [copied, setCopied] = useState(false);
 
-  async function loadTicket() {
+  const loadTicket = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
@@ -123,11 +150,17 @@ export default function SupportTicketDetailClient({
     } finally {
       setLoading(false);
     }
-  }
+  }, [ticketId]);
 
   useEffect(() => {
-    void loadTicket();
-  }, [ticketId]);
+    const timer = window.setTimeout(() => {
+      void loadTicket();
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [loadTicket]);
 
   async function updateTicket(
     updates: {
@@ -253,165 +286,158 @@ export default function SupportTicketDetailClient({
 
   if (loading) {
     return (
-      <PageShell>
-        <div className="flex min-h-64 items-center justify-center text-text-secondary">
-          <Loader2
-            size={20}
-            className="mr-3 animate-spin"
-          />
-          Loading ticket...
-        </div>
-      </PageShell>
+      <AdminLoadingState label="Loading support ticket…" />
     );
   }
 
   if (!ticket) {
     return (
-      <PageShell>
-        <PageCard className="p-8">
-          <p className="text-sm text-red-700">
-            {error || "Ticket not found."}
-          </p>
-
-          <Button
-            href="/admin/support"
-            className="mt-6"
-            variant="secondary"
-          >
-            Back to inbox
-          </Button>
-        </PageCard>
-      </PageShell>
+      <>
+        <AdminPageHero
+          title="Support ticket"
+          description="The requested ticket could not be loaded."
+        />
+        <AdminErrorState
+          message={error || "Ticket not found."}
+        />
+        <Button
+          href="/admin/support"
+          className="mt-4"
+          variant="secondary"
+        >
+          Back to inbox
+        </Button>
+      </>
     );
   }
 
   const mailtoHref = `mailto:${encodeURIComponent(ticket.email)}?subject=${encodeURIComponent(`Re: ${ticket.ticket_number} — ${ticket.subject}`)}`;
 
   return (
-    <PageShell>
-      <section className="htv-hero-band overflow-hidden shadow-sm">
-        <div className="px-6 py-9 md:px-10 md:py-11">
-          <Link
-            href="/admin/support"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-interaction transition hover:text-interaction-hover"
-          >
-            <ArrowLeft size={16} />
-            Back to Support Inbox
-          </Link>
+    <>
+      <Link
+        href="/admin/support"
+        className="inline-flex items-center gap-2 text-sm font-medium text-accent transition hover:underline"
+      >
+        <ArrowLeft size={16} />
+        Back to Support Inbox
+      </Link>
 
-          <h1 className="mt-4 text-3xl font-semibold tracking-[-0.04em] md:text-4xl">
-            {ticket.ticket_number}
-          </h1>
+      <AdminPageHero
+        title={ticket.ticket_number}
+        description={`${ticket.category}: ${ticket.subject}`}
+        badge={
+          <AdminStatusBadge tone={statusTone(ticket.status)}>
+            {statusLabel(ticket.status)}
+          </AdminStatusBadge>
+        }
+        primaryAction={{
+          label: "Reply by email",
+          href: mailtoHref,
+        }}
+      />
 
-          <p className="mt-3 max-w-3xl text-sm leading-7 text-text-secondary md:text-base">
-            {ticket.category}: {ticket.subject}
-          </p>
-        </div>
-      </section>
+      <AdminSummaryGrid>
+        <AdminSummaryCard
+          label="Customer"
+          value={ticket.name}
+          hint={ticket.email}
+        />
+        <AdminSummaryCard
+          label="Priority"
+          value={
+            ticket.priority.charAt(0).toUpperCase() +
+            ticket.priority.slice(1)
+          }
+        />
+        <AdminSummaryCard
+          label="Submitted"
+          value={formatTimestamp(ticket.created_at)}
+        />
+        <AdminSummaryCard
+          label="Effective plan"
+          value={ticket.effective_plan || "Not available"}
+        />
+      </AdminSummaryGrid>
 
-      <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-        <PageCard className="p-6 md:p-8">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <p className="text-overline text-charcoal-soft">
-                Customer Message
-              </p>
-
-              <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em]">
-                {ticket.name}
-              </h2>
-
-              <p className="mt-2 text-sm text-text-secondary">
-                {ticket.email}
-              </p>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => {
-                  void copyCustomerEmail();
-                }}
-              >
-                <Copy size={16} />
-                {copied
-                  ? "Copied"
-                  : "Copy email"}
-              </Button>
-
-              <Button href={mailtoHref}>
-                <Mail size={16} />
-                Reply by email
-              </Button>
-            </div>
-          </div>
-
-          <div className="mt-6 rounded-[24px] border border-border-subtle bg-surface-sunken p-5">
+      <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+        <AdminContentSection
+          id="customer-message-heading"
+          title="Customer message"
+          subtitle={ticket.email}
+          action={
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                void copyCustomerEmail();
+              }}
+            >
+              <Copy size={16} />
+              {copied ? "Copied" : "Copy email"}
+            </Button>
+          }
+        >
+          <div className="rounded-[20px] bg-surface-sunken px-5 py-5">
             <p className="whitespace-pre-wrap text-sm leading-7 text-text-primary">
               {ticket.message}
             </p>
           </div>
 
-          <dl className="mt-6 grid gap-4 sm:grid-cols-2">
-            <DetailItem
-              label="Submitted"
-              value={formatTimestamp(
-                ticket.created_at
-              )}
-            />
-            <DetailItem
-              label="Effective plan"
-              value={
-                ticket.effective_plan ||
-                "Not available"
-              }
-            />
-            <DetailItem
+          <div className="mt-6 space-y-4">
+            <AdminDetailField
               label="Household role"
               value={
                 ticket.household_role ||
                 "Not available"
               }
             />
-            <DetailItem
+            <AdminDetailField
               label="Source page"
               value={
                 ticket.source_page ||
                 "Not provided"
               }
             />
-          </dl>
-        </PageCard>
+          </div>
+        </AdminContentSection>
 
-        <div className="space-y-6">
-          <PageCard className="p-6 md:p-7">
-            <p className="text-overline text-charcoal-soft">
-              Ticket Controls
-            </p>
-
-            <div className="mt-4 space-y-4">
-              <ControlSelect
+        <div className="space-y-4">
+          <AdminContentSection
+            id="ticket-controls-heading"
+            title="Ticket controls"
+            subtitle="Update status and priority."
+          >
+            <div className="grid gap-4">
+              <AdminFilterSelect
                 label="Status"
                 value={ticket.status}
-                options={SUPPORT_TICKET_STATUSES.map(
-                  (value) => ({
-                    value,
-                    label: statusLabel(value),
-                  })
-                )}
+                includeAll={false}
                 onChange={(value) => {
                   void updateTicket({
                     status:
                       value as SupportTicketStatus,
                   });
                 }}
-                disabled={saving}
+                options={SUPPORT_TICKET_STATUSES.map(
+                  (value) => ({
+                    value,
+                    label: statusLabel(value),
+                  })
+                )}
               />
 
-              <ControlSelect
+              <AdminFilterSelect
                 label="Priority"
                 value={ticket.priority}
+                includeAll={false}
+                onChange={(value) => {
+                  void updateTicket({
+                    priority:
+                      value as SupportTicketPriority,
+                  });
+                }}
                 options={SUPPORT_TICKET_PRIORITIES.map(
                   (value) => ({
                     value,
@@ -420,13 +446,6 @@ export default function SupportTicketDetailClient({
                       value.slice(1),
                   })
                 )}
-                onChange={(value) => {
-                  void updateTicket({
-                    priority:
-                      value as SupportTicketPriority,
-                  });
-                }}
-                disabled={saving}
               />
 
               <Button
@@ -444,25 +463,25 @@ export default function SupportTicketDetailClient({
               </Button>
             </div>
 
-            {success && (
+            {success ? (
               <p className="mt-4 text-sm text-emerald-700">
                 {success}
               </p>
-            )}
+            ) : null}
 
-            {error && (
-              <p className="mt-4 text-sm text-red-700">
-                {error}
-              </p>
-            )}
-          </PageCard>
+            {error ? (
+              <div className="mt-4">
+                <AdminErrorState message={error} />
+              </div>
+            ) : null}
+          </AdminContentSection>
 
-          <PageCard className="p-6 md:p-7">
-            <p className="text-overline text-charcoal-soft">
-              Internal Notes
-            </p>
-
-            <div className="mt-4 space-y-4">
+          <AdminContentSection
+            id="internal-notes-heading"
+            title="Internal notes"
+            subtitle="Visible only to the support team."
+          >
+            <div className="space-y-4">
               {notes.length === 0 ? (
                 <p className="text-sm text-text-secondary">
                   No internal notes yet.
@@ -471,7 +490,7 @@ export default function SupportTicketDetailClient({
                 notes.map((note) => (
                   <div
                     key={note.id}
-                    className="rounded-[20px] border border-border-subtle bg-surface-sunken p-4"
+                    className="rounded-[20px] bg-surface-sunken px-4 py-4"
                   >
                     <p className="whitespace-pre-wrap text-sm leading-6 text-text-primary">
                       {note.body}
@@ -492,7 +511,7 @@ export default function SupportTicketDetailClient({
                 }
                 rows={5}
                 placeholder="Add an internal note for the support team."
-                className="w-full resize-y rounded-2xl border border-border-subtle bg-white px-4 py-3.5 text-sm leading-6 outline-none transition focus:border-interaction focus:ring-4 focus:ring-interaction/10"
+                className="w-full resize-y rounded-[20px] border border-border-subtle bg-surface-card px-4 py-3.5 text-sm leading-6 outline-none transition focus-visible:border-interaction/40 focus-visible:ring-2 focus-visible:ring-interaction/15"
               />
 
               <Button
@@ -508,68 +527,9 @@ export default function SupportTicketDetailClient({
                 Save internal note
               </Button>
             </div>
-          </PageCard>
+          </AdminContentSection>
         </div>
       </section>
-    </PageShell>
-  );
-}
-
-function DetailItem({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
-  return (
-    <div>
-      <dt className="text-xs font-semibold uppercase tracking-[0.14em] text-text-tertiary">
-        {label}
-      </dt>
-      <dd className="mt-2 text-sm text-text-primary">
-        {value}
-      </dd>
-    </div>
-  );
-}
-
-function ControlSelect({
-  label,
-  value,
-  options,
-  onChange,
-  disabled,
-}: {
-  label: string;
-  value: string;
-  options: Array<{ value: string; label: string }>;
-  onChange: (value: string) => void;
-  disabled?: boolean;
-}) {
-  return (
-    <label className="block">
-      <span className="mb-2 block text-sm font-semibold text-text-primary">
-        {label}
-      </span>
-
-      <select
-        value={value}
-        disabled={disabled}
-        onChange={(event) =>
-          onChange(event.target.value)
-        }
-        className="w-full rounded-2xl border border-border-subtle bg-white px-4 py-3.5 text-sm outline-none transition focus:border-interaction focus:ring-4 focus:ring-interaction/10 disabled:opacity-60"
-      >
-        {options.map((option) => (
-          <option
-            key={option.value}
-            value={option.value}
-          >
-            {option.label}
-          </option>
-        ))}
-      </select>
-    </label>
+    </>
   );
 }

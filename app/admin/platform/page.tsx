@@ -1,7 +1,12 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 
-import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import {
+  AdminContentSection,
+  AdminPageHero,
+  AdminSummaryCard,
+  AdminSummaryGrid,
+} from "@/components/admin/layout/AdminPageLayout";
 import { ADMIN_PLATFORM_LINKS } from "@/lib/admin/navigation";
 
 export const metadata = {
@@ -11,36 +16,48 @@ export const metadata = {
 export default function AdminPlatformPage() {
   return (
     <>
-      <AdminPageHeader
-        overline="Platform"
-        title="Platform Tools"
-        description="Secondary admin tools for system health, support, billing, and founding programs."
+      <AdminPageHero
+        title="Platform"
+        description="System health, support, billing, and founding member tools."
       />
 
-      <section className="grid gap-4 md:grid-cols-2">
-        {ADMIN_PLATFORM_LINKS.map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            className="group rounded-[24px] border border-border-subtle bg-surface-card p-6 shadow-[var(--shadow-sm)] transition hover:border-charcoal/10"
-          >
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h2 className="text-lg font-semibold text-text-primary">
-                  {link.label}
-                </h2>
-                <p className="mt-2 text-sm leading-6 text-text-secondary">
-                  {link.description}
-                </p>
-              </div>
-              <ArrowUpRight
-                aria-hidden="true"
-                className="h-4 w-4 text-text-tertiary transition group-hover:text-charcoal"
-              />
-            </div>
-          </Link>
-        ))}
-      </section>
+      <AdminSummaryGrid>
+        <AdminSummaryCard
+          label="Tools"
+          value={ADMIN_PLATFORM_LINKS.length}
+          hint="Available platform sections"
+        />
+      </AdminSummaryGrid>
+
+      <AdminContentSection
+        id="platform-tools-heading"
+        title="Platform tools"
+        subtitle="Secondary admin areas grouped for quick access."
+      >
+        <ul className="grid gap-4 md:grid-cols-2">
+          {ADMIN_PLATFORM_LINKS.map((link) => (
+            <li key={link.href}>
+              <Link
+                href={link.href}
+                className="group flex items-start justify-between gap-4 rounded-[22px] border border-border-subtle bg-surface-sunken px-5 py-5 transition hover:bg-surface-card"
+              >
+                <div>
+                  <h2 className="text-lg font-semibold text-text-primary">
+                    {link.label}
+                  </h2>
+                  <p className="mt-2 text-sm leading-6 text-text-secondary">
+                    {link.description}
+                  </p>
+                </div>
+                <ArrowUpRight
+                  aria-hidden="true"
+                  className="h-4 w-4 shrink-0 text-text-tertiary transition group-hover:text-charcoal"
+                />
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </AdminContentSection>
     </>
   );
 }
