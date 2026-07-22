@@ -109,9 +109,11 @@ export function PageAction({
   const {
     canCreate,
     isDemo,
+    loading: permissionsLoading,
     getActionHref,
     getActionLabel,
     canAccessFeature,
+    canPerformEdit,
   } = usePermissions();
 
   const showReadOnlyModal = useDemoReadOnlyAction();
@@ -120,18 +122,21 @@ export function PageAction({
     canCreateOverride ?? canCreate;
 
   const featureLocked =
+    !permissionsLoading &&
     feature !== undefined &&
     !canAccessFeature(feature);
 
-  const destination = allowed
-    ? featureLocked
-      ? "/upgrade"
-      : getActionHref(href, feature)
-    : isDemo
-      ? "/signup"
-      : featureLocked
+  const destination = permissionsLoading
+    ? href
+    : allowed
+      ? featureLocked
         ? "/upgrade"
-        : "/signup";
+        : getActionHref(href, feature)
+      : isDemo
+        ? "/signup"
+        : featureLocked
+          ? "/upgrade"
+          : "/signup";
 
   const buttonLabel = allowed
     ? label
@@ -243,7 +248,9 @@ export function CardActions({
     canDelete,
     isDemo,
     isViewer,
+    loading: permissionsLoading,
     getActionHref,
+    canPerformEdit,
   } = usePermissions();
 
   const showReadOnlyModal = useDemoReadOnlyAction();
@@ -290,12 +297,21 @@ export function CardActions({
 
   const resolvedEditHref =
     editHref &&
-    getActionHref(editHref, feature);
+    !permissionsLoading &&
+    getActionHref(editHref, feature, {
+      action: "edit",
+    });
+
+  const editBlockedByPlan =
+    Boolean(feature) &&
+    !permissionsLoading &&
+    !canPerformEdit(feature);
 
   return (
     <div className="flex flex-wrap items-center gap-3 border-t border-border-subtle pt-5">
       {editAllowed &&
         resolvedEditHref &&
+        !editBlockedByPlan &&
         (isDemo ? (
           <Button
             type="button"

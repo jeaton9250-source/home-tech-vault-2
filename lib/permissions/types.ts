@@ -163,7 +163,10 @@ export type ComputedPermissions = {
   ) => FeatureAccess;
   getActionHref: (
     targetHref: string,
-    feature?: FeatureKey
+    feature?: FeatureKey,
+    options?: {
+      action?: "create" | "edit";
+    }
   ) => string;
   getActionLabel: (
     label: string,

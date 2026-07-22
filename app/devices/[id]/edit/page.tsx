@@ -18,6 +18,8 @@ import {
   recordActivity,
 } from "@/lib/activity";
 import { usePermissions } from "@/hooks/usePermissions";
+import { getEditAccess, getEditAccessMessage } from "@/lib/permissions/editAccess";
+import { isDevelopmentEnvironment } from "@/lib/permissions/developmentAccess";
 
 import PageShell from "@/components/ui/PageShell";
 import PageTitle from "@/components/ui/PageTitle";
@@ -57,11 +59,19 @@ export default function EditDevicePage() {
   const {
     user,
     householdId,
+    canEdit,
+    isViewer,
     loading: permissionsLoading,
+    personalPlan,
+    effectivePlan,
+    canUseProFeatures,
+    rawHouseholdRole,
+    isVerifiedPlatformAdmin,
+    canUsePremiumFeatures,
   } = usePermissions();
 
   const [form, setForm] = useState<DeviceForm>(emptyForm);
-  const [loading, setLoading] = useState(true);
+  const [loadingDevice, setLoadingDevice] = useState(true);
   const [saving, setSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -72,7 +82,7 @@ export default function EditDevicePage() {
       }
 
       try {
-        setLoading(true);
+        setLoadingDevice(true);
         setErrorMessage("");
 
         const deviceId = params.id;
@@ -129,7 +139,7 @@ export default function EditDevicePage() {
             : "Unable to load this device."
         );
       } finally {
-        setLoading(false);
+        setLoadingDevice(false);
       }
     }
 
@@ -252,7 +262,30 @@ export default function EditDevicePage() {
     }
   }
 
-  if (loading) {
+  const pageLoading =
+    permissionsLoading || loadingDevice;
+
+  const editAccess = getEditAccess({
+    loading: permissionsLoading,
+    isDemo: false,
+    isAuthenticated: Boolean(user),
+    isViewer,
+    canEdit,
+    feature: "devices",
+    isPlatformAdmin: isVerifiedPlatformAdmin,
+    canUsePremiumFeatures,
+    canUseFamilySharing: canUsePremiumFeatures,
+  });
+
+  const editAccessMessage = getEditAccessMessage(
+    editAccess.reason
+  );
+
+  const showEditDebug =
+    isDevelopmentEnvironment() ||
+    isVerifiedPlatformAdmin;
+
+  if (pageLoading) {
     return (
       <PageShell>
         <PageCard className="flex min-h-64 items-center justify-center">
@@ -260,6 +293,41 @@ export default function EditDevicePage() {
             <Loader2 className="animate-spin" size={22} />
             Loading device...
           </div>
+        </PageCard>
+      </PageShell>
+    );
+  }
+
+  if (!editAccess.allowed) {
+    return (
+      <PageShell>
+        <PageTitle
+          eyebrow="Device Vault"
+          title={editAccessMessage.title}
+          description={editAccessMessage.body}
+        />
+
+        <PageCard className="text-center">
+          <h2 className="text-2xl font-semibold text-text-primary">
+            {editAccessMessage.title}
+          </h2>
+
+          <p className="mx-auto mt-3 max-w-lg text-text-secondary">
+            {editAccessMessage.body}
+          </p>
+
+          {editAccessMessage.showUpgrade ? (
+            <Button href="/upgrade" className="mt-6">
+              Upgrade Household
+            </Button>
+          ) : (
+            <Button
+              href={`/devices/${params.id}`}
+              className="mt-6"
+            >
+              Back to Device
+            </Button>
+          )}
         </PageCard>
       </PageShell>
     );
@@ -288,6 +356,24 @@ export default function EditDevicePage() {
 
   return (
     <PageShell>
+      {showEditDebug ? (
+        <PageCard className="mb-4 border-dashed p-4 text-xs">
+          <p className="font-semibold text-text-primary">
+            Edit access debug
+          </p>
+          <dl className="mt-2 grid gap-1 font-mono text-text-secondary">
+            <div>householdId: {householdId ?? "—"}</div>
+            <div>role: {rawHouseholdRole ?? "—"}</div>
+            <div>personalPlan: {personalPlan}</div>
+            <div>effectivePlan: {effectivePlan}</div>
+            <div>canUseProFeatures: {String(canUseProFeatures)}</div>
+            <div>canEdit: {String(canEdit)}</div>
+            <div>editAccess: {editAccess.reason}</div>
+            <div>permissionsLoading: {String(permissionsLoading)}</div>
+          </dl>
+        </PageCard>
+      ) : null}
+
       <PageTitle
         eyebrow="Device Vault"
         title="Edit Device"

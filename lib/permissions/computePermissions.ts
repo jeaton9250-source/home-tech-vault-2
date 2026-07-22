@@ -9,6 +9,8 @@ import {
   resolveUpgradeReason,
 } from "@/lib/permissions/upgradeReasons";
 
+import { getEditAccess } from "@/lib/permissions/editAccess";
+
 import type {
   ComputedPermissions,
   FeatureAccess,
@@ -252,9 +254,9 @@ export function computePermissions(
       return false;
     }
 
-    return (
-      context.isPlatformAdmin ||
-      context.featureAccess[feature]
+    return meetsPlanRequirement(
+      FEATURE_REQUIREMENTS[feature],
+      context
     );
   }
 
@@ -408,23 +410,20 @@ export function computePermissions(
   function canPerformEdit(
     feature?: FeatureKey
   ): boolean {
-    if (!canEdit) {
-      return false;
-    }
+    const access = getEditAccess({
+      isDemo: context.isDemo,
+      isAuthenticated,
+      isViewer,
+      canEdit,
+      feature,
+      isPlatformAdmin: context.isPlatformAdmin,
+      canUsePremiumFeatures:
+        context.canUsePremiumFeatures,
+      canUseFamilySharing:
+        context.canUseFamilySharing,
+    });
 
-    if (!feature) {
-      return true;
-    }
-
-    const code = resolveUpgradeReason(
-      context,
-      {
-        feature,
-        requiresWriteAccess: true,
-      }
-    );
-
-    return code === null;
+    return access.allowed;
   }
 
   function canPerformDelete(
@@ -451,9 +450,54 @@ export function computePermissions(
 
   function getActionHref(
     targetHref: string,
-    feature?: FeatureKey
+    feature?: FeatureKey,
+    options?: {
+      action?: "create" | "edit";
+    }
   ): string {
     if (context.isDemo) {
+      return targetHref;
+    }
+
+    const action = options?.action ?? "create";
+
+    if (action === "edit") {
+      const editAccess = getEditAccess({
+        isDemo: context.isDemo,
+        isAuthenticated,
+        isViewer,
+        canEdit,
+        feature,
+        isPlatformAdmin: context.isPlatformAdmin,
+        canUsePremiumFeatures:
+          context.canUsePremiumFeatures,
+        canUseFamilySharing:
+          context.canUseFamilySharing,
+      });
+
+      if (editAccess.reason === "viewer_read_only") {
+        return targetHref;
+      }
+
+      if (
+        editAccess.reason ===
+        "household_plan_required"
+      ) {
+        if (
+          context.inheritsHouseholdPlan ||
+          context.inheritsProPlan ||
+          context.inheritsFamilyPlan
+        ) {
+          return "/family";
+        }
+
+        return "/upgrade";
+      }
+
+      if (!editAccess.allowed) {
+        return "/signup";
+      }
+
       return targetHref;
     }
 

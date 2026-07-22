@@ -71,6 +71,16 @@ export {
   resolveHouseholdQuotaLimits,
 } from "@/lib/permissions/householdQuota";
 
+export {
+  getEditAccess,
+  getEditAccessMessage,
+} from "@/lib/permissions/editAccess";
+
+export type {
+  EditAccessReason,
+  EditAccessResult,
+} from "@/lib/permissions/editAccess";
+
 export type {
   HouseholdLimitReason,
   HouseholdQuotaState,

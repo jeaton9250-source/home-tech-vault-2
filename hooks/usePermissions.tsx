@@ -27,6 +27,7 @@ import {
 } from "@/lib/permissions/computePermissions";
 
 import {
+  buildPlanFeatureAccess,
   isActiveSubscriptionStatus,
   resolveEffectivePlan,
   resolveUsageLimits,
@@ -804,6 +805,58 @@ function usePermissionsState() {
     effectiveIsPlatformAdmin ||
     hasFamilyFeatureAccess;
 
+  const mergedFeatureAccess = useMemo(
+    () => {
+      if (
+        !authoritativeEntitlement.canUseProFeatures
+      ) {
+        return featureAccess;
+      }
+
+      const planForFeatures =
+        authoritativeEntitlement.effectivePlan ===
+        "family"
+          ? "family"
+          : "pro";
+
+      return buildPlanFeatureAccess(
+        planForFeatures,
+        effectiveIsPlatformAdmin
+      );
+    },
+    [
+      authoritativeEntitlement.canUseProFeatures,
+      authoritativeEntitlement.effectivePlan,
+      featureAccess,
+      effectiveIsPlatformAdmin,
+    ]
+  );
+
+  const mergedInheritsProPlan =
+    apiEntitlementSnapshot.canUseProFeatures ===
+      true &&
+    apiEntitlementSnapshot.effectivePlan === "pro"
+      ? true
+      : inheritsProPlan;
+
+  const mergedInheritsFamilyPlan =
+    apiEntitlementSnapshot.canUseProFeatures ===
+      true &&
+    apiEntitlementSnapshot.effectivePlan ===
+      "family"
+      ? true
+      : inheritsFamilyPlan;
+
+  const mergedInheritsHouseholdPlan =
+    apiEntitlementSnapshot.canUseProFeatures ===
+      true &&
+    (apiEntitlementSnapshot.effectivePlan ===
+      "pro" ||
+      apiEntitlementSnapshot.effectivePlan ===
+        "family")
+      ? true
+      : inheritsHouseholdPlan;
+
   const limits = usageLimits;
 
   const permissions = useMemo(
@@ -823,10 +876,14 @@ function usePermissionsState() {
         canUseFamilySharing,
         hasFamilyFeatureAccess,
         billingManagedByHousehold,
-        inheritsFamilyPlan,
-        inheritsProPlan,
-        inheritsHouseholdPlan,
-        featureAccess,
+        inheritsFamilyPlan:
+          mergedInheritsFamilyPlan,
+        inheritsProPlan:
+          mergedInheritsProPlan,
+        inheritsHouseholdPlan:
+          mergedInheritsHouseholdPlan,
+        featureAccess:
+          mergedFeatureAccess,
         hasUnlimitedDevices:
           limits.maxDevices === null,
         hasUnlimitedDocuments:
@@ -848,10 +905,10 @@ function usePermissionsState() {
       canUseFamilySharing,
       hasFamilyFeatureAccess,
       billingManagedByHousehold,
-      inheritsFamilyPlan,
-      inheritsProPlan,
-      inheritsHouseholdPlan,
-      featureAccess,
+      mergedInheritsFamilyPlan,
+      mergedInheritsProPlan,
+      mergedInheritsHouseholdPlan,
+      mergedFeatureAccess,
       limits.maxDevices,
       limits.maxDocuments,
       canManageBilling,
