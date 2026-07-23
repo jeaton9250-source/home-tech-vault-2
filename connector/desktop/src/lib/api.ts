@@ -13,12 +13,16 @@ type NativeCommandError = {
   kind?: string;
   message?: string;
   status?: number;
+  reason?: string;
+  diagnostics?: Record<string, unknown>;
 };
 
 function parseNativeError(error: unknown): {
   kind: ConnectorApiError["kind"];
   message: string;
   status?: number;
+  reason?: string;
+  diagnostics?: Record<string, unknown>;
 } {
   console.info("[htv-connector] native_invoke_error", {
     errorType: typeof error,
@@ -45,6 +49,8 @@ function parseNativeError(error: unknown): {
         native.message ??
         "Home Tech Vault returned an unexpected response.",
       status: native.status,
+      reason: native.reason,
+      diagnostics: native.diagnostics,
     };
   }
 
@@ -75,6 +81,8 @@ function logNativeFailure(
     kind: ConnectorApiError["kind"];
     message: string;
     status?: number;
+    reason?: string;
+    diagnostics?: Record<string, unknown>;
   }
 ) {
   console.info(
@@ -85,6 +93,19 @@ function logNativeFailure(
       errorMessage: parsed.message,
       httpStatus:
         parsed.status ?? null,
+      reason: parsed.reason ?? null,
+      connectorId:
+        parsed.diagnostics?.connectorId ??
+        null,
+      tokenHashPrefix:
+        parsed.diagnostics?.tokenHashPrefix ??
+        null,
+      installationStatus:
+        parsed.diagnostics?.installationStatus ??
+        null,
+      revokedAtPresent:
+        parsed.diagnostics?.revokedAtPresent ??
+        null,
     }
   );
 }
@@ -135,7 +156,12 @@ export async function confirmPairing(options: {
 
     throw new ConnectorApiError(
       parsed.kind,
-      parsed.message
+      parsed.message,
+      {
+        status: parsed.status,
+        reason: parsed.reason,
+        diagnostics: parsed.diagnostics,
+      }
     );
   }
 }
@@ -187,7 +213,12 @@ export async function sendHeartbeat(options: {
 
     throw new ConnectorApiError(
       parsed.kind,
-      parsed.message
+      parsed.message,
+      {
+        status: parsed.status,
+        reason: parsed.reason,
+        diagnostics: parsed.diagnostics,
+      }
     );
   }
 }

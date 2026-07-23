@@ -1,6 +1,9 @@
 export const APP_VERSION = "0.1.0";
 
 export const PRODUCTION_API_BASE_URL =
+  "https://www.hometechvault.com";
+
+const LEGACY_PRODUCTION_API_BASE_URL =
   "https://hometechvault.com";
 
 export const DEVELOPMENT_API_BASE_URL =
@@ -66,6 +69,14 @@ export function validateAndNormalizeApiBaseUrl(
     throw new Error(
       "Production builds must use HTTPS for the API base URL."
     );
+  }
+
+  if (
+    isProduction &&
+    parsed.origin ===
+      LEGACY_PRODUCTION_API_BASE_URL
+  ) {
+    return PRODUCTION_API_BASE_URL;
   }
 
   return parsed.origin;

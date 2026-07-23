@@ -25,7 +25,7 @@ Vite mode files set the public API origin:
 | File | Mode | URL |
 |------|------|-----|
 | `.env.development` | `tauri dev` | `http://localhost:3003` |
-| `.env.production` | `tauri build` | `https://hometechvault.com` |
+| `.env.production` | `tauri build` | `https://www.hometechvault.com` |
 
 Optional personal overrides can go in `.env` (gitignored). HTTP is allowed only in development; production builds reject insecure `http://` URLs.
 

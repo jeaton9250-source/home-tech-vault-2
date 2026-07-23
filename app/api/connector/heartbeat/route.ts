@@ -78,9 +78,9 @@ export async function POST(request: Request) {
       connectorSessionResponse(error);
 
     if (sessionResponse) {
-      return connectorErrorResponse(
-        sessionResponse.message,
-        sessionResponse.status
+      return connectorJsonResponse(
+        sessionResponse.body,
+        { status: sessionResponse.status }
       );
     }
 

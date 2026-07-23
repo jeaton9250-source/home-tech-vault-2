@@ -96,6 +96,10 @@ function App() {
       return "Access revoked";
     }
 
+    if (errorMessage?.includes("rejected")) {
+      return "Token rejected";
+    }
+
     if (connectionProblem) {
       return "Connection problem";
     }
@@ -190,9 +194,42 @@ function App() {
           error.kind === "unauthorized"
         ) {
           setConnectionProblem(false);
-          setErrorMessage(
-            "Connector access revoked or invalid. Generate a new pairing code in Home Tech Vault, or disconnect locally."
-          );
+
+          if (error.reason === "revoked") {
+            setErrorMessage(
+              "Connector access was revoked in Home Tech Vault. Generate a new pairing code, or disconnect locally."
+            );
+          } else {
+            setErrorMessage(
+              "Connector token was rejected by Home Tech Vault. Disconnect this Mac and pair again."
+            );
+          }
+
+          logConnectorEvent("connector_revoked", {
+            apiBaseUrl,
+            appVersion: APP_VERSION,
+            httpStatus: error.status ?? null,
+            reason: error.reason ?? null,
+            connectorId:
+              (error.diagnostics?.connectorId as
+                | string
+                | undefined) ??
+              metadataRef.current?.connectorId ??
+              null,
+            tokenHashPrefix:
+              (error.diagnostics?.tokenHashPrefix as
+                | string
+                | undefined) ?? null,
+            installationStatus:
+              (error.diagnostics?.installationStatus as
+                | string
+                | undefined) ?? null,
+            revokedAtPresent:
+              (error.diagnostics?.revokedAtPresent as
+                | boolean
+                | undefined) ?? null,
+          });
+
           return {
             ok: false,
             retryable: false,

@@ -4,7 +4,8 @@ use reqwest::header::{AUTHORIZATION, CONTENT_TYPE};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
-const PROD_ORIGIN: &str = "https://hometechvault.com";
+const PROD_ORIGIN: &str = "https://www.hometechvault.com";
+const LEGACY_PROD_ORIGIN: &str = "https://hometechvault.com";
 
 const DEV_ORIGINS: [&str; 4] = [
     "http://localhost:3000",
@@ -21,6 +22,22 @@ pub struct ConnectorCommandError {
     pub kind: String,
     pub message: String,
     pub status: Option<u16>,
+    pub reason: Option<String>,
+    pub diagnostics: Option<Value>,
+}
+
+fn command_error(
+    kind: &str,
+    message: impl Into<String>,
+    status: Option<u16>,
+) -> ConnectorCommandError {
+    ConnectorCommandError {
+        kind: kind.to_string(),
+        message: message.into(),
+        status,
+        reason: None,
+        diagnostics: None,
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -41,9 +58,40 @@ pub struct HeartbeatSuccess {
     pub server_time: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Default)]
 struct ErrorBody {
     error: Option<String>,
+    reason: Option<String>,
+    diagnostics: Option<Value>,
+}
+
+fn log_heartbeat_auth_failure(status: u16, body: &ErrorBody) {
+    let diagnostics = body
+        .diagnostics
+        .as_ref()
+        .and_then(|value| value.as_object());
+
+    eprintln!(
+        "[htv-connector] heartbeat_auth_failure status={status} reason={} connector_id={} token_hash_prefix={} installation_status={} revoked_at_present={}",
+        body.reason.as_deref().unwrap_or("unknown"),
+        diagnostics
+            .and_then(|value| value.get("connectorId"))
+            .and_then(|value| value.as_str())
+            .unwrap_or("-"),
+        diagnostics
+            .and_then(|value| value.get("tokenHashPrefix"))
+            .and_then(|value| value.as_str())
+            .unwrap_or("-"),
+        diagnostics
+            .and_then(|value| value.get("installationStatus"))
+            .and_then(|value| value.as_str())
+            .unwrap_or("-"),
+        diagnostics
+            .and_then(|value| value.get("revokedAtPresent"))
+            .and_then(|value| value.as_bool())
+            .map(|value| value.to_string())
+            .unwrap_or_else(|| "-".to_string()),
+    );
 }
 
 fn normalize_base_url(base_url: &str) -> String {
@@ -54,15 +102,15 @@ pub fn validate_api_base_url(base_url: &str) -> Result<String, ConnectorCommandE
     let normalized = normalize_base_url(base_url);
 
     if normalized.is_empty() {
-        return Err(ConnectorCommandError {
-            kind: "network".into(),
-            message: "API base URL is required.".into(),
-            status: None,
-        });
+        return Err(command_error(
+            "network",
+            "API base URL is required.",
+            None,
+        ));
     }
 
-    if normalized == PROD_ORIGIN {
-        return Ok(normalized);
+    if normalized == PROD_ORIGIN || normalized == LEGACY_PROD_ORIGIN {
+        return Ok(PROD_ORIGIN.to_string());
     }
 
     if cfg!(debug_assertions) && DEV_ORIGINS.contains(&normalized.as_str()) {
@@ -70,38 +118,38 @@ pub fn validate_api_base_url(base_url: &str) -> Result<String, ConnectorCommandE
     }
 
     if !cfg!(debug_assertions) && normalized.starts_with("http://") {
-        return Err(ConnectorCommandError {
-            kind: "network".into(),
-            message: "Production builds require HTTPS for the API base URL.".into(),
-            status: None,
-        });
+        return Err(command_error(
+            "network",
+            "Production builds require HTTPS for the API base URL.",
+            None,
+        ));
     }
 
-    Err(ConnectorCommandError {
-        kind: "network".into(),
-        message: "API base URL is not allowed.".into(),
-        status: None,
-    })
+    Err(command_error(
+        "network",
+        "API base URL is not allowed.",
+        None,
+    ))
 }
 
 fn map_pair_confirm_error(status: u16, body: &ErrorBody) -> ConnectorCommandError {
     let server_message = body.error.clone();
 
     match status {
-        400 => ConnectorCommandError {
-            kind: "invalid_code".into(),
-            message: server_message.unwrap_or_else(|| {
+        400 => command_error(
+            "invalid_code",
+            server_message.unwrap_or_else(|| {
                 "That pairing code is not valid. Check the code and try again.".into()
             }),
-            status: Some(status),
-        },
-        401 => ConnectorCommandError {
-            kind: "unauthorized".into(),
-            message: server_message.unwrap_or_else(|| {
+            Some(status),
+        ),
+        401 => command_error(
+            "unauthorized",
+            server_message.unwrap_or_else(|| {
                 "Pairing was rejected. Generate a new code and try again.".into()
             }),
-            status: Some(status),
-        },
+            Some(status),
+        ),
         410 => {
             let message = server_message.unwrap_or_else(|| {
                 "This pairing code has expired. Generate a new code in Home Tech Vault.".into()
@@ -112,67 +160,62 @@ fn map_pair_confirm_error(status: u16, body: &ErrorBody) -> ConnectorCommandErro
                 "expired_code"
             };
 
-            ConnectorCommandError {
-                kind: kind.into(),
-                message,
-                status: Some(status),
-            }
+            command_error(kind, message, Some(status))
         }
-        _ if status == 403 => ConnectorCommandError {
-            kind: "network".into(),
-            message: server_message.unwrap_or_else(|| {
+        _ if status == 403 => command_error(
+            "network",
+            server_message.unwrap_or_else(|| {
                 "Home Tech Vault rejected the request. Check the API URL in connector/desktop/.env."
                     .into()
             }),
-            status: Some(status),
-        },
-        _ if status >= 500 => ConnectorCommandError {
-            kind: "server".into(),
-            message: "Home Tech Vault is temporarily unavailable. Try again shortly.".into(),
-            status: Some(status),
-        },
-        _ => ConnectorCommandError {
-            kind: "server".into(),
-            message: server_message
+            Some(status),
+        ),
+        _ if status >= 500 => command_error(
+            "server",
+            "Home Tech Vault is temporarily unavailable. Try again shortly.",
+            Some(status),
+        ),
+        _ => command_error(
+            "server",
+            server_message
                 .unwrap_or_else(|| "Home Tech Vault returned an unexpected response.".into()),
-            status: Some(status),
-        },
+            Some(status),
+        ),
     }
 }
 
 fn map_request_error(error: reqwest::Error) -> ConnectorCommandError {
     if error.is_timeout() {
-        return ConnectorCommandError {
-            kind: "timeout".into(),
-            message: "The request timed out. Try again.".into(),
-            status: None,
-        };
+        return command_error(
+            "timeout",
+            "The request timed out. Try again.",
+            None,
+        );
     }
 
     if error.is_connect() {
-        return ConnectorCommandError {
-            kind: "network".into(),
-            message: "Unable to reach Home Tech Vault. Check your connection and try again."
-                .into(),
-            status: None,
-        };
+        return command_error(
+            "network",
+            "Unable to reach Home Tech Vault. Check your connection and try again.",
+            None,
+        );
     }
 
     if error.to_string().to_lowercase().contains("certificate")
         || error.to_string().to_lowercase().contains("tls")
     {
-        return ConnectorCommandError {
-            kind: "tls".into(),
-            message: "Secure connection to Home Tech Vault failed.".into(),
-            status: None,
-        };
+        return command_error(
+            "tls",
+            "Secure connection to Home Tech Vault failed.",
+            None,
+        );
     }
 
-    ConnectorCommandError {
-        kind: "network".into(),
-        message: "Unable to reach Home Tech Vault. Check your connection and try again.".into(),
-        status: None,
-    }
+    command_error(
+        "network",
+        "Unable to reach Home Tech Vault. Check your connection and try again.",
+        None,
+    )
 }
 
 async fn post_json(
@@ -183,10 +226,12 @@ async fn post_json(
     let client = reqwest::Client::builder()
         .timeout(REQUEST_TIMEOUT)
         .build()
-        .map_err(|_| ConnectorCommandError {
-            kind: "server".into(),
-            message: "Unable to initialize the connector HTTP client.".into(),
-            status: None,
+        .map_err(|_| {
+            command_error(
+                "server",
+                "Unable to initialize the connector HTTP client.",
+                None,
+            )
         })?;
 
     let mut request = client
@@ -242,11 +287,11 @@ pub async fn pair_connector_request(
 
     if status >= 200 && status < 300 {
         let parsed = serde_json::from_value::<PairConfirmSuccess>(payload).map_err(|_| {
-            ConnectorCommandError {
-                kind: "malformed".into(),
-                message: "Home Tech Vault returned an incomplete pairing response.".into(),
-                status: Some(status),
-            }
+            command_error(
+                "malformed",
+                "Home Tech Vault returned an incomplete pairing response.",
+                Some(status),
+            )
         })?;
 
         if parsed.connector_id.is_empty()
@@ -254,18 +299,19 @@ pub async fn pair_connector_request(
             || parsed.household_id.is_empty()
             || parsed.connector_name.is_empty()
         {
-            return Err(ConnectorCommandError {
-                kind: "malformed".into(),
-                message: "Home Tech Vault returned an incomplete pairing response.".into(),
-                status: Some(status),
-            });
+            return Err(command_error(
+                "malformed",
+                "Home Tech Vault returned an incomplete pairing response.",
+                Some(status),
+            ));
         }
 
         eprintln!("[htv-connector] pair request succeeded");
         return Ok(parsed);
     }
 
-    let error_body = serde_json::from_value::<ErrorBody>(payload).unwrap_or(ErrorBody { error: None });
+    let error_body =
+        serde_json::from_value::<ErrorBody>(payload).unwrap_or_default();
     Err(map_pair_confirm_error(status, &error_body))
 }
 
@@ -292,28 +338,37 @@ pub async fn send_heartbeat_request(
     .await?;
 
     if status == 401 {
+        let error_body =
+            serde_json::from_value::<ErrorBody>(payload.clone())
+                .unwrap_or_default();
+        log_heartbeat_auth_failure(status, &error_body);
+
         return Err(ConnectorCommandError {
             kind: "unauthorized".into(),
-            message: "Connector access revoked or invalid.".into(),
+            message: error_body.error.unwrap_or_else(|| {
+                "Connector access revoked or invalid.".into()
+            }),
             status: Some(status),
+            reason: error_body.reason,
+            diagnostics: error_body.diagnostics,
         });
     }
 
     if status >= 200 && status < 300 {
         let parsed = serde_json::from_value::<HeartbeatSuccess>(payload).map_err(|_| {
-            ConnectorCommandError {
-                kind: "malformed".into(),
-                message: "Home Tech Vault returned an unexpected response.".into(),
-                status: Some(status),
-            }
+            command_error(
+                "malformed",
+                "Home Tech Vault returned an unexpected response.",
+                Some(status),
+            )
         })?;
 
         if !parsed.ok {
-            return Err(ConnectorCommandError {
-                kind: "malformed".into(),
-                message: "Home Tech Vault returned an unexpected response.".into(),
-                status: Some(status),
-            });
+            return Err(command_error(
+                "malformed",
+                "Home Tech Vault returned an unexpected response.",
+                Some(status),
+            ));
         }
 
         eprintln!("[htv-connector] heartbeat request succeeded");
@@ -321,22 +376,23 @@ pub async fn send_heartbeat_request(
     }
 
     if status >= 500 {
-        return Err(ConnectorCommandError {
-            kind: "server".into(),
-            message: "Temporary server issue. Try again shortly.".into(),
-            status: Some(status),
-        });
+        return Err(command_error(
+            "server",
+            "Temporary server issue. Try again shortly.",
+            Some(status),
+        ));
     }
 
-    let error_body = serde_json::from_value::<ErrorBody>(payload).unwrap_or(ErrorBody { error: None });
+    let error_body =
+        serde_json::from_value::<ErrorBody>(payload).unwrap_or_default();
 
-    Err(ConnectorCommandError {
-        kind: "server".into(),
-        message: error_body
+    Err(command_error(
+        "server",
+        error_body
             .error
             .unwrap_or_else(|| "Home Tech Vault returned an unexpected response.".into()),
-        status: Some(status),
-    })
+        Some(status),
+    ))
 }
 
 #[cfg(test)]
@@ -359,8 +415,16 @@ mod tests {
 
     #[test]
     fn allows_production_origin() {
+        let result = validate_api_base_url("https://www.hometechvault.com");
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), PROD_ORIGIN);
+    }
+
+    #[test]
+    fn normalizes_legacy_production_origin_to_www() {
         let result = validate_api_base_url("https://hometechvault.com");
         assert!(result.is_ok());
+        assert_eq!(result.unwrap(), PROD_ORIGIN);
     }
 
     #[test]

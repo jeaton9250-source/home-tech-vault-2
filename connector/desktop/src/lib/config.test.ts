@@ -20,10 +20,19 @@ describe("validateAndNormalizeApiBaseUrl", () => {
   it("accepts production HTTPS URLs", () => {
     expect(
       validateAndNormalizeApiBaseUrl(
+        "https://www.hometechvault.com/",
+        true
+      )
+    ).toBe("https://www.hometechvault.com");
+  });
+
+  it("normalizes legacy apex production URLs to www", () => {
+    expect(
+      validateAndNormalizeApiBaseUrl(
         "https://hometechvault.com/",
         true
       )
-    ).toBe("https://hometechvault.com");
+    ).toBe("https://www.hometechvault.com");
   });
 
   it("rejects production HTTP URLs", () => {
@@ -73,6 +82,9 @@ describe("resolveApiBaseUrl", () => {
         isProduction: true,
       })
     ).toBe(PRODUCTION_API_BASE_URL);
+    expect(PRODUCTION_API_BASE_URL).toBe(
+      "https://www.hometechvault.com"
+    );
   });
 
   it("accepts configured development HTTP URLs", () => {
@@ -89,9 +101,19 @@ describe("resolveApiBaseUrl", () => {
       resolveApiBaseUrl({
         isProduction: true,
         configured:
+          "https://www.hometechvault.com/",
+      })
+    ).toBe("https://www.hometechvault.com");
+  });
+
+  it("normalizes configured legacy apex production URLs to www", () => {
+    expect(
+      resolveApiBaseUrl({
+        isProduction: true,
+        configured:
           "https://hometechvault.com/",
       })
-    ).toBe("https://hometechvault.com");
+    ).toBe("https://www.hometechvault.com");
   });
 
   it("rejects configured production HTTP URLs", () => {

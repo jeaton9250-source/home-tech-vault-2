@@ -2,7 +2,13 @@ import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { hashConnectorToken } from "@/lib/connector/tokens";
+import {
+  diagnosticsForInvalidToken,
+  diagnosticsForMissingToken,
+  diagnosticsForRevokedInstallation,
+} from "@/lib/connector/sessionDiagnostics";
 
+import type { SafeConnectorDiagnostics } from "@/lib/connector/sessionDiagnostics";
 import type {
   ConnectorInstallationRow,
   ConnectorSessionContext,
@@ -12,13 +18,16 @@ export class ConnectorSessionError extends Error {
   readonly code:
     | "UNAUTHORIZED"
     | "FORBIDDEN";
+  readonly diagnostics: SafeConnectorDiagnostics;
 
   constructor(
     code: "UNAUTHORIZED" | "FORBIDDEN",
+    diagnostics: SafeConnectorDiagnostics,
     message?: string
   ) {
     super(message ?? code);
     this.code = code;
+    this.diagnostics = diagnostics;
   }
 }
 
@@ -55,6 +64,7 @@ export async function requireConnectorSession(
   if (!token) {
     throw new ConnectorSessionError(
       "UNAUTHORIZED",
+      diagnosticsForMissingToken(),
       "Missing connector authorization token."
     );
   }
@@ -80,6 +90,7 @@ export async function requireConnectorSession(
   if (!installation) {
     throw new ConnectorSessionError(
       "UNAUTHORIZED",
+      diagnosticsForInvalidToken(token),
       "Invalid connector authorization token."
     );
   }
@@ -90,6 +101,10 @@ export async function requireConnectorSession(
   ) {
     throw new ConnectorSessionError(
       "UNAUTHORIZED",
+      diagnosticsForRevokedInstallation(
+        installation,
+        token
+      ),
       "Connector authorization is no longer valid."
     );
   }
@@ -108,6 +123,14 @@ export function connectorSessionResponse(
     return {
       status: 401,
       message: "Unauthorized",
+      body: {
+        error:
+          error.message ??
+          "Unauthorized",
+        reason:
+          error.diagnostics.reason,
+        diagnostics: error.diagnostics,
+      },
     };
   }
 

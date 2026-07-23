@@ -32,10 +32,24 @@ export type ApiErrorKind =
 
 export class ConnectorApiError extends Error {
   readonly kind: ApiErrorKind;
+  readonly status?: number;
+  readonly reason?: string;
+  readonly diagnostics?: Record<string, unknown>;
 
-  constructor(kind: ApiErrorKind, message: string) {
+  constructor(
+    kind: ApiErrorKind,
+    message: string,
+    options?: {
+      status?: number;
+      reason?: string;
+      diagnostics?: Record<string, unknown>;
+    }
+  ) {
     super(message);
     this.kind = kind;
+    this.status = options?.status;
+    this.reason = options?.reason;
+    this.diagnostics = options?.diagnostics;
   }
 }
 

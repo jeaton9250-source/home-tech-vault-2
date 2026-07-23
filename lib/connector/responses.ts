@@ -20,10 +20,11 @@ export function connectorJsonResponse<T>(
 
 export function connectorErrorResponse(
   message: string,
-  status: number
+  status: number,
+  extra?: Record<string, unknown>
 ) {
   return connectorJsonResponse(
-    { error: message },
+    { error: message, ...extra },
     { status }
   );
 }
