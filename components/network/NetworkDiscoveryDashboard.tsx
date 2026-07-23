@@ -15,7 +15,6 @@ import {
   Radar,
   RefreshCw,
   ShieldAlert,
-  Wifi,
   XCircle,
 } from "lucide-react";
 
