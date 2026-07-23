@@ -25,10 +25,10 @@ export function absoluteUrl(path: string): string {
 export const siteConfig = {
   name: brand.name,
   tagline: brand.tagline,
-  /** App Router file convention: app/opengraph-image.png */
-  defaultOgImage: "/opengraph-image.png",
+  /** Public social sharing image */
+  defaultOgImage: "/og-image.png",
   defaultOgImageAlt:
-    "Home Tech Vault — Your home's digital memory",
+    "Home Tech Vault Dashboard Preview",
   logo: absoluteUrl("/brand/logo.svg"),
   twitterHandle: "@hometechvault",
 } as const;

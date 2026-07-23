@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
 
 import {
+  SOCIAL_DEFAULT_TITLE,
+  SOCIAL_OG_DESCRIPTION,
+  SOCIAL_OG_TITLE,
+  SOCIAL_TWITTER_DESCRIPTION,
+  SOCIAL_TWITTER_TITLE,
+} from "@/lib/marketing/socialMetadata";
+import {
   absoluteUrl,
   siteConfig,
 } from "@/lib/marketing/site";
@@ -27,7 +34,7 @@ export function createPageMetadata({
   const canonical = absoluteUrl(path);
   const fullTitle =
     path === "/"
-      ? `${siteConfig.name} — ${siteConfig.tagline}`
+      ? SOCIAL_DEFAULT_TITLE
       : `${title} | ${siteConfig.name}`;
 
   const openGraph: NonNullable<
@@ -37,8 +44,14 @@ export function createPageMetadata({
     locale: "en_US",
     url: canonical,
     siteName: siteConfig.name,
-    title: fullTitle,
-    description,
+    title:
+      path === "/"
+        ? SOCIAL_OG_TITLE
+        : `${title} | ${siteConfig.name}`,
+    description:
+      path === "/"
+        ? SOCIAL_OG_DESCRIPTION
+        : description,
     images: [
       {
         url: siteConfig.defaultOgImage,
@@ -71,8 +84,14 @@ export function createPageMetadata({
     openGraph,
     twitter: {
       card: "summary_large_image",
-      title: fullTitle,
-      description,
+      title:
+        path === "/"
+          ? SOCIAL_TWITTER_TITLE
+          : fullTitle,
+      description:
+        path === "/"
+          ? SOCIAL_TWITTER_DESCRIPTION
+          : description,
       images: [siteConfig.defaultOgImage],
       creator: siteConfig.twitterHandle,
     },

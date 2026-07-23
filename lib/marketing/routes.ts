@@ -42,6 +42,7 @@ export const PUBLIC_METADATA_PATHS = [
   "/sitemap.xml",
   "/favicon.ico",
   "/manifest.webmanifest",
+  "/og-image.png",
   "/opengraph-image",
   "/opengraph-image.png",
   "/twitter-image",
