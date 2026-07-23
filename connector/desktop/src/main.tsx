@@ -5,6 +5,10 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { confirmPairing, sendHeartbeat } from "./lib/api";
 import { APP_VERSION, getApiBaseUrl } from "./lib/config";
 import {
+  cancelLocalNetworkScan,
+  scanAndSyncDiscovery,
+} from "./lib/scan";
+import {
   disconnectLocally,
   getDeviceName,
   loadConnectorMetadata,
@@ -78,6 +82,13 @@ function App() {
     useState(false);
   const [bootstrapping, setBootstrapping] =
     useState(true);
+  const [scanPhase, setScanPhase] = useState<
+    "idle" | "scanning" | "syncing"
+  >("idle");
+  const [scanConsentOpen, setScanConsentOpen] =
+    useState(false);
+  const [lastScanDeviceCount, setLastScanDeviceCount] =
+    useState<number | null>(null);
 
   const metadataRef = useRef(metadata);
   metadataRef.current = metadata;
@@ -304,6 +315,10 @@ function App() {
         }
 
         setMetadata(storedMetadata);
+        setLastScanDeviceCount(
+          storedMetadata.lastScanDeviceCount ??
+            null
+        );
         setScreen("connected");
 
         await performHeartbeat();
@@ -396,6 +411,94 @@ function App() {
 
   async function handleQuit() {
     await getCurrentWindow().close();
+  }
+
+  async function handleNetworkScan() {
+    if (!metadata?.scanConsentAccepted) {
+      setScanConsentOpen(true);
+      return;
+    }
+
+    await runNetworkScan();
+  }
+
+  async function runNetworkScan() {
+    setErrorMessage(null);
+    setStatusMessage(null);
+    setScanPhase("scanning");
+    logConnectorEvent("discovery_scan_started");
+
+    try {
+      const token =
+        await loadConnectorToken();
+
+      if (!token) {
+        throw new Error(
+          "Connector token missing from Keychain. Pair this Mac again."
+        );
+      }
+
+      setScanPhase("scanning");
+
+      const { scan, sync } =
+        await scanAndSyncDiscovery({
+          token,
+          runMatching: false,
+          onScanComplete: () => {
+            setScanPhase("syncing");
+          },
+        });
+
+      if (scan.cancelled) {
+        setStatusMessage("Network scan cancelled.");
+        return;
+      }
+
+      const scannedAt =
+        sync?.scannedAt ??
+        new Date().toISOString();
+      const deviceCount =
+        scan.devices.length;
+
+      setLastScanDeviceCount(deviceCount);
+
+      const nextMetadata: ConnectorMetadata =
+        {
+          ...metadata!,
+          lastScanAt: scannedAt,
+          lastScanDeviceCount: deviceCount,
+          scanConsentAccepted: true,
+        };
+
+      await saveConnectorMetadata(
+        nextMetadata
+      );
+      setMetadata(nextMetadata);
+
+      logConnectorEvent("discovery_scan_completed", {
+        devicesFound: deviceCount,
+        upserted: sync?.upserted ?? 0,
+      });
+
+      setStatusMessage(
+        `Scan complete. ${deviceCount} device${deviceCount === 1 ? "" : "s"} found and synced to Home Tech Vault.`
+      );
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Unable to complete the network scan."
+      );
+    } finally {
+      setScanPhase("idle");
+      setScanConsentOpen(false);
+    }
+  }
+
+  function handleCancelScan() {
+    void cancelLocalNetworkScan();
+    setScanPhase("idle");
+    setStatusMessage("Cancelling scan…");
   }
 
   if (bootstrapping) {
@@ -533,7 +636,97 @@ function App() {
                 <dt>Connection status</dt>
                 <dd>{connectionLabel}</dd>
               </div>
+              <div>
+                <dt>Last scan</dt>
+                <dd>
+                  {formatTimestamp(
+                    metadata.lastScanAt ?? null
+                  )}
+                </dd>
+              </div>
+              <div>
+                <dt>Devices found</dt>
+                <dd>
+                  {lastScanDeviceCount ??
+                    metadata.lastScanDeviceCount ??
+                    "—"}
+                </dd>
+              </div>
             </dl>
+
+            <section className="scan-panel">
+              <h2>Network scan</h2>
+              <p className="help">
+                Scan your local private network and
+                sync results to Home Tech Vault.
+                Nothing is imported automatically.
+              </p>
+
+              {scanPhase !== "idle" ? (
+                <p className="status">
+                  {scanPhase === "scanning"
+                    ? "Scanning your local network…"
+                    : "Syncing discovered devices…"}
+                </p>
+              ) : null}
+
+              <div className="actions">
+                <button
+                  className="primary"
+                  type="button"
+                  disabled={scanPhase !== "idle"}
+                  onClick={() =>
+                    void handleNetworkScan()
+                  }
+                >
+                  Scan My Network
+                </button>
+
+                {scanPhase !== "idle" ? (
+                  <button
+                    className="secondary"
+                    type="button"
+                    onClick={handleCancelScan}
+                  >
+                    Cancel Scan
+                  </button>
+                ) : null}
+              </div>
+            </section>
+
+            {scanConsentOpen ? (
+              <section className="consent-panel">
+                <h2>Before you scan</h2>
+                <p className="help">
+                  Home Tech Vault scans only your
+                  local network to identify connected
+                  devices. It does not inspect
+                  browsing history, packet contents,
+                  personal files, or internet
+                  activity.
+                </p>
+                <div className="actions">
+                  <button
+                    className="primary"
+                    type="button"
+                    onClick={() =>
+                      void runNetworkScan()
+                    }
+                  >
+                    Start Scan
+                  </button>
+                  <button
+                    className="secondary"
+                    type="button"
+                    onClick={() =>
+                      setScanConsentOpen(false)
+                    }
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </section>
+            ) : null}
 
             <div className="actions">
               <button

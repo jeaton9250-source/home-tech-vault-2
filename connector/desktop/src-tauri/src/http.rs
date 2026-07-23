@@ -395,6 +395,97 @@ pub async fn send_heartbeat_request(
     ))
 }
 
+#[derive(Debug, Deserialize, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct DiscoverySyncSuccess {
+    pub ok: bool,
+    pub connector_id: String,
+    pub household_id: String,
+    pub scanned_at: String,
+    pub received: u32,
+    pub upserted: u32,
+}
+
+pub async fn sync_discovery_request(
+    api_base_url: String,
+    connector_token: String,
+    scanned_at: String,
+    devices: Value,
+    run_matching: bool,
+) -> Result<DiscoverySyncSuccess, ConnectorCommandError> {
+    let base_url = validate_api_base_url(&api_base_url)?;
+    let url = format!("{base_url}/api/connector/discovery/sync");
+
+    eprintln!("[htv-connector] discovery sync started: {url}");
+
+    let (status, payload) = post_json(
+        &url,
+        json!({
+            "scannedAt": scanned_at,
+            "devices": devices,
+            "runMatching": run_matching,
+        }),
+        Some(&connector_token),
+    )
+    .await?;
+
+    if status == 401 {
+        let error_body =
+            serde_json::from_value::<ErrorBody>(payload.clone()).unwrap_or_default();
+        log_heartbeat_auth_failure(status, &error_body);
+
+        return Err(ConnectorCommandError {
+            kind: "unauthorized".into(),
+            message: error_body.error.unwrap_or_else(|| {
+                "Connector access revoked or invalid.".into()
+            }),
+            status: Some(status),
+            reason: error_body.reason,
+            diagnostics: error_body.diagnostics,
+        });
+    }
+
+    if status >= 200 && status < 300 {
+        let parsed = serde_json::from_value::<DiscoverySyncSuccess>(payload).map_err(|_| {
+            command_error(
+                "malformed",
+                "Home Tech Vault returned an incomplete discovery sync response.",
+                Some(status),
+            )
+        })?;
+
+        if !parsed.ok {
+            return Err(command_error(
+                "malformed",
+                "Home Tech Vault returned an incomplete discovery sync response.",
+                Some(status),
+            ));
+        }
+
+        eprintln!("[htv-connector] discovery sync succeeded");
+        return Ok(parsed);
+    }
+
+    if status >= 500 {
+        return Err(command_error(
+            "server",
+            "Temporary server issue. Try again shortly.",
+            Some(status),
+        ));
+    }
+
+    let error_body =
+        serde_json::from_value::<ErrorBody>(payload).unwrap_or_default();
+
+    Err(command_error(
+        "server",
+        error_body
+            .error
+            .unwrap_or_else(|| "Home Tech Vault returned an unexpected response.".into()),
+        Some(status),
+    ))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -5,7 +5,10 @@ type LogEvent =
   | "heartbeat_succeeded"
   | "network_request_failed"
   | "token_missing"
-  | "connector_revoked";
+  | "connector_revoked"
+  | "discovery_scan_started"
+  | "discovery_scan_completed"
+  | "discovery_sync_succeeded";
 
 export function logConnectorEvent(
   event: LogEvent,

@@ -168,3 +168,16 @@ h1 {
     transform: rotate(360deg);
   }
 }
+
+.scan-panel,
+.consent-panel {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.scan-panel h2,
+.consent-panel h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+}

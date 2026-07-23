@@ -3,6 +3,41 @@ export type ConnectorMetadata = {
   householdId: string;
   connectorName: string;
   lastHeartbeatAt: string | null;
+  lastScanAt?: string | null;
+  lastScanDeviceCount?: number | null;
+  scanConsentAccepted?: boolean;
+};
+
+export type ScannedDevice = {
+  localFingerprint: string;
+  ipAddress?: string | null;
+  macAddress?: string | null;
+  hostname?: string | null;
+  manufacturer?: string | null;
+  deviceType?: string | null;
+  discoverySource: string;
+  online: boolean;
+};
+
+export type ScanSummary = {
+  startedAt: string;
+  completedAt: string;
+  interfaces: Array<{
+    name: string;
+    ipAddress: string;
+    netmask: string;
+  }>;
+  devices: ScannedDevice[];
+  cancelled: boolean;
+};
+
+export type DiscoverySyncResponse = {
+  ok: boolean;
+  connectorId: string;
+  householdId: string;
+  scannedAt: string;
+  received: number;
+  upserted: number;
 };
 
 export type PairConfirmResponse = {

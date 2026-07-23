@@ -2,6 +2,9 @@ import {
   CONNECTOR_FIELD_LIMITS,
 } from "@/lib/connector/constants";
 import {
+  isPrivateIpAddress,
+} from "@/lib/connector/privateNetwork";
+import {
   computeStableFingerprint,
   normalizeMacAddress,
 } from "@/lib/connector/network";
@@ -24,6 +27,8 @@ export type DiscoverySyncDeviceInput = {
 export type DiscoverySyncRequestBody = {
   scannedAt?: string;
   devices?: DiscoverySyncDeviceInput[];
+  /** Phase 2B.2+: run matching and enrichment after upsert. Default false. */
+  runMatching?: boolean;
 };
 
 export type ParsedDiscoveryDevice = {
@@ -103,7 +108,8 @@ function parseIsoTimestamp(
 }
 
 function parseIpAddress(
-  value: unknown
+  value: unknown,
+  index: number
 ): string | null {
   const trimmed = trimOptional(
     value,
@@ -112,6 +118,12 @@ function parseIpAddress(
 
   if (!trimmed) {
     return null;
+  }
+
+  if (!isPrivateIpAddress(trimmed)) {
+    throw new DiscoveryValidationError(
+      `devices[${index}].ipAddress must be a private local network address.`
+    );
   }
 
   return trimmed;
@@ -176,7 +188,8 @@ export function parseDiscoverySyncPayload(
       }
 
       const ipAddress = parseIpAddress(
-        device.ipAddress
+        device.ipAddress,
+        index
       );
       const macAddress = parseMacAddress(
         device.macAddress

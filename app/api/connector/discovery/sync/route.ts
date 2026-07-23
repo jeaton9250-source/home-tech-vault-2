@@ -2,7 +2,8 @@ import {
   DiscoveryValidationError,
   parseDiscoverySyncPayload,
 } from "@/lib/connector/discoveryValidation";
-import { syncDiscoveredDevices } from "@/lib/connector/discoverySync";
+import { upsertDiscoveredDevices } from "@/lib/connector/discoveryUpsert";
+import { syncDiscoveredDevicesWithMatching } from "@/lib/connector/discoverySync";
 import {
   connectorErrorResponse,
   connectorJsonResponse,
@@ -35,13 +36,24 @@ export async function POST(request: Request) {
 
     const admin = createAdminClient();
 
-    const result = await syncDiscoveredDevices({
-      admin,
-      connectorId: session.connectorId,
-      householdId: session.householdId,
-      scannedAt: payload.scannedAt,
-      devices: payload.devices,
-    });
+    const runMatching =
+      body.runMatching === true;
+
+    const result = runMatching
+      ? await syncDiscoveredDevicesWithMatching({
+          admin,
+          connectorId: session.connectorId,
+          householdId: session.householdId,
+          scannedAt: payload.scannedAt,
+          devices: payload.devices,
+        })
+      : await upsertDiscoveredDevices({
+          admin,
+          connectorId: session.connectorId,
+          householdId: session.householdId,
+          scannedAt: payload.scannedAt,
+          devices: payload.devices,
+        });
 
     return connectorJsonResponse(result);
   } catch (error) {

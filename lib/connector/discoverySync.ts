@@ -95,7 +95,7 @@ async function enrichVaultDevice(
   }
 }
 
-export async function syncDiscoveredDevices(
+export async function syncDiscoveredDevicesWithMatching(
   input: SyncDiscoveredDevicesInput
 ): Promise<DiscoverySyncResponse> {
   const {

@@ -4,6 +4,7 @@ import { getApiBaseUrl } from "./config";
 import { logConnectorEvent } from "./logger";
 
 import type {
+  DiscoverySyncResponse,
   HeartbeatResponse,
   PairConfirmResponse,
 } from "./types";
@@ -210,6 +211,70 @@ export async function sendHeartbeat(options: {
     } else {
       logConnectorEvent("network_request_failed");
     }
+
+    throw new ConnectorApiError(
+      parsed.kind,
+      parsed.message,
+      {
+        status: parsed.status,
+        reason: parsed.reason,
+        diagnostics: parsed.diagnostics,
+      }
+    );
+  }
+}
+
+type SyncDevicePayload = {
+  localFingerprint: string;
+  ipAddress: string | null;
+  macAddress: string | null;
+  hostname: string | null;
+  manufacturer: string | null;
+  deviceType: string | null;
+  discoverySource: string;
+  firstSeenAt: string;
+  lastSeenAt: string;
+  online: boolean;
+};
+
+export async function syncDiscoveryResults(options: {
+  token: string;
+  scannedAt: string;
+  devices: SyncDevicePayload[];
+  runMatching?: boolean;
+}) {
+  const baseUrl = getApiBaseUrl();
+  const apiUrl = `${baseUrl}/api/connector/discovery/sync`;
+
+  try {
+    const result =
+      await invoke<DiscoverySyncResponse>(
+        "sync_discovery_results",
+        {
+          apiBaseUrl: baseUrl,
+          connectorToken: options.token,
+          scannedAt: options.scannedAt,
+          devices: options.devices,
+          runMatching:
+            options.runMatching ?? false,
+        }
+      );
+
+    logConnectorEvent("discovery_sync_succeeded", {
+      received: result.received,
+      upserted: result.upserted,
+    });
+
+    return result;
+  } catch (error) {
+    const parsed =
+      parseNativeError(error);
+
+    logNativeFailure(
+      "heartbeat",
+      apiUrl,
+      parsed
+    );
 
     throw new ConnectorApiError(
       parsed.kind,

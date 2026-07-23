@@ -35,6 +35,16 @@ import type {
   MatchStatus,
 } from "@/lib/connector/discoveryTypes";
 
+type ConnectorSummary = {
+  id: string;
+  name: string;
+  platform: string;
+  status: string;
+  lastSeenAt: string | null;
+  lastScanAt: string | null;
+  revokedAt: string | null;
+};
+
 type VaultDeviceOption = {
   id: string;
   device_name: string | null;
@@ -97,6 +107,41 @@ function DiscoveryReviewContent() {
   >(null);
   const [selectedDeviceByDiscoveryId, setSelectedDeviceByDiscoveryId] =
     useState<Record<string, string>>({});
+  const [connectors, setConnectors] = useState<
+    ConnectorSummary[]
+  >([]);
+
+  const activeConnectors = useMemo(
+    () =>
+      connectors.filter(
+        (connector) =>
+          connector.status === "active" &&
+          !connector.revokedAt
+      ),
+    [connectors]
+  );
+
+  const lastScanAt = useMemo(() => {
+    const timestamps = activeConnectors
+      .map(
+        (connector) =>
+          connector.lastScanAt
+      )
+      .filter(Boolean) as string[];
+
+    if (timestamps.length === 0) {
+      return null;
+    }
+
+    return timestamps.sort(
+      (first, second) =>
+        Date.parse(second) -
+        Date.parse(first)
+    )[0];
+  }, [activeConnectors]);
+
+  const hasCompletedScan =
+    lastScanAt !== null;
 
   const reloadReviewData = useCallback(
     async (showSpinner = true) => {
@@ -116,6 +161,7 @@ function DiscoveryReviewContent() {
         const [
           discoveryResponse,
           vaultResponse,
+          connectorResponse,
         ] = await Promise.all([
           fetch(
             `/api/connector/discovery?householdId=${encodeURIComponent(householdId)}`,
@@ -130,6 +176,10 @@ function DiscoveryReviewContent() {
               .order("device_name"),
             householdId,
             user.id
+          ),
+          fetch(
+            `/api/connector/pair/status?householdId=${encodeURIComponent(householdId)}`,
+            { cache: "no-store" }
           ),
         ]);
 
@@ -147,6 +197,18 @@ function DiscoveryReviewContent() {
 
         if (vaultResponse.error) {
           throw vaultResponse.error;
+        }
+
+        if (connectorResponse.ok) {
+          const connectorPayload =
+            (await connectorResponse.json()) as {
+              connectors?: ConnectorSummary[];
+            };
+
+          setConnectors(
+            connectorPayload.connectors ??
+              []
+          );
         }
 
         const payload =
@@ -195,6 +257,7 @@ function DiscoveryReviewContent() {
         const [
           discoveryResponse,
           vaultResponse,
+          connectorResponse,
         ] = await Promise.all([
           fetch(
             `/api/connector/discovery?householdId=${encodeURIComponent(householdId)}`,
@@ -209,6 +272,10 @@ function DiscoveryReviewContent() {
               .order("device_name"),
             householdId,
             user.id
+          ),
+          fetch(
+            `/api/connector/pair/status?householdId=${encodeURIComponent(householdId)}`,
+            { cache: "no-store" }
           ),
         ]);
 
@@ -230,6 +297,18 @@ function DiscoveryReviewContent() {
 
         if (!mounted) {
           return;
+        }
+
+        if (connectorResponse.ok) {
+          const connectorPayload =
+            (await connectorResponse.json()) as {
+              connectors?: ConnectorSummary[];
+            };
+
+          setConnectors(
+            connectorPayload.connectors ??
+              []
+          );
         }
 
         const payload =
@@ -530,6 +609,60 @@ function DiscoveryReviewContent() {
         </PageCard>
       ) : null}
 
+      <PageCard className="mt-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-overline text-section-network">
+              Scan status
+            </p>
+            <h2 className="mt-1 text-lg font-semibold text-text-primary">
+              {hasCompletedScan
+                ? "Network scan completed"
+                : "Waiting for first scan"}
+            </h2>
+            <p className="mt-1 text-sm text-text-secondary">
+              {hasCompletedScan
+                ? `Last scan ${formatTimestamp(lastScanAt)} from ${activeConnectors.length} active connector${activeConnectors.length === 1 ? "" : "s"}.`
+                : "Run Scan My Network from the Home Tech Vault Connector on a Mac connected to your home network."}
+            </p>
+          </div>
+
+          <div className="rounded-2xl bg-surface-sunken px-5 py-3 text-sm">
+            <p className="font-semibold text-text-primary">
+              {devices.length} discovered
+            </p>
+            <p className="mt-1 text-text-secondary">
+              {activeConnectors.length > 0
+                ? `${activeConnectors.length} connector${activeConnectors.length === 1 ? "" : "s"} paired`
+                : "No active connector"}
+            </p>
+          </div>
+        </div>
+      </PageCard>
+
+      {!hasCompletedScan ? (
+        <PageCard className="mt-6">
+          <div className="rounded-2xl border border-dashed border-neutral-200 px-6 py-10 text-center">
+            <Radar
+              className="mx-auto text-text-secondary"
+              size={28}
+            />
+            <p className="mt-3 text-sm text-text-secondary">
+              No network scan has been completed yet.
+            </p>
+            <p className="mt-2 text-sm text-text-secondary">
+              Open the connector app on your Mac, accept the privacy notice, and tap Scan My Network.
+            </p>
+            <Link
+              href="/network/connect"
+              className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-interaction"
+            >
+              Connector setup
+            </Link>
+          </div>
+        </PageCard>
+      ) : (
+        <>
       <section className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <SummaryCard
           label="Matched automatically"
@@ -584,7 +717,10 @@ function DiscoveryReviewContent() {
                 size={28}
               />
               <p className="mt-3 text-sm text-text-secondary">
-                No discovered devices in this view yet. Run a connector scan to populate this review queue.
+                No discovered devices in this view.
+                {activeTab === "all"
+                  ? " Try another tab or run another scan from the connector."
+                  : " Try another tab."}
               </p>
             </div>
           ) : (
@@ -843,6 +979,8 @@ function DiscoveryReviewContent() {
           )}
         </div>
       </PageCard>
+        </>
+      )}
     </PageShell>
   );
 }

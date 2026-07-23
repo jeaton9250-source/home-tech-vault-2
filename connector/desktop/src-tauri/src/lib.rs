@@ -1,12 +1,14 @@
 mod http;
+mod scan;
 
 use std::fs;
 use std::path::PathBuf;
 
 use http::{
-    pair_connector_request, send_heartbeat_request, ConnectorCommandError, HeartbeatSuccess,
-    PairConfirmSuccess,
+    pair_connector_request, send_heartbeat_request, sync_discovery_request,
+    ConnectorCommandError, DiscoverySyncSuccess, HeartbeatSuccess, PairConfirmSuccess,
 };
+use scan::{request_scan_cancel, scan_local_network, ScanSummary};
 use keyring::Entry;
 use tauri::{AppHandle, Manager};
 
@@ -145,6 +147,34 @@ async fn send_connector_heartbeat(
     .await
 }
 
+#[tauri::command]
+fn scan_my_network() -> Result<ScanSummary, String> {
+    scan_local_network()
+}
+
+#[tauri::command]
+fn cancel_network_scan() {
+    request_scan_cancel();
+}
+
+#[tauri::command]
+async fn sync_discovery_results(
+    api_base_url: String,
+    connector_token: String,
+    scanned_at: String,
+    devices: serde_json::Value,
+    run_matching: bool,
+) -> Result<DiscoverySyncSuccess, ConnectorCommandError> {
+    sync_discovery_request(
+        api_base_url,
+        connector_token,
+        scanned_at,
+        devices,
+        run_matching,
+    )
+    .await
+}
+
 #[cfg(test)]
 mod keychain_tests {
     use super::*;
@@ -185,7 +215,10 @@ pub fn run() {
             delete_connector_metadata,
             get_device_name,
             pair_connector,
-            send_connector_heartbeat
+            send_connector_heartbeat,
+            scan_my_network,
+            cancel_network_scan,
+            sync_discovery_results
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
