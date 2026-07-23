@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { deriveConnectorPresence } from "@/lib/connector/presence";
+import { normalizeMacAddress } from "@/lib/connector/network";
 import {
   mergePresenceFromDiscovery,
   pickFreshestDiscoveryPresence,
@@ -86,20 +87,32 @@ export function useDeviceNetworkRefresh(
 
       const { data: discoveryRows } = await supabase
         .from("discovered_devices")
-        .select("online, last_seen_at")
-        .eq("imported_device_id", input.deviceId)
+        .select("imported_device_id, mac_address, online, last_seen_at")
         .eq("household_id", householdId)
         .is("ignored_at", null)
+        .or(
+          `imported_device_id.eq.${input.deviceId},mac_address.not.is.null`
+        )
         .order("last_seen_at", { ascending: false })
-        .limit(5);
+        .limit(20);
 
       if (cancelled) {
         return;
       }
 
+      const deviceMac = normalizeMacAddress(
+        deviceRow.mac_address ?? ""
+      );
+      const relevantDiscoveryRows = (discoveryRows ?? []).filter(
+        (row) =>
+          row.imported_device_id === input.deviceId ||
+          (deviceMac &&
+            normalizeMacAddress(row.mac_address ?? "") === deviceMac)
+      );
+
       const merged = mergePresenceFromDiscovery(
         deviceRow,
-        pickFreshestDiscoveryPresence(discoveryRows ?? [])
+        pickFreshestDiscoveryPresence(relevantDiscoveryRows)
       );
 
       onNetworkFieldsUpdate({

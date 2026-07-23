@@ -309,15 +309,16 @@ export async function syncDiscoveredDevicesWithMatching(
     );
 
     let targetDeviceId =
-      discoveredRow.imported_device_id;
+      discoveredRow.imported_device_id ??
+      (match.matchStatus === "matched"
+        ? match.matchedDeviceId
+        : null);
 
     if (
-      !targetDeviceId &&
-      shouldAutoLinkMatch(match)
+      !discoveredRow.imported_device_id &&
+      shouldAutoLinkMatch(match) &&
+      targetDeviceId
     ) {
-      targetDeviceId =
-        match.matchedDeviceId;
-
       const { error: linkError } = await admin
         .from("discovered_devices")
         .update({

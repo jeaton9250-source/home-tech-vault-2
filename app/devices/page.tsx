@@ -48,6 +48,7 @@ import {
 } from "@/components/ui/PermissionUI";
 import { useDemoReadOnlyAction } from "@/components/demo/DemoExperienceProvider";
 import { formatDevicePresenceListLine } from "@/lib/devices/devicePresence";
+import { normalizeMacAddress } from "@/lib/connector/network";
 import {
   mergePresenceFromDiscovery,
   pickFreshestDiscoveryPresence,
@@ -419,7 +420,7 @@ export default function DevicesPage() {
         supabase
           .from("devices")
           .select(
-            "id, online, last_seen_at, first_seen_at, network_updated_at"
+            "id, mac_address, online, last_seen_at, first_seen_at, network_updated_at"
           ),
         householdId,
         userId
@@ -431,6 +432,7 @@ export default function DevicesPage() {
 
       type PresenceRow = {
         id: string;
+        mac_address?: string | null;
         online?: boolean | null;
         last_seen_at?: string | null;
         first_seen_at?: string | null;
@@ -439,23 +441,36 @@ export default function DevicesPage() {
 
       type DiscoveryPresenceRow = {
         imported_device_id: string | null;
+        mac_address?: string | null;
         online?: boolean | null;
         last_seen_at?: string | null;
       };
 
-      const deviceIds = (data as PresenceRow[]).map(
+      const presenceRows = data as PresenceRow[];
+      const deviceIds = presenceRows.map(
         (row) => row.id
       );
+      const normalizedMacs = presenceRows
+        .map((row) =>
+          normalizeMacAddress(row.mac_address ?? "")
+        )
+        .filter(Boolean);
 
       let discoveryByDeviceId = new Map<
         string,
         DiscoveryPresenceRow[]
       >();
+      let discoveryByMac = new Map<
+        string,
+        DiscoveryPresenceRow[]
+      >();
 
       if (deviceIds.length > 0) {
-        const { data: discoveryRows } = await supabase
+        const { data: linkedDiscoveryRows } = await supabase
           .from("discovered_devices")
-          .select("imported_device_id, online, last_seen_at")
+          .select(
+            "imported_device_id, mac_address, online, last_seen_at"
+          )
           .eq("household_id", householdId)
           .in("imported_device_id", deviceIds)
           .is("ignored_at", null);
@@ -464,9 +479,7 @@ export default function DevicesPage() {
           return;
         }
 
-        discoveryByDeviceId = new Map();
-
-        for (const row of (discoveryRows ??
+        for (const row of (linkedDiscoveryRows ??
           []) as DiscoveryPresenceRow[]) {
           if (!row.imported_device_id) {
             continue;
@@ -483,12 +496,66 @@ export default function DevicesPage() {
         }
       }
 
+      if (normalizedMacs.length > 0) {
+        const normalizedMacSet = new Set(normalizedMacs);
+        const { data: macDiscoveryRows } = await supabase
+          .from("discovered_devices")
+          .select(
+            "imported_device_id, mac_address, online, last_seen_at"
+          )
+          .eq("household_id", householdId)
+          .is("ignored_at", null)
+          .not("mac_address", "is", null);
+
+        if (cancelled) {
+          return;
+        }
+
+        for (const row of (macDiscoveryRows ??
+          []) as DiscoveryPresenceRow[]) {
+          const mac = normalizeMacAddress(
+            row.mac_address ?? ""
+          );
+
+          if (!mac || !normalizedMacSet.has(mac)) {
+            continue;
+          }
+
+          const existing =
+            discoveryByMac.get(mac) ?? [];
+          existing.push(row);
+          discoveryByMac.set(mac, existing);
+        }
+      }
+
       const presenceById = new Map(
-        (data as PresenceRow[]).map((row) => {
+        presenceRows.map((row) => {
+          const mac = normalizeMacAddress(
+            row.mac_address ?? ""
+          );
+          const linkedRows =
+            discoveryByDeviceId.get(row.id) ?? [];
+          const macRows = mac
+            ? discoveryByMac.get(mac) ?? []
+            : [];
+          const mergedDiscoveryRows = [
+            ...linkedRows,
+            ...macRows.filter(
+              (candidate) =>
+                !linkedRows.some(
+                  (linked) =>
+                    linked.last_seen_at ===
+                      candidate.last_seen_at &&
+                    linked.mac_address ===
+                      candidate.mac_address
+                )
+            ),
+          ];
+
           const merged = mergePresenceFromDiscovery(
             row,
             pickFreshestDiscoveryPresence(
-              discoveryByDeviceId.get(row.id) ?? []
+              mergedDiscoveryRows
             )
           );
 

@@ -21,6 +21,13 @@ import {
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
+import { normalizeMacAddress } from "@/lib/connector/network";
+import {
+  buildVaultPresenceUpdateFromScan,
+  filterVaultDevicesObservedInScan,
+  indexObservedDevicesByMac,
+  indexVaultDevicesByMac,
+} from "@/lib/devices/vaultPresenceFromScan";
 import { applyHouseholdScope, applyOwnerUserScope, withHouseholdInsertFields, applyHouseholdMutationScope, withOwnerUserInsertFields } from "@/lib/data/householdScope";
 import { recordActivity } from "@/lib/activity";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -266,53 +273,43 @@ function NetworkDiscoveryContent() {
         return;
       }
 
-      const normalizedMacAddresses =
-        parsedDevices
-          .map((device) =>
-            normalizeMacAddress(
-              device.macAddress
-            )
+      const observedByMac =
+        indexObservedDevicesByMac(
+          parsedDevices.map((device) => ({
+            macAddress: device.macAddress,
+            ipAddress: device.ipAddress,
+            manufacturer: device.manufacturer,
+            online: true,
+          }))
+        );
+
+      const {
+        data: vaultDevicesWithMac,
+        error: existingError,
+      } = await applyHouseholdScope(
+        supabase
+          .from("devices")
+          .select(
+            "id, device_name, brand, manufacturer, mac_address, ip_address"
           )
-          .filter(Boolean);
+          .not("mac_address", "is", null),
+        householdId,
+        user.id
+      );
 
-      let existingRows: VaultDevice[] = [];
-
-      if (
-        normalizedMacAddresses.length > 0
-      ) {
-        const {
-          data,
-          error: existingError,
-        } = await applyHouseholdScope(
-          supabase
-            .from("devices")
-            .select(
-              "id, device_name, mac_address, ip_address"
-            ),
-          householdId,
-          user.id
-        ).in(
-            "mac_address",
-            normalizedMacAddresses
-          );
-
-        if (existingError) {
-          throw existingError;
-        }
-
-        existingRows =
-          (data || []) as VaultDevice[];
+      if (existingError) {
+        throw existingError;
       }
 
-      const existingMacs = new Set(
-        existingRows
-          .map((device) =>
-            normalizeMacAddress(
-              device.mac_address || ""
-            )
-          )
-          .filter(Boolean)
+      const vaultByMac = indexVaultDevicesByMac(
+        (vaultDevicesWithMac || []) as VaultDevice[]
       );
+      const existingRows =
+        filterVaultDevicesObservedInScan(
+          (vaultDevicesWithMac || []) as VaultDevice[],
+          observedByMac
+        );
+      const existingMacs = new Set(vaultByMac.keys());
 
       const comparedDevices =
         parsedDevices.map((device) => {
@@ -447,6 +444,54 @@ function NetworkDiscoveryContent() {
         }))
       );
 
+      const scannedAt =
+        scanRow.scanned_at ||
+        new Date().toISOString();
+
+      for (const vaultDevice of existingRows) {
+        const normalizedMac = normalizeMacAddress(
+          vaultDevice.mac_address || ""
+        );
+        const observed = normalizedMac
+          ? observedByMac.get(normalizedMac)
+          : undefined;
+
+        if (!observed) {
+          continue;
+        }
+
+        const matchedDiscovery = comparedDevices.find(
+          (device) =>
+            normalizeMacAddress(
+              device.macAddress
+            ) === normalizedMac
+        );
+
+        const updatePayload =
+          buildVaultPresenceUpdateFromScan({
+            scannedAt,
+            observed,
+            existing: vaultDevice,
+            suggestedName:
+              matchedDiscovery?.deviceName ??
+              null,
+          });
+
+        const { error: refreshError } =
+          await applyHouseholdMutationScope(
+            supabase
+              .from("devices")
+              .update(updatePayload)
+              .eq("id", vaultDevice.id),
+            householdId,
+            user.id
+          );
+
+        if (refreshError) {
+          throw refreshError;
+        }
+      }
+
       setScanHistory((current) =>
         [
           {
@@ -549,16 +594,8 @@ function NetworkDiscoveryContent() {
             ),
         }));
 
-      const scannedMacAddresses =
-        normalizedDevices
-          .map(
-            (device) =>
-              device.normalizedMac
-          )
-          .filter(Boolean);
-
       const {
-        data: existingRows,
+        data: vaultDevicesWithMac,
         error: existingError,
       } = await applyHouseholdScope(
         supabase
@@ -572,28 +609,18 @@ function NetworkDiscoveryContent() {
             mac_address,
             ip_address
           `
-          ),
+          )
+          .not("mac_address", "is", null),
         householdId,
         user.id
-      ).in(
-          "mac_address",
-          scannedMacAddresses
-        );
+      );
 
       if (existingError) {
         throw existingError;
       }
 
-      const existingByMac = new Map(
-        ((existingRows ||
-          []) as VaultDevice[]).map(
-          (device) => [
-            normalizeMacAddress(
-              device.mac_address || ""
-            ),
-            device,
-          ]
-        )
+      const existingByMac = indexVaultDevicesByMac(
+        (vaultDevicesWithMac || []) as VaultDevice[]
       );
 
       let addedCount = 0;
@@ -623,6 +650,7 @@ function NetworkDiscoveryContent() {
           const updatePayload: {
             ip_address: string | null;
             last_seen_at: string;
+            network_updated_at: string;
             online: boolean;
             discovery_source: string;
             manufacturer?: string | null;
@@ -633,6 +661,7 @@ function NetworkDiscoveryContent() {
               discoveredDevice.ipAddress ||
               null,
             last_seen_at: now,
+            network_updated_at: now,
             online: true,
             discovery_source:
               "ARP Sync",
@@ -1986,22 +2015,6 @@ function formatHostname(
       (letter) =>
         letter.toUpperCase()
     );
-}
-
-function normalizeMacAddress(
-  value: string
-) {
-  if (!value) {
-    return "";
-  }
-
-  return value
-    .split(/[:-]/)
-    .map((part) =>
-      part.padStart(2, "0")
-    )
-    .join(":")
-    .toLowerCase();
 }
 
 function extractHostname(
