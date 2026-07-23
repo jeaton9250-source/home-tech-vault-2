@@ -64,17 +64,15 @@ export default function HeroSection({
               />
             </LandingTrackedLink>
 
-            {!isSignedIn ? (
-              <LandingTrackedLink
-                href={MARKETING_ROUTES.demo}
-                eventName={
-                  LANDING_ANALYTICS_EVENTS.heroExploreDemo
-                }
-                className={landingTheme.btnSecondary}
-              >
-                Explore Demo
-              </LandingTrackedLink>
-            ) : null}
+            <LandingTrackedLink
+              href={MARKETING_ROUTES.demo}
+              eventName={
+                LANDING_ANALYTICS_EVENTS.heroExploreDemo
+              }
+              className={landingTheme.btnSecondary}
+            >
+              Explore Demo
+            </LandingTrackedLink>
 
             <LandingScrollLink
               sectionId={

@@ -59,25 +59,23 @@ export default function FinalCta({
               />
             </LandingTrackedLink>
 
-            {!isSignedIn ? (
-              <>
-                <LandingTrackedLink
-                  href={MARKETING_ROUTES.demo}
-                  eventName={
-                    LANDING_ANALYTICS_EVENTS.finalCtaExploreDemo
-                  }
-                  className={landingTheme.btnSecondary}
-                >
-                  Explore Demo
-                </LandingTrackedLink>
+            <LandingTrackedLink
+              href={MARKETING_ROUTES.demo}
+              eventName={
+                LANDING_ANALYTICS_EVENTS.finalCtaExploreDemo
+              }
+              className={landingTheme.btnSecondary}
+            >
+              Explore Demo
+            </LandingTrackedLink>
 
-                <Link
-                  href={MARKETING_ROUTES.login}
-                  className={landingTheme.link}
-                >
-                  Sign In
-                </Link>
-              </>
+            {!isSignedIn ? (
+              <Link
+                href={MARKETING_ROUTES.login}
+                className={landingTheme.link}
+              >
+                Sign In
+              </Link>
             ) : null}
           </div>
         </div>
