@@ -167,3 +167,32 @@ export type AdminSystemHealth = {
   resendConfigured: boolean;
   stripeConfigured: boolean;
 };
+
+export type AdminHouseholdInviteRole =
+  | "admin"
+  | "member"
+  | "viewer";
+
+export type AdminPendingInvitation = {
+  id: string;
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+  householdId: string;
+  householdName: string | null;
+  role: AdminHouseholdInviteRole;
+  invitedBy: string | null;
+  invitedByName: string | null;
+  invitedByEmail: string | null;
+  createdAt: string;
+  expiresAt: string;
+  status: "pending" | "expired";
+};
+
+export type AdminInviteUserInput = {
+  email: string;
+  householdId: string;
+  role: AdminHouseholdInviteRole;
+  firstName?: string | null;
+  lastName?: string | null;
+};

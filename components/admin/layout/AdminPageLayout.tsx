@@ -11,6 +11,7 @@ type AdminPageHeroProps = {
     label: string;
     href: string;
   };
+  action?: ReactNode;
   badge?: ReactNode;
 };
 
@@ -18,6 +19,7 @@ export function AdminPageHero({
   title,
   description,
   primaryAction,
+  action,
   badge,
 }: AdminPageHeroProps) {
   return (
@@ -32,7 +34,9 @@ export function AdminPageHero({
           </p>
           {badge ? <div className="mt-4">{badge}</div> : null}
         </div>
-        {primaryAction ? (
+        {action ? (
+          <div className="shrink-0">{action}</div>
+        ) : primaryAction ? (
           <Button href={primaryAction.href} size="md">
             {primaryAction.label}
           </Button>
@@ -229,7 +233,7 @@ export function AdminSearchFilters({
 }) {
   return (
     <AdminContentSection>
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {children}
       </div>
     </AdminContentSection>
