@@ -7,7 +7,7 @@ import {
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
   createAdminUserInvitation,
-  parseInviteRole,
+  parseInvitationType,
 } from "@/lib/admin/invitations";
 
 export const runtime = "nodejs";
@@ -18,6 +18,7 @@ export async function POST(request: Request) {
     const admin = createAdminClient();
 
     const body = (await request.json()) as {
+      invitationType?: string;
       email?: string;
       householdId?: string;
       role?: string;
@@ -25,17 +26,8 @@ export async function POST(request: Request) {
       lastName?: string;
     };
 
-    const role = parseInviteRole(body.role);
-
-    if (!role) {
-      return NextResponse.json(
-        {
-          error:
-            "Select a household role of Admin, Member, or Viewer.",
-        },
-        { status: 400 }
-      );
-    }
+    const invitationType =
+      parseInvitationType(body.invitationType) ?? "new_account";
 
     const { data: profile } = await admin
       .from("profiles")
@@ -51,9 +43,10 @@ export async function POST(request: Request) {
         fullName: profile?.full_name ?? null,
       },
       payload: {
+        invitationType,
         email: body.email ?? "",
-        householdId: body.householdId ?? "",
-        role,
+        householdId: body.householdId ?? null,
+        role: (body.role as "admin" | "member" | "viewer") ?? null,
         firstName: body.firstName,
         lastName: body.lastName,
       },

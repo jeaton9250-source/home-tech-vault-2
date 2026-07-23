@@ -427,7 +427,7 @@ export default function UsersAdminClient({
     <>
       <AdminPageHero
         title="Users"
-        description="Search accounts, review plan context, invite household members, and manage platform-admin access."
+        description="Search accounts, invite new independent households or household members, and manage platform-admin access."
         action={
           <Button
             type="button"
@@ -550,41 +550,58 @@ export default function UsersAdminClient({
             />
           ) : (
             <AdminList>
-              {filteredInvitations.map((invitation) => (
-                <AdminListItem
-                  key={`invitation-${invitation.id}`}
-                  selected={
-                    selection?.kind === "invitation" &&
-                    selection.id === invitation.id
-                  }
-                  onClick={() => selectInvitation(invitation)}
-                >
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                      <p className="font-medium text-text-primary">
-                        {invitation.email}
-                      </p>
-                      <p className="mt-1 text-sm text-text-secondary">
-                        {invitation.householdName ||
-                          "Unknown household"}
-                      </p>
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        <AdminStatusBadge tone="warning">
-                          Invitation Pending
-                        </AdminStatusBadge>
+              {filteredInvitations.map((invitation) => {
+                const isNewAccount =
+                  invitation.invitationType === "new_account";
+
+                return (
+                  <AdminListItem
+                    key={`invitation-${invitation.id}`}
+                    selected={
+                      selection?.kind === "invitation" &&
+                      selection.id === invitation.id
+                    }
+                    onClick={() => selectInvitation(invitation)}
+                  >
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <p className="font-medium text-text-primary">
+                          {invitation.email}
+                        </p>
+                        <p className="mt-1 text-sm text-text-secondary">
+                          {isNewAccount
+                            ? "New Account"
+                            : invitation.householdName ||
+                              "Unknown household"}
+                        </p>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          <AdminStatusBadge tone="warning">
+                            {isNewAccount
+                              ? "Awaiting account setup"
+                              : "Invitation Pending"}
+                          </AdminStatusBadge>
+                        </div>
+                      </div>
+                      <div className="text-left sm:text-right">
+                        <p className="text-sm capitalize text-text-primary">
+                          {isNewAccount
+                            ? "New Account Invitation"
+                            : invitation.role}
+                        </p>
+                        <p className="mt-1 text-xs text-text-tertiary">
+                          Invited {formatAdminDate(invitation.createdAt)}
+                        </p>
+                        {isNewAccount ? (
+                          <p className="mt-1 text-xs text-text-tertiary">
+                            Expires{" "}
+                            {formatAdminDate(invitation.expiresAt)}
+                          </p>
+                        ) : null}
                       </div>
                     </div>
-                    <div className="text-left sm:text-right">
-                      <p className="text-sm capitalize text-text-primary">
-                        {invitation.role}
-                      </p>
-                      <p className="mt-1 text-xs text-text-tertiary">
-                        Invited {formatAdminDate(invitation.createdAt)}
-                      </p>
-                    </div>
-                  </div>
-                </AdminListItem>
-              ))}
+                  </AdminListItem>
+                );
+              })}
 
               {filteredUsers.map((user) => (
                 <AdminListItem
@@ -674,16 +691,48 @@ export default function UsersAdminClient({
                 }}
               />
               <AdminDetailField
-                label="Household"
+                label="Invitation type"
                 value={
-                  selectedInvitation.householdName ||
-                  selectedInvitation.householdId
+                  selectedInvitation.invitationType ===
+                  "new_account"
+                    ? "New Account Invitation"
+                    : "Household Invitation"
                 }
               />
-              <AdminDetailField
-                label="Selected role"
-                value={selectedInvitation.role}
-              />
+              {selectedInvitation.invitationType ===
+              "household_member" ? (
+                <>
+                  <AdminDetailField
+                    label="Household"
+                    value={
+                      selectedInvitation.householdName ||
+                      selectedInvitation.householdId ||
+                      "—"
+                    }
+                  />
+                  <AdminDetailField
+                    label="Selected role"
+                    value={selectedInvitation.role || "—"}
+                  />
+                </>
+              ) : (
+                <AdminDetailField
+                  label="Setup status"
+                  value="Awaiting account setup"
+                />
+              )}
+              {(selectedInvitation.firstName ||
+                selectedInvitation.lastName) && (
+                <AdminDetailField
+                  label="Suggested name"
+                  value={[
+                    selectedInvitation.firstName,
+                    selectedInvitation.lastName,
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                />
+              )}
               <AdminDetailField
                 label="Invited by"
                 value={
@@ -703,7 +752,12 @@ export default function UsersAdminClient({
               />
               <AdminDetailField
                 label="Invitation status"
-                value="Invitation Pending"
+                value={
+                  selectedInvitation.invitationType ===
+                  "new_account"
+                    ? "Awaiting account setup"
+                    : "Invitation Pending"
+                }
               />
 
               {adminMessage ? (
@@ -734,12 +788,16 @@ export default function UsersAdminClient({
                 </Button>
               </div>
 
-              <Link
-                href={`/admin/households?selected=${selectedInvitation.householdId}`}
-                className="inline-flex text-sm font-semibold text-interaction"
-              >
-                View household
-              </Link>
+              {selectedInvitation.invitationType ===
+                "household_member" &&
+              selectedInvitation.householdId ? (
+                <Link
+                  href={`/admin/households?selected=${selectedInvitation.householdId}`}
+                  className="inline-flex text-sm font-semibold text-interaction"
+                >
+                  View household
+                </Link>
+              ) : null}
             </div>
           ) : detailLoading ? (
             <AdminLoadingState label="Loading details…" />

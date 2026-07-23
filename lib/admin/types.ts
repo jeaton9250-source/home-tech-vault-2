@@ -173,14 +173,19 @@ export type AdminHouseholdInviteRole =
   | "member"
   | "viewer";
 
+export type AdminInvitationType =
+  | "new_account"
+  | "household_member";
+
 export type AdminPendingInvitation = {
   id: string;
   email: string;
   firstName: string | null;
   lastName: string | null;
-  householdId: string;
+  invitationType: AdminInvitationType;
+  householdId: string | null;
   householdName: string | null;
-  role: AdminHouseholdInviteRole;
+  role: AdminHouseholdInviteRole | null;
   invitedBy: string | null;
   invitedByName: string | null;
   invitedByEmail: string | null;
@@ -190,9 +195,10 @@ export type AdminPendingInvitation = {
 };
 
 export type AdminInviteUserInput = {
+  invitationType: AdminInvitationType;
   email: string;
-  householdId: string;
-  role: AdminHouseholdInviteRole;
+  householdId?: string | null;
+  role?: AdminHouseholdInviteRole | null;
   firstName?: string | null;
   lastName?: string | null;
 };

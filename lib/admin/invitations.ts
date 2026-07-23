@@ -9,10 +9,15 @@ import FamilyInvitationEmail, {
   formatHouseholdRole,
   renderFamilyInvitationPlainText,
 } from "@/emails/templates/FamilyInvitationEmail";
+import NewAccountInvitationEmail, {
+  newAccountInvitationSubject,
+  renderNewAccountInvitationPlainText,
+} from "@/emails/templates/NewAccountInvitationEmail";
 import { sendReactEmail } from "@/lib/email/sendEmail";
 import { absoluteUrl } from "@/lib/marketing/site";
 import type {
   AdminHouseholdInviteRole,
+  AdminInvitationType,
   AdminInviteUserInput,
   AdminPendingInvitation,
 } from "@/lib/admin/types";
@@ -26,11 +31,17 @@ const INVITE_ROLES: AdminHouseholdInviteRole[] = [
   "viewer",
 ];
 
+const INVITATION_SELECT =
+  "id, household_id, email, role, token, invited_by, accepted_at, expires_at, created_at, first_name, last_name, invitation_type";
+
+const INVITATION_SELECT_FALLBACK =
+  "id, household_id, email, role, token, invited_by, accepted_at, expires_at, created_at, first_name, last_name";
+
 type InvitationRow = {
   id: string;
-  household_id: string;
+  household_id: string | null;
   email: string;
-  role: string;
+  role: string | null;
   token: string;
   invited_by: string | null;
   accepted_at: string | null;
@@ -38,6 +49,7 @@ type InvitationRow = {
   created_at: string;
   first_name?: string | null;
   last_name?: string | null;
+  invitation_type?: string | null;
 };
 
 export function normalizeInviteEmail(value: string) {
@@ -72,6 +84,25 @@ export function parseInviteRole(
   return null;
 }
 
+export function parseInvitationType(
+  value: unknown
+): AdminInvitationType | null {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const normalized = value.trim().toLowerCase();
+
+  if (
+    normalized === "new_account" ||
+    normalized === "household_member"
+  ) {
+    return normalized;
+  }
+
+  return null;
+}
+
 function formatExpirationLabel(expiresAt: string) {
   const date = new Date(expiresAt);
 
@@ -101,9 +132,15 @@ function invitationStatus(
   return "pending";
 }
 
-function buildAcceptanceUrl(token: string) {
+function buildHouseholdAcceptanceUrl(token: string) {
   return absoluteUrl(
     `/family/accept/${encodeURIComponent(token)}`
+  );
+}
+
+function buildNewAccountSetupUrl(token: string) {
+  return absoluteUrl(
+    `/invite/setup/${encodeURIComponent(token)}`
   );
 }
 
@@ -115,6 +152,15 @@ function buildFullName(
     .filter(Boolean)
     .join(" ")
     .trim();
+}
+
+function resolveInvitationType(
+  row: InvitationRow
+): AdminInvitationType {
+  return (
+    parseInvitationType(row.invitation_type) ??
+    (row.household_id ? "household_member" : "new_account")
+  );
 }
 
 async function findAuthUserByEmail(
@@ -162,7 +208,7 @@ async function sendHouseholdInvitationEmail(input: {
   token: string;
   expiresAt: string;
 }) {
-  const acceptanceUrl = buildAcceptanceUrl(input.token);
+  const acceptanceUrl = buildHouseholdAcceptanceUrl(input.token);
   const roleLabel = formatHouseholdRole(input.role);
   const expirationLabel = formatExpirationLabel(
     input.expiresAt
@@ -191,19 +237,85 @@ async function sendHouseholdInvitationEmail(input: {
   });
 }
 
+async function sendNewAccountInvitationEmail(input: {
+  email: string;
+  inviterName: string;
+  token: string;
+  expiresAt: string;
+  inviteeFirstName?: string | null;
+}) {
+  const acceptanceUrl = buildNewAccountSetupUrl(input.token);
+  const expirationLabel = formatExpirationLabel(
+    input.expiresAt
+  );
+
+  return sendReactEmail({
+    to: input.email,
+    subject: newAccountInvitationSubject,
+    template: createElement(NewAccountInvitationEmail, {
+      inviterName: input.inviterName,
+      acceptanceUrl,
+      expirationLabel,
+      inviteeFirstName: input.inviteeFirstName,
+    }),
+    text: renderNewAccountInvitationPlainText({
+      inviterName: input.inviterName,
+      acceptanceUrl,
+      expirationLabel,
+      inviteeFirstName: input.inviteeFirstName,
+    }),
+    tags: [
+      { name: "category", value: "new_account_invitation" },
+    ],
+  });
+}
+
+async function selectInvitationById(
+  admin: SupabaseClient,
+  invitationId: string
+) {
+  const { data, error } = await admin
+    .from("household_invitations")
+    .select(INVITATION_SELECT)
+    .eq("id", invitationId)
+    .maybeSingle();
+
+  if (
+    error &&
+    error.message?.includes("invitation_type")
+  ) {
+    const fallback = await admin
+      .from("household_invitations")
+      .select(INVITATION_SELECT_FALLBACK)
+      .eq("id", invitationId)
+      .maybeSingle();
+
+    if (fallback.error) {
+      throw fallback.error;
+    }
+
+    return fallback.data as InvitationRow | null;
+  }
+
+  if (error) {
+    throw error;
+  }
+
+  return data as InvitationRow | null;
+}
+
 export async function loadAdminPendingInvitations(
   admin: SupabaseClient,
   options?: {
     q?: string;
     role?: string;
     householdId?: string;
+    invitationType?: string;
   }
 ): Promise<AdminPendingInvitation[]> {
   let query = admin
     .from("household_invitations")
-    .select(
-      "id, household_id, email, role, token, invited_by, accepted_at, expires_at, created_at, first_name, last_name"
-    )
+    .select(INVITATION_SELECT)
     .is("accepted_at", null)
     .order("created_at", { ascending: false })
     .limit(200);
@@ -216,6 +328,13 @@ export async function loadAdminPendingInvitations(
     query = query.eq("role", options.role);
   }
 
+  if (options?.invitationType) {
+    query = query.eq(
+      "invitation_type",
+      options.invitationType
+    );
+  }
+
   if (options?.q?.trim()) {
     const term = `%${options.q.trim()}%`;
     query = query.ilike("email", term);
@@ -224,19 +343,37 @@ export async function loadAdminPendingInvitations(
   const { data, error } = await query;
 
   if (error) {
-    // Optional columns may not exist until migration is applied.
     if (
+      error.message?.includes("invitation_type") ||
       error.message?.includes("first_name") ||
       error.message?.includes("last_name")
     ) {
-      const fallback = await admin
+      let fallbackQuery = admin
         .from("household_invitations")
-        .select(
-          "id, household_id, email, role, token, invited_by, accepted_at, expires_at, created_at"
-        )
+        .select(INVITATION_SELECT_FALLBACK)
         .is("accepted_at", null)
         .order("created_at", { ascending: false })
         .limit(200);
+
+      if (options?.householdId) {
+        fallbackQuery = fallbackQuery.eq(
+          "household_id",
+          options.householdId
+        );
+      }
+
+      if (options?.role) {
+        fallbackQuery = fallbackQuery.eq("role", options.role);
+      }
+
+      if (options?.q?.trim()) {
+        fallbackQuery = fallbackQuery.ilike(
+          "email",
+          `%${options.q.trim()}%`
+        );
+      }
+
+      const fallback = await fallbackQuery;
 
       if (fallback.error) {
         throw fallback.error;
@@ -266,7 +403,11 @@ async function mapInvitationRows(
   }
 
   const householdIds = [
-    ...new Set(rows.map((row) => row.household_id)),
+    ...new Set(
+      rows
+        .map((row) => row.household_id)
+        .filter((value): value is string => Boolean(value))
+    ),
   ];
   const inviterIds = [
     ...new Set(
@@ -278,19 +419,28 @@ async function mapInvitationRows(
 
   const [{ data: households }, { data: profiles }] =
     await Promise.all([
-      admin
-        .from("households")
-        .select("id, name")
-        .in("id", householdIds),
+      householdIds.length > 0
+        ? admin
+            .from("households")
+            .select("id, name")
+            .in("id", householdIds)
+        : Promise.resolve({
+            data: [] as Array<{
+              id: string;
+              name: string | null;
+            }>,
+          }),
       inviterIds.length > 0
         ? admin
             .from("profiles")
             .select("id, full_name")
             .in("id", inviterIds)
-        : Promise.resolve({ data: [] as Array<{
-            id: string;
-            full_name: string | null;
-          }> }),
+        : Promise.resolve({
+            data: [] as Array<{
+              id: string;
+              full_name: string | null;
+            }>,
+          }),
     ]);
 
   const householdMap = new Map(
@@ -320,21 +470,30 @@ async function mapInvitationRows(
   }
 
   return rows
-    .filter((row) => {
-      const role = parseInviteRole(row.role);
-      return role !== null;
-    })
     .map((row) => {
-      const role = parseInviteRole(row.role)!;
+      const invitationType = resolveInvitationType(row);
+      const role =
+        invitationType === "household_member"
+          ? parseInviteRole(row.role)
+          : null;
+
+      if (
+        invitationType === "household_member" &&
+        !role
+      ) {
+        return null;
+      }
 
       return {
         id: row.id,
         email: row.email,
         firstName: row.first_name ?? null,
         lastName: row.last_name ?? null,
+        invitationType,
         householdId: row.household_id,
-        householdName:
-          householdMap.get(row.household_id) ?? null,
+        householdName: row.household_id
+          ? householdMap.get(row.household_id) ?? null
+          : null,
         role,
         invitedBy: row.invited_by,
         invitedByName: row.invited_by
@@ -348,7 +507,10 @@ async function mapInvitationRows(
         status: invitationStatus(row.expires_at),
       } satisfies AdminPendingInvitation;
     })
-    .filter((row) => row.status === "pending");
+    .filter(
+      (row): row is AdminPendingInvitation =>
+        row !== null && row.status === "pending"
+    );
 }
 
 export async function createAdminUserInvitation(input: {
@@ -361,8 +523,9 @@ export async function createAdminUserInvitation(input: {
   payload: AdminInviteUserInput;
 }) {
   const email = normalizeInviteEmail(input.payload.email);
-  const role = parseInviteRole(input.payload.role);
-  const householdId = input.payload.householdId.trim();
+  const invitationType =
+    parseInvitationType(input.payload.invitationType) ??
+    "new_account";
   const firstName = input.payload.firstName?.trim() || null;
   const lastName = input.payload.lastName?.trim() || null;
 
@@ -373,6 +536,26 @@ export async function createAdminUserInvitation(input: {
       error: "Enter a valid email address.",
     };
   }
+
+  const inviterName =
+    input.actor.fullName?.trim() ||
+    input.actor.email ||
+    "A Home Tech Vault administrator";
+
+  if (invitationType === "new_account") {
+    return createNewAccountInvitation({
+      admin: input.admin,
+      actorUserId: input.actor.userId,
+      email,
+      firstName,
+      lastName,
+      inviterName,
+    });
+  }
+
+  const role = parseInviteRole(input.payload.role);
+  const householdId =
+    input.payload.householdId?.trim() || "";
 
   if (!role) {
     return {
@@ -390,11 +573,191 @@ export async function createAdminUserInvitation(input: {
     };
   }
 
+  return createHouseholdMemberInvitation({
+    admin: input.admin,
+    actorUserId: input.actor.userId,
+    email,
+    firstName,
+    lastName,
+    role,
+    householdId,
+    inviterName,
+  });
+}
+
+async function createNewAccountInvitation(input: {
+  admin: SupabaseClient;
+  actorUserId: string;
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+  inviterName: string;
+}) {
+  const existingAuthUser = await findAuthUserByEmail(
+    input.admin,
+    input.email
+  );
+
+  if (existingAuthUser) {
+    const { data: ownedHousehold } = await input.admin
+      .from("households")
+      .select("id")
+      .eq("owner_id", existingAuthUser.id)
+      .maybeSingle();
+
+    if (ownedHousehold) {
+      return {
+        ok: false as const,
+        status: 409,
+        error:
+          "Unable to send this invitation. Ask the person to sign in if they already have an account.",
+      };
+    }
+  }
+
+  const { data: existingInvite } = await input.admin
+    .from("household_invitations")
+    .select("id")
+    .ilike("email", input.email)
+    .eq("invitation_type", "new_account")
+    .is("accepted_at", null)
+    .maybeSingle();
+
+  if (existingInvite) {
+    return {
+      ok: false as const,
+      status: 409,
+      error:
+        "A pending new-account invitation already exists for this email.",
+    };
+  }
+
+  const insertPayload: Record<string, unknown> = {
+    invitation_type: "new_account",
+    household_id: null,
+    role: null,
+    email: input.email,
+    invited_by: input.actorUserId,
+  };
+
+  if (input.firstName) {
+    insertPayload.first_name = input.firstName;
+  }
+
+  if (input.lastName) {
+    insertPayload.last_name = input.lastName;
+  }
+
+  const { data, error } = await input.admin
+    .from("household_invitations")
+    .insert(insertPayload)
+    .select(INVITATION_SELECT)
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  const invitation = data as InvitationRow;
+  let deliveryWarning: string | null = null;
+  let delivery: "auth_invite" | "account_email" =
+    "account_email";
+
+  const fullName = buildFullName(
+    input.firstName,
+    input.lastName
+  );
+  const redirectTo = buildNewAccountSetupUrl(
+    invitation.token
+  );
+
+  if (!existingAuthUser) {
+    const { error: authInviteError } =
+      await input.admin.auth.admin.inviteUserByEmail(
+        input.email,
+        {
+          redirectTo,
+          data: {
+            full_name: fullName || undefined,
+            invitation_token: invitation.token,
+            invitation_type: "new_account",
+          },
+        }
+      );
+
+    if (authInviteError) {
+      const message = authInviteError.message.toLowerCase();
+
+      if (
+        !(
+          message.includes("already") ||
+          message.includes("registered") ||
+          message.includes("exists")
+        )
+      ) {
+        await input.admin
+          .from("household_invitations")
+          .delete()
+          .eq("id", invitation.id);
+
+        return {
+          ok: false as const,
+          status: 500,
+          error:
+            "Unable to send the account invitation. Please try again.",
+        };
+      }
+    } else {
+      delivery = "auth_invite";
+    }
+  }
+
+  if (delivery !== "auth_invite") {
+    const emailResult = await sendNewAccountInvitationEmail({
+      email: input.email,
+      inviterName: input.inviterName,
+      token: invitation.token,
+      expiresAt: invitation.expires_at,
+      inviteeFirstName: input.firstName,
+    });
+
+    if (!emailResult.ok) {
+      deliveryWarning =
+        "Invitation saved, but the email could not be delivered. You can resend it from the directory.";
+    }
+  }
+
+  const [mapped] = await mapInvitationRows(input.admin, [
+    invitation,
+  ]);
+
+  return {
+    ok: true as const,
+    invitation: mapped,
+    delivery,
+    deliveryWarning,
+    message:
+      delivery === "auth_invite"
+        ? "Invitation sent. The invitee will create their password and set up their own household."
+        : "Invitation sent. The invitee can complete account setup from the email link.",
+  };
+}
+
+async function createHouseholdMemberInvitation(input: {
+  admin: SupabaseClient;
+  actorUserId: string;
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+  role: AdminHouseholdInviteRole;
+  householdId: string;
+  inviterName: string;
+}) {
   const { data: household, error: householdError } =
     await input.admin
       .from("households")
       .select("id, name, owner_id")
-      .eq("id", householdId)
+      .eq("id", input.householdId)
       .maybeSingle();
 
   if (householdError) {
@@ -411,14 +774,14 @@ export async function createAdminUserInvitation(input: {
 
   const existingAuthUser = await findAuthUserByEmail(
     input.admin,
-    email
+    input.email
   );
 
   if (existingAuthUser) {
     const { data: membership } = await input.admin
       .from("household_members")
       .select("id")
-      .eq("household_id", householdId)
+      .eq("household_id", input.householdId)
       .eq("user_id", existingAuthUser.id)
       .maybeSingle();
 
@@ -435,8 +798,8 @@ export async function createAdminUserInvitation(input: {
   const { data: existingInvite } = await input.admin
     .from("household_invitations")
     .select("id")
-    .eq("household_id", householdId)
-    .ilike("email", email)
+    .eq("household_id", input.householdId)
+    .ilike("email", input.email)
     .is("accepted_at", null)
     .maybeSingle();
 
@@ -450,74 +813,32 @@ export async function createAdminUserInvitation(input: {
   }
 
   const insertPayload: Record<string, unknown> = {
-    household_id: householdId,
-    email,
-    role,
-    invited_by: input.actor.userId,
+    invitation_type: "household_member",
+    household_id: input.householdId,
+    email: input.email,
+    role: input.role,
+    invited_by: input.actorUserId,
   };
 
-  if (firstName) {
-    insertPayload.first_name = firstName;
+  if (input.firstName) {
+    insertPayload.first_name = input.firstName;
   }
 
-  if (lastName) {
-    insertPayload.last_name = lastName;
+  if (input.lastName) {
+    insertPayload.last_name = input.lastName;
   }
 
-  let invitation: InvitationRow | null = null;
+  const { data, error } = await input.admin
+    .from("household_invitations")
+    .insert(insertPayload)
+    .select(INVITATION_SELECT)
+    .single();
 
-  {
-    const { data, error } = await input.admin
-      .from("household_invitations")
-      .insert(insertPayload)
-      .select(
-        "id, household_id, email, role, token, invited_by, accepted_at, expires_at, created_at, first_name, last_name"
-      )
-      .single();
-
-    if (
-      error &&
-      (error.message?.includes("first_name") ||
-        error.message?.includes("last_name"))
-    ) {
-      const fallback = await input.admin
-        .from("household_invitations")
-        .insert({
-          household_id: householdId,
-          email,
-          role,
-          invited_by: input.actor.userId,
-        })
-        .select(
-          "id, household_id, email, role, token, invited_by, accepted_at, expires_at, created_at"
-        )
-        .single();
-
-      if (fallback.error) {
-        throw fallback.error;
-      }
-
-      invitation = fallback.data as InvitationRow;
-    } else if (error) {
-      throw error;
-    } else {
-      invitation = data as InvitationRow;
-    }
+  if (error) {
+    throw error;
   }
 
-  if (!invitation) {
-    return {
-      ok: false as const,
-      status: 500,
-      error: "Unable to create the invitation.",
-    };
-  }
-
-  const inviterName =
-    input.actor.fullName?.trim() ||
-    input.actor.email ||
-    "A Home Tech Vault administrator";
-
+  const invitation = data as InvitationRow;
   const householdName =
     (household.name as string | null)?.trim() ||
     "Home Tech Vault household";
@@ -527,30 +848,39 @@ export async function createAdminUserInvitation(input: {
   let deliveryWarning: string | null = null;
 
   if (!existingAuthUser) {
-    const fullName = buildFullName(firstName, lastName);
-    const redirectTo = buildAcceptanceUrl(invitation.token);
+    const fullName = buildFullName(
+      input.firstName,
+      input.lastName
+    );
+    const redirectTo = buildHouseholdAcceptanceUrl(
+      invitation.token
+    );
 
     const { error: authInviteError } =
-      await input.admin.auth.admin.inviteUserByEmail(email, {
-        redirectTo,
-        data: {
-          full_name: fullName || undefined,
-          invitation_token: invitation.token,
-          household_id: householdId,
-          household_role: role,
-        },
-      });
+      await input.admin.auth.admin.inviteUserByEmail(
+        input.email,
+        {
+          redirectTo,
+          data: {
+            full_name: fullName || undefined,
+            invitation_token: invitation.token,
+            invitation_type: "household_member",
+            household_id: input.householdId,
+            household_role: input.role,
+          },
+        }
+      );
 
     if (authInviteError) {
       const message = authInviteError.message.toLowerCase();
 
       if (
-        message.includes("already") ||
-        message.includes("registered") ||
-        message.includes("exists")
+        !(
+          message.includes("already") ||
+          message.includes("registered") ||
+          message.includes("exists")
+        )
       ) {
-        delivery = "household_email";
-      } else {
         await input.admin
           .from("household_invitations")
           .delete()
@@ -570,10 +900,10 @@ export async function createAdminUserInvitation(input: {
 
   if (delivery === "household_email" || existingAuthUser) {
     const emailResult = await sendHouseholdInvitationEmail({
-      email,
-      inviterName,
+      email: input.email,
+      inviterName: input.inviterName,
       householdName,
-      role,
+      role: input.role,
       token: invitation.token,
       expiresAt: invitation.expires_at,
     });
@@ -581,10 +911,9 @@ export async function createAdminUserInvitation(input: {
     if (!emailResult.ok) {
       deliveryWarning =
         "Invitation saved, but the email could not be delivered. You can resend it from the directory.";
-      delivery = "household_email";
-    } else {
-      delivery = "household_email";
     }
+
+    delivery = "household_email";
   }
 
   const [mapped] = await mapInvitationRows(input.admin, [
@@ -612,37 +941,10 @@ export async function resendAdminUserInvitation(input: {
   };
   invitationId: string;
 }) {
-  const { data: invitation, error } = await input.admin
-    .from("household_invitations")
-    .select(
-      "id, household_id, email, role, token, invited_by, accepted_at, expires_at, created_at, first_name, last_name"
-    )
-    .eq("id", input.invitationId)
-    .maybeSingle();
-
-  let row = invitation as InvitationRow | null;
-
-  if (
-    error &&
-    (error.message?.includes("first_name") ||
-      error.message?.includes("last_name"))
-  ) {
-    const fallback = await input.admin
-      .from("household_invitations")
-      .select(
-        "id, household_id, email, role, token, invited_by, accepted_at, expires_at, created_at"
-      )
-      .eq("id", input.invitationId)
-      .maybeSingle();
-
-    if (fallback.error) {
-      throw fallback.error;
-    }
-
-    row = fallback.data as InvitationRow | null;
-  } else if (error) {
-    throw error;
-  }
+  const row = await selectInvitationById(
+    input.admin,
+    input.invitationId
+  );
 
   if (!row || row.accepted_at) {
     return {
@@ -660,9 +962,78 @@ export async function resendAdminUserInvitation(input: {
     };
   }
 
+  const invitationType = resolveInvitationType(row);
+  const inviterName =
+    input.actor.fullName?.trim() ||
+    input.actor.email ||
+    "A Home Tech Vault administrator";
+
+  const existingAuthUser = await findAuthUserByEmail(
+    input.admin,
+    row.email
+  );
+
+  if (invitationType === "new_account") {
+    const redirectTo = buildNewAccountSetupUrl(row.token);
+    const fullName = buildFullName(
+      row.first_name,
+      row.last_name
+    );
+
+    if (!existingAuthUser) {
+      const { error: authInviteError } =
+        await input.admin.auth.admin.inviteUserByEmail(
+          normalizeInviteEmail(row.email),
+          {
+            redirectTo,
+            data: {
+              full_name: fullName || undefined,
+              invitation_token: row.token,
+              invitation_type: "new_account",
+            },
+          }
+        );
+
+      if (
+        !authInviteError ||
+        authInviteError.message
+          .toLowerCase()
+          .includes("already")
+      ) {
+        if (!authInviteError) {
+          return {
+            ok: true as const,
+            message: "Invitation resent.",
+          };
+        }
+      }
+    }
+
+    const emailResult = await sendNewAccountInvitationEmail({
+      email: normalizeInviteEmail(row.email),
+      inviterName,
+      token: row.token,
+      expiresAt: row.expires_at,
+      inviteeFirstName: row.first_name,
+    });
+
+    if (!emailResult.ok) {
+      return {
+        ok: false as const,
+        status: 500,
+        error: "Unable to resend the invitation email.",
+      };
+    }
+
+    return {
+      ok: true as const,
+      message: "Invitation resent.",
+    };
+  }
+
   const role = parseInviteRole(row.role);
 
-  if (!role) {
+  if (!role || !row.household_id) {
     return {
       ok: false as const,
       status: 400,
@@ -675,16 +1046,6 @@ export async function resendAdminUserInvitation(input: {
     .select("name")
     .eq("id", row.household_id)
     .maybeSingle();
-
-  const existingAuthUser = await findAuthUserByEmail(
-    input.admin,
-    row.email
-  );
-
-  const inviterName =
-    input.actor.fullName?.trim() ||
-    input.actor.email ||
-    "A Home Tech Vault administrator";
 
   const householdName =
     (household?.name as string | null)?.trim() ||
@@ -700,22 +1061,18 @@ export async function resendAdminUserInvitation(input: {
       await input.admin.auth.admin.inviteUserByEmail(
         normalizeInviteEmail(row.email),
         {
-          redirectTo: buildAcceptanceUrl(row.token),
+          redirectTo: buildHouseholdAcceptanceUrl(row.token),
           data: {
             full_name: fullName || undefined,
             invitation_token: row.token,
+            invitation_type: "household_member",
             household_id: row.household_id,
             household_role: role,
           },
         }
       );
 
-    if (
-      authInviteError &&
-      !authInviteError.message.toLowerCase().includes("already")
-    ) {
-      // Fall through to household email.
-    } else if (!authInviteError) {
+    if (!authInviteError) {
       return {
         ok: true as const,
         message: "Invitation resent.",
@@ -750,15 +1107,10 @@ export async function revokeAdminUserInvitation(input: {
   admin: SupabaseClient;
   invitationId: string;
 }) {
-  const { data: invitation, error } = await input.admin
-    .from("household_invitations")
-    .select("id, accepted_at")
-    .eq("id", input.invitationId)
-    .maybeSingle();
-
-  if (error) {
-    throw error;
-  }
+  const invitation = await selectInvitationById(
+    input.admin,
+    input.invitationId
+  );
 
   if (!invitation || invitation.accepted_at) {
     return {
@@ -781,4 +1133,203 @@ export async function revokeAdminUserInvitation(input: {
     ok: true as const,
     message: "Invitation revoked.",
   };
+}
+
+export async function loadInvitationByToken(
+  admin: SupabaseClient,
+  token: string
+) {
+  const { data, error } = await admin
+    .from("household_invitations")
+    .select(INVITATION_SELECT)
+    .eq("token", token)
+    .maybeSingle();
+
+  if (
+    error &&
+    error.message?.includes("invitation_type")
+  ) {
+    const fallback = await admin
+      .from("household_invitations")
+      .select(INVITATION_SELECT_FALLBACK)
+      .eq("token", token)
+      .maybeSingle();
+
+    if (fallback.error) {
+      throw fallback.error;
+    }
+
+    return fallback.data as InvitationRow | null;
+  }
+
+  if (error) {
+    throw error;
+  }
+
+  return data as InvitationRow | null;
+}
+
+export async function acceptNewAccountInvitation(input: {
+  admin: SupabaseClient;
+  userId: string;
+  userEmail: string | null;
+  token: string;
+  firstName: string;
+  lastName: string;
+  householdName: string;
+}) {
+  const invitation = await loadInvitationByToken(
+    input.admin,
+    input.token
+  );
+
+  if (!invitation || invitation.accepted_at) {
+    return {
+      ok: false as const,
+      status: 404,
+      error: "This invitation is invalid or already used.",
+    };
+  }
+
+  if (invitationStatus(invitation.expires_at) === "expired") {
+    return {
+      ok: false as const,
+      status: 410,
+      error: "This invitation has expired.",
+    };
+  }
+
+  const invitationType = resolveInvitationType(invitation);
+
+  if (invitationType !== "new_account") {
+    return {
+      ok: false as const,
+      status: 400,
+      error:
+        "This invitation is for joining an existing household.",
+    };
+  }
+
+  const inviteEmail = normalizeInviteEmail(invitation.email);
+  const sessionEmail = normalizeInviteEmail(
+    input.userEmail || ""
+  );
+
+  if (!sessionEmail || sessionEmail !== inviteEmail) {
+    return {
+      ok: false as const,
+      status: 403,
+      error:
+        "Sign in with the invited email address to finish setup.",
+    };
+  }
+
+  const firstName = input.firstName.trim();
+  const lastName = input.lastName.trim();
+  const householdName = input.householdName.trim();
+
+  if (!firstName || !lastName) {
+    return {
+      ok: false as const,
+      status: 400,
+      error: "Enter your first and last name.",
+    };
+  }
+
+  if (!householdName) {
+    return {
+      ok: false as const,
+      status: 400,
+      error: "Enter a household name.",
+    };
+  }
+
+  const { data: existingOwned } = await input.admin
+    .from("households")
+    .select("id")
+    .eq("owner_id", input.userId)
+    .maybeSingle();
+
+  if (existingOwned) {
+    return {
+      ok: false as const,
+      status: 409,
+      error: "Your account already owns a household.",
+    };
+  }
+
+  const fullName = buildFullName(firstName, lastName);
+
+  const { error: profileError } = await input.admin
+    .from("profiles")
+    .upsert({
+      id: input.userId,
+      full_name: fullName,
+      household_name: householdName,
+    });
+
+  if (profileError) {
+    throw profileError;
+  }
+
+  const { data: household, error: householdError } =
+    await input.admin
+      .from("households")
+      .insert({
+        owner_id: input.userId,
+        name: householdName,
+      })
+      .select("id, name")
+      .single();
+
+  if (householdError) {
+    throw householdError;
+  }
+
+  const { error: membershipError } = await input.admin
+    .from("household_members")
+    .insert({
+      household_id: household.id,
+      user_id: input.userId,
+      role: "owner",
+      invited_by: invitation.invited_by,
+    });
+
+  if (
+    membershipError &&
+    !membershipError.message.toLowerCase().includes("duplicate")
+  ) {
+    await input.admin
+      .from("households")
+      .delete()
+      .eq("id", household.id);
+
+    throw membershipError;
+  }
+
+  const { error: acceptError } = await input.admin
+    .from("household_invitations")
+    .update({
+      accepted_at: new Date().toISOString(),
+      accepted_by: input.userId,
+    })
+    .eq("id", invitation.id)
+    .is("accepted_at", null);
+
+  if (acceptError) {
+    throw acceptError;
+  }
+
+  return {
+    ok: true as const,
+    householdId: household.id as string,
+    householdName: household.name as string,
+    message: "Your household is ready.",
+  };
+}
+
+export function getInvitationTypeFromRow(
+  row: InvitationRow
+): AdminInvitationType {
+  return resolveInvitationType(row);
 }

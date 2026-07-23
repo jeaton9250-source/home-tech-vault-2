@@ -105,6 +105,30 @@ export default function AcceptFamilyInvitationPage() {
           return;
         }
 
+        const {
+          data: invitationPreview,
+          error: invitationPreviewError,
+        } = await supabase
+          .from("household_invitations")
+          .select("invitation_type, household_id")
+          .eq("token", token)
+          .maybeSingle();
+
+        if (
+          !invitationPreviewError &&
+          invitationPreview &&
+          (
+            invitationPreview.invitation_type ===
+              "new_account" ||
+            !invitationPreview.household_id
+          )
+        ) {
+          router.replace(
+            `/invite/setup/${encodeURIComponent(token)}`
+          );
+          return;
+        }
+
         setState("accepting");
         setMessage(
           "Adding you to the shared household..."
