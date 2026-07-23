@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
+import { Analytics } from "@vercel/analytics/next";
 
 import "./globals.css";
 
@@ -57,6 +58,7 @@ export default function RootLayout({
       <body className="bg-surface-base text-text-primary antialiased">
         <GoogleAnalytics />
         <AppChrome>{children}</AppChrome>
+        <Analytics />
       </body>
     </html>
   );
