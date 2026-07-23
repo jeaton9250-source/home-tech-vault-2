@@ -39,17 +39,17 @@ import { cn } from "@/lib/design-system/cn";
 import {
   displayValue,
   formatLastSeen,
-  formatNetworkPresence,
+  formatNetworkUpdatedAt,
   formatProfileCurrency,
   formatProfileDate,
   getWarrantyPresentation,
+  presentDeviceNetworkPresence,
 } from "@/lib/devices/deviceProfileUtils";
 import PageShell from "@/components/ui/PageShell";
 import PageCard from "@/components/ui/PageCard";
 import Button from "@/components/ui/Button";
 import DeviceProfileMaintenance from "@/components/devices/DeviceProfileMaintenance";
 import { ViewerBanner } from "@/components/ui/PermissionUI";
-import { usePermissions } from "@/hooks/usePermissions";
 
 export type DeviceProfileDevice = {
   id: string;
@@ -73,6 +73,7 @@ export type DeviceProfileDevice = {
   connector_id?: string | null;
   network_fingerprint?: string | null;
   first_seen_at?: string | null;
+  network_updated_at?: string | null;
 };
 
 export type DeviceProfilePhoto = {
@@ -119,6 +120,8 @@ type DeviceProfileProps = {
   onDeletePhoto?: (photoId: string) => void;
   documentsSection?: ReactNode;
   timelineSection?: ReactNode;
+  connectorName?: string | null;
+  connectorStatusMayBeOutdated?: boolean;
 };
 
 const NOTES_COLLAPSE_LENGTH = 220;
@@ -144,10 +147,9 @@ export default function DeviceProfile({
   onDeletePhoto,
   documentsSection,
   timelineSection,
+  connectorName = null,
+  connectorStatusMayBeOutdated = false,
 }: DeviceProfileProps) {
-  const { canViewFeature } = usePermissions();
-  const automaticMonitoring = canViewFeature("connectorMonitoring");
-
   const [timelineExpanded, setTimelineExpanded] = useState(false);
   const [notesExpanded, setNotesExpanded] = useState(false);
   const [previewPhotoId, setPreviewPhotoId] = useState<string | null>(null);
@@ -157,20 +159,28 @@ export default function DeviceProfile({
   const previewPhoto =
     photos.find((photo) => photo.id === previewPhotoId) ?? heroPhoto;
 
+  const hasNetworkMatch = Boolean(
+    device.connector_id ||
+      device.network_fingerprint ||
+      device.network_updated_at
+  );
+
   const hasNetwork = Boolean(
-    device.ip_address ||
+    hasNetworkMatch ||
+      device.ip_address ||
       device.mac_address ||
       device.hostname ||
       device.manufacturer ||
       device.discovery_source ||
-      device.connector_id ||
       device.last_seen_at ||
       device.online !== null
   );
 
-  const networkPresence = formatNetworkPresence({
+  const networkPresence = presentDeviceNetworkPresence({
     online: device.online,
     lastSeenAt: device.last_seen_at,
+    firstSeenAt: device.first_seen_at,
+    networkUpdatedAt: device.network_updated_at,
   });
 
   const receipt = documents.find((doc) => doc.type === "Receipt");
@@ -677,27 +687,26 @@ export default function DeviceProfile({
             <div>
               <p className="text-overline text-section-technology">Network</p>
               <h2 className="text-2xl font-semibold tracking-[-0.03em] text-text-primary">
-                Connection details
+                Network status
               </h2>
             </div>
           </div>
 
+          {connectorStatusMayBeOutdated ? (
+            <p className="mt-4 rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              Connector online. Device status may be outdated.
+            </p>
+          ) : null}
+
           <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             <FactCard
               icon={Wifi}
-              label="Network Status"
-              value={networkPresence}
+              label="Status"
+              value={networkPresence.label}
             />
             <FactCard
               icon={Radio}
-              label="Monitoring"
-              value={
-                automaticMonitoring ? "Automatic" : "Manual"
-              }
-            />
-            <FactCard
-              icon={Radio}
-              label="Last Seen"
+              label="Last Detected"
               value={formatLastSeen(device.last_seen_at)}
             />
             <FactCard
@@ -722,35 +731,56 @@ export default function DeviceProfile({
             />
             <FactCard
               icon={Sparkles}
-              label="Connector"
-              value={
-                device.connector_id
-                  ? "Home Tech Vault Connector"
-                  : "Not linked"
-              }
-            />
-            <FactCard
-              icon={Sparkles}
               label="Discovery Source"
               value={displayValue(device.discovery_source)}
             />
             <FactCard
-              icon={Wifi}
-              label="Signal"
-              value="Not available yet"
+              icon={Sparkles}
+              label="Connector"
+              value={displayValue(connectorName, "Home Tech Vault Connector")}
+            />
+            <FactCard
+              icon={CalendarDays}
+              label="First Detected"
+              value={formatProfileDate(device.first_seen_at) ?? "Not recorded"}
+            />
+            <FactCard
+              icon={CalendarDays}
+              label="Last Network Update"
+              value={formatNetworkUpdatedAt(device.network_updated_at)}
             />
           </div>
 
-          <div className="mt-8 rounded-2xl border border-dashed border-border-subtle px-5 py-4">
-            <p className="text-sm font-medium text-text-primary">
-              Network timeline
-            </p>
-            <p className="mt-1 text-sm text-text-secondary">
-              Network activity history will appear here in a future update.
-            </p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Button href="/network/discovery" variant="secondary">
+              Review discovery
+            </Button>
+            <Button href="/network?tab=monitoring" variant="ghost">
+              View monitoring
+            </Button>
           </div>
         </PageCard>
-      ) : null}
+      ) : (
+        <PageCard className="p-6 md:p-8">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-sm)]">
+              <Wifi size={20} />
+            </div>
+            <div>
+              <p className="text-overline text-section-technology">Network</p>
+              <h2 className="text-2xl font-semibold tracking-[-0.03em] text-text-primary">
+                Network status
+              </h2>
+            </div>
+          </div>
+          <p className="mt-4 text-sm leading-7 text-text-secondary">
+            This device has not been matched to a network device yet.
+          </p>
+          <div className="mt-6">
+            <Button href="/network/discovery">Match Network Device</Button>
+          </div>
+        </PageCard>
+      )}
 
       {/* Maintenance */}
       <DeviceProfileMaintenance

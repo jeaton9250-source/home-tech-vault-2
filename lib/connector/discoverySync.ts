@@ -4,6 +4,11 @@ import {
   buildDeviceNetworkEnrichmentUpdate,
 } from "@/lib/connector/deviceEnrichment";
 import {
+  recordDeviceMatchedNetworkEvent,
+  recordVaultDeviceNetworkSyncEvents,
+  type VaultDeviceNetworkSnapshot,
+} from "@/lib/connector/deviceNetworkSync";
+import {
   matchDiscoveredDevice,
   rowToDiscoveredForMatching,
   rowToVaultDeviceForMatching,
@@ -31,7 +36,7 @@ type SyncDiscoveredDevicesInput = {
 };
 
 const VAULT_DEVICE_SELECT =
-  "id, household_id, device_name, brand, manufacturer, model_number, serial_number, mac_address, network_fingerprint, category, ip_address, hostname, first_seen_at, discovery_source";
+  "id, household_id, device_name, brand, manufacturer, model_number, serial_number, mac_address, network_fingerprint, category, ip_address, hostname, first_seen_at, discovery_source, online, last_seen_at, network_updated_at, connector_id";
 
 /** Foundation schema only — safe before 2B.2 device enrichment migration. */
 const VAULT_DEVICE_SELECT_FOUNDATION =
@@ -61,7 +66,7 @@ function toDiscoveryNetworkFields(
   };
 }
 
-async function loadVaultDevices(
+async function loadVaultDeviceRows(
   admin: SupabaseClient,
   householdId: string
 ) {
@@ -74,9 +79,32 @@ async function loadVaultDevices(
     throw error;
   }
 
-  return (data ?? []).map(
-    rowToVaultDeviceForMatching
-  );
+  return data ?? [];
+}
+
+function toNetworkSnapshot(row: {
+  id: string;
+  online?: boolean | null;
+  last_seen_at?: string | null;
+  first_seen_at?: string | null;
+  ip_address?: string | null;
+  hostname?: string | null;
+  manufacturer?: string | null;
+  network_updated_at?: string | null;
+}): VaultDeviceNetworkSnapshot {
+  return {
+    id: row.id,
+    online: row.online,
+    last_seen_at: row.last_seen_at,
+    first_seen_at: row.first_seen_at,
+    ip_address:
+      row.ip_address === null || row.ip_address === undefined
+        ? null
+        : String(row.ip_address),
+    hostname: row.hostname,
+    manufacturer: row.manufacturer,
+    network_updated_at: row.network_updated_at,
+  };
 }
 
 async function enrichVaultDevice(
@@ -114,10 +142,28 @@ export async function syncDiscoveredDevicesWithMatching(
     devices,
   } = input;
 
-  const vaultDevices = await loadVaultDevices(
+  const vaultDeviceRows = await loadVaultDeviceRows(
     admin,
     householdId
   );
+  const vaultDevices = vaultDeviceRows.map(
+    rowToVaultDeviceForMatching
+  );
+
+  const { data: connectorRow, error: connectorError } =
+    await admin
+      .from("connector_installations")
+      .select("created_by_user_id")
+      .eq("id", connectorId)
+      .eq("household_id", householdId)
+      .maybeSingle();
+
+  if (connectorError) {
+    throw connectorError;
+  }
+
+  const actorUserId =
+    connectorRow?.created_by_user_id ?? null;
 
   let upserted = 0;
   let autoMatched = 0;
@@ -264,6 +310,17 @@ export async function syncDiscoveredDevicesWithMatching(
       continue;
     }
 
+    const vaultDeviceRow = vaultDeviceRows.find(
+      (candidate) => candidate.id === targetDeviceId
+    );
+
+    if (!vaultDeviceRow) {
+      continue;
+    }
+
+    const previousSnapshot =
+      toNetworkSnapshot(vaultDeviceRow);
+
     const update = buildDeviceNetworkEnrichmentUpdate(
       vaultDevice,
       toDiscoveryNetworkFields(
@@ -275,7 +332,7 @@ export async function syncDiscoveredDevicesWithMatching(
           vaultDevice.discoverySource ?? null,
         existingDiscoverySources:
           mergedSources,
-        extendedNetworkFields: false,
+        networkUpdatedAt: scannedAt,
       }
     );
 
@@ -285,6 +342,52 @@ export async function syncDiscoveredDevicesWithMatching(
       householdId,
       update
     );
+
+    if (Object.keys(update).length > 0) {
+      const nextSnapshot = toNetworkSnapshot({
+        ...vaultDeviceRow,
+        online:
+          typeof update.online === "boolean"
+            ? update.online
+            : vaultDeviceRow.online,
+        last_seen_at:
+          typeof update.last_seen_at === "string"
+            ? update.last_seen_at
+            : vaultDeviceRow.last_seen_at,
+        first_seen_at:
+          typeof update.first_seen_at === "string"
+            ? update.first_seen_at
+            : vaultDeviceRow.first_seen_at,
+        ip_address:
+          typeof update.ip_address === "string"
+            ? update.ip_address
+            : vaultDeviceRow.ip_address,
+        hostname:
+          typeof update.hostname === "string"
+            ? update.hostname
+            : vaultDeviceRow.hostname,
+        manufacturer:
+          typeof update.manufacturer === "string"
+            ? update.manufacturer
+            : vaultDeviceRow.manufacturer,
+        network_updated_at:
+          typeof update.network_updated_at === "string"
+            ? update.network_updated_at
+            : scannedAt,
+      });
+
+      await recordVaultDeviceNetworkSyncEvents({
+        admin,
+        householdId,
+        connectorId,
+        discoveredDeviceId: discoveredRow.id,
+        deviceId: vaultDevice.id,
+        previous: previousSnapshot,
+        next: nextSnapshot,
+        scannedAt,
+        actorUserId,
+      });
+    }
 
     enriched += 1;
 
@@ -306,6 +409,30 @@ export async function syncDiscoveredDevicesWithMatching(
       firstSeenAt:
         vaultDevice.firstSeenAt ??
         preservedFirstSeenAt,
+    });
+
+    Object.assign(vaultDeviceRow, {
+      online:
+        typeof update.online === "boolean"
+          ? update.online
+          : vaultDeviceRow.online,
+      last_seen_at:
+        typeof update.last_seen_at === "string"
+          ? update.last_seen_at
+          : vaultDeviceRow.last_seen_at,
+      ip_address:
+        typeof update.ip_address === "string"
+          ? update.ip_address
+          : vaultDeviceRow.ip_address,
+      hostname:
+        typeof update.hostname === "string"
+          ? update.hostname
+          : vaultDeviceRow.hostname,
+      manufacturer:
+        typeof update.manufacturer === "string"
+          ? update.manufacturer
+          : vaultDeviceRow.manufacturer,
+      network_updated_at: scannedAt,
     });
   }
 
@@ -538,6 +665,8 @@ export async function confirmDiscoveredDeviceMatch(input: {
   const vaultDevice =
     rowToVaultDeviceForMatching(vaultRow);
 
+  const previousSnapshot = toNetworkSnapshot(vaultRow);
+
   const update = buildDeviceNetworkEnrichmentUpdate(
     vaultDevice,
     {
@@ -563,6 +692,7 @@ export async function confirmDiscoveredDeviceMatch(input: {
     {
       existingDiscoverySources:
         discoveredRow.discovery_sources,
+      networkUpdatedAt: nowIso,
     }
   );
 
@@ -572,6 +702,62 @@ export async function confirmDiscoveredDeviceMatch(input: {
     householdId,
     update
   );
+
+  if (Object.keys(update).length > 0) {
+    const nextSnapshot = toNetworkSnapshot({
+      ...vaultRow,
+      online:
+        typeof update.online === "boolean"
+          ? update.online
+          : vaultRow.online,
+      last_seen_at:
+        typeof update.last_seen_at === "string"
+          ? update.last_seen_at
+          : vaultRow.last_seen_at,
+      first_seen_at:
+        typeof update.first_seen_at === "string"
+          ? update.first_seen_at
+          : vaultRow.first_seen_at,
+      ip_address:
+        typeof update.ip_address === "string"
+          ? update.ip_address
+          : vaultRow.ip_address,
+      hostname:
+        typeof update.hostname === "string"
+          ? update.hostname
+          : vaultRow.hostname,
+      manufacturer:
+        typeof update.manufacturer === "string"
+          ? update.manufacturer
+          : vaultRow.manufacturer,
+      network_updated_at:
+        typeof update.network_updated_at === "string"
+          ? update.network_updated_at
+          : nowIso,
+    });
+
+    await recordVaultDeviceNetworkSyncEvents({
+      admin,
+      householdId,
+      connectorId: discoveredRow.connector_id,
+      discoveredDeviceId,
+      deviceId: vaultDeviceId,
+      previous: previousSnapshot,
+      next: nextSnapshot,
+      scannedAt: nowIso,
+      actorUserId: userId,
+    });
+  }
+
+  await recordDeviceMatchedNetworkEvent({
+    admin,
+    householdId,
+    connectorId: discoveredRow.connector_id,
+    discoveredDeviceId,
+    deviceId: vaultDeviceId,
+    matchedAt: nowIso,
+    actorUserId: userId,
+  });
 }
 
 export async function ignoreDiscoveredDevice(input: {

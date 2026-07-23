@@ -21,6 +21,7 @@ export function buildDeviceNetworkEnrichmentUpdate(
     existingDiscoverySources?: string[];
     /** When false, skips columns that require the 2B.2 migration. */
     extendedNetworkFields?: boolean;
+    networkUpdatedAt?: string;
   }
 ): Record<string, unknown> {
   const update: Record<string, unknown> = {};
@@ -120,6 +121,11 @@ export function buildDeviceNetworkEnrichmentUpdate(
   } else if (discovery.discoverySource) {
     update.discovery_source =
       discovery.discoverySource;
+  }
+
+  if (Object.keys(update).length > 0) {
+    update.network_updated_at =
+      options?.networkUpdatedAt ?? discovery.lastSeenAt;
   }
 
   return update;

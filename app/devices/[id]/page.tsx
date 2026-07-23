@@ -51,6 +51,7 @@ import PageCard from "@/components/ui/PageCard";
 import Button from "@/components/ui/Button";
 
 import { useDemoReadOnlyAction } from "@/components/demo/DemoExperienceProvider";
+import { useDeviceNetworkRefresh } from "@/hooks/useDeviceNetworkRefresh";
 
 type Device = {
   id: string;
@@ -72,6 +73,11 @@ type Device = {
   mac_address?: string | null;
   manufacturer?: string | null;
   discovery_source?: string | null;
+  hostname?: string | null;
+  connector_id?: string | null;
+  network_fingerprint?: string | null;
+  first_seen_at?: string | null;
+  network_updated_at?: string | null;
 };
 
 type DeviceImageRow = {
@@ -436,6 +442,29 @@ export default function DevicePage() {
     permissionsLoading,
     loadImages,
   ]);
+
+  const handleDeviceNetworkUpdate = useCallback(
+    (fields: Partial<Device>) => {
+      setDevice((current) =>
+        current ? { ...current, ...fields } : current
+      );
+    },
+    []
+  );
+
+  const {
+    connectorName,
+    connectorStatusMayBeOutdated,
+  } = useDeviceNetworkRefresh(
+    {
+      deviceId,
+      householdId,
+      userId: user?.id ?? null,
+      enabled: Boolean(device && user && !isDemo && householdId),
+    },
+    device,
+    handleDeviceNetworkUpdate
+  );
 
   function redirectViewer() {
     if (isDemo || !user) {
@@ -971,6 +1000,8 @@ export default function DevicePage() {
           />
         ) : undefined
       }
+      connectorName={connectorName}
+      connectorStatusMayBeOutdated={connectorStatusMayBeOutdated}
     />
   );
 }

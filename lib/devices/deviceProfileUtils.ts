@@ -1,3 +1,10 @@
+import {
+  formatDevicePresenceListLine,
+  formatNetworkUpdatedAt,
+  formatPresenceLastSeen,
+  presentDeviceNetworkPresence,
+} from "@/lib/devices/devicePresence";
+
 export type WarrantyPresentation = {
   label: string;
   shortLabel: string;
@@ -105,73 +112,23 @@ export function formatProfileCurrency(value?: number | null) {
 }
 
 export function formatLastSeen(value?: string | null) {
-  if (!value) {
-    return "Never seen";
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "Unknown";
-  }
-
-  const minutes = Math.floor((Date.now() - date.getTime()) / (1000 * 60));
-
-  if (minutes < 1) {
-    return "Seen just now";
-  }
-
-  if (minutes < 60) {
-    return `Seen ${minutes} minute${minutes === 1 ? "" : "s"} ago`;
-  }
-
-  const hours = Math.floor(minutes / 60);
-
-  if (hours < 24) {
-    return `Seen ${hours} hour${hours === 1 ? "" : "s"} ago`;
-  }
-
-  const days = Math.floor(hours / 24);
-
-  if (days < 7) {
-    return `Seen ${days} day${days === 1 ? "" : "s"} ago`;
-  }
-
-  return `Last seen ${date.toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  })}`;
+  return formatPresenceLastSeen(value);
 }
 
 export function formatNetworkPresence(input: {
   online?: boolean | null;
   lastSeenAt?: string | null;
+  firstSeenAt?: string | null;
+  networkUpdatedAt?: string | null;
 }): string {
-  if (input.online === true) {
-    return "Online";
-  }
-
-  if (!input.lastSeenAt) {
-    return "Unknown";
-  }
-
-  const date = new Date(input.lastSeenAt);
-
-  if (Number.isNaN(date.getTime())) {
-    return "Unknown";
-  }
-
-  const minutes = Math.floor(
-    (Date.now() - date.getTime()) / (1000 * 60)
-  );
-
-  if (minutes <= 30) {
-    return "Recently detected";
-  }
-
-  return "Not recently detected";
+  return presentDeviceNetworkPresence(input).label;
 }
+
+export {
+  formatDevicePresenceListLine,
+  formatNetworkUpdatedAt,
+  presentDeviceNetworkPresence,
+};
 
 export function displayValue(value?: string | null, fallback = "Not recorded") {
   const trimmed = value?.trim();

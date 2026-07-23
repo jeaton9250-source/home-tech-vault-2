@@ -47,6 +47,7 @@ import {
   ViewerBanner,
 } from "@/components/ui/PermissionUI";
 import { useDemoReadOnlyAction } from "@/components/demo/DemoExperienceProvider";
+import { formatDevicePresenceListLine } from "@/lib/devices/devicePresence";
 
 type DeviceRecord = BaseDevice & {
   id: string;
@@ -55,6 +56,10 @@ type DeviceRecord = BaseDevice & {
   device_name: string;
   photo_url?: string;
   demo_image?: string;
+  online?: boolean | null;
+  last_seen_at?: string | null;
+  first_seen_at?: string | null;
+  network_updated_at?: string | null;
 };
 
 type DeviceImageRecord = {
@@ -372,6 +377,101 @@ export default function DevicesPage() {
     isDemo,
     householdId,
     permissionsLoading,
+  ]);
+
+  useEffect(() => {
+    if (
+      permissionsLoading ||
+      isDemo ||
+      !user ||
+      !householdId ||
+      devices.length === 0
+    ) {
+      return;
+    }
+
+    let cancelled = false;
+    const userId = user.id;
+
+    async function refreshDevicePresence() {
+      const { data, error } = await applyHouseholdScope(
+        supabase
+          .from("devices")
+          .select(
+            "id, online, last_seen_at, first_seen_at, network_updated_at"
+          ),
+        householdId,
+        userId
+      );
+
+      if (error || !data || cancelled) {
+        return;
+      }
+
+      type PresenceRow = {
+        id: string;
+        online?: boolean | null;
+        last_seen_at?: string | null;
+        first_seen_at?: string | null;
+        network_updated_at?: string | null;
+      };
+
+      const presenceById = new Map(
+        (data as PresenceRow[]).map((row) => [row.id, row])
+      );
+
+      setDevices((currentDevices) =>
+        currentDevices.map((device) => {
+          const presence = presenceById.get(device.id);
+
+          if (!presence) {
+            return device;
+          }
+
+          return {
+            ...device,
+            online: presence.online,
+            last_seen_at: presence.last_seen_at,
+            first_seen_at: presence.first_seen_at,
+            network_updated_at: presence.network_updated_at,
+          };
+        })
+      );
+    }
+
+    void refreshDevicePresence();
+
+    const intervalId = window.setInterval(() => {
+      void refreshDevicePresence();
+    }, 45_000);
+
+    const channel = supabase
+      .channel(`devices-presence-${householdId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "devices",
+          filter: `household_id=eq.${householdId}`,
+        },
+        () => {
+          void refreshDevicePresence();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+      void supabase.removeChannel(channel);
+    };
+  }, [
+    devices.length,
+    householdId,
+    isDemo,
+    permissionsLoading,
+    user,
   ]);
 
   const categories = useMemo(() => {
@@ -1133,6 +1233,15 @@ function ModernDeviceCard({
                 .filter(Boolean)
                 .join(" · ") ||
                 "Device details"}
+            </p>
+
+            <p className="mt-2 text-sm text-text-secondary">
+              {formatDevicePresenceListLine({
+                online: device.online,
+                lastSeenAt: device.last_seen_at,
+                firstSeenAt: device.first_seen_at,
+                networkUpdatedAt: device.network_updated_at,
+              })}
             </p>
           </div>
 
