@@ -1,31 +1,37 @@
 "use client";
 
 import {
+  useCallback,
   useEffect,
   useMemo,
   useState,
-  type ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
 import {
-  CalendarClock,
-  CheckCircle2,
+  CalendarX,
   ChevronRight,
   CircleAlert,
   Clock3,
   Download,
   Laptop,
+  MapPin,
+  RotateCcw,
   Search,
   ShieldAlert,
   ShieldCheck,
+  SlidersHorizontal,
+  X,
 } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+
 import { getWarrantyDevices } from "@/lib/data/warranties";
 import { demoDevices } from "@/lib/demoData";
 import { usePermissions } from "@/hooks/usePermissions";
+import { cn } from "@/lib/design-system/cn";
 
 import PageShell from "@/components/ui/PageShell";
+import PageCard from "@/components/ui/PageCard";
 import PageHero from "@/components/ui/PageHero";
+import Button from "@/components/ui/Button";
 import EmptyState from "@/components/ui/EmptyState";
 import { ViewerBanner } from "@/components/ui/PermissionUI";
 
@@ -41,6 +47,12 @@ type WarrantyStatus =
   | "expiring"
   | "expired"
   | "missing";
+
+type WarrantySort =
+  | "expiration-soonest"
+  | "expiration-latest"
+  | "name-asc"
+  | "name-desc";
 
 type WarrantyDevice = {
   id: string;
@@ -106,7 +118,9 @@ function normalizeDevice(
 
     brand: getString(record, "brand"),
 
-    model: getString(record, "model"),
+    model:
+      getString(record, "model") ??
+      getString(record, "model_number"),
 
     location: getString(
       record,
@@ -255,7 +269,29 @@ function getStatusLabel(
     return "Expired";
   }
 
-  return "Missing Warranty";
+  return "Missing";
+}
+
+function getFilterLabel(
+  filter: WarrantyFilter
+): string {
+  if (filter === "all") {
+    return "all warranties";
+  }
+
+  if (filter === "active") {
+    return "active warranties";
+  }
+
+  if (filter === "expiring") {
+    return "expiring warranties";
+  }
+
+  if (filter === "expired") {
+    return "expired warranties";
+  }
+
+  return "missing warranty information";
 }
 
 function getStatusDescription(
@@ -268,11 +304,11 @@ function getStatusDescription(
     getDaysRemaining(warrantyDate);
 
   if (status === "missing") {
-    return "Add a warranty expiration date.";
+    return "Expiration date not provided";
   }
 
   if (daysRemaining === null) {
-    return "";
+    return "Expiration date not provided";
   }
 
   if (status === "expired") {
@@ -294,6 +330,22 @@ function getStatusDescription(
     return "Expires today";
   }
 
+  if (status === "expiring") {
+    if (daysRemaining === 1) {
+      return "Expires in 1 day";
+    }
+
+    return (
+      "Expires in " +
+      String(daysRemaining) +
+      " days"
+    );
+  }
+
+  if (daysRemaining === 1) {
+    return "1 day remaining";
+  }
+
   return (
     String(daysRemaining) +
     " days remaining"
@@ -306,27 +358,30 @@ function getStatusStyles(
   if (status === "active") {
     return {
       badge:
-        "border-emerald-200 bg-emerald-50 text-emerald-700",
+        "border-home-health/25 bg-home-health-soft text-home-health",
       icon:
-        "bg-emerald-100 text-emerald-700",
+        "bg-home-health-soft text-home-health",
+      Icon: ShieldCheck,
     };
   }
 
   if (status === "expiring") {
     return {
       badge:
-        "border-amber-200 bg-amber-50 text-amber-700",
+        "border-warning/30 bg-warning-soft text-warning",
       icon:
-        "bg-amber-100 text-amber-700",
+        "bg-warning-soft text-warning",
+      Icon: Clock3,
     };
   }
 
   if (status === "expired") {
     return {
       badge:
-        "border-red-200 bg-red-50 text-red-700",
+        "border-danger/25 bg-danger-soft text-danger",
       icon:
-        "bg-red-100 text-red-700",
+        "bg-danger-soft text-danger",
+      Icon: CircleAlert,
     };
   }
 
@@ -335,7 +390,26 @@ function getStatusStyles(
       "border-border-subtle bg-surface-sunken text-text-secondary",
     icon:
       "bg-surface-sunken text-text-secondary",
+    Icon: CalendarX,
   };
+}
+
+function getWarrantySortValue(
+  warrantyDate: string | null
+): number | null {
+  if (!warrantyDate) {
+    return null;
+  }
+
+  const expirationDate = new Date(
+    warrantyDate + "T12:00:00"
+  ).getTime();
+
+  if (Number.isNaN(expirationDate)) {
+    return null;
+  }
+
+  return expirationDate;
 }
 
 export default function WarrantiesPage() {
@@ -345,8 +419,15 @@ export default function WarrantiesPage() {
     user,
     isDemo,
     householdId,
+    role,
     loading: permissionsLoading,
   } = usePermissions();
+
+  const showViewerAccess =
+    !permissionsLoading &&
+    !isDemo &&
+    Boolean(user) &&
+    role === "viewer";
 
   const [devices, setDevices] =
     useState<WarrantyDevice[]>([]);
@@ -357,6 +438,11 @@ export default function WarrantiesPage() {
   const [activeFilter, setActiveFilter] =
     useState<WarrantyFilter>("all");
 
+  const [sortOption, setSortOption] =
+    useState<WarrantySort>(
+      "expiration-soonest"
+    );
+
   const [loading, setLoading] =
     useState(true);
 
@@ -366,10 +452,8 @@ export default function WarrantiesPage() {
   const [error, setError] =
     useState<string | null>(null);
 
-  useEffect(() => {
-    let mounted = true;
-
-    async function loadWarranties() {
+  const loadWarranties = useCallback(
+    async () => {
       if (permissionsLoading) {
         return;
       }
@@ -377,10 +461,6 @@ export default function WarrantiesPage() {
       try {
         setLoading(true);
         setError(null);
-
-        if (!mounted) {
-          return;
-        }
 
         if (isDemo || !user) {
           const demoWarrantyDevices =
@@ -410,6 +490,69 @@ export default function WarrantiesPage() {
           loadError
         );
 
+        setError(
+          "Unable to load warranty information."
+        );
+      } finally {
+        setLoading(false);
+      }
+    },
+    [
+      user,
+      isDemo,
+      householdId,
+      permissionsLoading,
+    ]
+  );
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function runLoad() {
+      if (permissionsLoading) {
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError(null);
+
+        if (isDemo || !user) {
+          const demoWarrantyDevices =
+            (demoDevices as unknown[]).map(
+              normalizeDevice
+            );
+
+          if (!mounted) {
+            return;
+          }
+
+          setDevices(
+            demoWarrantyDevices
+          );
+
+          return;
+        }
+
+        const realDevices =
+          (
+            await getWarrantyDevices(
+              user,
+              householdId
+            )
+          ).map(normalizeDevice);
+
+        if (!mounted) {
+          return;
+        }
+
+        setDevices(realDevices);
+      } catch (loadError: unknown) {
+        console.error(
+          "Unable to load warranties:",
+          loadError
+        );
+
         if (!mounted) {
           return;
         }
@@ -424,7 +567,7 @@ export default function WarrantiesPage() {
       }
     }
 
-    void loadWarranties();
+    void runLoad();
 
     return () => {
       mounted = false;
@@ -541,75 +684,251 @@ export default function WarrantiesPage() {
           .trim()
           .toLowerCase();
 
-      return devices.filter((device) => {
-        const status =
-          getWarrantyStatus(
-            device.warranty_date
+      const filtered = devices.filter(
+        (device) => {
+          const status =
+            getWarrantyStatus(
+              device.warranty_date
+            );
+
+          const matchesFilter =
+            activeFilter === "all" ||
+            status === activeFilter;
+
+          const searchableText = [
+            device.device_name,
+            device.brand,
+            device.model,
+            device.location,
+          ]
+            .filter(
+              (value): value is string =>
+                typeof value === "string"
+            )
+            .join(" ")
+            .toLowerCase();
+
+          const matchesSearch =
+            search.length === 0 ||
+            searchableText.includes(
+              search
+            );
+
+          return (
+            matchesFilter &&
+            matchesSearch
           );
+        }
+      );
 
-        const matchesFilter =
-          activeFilter === "all" ||
-          status === activeFilter;
+      return [...filtered].sort(
+        (first, second) => {
+          const firstName = String(
+            first.device_name ?? ""
+          ).toLowerCase();
+          const secondName = String(
+            second.device_name ?? ""
+          ).toLowerCase();
 
-        const searchableText = [
-          device.device_name,
-          device.brand,
-          device.model,
-          device.location,
-        ]
-          .filter(
-            (value): value is string =>
-              typeof value === "string"
-          )
-          .join(" ")
-          .toLowerCase();
+          if (sortOption === "name-asc") {
+            return firstName.localeCompare(
+              secondName
+            );
+          }
 
-        const matchesSearch =
-          search.length === 0 ||
-          searchableText.includes(search);
+          if (sortOption === "name-desc") {
+            return secondName.localeCompare(
+              firstName
+            );
+          }
 
-        return (
-          matchesFilter &&
-          matchesSearch
-        );
-      });
+          const firstDate =
+            getWarrantySortValue(
+              first.warranty_date
+            );
+          const secondDate =
+            getWarrantySortValue(
+              second.warranty_date
+            );
+
+          const firstMissing =
+            firstDate === null;
+          const secondMissing =
+            secondDate === null;
+
+          if (
+            firstMissing &&
+            secondMissing
+          ) {
+            return firstName.localeCompare(
+              secondName
+            );
+          }
+
+          if (firstMissing) {
+            return 1;
+          }
+
+          if (secondMissing) {
+            return -1;
+          }
+
+          if (
+            sortOption ===
+            "expiration-latest"
+          ) {
+            return (
+              (secondDate ?? 0) -
+              (firstDate ?? 0)
+            );
+          }
+
+          return (
+            (firstDate ?? 0) -
+            (secondDate ?? 0)
+          );
+        }
+      );
     }, [
       activeFilter,
       devices,
       searchQuery,
+      sortOption,
     ]);
 
-  const filters: Array<{
+  const filtersActive =
+    searchQuery.trim() !== "" ||
+    activeFilter !== "all" ||
+    sortOption !== "expiration-soonest";
+
+  const summaryCards: Array<{
     id: WarrantyFilter;
-    label: string;
-    count: number;
+    title: string;
+    value: number;
+    description: string;
+    icon: typeof ShieldCheck;
+    iconClassName: string;
   }> = [
     {
-      id: "all",
-      label: "All",
-      count: summary.total,
-    },
-    {
       id: "active",
-      label: "Active",
-      count: summary.active,
+      title: "Active",
+      value: summary.active,
+      description: "Coverage currently valid",
+      icon: ShieldCheck,
+      iconClassName:
+        "bg-home-health-soft text-home-health",
     },
     {
       id: "expiring",
-      label: "Expiring Soon",
-      count: summary.expiring,
+      title: "Expiring Soon",
+      value: summary.expiring,
+      description: "Expires within 90 days",
+      icon: Clock3,
+      iconClassName:
+        "bg-warning-soft text-warning",
     },
     {
       id: "expired",
-      label: "Expired",
-      count: summary.expired,
+      title: "Expired",
+      value: summary.expired,
+      description: "Coverage has ended",
+      icon: CircleAlert,
+      iconClassName:
+        "bg-danger-soft text-danger",
     },
     {
       id: "missing",
-      label: "Missing",
-      count: summary.missing,
+      title: "Missing Information",
+      value: summary.missing,
+      description: "No expiration date saved",
+      icon: CalendarX,
+      iconClassName:
+        "bg-surface-sunken text-text-secondary",
     },
   ];
+
+  const statusFilters: Array<{
+    id: WarrantyFilter;
+    label: string;
+  }> = [
+    { id: "all", label: "All" },
+    { id: "active", label: "Active" },
+    { id: "expiring", label: "Expiring" },
+    { id: "expired", label: "Expired" },
+    { id: "missing", label: "Missing" },
+  ];
+
+  const resultsHeader = useMemo(() => {
+    const count = filteredDevices.length;
+    const search = searchQuery.trim();
+
+    if (search) {
+      return (
+        "Showing " +
+        String(count) +
+        " result" +
+        (count === 1 ? "" : "s") +
+        " for “" +
+        search +
+        "”"
+      );
+    }
+
+    if (activeFilter === "expiring") {
+      return (
+        String(count) +
+        " expiring " +
+        (count === 1
+          ? "warranty"
+          : "warranties")
+      );
+    }
+
+    if (activeFilter === "expired") {
+      return (
+        String(count) +
+        " expired " +
+        (count === 1
+          ? "warranty"
+          : "warranties")
+      );
+    }
+
+    if (activeFilter === "active") {
+      return (
+        String(count) +
+        " active " +
+        (count === 1
+          ? "warranty"
+          : "warranties")
+      );
+    }
+
+    if (activeFilter === "missing") {
+      return (
+        String(count) +
+        " device" +
+        (count === 1 ? "" : "s") +
+        " missing warranty information"
+      );
+    }
+
+    return (
+      String(count) +
+      " warranty record" +
+      (count === 1 ? "" : "s")
+    );
+  }, [
+    activeFilter,
+    filteredDevices.length,
+    searchQuery,
+  ]);
+
+  function clearFilters() {
+    setSearchQuery("");
+    setActiveFilter("all");
+    setSortOption("expiration-soonest");
+  }
 
   function handleExport() {
     try {
@@ -703,441 +1022,669 @@ export default function WarrantiesPage() {
     }
   }
 
+  const pageLoading =
+    permissionsLoading || loading;
+
   return (
     <PageShell>
       <PageHero
         section="homeHealth"
-        eyebrow="Coverage Center"
-        title="Your warranties."
-        description="Track warranty coverage and see which devices need attention."
+        title="Warranties"
+        description="Track coverage, upcoming expirations, and missing warranty information across your household devices."
       >
-        <button
-          type="button"
-          onClick={handleExport}
-          disabled={
-            exporting ||
-            filteredDevices.length === 0
-          }
-          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--radius-button)] border border-border-subtle bg-surface-card px-4 text-sm font-semibold text-text-primary shadow-[var(--shadow-sm)] transition hover:bg-surface-sunken disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <Download size={17} />
-          {exporting ? "Exporting..." : "Export"}
-        </button>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <Button
+            href="/devices"
+            variant="secondary"
+          >
+            <Laptop size={17} />
+            Devices
+          </Button>
+
+          <Button
+            type="button"
+            onClick={handleExport}
+            disabled={
+              exporting ||
+              pageLoading ||
+              filteredDevices.length === 0
+            }
+            loading={exporting}
+            loadingLabel="Exporting..."
+          >
+            <Download size={17} />
+            Export CSV
+          </Button>
+        </div>
       </PageHero>
 
-      <ViewerBanner />
+      {showViewerAccess ? (
+        <ViewerBanner
+          description="You can view and search warranty records. Viewer access cannot change device warranty details."
+        />
+      ) : null}
 
-      <div className="space-y-6">
-
-        {!loading && !user && (
-          <div className="flex items-start gap-3 rounded-2xl border border-warning/40 bg-warning-soft p-4 text-text-primary">
-            <CircleAlert size={20} />
-
+      {(isDemo || !user) && !pageLoading ? (
+        <PageCard className="border-warning/30 bg-warning-soft/60 p-4 md:p-5">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-button)] border border-charcoal/15 bg-charcoal text-surface-card">
+              <ShieldCheck size={18} />
+            </div>
             <div>
-              <p className="font-semibold">
+              <p className="text-sm font-semibold text-text-primary">
                 Demo Mode
               </p>
-
-              <p className="mt-1 text-sm">
-                You are viewing sample
-                warranty information.
+              <p className="mt-1 text-sm leading-6 text-text-secondary">
+                You are viewing sample warranty
+                information from the Morgan Household.
               </p>
             </div>
           </div>
-        )}
+        </PageCard>
+      ) : null}
 
-        {error && (
-          <div className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-red-900">
-            <ShieldAlert size={20} />
-
-            <div>
-              <p className="font-semibold">
-                Unable to load warranties
-              </p>
-
-              <p className="mt-1 text-sm">
-                {error}
-              </p>
-            </div>
-          </div>
-        )}
-
-        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <SummaryCard
-            title="Active"
-            value={summary.active}
-            description="Protected devices"
-            icon={
-              <CheckCircle2 size={22} />
-            }
-            iconClassName="bg-emerald-100 text-emerald-700"
-          />
-
-          <SummaryCard
-            title="Expiring Soon"
-            value={summary.expiring}
-            description="Within 90 days"
-            icon={
-              <CalendarClock size={22} />
-            }
-            iconClassName="bg-amber-100 text-amber-700"
-          />
-
-          <SummaryCard
-            title="Expired"
-            value={summary.expired}
-            description="Coverage ended"
-            icon={
-              <ShieldAlert size={22} />
-            }
-            iconClassName="bg-red-100 text-red-700"
-          />
-
-          <SummaryCard
-            title="Missing"
-            value={summary.missing}
-            description="Need warranty dates"
-            icon={<Clock3 size={22} />}
-            iconClassName="bg-surface-sunken text-text-secondary"
-          />
-        </section>
-
-        <section className="grid gap-4 lg:grid-cols-2">
-          <div className="rounded-[var(--radius-card)] border border-border-subtle bg-surface-card p-5 shadow-sm">
-            <div className="flex items-start justify-between gap-4">
+      {error ? (
+        <PageCard className="border-danger/30 bg-danger-soft/70 p-5 md:p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-button)] bg-danger-soft text-danger">
+                <ShieldAlert size={18} />
+              </div>
               <div>
-                <p className="text-sm font-medium text-text-secondary">
-                  Protected Value
+                <p className="font-semibold text-text-primary">
+                  Unable to load warranties
                 </p>
+                <p className="mt-1 text-sm leading-6 text-text-secondary">
+                  {error}
+                </p>
+              </div>
+            </div>
 
-                <p className="mt-2 text-3xl font-bold tracking-tight text-text-primary">
-                  {formatCurrency(
-                    protectedValue
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => {
+                void loadWarranties();
+              }}
+            >
+              <RotateCcw size={16} />
+              Retry
+            </Button>
+          </div>
+        </PageCard>
+      ) : null}
+
+      {pageLoading ? (
+        <WarrantiesSkeleton />
+      ) : error && devices.length === 0 ? null : (
+        <>
+          <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {summaryCards.map((card) => {
+              const selected =
+                activeFilter === card.id;
+              const Icon = card.icon;
+
+              return (
+                <button
+                  key={card.id}
+                  type="button"
+                  onClick={() =>
+                    setActiveFilter(
+                      selected
+                        ? "all"
+                        : card.id
+                    )
+                  }
+                  aria-pressed={selected}
+                  className={cn(
+                    "htv-focus-ring rounded-[var(--radius-card)] border p-4 text-left shadow-[var(--shadow-sm)] transition md:p-5",
+                    selected
+                      ? "border-charcoal bg-surface-card ring-2 ring-charcoal/15"
+                      : "border-border-subtle bg-surface-card hover:border-border-strong hover:bg-surface-hover"
                   )}
-                </p>
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-text-tertiary">
+                        {card.title}
+                      </p>
+                      <p className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
+                        {card.value}
+                      </p>
+                      <p className="mt-1 text-xs leading-5 text-text-secondary">
+                        {card.description}
+                      </p>
+                    </div>
 
-                <p className="mt-1 text-sm text-text-secondary">
-                  Value currently covered by
-                  active warranties
-                </p>
-              </div>
-
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-100 text-violet-700">
-                <ShieldCheck size={22} />
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-[var(--radius-card)] border border-border-subtle bg-surface-card p-5 shadow-sm">
-            <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0">
-                <p className="text-sm font-medium text-text-secondary">
-                  Next Expiring
-                </p>
-
-                {nextExpiringDevice ? (
-                  <>
-                    <p className="mt-2 truncate text-xl font-bold text-text-primary">
-                      {nextExpiringDevice.device_name ??
-                        "Unnamed Device"}
-                    </p>
-
-                    <p className="mt-1 text-sm font-medium text-amber-700">
-                      {getStatusDescription(
-                        nextExpiringDevice.warranty_date
+                    <div
+                      className={cn(
+                        "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
+                        card.iconClassName
                       )}
-                    </p>
+                    >
+                      <Icon size={16} aria-hidden />
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </section>
 
-                    <p className="mt-1 text-sm text-text-secondary">
-                      Expires{" "}
-                      {formatDate(
-                        nextExpiringDevice.warranty_date
-                      )}
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <p className="mt-2 text-xl font-bold text-text-primary">
-                      Nothing upcoming
-                    </p>
-
-                    <p className="mt-1 text-sm text-text-secondary">
-                      No active warranty
-                      expirations were found.
-                    </p>
-                  </>
-                )}
+          <section className="grid gap-3 lg:grid-cols-2">
+            <PageCard className="p-4 md:p-5">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-text-tertiary">
+                    Protected Value
+                  </p>
+                  <p className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
+                    {formatCurrency(protectedValue)}
+                  </p>
+                  <p className="mt-1 text-xs text-text-secondary">
+                    Covered by active warranties
+                  </p>
+                </div>
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-surface-sunken text-charcoal">
+                  <ShieldCheck size={16} />
+                </div>
               </div>
+            </PageCard>
 
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
-                <CalendarClock size={22} />
+            <PageCard className="p-4 md:p-5">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-text-tertiary">
+                    Next Expiring
+                  </p>
+                  {nextExpiringDevice ? (
+                    <>
+                      <p className="mt-2 truncate text-lg font-semibold text-text-primary">
+                        {nextExpiringDevice.device_name ??
+                          "Unnamed Device"}
+                      </p>
+                      <p className="mt-1 text-xs font-medium text-warning">
+                        {getStatusDescription(
+                          nextExpiringDevice.warranty_date
+                        )}
+                      </p>
+                      <p className="mt-1 text-xs text-text-secondary">
+                        Expires{" "}
+                        {formatDate(
+                          nextExpiringDevice.warranty_date
+                        )}
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="mt-2 text-lg font-semibold text-text-primary">
+                        Nothing upcoming
+                      </p>
+                      <p className="mt-1 text-xs text-text-secondary">
+                        No active warranty expirations found.
+                      </p>
+                    </>
+                  )}
+                </div>
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-warning-soft text-warning">
+                  <Clock3 size={16} />
+                </div>
               </div>
-            </div>
-          </div>
-        </section>
+            </PageCard>
+          </section>
 
-        <section className="rounded-[var(--radius-card)] border border-border-subtle bg-surface-card p-5 shadow-sm">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-text-primary">
-                At a Glance
-              </h2>
-
-              <p className="mt-1 text-sm text-text-secondary">
-                Search and filter your
-                devices.
-              </p>
-            </div>
-
-            <div className="relative w-full lg:max-w-sm">
-              <Search
-                size={18}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary"
-              />
-
-              <input
-                type="search"
-                value={searchQuery}
-                onChange={(event) =>
-                  setSearchQuery(
-                    event.target.value
-                  )
-                }
-                placeholder="Search devices..."
-                className="h-11 w-full rounded-xl border border-border-subtle pl-10 pr-4 text-sm outline-none focus:border-interaction"
-              />
-            </div>
-          </div>
-
-          <div className="mt-4 flex gap-2 overflow-x-auto">
-            {filters.map((filter) => (
-              <button
-                key={filter.id}
-                type="button"
-                onClick={() =>
-                  setActiveFilter(
-                    filter.id
-                  )
-                }
-                className={
-                  activeFilter === filter.id
-                    ? "shrink-0 rounded-xl bg-charcoal px-4 py-2 text-sm font-medium text-surface-card"
-                    : "shrink-0 rounded-xl border border-border-subtle bg-surface-card px-4 py-2 text-sm font-medium text-text-secondary"
-                }
-              >
-                {filter.label +
-                  " (" +
-                  String(filter.count) +
-                  ")"}
-              </button>
-            ))}
-          </div>
-        </section>
-
-        <section className="space-y-4">
-          {loading ? (
-            [1, 2, 3].map((item) => (
-              <div
-                key={item}
-                className="h-32 animate-pulse rounded-[var(--radius-card)] border border-border-subtle bg-surface-card"
-              />
-            ))
-          ) : filteredDevices.length ===
-            0 ? (
-            <EmptyState
-              icon={ShieldCheck}
-              title={
-                devices.length === 0
-                  ? "No warranty records yet"
-                  : "No warranties match your search"
-              }
-              description={
-                devices.length === 0
-                  ? "Add devices with warranty dates to see coverage at a glance."
-                  : "Try another search or filter to find what you need."
-              }
-              section="homeHealth"
-              actionLabel={
-                devices.length === 0
-                  ? "Add a device"
-                  : undefined
-              }
-              actionHref={
-                devices.length === 0
-                  ? "/devices/add"
-                  : undefined
-              }
-            />
-          ) : (
-            filteredDevices.map(
-              (device) => {
-                const status =
-                  getWarrantyStatus(
-                    device.warranty_date
-                  );
-
-                const styles =
-                  getStatusStyles(status);
-
-                return (
-                  <button
-                    key={device.id}
-                    type="button"
-                    onClick={() =>
-                      router.push(
-                        "/devices/" +
-                          device.id
+          <PageCard className="p-5 md:p-6">
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+                <div className="relative flex-1">
+                  <Search
+                    size={18}
+                    className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-text-tertiary"
+                  />
+                  <input
+                    type="search"
+                    value={searchQuery}
+                    onChange={(event) =>
+                      setSearchQuery(
+                        event.target.value
                       )
                     }
-                    className="w-full rounded-[var(--radius-card)] border border-border-subtle bg-surface-card p-5 text-left shadow-sm transition hover:border-border-strong"
+                    placeholder="Search devices, brands, models, or locations..."
+                    className="htv-focus-ring w-full rounded-2xl border border-border-subtle bg-surface-sunken py-3.5 pl-11 pr-11 text-sm text-text-primary outline-none transition placeholder:text-text-tertiary focus:border-interaction focus:bg-surface-card focus:ring-4 focus:ring-interaction/15"
+                  />
+                  {searchQuery ? (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setSearchQuery("")
+                      }
+                      aria-label="Clear search"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-text-tertiary transition hover:text-text-primary"
+                    >
+                      <X size={16} />
+                    </button>
+                  ) : null}
+                </div>
+
+                <label className="flex min-w-[12rem] items-center gap-2">
+                  <span className="sr-only">
+                    Sort warranties
+                  </span>
+                  <SlidersHorizontal
+                    size={16}
+                    className="shrink-0 text-text-tertiary"
+                    aria-hidden
+                  />
+                  <select
+                    value={sortOption}
+                    onChange={(event) =>
+                      setSortOption(
+                        event.target
+                          .value as WarrantySort
+                      )
+                    }
+                    className="htv-focus-ring w-full rounded-2xl border border-border-subtle bg-surface-card px-4 py-3 text-sm text-text-primary outline-none transition focus:border-interaction"
                   >
-                    <div className="flex flex-col gap-5 lg:flex-row lg:items-center">
-                      <div className="flex min-w-0 flex-1 items-start gap-4">
-                        <div
-                          className={
-                            "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl " +
-                            styles.icon
-                          }
-                        >
-                          <Laptop size={22} />
-                        </div>
+                    <option value="expiration-soonest">
+                      Expiration Soonest
+                    </option>
+                    <option value="expiration-latest">
+                      Expiration Latest
+                    </option>
+                    <option value="name-asc">
+                      Device Name A–Z
+                    </option>
+                    <option value="name-desc">
+                      Device Name Z–A
+                    </option>
+                  </select>
+                </label>
+              </div>
 
-                        <div className="min-w-0">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <h3 className="font-semibold text-text-primary">
-                              {device.device_name ??
-                                "Unnamed Device"}
-                            </h3>
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                {statusFilters.map((filter) => {
+                  const selected =
+                    activeFilter === filter.id;
 
-                            <span
-                              className={
-                                "rounded-full border px-2.5 py-1 text-xs font-semibold " +
-                                styles.badge
-                              }
-                            >
-                              {getStatusLabel(
-                                status
-                              )}
-                            </span>
-                          </div>
+                  return (
+                    <button
+                      key={filter.id}
+                      type="button"
+                      onClick={() =>
+                        setActiveFilter(filter.id)
+                      }
+                      className={cn(
+                        "htv-focus-ring shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition",
+                        selected
+                          ? "bg-charcoal text-surface-card"
+                          : "border border-border-subtle bg-surface-card text-text-secondary hover:border-border-strong hover:text-text-primary"
+                      )}
+                    >
+                      {filter.label}
+                    </button>
+                  );
+                })}
+              </div>
 
-                          <p className="mt-1 text-sm text-text-secondary">
-                            {[
-                              device.brand,
-                              device.model,
-                            ]
-                              .filter(Boolean)
-                              .join(" • ") ||
-                              "Brand and model not added"}
-                          </p>
+              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border-subtle pt-4">
+                <p className="text-sm text-text-secondary">
+                  {resultsHeader}
+                  {activeFilter !== "all" ? (
+                    <span className="text-text-tertiary">
+                      {" "}
+                      · Filtered by{" "}
+                      {getFilterLabel(activeFilter)}
+                    </span>
+                  ) : null}
+                </p>
 
-                          <p className="mt-2 text-sm font-medium text-text-secondary">
-                            {getStatusDescription(
-                              device.warranty_date
-                            )}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="grid flex-1 gap-3 sm:grid-cols-3">
-                        <DetailBox
-                          label="Warranty Ends"
-                          value={formatDate(
-                            device.warranty_date
-                          )}
-                        />
-
-                        <DetailBox
-                          label="Purchase Price"
-                          value={formatCurrency(
-                            device.purchase_price
-                          )}
-                        />
-
-                        <DetailBox
-                          label="Location"
-                          value={
-                            device.location ??
-                            "Not added"
-                          }
-                        />
-                      </div>
-
-                      <ChevronRight
-                        size={20}
-                        className="hidden text-text-tertiary lg:block"
-                      />
-                    </div>
+                {filtersActive ? (
+                  <button
+                    type="button"
+                    onClick={clearFilters}
+                    className="htv-focus-ring inline-flex items-center gap-2 text-sm font-semibold text-text-primary transition hover:text-interaction"
+                  >
+                    <X size={15} />
+                    Clear filters
                   </button>
-                );
-              }
-            )
-          )}
-        </section>
-      </div>
+                ) : null}
+              </div>
+            </div>
+          </PageCard>
+
+          <section className="space-y-3">
+            {filteredDevices.length === 0 ? (
+              <WarrantyEmptyState
+                devicesCount={devices.length}
+                activeFilter={activeFilter}
+                searchQuery={searchQuery}
+                onClearSearch={() =>
+                  setSearchQuery("")
+                }
+                onViewAll={() => {
+                  setActiveFilter("all");
+                  setSearchQuery("");
+                }}
+              />
+            ) : (
+              <>
+                <div className="hidden px-2 text-xs font-semibold uppercase tracking-[0.12em] text-text-tertiary lg:grid lg:grid-cols-[minmax(0,1.5fr)_7rem_9rem_10rem_9rem_1.5rem] lg:gap-4">
+                  <span>Device</span>
+                  <span>Location</span>
+                  <span>Purchase</span>
+                  <span>Expiration</span>
+                  <span>Status</span>
+                  <span className="sr-only">Open</span>
+                </div>
+
+                {filteredDevices.map((device) => (
+                  <WarrantyRecord
+                    key={device.id}
+                    device={device}
+                    onOpen={() =>
+                      router.push(
+                        "/devices/" + device.id
+                      )
+                    }
+                  />
+                ))}
+              </>
+            )}
+          </section>
+        </>
+      )}
     </PageShell>
   );
 }
 
-function SummaryCard({
-  title,
-  value,
-  description,
-  icon,
-  iconClassName,
+function WarrantyRecord({
+  device,
+  onOpen,
 }: {
-  title: string;
-  value: number;
-  description: string;
-  icon: ReactNode;
-  iconClassName: string;
+  device: WarrantyDevice;
+  onOpen: () => void;
 }) {
+  const status = getWarrantyStatus(
+    device.warranty_date
+  );
+  const styles = getStatusStyles(status);
+  const StatusIcon = styles.Icon;
+  const brandModel =
+    [device.brand, device.model]
+      .filter(Boolean)
+      .join(" · ") || "Brand and model not added";
+
   return (
-    <div className="rounded-[var(--radius-card)] border border-border-subtle bg-surface-card p-5 shadow-sm">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-sm text-text-secondary">
-            {title}
-          </p>
+    <button
+      type="button"
+      onClick={onOpen}
+      className="htv-focus-ring group w-full rounded-[var(--radius-card)] border border-border-subtle bg-surface-card p-4 text-left shadow-[var(--shadow-sm)] transition hover:-translate-y-0.5 hover:border-border-strong hover:shadow-[var(--shadow-md)] md:p-5"
+    >
+      <div className="flex flex-col gap-4 lg:hidden">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h3 className="text-lg font-semibold tracking-[-0.03em] text-text-primary">
+              {device.device_name ?? "Unnamed Device"}
+            </h3>
+            <p className="mt-1 text-sm text-text-secondary">
+              {brandModel}
+            </p>
+          </div>
 
-          <p className="mt-2 text-3xl font-bold">
-            {value}
-          </p>
-
-          <p className="mt-1 text-sm text-text-secondary">
-            {description}
-          </p>
+          <span
+            className={cn(
+              "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold",
+              styles.badge
+            )}
+          >
+            <StatusIcon size={13} aria-hidden />
+            {getStatusLabel(status)}
+          </span>
         </div>
 
-        <div
-          className={
-            "flex h-11 w-11 items-center justify-center rounded-2xl " +
-            iconClassName
-          }
-        >
-          {icon}
+        <div className="space-y-2 text-sm">
+          <p className="font-medium text-text-primary">
+            {status === "missing"
+              ? "Warranty date missing"
+              : formatDate(device.warranty_date)}
+          </p>
+          <p className="text-text-secondary">
+            {status === "missing"
+              ? "Add warranty details from the device page"
+              : getStatusDescription(
+                  device.warranty_date
+                )}
+          </p>
+          {device.location ? (
+            <p className="inline-flex items-center gap-1.5 text-text-secondary">
+              <MapPin size={14} aria-hidden />
+              {device.location}
+            </p>
+          ) : null}
+          {(device.purchase_date ||
+            device.purchase_price !== null) && (
+            <p className="text-text-secondary">
+              {[
+                device.purchase_date
+                  ? "Purchased " +
+                    formatDate(device.purchase_date)
+                  : null,
+                device.purchase_price !== null
+                  ? formatCurrency(
+                      device.purchase_price
+                    )
+                  : null,
+              ]
+                .filter(Boolean)
+                .join(" · ")}
+            </p>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between border-t border-border-subtle pt-3 text-sm font-semibold text-interaction">
+          View Device
+          <ChevronRight
+            size={16}
+            className="transition group-hover:translate-x-0.5"
+          />
         </div>
       </div>
-    </div>
+
+      <div className="hidden lg:grid lg:grid-cols-[minmax(0,1.5fr)_7rem_9rem_10rem_9rem_1.5rem] lg:items-center lg:gap-4">
+        <div className="min-w-0">
+          <div className="flex items-start gap-3">
+            <div
+              className={cn(
+                "mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl",
+                styles.icon
+              )}
+            >
+              <Laptop size={18} aria-hidden />
+            </div>
+            <div className="min-w-0">
+              <h3 className="truncate text-base font-semibold text-text-primary">
+                {device.device_name ?? "Unnamed Device"}
+              </h3>
+              <p className="mt-1 truncate text-sm text-text-secondary">
+                {brandModel}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <p className="truncate text-sm text-text-secondary">
+          {device.location ?? "—"}
+        </p>
+
+        <div className="min-w-0 text-sm">
+          <p className="truncate font-medium text-text-primary">
+            {device.purchase_price !== null
+              ? formatCurrency(device.purchase_price)
+              : "—"}
+          </p>
+          <p className="mt-1 truncate text-text-tertiary">
+            {device.purchase_date
+              ? formatDate(device.purchase_date)
+              : "No purchase date"}
+          </p>
+        </div>
+
+        <div className="min-w-0 text-sm">
+          {status === "missing" ? (
+            <>
+              <p className="font-medium text-text-primary">
+                Warranty date missing
+              </p>
+              <p className="mt-1 text-xs leading-5 text-text-tertiary">
+                Add details on the device page
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="font-medium text-text-primary">
+                {formatDate(device.warranty_date)}
+              </p>
+              <p className="mt-1 text-xs text-text-secondary">
+                {getStatusDescription(
+                  device.warranty_date
+                )}
+              </p>
+            </>
+          )}
+        </div>
+
+        <span
+          className={cn(
+            "inline-flex w-fit items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold",
+            styles.badge
+          )}
+        >
+          <StatusIcon size={13} aria-hidden />
+          {getStatusLabel(status)}
+        </span>
+
+        <ChevronRight
+          size={18}
+          className="justify-self-end text-text-tertiary transition group-hover:translate-x-0.5 group-hover:text-text-primary"
+        />
+      </div>
+    </button>
   );
 }
 
-function DetailBox({
-  label,
-  value,
+function WarrantyEmptyState({
+  devicesCount,
+  activeFilter,
+  searchQuery,
+  onClearSearch,
+  onViewAll,
 }: {
-  label: string;
-  value: string;
+  devicesCount: number;
+  activeFilter: WarrantyFilter;
+  searchQuery: string;
+  onClearSearch: () => void;
+  onViewAll: () => void;
 }) {
-  return (
-    <div className="rounded-xl border border-border-subtle bg-surface-sunken px-4 py-3">
-      <p className="text-xs uppercase tracking-wide text-text-tertiary">
-        {label}
-      </p>
+  if (devicesCount === 0) {
+    return (
+      <EmptyState
+        icon={Laptop}
+        title="No devices have been added yet."
+        description="Add devices to start tracking warranty coverage and expiration dates."
+        section="homeHealth"
+        actionLabel="Go to Devices"
+        actionHref="/devices"
+      />
+    );
+  }
 
-      <p className="mt-1 truncate text-sm font-semibold">
-        {value}
-      </p>
+  if (searchQuery.trim()) {
+    return (
+      <EmptyState
+        icon={Search}
+        title="No warranties match your search."
+        description="Try another device name, brand, model, or location."
+        section="homeHealth"
+      >
+        <Button
+          type="button"
+          variant="secondary"
+          className="mt-6"
+          onClick={onClearSearch}
+        >
+          Clear Search
+        </Button>
+      </EmptyState>
+    );
+  }
+
+  let title = "No warranties found.";
+  let description =
+    "Try another filter to review coverage across your devices.";
+
+  if (activeFilter === "expiring") {
+    title = "No warranties are expiring soon.";
+    description =
+      "None of your devices expire within the next 90 days.";
+  } else if (activeFilter === "expired") {
+    title = "No expired warranties found.";
+    description =
+      "Great news — nothing in this list has ended coverage.";
+  } else if (activeFilter === "missing") {
+    title = "All devices have warranty information.";
+    description =
+      "Every device currently has an expiration date on file.";
+  } else if (activeFilter === "active") {
+    title = "No active warranties found.";
+    description =
+      "Try viewing all warranties or check devices that may be missing dates.";
+  }
+
+  return (
+    <EmptyState
+      icon={ShieldCheck}
+      title={title}
+      description={description}
+      section="homeHealth"
+    >
+      <Button
+        type="button"
+        variant="secondary"
+        className="mt-6"
+        onClick={onViewAll}
+      >
+        View All Warranties
+      </Button>
+    </EmptyState>
+  );
+}
+
+function WarrantiesSkeleton() {
+  return (
+    <div className="space-y-6">
+      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {[1, 2, 3, 4].map((item) => (
+          <div
+            key={item}
+            className="h-28 animate-pulse rounded-[var(--radius-card)] border border-border-subtle bg-surface-card"
+          />
+        ))}
+      </section>
+
+      <section className="grid gap-3 lg:grid-cols-2">
+        <div className="h-24 animate-pulse rounded-[var(--radius-card)] border border-border-subtle bg-surface-card" />
+        <div className="h-24 animate-pulse rounded-[var(--radius-card)] border border-border-subtle bg-surface-card" />
+      </section>
+
+      <div className="h-40 animate-pulse rounded-[var(--radius-card)] border border-border-subtle bg-surface-card" />
+
+      <section className="space-y-3">
+        {[1, 2, 3, 4].map((item) => (
+          <div
+            key={item}
+            className="h-28 animate-pulse rounded-[var(--radius-card)] border border-border-subtle bg-surface-card"
+          />
+        ))}
+      </section>
     </div>
   );
 }
