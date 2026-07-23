@@ -19,6 +19,7 @@ import {
   Loader2,
   LockKeyhole,
   Pencil,
+  PlugZap,
   Plus,
   Radar,
   Router,
@@ -544,6 +545,35 @@ export default function NetworkPage() {
           </ActionLink>
         </div>
       </PageHero>
+
+      <section className="mt-2">
+        <Card className="p-6 md:p-7">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="min-w-0">
+              <p className="text-overline text-section-network">
+                Connector setup
+              </p>
+
+              <h2 className="mt-2 text-2xl font-semibold text-text-primary">
+                Set Up Device Monitoring
+              </h2>
+
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-text-secondary">
+                Connect a computer to discover
+                and monitor devices on your home
+                network. Prepare connector
+                pairing now — scanning and
+                monitoring arrive in Phase 2.
+              </p>
+            </div>
+
+            <ActionLink href="/network/connect">
+              <PlugZap size={17} />
+              Prepare device monitoring
+            </ActionLink>
+          </div>
+        </Card>
+      </section>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <SummaryCard
