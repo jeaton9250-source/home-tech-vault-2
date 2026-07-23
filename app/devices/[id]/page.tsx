@@ -1216,12 +1216,10 @@ export default function DevicePage() {
                 {brandModel || "Brand and model not provided"}
               </p>
 
-              {device.location ? (
-                <p className="inline-flex items-center gap-2 text-sm text-text-muted">
-                  <MapPin size={15} aria-hidden />
-                  {device.location}
-                </p>
-              ) : null}
+              <p className="inline-flex items-center gap-2 text-sm text-text-muted">
+                <MapPin size={15} aria-hidden />
+                {device.location?.trim() || "Location not provided"}
+              </p>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
