@@ -8,6 +8,7 @@ export const FREE_DOCUMENT_LIMIT = 25;
 export type PlanLimits = {
   maxDevices: number | null;
   maxDocuments: number | null;
+  maxConnectors: number | null;
 };
 
 export const PLAN_LIMITS: Record<
@@ -17,14 +18,17 @@ export const PLAN_LIMITS: Record<
   free: {
     maxDevices: FREE_DEVICE_LIMIT,
     maxDocuments: FREE_DOCUMENT_LIMIT,
+    maxConnectors: 1,
   },
   pro: {
     maxDevices: null,
     maxDocuments: null,
+    maxConnectors: 3,
   },
   family: {
     maxDevices: null,
     maxDocuments: null,
+    maxConnectors: null,
   },
 };
 
@@ -42,6 +46,9 @@ export const PLAN_FEATURES: Record<
     items: [
       `Up to ${FREE_DEVICE_LIMIT} devices`,
       "Up to 25 documents",
+      "Connector download and pairing",
+      "Manual network scans",
+      "Device discovery and matching",
       "Basic warranty tracking",
       "Basic maintenance",
       "Demo Mode",
@@ -52,11 +59,14 @@ export const PLAN_FEATURES: Record<
     items: [
       "Unlimited devices",
       "Unlimited documents",
-      "Unlimited warranties",
-      "Unlimited maintenance",
+      "Automatic connector monitoring",
+      "Background scans every 15 minutes",
+      "Device presence and timeline",
+      "Home Pulse live updates",
+      "Smart recommendations",
+      "Up to 3 paired Macs",
       "AI Advisor",
       "Advanced reports",
-      "Network monitoring",
       "Unlimited uploads",
       "Priority support",
     ],
@@ -65,6 +75,7 @@ export const PLAN_FEATURES: Record<
     label: "Family",
     items: [
       "Everything in Pro",
+      "Unlimited household connectors",
       "Household creation",
       "Household invitations",
       "Multiple members",
@@ -85,6 +96,7 @@ export function getLimitsForPlan(
     return {
       maxDevices: null,
       maxDocuments: null,
+      maxConnectors: null,
     };
   }
 

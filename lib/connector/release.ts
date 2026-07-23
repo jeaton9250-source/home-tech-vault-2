@@ -16,7 +16,11 @@ export function getConnectorMacosReleaseLabel() {
     version: CONNECTOR_MACOS_APP_VERSION,
     platform: "macOS",
     status: getConnectorMacosDownloadUrl()
-      ? "available"
-      : "preparing",
-  } as const;
+      ? ("available" as const)
+      : ("preparing" as const),
+  };
+}
+
+export function getConnectorDownloadUnavailableMessage() {
+  return "Download coming soon.";
 }

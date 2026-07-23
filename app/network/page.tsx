@@ -19,7 +19,6 @@ import {
   Loader2,
   LockKeyhole,
   Pencil,
-  PlugZap,
   Plus,
   Radar,
   Router,
@@ -43,6 +42,7 @@ import { demoNetwork as morganDemoNetwork } from "@/lib/demoData";
 import PageShell from "@/components/ui/PageShell";
 import PageHero from "@/components/ui/PageHero";
 import EmptyState from "@/components/ui/EmptyState";
+import ConnectorHubSection from "@/components/connector/ConnectorHubSection";
 
 type NetworkInfo = {
   id?: string;
@@ -471,10 +471,7 @@ export default function NetworkPage() {
     permissionsLoading ||
     loadingNetwork;
 
-  const scanHref = getActionHref(
-    "/network/discover",
-    "networkDiscover"
-  );
+  const scanHref = "/network/discovery";
 
   const editHref = getActionHref(
     "/network/edit"
@@ -527,9 +524,7 @@ export default function NetworkPage() {
             variant="secondary"
           >
             <Radar size={17} />
-            {getActionLabel(
-              "Scan Network"
-            )}
+            {getActionLabel("Review Discovery")}
           </ActionLink>
 
           <ActionLink
@@ -547,32 +542,7 @@ export default function NetworkPage() {
       </PageHero>
 
       <section className="mt-2">
-        <Card className="p-6 md:p-7">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-            <div className="min-w-0">
-              <p className="text-overline text-section-network">
-                Connector setup
-              </p>
-
-              <h2 className="mt-2 text-2xl font-semibold text-text-primary">
-                Set Up Device Monitoring
-              </h2>
-
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-text-secondary">
-                Connect a computer to discover
-                and monitor devices on your home
-                network. Prepare connector
-                pairing now — scanning and
-                monitoring arrive in Phase 2.
-              </p>
-            </div>
-
-            <ActionLink href="/network/connect">
-              <PlugZap size={17} />
-              Prepare device monitoring
-            </ActionLink>
-          </div>
-        </Card>
+        <ConnectorHubSection />
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -705,9 +675,7 @@ export default function NetworkPage() {
                 <ActionLink href={scanHref}>
                   <Radar size={17} />
 
-                  {getActionLabel(
-                    "Scan Again"
-                  )}
+                  {getActionLabel("Review Discovery Again")}
                 </ActionLink>
 
                 <ActionLink
@@ -723,7 +691,7 @@ export default function NetworkPage() {
             <EmptyScanState
               href={scanHref}
               scanLabel={getActionLabel(
-                "Start Network Scan"
+                "Review Discovery"
               )}
             />
           )}

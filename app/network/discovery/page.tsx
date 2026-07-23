@@ -8,7 +8,6 @@ import {
 import Link from "next/link";
 import { ArrowLeft, Loader2 } from "lucide-react";
 
-import FeatureGate from "@/components/permissions/FeatureGate";
 import NetworkDiscoveryDashboard from "@/components/network/NetworkDiscoveryDashboard";
 import PageShell from "@/components/ui/PageShell";
 import PageHero from "@/components/ui/PageHero";
@@ -382,12 +381,5 @@ function DiscoveryReviewContent() {
 }
 
 export default function NetworkDiscoveryReviewPage() {
-  return (
-    <FeatureGate
-      feature="networkDiscover"
-      description="Review connector discovery results and enrich existing vault devices without creating duplicates."
-    >
-      <DiscoveryReviewContent />
-    </FeatureGate>
-  );
+  return <DiscoveryReviewContent />;
 }

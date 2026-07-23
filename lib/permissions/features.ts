@@ -21,7 +21,8 @@ export const FEATURE_REQUIREMENTS: Record<
   securityCenter: "pro",
   audit: "free",
 
-  networkDiscover: "pro",
+  networkDiscover: "free",
+  connectorMonitoring: "pro",
   rooms: "pro",
   reports: "pro",
   insights: "pro",
@@ -43,6 +44,7 @@ export const FEATURE_LABELS: Record<
   maintenance: "Maintenance",
   network: "Network",
   networkDiscover: "Network Discovery",
+  connectorMonitoring: "Connector Monitoring",
   rooms: "Rooms",
   subscriptions: "Subscriptions",
   reports: "Reports",

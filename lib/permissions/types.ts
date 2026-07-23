@@ -27,6 +27,7 @@ export type FeatureKey =
   | "maintenance"
   | "network"
   | "networkDiscover"
+  | "connectorMonitoring"
   | "rooms"
   | "subscriptions"
   | "reports"

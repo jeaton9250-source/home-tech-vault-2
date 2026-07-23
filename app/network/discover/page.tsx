@@ -26,7 +26,6 @@ import { recordActivity } from "@/lib/activity";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useDemoReadOnlyAction } from "@/components/demo/DemoExperienceProvider";
 
-import FeatureGate from "@/components/permissions/FeatureGate";
 import PageShell from "@/components/ui/PageShell";
 import PageTitle from "@/components/ui/PageTitle";
 import PageCard from "@/components/ui/PageCard";
@@ -2058,12 +2057,5 @@ function compareIpAddresses(
 }
 
 export default function NetworkDiscoveryPage() {
-  return (
-    <FeatureGate
-      feature="networkDiscover"
-      description="Automatically discover, identify, and sync devices connected to your home network."
-    >
-      <NetworkDiscoveryContent />
-    </FeatureGate>
-  );
+  return <NetworkDiscoveryContent />;
 }

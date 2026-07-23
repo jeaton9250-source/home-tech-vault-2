@@ -943,6 +943,7 @@ function usePermissionsState() {
     householdOwnerId,
     householdOwnerPlan,
     householdOwnerStatus,
+    householdOwnerName,
     loading,
     permissionsReady,
     error: roleError,
