@@ -49,6 +49,7 @@ import PageCard from "@/components/ui/PageCard";
 import Button from "@/components/ui/Button";
 import DeviceProfileMaintenance from "@/components/devices/DeviceProfileMaintenance";
 import { ViewerBanner } from "@/components/ui/PermissionUI";
+import { usePermissions } from "@/hooks/usePermissions";
 
 export type DeviceProfileDevice = {
   id: string;
@@ -144,6 +145,9 @@ export default function DeviceProfile({
   documentsSection,
   timelineSection,
 }: DeviceProfileProps) {
+  const { canViewFeature } = usePermissions();
+  const automaticMonitoring = canViewFeature("connectorMonitoring");
+
   const [timelineExpanded, setTimelineExpanded] = useState(false);
   const [notesExpanded, setNotesExpanded] = useState(false);
   const [previewPhotoId, setPreviewPhotoId] = useState<string | null>(null);
@@ -683,6 +687,13 @@ export default function DeviceProfile({
               icon={Wifi}
               label="Network Status"
               value={networkPresence}
+            />
+            <FactCard
+              icon={Radio}
+              label="Monitoring"
+              value={
+                automaticMonitoring ? "Automatic" : "Manual"
+              }
             />
             <FactCard
               icon={Radio}

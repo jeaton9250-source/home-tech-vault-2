@@ -79,6 +79,25 @@ export default function ConnectorCard({
                 background monitoring.
               </p>
 
+              <ul className="mt-5 space-y-2 text-sm text-text-secondary">
+                <li className="flex items-start gap-2">
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-section-network" />
+                  Discover every device on your home network
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-section-network" />
+                  Match discoveries to vault devices automatically
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-section-network" />
+                  Import new devices with one click
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-section-network" />
+                  Upgrade to Pro for automatic 15-minute scans
+                </li>
+              </ul>
+
               {!monitoringEnabled ? (
                 <div className="mt-5">
                   <ConnectorMonitoringBadge enabled={false} />

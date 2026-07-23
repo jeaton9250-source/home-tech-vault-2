@@ -5,7 +5,10 @@ import { useMemo, useState } from "react";
 import Button from "@/components/ui/Button";
 import ConnectorDownloadButton from "@/components/connector/ConnectorDownloadButton";
 import ConnectorModal from "@/components/connector/ConnectorModal";
-import { CONNECTOR_INSTALLATION_STEPS } from "@/lib/connector/installationGuide";
+import {
+  CONNECTOR_INSTALLATION_COMPLETE_MESSAGE,
+  CONNECTOR_INSTALLATION_STEPS,
+} from "@/lib/connector/installationGuide";
 
 type InstallationGuideDialogProps = {
   open: boolean;
@@ -89,6 +92,12 @@ export default function InstallationGuideDialog({
             </Button>
           </div>
         ) : null}
+
+        {activeIndex === steps.length - 1 ? (
+          <p className="mt-5 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
+            {CONNECTOR_INSTALLATION_COMPLETE_MESSAGE}
+          </p>
+        ) : null}
       </div>
 
       <div className="mt-6 flex flex-wrap gap-3">
@@ -109,7 +118,7 @@ export default function InstallationGuideDialog({
           }
         >
           {activeIndex === steps.length - 1
-            ? "Done"
+            ? "Finish"
             : "Next step"}
         </Button>
       </div>

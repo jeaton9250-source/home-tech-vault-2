@@ -8,6 +8,7 @@ import Button from "@/components/ui/Button";
 import PageCard from "@/components/ui/PageCard";
 import ConnectorCard from "@/components/connector/ConnectorCard";
 import ConnectorHealthDashboard from "@/components/connector/ConnectorHealthDashboard";
+import ConnectorMonitoringCard from "@/components/connector/ConnectorMonitoringCard";
 import ConnectorMultiList from "@/components/connector/ConnectorMultiList";
 import ConnectorScanHistory from "@/components/connector/ConnectorScanHistory";
 import ConnectorStatusGrid from "@/components/connector/ConnectorStatusGrid";
@@ -284,6 +285,12 @@ export default function ConnectorHubSection({
           </div>
         </PageCard>
       ) : null}
+
+      <ConnectorMonitoringCard
+        monitoringEnabled={overview.monitoringEnabled}
+        lastScanAt={selectedConnector?.lastScanAt}
+        isInstalled={overview.isInstalled}
+      />
 
       {!overview.monitoringEnabled ? <ConnectorUpgradePrompt /> : null}
 
