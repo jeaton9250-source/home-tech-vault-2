@@ -141,7 +141,7 @@ function DiscoveryReviewContent() {
   }, [activeConnectors]);
 
   const hasCompletedScan =
-    lastScanAt !== null;
+    lastScanAt !== null || devices.length > 0;
 
   const reloadReviewData = useCallback(
     async (showSpinner = true) => {

@@ -33,6 +33,14 @@ type SyncDiscoveredDevicesInput = {
 const VAULT_DEVICE_SELECT =
   "id, household_id, device_name, brand, manufacturer, model_number, serial_number, mac_address, network_fingerprint, category, ip_address, hostname, first_seen_at, discovery_source";
 
+/** Foundation schema only — safe before 2B.2 device enrichment migration. */
+const VAULT_DEVICE_SELECT_FOUNDATION =
+  "id, household_id, device_name, brand, manufacturer, model_number, serial_number, mac_address, category, ip_address, discovery_source";
+
+/** Foundation schema only — safe before 2B.2 discovered_devices match columns. */
+const DISCOVERED_DEVICE_SELECT_FOUNDATION =
+  "id, household_id, connector_id, local_fingerprint, hostname, manufacturer, ip_address, mac_address, device_type, online, discovery_sources, first_seen_at, last_seen_at, imported_device_id, ignored_at, created_at, updated_at";
+
 function toDiscoveryNetworkFields(
   device: ParsedDiscoveryDevice,
   connectorId: string
@@ -396,14 +404,14 @@ export async function loadDiscoveryReviewRows(
   ] = await Promise.all([
     admin
       .from("discovered_devices")
-      .select("*")
+      .select(DISCOVERED_DEVICE_SELECT_FOUNDATION)
       .eq("household_id", householdId)
       .order("last_seen_at", {
         ascending: false,
       }),
     admin
       .from("devices")
-      .select(VAULT_DEVICE_SELECT)
+      .select(VAULT_DEVICE_SELECT_FOUNDATION)
       .eq("household_id", householdId),
   ]);
 
@@ -430,7 +438,13 @@ export async function loadDiscoveryReviewRows(
       []) as DiscoveredDeviceRow[]
   ).map((row) => {
     const match = matchDiscoveredDevice(
-      rowToDiscoveredForMatching(row),
+      rowToDiscoveredForMatching({
+        ...row,
+        model: row.model ?? null,
+        serial_number: row.serial_number ?? null,
+        match_confirmed_at:
+          row.match_confirmed_at ?? null,
+      }),
       vaultDevices
     );
 
