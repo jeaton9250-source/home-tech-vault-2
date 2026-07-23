@@ -1,163 +1,1207 @@
+"use client";
+
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ComponentType,
+} from "react";
+
+import Link from "next/link";
+import {
+  CheckCircle2,
+  ChevronRight,
+  Clock3,
+  Laptop,
+  Link2,
+  MoreHorizontal,
+  Radar,
+  RefreshCw,
+  Router,
+  Search,
+  SlidersHorizontal,
+  Unlink,
+  Wifi,
+  WifiOff,
+  X,
+} from "lucide-react";
+
 import Button from "@/components/ui/Button";
+import EmptyState from "@/components/ui/EmptyState";
 import PageCard from "@/components/ui/PageCard";
+import { discoveryDeviceTitle } from "@/lib/connector/identificationReasons";
+import { formatPlatformLabel } from "@/lib/connector/platforms";
+import {
+  connectorPresenceDescription,
+  deriveConnectorPresence,
+} from "@/lib/connector/presence";
+import {
+  formatConnectorRelativeTime,
+  formatConnectorTimestamp,
+} from "@/lib/connector/scanHistory";
+import { formatDemoRelativeTime } from "@/lib/demo/demoNetworkTime";
+import {
+  deriveDeviceNetworkPresence,
+  presentDeviceNetworkPresence,
+} from "@/lib/devices/devicePresence";
+import { cn } from "@/lib/design-system/cn";
+
+import type { DiscoveredDeviceSummary } from "@/lib/connector/discoveryTypes";
 import type { NetworkPageData } from "@/hooks/useNetworkPageData";
+
+type NetworkStatusFilter =
+  | "all"
+  | "online"
+  | "offline"
+  | "new"
+  | "unlinked";
+
+type NetworkLinkFilter = "all" | "linked" | "unlinked";
+
+type NetworkSort =
+  | "last-seen-newest"
+  | "last-seen-oldest"
+  | "name-asc"
+  | "manufacturer-asc"
+  | "first-seen-newest";
+
+type NetworkIcon = ComponentType<{
+  size?: number;
+  className?: string;
+}>;
 
 type NetworkOverviewTabProps = {
   data: NetworkPageData;
   isDemo?: boolean;
+  canLink?: boolean;
+  canRefresh?: boolean;
+  refreshing?: boolean;
+  onRefresh?: () => void;
+  onDemoAction?: () => void;
 };
 
-function SummaryMetric({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="rounded-[20px] border border-border-subtle bg-surface-sunken p-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-text-tertiary">
-        {label}
-      </p>
-      <p className="mt-2 text-lg font-semibold text-text-primary">{value}</p>
-    </div>
-  );
+function getDevicePresence(device: DiscoveredDeviceSummary) {
+  return deriveDeviceNetworkPresence({
+    online: device.online,
+    lastSeenAt: device.lastSeenAt,
+    firstSeenAt: device.firstSeenAt,
+  });
+}
+
+function isOnlineDevice(device: DiscoveredDeviceSummary) {
+  const state = getDevicePresence(device);
+  return state === "online" || state === "recently_detected";
+}
+
+function isOfflineDevice(device: DiscoveredDeviceSummary) {
+  return !isOnlineDevice(device);
+}
+
+function isUnlinkedDevice(device: DiscoveredDeviceSummary) {
+  return !device.importedDeviceId && device.matchStatus !== "ignored";
+}
+
+function isNewlyDiscovered(device: DiscoveredDeviceSummary) {
+  return device.matchStatus === "new";
 }
 
 export default function NetworkOverviewTab({
   data,
+  isDemo = false,
+  canLink = false,
+  canRefresh = false,
+  refreshing = false,
+  onRefresh,
+  onDemoAction,
 }: NetworkOverviewTabProps) {
-  const { summary, activityItems } = data;
+  const { summary, devices, stats } = data;
 
-  if (data.error) {
-    return (
-      <PageCard className="p-7">
-        <p className="text-sm text-red-700">
-          Network information is temporarily unavailable.
-        </p>
-      </PageCard>
-    );
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] =
+    useState<NetworkStatusFilter>("all");
+  const [linkFilter, setLinkFilter] =
+    useState<NetworkLinkFilter>("all");
+  const [manufacturerFilter, setManufacturerFilter] =
+    useState("all");
+  const [sortOption, setSortOption] =
+    useState<NetworkSort>("last-seen-newest");
+  const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
+
+  const onlineDevices = useMemo(
+    () => devices.filter(isOnlineDevice),
+    [devices]
+  );
+  const offlineDevices = useMemo(
+    () => devices.filter(isOfflineDevice),
+    [devices]
+  );
+  const newDevices = useMemo(
+    () => devices.filter(isNewlyDiscovered),
+    [devices]
+  );
+  const unlinkedDevices = useMemo(
+    () => devices.filter(isUnlinkedDevice),
+    [devices]
+  );
+
+  const manufacturerOptions = useMemo(() => {
+    const values = new Set<string>();
+
+    for (const device of devices) {
+      const manufacturer = device.manufacturer?.trim();
+      if (manufacturer) {
+        values.add(manufacturer);
+      }
+    }
+
+    return Array.from(values).sort((a, b) => a.localeCompare(b));
+  }, [devices]);
+
+  const filteredDevices = useMemo(() => {
+    const query = searchTerm.trim().toLowerCase();
+
+    const filtered = devices.filter((device) => {
+      const matchesStatus =
+        statusFilter === "all" ||
+        (statusFilter === "online" && isOnlineDevice(device)) ||
+        (statusFilter === "offline" && isOfflineDevice(device)) ||
+        (statusFilter === "new" && isNewlyDiscovered(device)) ||
+        (statusFilter === "unlinked" && isUnlinkedDevice(device));
+
+      const linked = Boolean(device.importedDeviceId);
+      const matchesLink =
+        linkFilter === "all" ||
+        (linkFilter === "linked" && linked) ||
+        (linkFilter === "unlinked" && !linked);
+
+      const matchesManufacturer =
+        manufacturerFilter === "all" ||
+        (device.manufacturer?.trim() || "") === manufacturerFilter;
+
+      const searchableText = [
+        discoveryDeviceTitle(device),
+        device.hostname,
+        device.manufacturer,
+        device.model,
+        device.ipAddress,
+        device.macAddress,
+        device.matchedDevice?.deviceName,
+        device.deviceType,
+        device.friendlyName,
+      ]
+        .map((value) => String(value ?? "").toLowerCase())
+        .join(" ");
+
+      const matchesSearch =
+        query === "" || searchableText.includes(query);
+
+      return (
+        matchesStatus &&
+        matchesLink &&
+        matchesManufacturer &&
+        matchesSearch
+      );
+    });
+
+    return [...filtered].sort((first, second) => {
+      if (sortOption === "name-asc") {
+        return discoveryDeviceTitle(first).localeCompare(
+          discoveryDeviceTitle(second)
+        );
+      }
+
+      if (sortOption === "manufacturer-asc") {
+        return (first.manufacturer ?? "").localeCompare(
+          second.manufacturer ?? ""
+        );
+      }
+
+      if (sortOption === "first-seen-newest") {
+        return (
+          new Date(second.firstSeenAt).getTime() -
+          new Date(first.firstSeenAt).getTime()
+        );
+      }
+
+      const firstSeen = new Date(first.lastSeenAt).getTime();
+      const secondSeen = new Date(second.lastSeenAt).getTime();
+
+      if (sortOption === "last-seen-oldest") {
+        return firstSeen - secondSeen;
+      }
+
+      return secondSeen - firstSeen;
+    });
+  }, [
+    devices,
+    searchTerm,
+    statusFilter,
+    linkFilter,
+    manufacturerFilter,
+    sortOption,
+  ]);
+
+  const filtersActive =
+    searchTerm.trim() !== "" ||
+    statusFilter !== "all" ||
+    linkFilter !== "all" ||
+    manufacturerFilter !== "all" ||
+    sortOption !== "last-seen-newest";
+
+  function clearFilters() {
+    setSearchTerm("");
+    setStatusFilter("all");
+    setLinkFilter("all");
+    setManufacturerFilter("all");
+    setSortOption("last-seen-newest");
   }
 
-  if (!summary.hasConnector) {
-    return (
-      <PageCard className="p-7 md:p-8">
-        <h2 className="text-xl font-semibold text-text-primary">
-          Connect your home network
-        </h2>
-        <p className="mt-3 max-w-2xl text-sm leading-7 text-text-secondary">
-          Install and pair the Home Tech Vault Connector to begin discovering
-          devices on your local network.
-        </p>
-        <div className="mt-6 flex flex-wrap gap-3">
-          <Button href="/network/connect">Connect Your Home Network</Button>
-          <Button href="/network/discovery" variant="secondary">
-            Open Discovery Review
-          </Button>
-        </div>
-      </PageCard>
-    );
+  function formatRelative(value: string | null | undefined) {
+    if (!value) {
+      return "Never";
+    }
+
+    return isDemo
+      ? formatDemoRelativeTime(value)
+      : formatConnectorRelativeTime(value);
   }
 
-  const overviewActions =
-    summary.reviewCount > 0
-      ? [
-          {
-            label: "Review Devices",
-            href: "/network/discovery",
-            variant: "primary" as const,
-          },
-          {
-            label: "Manage Connector",
-            href: "/network/connect",
-            variant: "secondary" as const,
-          },
-        ]
-      : [
-          {
-            label: "Manage Connector",
-            href: "/network/connect",
-            variant: "primary" as const,
-          },
-          {
-            label: "Open Discovery Review",
-            href: "/network/discovery",
-            variant: "secondary" as const,
-          },
-        ];
+  if (data.error && devices.length === 0) {
+    return null;
+  }
+
+  const connector = summary.primaryConnector;
+  const connectorPresence = connector
+    ? deriveConnectorPresence(connector.status, connector.lastSeenAt)
+    : null;
+
+  const summaryCards: Array<{
+    id: NetworkStatusFilter;
+    title: string;
+    value: number;
+    description: string;
+    icon: NetworkIcon;
+    iconClassName: string;
+  }> = [
+    {
+      id: "online",
+      title: "Online",
+      value: onlineDevices.length,
+      description: "Currently detected",
+      icon: Wifi,
+      iconClassName: "bg-home-health-soft text-home-health",
+    },
+    {
+      id: "offline",
+      title: "Offline",
+      value: offlineDevices.length,
+      description: "Not recently detected",
+      icon: WifiOff,
+      iconClassName: "bg-surface-sunken text-text-secondary",
+    },
+    {
+      id: "new",
+      title: "Newly Discovered",
+      value: newDevices.length,
+      description: "First seen recently",
+      icon: Radar,
+      iconClassName: "bg-warning-soft text-warning",
+    },
+    {
+      id: "unlinked",
+      title: "Unlinked",
+      value: unlinkedDevices.length,
+      description: "Needs a vault match",
+      icon: Unlink,
+      iconClassName: "bg-surface-sunken text-charcoal",
+    },
+  ];
 
   return (
     <div className="space-y-6">
-      <PageCard className="p-7 md:p-8">
-        <h2 className="text-xl font-semibold text-text-primary">
-          Network summary
-        </h2>
+      <ConnectorStatusPanel
+        summary={summary}
+        connectorPresence={connectorPresence}
+        formatRelative={formatRelative}
+        canManage={canRefresh || canLink}
+        isDemo={isDemo}
+        onDemoAction={onDemoAction}
+      />
 
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          <SummaryMetric
-            label="Connector status"
-            value={summary.connectorStatusLabel}
-          />
-          <SummaryMetric
-            label="Monitoring"
-            value={summary.monitoringLabel}
-          />
-          <SummaryMetric
-            label="Devices discovered"
-            value={
-              summary.lastScan || summary.totalDiscovered > 0
-                ? String(summary.totalDiscovered)
-                : "—"
-            }
-          />
-          <SummaryMetric
-            label="Added to Vault"
-            value={String(summary.addedToVaultCount)}
-          />
-          <SummaryMetric
-            label="Needs review"
-            value={String(summary.reviewCount)}
-          />
-          <SummaryMetric
-            label="Last scan"
-            value={
-              summary.lastScan
-                ? summary.lastScanLabel
-                : "No scan yet"
-            }
-          />
-        </div>
+      {summary.hasConnector ? (
+        <ScanMetadataCard
+          summary={summary}
+          stats={stats}
+          onlineCount={onlineDevices.length}
+          unlinkedCount={unlinkedDevices.length}
+          newCount={newDevices.length}
+          formatRelative={formatRelative}
+        />
+      ) : null}
 
-        <div className="mt-6 flex flex-wrap gap-3">
-          {overviewActions.map((action) => (
-            <Button
-              key={action.label}
-              href={action.href}
-              variant={action.variant}
+      {summary.hasConnector || devices.length > 0 ? (
+        <>
+          <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {summaryCards.map((card) => {
+              const selected = statusFilter === card.id;
+              const Icon = card.icon;
+
+              return (
+                <button
+                  key={card.id}
+                  type="button"
+                  onClick={() =>
+                    setStatusFilter(selected ? "all" : card.id)
+                  }
+                  aria-pressed={selected}
+                  className={cn(
+                    "htv-focus-ring rounded-[var(--radius-card)] border p-4 text-left shadow-[var(--shadow-sm)] transition md:p-5",
+                    selected
+                      ? "border-charcoal bg-surface-card ring-2 ring-charcoal/15"
+                      : "border-border-subtle bg-surface-card hover:border-border-strong hover:bg-surface-hover"
+                  )}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-text-tertiary">
+                        {card.title}
+                      </p>
+                      <p className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
+                        {card.value}
+                      </p>
+                      <p className="mt-1 text-xs leading-5 text-text-secondary">
+                        {card.description}
+                      </p>
+                    </div>
+                    <div
+                      className={cn(
+                        "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
+                        card.iconClassName
+                      )}
+                    >
+                      <Icon size={16} aria-hidden />
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </section>
+
+          <PageCard className="p-5 md:p-6">
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+                <div className="relative flex-1">
+                  <Search
+                    size={18}
+                    className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-text-tertiary"
+                  />
+                  <input
+                    type="search"
+                    value={searchTerm}
+                    onChange={(event) => setSearchTerm(event.target.value)}
+                    placeholder="Search name, hostname, manufacturer, IP, MAC..."
+                    className="htv-focus-ring w-full rounded-2xl border border-border-subtle bg-surface-sunken py-3.5 pl-11 pr-11 text-sm text-text-primary outline-none transition placeholder:text-text-tertiary focus:border-interaction focus:bg-surface-card focus:ring-4 focus:ring-interaction/15"
+                  />
+                  {searchTerm ? (
+                    <button
+                      type="button"
+                      onClick={() => setSearchTerm("")}
+                      aria-label="Clear search"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-text-tertiary transition hover:text-text-primary"
+                    >
+                      <X size={16} />
+                    </button>
+                  ) : null}
+                </div>
+
+                <label className="flex min-w-[10rem] items-center gap-2">
+                  <span className="sr-only">Link status</span>
+                  <Link2
+                    size={16}
+                    className="shrink-0 text-text-tertiary"
+                    aria-hidden
+                  />
+                  <select
+                    value={linkFilter}
+                    onChange={(event) =>
+                      setLinkFilter(event.target.value as NetworkLinkFilter)
+                    }
+                    className="htv-focus-ring w-full rounded-2xl border border-border-subtle bg-surface-card px-4 py-3 text-sm text-text-primary outline-none transition focus:border-interaction"
+                  >
+                    <option value="all">All Devices</option>
+                    <option value="linked">Linked</option>
+                    <option value="unlinked">Unlinked</option>
+                  </select>
+                </label>
+
+                {manufacturerOptions.length > 0 ? (
+                  <label className="flex min-w-[11rem] items-center gap-2">
+                    <span className="sr-only">Manufacturer</span>
+                    <Laptop
+                      size={16}
+                      className="shrink-0 text-text-tertiary"
+                      aria-hidden
+                    />
+                    <select
+                      value={manufacturerFilter}
+                      onChange={(event) =>
+                        setManufacturerFilter(event.target.value)
+                      }
+                      className="htv-focus-ring w-full rounded-2xl border border-border-subtle bg-surface-card px-4 py-3 text-sm text-text-primary outline-none transition focus:border-interaction"
+                    >
+                      <option value="all">All manufacturers</option>
+                      {manufacturerOptions.map((manufacturer) => (
+                        <option key={manufacturer} value={manufacturer}>
+                          {manufacturer}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                ) : null}
+
+                <label className="flex min-w-[12rem] items-center gap-2">
+                  <span className="sr-only">Sort network devices</span>
+                  <SlidersHorizontal
+                    size={16}
+                    className="shrink-0 text-text-tertiary"
+                    aria-hidden
+                  />
+                  <select
+                    value={sortOption}
+                    onChange={(event) =>
+                      setSortOption(event.target.value as NetworkSort)
+                    }
+                    className="htv-focus-ring w-full rounded-2xl border border-border-subtle bg-surface-card px-4 py-3 text-sm text-text-primary outline-none transition focus:border-interaction"
+                  >
+                    <option value="last-seen-newest">
+                      Last Seen Most Recent
+                    </option>
+                    <option value="last-seen-oldest">Last Seen Oldest</option>
+                    <option value="name-asc">Device Name A–Z</option>
+                    <option value="manufacturer-asc">Manufacturer A–Z</option>
+                    <option value="first-seen-newest">
+                      First Seen Most Recent
+                    </option>
+                  </select>
+                </label>
+              </div>
+
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                {(
+                  [
+                    { id: "all", label: "All" },
+                    { id: "online", label: "Online" },
+                    { id: "offline", label: "Offline" },
+                    { id: "new", label: "Newly Discovered" },
+                    { id: "unlinked", label: "Unlinked" },
+                  ] as const
+                ).map((filter) => {
+                  const selected = statusFilter === filter.id;
+
+                  return (
+                    <button
+                      key={filter.id}
+                      type="button"
+                      onClick={() => setStatusFilter(filter.id)}
+                      className={cn(
+                        "htv-focus-ring shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition",
+                        selected
+                          ? "bg-charcoal text-surface-card"
+                          : "border border-border-subtle bg-surface-card text-text-secondary hover:border-border-strong hover:text-text-primary"
+                      )}
+                    >
+                      {filter.label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border-subtle pt-4">
+                <p className="text-sm text-text-secondary">
+                  {filteredDevices.length} network device
+                  {filteredDevices.length === 1 ? "" : "s"}
+                  {searchTerm.trim()
+                    ? ` matching “${searchTerm.trim()}”`
+                    : ""}
+                </p>
+
+                <div className="flex items-center gap-3">
+                  {canRefresh && summary.hasConnector ? (
+                    <button
+                      type="button"
+                      onClick={onRefresh}
+                      disabled={refreshing}
+                      className="htv-focus-ring inline-flex items-center gap-2 text-sm font-semibold text-text-primary transition hover:text-interaction disabled:opacity-50"
+                    >
+                      <RefreshCw
+                        size={15}
+                        className={refreshing ? "animate-spin" : undefined}
+                      />
+                      Refresh
+                    </button>
+                  ) : null}
+
+                  {filtersActive ? (
+                    <button
+                      type="button"
+                      onClick={clearFilters}
+                      className="htv-focus-ring inline-flex items-center gap-2 text-sm font-semibold text-text-primary transition hover:text-interaction"
+                    >
+                      <X size={15} />
+                      Clear filters
+                    </button>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          </PageCard>
+
+          {devices.length === 0 ? (
+            <EmptyState
+              icon={Radar}
+              title="No network devices have been discovered yet."
+              description={
+                summary.lastScan
+                  ? "Run another scan from the Home Tech Vault Connector to refresh discoveries."
+                  : "No network scan has been completed yet."
+              }
+              section="network"
             >
-              {action.label}
-            </Button>
-          ))}
-        </div>
-      </PageCard>
-
-      {activityItems.length > 0 ? (
-        <PageCard className="p-7 md:p-8">
-          <h3 className="text-lg font-semibold text-text-primary">
-            Recent activity
-          </h3>
-          <ul className="mt-4 space-y-3">
-            {activityItems.map((item) => (
-              <li
-                key={item.id}
-                className="rounded-[20px] border border-border-subtle bg-surface-sunken px-4 py-3 text-sm text-text-secondary"
-              >
-                {item.message}
-              </li>
-            ))}
-          </ul>
-        </PageCard>
+              {canRefresh ? (
+                <Button
+                  type="button"
+                  className="mt-6"
+                  onClick={onRefresh}
+                  disabled={refreshing}
+                >
+                  <RefreshCw size={17} />
+                  Refresh Network
+                </Button>
+              ) : null}
+            </EmptyState>
+          ) : filteredDevices.length === 0 ? (
+            <NetworkEmptyFilterState
+              statusFilter={statusFilter}
+              searchTerm={searchTerm}
+              onClear={clearFilters}
+            />
+          ) : (
+            <section className="space-y-3">
+              {filteredDevices.map((device) => (
+                <NetworkDeviceCard
+                  key={device.id}
+                  device={device}
+                  formatRelative={formatRelative}
+                  canLink={canLink}
+                  isDemo={isDemo}
+                  menuOpen={menuOpenId === device.id}
+                  onMenuOpenChange={(open) =>
+                    setMenuOpenId(open ? device.id : null)
+                  }
+                  onDemoAction={onDemoAction}
+                />
+              ))}
+            </section>
+          )}
+        </>
       ) : null}
     </div>
+  );
+}
+
+function ConnectorStatusPanel({
+  summary,
+  connectorPresence,
+  formatRelative,
+  canManage,
+  isDemo,
+  onDemoAction,
+}: {
+  summary: NetworkPageData["summary"];
+  connectorPresence: ReturnType<typeof deriveConnectorPresence> | null;
+  formatRelative: (value: string | null | undefined) => string;
+  canManage: boolean;
+  isDemo: boolean;
+  onDemoAction?: () => void;
+}) {
+  if (!summary.hasConnector || !summary.primaryConnector) {
+    return (
+      <PageCard className="p-5 md:p-6">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[var(--radius-button)] border border-border-subtle bg-surface-sunken text-text-secondary">
+              <Router size={22} />
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-text-tertiary">
+                Connector
+              </p>
+              <h2 className="mt-1 text-xl font-semibold tracking-[-0.03em] text-text-primary">
+                No Home Tech Vault connector is paired.
+              </h2>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-text-secondary">
+                Pair a household connector to detect devices on your local
+                network.
+              </p>
+            </div>
+          </div>
+
+          {canManage || isDemo ? (
+            isDemo ? (
+              <Button type="button" onClick={onDemoAction}>
+                Connect Your Home Network
+              </Button>
+            ) : (
+              <Button href="/network/connect">Connect Your Home Network</Button>
+            )
+          ) : null}
+        </div>
+      </PageCard>
+    );
+  }
+
+  const connector = summary.primaryConnector;
+  const presenceLabel =
+    connectorPresence === "online"
+      ? "Connector online"
+      : connectorPresence === "recently_seen"
+        ? "Recently seen"
+        : connectorPresence === "pending"
+          ? "Pending pairing"
+          : "Connector offline";
+
+  const presenceTone =
+    connectorPresence === "online"
+      ? "bg-home-health-soft text-home-health"
+      : connectorPresence === "recently_seen" ||
+          connectorPresence === "pending"
+        ? "bg-warning-soft text-warning"
+        : "bg-danger-soft text-danger";
+
+  return (
+    <PageCard className="p-5 md:p-6">
+      <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+        <div className="flex items-start gap-4">
+          <div
+            className={cn(
+              "flex h-12 w-12 shrink-0 items-center justify-center rounded-[var(--radius-button)]",
+              presenceTone
+            )}
+          >
+            <Router size={22} />
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-text-tertiary">
+              Connector status
+            </p>
+            <h2 className="mt-1 truncate text-xl font-semibold tracking-[-0.03em] text-text-primary">
+              {connector.name}
+            </h2>
+            <p className="mt-1 text-sm font-medium text-text-primary">
+              {presenceLabel}
+            </p>
+            {connectorPresence ? (
+              <p className="mt-1 text-sm text-text-secondary">
+                {connectorPresenceDescription(connectorPresence)}
+              </p>
+            ) : null}
+          </div>
+        </div>
+
+        <span
+          className={cn(
+            "inline-flex w-fit items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold",
+            presenceTone
+          )}
+        >
+          {summary.connectorStatusLabel}
+        </span>
+      </div>
+
+      <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <ConnectorMeta
+          label="Last heartbeat"
+          value={
+            connector.lastSeenAt
+              ? formatRelative(connector.lastSeenAt)
+              : "Never connected"
+          }
+          detail={
+            connector.lastSeenAt
+              ? formatConnectorTimestamp(connector.lastSeenAt)
+              : undefined
+          }
+        />
+        <ConnectorMeta
+          label="Last completed scan"
+          value={
+            connector.lastScanAt
+              ? formatRelative(connector.lastScanAt)
+              : "No scan yet"
+          }
+          detail={
+            connector.lastScanAt
+              ? formatConnectorTimestamp(connector.lastScanAt)
+              : undefined
+          }
+        />
+        <ConnectorMeta
+          label="Platform"
+          value={
+            connector.platform
+              ? formatPlatformLabel(connector.platform)
+              : "Unknown"
+          }
+        />
+        <ConnectorMeta
+          label="Version"
+          value={connector.appVersion ?? "Unknown"}
+        />
+      </div>
+    </PageCard>
+  );
+}
+
+function ConnectorMeta({
+  label,
+  value,
+  detail,
+}: {
+  label: string;
+  value: string;
+  detail?: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-border-subtle bg-surface-sunken px-4 py-3">
+      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-text-tertiary">
+        {label}
+      </p>
+      <p className="mt-1 text-sm font-semibold text-text-primary">{value}</p>
+      {detail ? (
+        <p className="mt-1 text-xs text-text-tertiary">{detail}</p>
+      ) : null}
+    </div>
+  );
+}
+
+function ScanMetadataCard({
+  summary,
+  stats,
+  onlineCount,
+  unlinkedCount,
+  newCount,
+  formatRelative,
+}: {
+  summary: NetworkPageData["summary"];
+  stats: NetworkPageData["stats"];
+  onlineCount: number;
+  unlinkedCount: number;
+  newCount: number;
+  formatRelative: (value: string | null | undefined) => string;
+}) {
+  if (!summary.lastScan) {
+    return (
+      <PageCard className="p-5 md:p-6">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-button)] bg-surface-sunken text-text-secondary">
+            <Clock3 size={18} />
+          </div>
+          <div>
+            <p className="font-semibold text-text-primary">Scan activity</p>
+            <p className="mt-1 text-sm text-text-secondary">
+              No network scan has been completed yet.
+            </p>
+          </div>
+        </div>
+      </PageCard>
+    );
+  }
+
+  return (
+    <PageCard className="p-5 md:p-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-text-tertiary">
+            Last scan
+          </p>
+          <p className="mt-1 text-lg font-semibold text-text-primary">
+            Completed {formatRelative(summary.lastScan)}
+          </p>
+          <p className="mt-1 text-sm text-text-secondary">
+            {formatConnectorTimestamp(summary.lastScan)}
+          </p>
+        </div>
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-sunken px-3 py-1.5 text-xs font-semibold text-text-secondary">
+          <Radar size={13} />
+          {summary.monitoringLabel} monitoring
+        </span>
+      </div>
+
+      <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <ConnectorMeta
+          label="Devices found"
+          value={String(stats?.totalDiscovered ?? summary.totalDiscovered)}
+        />
+        <ConnectorMeta label="Newly discovered" value={String(newCount)} />
+        <ConnectorMeta
+          label="Linked"
+          value={String(summary.addedToVaultCount)}
+        />
+        <ConnectorMeta label="Unlinked" value={String(unlinkedCount)} />
+      </div>
+
+      <p className="mt-4 text-xs text-text-tertiary">
+        {onlineCount} currently detected · {summary.reviewCount} need review
+      </p>
+    </PageCard>
+  );
+}
+
+function NetworkEmptyFilterState({
+  statusFilter,
+  searchTerm,
+  onClear,
+}: {
+  statusFilter: NetworkStatusFilter;
+  searchTerm: string;
+  onClear: () => void;
+}) {
+  if (searchTerm.trim()) {
+    return (
+      <EmptyState
+        icon={Search}
+        title="No network devices match your search."
+        description="Try another device name, hostname, manufacturer, IP, or MAC address."
+        section="network"
+      >
+        <Button
+          type="button"
+          variant="secondary"
+          className="mt-6"
+          onClick={onClear}
+        >
+          Clear Filters
+        </Button>
+      </EmptyState>
+    );
+  }
+
+  let title = "No network devices found.";
+  let description = "Try another filter to review discoveries on your network.";
+
+  if (statusFilter === "online") {
+    title = "No devices are currently online.";
+    description = "Nothing was recently detected on the household network.";
+  } else if (statusFilter === "offline") {
+    title = "No offline devices found.";
+    description = "All listed devices were detected recently.";
+  } else if (statusFilter === "new") {
+    title = "No newly discovered devices.";
+    description = "New discoveries will appear here after the next scan.";
+  } else if (statusFilter === "unlinked") {
+    title = "All discovered devices are linked.";
+    description = "Every reviewed discovery is matched to a vault device.";
+  }
+
+  return (
+    <EmptyState
+      icon={CheckCircle2}
+      title={title}
+      description={description}
+      section="network"
+    >
+      <Button
+        type="button"
+        variant="secondary"
+        className="mt-6"
+        onClick={onClear}
+      >
+        View All Devices
+      </Button>
+    </EmptyState>
+  );
+}
+
+function NetworkDeviceCard({
+  device,
+  formatRelative,
+  canLink,
+  isDemo,
+  menuOpen,
+  onMenuOpenChange,
+  onDemoAction,
+}: {
+  device: DiscoveredDeviceSummary;
+  formatRelative: (value: string | null | undefined) => string;
+  canLink: boolean;
+  isDemo: boolean;
+  menuOpen: boolean;
+  onMenuOpenChange: (open: boolean) => void;
+  onDemoAction?: () => void;
+}) {
+  const menuRef = useRef<HTMLDivElement>(null);
+  const presence = presentDeviceNetworkPresence({
+    online: device.online,
+    lastSeenAt: device.lastSeenAt,
+    firstSeenAt: device.firstSeenAt,
+  });
+  const title = discoveryDeviceTitle(device);
+  const linked = Boolean(device.importedDeviceId);
+  const isNew = isNewlyDiscovered(device);
+  const source =
+    device.discoverySources.length > 0
+      ? device.discoverySources.join(", ")
+      : "Connector";
+
+  useEffect(() => {
+    if (!menuOpen) {
+      return;
+    }
+
+    function handlePointerDown(event: MouseEvent) {
+      if (menuRef.current?.contains(event.target as Node)) {
+        return;
+      }
+
+      onMenuOpenChange(false);
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        onMenuOpenChange(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [menuOpen, onMenuOpenChange]);
+
+  const statusTone =
+    presence.tone === "online"
+      ? "bg-home-health-soft text-home-health"
+      : presence.tone === "recent"
+        ? "bg-warning-soft text-warning"
+        : presence.tone === "stale"
+          ? "bg-surface-sunken text-text-secondary"
+          : "bg-surface-sunken text-text-tertiary";
+
+  const StatusIcon =
+    presence.tone === "online"
+      ? Wifi
+      : presence.tone === "recent"
+        ? Clock3
+        : WifiOff;
+
+  return (
+    <article className="rounded-[var(--radius-card)] border border-border-subtle bg-surface-card p-4 shadow-[var(--shadow-sm)] transition hover:border-border-strong md:p-5">
+      <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(0,1.5fr)_10rem_9rem_minmax(0,1fr)_8rem_auto] lg:items-center lg:gap-4">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="text-lg font-semibold tracking-[-0.03em] text-text-primary">
+              {title}
+            </h3>
+            {isNew ? (
+              <span className="inline-flex items-center rounded-full bg-warning-soft px-2.5 py-1 text-xs font-semibold text-warning">
+                New
+              </span>
+            ) : null}
+            <span
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold lg:hidden",
+                statusTone
+              )}
+            >
+              <StatusIcon size={13} />
+              {presence.label}
+            </span>
+          </div>
+
+          <p className="mt-1 text-sm text-text-secondary">
+            {[device.manufacturer, device.model, device.deviceType]
+              .filter(Boolean)
+              .join(" · ") || "Manufacturer unavailable"}
+          </p>
+
+          {isNew ? (
+            <p className="mt-2 text-xs text-text-tertiary">
+              First detected {formatRelative(device.firstSeenAt)}
+            </p>
+          ) : null}
+        </div>
+
+        <div className="text-sm">
+          <p className="font-medium text-text-primary">
+            {device.ipAddress || "No IP"}
+          </p>
+          <p className="mt-1 break-all text-xs text-text-tertiary">
+            {device.macAddress || "No MAC"}
+          </p>
+          <p className="mt-1 text-xs text-text-tertiary lg:hidden">
+            Source · {source}
+          </p>
+        </div>
+
+        <div className="text-sm">
+          <p className="font-medium text-text-primary">
+            {formatRelative(device.lastSeenAt)}
+          </p>
+          <p className="mt-1 text-xs text-text-tertiary">
+            First seen {formatRelative(device.firstSeenAt)}
+          </p>
+        </div>
+
+        <div className="min-w-0 text-sm">
+          {linked && device.matchedDevice ? (
+            <Link
+              href={"/devices/" + device.matchedDevice.id}
+              className="htv-focus-ring inline-flex max-w-full items-center gap-1.5 rounded-md font-medium text-interaction hover:text-interaction-hover"
+            >
+              <Laptop size={14} className="shrink-0" />
+              <span className="truncate">
+                {device.matchedDevice.deviceName || "Linked device"}
+              </span>
+            </Link>
+          ) : linked && device.importedDeviceId ? (
+            <Link
+              href={"/devices/" + device.importedDeviceId}
+              className="htv-focus-ring inline-flex items-center gap-1.5 rounded-md font-medium text-interaction hover:text-interaction-hover"
+            >
+              <Laptop size={14} />
+              View linked device
+            </Link>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 text-text-secondary">
+              <Unlink size={14} />
+              Unlinked
+            </span>
+          )}
+          <p className="mt-1 text-xs text-text-tertiary capitalize">
+            {device.matchStatus.replace("_", " ")}
+          </p>
+        </div>
+
+        <span
+          className={cn(
+            "hidden w-fit items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold lg:inline-flex",
+            statusTone
+          )}
+        >
+          <StatusIcon size={13} />
+          {presence.label}
+        </span>
+
+        <div
+          className="relative flex items-center justify-between gap-2 lg:justify-end"
+          ref={menuRef}
+        >
+          <div className="flex flex-wrap gap-2 lg:hidden">
+            {linked && device.importedDeviceId ? (
+              <Button
+                href={"/devices/" + device.importedDeviceId}
+                variant="secondary"
+                size="sm"
+              >
+                View Device
+              </Button>
+            ) : canLink || isDemo ? (
+              isDemo ? (
+                <Button type="button" size="sm" onClick={onDemoAction}>
+                  Link Device
+                </Button>
+              ) : (
+                <Button
+                  href={
+                    "/network/discovery?focus=" + encodeURIComponent(device.id)
+                  }
+                  size="sm"
+                >
+                  Link Device
+                </Button>
+              )
+            ) : null}
+          </div>
+
+          <div className="relative">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="px-3"
+              aria-label="Device actions"
+              aria-expanded={menuOpen}
+              onClick={() => onMenuOpenChange(!menuOpen)}
+            >
+              <MoreHorizontal size={16} />
+            </Button>
+
+            {menuOpen ? (
+              <div
+                role="menu"
+                className="absolute right-0 top-full z-20 mt-2 w-52 overflow-hidden rounded-[var(--radius-dialog)] border border-border-subtle bg-surface-card shadow-lg"
+              >
+                <Link
+                  href={
+                    "/network/discovery?focus=" + encodeURIComponent(device.id)
+                  }
+                  role="menuitem"
+                  className="htv-focus-ring flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-medium text-text-primary transition hover:bg-surface-sunken"
+                  onClick={() => onMenuOpenChange(false)}
+                >
+                  <Radar size={15} />
+                  Review Discovery
+                </Link>
+
+                {linked && device.importedDeviceId ? (
+                  <Link
+                    href={"/devices/" + device.importedDeviceId}
+                    role="menuitem"
+                    className="htv-focus-ring flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-medium text-text-primary transition hover:bg-surface-sunken"
+                    onClick={() => onMenuOpenChange(false)}
+                  >
+                    <Laptop size={15} />
+                    View Device
+                    <ChevronRight size={14} className="ml-auto" />
+                  </Link>
+                ) : canLink || isDemo ? (
+                  isDemo ? (
+                    <button
+                      type="button"
+                      role="menuitem"
+                      className="htv-focus-ring flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-medium text-text-primary transition hover:bg-surface-sunken"
+                      onClick={() => {
+                        onMenuOpenChange(false);
+                        onDemoAction?.();
+                      }}
+                    >
+                      <Link2 size={15} />
+                      Link Device
+                    </button>
+                  ) : (
+                    <Link
+                      href={
+                        "/network/discovery?focus=" +
+                        encodeURIComponent(device.id)
+                      }
+                      role="menuitem"
+                      className="htv-focus-ring flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-medium text-text-primary transition hover:bg-surface-sunken"
+                      onClick={() => onMenuOpenChange(false)}
+                    >
+                      <Link2 size={15} />
+                      Link Device
+                    </Link>
+                  )
+                ) : null}
+              </div>
+            ) : null}
+          </div>
+        </div>
+      </div>
+    </article>
   );
 }

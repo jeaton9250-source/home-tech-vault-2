@@ -191,8 +191,30 @@ export function useNetworkPageData(
 
     void run();
 
+    const intervalId = window.setInterval(() => {
+      if (!input.householdId || input.enabled === false) {
+        return;
+      }
+
+      void fetchNetworkPagePayload(input.householdId)
+        .then((payload) => {
+          if (cancelled) {
+            return;
+          }
+
+          setConnectors(payload.connectors);
+          setDevices(payload.devices);
+          setStats(payload.stats);
+          setError(null);
+        })
+        .catch(() => {
+          // Keep the current snapshot on background refresh failures.
+        });
+    }, 45_000);
+
     return () => {
       cancelled = true;
+      window.clearInterval(intervalId);
     };
   }, [input.enabled, input.householdId, input.isDemo]);
 

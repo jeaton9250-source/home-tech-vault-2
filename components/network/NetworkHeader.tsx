@@ -1,66 +1,126 @@
+"use client";
+
+import {
+  Link2,
+  Radar,
+  RefreshCw,
+  Router,
+} from "lucide-react";
+
 import Button from "@/components/ui/Button";
-import { resolveNetworkHeaderActions } from "@/lib/network/headerActions";
+import PageHero from "@/components/ui/PageHero";
 import type { NetworkSummary } from "@/lib/network/summary";
 
 type NetworkHeaderProps = {
   summary: NetworkSummary | null;
   headerSummary: string | null;
   loading: boolean;
+  refreshing?: boolean;
+  canRefresh?: boolean;
+  canManageConnector?: boolean;
+  isDemo?: boolean;
+  isViewer?: boolean;
+  onRefresh?: () => void;
+  onDemoAction?: () => void;
 };
 
 export default function NetworkHeader({
   summary,
   headerSummary,
   loading,
+  refreshing = false,
+  canRefresh = false,
+  canManageConnector = false,
+  isDemo = false,
+  isViewer = false,
+  onRefresh,
+  onDemoAction,
 }: NetworkHeaderProps) {
-  const actions = summary
-    ? resolveNetworkHeaderActions(summary)
-    : null;
+  const hasConnector = Boolean(summary?.hasConnector);
+  const reviewCount = summary?.reviewCount ?? 0;
 
   return (
-    <header className="mb-8">
-      <p className="text-overline text-section-network">Network</p>
+    <div className="space-y-4">
+      <PageHero
+        section="network"
+        title="Network"
+        description="Monitor connected devices, review recent discoveries, and link network activity to your Home Tech Vault records."
+      >
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+          {isViewer ? (
+            <div className="rounded-[var(--radius-button)] border border-border-subtle bg-surface-card/80 px-4 py-3 text-sm font-medium text-text-secondary shadow-[var(--shadow-sm)]">
+              Viewer Access · Read Only
+            </div>
+          ) : null}
 
-      <div className="mt-2 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-        <div className="max-w-3xl">
-          <h1 className="text-3xl font-semibold tracking-[-0.03em] text-text-primary md:text-4xl">
-            Your home network
-          </h1>
-          <p className="mt-3 text-sm leading-7 text-text-secondary md:text-base">
-            See what is connected, review new devices, and manage monitoring
-            from one place.
-          </p>
+          {canRefresh && hasConnector ? (
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={onRefresh}
+              disabled={refreshing || loading}
+              loading={refreshing}
+              loadingLabel="Refreshing..."
+            >
+              <RefreshCw size={17} />
+              Refresh Network
+            </Button>
+          ) : null}
 
-          {loading ? (
-            <div className="mt-4 h-5 w-full max-w-xl animate-pulse rounded-full bg-surface-sunken" />
-          ) : headerSummary ? (
-            <p className="mt-4 text-sm font-medium text-text-primary">
-              {headerSummary}
-            </p>
+          {isDemo ? (
+            <Button type="button" variant="secondary" onClick={onDemoAction}>
+              <Radar size={17} />
+              Scan Network
+            </Button>
+          ) : null}
+
+          {!loading && !hasConnector && (canManageConnector || isDemo) ? (
+            isDemo ? (
+              <Button type="button" onClick={onDemoAction}>
+                <Router size={17} />
+                Connect Your Home Network
+              </Button>
+            ) : (
+              <Button href="/network/connect">
+                <Router size={17} />
+                Connect Your Home Network
+              </Button>
+            )
+          ) : null}
+
+          {!loading && hasConnector && (canManageConnector || isDemo) ? (
+            isDemo ? (
+              <Button type="button" variant="secondary" onClick={onDemoAction}>
+                <Router size={17} />
+                Manage Connector
+              </Button>
+            ) : (
+              <Button href="/network/connect" variant="secondary">
+                <Router size={17} />
+                Manage Connector
+              </Button>
+            )
+          ) : null}
+
+          {!loading && summary ? (
+            <Button href="/network/discovery">
+              <Link2 size={17} />
+              {reviewCount > 0 ? "Review Devices" : "Open Discovery Review"}
+              {reviewCount > 0 ? (
+                <span className="ml-1 rounded-full bg-white/15 px-2 py-0.5 text-xs font-semibold">
+                  {reviewCount}
+                </span>
+              ) : null}
+            </Button>
           ) : null}
         </div>
+      </PageHero>
 
-        {actions ? (
-          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
-            <Button href={actions.primary.href}>
-              {actions.primary.label}
-              {actions.primary.badgeCount ? (
-                <span className="ml-2 rounded-full bg-white/15 px-2 py-0.5 text-xs font-semibold">
-                  {actions.primary.badgeCount}
-                </span>
-              ) : null}
-            </Button>
-            <Button href={actions.secondary.href} variant="secondary">
-              {actions.secondary.label}
-              {actions.secondary.badgeCount ? (
-                <span className="ml-2 rounded-full bg-charcoal/10 px-2 py-0.5 text-xs font-semibold">
-                  {actions.secondary.badgeCount}
-                </span>
-              ) : null}
-            </Button>
-          </div>
-        ) : null}
-      </div>
-    </header>
+      {!loading && headerSummary ? (
+        <p className="px-1 text-sm font-medium text-text-secondary">
+          {headerSummary}
+        </p>
+      ) : null}
+    </div>
   );
 }

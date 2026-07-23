@@ -1,25 +1,29 @@
-import PageCard from "@/components/ui/PageCard";
-
 export function NetworkPageSkeleton() {
   return (
     <div className="space-y-6">
-      <PageCard className="p-7">
-        <div className="space-y-3">
-          <div className="h-4 w-32 animate-pulse rounded bg-surface-sunken" />
-          <div className="h-8 w-2/3 animate-pulse rounded bg-surface-sunken" />
-          <div className="h-4 w-full max-w-xl animate-pulse rounded bg-surface-sunken" />
-        </div>
-      </PageCard>
-      <PageCard className="p-7">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {[1, 2, 3, 4].map((item) => (
-            <div
-              key={item}
-              className="h-20 animate-pulse rounded-[20px] bg-surface-sunken"
-            />
-          ))}
-        </div>
-      </PageCard>
+      <div className="h-40 animate-pulse rounded-[var(--radius-card)] border border-border-subtle bg-surface-card" />
+
+      <div className="h-28 animate-pulse rounded-[var(--radius-card)] border border-border-subtle bg-surface-card" />
+
+      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {[1, 2, 3, 4].map((item) => (
+          <div
+            key={item}
+            className="h-28 animate-pulse rounded-[var(--radius-card)] border border-border-subtle bg-surface-card"
+          />
+        ))}
+      </section>
+
+      <div className="h-44 animate-pulse rounded-[var(--radius-card)] border border-border-subtle bg-surface-card" />
+
+      <section className="space-y-3">
+        {[1, 2, 3, 4].map((item) => (
+          <div
+            key={item}
+            className="h-28 animate-pulse rounded-[var(--radius-card)] border border-border-subtle bg-surface-card"
+          />
+        ))}
+      </section>
     </div>
   );
 }
