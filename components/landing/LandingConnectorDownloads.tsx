@@ -70,7 +70,7 @@ export default function LandingConnectorDownloads({
           href={MARKETING_ROUTES.signup}
           className="font-medium text-interaction hover:text-interaction-hover"
         >
-          Create your free vault
+          Start your home&apos;s memory
         </Link>
       </p>
     </div>

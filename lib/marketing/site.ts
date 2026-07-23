@@ -28,7 +28,7 @@ export const siteConfig = {
   /** App Router file convention: app/opengraph-image.png */
   defaultOgImage: "/opengraph-image.png",
   defaultOgImageAlt:
-    "Home Tech Vault — The digital home for everything that powers yours",
+    "Home Tech Vault — Your home's digital memory",
   logo: absoluteUrl("/brand/logo.svg"),
   twitterHandle: "@hometechvault",
 } as const;

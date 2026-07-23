@@ -3,6 +3,7 @@
 import {
   Activity,
   CheckCircle2,
+  HeartPulse,
   HelpCircle,
   Radar,
   Wifi,
@@ -12,6 +13,8 @@ import { sections } from "@/lib/design-system/tokens";
 import {
   LANDING_DEMO_LABEL,
   landingConnectorDemoSummary,
+  landingConnectorCategories,
+  landingHomePulseSummary,
 } from "@/lib/marketing/landingConnectorDemo";
 import { cn } from "@/lib/design-system/cn";
 
@@ -37,7 +40,7 @@ export function LandingConnectorDemoSummary({
         className
       )}
       role="img"
-      aria-label="Demo summary of Smart Connector network discovery"
+      aria-label="Demo summary of Home Tech Vault remembering home technology"
     >
       <div className="flex items-center justify-between gap-3 border-b border-border-subtle bg-surface-sunken/80 px-5 py-3.5">
         <div className="flex items-center gap-2.5">
@@ -66,14 +69,14 @@ export function LandingConnectorDemoSummary({
             {summary.connectorStatus}
           </div>
           <p className="text-xs text-text-muted">
-            Last scan {summary.lastScanLabel}
+            Last check {summary.lastScanLabel}
           </p>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           {[
             {
-              label: "Discovered",
+              label: "Remembered",
               value: summary.devicesDiscovered,
               icon: Wifi,
             },
@@ -83,12 +86,12 @@ export function LandingConnectorDemoSummary({
               icon: CheckCircle2,
             },
             {
-              label: "Online now",
+              label: "At home now",
               value: summary.onlineNow,
               icon: Activity,
             },
             {
-              label: "Needs review",
+              label: "Needs you",
               value: summary.needsReview,
               icon: HelpCircle,
             },
@@ -112,8 +115,8 @@ export function LandingConnectorDemoSummary({
 
         <div className="rounded-[var(--radius-button)] border border-border-subtle bg-surface-sunken px-4 py-3">
           <p className="text-xs leading-5 text-text-secondary">
-            Passive scans found TVs, speakers, printers, and smart-home
-            devices — then matched them to your vault automatically.
+            TVs, speakers, printers, and smart-home devices — quietly
+            remembered and matched to your vault.
           </p>
         </div>
       </div>
@@ -168,7 +171,7 @@ export function ConnectorNetworkIllustration() {
       ))}
 
       <div className="absolute bottom-4 left-4 right-4 rounded-[var(--radius-button)] border border-border-subtle/80 bg-surface-card/90 px-3 py-2 text-center text-[0.6875rem] text-text-secondary backdrop-blur-sm">
-        Private network scan · No port scanning
+        Quietly watching your home network · Private and local
       </div>
     </div>
   );
@@ -177,22 +180,7 @@ export function ConnectorNetworkIllustration() {
 export function ConnectorDeviceCategoryGrid() {
   return (
     <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-      {[
-        "Computers & tablets",
-        "Smart TVs & streaming",
-        "Printers",
-        "Smart speakers",
-        "Game consoles",
-        "Cameras & doorbells",
-        "Thermostats & plugs",
-        "Robot vacuums",
-        "Lighting & hubs",
-        "Routers & mesh",
-        "NAS & storage",
-        "Appliances",
-        "Aquarium tech",
-        "Other Wi‑Fi devices",
-      ].map((category, index) => (
+      {landingConnectorCategories.map((category, index) => (
         <div
           key={category}
           className={cn(
@@ -208,7 +196,7 @@ export function ConnectorDeviceCategoryGrid() {
   );
 }
 
-export function MonitoringStatusIllustration() {
+export function HomePulseIllustration() {
   return (
     <div
       className="overflow-hidden rounded-[var(--radius-card)] border border-border-subtle bg-surface-card shadow-[var(--shadow-md)]"
@@ -217,46 +205,48 @@ export function MonitoringStatusIllustration() {
       }}
     >
       <div className="border-b border-border-subtle bg-surface-sunken/80 px-5 py-3.5">
-        <p
-          className="text-overline"
-          style={{ color: sections.network.accent }}
-        >
-          Live Monitoring
-        </p>
-        <p className="mt-1 text-sm font-medium text-text-primary">
-          Example device statuses
-        </p>
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p
+              className="text-overline"
+              style={{ color: sections.network.accent }}
+            >
+              Home Pulse
+            </p>
+            <p className="mt-1 text-sm font-medium text-text-primary">
+              {landingHomePulseSummary.headline}
+            </p>
+          </div>
+          <span className="inline-flex h-9 w-9 items-center justify-center rounded-[var(--radius-button)] bg-section-network/10 text-section-network">
+            <HeartPulse size={18} aria-hidden />
+          </span>
+        </div>
       </div>
 
       <div className="space-y-2 p-4">
-        {[
-          { name: "UniFi Router", status: "Online", tone: "success" },
-          { name: "LG OLED TV", status: "Recently Detected", tone: "info" },
-          { name: "Guest iPad", status: "Needs Review", tone: "warning" },
-        ].map((device) => (
+        {landingHomePulseSummary.items.map((item) => (
           <div
-            key={device.name}
-            className="flex items-center justify-between rounded-[var(--radius-button)] border border-border-subtle bg-surface-base px-4 py-3"
+            key={item.text}
+            className="flex items-start gap-3 rounded-[var(--radius-button)] border border-border-subtle bg-surface-base px-4 py-3"
           >
-            <p className="text-sm font-medium text-text-primary">
-              {device.name}
-            </p>
             <span
               className={cn(
-                "rounded-full px-2.5 py-1 text-[0.625rem] font-semibold uppercase tracking-wider",
-                device.tone === "success" &&
-                  "bg-home-health-soft text-home-health",
-                device.tone === "info" &&
-                  "bg-interaction-soft text-interaction",
-                device.tone === "warning" &&
-                  "bg-warning-soft text-warning"
+                "mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full",
+                item.tone === "success" && "bg-home-health",
+                item.tone === "info" && "bg-interaction",
+                item.tone === "warning" && "bg-warning"
               )}
-            >
-              {device.status}
-            </span>
+              aria-hidden
+            />
+            <p className="text-sm text-text-secondary">{item.text}</p>
           </div>
         ))}
       </div>
     </div>
   );
+}
+
+/** @deprecated Use HomePulseIllustration */
+export function MonitoringStatusIllustration() {
+  return <HomePulseIllustration />;
 }

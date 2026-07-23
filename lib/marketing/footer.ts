@@ -6,7 +6,7 @@ export type FooterLink = {
 };
 
 export const FOOTER_BRAND_DESCRIPTION =
-  "The secure home for your devices, warranties, documents, and household technology.";
+  "Home Tech Vault remembers the details so you can enjoy your home.";
 
 export const FOOTER_SUPPORT_LINKS: FooterLink[] =
   [

@@ -117,12 +117,14 @@ export default function LandingPage({
             Home Tech Vault
           </p>
           <h2 className="mt-4 text-2xl font-medium tracking-[-0.03em] text-text-primary md:text-[2rem] md:leading-tight">
-            Ready to discover what is on your network?
+            Your home already has a memory.
+            <span className="block text-text-secondary">
+              Now your technology does too.
+            </span>
           </h2>
 
           <p className="mx-auto mt-4 max-w-lg text-sm leading-6 text-text-muted">
-            Start free with manual scans, then upgrade when you want
-            automatic monitoring and a complete household vault.
+            Because your home deserves a memory. Start organizing today.
           </p>
 
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">

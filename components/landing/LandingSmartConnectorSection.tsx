@@ -37,29 +37,36 @@ export default function LandingSmartConnectorSection() {
             Smart Connector
           </p>
           <h2 className="mt-3 text-3xl font-medium tracking-[-0.03em] text-text-primary md:text-4xl">
-            A quiet assistant on your home network.
+            A quiet assistant for your home&apos;s technology.
           </h2>
           <p className="mt-4 max-w-xl text-sm leading-7 text-text-muted">
-            The Smart Connector runs locally on your Mac or PC, discovers
-            devices with low-impact methods, and syncs observations to your
-            vault. It never scans the public internet or inspects browsing
-            activity.
+            The Smart Connector quietly watches over your home&apos;s
+            technology. It automatically discovers compatible devices,
+            keeps network information up to date, and helps Home Tech
+            Vault remember what matters.
           </p>
+
+          <div className="mt-5 space-y-1 text-sm font-medium text-text-secondary">
+            <p>No complicated networking.</p>
+            <p>No spreadsheets.</p>
+            <p>No guesswork.</p>
+          </div>
 
           <ul className="mt-6 space-y-3 text-sm text-text-secondary">
             <li className="flex items-start gap-3">
               <Radar size={16} className="mt-0.5 shrink-0 text-section-network" />
-              Passive discovery across computers, entertainment, smart home,
-              networking, and aquarium tech
+              Know what&apos;s connected — from TVs and speakers to smart
+              home gear and aquarium tech
             </li>
             <li className="flex items-start gap-3">
               <MonitorSmartphone size={16} className="mt-0.5 shrink-0 text-section-network" />
-              Confidence-based identification with clear review for unknown
-              devices
+              Clear, friendly review when something new appears on your
+              network
             </li>
             <li className="flex items-start gap-3">
               <ShieldCheck size={16} className="mt-0.5 shrink-0 text-section-network" />
-              Private local network only — your data stays in your household
+              Private and local — it only watches your home network, never
+              the public internet
             </li>
           </ul>
 
@@ -72,12 +79,10 @@ export default function LandingSmartConnectorSection() {
       <div className="mx-auto mt-14 max-w-6xl">
         <div className="max-w-2xl">
           <h3 className="text-xl font-medium tracking-[-0.02em] text-text-primary">
-            Supported device categories
+            Technology your home already has
           </h3>
           <p className="mt-2 text-sm leading-6 text-text-muted">
-            Identification improves as signals accumulate. Unknown devices
-            always go to review — we do not claim perfect product-level
-            matching.
+            Technology changes. Your memories stay organized.
           </p>
         </div>
         <div className="mt-6">

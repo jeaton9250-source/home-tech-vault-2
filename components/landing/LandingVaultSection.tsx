@@ -3,7 +3,7 @@ import {
   Laptop,
   Receipt,
   ShieldCheck,
-  Sparkles,
+  Users,
   Wrench,
   Wifi,
 } from "lucide-react";
@@ -20,11 +20,11 @@ import { cn } from "@/lib/design-system/cn";
 const pillarIcons = {
   Devices: Laptop,
   Warranties: ShieldCheck,
-  Documents: FileText,
+  Manuals: FileText,
   Receipts: Receipt,
   Network: Wifi,
   Maintenance: Wrench,
-  Subscriptions: Sparkles,
+  Family: Users,
 } as const;
 
 export default function LandingVaultSection() {
@@ -43,12 +43,18 @@ export default function LandingVaultSection() {
             Everything in One Place
           </p>
           <h2 className="mt-3 text-3xl font-medium tracking-[-0.03em] text-text-primary md:text-4xl">
-            One vault for the technology and paperwork behind your home.
+            Everything your home remembers.
+            <span className="block text-text-secondary">
+              In one beautiful place.
+            </span>
           </h2>
           <p className="mt-4 text-sm leading-7 text-text-muted">
-            Discovery is the front door. Home Tech Vault keeps the full
-            record — from the router in the closet to the warranty card in
-            a drawer somewhere.
+            The product quietly remembers everything about your home&apos;s
+            technology — so you don&apos;t have to dig through drawers,
+            email, or old boxes when something matters.
+          </p>
+          <p className="mt-4 text-sm leading-6 text-text-secondary">
+            Spend less time searching. Spend more time enjoying your home.
           </p>
         </div>
 

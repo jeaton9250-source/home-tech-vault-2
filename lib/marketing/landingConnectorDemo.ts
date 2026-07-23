@@ -4,12 +4,34 @@ export const LANDING_DEMO_LABEL = "Demo data";
 
 export const landingConnectorDemoSummary = {
   connectorName: "Morgan Home Mac",
-  connectorStatus: "Connected",
+  connectorStatus: "Watching quietly",
   lastScanLabel: "4 minutes ago",
   devicesDiscovered: 18,
   devicesMatched: 12,
   needsReview: 3,
   onlineNow: 14,
+} as const;
+
+export const landingHomePulseSummary = {
+  headline: "Everything looks good today.",
+  items: [
+    {
+      text: "Your home is organized.",
+      tone: "success" as const,
+    },
+    {
+      text: "Your devices are up to date.",
+      tone: "success" as const,
+    },
+    {
+      text: "One warranty expires next month.",
+      tone: "warning" as const,
+    },
+    {
+      text: "One new device needs your attention.",
+      tone: "info" as const,
+    },
+  ],
 } as const;
 
 export const landingMonitoringDemoDevices = [
@@ -23,7 +45,7 @@ export const landingMonitoringDemoDevices = [
   {
     name: "LG OLED TV",
     location: "Living Room",
-    status: "Recently Detected",
+    status: "Recently seen",
     tone: "info" as const,
     lastSeen: "12 minutes ago",
   },
@@ -37,7 +59,7 @@ export const landingMonitoringDemoDevices = [
   {
     name: "Guest iPad",
     location: "Guest Room",
-    status: "Needs Review",
+    status: "Needs review",
     tone: "warning" as const,
     lastSeen: "New this scan",
   },
@@ -61,11 +83,37 @@ export const landingConnectorCategories = [
 ] as const;
 
 export const landingVaultPillars = [
-  { label: "Devices", detail: "Photos, specs, locations, and purchase history" },
-  { label: "Warranties", detail: "Coverage status and expiration alerts" },
-  { label: "Documents", detail: "Manuals, receipts, and warranty cards" },
-  { label: "Receipts", detail: "Proof of purchase linked to each item" },
-  { label: "Network", detail: "Discovery, matching, and live presence" },
-  { label: "Maintenance", detail: "Schedules, filters, and service reminders" },
-  { label: "Subscriptions", detail: "Streaming, SaaS, and renewal tracking" },
+  {
+    label: "Devices",
+    detail:
+      "Every TV, speaker, and gadget — where it lives and when you bought it.",
+  },
+  {
+    label: "Warranties",
+    detail:
+      "Never lose another warranty. Know what's covered and when it expires.",
+  },
+  {
+    label: "Manuals",
+    detail:
+      "Keep every manual in one place — no more digging through drawers.",
+  },
+  {
+    label: "Receipts",
+    detail: "Proof of purchase, linked to the device it belongs to.",
+  },
+  {
+    label: "Maintenance",
+    detail: "Filters, service dates, and reminders — taken care of.",
+  },
+  {
+    label: "Network",
+    detail:
+      "Know what's connected. Always know when a device was last seen.",
+  },
+  {
+    label: "Family",
+    detail:
+      "Share access with the people who help take care of your home.",
+  },
 ] as const;

@@ -1,15 +1,16 @@
 import {
   Clock3,
-  RefreshCw,
+  HeartPulse,
   Sparkles,
 } from "lucide-react";
 
 import {
-  MonitoringStatusIllustration,
+  HomePulseIllustration,
 } from "@/components/landing/LandingConnectorIllustrations";
 import { LANDING_SECTION_IDS } from "@/lib/marketing/landingNav";
 import {
   LANDING_DEMO_LABEL,
+  landingHomePulseSummary,
   landingMonitoringDemoDevices,
 } from "@/lib/marketing/landingConnectorDemo";
 import {
@@ -28,7 +29,7 @@ const toneClasses = {
 export default function LandingMonitoringSection() {
   return (
     <section
-      id={LANDING_SECTION_IDS.monitoring}
+      id={LANDING_SECTION_IDS.homePulse}
       className={cn(
         landingSectionClass,
         landingSectionAnchor,
@@ -38,16 +39,36 @@ export default function LandingMonitoringSection() {
       <div className="mx-auto grid max-w-6xl items-start gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
         <div className={landingMotionRise}>
           <p className="text-overline text-section-network">
-            Live Monitoring
+            Home Pulse
           </p>
           <h2 className="mt-3 text-3xl font-medium tracking-[-0.03em] text-text-primary md:text-4xl">
-            Know what is online, what changed, and what needs attention.
+            {landingHomePulseSummary.headline}
           </h2>
           <p className="mt-4 max-w-xl text-sm leading-7 text-text-muted">
-            After discovery, Home Tech Vault tracks presence over time —
-            online, recently detected, or not recently seen — without
-            pretending every device is live just because a scan ran.
+            Home Pulse is your trusted assistant — a calm check-in on
+            your home&apos;s technology. Not a dashboard. Not analytics.
+            Just a friendly answer to &ldquo;How is everything doing?&rdquo;
           </p>
+
+          <ul className="mt-6 space-y-2.5">
+            {landingHomePulseSummary.items.map((item) => (
+              <li
+                key={item.text}
+                className="flex items-start gap-3 text-sm text-text-secondary"
+              >
+                <span
+                  className={cn(
+                    "mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full",
+                    item.tone === "success" && "bg-home-health",
+                    item.tone === "info" && "bg-interaction",
+                    item.tone === "warning" && "bg-warning"
+                  )}
+                  aria-hidden
+                />
+                {item.text}
+              </li>
+            ))}
+          </ul>
 
           <div className="mt-8 grid gap-4 sm:grid-cols-2">
             <article className="rounded-[var(--radius-card)] border border-border-subtle bg-surface-card p-5">
@@ -56,8 +77,8 @@ export default function LandingMonitoringSection() {
                 Free
               </div>
               <p className="mt-3 text-sm leading-6 text-text-muted">
-                Manual scans from the connector when you choose. Review
-                discoveries and refresh device network fields on demand.
+                Run a scan when you want. Home Tech Vault remembers what
+                it finds and keeps your records up to date.
               </p>
             </article>
 
@@ -67,21 +88,25 @@ export default function LandingMonitoringSection() {
                 Pro &amp; Family
               </div>
               <p className="mt-3 text-sm leading-6 text-text-muted">
-                Automatic background monitoring with scheduled scans,
-                timeline events, and live Home Pulse updates.
+                Home Pulse keeps watch in the background — so you always
+                know when something new appears or needs attention.
               </p>
             </article>
           </div>
+
+          <p className="mt-6 text-sm leading-6 text-text-secondary">
+            Always know when a device was last seen.
+          </p>
         </div>
 
         <div className={cn(landingMotionRise, "htv-landing-delay-1")}>
-          <MonitoringStatusIllustration />
+          <HomePulseIllustration />
 
           <div className="mt-4 overflow-hidden rounded-[var(--radius-card)] border border-border-subtle bg-surface-card">
             <div className="flex items-center justify-between border-b border-border-subtle px-4 py-3">
               <div className="flex items-center gap-2 text-sm font-medium text-text-primary">
-                <RefreshCw size={15} className="text-section-network" />
-                Example statuses
+                <HeartPulse size={15} className="text-section-network" />
+                At home right now
               </div>
               <span className="text-[0.625rem] font-semibold uppercase tracking-wider text-text-muted">
                 {LANDING_DEMO_LABEL}

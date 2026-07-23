@@ -18,21 +18,21 @@ const plans = [
     id: "free" as const,
     price: "$0",
     period: "forever",
-    note: "Manual scans and starter inventory.",
+    note: "Start remembering the basics — your devices, warranties, and manual scans.",
     highlighted: false,
   },
   {
     id: "pro" as const,
     price: "$7.99",
     period: "per month",
-    note: "Automatic monitoring and unlimited inventory.",
+    note: "Home Pulse keeps watch automatically, so you don't have to.",
     highlighted: false,
   },
   {
     id: "family" as const,
     price: "$14.99",
     period: "per month",
-    note: "Household sharing with everything in Pro.",
+    note: "Everyone who helps care for your home, sharing the same trusted memory.",
     highlighted: true,
   },
 ] as const;
@@ -63,8 +63,12 @@ export default function LandingPricingSection({
             Pricing
           </p>
           <h2 className="mt-3 text-3xl font-medium tracking-[-0.03em] text-text-primary md:text-4xl">
-            Start free. Upgrade when your home outgrows the basics.
+            Simple plans for the home you love.
           </h2>
+          <p className="mt-4 text-sm leading-7 text-text-muted">
+            Start free. Upgrade when you want Home Pulse to keep watch
+            in the background.
+          </p>
         </div>
 
         <div className="mt-10 grid gap-6 lg:grid-cols-3">
