@@ -315,12 +315,38 @@ textarea::placeholder {
   animation-delay: 180ms;
 }
 
+@keyframes htv-landing-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+
+  70% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+.htv-landing-pulse {
+  animation: htv-landing-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .htv-landing-rise,
   .htv-preview-enter {
     animation: none;
     opacity: 1;
     transform: none;
+  }
+
+  .htv-landing-pulse {
+    animation: none;
+    opacity: 0.35;
   }
 }
 

@@ -1,10 +1,11 @@
 import { MARKETING_ROUTES } from "@/lib/marketing/routes";
 
 export const LANDING_SECTION_IDS = {
-  features: "features",
+  smartConnector: "smart-connector",
   howItWorks: "how-it-works",
-  trust: "trust",
-  support: "support",
+  monitoring: "monitoring",
+  vault: "vault",
+  pricing: "pricing",
 } as const;
 
 export type LandingSectionId =
@@ -12,25 +13,25 @@ export type LandingSectionId =
 
 export const LANDING_NAV_LINKS = [
   {
-    label: "Features",
-    sectionId: LANDING_SECTION_IDS.features,
+    label: "Smart Connector",
+    sectionId: LANDING_SECTION_IDS.smartConnector,
   },
   {
     label: "How It Works",
     sectionId: LANDING_SECTION_IDS.howItWorks,
   },
   {
-    label: "Trust",
-    sectionId: LANDING_SECTION_IDS.trust,
+    label: "Monitoring",
+    sectionId: LANDING_SECTION_IDS.monitoring,
   },
   {
-    label: "Support",
-    sectionId: LANDING_SECTION_IDS.support,
+    label: "Pricing",
+    sectionId: LANDING_SECTION_IDS.pricing,
   },
 ] as const;
 
 export const LANDING_ANNOUNCEMENT =
-  "Trusted by homeowners to organize and protect their home technology.";
+  "Discover, organize, and monitor your home technology automatically.";
 
 export function landingSectionHref(
   sectionId: LandingSectionId
@@ -43,16 +44,16 @@ export const LANDING_SUPPORT_QUESTIONS = [
     question:
       "Do I need an account to explore Home Tech Vault?",
     answer:
-      "No. Open the interactive demo to browse a sample vault. Create a free account when you are ready to save your own records.",
+      "No. Open the interactive demo to browse a sample vault. Create a free account when you are ready to scan your own home.",
     href: MARKETING_ROUTES.demo,
     linkLabel: "Open the demo",
   },
   {
-    question: "How many devices can I track?",
+    question: "What does the Smart Connector do?",
     answer:
-      "Free includes a starter device limit. Paid plans expand capacity for larger households.",
-    href: MARKETING_ROUTES.faq,
-    linkLabel: "View plan details",
+      "The connector passively scans your local network to discover devices, then syncs observations to your vault for matching and monitoring.",
+    href: MARKETING_ROUTES.demo,
+    linkLabel: "See it in the demo",
   },
   {
     question: "Can I share with household members?",

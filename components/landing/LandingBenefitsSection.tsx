@@ -36,7 +36,7 @@ const benefits = [
 export default function LandingBenefitsSection() {
   return (
     <MarketingContent
-      id={LANDING_SECTION_IDS.features}
+      id="features"
       className={cn(
         landingSectionClass,
         landingSectionAnchor

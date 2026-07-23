@@ -1,17 +1,15 @@
 "use client";
 
 import { useEffect } from "react";
-import {
-  ArrowRight,
-  Loader2,
-  Play,
-} from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 
-import LandingBenefitsSection from "@/components/landing/LandingBenefitsSection";
-import LandingProductPreview from "@/components/landing/LandingProductPreview";
-import LandingSupportSection from "@/components/landing/LandingSupportSection";
-import LandingTrustSection from "@/components/landing/LandingTrustSection";
-import { HeroAppPreview } from "@/components/landing/LandingPreviews";
+import LandingHeroSection, {
+  LandingHowItWorksSection,
+} from "@/components/landing/LandingHeroSection";
+import LandingMonitoringSection from "@/components/landing/LandingMonitoringSection";
+import LandingPricingSection from "@/components/landing/LandingPricingSection";
+import LandingSmartConnectorSection from "@/components/landing/LandingSmartConnectorSection";
+import LandingVaultSection from "@/components/landing/LandingVaultSection";
 import MarketingLayout, {
   MarketingContent,
 } from "@/components/marketing/MarketingLayout";
@@ -22,7 +20,6 @@ import type { LandingSectionId } from "@/lib/marketing/landingNav";
 import {
   landingMotionRise,
   landingSectionClass,
-  marketingSecondaryButtonClass,
 } from "@/lib/marketing/landingStyles";
 import { MARKETING_ROUTES } from "@/lib/marketing/routes";
 import { cn } from "@/lib/design-system/cn";
@@ -89,12 +86,9 @@ export default function LandingPage({
   const primaryHref = isSignedIn
     ? "/dashboard"
     : MARKETING_ROUTES.signup;
-  const primaryLabel = isSignedIn
-    ? "Go to Your Vault"
-    : "Create Your Free Vault";
   const finalCtaLabel = isSignedIn
     ? "Go to Your Vault"
-    : "Create Your Free Vault";
+    : "Start Free";
 
   return (
     <MarketingLayout
@@ -102,72 +96,13 @@ export default function LandingPage({
       foundingSummary={foundingSummary}
       minimalNav
     >
-      {/* Hero */}
-      <section
-        className={cn(
-          "px-8 lg:px-10",
-          landingSectionClass,
-          "pt-12 md:pt-16"
-        )}
-      >
-        <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[1.02fr_1fr] lg:gap-16">
-          <div className={landingMotionRise}>
-            <p className="text-overline text-interaction">
-              Home Tech Vault
-            </p>
+      <LandingHeroSection isSignedIn={isSignedIn} />
+      <LandingSmartConnectorSection />
+      <LandingHowItWorksSection />
+      <LandingMonitoringSection />
+      <LandingVaultSection />
+      <LandingPricingSection isSignedIn={isSignedIn} />
 
-            <h1 className="mt-5 max-w-xl text-4xl font-medium tracking-[-0.04em] text-text-primary md:text-[3.25rem] md:leading-[1.04]">
-              The digital home for everything
-              that powers yours.
-            </h1>
-
-            <p className="mt-5 max-w-md text-[0.9375rem] leading-7 text-text-muted">
-              Organize your devices, warranties, receipts,
-              subscriptions, and important documents in one
-              secure place.
-            </p>
-
-            <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <Button
-                href={primaryHref}
-                size="lg"
-              >
-                {primaryLabel}
-                <ArrowRight size={16} aria-hidden />
-              </Button>
-
-              {!isSignedIn ? (
-                <Button
-                  href={MARKETING_ROUTES.demo}
-                  variant="secondary"
-                  size="lg"
-                  className={marketingSecondaryButtonClass}
-                >
-                  <Play size={16} aria-hidden />
-                  Explore the Demo
-                </Button>
-              ) : null}
-            </div>
-          </div>
-
-          <div
-            className={cn(
-              "mx-auto w-full max-w-xl lg:max-w-none",
-              landingMotionRise,
-              "htv-landing-delay-1"
-            )}
-          >
-            <HeroAppPreview />
-          </div>
-        </div>
-      </section>
-
-      <LandingBenefitsSection />
-      <LandingProductPreview />
-      <LandingTrustSection />
-      <LandingSupportSection />
-
-      {/* Final CTA */}
       <MarketingContent
         className={cn(landingSectionClass, "pb-14 md:pb-16")}
       >
@@ -178,23 +113,33 @@ export default function LandingPage({
             "mx-auto max-w-3xl border-border-subtle px-8 py-14 text-center md:px-16 md:py-16"
           )}
         >
-          <h2 className="text-2xl font-medium tracking-[-0.03em] text-text-primary md:text-[2rem] md:leading-tight">
-            Ready to build your Home Tech Vault?
+          <p className="text-overline text-section-network">
+            Home Tech Vault
+          </p>
+          <h2 className="mt-4 text-2xl font-medium tracking-[-0.03em] text-text-primary md:text-[2rem] md:leading-tight">
+            Ready to discover what is on your network?
           </h2>
 
-          <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-text-muted">
-            Create your free vault and keep everything
-            important in one place.
+          <p className="mx-auto mt-4 max-w-lg text-sm leading-6 text-text-muted">
+            Start free with manual scans, then upgrade when you want
+            automatic monitoring and a complete household vault.
           </p>
 
-          <Button
-            href={primaryHref}
-            size="lg"
-            className="mt-9"
-          >
-            {finalCtaLabel}
-            <ArrowRight size={16} aria-hidden />
-          </Button>
+          <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Button href={primaryHref} size="lg">
+              {finalCtaLabel}
+              <ArrowRight size={16} aria-hidden />
+            </Button>
+            {!isSignedIn ? (
+              <Button
+                href={MARKETING_ROUTES.demo}
+                variant="secondary"
+                size="lg"
+              >
+                Watch Demo
+              </Button>
+            ) : null}
+          </div>
         </PageCard>
       </MarketingContent>
     </MarketingLayout>

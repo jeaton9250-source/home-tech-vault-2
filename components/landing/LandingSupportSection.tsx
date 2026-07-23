@@ -19,7 +19,7 @@ import { cn } from "@/lib/design-system/cn";
 export default function LandingSupportSection() {
   return (
     <MarketingContent
-      id={LANDING_SECTION_IDS.support}
+      id="support"
       className={cn(
         landingSectionClass,
         landingSectionAnchor

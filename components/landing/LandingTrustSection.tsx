@@ -60,7 +60,7 @@ const trustQuestions = [
 export default function LandingTrustSection() {
   return (
     <MarketingContent
-      id={LANDING_SECTION_IDS.trust}
+      id="trust"
       className={cn(
         landingSectionClass,
         landingSectionAnchor
