@@ -19,6 +19,7 @@ type UpsertDiscoveredDevicesInput = {
 /**
  * Phase 2B.1 — upsert discovered device observations only.
  * Does not match, enrich vault devices, or import.
+ * Writes foundation-schema columns only (model/serial added in 2B.2 migration).
  */
 export async function upsertDiscoveredDevices(
   input: UpsertDiscoveredDevicesInput
@@ -72,8 +73,6 @@ export async function upsertDiscoveredDevices(
             device.localFingerprint,
           hostname: device.hostname,
           manufacturer: device.manufacturer,
-          model: device.model,
-          serial_number: device.serialNumber,
           ip_address: device.ipAddress,
           mac_address: device.macAddress,
           device_type: device.deviceType,
