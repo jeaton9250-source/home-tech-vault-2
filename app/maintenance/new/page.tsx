@@ -1,8 +1,8 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { ArrowLeft, Loader2, Save, Wrench } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { ArrowLeft, Loader2, Save } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
 import { recordActivity } from "@/lib/activity";
@@ -24,8 +24,23 @@ type DeviceOption = {
   device_name: string | null;
 };
 
+function resolveSafeReturnTo(
+  value: string | null
+): string | null {
+  if (!value) {
+    return null;
+  }
+
+  if (!value.startsWith("/") || value.startsWith("//")) {
+    return null;
+  }
+
+  return value;
+}
+
 export default function NewMaintenanceTaskPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const {
     user,
@@ -35,8 +50,16 @@ export default function NewMaintenanceTaskPage() {
     loading: permissionsLoading,
   } = usePermissions();
 
+  const preselectedDeviceId =
+    searchParams.get("deviceId")?.trim() ?? "";
+  const returnTo =
+    resolveSafeReturnTo(searchParams.get("returnTo")) ??
+    (preselectedDeviceId
+      ? `/devices/${preselectedDeviceId}?tab=maintenance`
+      : "/maintenance");
+
   const [devices, setDevices] = useState<DeviceOption[]>([]);
-  const [deviceId, setDeviceId] = useState("");
+  const [deviceId, setDeviceId] = useState(preselectedDeviceId);
   const [title, setTitle] = useState("");
   const [taskType, setTaskType] = useState("Maintenance");
   const [dueDate, setDueDate] = useState("");
@@ -46,6 +69,15 @@ export default function NewMaintenanceTaskPage() {
   const [loadingDevices, setLoadingDevices] = useState(true);
   const [saving, setSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+
+  useEffect(() => {
+    const nextDeviceId =
+      searchParams.get("deviceId")?.trim() ?? "";
+
+    if (nextDeviceId) {
+      setDeviceId(nextDeviceId);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     async function loadDevices() {
@@ -76,7 +108,20 @@ export default function NewMaintenanceTaskPage() {
           throw error;
         }
 
-        setDevices((data || []) as DeviceOption[]);
+        const loadedDevices = (data || []) as DeviceOption[];
+        setDevices(loadedDevices);
+
+        const requestedDeviceId =
+          searchParams.get("deviceId")?.trim() ?? "";
+
+        if (
+          requestedDeviceId &&
+          loadedDevices.some(
+            (device) => device.id === requestedDeviceId
+          )
+        ) {
+          setDeviceId(requestedDeviceId);
+        }
       } catch (error) {
         console.error("Device loading error:", error);
 
@@ -94,6 +139,7 @@ export default function NewMaintenanceTaskPage() {
     isDemo,
     householdId,
     permissionsLoading,
+    searchParams,
   ]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -163,7 +209,7 @@ export default function NewMaintenanceTaskPage() {
         });
       }
 
-      router.push("/maintenance");
+      router.push(returnTo);
       router.refresh();
     } catch (error) {
       console.error("Maintenance task error:", error);
@@ -192,8 +238,8 @@ export default function NewMaintenanceTaskPage() {
   if (isDemo) {
     return (
       <DemoWriteGate
-        backHref="/maintenance"
-        backLabel="Back to Maintenance"
+        backHref={returnTo}
+        backLabel="Back"
       />
     );
   }
@@ -221,7 +267,7 @@ export default function NewMaintenanceTaskPage() {
         action={
           <Button
             variant="secondary"
-            onClick={() => router.push("/maintenance")}
+            onClick={() => router.push(returnTo)}
           >
             <ArrowLeft size={17} />
             Cancel
@@ -340,7 +386,7 @@ export default function NewMaintenanceTaskPage() {
 
             <Button
               variant="secondary"
-              onClick={() => router.push("/maintenance")}
+              onClick={() => router.push(returnTo)}
             >
               Cancel
             </Button>

@@ -14,6 +14,7 @@ import Link from "next/link";
 import {
   useParams,
   useRouter,
+  useSearchParams,
 } from "next/navigation";
 
 import {
@@ -32,7 +33,6 @@ import {
   ShieldCheck,
   Trash2,
   Wifi,
-  Wrench,
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
@@ -74,6 +74,7 @@ import { usePermissions } from "@/hooks/usePermissions";
 
 import DeviceDocuments from "@/components/DeviceDocuments";
 import DeviceTimeline from "@/components/DeviceTimeline";
+import DeviceProfileMaintenance from "@/components/devices/DeviceProfileMaintenance";
 import PageShell from "@/components/ui/PageShell";
 import PageCard from "@/components/ui/PageCard";
 import Button from "@/components/ui/Button";
@@ -147,12 +148,21 @@ const DEVICE_TABS: {
   { id: "activity", label: "Activity" },
 ];
 
+function resolveDeviceDetailTab(
+  value: string | null
+): DeviceDetailTab {
+  const match = DEVICE_TABS.find((tab) => tab.id === value);
+
+  return match?.id ?? "overview";
+}
+
 export default function DevicePage() {
   const params = useParams<{
     id: string;
   }>();
 
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const {
     user,
@@ -207,12 +217,43 @@ export default function DevicePage() {
     useState<number | null>(null);
 
   const [activeTab, setActiveTab] =
-    useState<DeviceDetailTab>("overview");
+    useState<DeviceDetailTab>(() =>
+      resolveDeviceDetailTab(searchParams.get("tab"))
+    );
 
   const [actionsOpen, setActionsOpen] =
     useState(false);
 
   const actionsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setActiveTab(
+      resolveDeviceDetailTab(searchParams.get("tab"))
+    );
+  }, [searchParams]);
+
+  function selectTab(tab: DeviceDetailTab) {
+    setActiveTab(tab);
+
+    const params = new URLSearchParams(
+      searchParams.toString()
+    );
+
+    if (tab === "overview") {
+      params.delete("tab");
+    } else {
+      params.set("tab", tab);
+    }
+
+    const query = params.toString();
+
+    router.replace(
+      query
+        ? `/devices/${deviceId}?${query}`
+        : `/devices/${deviceId}`,
+      { scroll: false }
+    );
+  }
 
   const sampleDocuments = useMemo(
     () =>
@@ -1346,7 +1387,7 @@ export default function DevicePage() {
                 aria-selected={isActive}
                 aria-controls={`device-panel-${tab.id}`}
                 id={`device-tab-${tab.id}`}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => selectTab(tab.id)}
                 className={cn(
                   "htv-focus-ring shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition",
                   isActive
@@ -1452,7 +1493,7 @@ export default function DevicePage() {
                   <SectionHeading title="Recent activity" />
                   <button
                     type="button"
-                    onClick={() => setActiveTab("activity")}
+                    onClick={() => selectTab("activity")}
                     className="htv-focus-ring text-sm font-medium text-interaction hover:text-interaction-hover"
                   >
                     View all
@@ -1491,7 +1532,7 @@ export default function DevicePage() {
                       type="button"
                       variant="secondary"
                       className="mt-4"
-                      onClick={() => setActiveTab("activity")}
+                      onClick={() => selectTab("activity")}
                     >
                       <Activity size={16} />
                       Open Activity
@@ -1789,36 +1830,11 @@ export default function DevicePage() {
         ) : null}
 
         {activeTab === "maintenance" ? (
-          <PageCard className="p-6 md:p-8">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <p className="text-overline text-section-technology">
-                  Maintenance
-                </p>
-                <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
-                  Care & service tasks
-                </h2>
-                <p className="mt-2 max-w-xl text-sm leading-6 text-text-secondary">
-                  Track cleaning, firmware updates, and service reminders for
-                  this device. Full maintenance workflows are coming soon.
-                </p>
-              </div>
-
-              <Button type="button" variant="secondary" disabled>
-                <Wrench size={16} />
-                Add Maintenance Task
-              </Button>
-            </div>
-
-            <div className="mt-6">
-              <EmptyState
-                icon={Wrench}
-                title="No maintenance tasks yet"
-                description="When maintenance tracking launches, you will be able to schedule care reminders and log completed service here."
-                className="shadow-none"
-              />
-            </div>
-          </PageCard>
+          <DeviceProfileMaintenance
+            deviceId={device.id}
+            onReadOnlyAction={showReadOnlyModal}
+            embedded
+          />
         ) : null}
 
         {activeTab === "activity" ? (
