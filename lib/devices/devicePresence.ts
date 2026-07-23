@@ -59,22 +59,47 @@ const PRESENCE_LABELS: Record<
 export function deriveDeviceNetworkPresence(
   input: DevicePresenceInput
 ): DeviceNetworkPresenceState {
-  const hasObservation = Boolean(
+  const observationAt =
     input.lastSeenAt?.trim() ||
-      input.firstSeenAt?.trim() ||
-      input.networkUpdatedAt?.trim()
-  );
+    input.networkUpdatedAt?.trim() ||
+    input.firstSeenAt?.trim() ||
+    null;
 
-  if (!hasObservation) {
+  if (!observationAt) {
     return "unknown";
   }
 
-  if (input.online === true) {
+  const observationMs = new Date(observationAt).getTime();
+  const now = input.now ?? Date.now();
+
+  if (!Number.isFinite(observationMs)) {
+    return "unknown";
+  }
+
+  const elapsed = now - observationMs;
+
+  /*
+   * Honor the online flag only while the latest observation is still fresh.
+   * Sticky online=true with a multi-day-old last_seen_at should not keep
+   * Devices cards permanently "Online".
+   */
+  if (
+    input.online === true &&
+    elapsed <= DEVICE_PRESENCE_ONLINE_WINDOW_MS
+  ) {
     return "online";
   }
 
   if (!input.lastSeenAt?.trim()) {
-    return "unknown";
+    if (elapsed <= DEVICE_PRESENCE_ONLINE_WINDOW_MS) {
+      return "recently_detected";
+    }
+
+    if (elapsed > DEVICE_PRESENCE_STALE_AFTER_MS) {
+      return "not_recently_detected";
+    }
+
+    return "recently_detected";
   }
 
   const lastSeenMs = new Date(input.lastSeenAt).getTime();
@@ -83,13 +108,15 @@ export function deriveDeviceNetworkPresence(
     return "unknown";
   }
 
-  const elapsed = (input.now ?? Date.now()) - lastSeenMs;
+  const lastSeenElapsed = now - lastSeenMs;
 
-  if (elapsed <= DEVICE_PRESENCE_ONLINE_WINDOW_MS) {
-    return "recently_detected";
+  if (lastSeenElapsed <= DEVICE_PRESENCE_ONLINE_WINDOW_MS) {
+    return input.online === true
+      ? "online"
+      : "recently_detected";
   }
 
-  if (elapsed > DEVICE_PRESENCE_STALE_AFTER_MS) {
+  if (lastSeenElapsed > DEVICE_PRESENCE_STALE_AFTER_MS) {
     return "not_recently_detected";
   }
 
@@ -162,8 +189,30 @@ export function formatDevicePresenceListLine(input: {
   firstSeenAt?: string | null;
   networkUpdatedAt?: string | null;
 }): string {
-  const presentation = presentDeviceNetworkPresence(input);
-  const lastSeenLabel = formatPresenceLastSeen(input.lastSeenAt);
+  const latestLastSeen =
+    [input.lastSeenAt, input.networkUpdatedAt]
+      .filter(
+        (value): value is string =>
+          typeof value === "string" && value.trim().length > 0
+      )
+      .map((value) => ({
+        value,
+        ms: new Date(value).getTime(),
+      }))
+      .filter((entry) => Number.isFinite(entry.ms))
+      .sort((a, b) => b.ms - a.ms)[0]?.value ??
+    input.lastSeenAt ??
+    null;
+
+  const presentation = presentDeviceNetworkPresence({
+    ...input,
+    lastSeenAt: latestLastSeen,
+  });
+  const lastSeenLabel = formatPresenceLastSeen(latestLastSeen);
+
+  if (presentation.state === "online") {
+    return `${presentation.listEmoji} ${presentation.listLabel} · Active now`;
+  }
 
   return `${presentation.listEmoji} ${presentation.listLabel} · ${lastSeenLabel}`;
 }
@@ -189,26 +238,26 @@ export function formatPresenceLastSeen(
   }
 
   if (minutes < 60) {
-    return `Seen ${minutes} min ago`;
+    return `Last active ${minutes} minute${minutes === 1 ? "" : "s"} ago`;
   }
 
   const hours = Math.floor(minutes / 60);
 
   if (hours < 24) {
-    return `Seen ${hours} hr ago`;
+    return `Last active ${hours} hour${hours === 1 ? "" : "s"} ago`;
   }
 
   const days = Math.floor(hours / 24);
 
   if (days === 1) {
-    return "Yesterday";
+    return "Last active yesterday";
   }
 
   if (days < 7) {
-    return `Seen ${days} days ago`;
+    return `Last active ${days} days ago`;
   }
 
-  return `Seen ${new Date(value).toLocaleDateString(undefined, {
+  return `Last active ${new Date(value).toLocaleDateString(undefined, {
     month: "short",
     day: "numeric",
   })}`;

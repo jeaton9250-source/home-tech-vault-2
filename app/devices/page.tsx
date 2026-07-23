@@ -48,6 +48,10 @@ import {
 } from "@/components/ui/PermissionUI";
 import { useDemoReadOnlyAction } from "@/components/demo/DemoExperienceProvider";
 import { formatDevicePresenceListLine } from "@/lib/devices/devicePresence";
+import {
+  mergePresenceFromDiscovery,
+  pickFreshestDiscoveryPresence,
+} from "@/lib/devices/deviceNetworkTimestamps";
 import { formatDemoDevicePresenceListLine } from "@/lib/demo/demoNetworkTime";
 
 type DeviceRecord = BaseDevice & {
@@ -433,8 +437,71 @@ export default function DevicesPage() {
         network_updated_at?: string | null;
       };
 
+      type DiscoveryPresenceRow = {
+        imported_device_id: string | null;
+        online?: boolean | null;
+        last_seen_at?: string | null;
+      };
+
+      const deviceIds = (data as PresenceRow[]).map(
+        (row) => row.id
+      );
+
+      let discoveryByDeviceId = new Map<
+        string,
+        DiscoveryPresenceRow[]
+      >();
+
+      if (deviceIds.length > 0) {
+        const { data: discoveryRows } = await supabase
+          .from("discovered_devices")
+          .select("imported_device_id, online, last_seen_at")
+          .eq("household_id", householdId)
+          .in("imported_device_id", deviceIds)
+          .is("ignored_at", null);
+
+        if (cancelled) {
+          return;
+        }
+
+        discoveryByDeviceId = new Map();
+
+        for (const row of (discoveryRows ??
+          []) as DiscoveryPresenceRow[]) {
+          if (!row.imported_device_id) {
+            continue;
+          }
+
+          const existing =
+            discoveryByDeviceId.get(row.imported_device_id) ??
+            [];
+          existing.push(row);
+          discoveryByDeviceId.set(
+            row.imported_device_id,
+            existing
+          );
+        }
+      }
+
       const presenceById = new Map(
-        (data as PresenceRow[]).map((row) => [row.id, row])
+        (data as PresenceRow[]).map((row) => {
+          const merged = mergePresenceFromDiscovery(
+            row,
+            pickFreshestDiscoveryPresence(
+              discoveryByDeviceId.get(row.id) ?? []
+            )
+          );
+
+          return [
+            row.id,
+            {
+              ...row,
+              online: merged.online,
+              last_seen_at: merged.last_seen_at,
+              network_updated_at: merged.network_updated_at,
+            },
+          ] as const;
+        })
       );
 
       setDevices((currentDevices) =>
@@ -470,6 +537,18 @@ export default function DevicesPage() {
           event: "UPDATE",
           schema: "public",
           table: "devices",
+          filter: `household_id=eq.${householdId}`,
+        },
+        () => {
+          void refreshDevicePresence();
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "discovered_devices",
           filter: `household_id=eq.${householdId}`,
         },
         () => {

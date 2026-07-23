@@ -45,6 +45,18 @@ describe("deriveDeviceNetworkPresence", () => {
     );
   });
 
+  it("does not keep sticky online when last_seen_at is stale", () => {
+    assert.equal(
+      deriveDeviceNetworkPresence({
+        online: true,
+        lastSeenAt: new Date(now - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        networkUpdatedAt: new Date(now - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        now,
+      }),
+      "not_recently_detected"
+    );
+  });
+
   it("returns recently detected within 30 minutes", () => {
     assert.equal(
       deriveDeviceNetworkPresence({
@@ -89,8 +101,9 @@ describe("presentDeviceNetworkPresence", () => {
 
 describe("formatDevicePresenceListLine", () => {
   it("formats list cards without IP addresses", () => {
-    const now = Date.UTC(2026, 6, 23, 12, 0, 0);
-    const lastSeenAt = new Date(now - 2 * 60 * 1000).toISOString();
+    const lastSeenAt = new Date(
+      Date.now() - 2 * 60 * 1000
+    ).toISOString();
 
     const line = formatDevicePresenceListLine({
       online: true,
@@ -98,7 +111,7 @@ describe("formatDevicePresenceListLine", () => {
       networkUpdatedAt: lastSeenAt,
     });
 
-    assert.match(line, /^🟢 Online · Seen/);
+    assert.match(line, /^🟢 Online · Active now/);
     assert.doesNotMatch(line, /192\.168\./);
   });
 });

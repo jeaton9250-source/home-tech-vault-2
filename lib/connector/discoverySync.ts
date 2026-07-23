@@ -340,6 +340,146 @@ export async function syncDiscoveredDevicesWithMatching(
       continue;
     }
 
+    /*
+     * Always enrich a linked vault device when this scan observes it.
+     * Do not skip enrichment for possible_match/new when imported_device_id
+     * already points at a saved device — that left Devices cards stale while
+     * Network showed a fresh discovered_devices.last_seen_at.
+     */
+    if (targetDeviceId) {
+      const vaultDevice = vaultDevices.find(
+        (candidate) =>
+          candidate.id === targetDeviceId
+      );
+
+      const vaultDeviceRow = vaultDeviceRows.find(
+        (candidate) => candidate.id === targetDeviceId
+      );
+
+      if (vaultDevice && vaultDeviceRow) {
+        const previousSnapshot =
+          toNetworkSnapshot(vaultDeviceRow);
+
+        const update =
+          buildDeviceNetworkEnrichmentUpdate(
+            vaultDevice,
+            toDiscoveryNetworkFields(
+              device,
+              connectorId
+            ),
+            {
+              existingDiscoverySource:
+                vaultDevice.discoverySource ?? null,
+              existingDiscoverySources:
+                mergedSources,
+              networkUpdatedAt: scannedAt,
+            }
+          );
+
+        await enrichVaultDevice(
+          admin,
+          vaultDevice.id,
+          householdId,
+          update
+        );
+
+        if (Object.keys(update).length > 0) {
+          const nextSnapshot = toNetworkSnapshot({
+            ...vaultDeviceRow,
+            online:
+              typeof update.online === "boolean"
+                ? update.online
+                : vaultDeviceRow.online,
+            last_seen_at:
+              typeof update.last_seen_at === "string"
+                ? update.last_seen_at
+                : vaultDeviceRow.last_seen_at,
+            first_seen_at:
+              typeof update.first_seen_at === "string"
+                ? update.first_seen_at
+                : vaultDeviceRow.first_seen_at,
+            ip_address:
+              typeof update.ip_address === "string"
+                ? update.ip_address
+                : vaultDeviceRow.ip_address,
+            hostname:
+              typeof update.hostname === "string"
+                ? update.hostname
+                : vaultDeviceRow.hostname,
+            manufacturer:
+              typeof update.manufacturer === "string"
+                ? update.manufacturer
+                : vaultDeviceRow.manufacturer,
+            network_updated_at:
+              typeof update.network_updated_at ===
+              "string"
+                ? update.network_updated_at
+                : scannedAt,
+          });
+
+          await recordVaultDeviceNetworkSyncEvents({
+            admin,
+            householdId,
+            connectorId,
+            discoveredDeviceId: discoveredRow.id,
+            deviceId: vaultDevice.id,
+            previous: previousSnapshot,
+            next: nextSnapshot,
+            scannedAt,
+            actorUserId,
+          });
+        }
+
+        enriched += 1;
+
+        Object.assign(vaultDevice, {
+          ipAddress:
+            device.ipAddress ??
+            vaultDevice.ipAddress,
+          macAddress:
+            device.macAddress ??
+            vaultDevice.macAddress,
+          hostname:
+            device.hostname ??
+            vaultDevice.hostname,
+          manufacturer:
+            device.manufacturer ??
+            vaultDevice.manufacturer,
+          networkFingerprint:
+            device.localFingerprint,
+          firstSeenAt:
+            vaultDevice.firstSeenAt ??
+            preservedFirstSeenAt,
+        });
+
+        Object.assign(vaultDeviceRow, {
+          online:
+            typeof update.online === "boolean"
+              ? update.online
+              : vaultDeviceRow.online,
+          last_seen_at:
+            typeof update.last_seen_at === "string"
+              ? update.last_seen_at
+              : vaultDeviceRow.last_seen_at,
+          ip_address:
+            typeof update.ip_address === "string"
+              ? update.ip_address
+              : vaultDeviceRow.ip_address,
+          hostname:
+            typeof update.hostname === "string"
+              ? update.hostname
+              : vaultDeviceRow.hostname,
+          manufacturer:
+            typeof update.manufacturer === "string"
+              ? update.manufacturer
+              : vaultDeviceRow.manufacturer,
+          network_updated_at: scannedAt,
+        });
+      }
+
+      continue;
+    }
+
     if (match.matchStatus === "possible_match") {
       possibleMatches += 1;
       continue;
@@ -349,145 +489,19 @@ export async function syncDiscoveredDevicesWithMatching(
       newDevices += 1;
       continue;
     }
-
-    if (!targetDeviceId) {
-      continue;
-    }
-
-    const vaultDevice = vaultDevices.find(
-      (candidate) =>
-        candidate.id === targetDeviceId
-    );
-
-    if (!vaultDevice) {
-      continue;
-    }
-
-    const vaultDeviceRow = vaultDeviceRows.find(
-      (candidate) => candidate.id === targetDeviceId
-    );
-
-    if (!vaultDeviceRow) {
-      continue;
-    }
-
-    const previousSnapshot =
-      toNetworkSnapshot(vaultDeviceRow);
-
-    const update = buildDeviceNetworkEnrichmentUpdate(
-      vaultDevice,
-      toDiscoveryNetworkFields(
-        device,
-        connectorId
-      ),
-      {
-        existingDiscoverySource:
-          vaultDevice.discoverySource ?? null,
-        existingDiscoverySources:
-          mergedSources,
-        networkUpdatedAt: scannedAt,
-      }
-    );
-
-    await enrichVaultDevice(
-      admin,
-      vaultDevice.id,
-      householdId,
-      update
-    );
-
-    if (Object.keys(update).length > 0) {
-      const nextSnapshot = toNetworkSnapshot({
-        ...vaultDeviceRow,
-        online:
-          typeof update.online === "boolean"
-            ? update.online
-            : vaultDeviceRow.online,
-        last_seen_at:
-          typeof update.last_seen_at === "string"
-            ? update.last_seen_at
-            : vaultDeviceRow.last_seen_at,
-        first_seen_at:
-          typeof update.first_seen_at === "string"
-            ? update.first_seen_at
-            : vaultDeviceRow.first_seen_at,
-        ip_address:
-          typeof update.ip_address === "string"
-            ? update.ip_address
-            : vaultDeviceRow.ip_address,
-        hostname:
-          typeof update.hostname === "string"
-            ? update.hostname
-            : vaultDeviceRow.hostname,
-        manufacturer:
-          typeof update.manufacturer === "string"
-            ? update.manufacturer
-            : vaultDeviceRow.manufacturer,
-        network_updated_at:
-          typeof update.network_updated_at === "string"
-            ? update.network_updated_at
-            : scannedAt,
-      });
-
-      await recordVaultDeviceNetworkSyncEvents({
-        admin,
-        householdId,
-        connectorId,
-        discoveredDeviceId: discoveredRow.id,
-        deviceId: vaultDevice.id,
-        previous: previousSnapshot,
-        next: nextSnapshot,
-        scannedAt,
-        actorUserId,
-      });
-    }
-
-    enriched += 1;
-
-    Object.assign(vaultDevice, {
-      ipAddress:
-        device.ipAddress ??
-        vaultDevice.ipAddress,
-      macAddress:
-        device.macAddress ??
-        vaultDevice.macAddress,
-      hostname:
-        device.hostname ??
-        vaultDevice.hostname,
-      manufacturer:
-        device.manufacturer ??
-        vaultDevice.manufacturer,
-      networkFingerprint:
-        device.localFingerprint,
-      firstSeenAt:
-        vaultDevice.firstSeenAt ??
-        preservedFirstSeenAt,
-    });
-
-    Object.assign(vaultDeviceRow, {
-      online:
-        typeof update.online === "boolean"
-          ? update.online
-          : vaultDeviceRow.online,
-      last_seen_at:
-        typeof update.last_seen_at === "string"
-          ? update.last_seen_at
-          : vaultDeviceRow.last_seen_at,
-      ip_address:
-        typeof update.ip_address === "string"
-          ? update.ip_address
-          : vaultDeviceRow.ip_address,
-      hostname:
-        typeof update.hostname === "string"
-          ? update.hostname
-          : vaultDeviceRow.hostname,
-      manufacturer:
-        typeof update.manufacturer === "string"
-          ? update.manufacturer
-          : vaultDeviceRow.manufacturer,
-      network_updated_at: scannedAt,
-    });
   }
+
+  await markAbsentLinkedDevicesOffline({
+    admin,
+    connectorId,
+    householdId,
+    scannedAt,
+    scannedFingerprints: new Set(
+      devices.map((device) => device.localFingerprint)
+    ),
+    vaultDeviceRows,
+    actorUserId,
+  });
 
   const { error: connectorUpdateError } =
     await admin
@@ -516,6 +530,158 @@ export async function syncDiscoveredDevicesWithMatching(
     ignored,
     newDevices,
   };
+}
+
+/**
+ * Linked vault devices that were not observed in this connector scan should
+ * flip offline while preserving their last_seen_at timestamp.
+ */
+async function markAbsentLinkedDevicesOffline(input: {
+  admin: SupabaseClient;
+  connectorId: string;
+  householdId: string;
+  scannedAt: string;
+  scannedFingerprints: Set<string>;
+  vaultDeviceRows: Array<Record<string, unknown>>;
+  actorUserId: string | null;
+}) {
+  const {
+    admin,
+    connectorId,
+    householdId,
+    scannedAt,
+    scannedFingerprints,
+    vaultDeviceRows,
+    actorUserId,
+  } = input;
+
+  const { data: linkedRows, error } = await admin
+    .from("discovered_devices")
+    .select(
+      "id, local_fingerprint, imported_device_id, last_seen_at, online"
+    )
+    .eq("connector_id", connectorId)
+    .eq("household_id", householdId)
+    .not("imported_device_id", "is", null)
+    .is("ignored_at", null);
+
+  if (error) {
+    throw error;
+  }
+
+  for (const row of linkedRows ?? []) {
+    const fingerprint =
+      typeof row.local_fingerprint === "string"
+        ? row.local_fingerprint
+        : "";
+
+    if (
+      !fingerprint ||
+      scannedFingerprints.has(fingerprint)
+    ) {
+      continue;
+    }
+
+    const vaultDeviceId =
+      typeof row.imported_device_id === "string"
+        ? row.imported_device_id
+        : null;
+
+    if (!vaultDeviceId) {
+      continue;
+    }
+
+    if (row.online !== false) {
+      const { error: discoveredOfflineError } =
+        await admin
+          .from("discovered_devices")
+          .update({
+            online: false,
+            updated_at: scannedAt,
+          })
+          .eq("id", row.id)
+          .eq("household_id", householdId);
+
+      if (discoveredOfflineError) {
+        throw discoveredOfflineError;
+      }
+    }
+
+    const vaultDeviceRow = vaultDeviceRows.find(
+      (candidate) => candidate.id === vaultDeviceId
+    );
+
+    if (!vaultDeviceRow) {
+      continue;
+    }
+
+    if (vaultDeviceRow.online === false) {
+      continue;
+    }
+
+    const previousSnapshot = toNetworkSnapshot({
+      id: vaultDeviceId,
+      online:
+        typeof vaultDeviceRow.online === "boolean"
+          ? vaultDeviceRow.online
+          : null,
+      last_seen_at:
+        typeof vaultDeviceRow.last_seen_at === "string"
+          ? vaultDeviceRow.last_seen_at
+          : null,
+      first_seen_at:
+        typeof vaultDeviceRow.first_seen_at === "string"
+          ? vaultDeviceRow.first_seen_at
+          : null,
+      ip_address:
+        vaultDeviceRow.ip_address === null ||
+        vaultDeviceRow.ip_address === undefined
+          ? null
+          : String(vaultDeviceRow.ip_address),
+      hostname:
+        typeof vaultDeviceRow.hostname === "string"
+          ? vaultDeviceRow.hostname
+          : null,
+      manufacturer:
+        typeof vaultDeviceRow.manufacturer === "string"
+          ? vaultDeviceRow.manufacturer
+          : null,
+      network_updated_at:
+        typeof vaultDeviceRow.network_updated_at ===
+        "string"
+          ? vaultDeviceRow.network_updated_at
+          : null,
+    });
+
+    await enrichVaultDevice(
+      admin,
+      vaultDeviceId,
+      householdId,
+      {
+        online: false,
+        network_updated_at: scannedAt,
+      }
+    );
+
+    vaultDeviceRow.online = false;
+    vaultDeviceRow.network_updated_at = scannedAt;
+
+    await recordVaultDeviceNetworkSyncEvents({
+      admin,
+      householdId,
+      connectorId,
+      discoveredDeviceId: row.id,
+      deviceId: vaultDeviceId,
+      previous: previousSnapshot,
+      next: {
+        ...previousSnapshot,
+        online: false,
+        network_updated_at: scannedAt,
+      },
+      scannedAt,
+      actorUserId,
+    });
+  }
 }
 
 export function summarizeDiscoveredDevice(

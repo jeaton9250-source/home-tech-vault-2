@@ -4,7 +4,10 @@ import {
   buildIdentificationForParsedDevice,
   identificationFieldsFromResult,
 } from "@/lib/connector/discoveryIdentification";
-import { mergeDiscoverySources, mergeStringArrays } from "@/lib/connector/network";
+import {
+  mergeDiscoverySources,
+  mergeStringArrays,
+} from "@/lib/connector/network";
 
 import type {
   DiscoverySyncResponse,
@@ -21,8 +24,10 @@ type UpsertDiscoveredDevicesInput = {
 };
 
 /**
- * Phase 2B.1 — upsert discovered device observations only.
- * Does not match, enrich vault devices, or import.
+ * Phase 2B.1 — upsert discovered device observations.
+ * When a discovery row is already linked to a vault device, also refresh that
+ * device's online / last_seen_at fields so Devices cards stay current even
+ * when runMatching is false.
  */
 export async function upsertDiscoveredDevices(
   input: UpsertDiscoveredDevicesInput
@@ -36,6 +41,7 @@ export async function upsertDiscoveredDevices(
   } = input;
 
   let upserted = 0;
+  let enriched = 0;
 
   for (const device of devices) {
     const existingResult = await admin
@@ -116,6 +122,28 @@ export async function upsertDiscoveredDevices(
     }
 
     upserted += 1;
+
+    if (
+      preservedImportedDeviceId &&
+      !existingResult.data?.ignored_at
+    ) {
+      const { error: vaultUpdateError } = await admin
+        .from("devices")
+        .update({
+          online: device.online,
+          last_seen_at: device.lastSeenAt,
+          network_updated_at: scannedAt,
+          updated_at: scannedAt,
+        })
+        .eq("id", preservedImportedDeviceId)
+        .eq("household_id", householdId);
+
+      if (vaultUpdateError) {
+        throw vaultUpdateError;
+      }
+
+      enriched += 1;
+    }
   }
 
   const { error: connectorUpdateError } =
@@ -140,7 +168,7 @@ export async function upsertDiscoveredDevices(
     received: devices.length,
     upserted,
     autoMatched: 0,
-    enriched: 0,
+    enriched,
     possibleMatches: 0,
     ignored: 0,
     newDevices: devices.length,

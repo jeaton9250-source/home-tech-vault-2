@@ -3,6 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { deriveConnectorPresence } from "@/lib/connector/presence";
+import {
+  mergePresenceFromDiscovery,
+  pickFreshestDiscoveryPresence,
+} from "@/lib/devices/deviceNetworkTimestamps";
 import { supabase } from "@/lib/supabase";
 import { applyHouseholdScope } from "@/lib/data/householdScope";
 
@@ -80,7 +84,30 @@ export function useDeviceNetworkRefresh(
         return;
       }
 
-      onNetworkFieldsUpdate(deviceRow);
+      const { data: discoveryRows } = await supabase
+        .from("discovered_devices")
+        .select("online, last_seen_at")
+        .eq("imported_device_id", input.deviceId)
+        .eq("household_id", householdId)
+        .is("ignored_at", null)
+        .order("last_seen_at", { ascending: false })
+        .limit(5);
+
+      if (cancelled) {
+        return;
+      }
+
+      const merged = mergePresenceFromDiscovery(
+        deviceRow,
+        pickFreshestDiscoveryPresence(discoveryRows ?? [])
+      );
+
+      onNetworkFieldsUpdate({
+        ...deviceRow,
+        online: merged.online,
+        last_seen_at: merged.last_seen_at,
+        network_updated_at: merged.network_updated_at,
+      });
 
       if (deviceRow.connector_id) {
         const { data: connectorRow } = await supabase
@@ -124,6 +151,18 @@ export function useDeviceNetworkRefresh(
           schema: "public",
           table: "devices",
           filter: `id=eq.${input.deviceId}`,
+        },
+        () => {
+          void refreshNetworkState();
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "discovered_devices",
+          filter: `imported_device_id=eq.${input.deviceId}`,
         },
         () => {
           void refreshNetworkState();
