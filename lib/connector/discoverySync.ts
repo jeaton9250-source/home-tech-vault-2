@@ -425,7 +425,12 @@ export async function loadDiscoveryReviewRows(
 
   const vaultDevices = (
     vaultDevicesResult.data ?? []
-  ).map(rowToVaultDeviceForMatching);
+  ).map((row) =>
+    rowToVaultDeviceForMatching({
+      ...row,
+      network_fingerprint: null,
+    })
+  );
 
   const vaultDeviceById = new Map(
     (vaultDevicesResult.data ?? []).map(
