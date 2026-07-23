@@ -1,11 +1,8 @@
 import {
-  getConnectorMacosDownloadUrl,
-  getConnectorWindowsDownloadUrl,
-} from "@/lib/connector/release";
-import {
-  CONNECTOR_MACOS_APP_VERSION,
-  CONNECTOR_WINDOWS_APP_VERSION,
-} from "@/lib/connector/constants";
+  buildConnectorDownloadOptions,
+  CONNECTOR_WINDOWS_UNAVAILABLE_MESSAGE,
+} from "@/lib/connector/downloadOptions";
+import { CONNECTOR_DOWNLOAD_UNAVAILABLE_MESSAGE } from "@/lib/connector/release";
 
 export type ConnectorPlatformId =
   | "macos"
@@ -26,13 +23,18 @@ export type ConnectorPlatformDefinition = {
   version: string | null;
   description: string;
   unavailableMessage?: string | null;
+  versionLabel?: string | null;
 };
 
 const PLATFORM_DEFINITIONS: Record<
   ConnectorPlatformId,
   Omit<
     ConnectorPlatformDefinition,
-    "downloadUrl" | "version" | "availability" | "unavailableMessage"
+    | "downloadUrl"
+    | "version"
+    | "availability"
+    | "unavailableMessage"
+    | "versionLabel"
   >
 > = {
   macos: {
@@ -59,8 +61,7 @@ const PLATFORM_DEFINITIONS: Record<
 };
 
 export function getConnectorPlatforms(): ConnectorPlatformDefinition[] {
-  const macosDownloadUrl = getConnectorMacosDownloadUrl();
-  const windowsDownloadUrl = getConnectorWindowsDownloadUrl();
+  const downloads = buildConnectorDownloadOptions();
 
   return (
     Object.keys(PLATFORM_DEFINITIONS) as ConnectorPlatformId[]
@@ -68,30 +69,32 @@ export function getConnectorPlatforms(): ConnectorPlatformDefinition[] {
     const base = PLATFORM_DEFINITIONS[id];
 
     if (id === "macos") {
+      const macos = downloads.macos;
+
       return {
         ...base,
-        availability: macosDownloadUrl
-          ? "available"
-          : "unavailable",
-        downloadUrl: macosDownloadUrl,
-        version: CONNECTOR_MACOS_APP_VERSION,
-        unavailableMessage: macosDownloadUrl
+        availability: macos.available ? "available" : "unavailable",
+        downloadUrl: macos.downloadUrl,
+        version: macos.version,
+        unavailableMessage: macos.available
           ? null
-          : "Download coming soon.",
+          : CONNECTOR_DOWNLOAD_UNAVAILABLE_MESSAGE,
+        versionLabel: macos.versionLabel,
       };
     }
 
     if (id === "windows") {
+      const windows = downloads.windows;
+
       return {
         ...base,
-        availability: windowsDownloadUrl
-          ? "available"
-          : "coming_soon",
-        downloadUrl: windowsDownloadUrl,
-        version: CONNECTOR_WINDOWS_APP_VERSION,
-        unavailableMessage: windowsDownloadUrl
+        availability: windows.available ? "available" : "coming_soon",
+        downloadUrl: windows.downloadUrl,
+        version: windows.version,
+        unavailableMessage: windows.available
           ? null
-          : "Windows version coming soon",
+          : CONNECTOR_WINDOWS_UNAVAILABLE_MESSAGE,
+        versionLabel: windows.versionLabel,
       };
     }
 
@@ -101,6 +104,7 @@ export function getConnectorPlatforms(): ConnectorPlatformDefinition[] {
       downloadUrl: null,
       version: null,
       unavailableMessage: "Coming Soon",
+      versionLabel: null,
     };
   });
 }

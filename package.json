@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:connector": "tsx --test lib/connector/heartbeatValidation.test.ts lib/connector/presence.test.ts lib/connector/matching.test.ts lib/connector/tokens.test.ts lib/connector/privateNetwork.test.ts lib/connector/discoveryValidation.test.ts lib/connector/discoveryStats.test.ts lib/connector/access.test.ts lib/connector/updates.test.ts lib/connector/connectorMonitoring.test.ts lib/connector/releaseManifest.test.ts lib/connector/downloadOptions.test.ts",
+    "test:connector": "tsx --test lib/connector/heartbeatValidation.test.ts lib/connector/presence.test.ts lib/connector/matching.test.ts lib/connector/tokens.test.ts lib/connector/privateNetwork.test.ts lib/connector/discoveryValidation.test.ts lib/connector/discoveryStats.test.ts lib/connector/access.test.ts lib/connector/updates.test.ts lib/connector/connectorMonitoring.test.ts lib/connector/releaseManifest.test.ts lib/connector/downloadOptions.test.ts lib/connector/release.test.ts",
     "email:dev": "email dev --dir emails/templates --port 3001"
   },
   "dependencies": {

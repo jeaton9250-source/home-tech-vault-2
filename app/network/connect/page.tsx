@@ -27,8 +27,9 @@ import {
   canPairAnotherConnector,
   connectorLimitLabel,
 } from "@/lib/connector/access";
-import { getConnectorMacosReleaseLabel } from "@/lib/connector/release";
+import { CONNECTOR_MACOS_APP_VERSION } from "@/lib/connector/constants";
 import { CONNECTOR_INSTALLATION_STEPS } from "@/lib/connector/installationGuide";
+import { useConnectorDownloadOptions } from "@/hooks/useConnectorDownloadOptions";
 
 import PageShell from "@/components/ui/PageShell";
 import PageHero from "@/components/ui/PageHero";
@@ -39,8 +40,6 @@ import type {
   ConnectorInstallationSummary,
   PairInitResponse,
 } from "@/lib/connector/types";
-
-const macosRelease = getConnectorMacosReleaseLabel();
 
 function formatRemainingTime(
   expiresAt: string | null,
@@ -100,6 +99,11 @@ export default function NetworkConnectPage() {
   const [countdownNow, setCountdownNow] = useState(() => Date.now());
   const [guideOpen, setGuideOpen] = useState(false);
   const [releaseNotesOpen, setReleaseNotesOpen] = useState(false);
+  const { options: downloadOptions } = useConnectorDownloadOptions();
+
+  const macosVersionLabel =
+    downloadOptions?.macos.versionLabel ??
+    `Home Tech Vault Connector ${CONNECTOR_MACOS_APP_VERSION} for macOS`;
 
   const canManageConnector =
     !isDemo && isAdmin && Boolean(householdId);
@@ -514,8 +518,8 @@ export default function NetworkConnectPage() {
             Home Tech Vault Connector
           </h2>
           <p className="mt-2 text-sm leading-6 text-text-secondary">
-            Version {macosRelease.version} · Manual scans, discovery, matching,
-            and import are included on Free.
+            {macosVersionLabel} · Manual scans, discovery, matching, and import
+            are included on Free.
           </p>
           <div className="mt-5">
             <ConnectorDownloadActions />

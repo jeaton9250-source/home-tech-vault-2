@@ -3,17 +3,59 @@
 import { Monitor, Smartphone } from "lucide-react";
 
 import Button from "@/components/ui/Button";
-import { getConnectorPlatforms } from "@/lib/connector/platforms";
+import { useConnectorDownloadOptions } from "@/hooks/useConnectorDownloadOptions";
+import { CONNECTOR_DOWNLOAD_UNAVAILABLE_MESSAGE } from "@/lib/connector/release";
+import { CONNECTOR_WINDOWS_UNAVAILABLE_MESSAGE } from "@/lib/connector/downloadOptions";
+
+const PLATFORM_DESCRIPTIONS = {
+  macos: "Install on a Mac that stays on your home network.",
+  windows: "Install on a Windows PC that stays on your home network.",
+  linux: "Linux connector support is planned for a future release.",
+} as const;
 
 export default function ConnectorPlatformList() {
-  const platforms = getConnectorPlatforms();
+  const { options, loading } = useConnectorDownloadOptions();
+
+  if (loading || !options) {
+    return (
+      <div className="grid gap-3 sm:grid-cols-3">
+        {[1, 2, 3].map((index) => (
+          <div
+            key={index}
+            className="rounded-[24px] border border-border-subtle bg-surface-sunken p-5"
+          >
+            <p className="text-sm text-text-secondary">Loading platforms...</p>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  const platforms = [
+    {
+      id: "macos" as const,
+      option: options.macos,
+      comingSoon: false,
+      unavailableMessage: CONNECTOR_DOWNLOAD_UNAVAILABLE_MESSAGE,
+    },
+    {
+      id: "windows" as const,
+      option: options.windows,
+      comingSoon: !options.windows.available,
+      unavailableMessage: CONNECTOR_WINDOWS_UNAVAILABLE_MESSAGE,
+    },
+    {
+      id: "linux" as const,
+      option: null,
+      comingSoon: true,
+      unavailableMessage: "Coming Soon",
+    },
+  ];
 
   return (
     <div className="grid gap-3 sm:grid-cols-3">
       {platforms.map((platform) => {
-        const isAvailable = platform.availability === "available";
-        const isComingSoon =
-          platform.availability === "coming_soon";
+        const isAvailable = platform.option?.available ?? false;
 
         return (
           <div
@@ -31,41 +73,43 @@ export default function ConnectorPlatformList() {
 
               <div>
                 <p className="font-semibold text-text-primary">
-                  {platform.label}
+                  {platform.option?.label ??
+                    (platform.id === "linux"
+                      ? "Linux"
+                      : platform.id === "windows"
+                        ? "Windows"
+                        : "macOS")}
                 </p>
                 <p className="text-xs text-text-tertiary">
-                  {isComingSoon
+                  {platform.comingSoon
                     ? "Coming Soon"
                     : isAvailable
-                      ? `v${platform.version}`
-                      : "Unavailable"}
+                      ? platform.option?.versionLabel
+                      : platform.unavailableMessage}
                 </p>
               </div>
             </div>
 
             <p className="mt-4 text-sm leading-6 text-text-secondary">
-              {platform.description}
+              {PLATFORM_DESCRIPTIONS[platform.id]}
             </p>
 
-            {isAvailable && platform.downloadUrl ? (
+            {isAvailable && platform.option?.downloadUrl ? (
               <div className="mt-4">
                 <Button
-                  href={platform.downloadUrl}
+                  href={platform.option.downloadUrl}
                   target="_blank"
                   rel="noopener noreferrer"
+                  download
                   size="sm"
                   fullWidth
                 >
-                  Download for {platform.label}
+                  {platform.option.buttonLabel}
                 </Button>
               </div>
-            ) : isComingSoon ? (
-              <p className="mt-4 text-sm font-medium text-text-tertiary">
-                Coming Soon
-              </p>
             ) : (
               <p className="mt-4 text-sm font-medium text-text-tertiary">
-                Download coming soon.
+                {platform.unavailableMessage}
               </p>
             )}
           </div>

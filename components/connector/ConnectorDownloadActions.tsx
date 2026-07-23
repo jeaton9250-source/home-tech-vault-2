@@ -6,25 +6,48 @@ import Button from "@/components/ui/Button";
 import { cn } from "@/lib/design-system/cn";
 import {
   detectBrowserPlatformHint,
-  getConnectorDownloadOptions,
+  orderConnectorDownloadPlatforms,
+  type ConnectorDownloadPlatformId,
 } from "@/lib/connector/downloadOptions";
+import { useConnectorDownloadOptions } from "@/hooks/useConnectorDownloadOptions";
 
 type ConnectorDownloadActionsProps = {
   layout?: "row" | "stack";
   className?: string;
+  platformIds?: ConnectorDownloadPlatformId[];
+  showVersionLabel?: boolean;
 };
 
 export default function ConnectorDownloadActions({
   layout = "row",
   className,
+  platformIds,
+  showVersionLabel = true,
 }: ConnectorDownloadActionsProps) {
   const browserPlatform = detectBrowserPlatformHint();
-  const downloads = getConnectorDownloadOptions();
+  const { options, loading } = useConnectorDownloadOptions();
 
   const orderedPlatforms =
-    browserPlatform === "windows"
-      ? (["windows", "macos"] as const)
-      : (["macos", "windows"] as const);
+    platformIds ??
+    orderConnectorDownloadPlatforms(browserPlatform);
+
+  if (loading || !options) {
+    return (
+      <div
+        className={cn(
+          layout === "row"
+            ? "flex flex-wrap gap-3"
+            : "flex flex-col gap-3",
+          className
+        )}
+      >
+        <Button type="button" variant="secondary" disabled>
+          <Download size={16} />
+          Loading download options...
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -36,10 +59,10 @@ export default function ConnectorDownloadActions({
       )}
     >
       {orderedPlatforms.map((platformId) => {
-        const option = downloads[platformId];
+        const option = options[platformId];
         const highlighted = browserPlatform === platformId;
 
-        if (!option.downloadUrl) {
+        if (!option.available || !option.downloadUrl) {
           return (
             <div
               key={platformId}
@@ -50,8 +73,13 @@ export default function ConnectorDownloadActions({
             >
               <Button type="button" variant="secondary" disabled>
                 <Download size={16} />
-                Download for {option.label}
+                {option.buttonLabel}
               </Button>
+              {showVersionLabel ? (
+                <p className="mt-2 text-xs font-medium text-text-tertiary">
+                  {option.versionLabel}
+                </p>
+              ) : null}
               <p className="mt-2 text-sm text-text-secondary">
                 {option.unavailableMessage}
               </p>
@@ -60,17 +88,35 @@ export default function ConnectorDownloadActions({
         }
 
         return (
-          <Button
+          <div
             key={platformId}
-            href={option.downloadUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            variant={highlighted ? "primary" : "secondary"}
-            className={highlighted ? undefined : "shrink-0"}
+            className={cn(
+              layout === "stack" && "rounded-[20px] border border-border-subtle bg-surface-sunken p-4",
+              highlighted && layout === "stack" && "ring-2 ring-charcoal/10"
+            )}
           >
-            <Download size={16} />
-            Download for {option.label}
-          </Button>
+            <Button
+              href={option.downloadUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              download
+              variant={highlighted ? "primary" : "secondary"}
+              className={highlighted ? undefined : "shrink-0"}
+            >
+              <Download size={16} />
+              {option.buttonLabel}
+            </Button>
+            {showVersionLabel ? (
+              <p
+                className={cn(
+                  "text-xs font-medium text-text-tertiary",
+                  layout === "stack" ? "mt-2" : "mt-1.5"
+                )}
+              >
+                {option.versionLabel}
+              </p>
+            ) : null}
+          </div>
         );
       })}
     </div>

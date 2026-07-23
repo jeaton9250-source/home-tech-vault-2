@@ -1,5 +1,6 @@
 "use client";
 
+import ConnectorDownloadActions from "@/components/connector/ConnectorDownloadActions";
 import ConnectorModal from "@/components/connector/ConnectorModal";
 import { CONNECTOR_RELEASE_NOTES } from "@/lib/connector/releaseNotes";
 
@@ -44,6 +45,19 @@ export default function ReleaseNotesModal({
             </ul>
           </div>
         ))}
+      </div>
+
+      <div className="mt-6 border-t border-border-subtle pt-6">
+        <p className="text-sm font-semibold text-text-primary">
+          Download Latest Version
+        </p>
+        <p className="mt-2 text-sm leading-6 text-text-secondary">
+          Install or update the connector on the computer that stays on your
+          home network.
+        </p>
+        <div className="mt-4">
+          <ConnectorDownloadActions layout="stack" />
+        </div>
       </div>
     </ConnectorModal>
   );
