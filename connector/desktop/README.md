@@ -20,17 +20,18 @@ Phase 2A desktop connector for pairing, secure token storage, and heartbeat only
 
 ## Configuration
 
-Copy `.env.example` to `.env`:
+Vite mode files set the public API origin:
 
-```bash
-cp .env.example .env
-```
+| File | Mode | URL |
+|------|------|-----|
+| `.env.development` | `tauri dev` | `http://localhost:3003` |
+| `.env.production` | `tauri build` | `https://hometechvault.com` |
+
+Optional personal overrides can go in `.env` (gitignored). HTTP is allowed only in development; production builds reject insecure `http://` URLs.
 
 | Variable | Purpose |
 |----------|---------|
-| `VITE_HTV_API_BASE_URL` | API origin (`http://localhost:3003` dev, `https://hometechvault.com` prod) |
-
-Production builds require HTTPS for the configured API base URL.
+| `VITE_HTV_API_BASE_URL` | API origin override |
 
 ## Development
 
@@ -39,7 +40,7 @@ npm install
 npm run tauri dev
 ```
 
-Set `VITE_HTV_API_BASE_URL=http://localhost:3003` if your local Next.js dev server uses port 3003.
+Development uses `http://localhost:3003` from `.env.development`. Change that file if your Next.js dev server uses a different port.
 
 ## Heartbeat behavior (Phase 2A)
 

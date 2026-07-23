@@ -1,9 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 
-import {
-  assertHttpsInProduction,
-  getApiBaseUrl,
-} from "./config";
+import { getApiBaseUrl } from "./config";
 import { logConnectorEvent } from "./logger";
 
 import type {
@@ -98,7 +95,6 @@ export async function confirmPairing(options: {
   appVersion: string;
 }) {
   const baseUrl = getApiBaseUrl();
-  assertHttpsInProduction(baseUrl);
 
   const apiUrl = `${baseUrl}/api/connector/pair/confirm`;
 
@@ -150,7 +146,6 @@ export async function sendHeartbeat(options: {
   deviceName: string;
 }) {
   const baseUrl = getApiBaseUrl();
-  assertHttpsInProduction(baseUrl);
 
   const apiUrl = `${baseUrl}/api/connector/heartbeat`;
 
