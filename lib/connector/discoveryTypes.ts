@@ -1,7 +1,7 @@
 export type MatchStatus =
   | "matched"
   | "possible_match"
-  | "unmatched"
+  | "new"
   | "ignored";
 
 export type MatchConfidence =
@@ -94,6 +94,22 @@ export type DiscoveredDeviceRow = {
   updated_at: string;
 };
 
+export type MatchReasonSignal = {
+  label: string;
+  matched: boolean;
+};
+
+export type DiscoveryStatsSummary = {
+  totalDevices: number;
+  onlineDevices: number;
+  recentlyDetected: number;
+  needsReview: number;
+  newDevices: number;
+  ignoredDevices: number;
+  matchedDevices: number;
+  totalDiscovered: number;
+};
+
 export type DiscoveredDeviceSummary = {
   id: string;
   connectorId: string;
@@ -123,6 +139,7 @@ export type DiscoveredDeviceSummary = {
     category: string | null;
     manufacturer: string | null;
     modelNumber: string | null;
+    location?: string | null;
   } | null;
 };
 
@@ -137,7 +154,7 @@ export type DiscoverySyncResponse = {
   enriched: number;
   possibleMatches: number;
   ignored: number;
-  unmatched: number;
+  newDevices: number;
 };
 
 export type DuplicateImportWarning = {

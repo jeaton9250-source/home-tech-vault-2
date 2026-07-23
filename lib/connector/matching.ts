@@ -22,8 +22,7 @@ function scopedVaultDevices(
 ): VaultDeviceForMatching[] {
   return vaultDevices.filter(
     (device) =>
-      device.householdId ===
-      discovered.householdId
+      device.householdId === discovered.householdId
   );
 }
 
@@ -73,62 +72,14 @@ function possibleResult(
   };
 }
 
-function strongMultiFieldMatches(
-  discovered: DiscoveredForMatching,
-  vaultDevices: VaultDeviceForMatching[]
-): VaultDeviceForMatching[] {
-  const manufacturer =
-    normalizeManufacturer(
-      discovered.manufacturer
-    );
-  const model = normalizeModel(
-    discovered.model
-  );
-  const hostname = normalizeHostname(
-    discovered.hostname
-  );
-  const category = normalizeCategory(
-    discovered.deviceType
-  );
-
-  if (
-    !manufacturer ||
-    !model ||
-    !hostname ||
-    !category
-  ) {
-    return [];
-  }
-
-  return vaultDevices.filter((device) => {
-    return (
-      normalizeManufacturer(
-        device.manufacturer
-      ) === manufacturer &&
-      normalizeModel(
-        device.modelNumber
-      ) === model &&
-      normalizeHostname(
-        device.hostname ??
-          device.deviceName
-      ) === hostname &&
-      normalizeCategory(device.category) ===
-        category
-    );
-  });
-}
-
 function manufacturerModelMatches(
   discovered: DiscoveredForMatching,
   vaultDevices: VaultDeviceForMatching[]
 ): VaultDeviceForMatching[] {
-  const manufacturer =
-    normalizeManufacturer(
-      discovered.manufacturer
-    );
-  const model = normalizeModel(
-    discovered.model
+  const manufacturer = normalizeManufacturer(
+    discovered.manufacturer
   );
+  const model = normalizeModel(discovered.model);
 
   if (!manufacturer || !model) {
     return [];
@@ -136,30 +87,91 @@ function manufacturerModelMatches(
 
   return vaultDevices.filter((device) => {
     return (
-      normalizeManufacturer(
-        device.manufacturer
-      ) === manufacturer &&
-      normalizeModel(
-        device.modelNumber
-      ) === model
+      normalizeManufacturer(device.manufacturer) ===
+        manufacturer &&
+      normalizeModel(device.modelNumber) === model
     );
   });
 }
 
-function hostnameCandidateMatches(
+function manufacturerHostnameMatches(
   discovered: DiscoveredForMatching,
   vaultDevices: VaultDeviceForMatching[]
 ): VaultDeviceForMatching[] {
-  return vaultDevices.filter((device) =>
-    hostnamesLikelyMatch(
-      discovered.hostname,
-      device.hostname ?? device.deviceName
-    )
+  const manufacturer = normalizeManufacturer(
+    discovered.manufacturer
+  );
+  const hostname = normalizeHostname(
+    discovered.hostname
+  );
+
+  if (!manufacturer || !hostname) {
+    return [];
+  }
+
+  return vaultDevices.filter((device) => {
+    if (
+      normalizeManufacturer(device.manufacturer) !==
+      manufacturer
+    ) {
+      return false;
+    }
+
+    return (
+      normalizeHostname(device.hostname) === hostname ||
+      normalizeHostname(device.deviceName) === hostname ||
+      hostnamesLikelyMatch(
+        discovered.hostname,
+        device.hostname ?? device.deviceName
+      )
+    );
+  });
+}
+
+function manufacturerCategoryMatches(
+  discovered: DiscoveredForMatching,
+  vaultDevices: VaultDeviceForMatching[]
+): VaultDeviceForMatching[] {
+  const manufacturer = normalizeManufacturer(
+    discovered.manufacturer
+  );
+  const category = normalizeCategory(
+    discovered.deviceType
+  );
+
+  if (!manufacturer || !category) {
+    return [];
+  }
+
+  return vaultDevices.filter(
+    (device) =>
+      normalizeManufacturer(device.manufacturer) ===
+        manufacturer &&
+      normalizeCategory(device.category) === category
+  );
+}
+
+function vendorIdentifierMatches(
+  discovered: DiscoveredForMatching,
+  vaultDevices: VaultDeviceForMatching[]
+): VaultDeviceForMatching[] {
+  const vendorId = normalizeSerialNumber(
+    discovered.serialNumber
+  );
+
+  if (!vendorId || vendorId.length < 8) {
+    return [];
+  }
+
+  return vaultDevices.filter(
+    (device) =>
+      normalizeSerialNumber(device.serialNumber) ===
+      vendorId
   );
 }
 
 /**
- * Match a discovered device to household vault devices using the Phase 2B.1 priority order.
+ * Phase 2B.2 confidence-based matching engine.
  */
 export function matchDiscoveredDevice(
   discovered: DiscoveredForMatching,
@@ -174,12 +186,12 @@ export function matchDiscoveredDevice(
     };
   }
 
-  const householdDevices =
-    scopedVaultDevices(
-      discovered,
-      vaultDevices
-    );
+  const householdDevices = scopedVaultDevices(
+    discovered,
+    vaultDevices
+  );
 
+  // 1. Previously confirmed relationship
   if (discovered.importedDeviceId) {
     const linkedDevice = findVaultDeviceById(
       householdDevices,
@@ -187,22 +199,17 @@ export function matchDiscoveredDevice(
     );
 
     if (linkedDevice) {
-      if (discovered.matchConfirmedAt) {
-        return matchedResult(
-          linkedDevice.id,
-          "exact",
-          "Previously confirmed by household admin"
-        );
-      }
-
       return matchedResult(
         linkedDevice.id,
         "exact",
-        "Existing discovered-device link"
+        discovered.matchConfirmedAt
+          ? "Matched by previous confirmation"
+          : "Matched by existing discovered-device link"
       );
     }
   }
 
+  // 2. Exact MAC address
   const discoveredMac = normalizeMacAddress(
     discovered.macAddress
   );
@@ -210,16 +217,15 @@ export function matchDiscoveredDevice(
   if (discoveredMac) {
     const macMatches = householdDevices.filter(
       (device) =>
-        normalizeMacAddress(
-          device.macAddress
-        ) === discoveredMac
+        normalizeMacAddress(device.macAddress) ===
+        discoveredMac
     );
 
     if (macMatches.length === 1) {
       return matchedResult(
         macMatches[0]!.id,
         "exact",
-        "Exact MAC address match"
+        "Matched by MAC address"
       );
     }
 
@@ -227,112 +233,101 @@ export function matchDiscoveredDevice(
       return possibleResult(
         macMatches.map((device) => device.id),
         "high",
-        "Multiple vault devices share this MAC address",
+        "Possible duplicate — multiple vault devices share this MAC address",
         macMatches[0]!.id
       );
     }
   }
 
+  // 3. Stable network fingerprint
   const discoveredFingerprint =
     discovered.localFingerprint.trim();
 
   if (discoveredFingerprint) {
-    const fingerprintMatches =
-      householdDevices.filter((device) => {
-        const vaultFingerprint =
-          vaultDeviceFingerprint({
-            macAddress: device.macAddress,
-            networkFingerprint:
-              device.networkFingerprint,
-            serialNumber:
-              device.serialNumber,
-          });
+    const fingerprintMatches = householdDevices.filter(
+      (device) => {
+        const vaultFingerprint = vaultDeviceFingerprint({
+          macAddress: device.macAddress,
+          networkFingerprint: device.networkFingerprint,
+          serialNumber: device.serialNumber,
+        });
 
-        return (
-          vaultFingerprint ===
-          discoveredFingerprint
-        );
-      });
+        return vaultFingerprint === discoveredFingerprint;
+      }
+    );
 
     if (fingerprintMatches.length === 1) {
       return matchedResult(
         fingerprintMatches[0]!.id,
         "exact",
-        "Exact stable network fingerprint match"
+        "Matched by stable network fingerprint"
       );
     }
 
     if (fingerprintMatches.length > 1) {
       return possibleResult(
-        fingerprintMatches.map(
-          (device) => device.id
-        ),
+        fingerprintMatches.map((device) => device.id),
         "high",
-        "Multiple vault devices share this network fingerprint",
+        "Possible duplicate — multiple vault devices share this fingerprint",
         fingerprintMatches[0]!.id
       );
     }
   }
 
-  const discoveredSerial =
-    normalizeSerialNumber(
-      discovered.serialNumber
+  // 4. Vendor identifier (when available)
+  const vendorMatches = vendorIdentifierMatches(
+    discovered,
+    householdDevices
+  );
+
+  if (vendorMatches.length === 1) {
+    return matchedResult(
+      vendorMatches[0]!.id,
+      "exact",
+      "Matched by vendor identifier"
     );
+  }
+
+  if (vendorMatches.length > 1) {
+    return possibleResult(
+      vendorMatches.map((device) => device.id),
+      "high",
+      "Possible duplicate — multiple vault devices share this vendor identifier",
+      vendorMatches[0]!.id
+    );
+  }
+
+  // 5. Serial number
+  const discoveredSerial = normalizeSerialNumber(
+    discovered.serialNumber
+  );
 
   if (discoveredSerial) {
-    const serialMatches =
-      householdDevices.filter(
-        (device) =>
-          normalizeSerialNumber(
-            device.serialNumber
-          ) === discoveredSerial
-      );
+    const serialMatches = householdDevices.filter(
+      (device) =>
+        normalizeSerialNumber(device.serialNumber) ===
+        discoveredSerial
+    );
 
     if (serialMatches.length === 1) {
       return matchedResult(
         serialMatches[0]!.id,
-        "high",
-        "Exact supported serial or vendor identifier match"
+        "exact",
+        "Matched by serial number"
       );
     }
 
     if (serialMatches.length > 1) {
       return possibleResult(
-        serialMatches.map(
-          (device) => device.id
-        ),
+        serialMatches.map((device) => device.id),
         "high",
-        "Multiple vault devices share this serial number",
+        "Possible duplicate — multiple vault devices share this serial number",
         serialMatches[0]!.id
       );
     }
   }
 
-  const strongMatches =
-    strongMultiFieldMatches(
-      discovered,
-      householdDevices
-    );
-
-  if (strongMatches.length === 1) {
-    return matchedResult(
-      strongMatches[0]!.id,
-      "high",
-      "Manufacturer and model match"
-    );
-  }
-
-  if (strongMatches.length > 1) {
-    return possibleResult(
-      strongMatches.map(
-        (device) => device.id
-      ),
-      "high",
-      "Multiple vault devices match manufacturer, model, hostname, and category",
-      strongMatches[0]!.id
-    );
-  }
-
+  // 6. Manufacturer + model — review required
   const manufacturerModelCandidates =
     manufacturerModelMatches(
       discovered,
@@ -345,7 +340,7 @@ export function matchDiscoveredDevice(
         (device) => device.id
       ),
       "high",
-      "Manufacturer and model match",
+      "Matched by manufacturer and model",
       manufacturerModelCandidates[0]!.id
     );
   }
@@ -356,47 +351,79 @@ export function matchDiscoveredDevice(
         (device) => device.id
       ),
       "medium",
-      "Multiple vault devices match manufacturer and model",
+      "Possible duplicate — multiple vault devices match manufacturer and model",
       manufacturerModelCandidates[0]!.id
     );
   }
 
-  const hostnameCandidates =
-    hostnameCandidateMatches(
+  // 7. Manufacturer + normalized hostname — review required
+  const manufacturerHostnameCandidates =
+    manufacturerHostnameMatches(
       discovered,
       householdDevices
     );
 
-  if (hostnameCandidates.length === 1) {
+  if (manufacturerHostnameCandidates.length === 1) {
     return possibleResult(
-      hostnameCandidates.map(
+      manufacturerHostnameCandidates.map(
         (device) => device.id
       ),
       "medium",
-      "Possible hostname match",
-      hostnameCandidates[0]!.id
+      "Matched by manufacturer and hostname",
+      manufacturerHostnameCandidates[0]!.id
     );
   }
 
-  if (hostnameCandidates.length > 1) {
+  if (manufacturerHostnameCandidates.length > 1) {
     return possibleResult(
-      hostnameCandidates.map(
+      manufacturerHostnameCandidates.map(
         (device) => device.id
       ),
       "low",
-      "Multiple vault devices have a similar hostname",
-      hostnameCandidates[0]!.id
+      "Possible duplicate — multiple vault devices match manufacturer and hostname",
+      manufacturerHostnameCandidates[0]!.id
     );
   }
 
+  // 8. Manufacturer + category — review required
+  const manufacturerCategoryCandidates =
+    manufacturerCategoryMatches(
+      discovered,
+      householdDevices
+    );
+
+  if (manufacturerCategoryCandidates.length === 1) {
+    return possibleResult(
+      manufacturerCategoryCandidates.map(
+        (device) => device.id
+      ),
+      "medium",
+      "Matched by manufacturer and category",
+      manufacturerCategoryCandidates[0]!.id
+    );
+  }
+
+  if (manufacturerCategoryCandidates.length > 1) {
+    return possibleResult(
+      manufacturerCategoryCandidates.map(
+        (device) => device.id
+      ),
+      "low",
+      "Possible duplicate — multiple vault devices match manufacturer and category",
+      manufacturerCategoryCandidates[0]!.id
+    );
+  }
+
+  // 9. New device — review required for import
   return {
-    matchStatus: "unmatched",
+    matchStatus: "new",
     matchConfidence: null,
     matchReason: null,
     matchedDeviceId: null,
   };
 }
 
+/** Auto-link and enrich only for exact matches or confirmed links. */
 export function shouldAutoLinkMatch(
   result: DeviceMatchResult
 ): boolean {
@@ -404,10 +431,7 @@ export function shouldAutoLinkMatch(
     return false;
   }
 
-  return (
-    result.matchConfidence === "exact" ||
-    result.matchConfidence === "high"
-  );
+  return result.matchConfidence === "exact";
 }
 
 export function isDuplicateImportCandidate(
@@ -422,8 +446,7 @@ export function isDuplicateImportCandidate(
   }
 
   return (
-    result.matchStatus ===
-      "possible_match" &&
+    result.matchStatus === "possible_match" &&
     (result.matchConfidence === "exact" ||
       result.matchConfidence === "high")
   );
@@ -436,13 +459,13 @@ export function rowToDiscoveredForMatching(
     local_fingerprint: string;
     hostname: string | null;
     manufacturer: string | null;
-    model: string | null;
-    serial_number: string | null;
+    model?: string | null;
+    serial_number?: string | null;
     ip_address: string | null;
     mac_address: string | null;
     device_type: string | null;
     imported_device_id: string | null;
-    match_confirmed_at: string | null;
+    match_confirmed_at?: string | null;
     ignored_at: string | null;
     first_seen_at?: string;
     last_seen_at?: string;
@@ -456,8 +479,8 @@ export function rowToDiscoveredForMatching(
     localFingerprint: row.local_fingerprint,
     hostname: row.hostname,
     manufacturer: row.manufacturer,
-    model: row.model,
-    serialNumber: row.serial_number,
+    model: row.model ?? null,
+    serialNumber: row.serial_number ?? null,
     ipAddress:
       row.ip_address === null
         ? null
@@ -465,7 +488,7 @@ export function rowToDiscoveredForMatching(
     macAddress: row.mac_address,
     deviceType: row.device_type,
     importedDeviceId: row.imported_device_id,
-    matchConfirmedAt: row.match_confirmed_at,
+    matchConfirmedAt: row.match_confirmed_at ?? null,
     ignoredAt: row.ignored_at,
     firstSeenAt: row.first_seen_at,
     lastSeenAt: row.last_seen_at,
@@ -484,12 +507,13 @@ export function rowToVaultDeviceForMatching(
     model_number: string | null;
     serial_number: string | null;
     mac_address: string | null;
-    network_fingerprint: string | null;
+    network_fingerprint?: string | null;
     category: string | null;
     ip_address?: string | null;
     hostname?: string | null;
     first_seen_at?: string | null;
     discovery_source?: string | null;
+    location?: string | null;
   }
 ): VaultDeviceForMatching {
   return {
@@ -501,8 +525,7 @@ export function rowToVaultDeviceForMatching(
     modelNumber: row.model_number,
     serialNumber: row.serial_number,
     macAddress: row.mac_address,
-    networkFingerprint:
-      row.network_fingerprint,
+    networkFingerprint: row.network_fingerprint ?? null,
     category: row.category,
     ipAddress:
       row.ip_address === null ||

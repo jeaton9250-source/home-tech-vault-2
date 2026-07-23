@@ -1,3 +1,4 @@
+import { computeDiscoveryStats } from "@/lib/connector/discoveryStats";
 import { loadDiscoveryReviewRows } from "@/lib/connector/discoverySync";
 import {
   householdAccessResponse,
@@ -29,9 +30,14 @@ export async function GET(request: Request) {
         memberContext.householdId
       );
 
+    const stats = computeDiscoveryStats({
+      devices,
+    });
+
     return NextResponse.json({
       householdId: memberContext.householdId,
       devices,
+      stats,
     });
   } catch (error) {
     const accessResponse =

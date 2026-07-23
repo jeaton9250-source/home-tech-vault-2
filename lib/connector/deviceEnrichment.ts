@@ -19,6 +19,8 @@ export function buildDeviceNetworkEnrichmentUpdate(
   options?: {
     existingDiscoverySource?: string | null;
     existingDiscoverySources?: string[];
+    /** When false, skips columns that require the 2B.2 migration. */
+    extendedNetworkFields?: boolean;
   }
 ): Record<string, unknown> {
   const update: Record<string, unknown> = {};
@@ -49,6 +51,7 @@ export function buildDeviceNetworkEnrichmentUpdate(
   }
 
   if (
+    options?.extendedNetworkFields !== false &&
     discovery.hostname &&
     discovery.hostname !== existing.hostname
   ) {
@@ -84,16 +87,18 @@ export function buildDeviceNetworkEnrichmentUpdate(
 
   update.online = discovery.online;
   update.last_seen_at = discovery.lastSeenAt;
-  update.connector_id = discovery.connectorId;
-  update.network_fingerprint =
-    discovery.networkFingerprint;
 
-  if (
-    !existing.firstSeenAt &&
-    discovery.firstSeenAt
-  ) {
-    update.first_seen_at =
-      discovery.firstSeenAt;
+  if (options?.extendedNetworkFields !== false) {
+    update.connector_id = discovery.connectorId;
+    update.network_fingerprint =
+      discovery.networkFingerprint;
+
+    if (
+      !existing.firstSeenAt &&
+      discovery.firstSeenAt
+    ) {
+      update.first_seen_at = discovery.firstSeenAt;
+    }
   }
 
   const mergedSources = mergeDiscoverySources(

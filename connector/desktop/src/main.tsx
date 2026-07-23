@@ -443,7 +443,7 @@ function App() {
       const { scan, sync } =
         await scanAndSyncDiscovery({
           token,
-          runMatching: false,
+          runMatching: true,
           onScanComplete: () => {
             setScanPhase("syncing");
           },

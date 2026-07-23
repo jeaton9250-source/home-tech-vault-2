@@ -90,7 +90,7 @@ describe("matchDiscoveredDevice", () => {
     assert.equal(result.matchedDeviceId, "device-1");
     assert.match(
       result.matchReason ?? "",
-      /confirmed/i
+      /previous confirmation/i
     );
   });
 
@@ -105,7 +105,7 @@ describe("matchDiscoveredDevice", () => {
 
     assert.equal(result.matchStatus, "matched");
     assert.equal(result.matchConfidence, "exact");
-    assert.equal(result.matchReason, "Exact MAC address match");
+    assert.equal(result.matchReason, "Matched by MAC address");
     assert.equal(result.matchedDeviceId, "device-1");
     assert.equal(shouldAutoLinkMatch(result), true);
   });
@@ -130,11 +130,11 @@ describe("matchDiscoveredDevice", () => {
     assert.equal(result.matchConfidence, "exact");
     assert.equal(
       result.matchReason,
-      "Exact stable network fingerprint match"
+      "Matched by stable network fingerprint"
     );
   });
 
-  it("auto matches on strong manufacturer, model, hostname, and category", () => {
+  it("requires review for manufacturer and model without auto-link", () => {
     const result = matchDiscoveredDevice(
       discovered({
         localFingerprint: "host:living-room-tv|mfg:samsung|model:qn65q80",
@@ -151,12 +151,13 @@ describe("matchDiscoveredDevice", () => {
       ]
     );
 
-    assert.equal(result.matchStatus, "matched");
+    assert.equal(result.matchStatus, "possible_match");
     assert.equal(result.matchConfidence, "high");
     assert.equal(
       result.matchReason,
-      "Manufacturer and model match"
+      "Matched by manufacturer and model"
     );
+    assert.equal(shouldAutoLinkMatch(result), false);
   });
 
   it("does not match when only IP address overlaps", () => {
@@ -177,7 +178,7 @@ describe("matchDiscoveredDevice", () => {
     assert.notEqual(result.matchStatus, "matched");
   });
 
-  it("requires review for similar hostname only", () => {
+  it("does not match on hostname alone", () => {
     const result = matchDiscoveredDevice(
       discovered({
         localFingerprint:
@@ -201,15 +202,36 @@ describe("matchDiscoveredDevice", () => {
       ]
     );
 
-    assert.equal(
-      result.matchStatus,
-      "possible_match"
-    );
-    assert.equal(
-      result.matchReason,
-      "Possible hostname match"
-    );
+    assert.equal(result.matchStatus, "new");
+    assert.equal(result.matchedDeviceId, null);
     assert.equal(shouldAutoLinkMatch(result), false);
+  });
+
+  it("flags manufacturer and hostname as possible match", () => {
+    const result = matchDiscoveredDevice(
+      discovered({
+        localFingerprint: "host:living-room-tv-2|mfg:samsung",
+        macAddress: null,
+        manufacturer: "Samsung",
+        model: null,
+        hostname: "living-room-tv",
+      }),
+      [
+        vaultDevice({
+          id: "device-1",
+          manufacturer: "Samsung",
+          hostname: "living-room-tv",
+          macAddress: null,
+          networkFingerprint: null,
+        }),
+      ]
+    );
+
+    assert.equal(result.matchStatus, "possible_match");
+    assert.match(
+      result.matchReason ?? "",
+      /manufacturer and hostname/i
+    );
   });
 
   it("never matches devices across households", () => {
@@ -221,7 +243,7 @@ describe("matchDiscoveredDevice", () => {
       [vaultDevice({ id: "device-1" })]
     );
 
-    assert.equal(result.matchStatus, "unmatched");
+    assert.equal(result.matchStatus, "new");
     assert.equal(result.matchedDeviceId, null);
   });
 

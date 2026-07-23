@@ -39,6 +39,7 @@ import { cn } from "@/lib/design-system/cn";
 import {
   displayValue,
   formatLastSeen,
+  formatNetworkPresence,
   formatProfileCurrency,
   formatProfileDate,
   getWarrantyPresentation,
@@ -65,8 +66,12 @@ export type DeviceProfileDevice = {
   last_seen_at?: string | null;
   ip_address?: string | null;
   mac_address?: string | null;
+  hostname?: string | null;
   manufacturer?: string | null;
   discovery_source?: string | null;
+  connector_id?: string | null;
+  network_fingerprint?: string | null;
+  first_seen_at?: string | null;
 };
 
 export type DeviceProfilePhoto = {
@@ -151,11 +156,18 @@ export default function DeviceProfile({
   const hasNetwork = Boolean(
     device.ip_address ||
       device.mac_address ||
+      device.hostname ||
       device.manufacturer ||
       device.discovery_source ||
+      device.connector_id ||
       device.last_seen_at ||
       device.online !== null
   );
+
+  const networkPresence = formatNetworkPresence({
+    online: device.online,
+    lastSeenAt: device.last_seen_at,
+  });
 
   const receipt = documents.find((doc) => doc.type === "Receipt");
   const manual = documents.find((doc) => doc.type === "Manual");
@@ -668,19 +680,18 @@ export default function DeviceProfile({
 
           <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             <FactCard
-              icon={Radio}
-              label="Connection Status"
-              value={
-                device.online === true
-                  ? "Online"
-                  : device.online === false
-                    ? "Offline"
-                    : "Not tracked"
-              }
+              icon={Wifi}
+              label="Network Status"
+              value={networkPresence}
             />
             <FactCard
               icon={Radio}
-              label="IP Address"
+              label="Last Seen"
+              value={formatLastSeen(device.last_seen_at)}
+            />
+            <FactCard
+              icon={Radio}
+              label="Current IP"
               value={displayValue(device.ip_address)}
             />
             <FactCard
@@ -690,19 +701,42 @@ export default function DeviceProfile({
             />
             <FactCard
               icon={Laptop}
+              label="Hostname"
+              value={displayValue(device.hostname)}
+            />
+            <FactCard
+              icon={Laptop}
               label="Manufacturer"
               value={displayValue(device.manufacturer)}
             />
             <FactCard
               icon={Sparkles}
-              label="Discovery Method"
+              label="Connector"
+              value={
+                device.connector_id
+                  ? "Home Tech Vault Connector"
+                  : "Not linked"
+              }
+            />
+            <FactCard
+              icon={Sparkles}
+              label="Discovery Source"
               value={displayValue(device.discovery_source)}
             />
             <FactCard
-              icon={CalendarDays}
-              label="Last Seen"
-              value={formatLastSeen(device.last_seen_at)}
+              icon={Wifi}
+              label="Signal"
+              value="Not available yet"
             />
+          </div>
+
+          <div className="mt-8 rounded-2xl border border-dashed border-border-subtle px-5 py-4">
+            <p className="text-sm font-medium text-text-primary">
+              Network timeline
+            </p>
+            <p className="mt-1 text-sm text-text-secondary">
+              Network activity history will appear here in a future update.
+            </p>
           </div>
         </PageCard>
       ) : null}

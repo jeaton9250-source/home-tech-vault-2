@@ -122,6 +122,6 @@ export async function upsertDiscoveredDevices(
     enriched: 0,
     possibleMatches: 0,
     ignored: 0,
-    unmatched: devices.length,
+    newDevices: devices.length,
   };
 }

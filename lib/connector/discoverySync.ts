@@ -35,7 +35,7 @@ const VAULT_DEVICE_SELECT =
 
 /** Foundation schema only — safe before 2B.2 device enrichment migration. */
 const VAULT_DEVICE_SELECT_FOUNDATION =
-  "id, household_id, device_name, brand, manufacturer, model_number, serial_number, mac_address, category, ip_address, discovery_source";
+  "id, household_id, device_name, brand, manufacturer, model_number, serial_number, mac_address, category, ip_address, discovery_source, location, online";
 
 /** Foundation schema only — safe before 2B.2 discovered_devices match columns. */
 const DISCOVERED_DEVICE_SELECT_FOUNDATION =
@@ -124,7 +124,7 @@ export async function syncDiscoveredDevicesWithMatching(
   let enriched = 0;
   let possibleMatches = 0;
   let ignored = 0;
-  let unmatched = 0;
+  let newDevices = 0;
 
   for (const device of devices) {
     const existingResult = await admin
@@ -158,15 +158,12 @@ export async function syncDiscoveredDevicesWithMatching(
         device.discoverySource
       );
 
-    const upsertPayload = {
+    const upsertPayload: Record<string, unknown> = {
       household_id: householdId,
       connector_id: connectorId,
-      local_fingerprint:
-        device.localFingerprint,
+      local_fingerprint: device.localFingerprint,
       hostname: device.hostname,
       manufacturer: device.manufacturer,
-      model: device.model,
-      serial_number: device.serialNumber,
       ip_address: device.ipAddress,
       mac_address: device.macAddress,
       device_type: device.deviceType,
@@ -175,8 +172,7 @@ export async function syncDiscoveredDevicesWithMatching(
       first_seen_at: preservedFirstSeenAt,
       last_seen_at: device.lastSeenAt,
       updated_at: scannedAt,
-      imported_device_id:
-        preservedImportedDeviceId,
+      imported_device_id: preservedImportedDeviceId,
     };
 
     const { data: upsertedRow, error: upsertError } =
@@ -250,8 +246,8 @@ export async function syncDiscoveredDevicesWithMatching(
       continue;
     }
 
-    if (match.matchStatus === "unmatched") {
-      unmatched += 1;
+    if (match.matchStatus === "new") {
+      newDevices += 1;
       continue;
     }
 
@@ -279,6 +275,7 @@ export async function syncDiscoveredDevicesWithMatching(
           vaultDevice.discoverySource ?? null,
         existingDiscoverySources:
           mergedSources,
+        extendedNetworkFields: false,
       }
     );
 
@@ -337,7 +334,7 @@ export async function syncDiscoveredDevicesWithMatching(
     enriched,
     possibleMatches,
     ignored,
-    unmatched,
+    newDevices,
   };
 }
 
@@ -350,6 +347,7 @@ export function summarizeDiscoveredDevice(
     category: string | null;
     manufacturer: string | null;
     model_number: string | null;
+    location?: string | null;
   } | null
 ): DiscoveredDeviceSummary {
   return {
@@ -389,6 +387,7 @@ export function summarizeDiscoveredDevice(
             matchedDevice.manufacturer,
           modelNumber:
             matchedDevice.model_number,
+          location: matchedDevice.location ?? null,
         }
       : null,
   };

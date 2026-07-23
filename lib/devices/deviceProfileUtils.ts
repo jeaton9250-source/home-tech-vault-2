@@ -144,6 +144,35 @@ export function formatLastSeen(value?: string | null) {
   })}`;
 }
 
+export function formatNetworkPresence(input: {
+  online?: boolean | null;
+  lastSeenAt?: string | null;
+}): string {
+  if (input.online === true) {
+    return "Online";
+  }
+
+  if (!input.lastSeenAt) {
+    return "Unknown";
+  }
+
+  const date = new Date(input.lastSeenAt);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Unknown";
+  }
+
+  const minutes = Math.floor(
+    (Date.now() - date.getTime()) / (1000 * 60)
+  );
+
+  if (minutes <= 30) {
+    return "Recently detected";
+  }
+
+  return "Not recently detected";
+}
+
 export function displayValue(value?: string | null, fallback = "Not recorded") {
   const trimmed = value?.trim();
   return trimmed ? trimmed : fallback;
