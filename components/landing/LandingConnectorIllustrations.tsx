@@ -12,10 +12,10 @@ import {
 import { sections } from "@/lib/design-system/tokens";
 import {
   LANDING_DEMO_LABEL,
-  landingConnectorDemoSummary,
   landingConnectorCategories,
+  landingConnectorDemoSummary,
   landingHomePulseSummary,
-} from "@/lib/marketing/landingConnectorDemo";
+} from "@/lib/marketing/landingContent";
 import { cn } from "@/lib/design-system/cn";
 
 function DemoBadge() {

@@ -1,31 +1,53 @@
-import {
-  FileText,
-  Laptop,
-  Receipt,
-  ShieldCheck,
-  Users,
-  Wrench,
-  Wifi,
-} from "lucide-react";
-
+import LandingScrollReveal from "@/components/landing/LandingScrollReveal";
+import { landingVaultCards } from "@/lib/marketing/landingContent";
 import { LANDING_SECTION_IDS } from "@/lib/marketing/landingNav";
-import { landingVaultPillars } from "@/lib/marketing/landingConnectorDemo";
 import {
-  landingMotionRise,
-  landingSectionClass,
   landingSectionAnchor,
+  landingSectionClass,
 } from "@/lib/marketing/landingStyles";
 import { cn } from "@/lib/design-system/cn";
 
-const pillarIcons = {
-  Devices: Laptop,
-  Warranties: ShieldCheck,
-  Manuals: FileText,
-  Receipts: Receipt,
-  Network: Wifi,
-  Maintenance: Wrench,
-  Family: Users,
-} as const;
+function VaultCardIllustration({
+  label,
+}: {
+  label: (typeof landingVaultCards)[number]["label"];
+}) {
+  const marks = {
+    Devices: (
+      <div className="absolute bottom-4 left-5 h-10 w-14 rounded-xl border border-black/5 bg-white/70 shadow-sm" />
+    ),
+    Network: (
+      <div className="absolute left-1/2 top-5 h-12 w-12 -translate-x-1/2 rounded-full border border-black/5 bg-white/70" />
+    ),
+    Documents: (
+      <div className="absolute left-5 top-5 h-16 w-12 rounded-lg border border-black/5 bg-white/70 shadow-sm" />
+    ),
+    Receipts: (
+      <div className="absolute bottom-5 right-5 h-12 w-16 rounded-lg border border-black/5 bg-white/70 shadow-sm" />
+    ),
+    Manuals: (
+      <div className="absolute left-6 top-6 h-14 w-11 rounded-md border border-black/5 bg-white/70" />
+    ),
+    Maintenance: (
+      <div className="absolute bottom-5 left-1/2 h-8 w-8 -translate-x-1/2 rounded-full border border-black/5 bg-white/70" />
+    ),
+    Subscriptions: (
+      <div className="absolute right-5 top-5 h-10 w-10 rounded-2xl border border-black/5 bg-white/70" />
+    ),
+    Warranties: (
+      <div className="absolute left-5 top-6 h-12 w-16 rounded-2xl border border-black/5 bg-white/70 shadow-sm" />
+    ),
+  } as const;
+
+  return (
+    <div
+      className="relative mb-5 aspect-[16/10] overflow-hidden rounded-[1rem] border border-white/50 bg-white/25"
+      aria-hidden
+    >
+      {marks[label]}
+    </div>
+  );
+}
 
 export default function LandingVaultSection() {
   return (
@@ -34,59 +56,45 @@ export default function LandingVaultSection() {
       className={cn(
         landingSectionClass,
         landingSectionAnchor,
-        "px-8 lg:px-10"
+        "border-y border-border-subtle/70 bg-surface-sunken/30 px-8 py-16 md:py-20 lg:px-10"
       )}
     >
       <div className="mx-auto max-w-6xl">
-        <div className="max-w-2xl">
+        <LandingScrollReveal className="max-w-2xl">
           <p className="text-overline text-text-muted">
-            Everything in One Place
+            One place
           </p>
           <h2 className="mt-3 text-3xl font-medium tracking-[-0.03em] text-text-primary md:text-4xl">
-            Everything your home remembers.
-            <span className="block text-text-secondary">
-              In one beautiful place.
-            </span>
+            Everything in one place.
           </h2>
           <p className="mt-4 text-sm leading-7 text-text-muted">
-            The product quietly remembers everything about your home&apos;s
-            technology — so you don&apos;t have to dig through drawers,
-            email, or old boxes when something matters.
+            Everything your home remembers — organized beautifully,
+            ready whenever you need it.
           </p>
-          <p className="mt-4 text-sm leading-6 text-text-secondary">
-            Spend less time searching. Spend more time enjoying your home.
-          </p>
-        </div>
+        </LandingScrollReveal>
 
-        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {landingVaultPillars.map((pillar, index) => {
-            const Icon =
-              pillarIcons[
-                pillar.label as keyof typeof pillarIcons
-              ] ?? Laptop;
-
-            return (
+        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {landingVaultCards.map((card, index) => (
+            <LandingScrollReveal
+              key={card.label}
+              delayMs={index * 50}
+            >
               <article
-                key={pillar.label}
                 className={cn(
-                  "rounded-[var(--radius-card)] border border-border-subtle bg-surface-card p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-md",
-                  landingMotionRise,
-                  index % 3 === 1 && "htv-landing-delay-1",
-                  index % 3 === 2 && "htv-landing-delay-2"
+                  "htv-card-interactive h-full rounded-[1.15rem] border border-border-subtle/70 bg-surface-card p-5 shadow-[var(--shadow-sm)]",
+                  `bg-gradient-to-br ${card.wash}`
                 )}
               >
-                <span className="inline-flex h-11 w-11 items-center justify-center rounded-[var(--radius-button)] border border-border-subtle bg-surface-sunken text-text-primary">
-                  <Icon size={20} strokeWidth={1.75} aria-hidden />
-                </span>
-                <h3 className="mt-5 text-lg font-medium tracking-[-0.02em] text-text-primary">
-                  {pillar.label}
+                <VaultCardIllustration label={card.label} />
+                <h3 className="text-lg font-medium tracking-[-0.02em] text-text-primary">
+                  {card.label}
                 </h3>
                 <p className="mt-2 text-sm leading-6 text-text-muted">
-                  {pillar.detail}
+                  {card.detail}
                 </p>
               </article>
-            );
-          })}
+            </LandingScrollReveal>
+          ))}
         </div>
       </div>
     </section>

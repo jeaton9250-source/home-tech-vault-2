@@ -11,7 +11,7 @@ import { MARKETING_ROUTES } from "@/lib/marketing/routes";
 export const metadata = createPageMetadata({
   title: "Home Tech Vault",
   description:
-    "Your home's digital memory. Home Tech Vault remembers devices, warranties, receipts, manuals, and connected technology so you can enjoy your home.",
+    "Everything your home remembers. Home Tech Vault quietly remembers devices, warranties, receipts, maintenance, and your network so you can enjoy your home.",
   path: MARKETING_ROUTES.home,
   keywords: [
     "home digital memory",

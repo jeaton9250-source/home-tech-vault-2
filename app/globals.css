@@ -348,6 +348,62 @@ textarea::placeholder {
     animation: none;
     opacity: 0.35;
   }
+
+  .htv-scroll-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .htv-connector-flow-dot,
+  .htv-room-card {
+    animation: none;
+    transform: none;
+  }
+}
+
+.htv-scroll-reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.65s var(--ease-premium),
+    transform 0.65s var(--ease-premium);
+}
+
+.htv-scroll-reveal-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@keyframes htv-connector-flow-dot {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.8);
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(28px) scale(1);
+  }
+}
+
+.htv-connector-flow-dot {
+  animation: htv-connector-flow-dot 2.8s var(--ease-premium) infinite;
+}
+
+.htv-room-card {
+  transition:
+    transform 0.35s var(--ease-premium),
+    box-shadow 0.35s var(--ease-premium);
+}
+
+.htv-room-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
 }
 
 .htv-well {

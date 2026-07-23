@@ -3,7 +3,7 @@
 export const marketingSecondaryButtonClass =
   "transition-all duration-200 ease-[var(--ease-premium)] hover:-translate-y-px hover:shadow-sm active:translate-y-0";
 
-export const landingSectionClass = "py-10 md:py-14";
+export const landingSectionClass = "py-14 md:py-20";
 
 export const landingCardClass =
   "rounded-[var(--radius-card)] border border-border-subtle bg-surface-card transition-all duration-200 ease-[var(--ease-premium)]";

@@ -71,7 +71,7 @@ export default function LandingProductPreview() {
 
   return (
     <section
-      id={LANDING_SECTION_IDS.howItWorks}
+      id={LANDING_SECTION_IDS.forHomes}
       className={cn(
         "border-y border-border-subtle/80 bg-surface-card/30",
         landingSectionAnchor

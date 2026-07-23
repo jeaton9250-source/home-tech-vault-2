@@ -1,28 +1,19 @@
 "use client";
 
 import { useEffect } from "react";
-import { ArrowRight, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
-import LandingHeroSection, {
-  LandingHowItWorksSection,
-} from "@/components/landing/LandingHeroSection";
-import LandingMonitoringSection from "@/components/landing/LandingMonitoringSection";
+import LandingFinalCtaSection from "@/components/landing/LandingFinalCtaSection";
+import LandingHeroSection from "@/components/landing/LandingHeroSection";
+import LandingMemoriesSection from "@/components/landing/LandingMemoriesSection";
 import LandingPricingSection from "@/components/landing/LandingPricingSection";
+import LandingRealHomesSection from "@/components/landing/LandingRealHomesSection";
+import LandingRoomsSection from "@/components/landing/LandingRoomsSection";
 import LandingSmartConnectorSection from "@/components/landing/LandingSmartConnectorSection";
 import LandingVaultSection from "@/components/landing/LandingVaultSection";
-import MarketingLayout, {
-  MarketingContent,
-} from "@/components/marketing/MarketingLayout";
-import Button from "@/components/ui/Button";
-import PageCard from "@/components/ui/PageCard";
+import MarketingLayout from "@/components/marketing/MarketingLayout";
 import { useDemoMode } from "@/hooks/useDemoMode";
 import type { LandingSectionId } from "@/lib/marketing/landingNav";
-import {
-  landingMotionRise,
-  landingSectionClass,
-} from "@/lib/marketing/landingStyles";
-import { MARKETING_ROUTES } from "@/lib/marketing/routes";
-import { cn } from "@/lib/design-system/cn";
 import type { PublicFoundingProgramSummary } from "@/lib/founding-members/types";
 
 type LandingPageProps = {
@@ -83,12 +74,6 @@ export default function LandingPage({
   }
 
   const isSignedIn = Boolean(user);
-  const primaryHref = isSignedIn
-    ? "/dashboard"
-    : MARKETING_ROUTES.signup;
-  const finalCtaLabel = isSignedIn
-    ? "Go to Your Vault"
-    : "Start Free";
 
   return (
     <MarketingLayout
@@ -97,53 +82,13 @@ export default function LandingPage({
       minimalNav
     >
       <LandingHeroSection isSignedIn={isSignedIn} />
-      <LandingSmartConnectorSection />
-      <LandingHowItWorksSection />
-      <LandingMonitoringSection />
+      <LandingRealHomesSection />
+      <LandingSmartConnectorSection isSignedIn={isSignedIn} />
+      <LandingRoomsSection />
+      <LandingMemoriesSection />
       <LandingVaultSection />
       <LandingPricingSection isSignedIn={isSignedIn} />
-
-      <MarketingContent
-        className={cn(landingSectionClass, "pb-14 md:pb-16")}
-      >
-        <PageCard
-          elevated={false}
-          className={cn(
-            landingMotionRise,
-            "mx-auto max-w-3xl border-border-subtle px-8 py-14 text-center md:px-16 md:py-16"
-          )}
-        >
-          <p className="text-overline text-section-network">
-            Home Tech Vault
-          </p>
-          <h2 className="mt-4 text-2xl font-medium tracking-[-0.03em] text-text-primary md:text-[2rem] md:leading-tight">
-            Your home already has a memory.
-            <span className="block text-text-secondary">
-              Now your technology does too.
-            </span>
-          </h2>
-
-          <p className="mx-auto mt-4 max-w-lg text-sm leading-6 text-text-muted">
-            Because your home deserves a memory. Start organizing today.
-          </p>
-
-          <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Button href={primaryHref} size="lg">
-              {finalCtaLabel}
-              <ArrowRight size={16} aria-hidden />
-            </Button>
-            {!isSignedIn ? (
-              <Button
-                href={MARKETING_ROUTES.demo}
-                variant="secondary"
-                size="lg"
-              >
-                Watch Demo
-              </Button>
-            ) : null}
-          </div>
-        </PageCard>
-      </MarketingContent>
+      <LandingFinalCtaSection isSignedIn={isSignedIn} />
     </MarketingLayout>
   );
 }

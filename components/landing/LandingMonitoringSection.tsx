@@ -29,7 +29,7 @@ const toneClasses = {
 export default function LandingMonitoringSection() {
   return (
     <section
-      id={LANDING_SECTION_IDS.homePulse}
+      id={LANDING_SECTION_IDS.memories}
       className={cn(
         landingSectionClass,
         landingSectionAnchor,

@@ -1,9 +1,14 @@
 import { MARKETING_ROUTES } from "@/lib/marketing/routes";
+import {
+  LANDING_SUPPORTING_MESSAGE,
+  LANDING_TAGLINE,
+} from "@/lib/marketing/landingContent";
 
 export const LANDING_SECTION_IDS = {
+  forHomes: "for-homes",
   smartConnector: "smart-connector",
-  howItWorks: "how-it-works",
-  homePulse: "home-pulse",
+  yourHome: "your-home",
+  memories: "memories",
   vault: "vault",
   pricing: "pricing",
 } as const;
@@ -13,20 +18,16 @@ export type LandingSectionId =
 
 export const LANDING_NAV_LINKS = [
   {
+    label: "For Your Home",
+    sectionId: LANDING_SECTION_IDS.forHomes,
+  },
+  {
     label: "Smart Connector",
     sectionId: LANDING_SECTION_IDS.smartConnector,
   },
   {
-    label: "How It Works",
-    sectionId: LANDING_SECTION_IDS.howItWorks,
-  },
-  {
-    label: "Home Pulse",
-    sectionId: LANDING_SECTION_IDS.homePulse,
-  },
-  {
-    label: "Your Vault",
-    sectionId: LANDING_SECTION_IDS.vault,
+    label: "Your Home",
+    sectionId: LANDING_SECTION_IDS.yourHome,
   },
   {
     label: "Pricing",
@@ -34,8 +35,7 @@ export const LANDING_NAV_LINKS = [
   },
 ] as const;
 
-export const LANDING_ANNOUNCEMENT =
-  "Your home's digital memory — Home Tech Vault remembers the details so you can enjoy your home.";
+export const LANDING_ANNOUNCEMENT = `${LANDING_TAGLINE} — ${LANDING_SUPPORTING_MESSAGE}`;
 
 export function landingSectionHref(
   sectionId: LandingSectionId
@@ -48,21 +48,21 @@ export const LANDING_SUPPORT_QUESTIONS = [
     question:
       "Do I need an account to explore Home Tech Vault?",
     answer:
-      "No. Open the interactive demo to browse a sample vault. Create a free account when you are ready to start remembering your home.",
+      "No. Tap Explore Demo to walk through a sample home. Create a free account when you're ready to start remembering yours.",
     href: MARKETING_ROUTES.demo,
-    linkLabel: "Open the demo",
+    linkLabel: "Explore the demo",
   },
   {
     question: "What does the Smart Connector do?",
     answer:
-      "It quietly watches over your home's technology — discovering devices, keeping network details up to date, and helping Home Tech Vault remember what matters.",
+      "Install it once and it quietly helps keep your home's technology up to date — discovering devices and syncing what matters to your vault.",
     href: MARKETING_ROUTES.demo,
     linkLabel: "See it in the demo",
   },
   {
     question: "Can I share with household members?",
     answer:
-      "Family plans let everyone who helps care for your home work from the same trusted memory — viewers, members, or admins.",
+      "Family plans let everyone who helps care for your home share the same trusted memory — with roles and permissions that fit your household.",
     href: MARKETING_ROUTES.faq,
     linkLabel: "Learn about sharing",
   },

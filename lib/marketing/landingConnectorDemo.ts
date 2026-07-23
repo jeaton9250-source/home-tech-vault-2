@@ -1,16 +1,10 @@
-/** Static demo copy for the marketing homepage — clearly labeled, no live API data. */
+/** @deprecated Import from `@/lib/marketing/landingContent` instead. */
 
-export const LANDING_DEMO_LABEL = "Demo data";
-
-export const landingConnectorDemoSummary = {
-  connectorName: "Morgan Home Mac",
-  connectorStatus: "Watching quietly",
-  lastScanLabel: "4 minutes ago",
-  devicesDiscovered: 18,
-  devicesMatched: 12,
-  needsReview: 3,
-  onlineNow: 14,
-} as const;
+export {
+  LANDING_DEMO_LABEL,
+  landingConnectorDemoSummary,
+  landingConnectorCategories,
+} from "@/lib/marketing/landingContent";
 
 export const landingHomePulseSummary = {
   headline: "Everything looks good today.",
@@ -63,23 +57,6 @@ export const landingMonitoringDemoDevices = [
     tone: "warning" as const,
     lastSeen: "New this scan",
   },
-] as const;
-
-export const landingConnectorCategories = [
-  "Computers & tablets",
-  "Smart TVs & streaming",
-  "Printers",
-  "Smart speakers",
-  "Game consoles",
-  "Cameras & doorbells",
-  "Thermostats & plugs",
-  "Robot vacuums",
-  "Lighting & hubs",
-  "Routers & mesh",
-  "NAS & storage",
-  "Appliances",
-  "Aquarium tech",
-  "Other Wi‑Fi devices",
 ] as const;
 
 export const landingVaultPillars = [
