@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  useCallback,
   useEffect,
   useId,
   useLayoutEffect,
@@ -27,7 +28,7 @@ type TriggerRenderProps = {
   onClick: () => void;
   "aria-expanded": boolean;
   "aria-controls": string;
-  "aria-haspopup": "menu";
+  "aria-haspopup": "menu" | "dialog";
   id: string;
 };
 
@@ -41,6 +42,8 @@ type DropdownMenuProps = {
   widthClass?: string;
   className?: string;
   onOpen?: () => void;
+  role?: "menu" | "dialog";
+  ariaLabel?: string;
 };
 
 export default function DropdownMenu({
@@ -51,6 +54,8 @@ export default function DropdownMenu({
   widthClass = "w-[min(100vw-2rem,320px)]",
   className,
   onOpen,
+  role = "menu",
+  ariaLabel,
 }: DropdownMenuProps) {
   const panelId = useId();
   const instanceId = useId();
@@ -77,50 +82,69 @@ export default function DropdownMenu({
     useState(false);
 
   useEffect(() => {
+    // Client-only portal mount (document.body is unavailable during SSR).
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- hydration gate for portal
     setMounted(true);
   }, []);
+
+  const updatePosition = useCallback(() => {
+    const triggerEl = triggerRef.current;
+    const panelEl = panelRef.current;
+
+    if (!triggerEl) {
+      return;
+    }
+
+    const rect =
+      triggerEl.getBoundingClientRect();
+
+    const panelWidth =
+      panelEl?.offsetWidth ?? 288;
+
+    const panelHeight =
+      panelEl?.offsetHeight ?? 0;
+
+    let left =
+      align === "end"
+        ? rect.right - panelWidth
+        : rect.left;
+
+    left = Math.max(
+      12,
+      Math.min(
+        left,
+        window.innerWidth - panelWidth - 12
+      )
+    );
+
+    let top = rect.bottom + 8;
+
+    if (
+      panelHeight > 0 &&
+      top + panelHeight >
+        window.innerHeight - 12
+    ) {
+      const above = rect.top - panelHeight - 8;
+
+      if (above >= 12) {
+        top = above;
+      } else {
+        top = Math.max(
+          12,
+          window.innerHeight - panelHeight - 12
+        );
+      }
+    }
+
+    setPosition({
+      top,
+      left,
+    });
+  }, [align]);
 
   useLayoutEffect(() => {
     if (!open || !triggerRef.current) {
       return;
-    }
-
-    function updatePosition() {
-      const triggerEl =
-        triggerRef.current;
-
-      const panelEl =
-        panelRef.current;
-
-      if (!triggerEl) {
-        return;
-      }
-
-      const rect =
-        triggerEl.getBoundingClientRect();
-
-      const panelWidth =
-        panelEl?.offsetWidth ?? 288;
-
-      let left =
-        align === "end"
-          ? rect.right - panelWidth
-          : rect.left;
-
-      left = Math.max(
-        16,
-        Math.min(
-          left,
-          window.innerWidth -
-            panelWidth -
-            16
-        )
-      );
-
-      setPosition({
-        top: rect.bottom + 8,
-        left,
-      });
     }
 
     updatePosition();
@@ -132,7 +156,7 @@ export default function DropdownMenu({
 
     window.addEventListener(
       "scroll",
-      closeMenu,
+      updatePosition,
       true
     );
 
@@ -144,11 +168,11 @@ export default function DropdownMenu({
 
       window.removeEventListener(
         "scroll",
-        closeMenu,
+        updatePosition,
         true
       );
     };
-  }, [open, align, closeMenu]);
+  }, [open, updatePosition]);
 
   useEffect(() => {
     if (!open) {
@@ -216,7 +240,7 @@ export default function DropdownMenu({
   }, [open, closeMenu, onOpen]);
 
   useEffect(() => {
-    if (!open || !panelRef.current) {
+    if (!open || !panelRef.current || role !== "menu") {
       return;
     }
 
@@ -226,11 +250,15 @@ export default function DropdownMenu({
       );
 
     firstItem?.focus();
-  }, [open]);
+  }, [open, role]);
 
   function handlePanelKeyDown(
     event: KeyboardEvent<HTMLDivElement>
   ) {
+    if (role !== "menu") {
+      return;
+    }
+
     const items = Array.from(
       panelRef.current?.querySelectorAll<HTMLElement>(
         '[role="menuitem"]'
@@ -298,7 +326,8 @@ export default function DropdownMenu({
         toggleMenu(menuId, instanceId),
       "aria-expanded": open,
       "aria-controls": panelId,
-      "aria-haspopup": "menu",
+      "aria-haspopup":
+        role === "dialog" ? "dialog" : "menu",
       id: `${panelId}-trigger`,
     };
 
@@ -313,8 +342,13 @@ export default function DropdownMenu({
               <motion.div
                 ref={panelRef}
                 id={panelId}
-                role="menu"
-                aria-labelledby={`${panelId}-trigger`}
+                role={role}
+                aria-label={ariaLabel}
+                aria-labelledby={
+                  ariaLabel
+                    ? undefined
+                    : `${panelId}-trigger`
+                }
                 onKeyDown={
                   handlePanelKeyDown
                 }

@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import {
   ChevronDown,
   LogOut,
+  Sparkles,
   type LucideIcon,
 } from "lucide-react";
 
@@ -19,6 +20,7 @@ import Badge from "@/components/ui/Badge";
 
 import DropdownMenu from "@/components/navigation/DropdownMenu";
 
+import { useAIAdvisor } from "@/hooks/useAIAdvisor";
 import { useDemoMode } from "@/hooks/useDemoMode";
 import { useNavMenu } from "@/hooks/useNavMenu";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -55,6 +57,8 @@ export default function ProfileMenu({
     inheritsFamilyPlan,
     hasFamilyFeatureAccess,
   } = usePermissions();
+
+  const { open: openAdvisor } = useAIAdvisor();
 
   const [displayName, setDisplayName] =
     useState("Account");
@@ -175,13 +179,13 @@ export default function ProfileMenu({
 
           {!compact ? (
             <>
-              <span className="hidden max-w-[120px] truncate font-medium text-text-primary md:inline">
+              <span className="hidden max-w-[140px] truncate font-medium text-text-primary xl:inline">
                 {displayName}
               </span>
 
               <ChevronDown
                 size={16}
-                className="hidden text-text-tertiary md:block"
+                className="hidden text-text-tertiary xl:block"
               />
             </>
           ) : null}
@@ -265,6 +269,27 @@ export default function ProfileMenu({
             />
           );
         })}
+
+        {canViewFeature("aiAdvisor") ? (
+          <button
+            type="button"
+            role="menuitem"
+            tabIndex={-1}
+            onClick={() => {
+              closeMenu();
+              openAdvisor();
+            }}
+            className="flex w-full items-start gap-2 rounded-[var(--radius-button)] px-3 py-2.5 text-sm text-text-secondary hover:bg-surface-sunken hover:text-text-primary focus-visible:bg-surface-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/25"
+          >
+            <Sparkles size={16} className="mt-0.5 shrink-0" />
+            <span className="min-w-0 flex-1 text-left">
+              <span className="block">AI Advisor</span>
+              <span className="mt-0.5 block text-xs leading-5 text-text-tertiary">
+                Ask questions about your household tech
+              </span>
+            </span>
+          </button>
+        ) : null}
 
         {!isDemo && user ? (
           <button

@@ -16,10 +16,13 @@ import { cn } from "@/lib/design-system/cn";
 
 type QuickAddMenuProps = {
   compact?: boolean;
+  /** Show only the plus icon with an accessible label */
+  iconOnly?: boolean;
 };
 
 export default function QuickAddMenu({
   compact = false,
+  iconOnly = false,
 }: QuickAddMenuProps) {
   const { closeMenu } = useNavMenu();
 
@@ -38,32 +41,31 @@ export default function QuickAddMenu({
         <button
           type="button"
           {...triggerProps}
+          title="Quick Add"
           className={cn(
             "inline-flex items-center justify-center gap-2 font-medium leading-none outline-none transition-all duration-200 focus-visible:ring-4 focus-visible:ring-accent/25",
             "border border-charcoal bg-charcoal text-surface-card shadow-sm hover:border-charcoal-hover hover:bg-charcoal-hover hover:shadow-md active:scale-[0.98]",
-            compact
-              ? "min-h-9 rounded-[var(--radius-button)] px-3.5 py-2 text-xs"
-              : "min-h-11 rounded-[var(--radius-button)] px-5 py-2.5 text-sm"
+            iconOnly
+              ? "h-10 w-10 rounded-[var(--radius-button)]"
+              : compact
+                ? "min-h-9 rounded-[var(--radius-button)] px-3.5 py-2 text-xs"
+                : "min-h-10 rounded-[var(--radius-button)] px-4 py-2 text-sm"
           )}
         >
           <Plus size={16} />
-          {!compact && "Quick Add"}
-          {compact && (
-            <span className="sr-only">
-              Quick Add
-            </span>
+          {!iconOnly && !compact ? "Quick Add" : null}
+          {(iconOnly || compact) && (
+            <span className="sr-only">Quick Add</span>
           )}
-          {!compact && (
+          {!iconOnly && !compact ? (
             <ChevronDown
               size={16}
               className={cn(
                 "transition-transform",
-                triggerProps[
-                  "aria-expanded"
-                ] && "rotate-180"
+                triggerProps["aria-expanded"] && "rotate-180"
               )}
             />
-          )}
+          ) : null}
         </button>
       )}
     >

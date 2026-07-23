@@ -3,8 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { Sparkles } from "lucide-react";
-
 import Logo from "@/components/brand/Logo";
 
 import NotificationBell from "@/components/NotificationBell";
@@ -14,7 +12,6 @@ import QuickAddMenu from "@/components/navigation/QuickAddMenu";
 import SearchField from "@/components/navigation/SearchField";
 import MobileNavSheet from "@/components/navigation/MobileNavSheet";
 
-import { useAIAdvisor } from "@/hooks/useAIAdvisor";
 import { usePermissions } from "@/hooks/usePermissions";
 
 import { isPrimaryNavActive } from "@/lib/navigation/activeGroup";
@@ -30,21 +27,19 @@ export default function AppHeader() {
     hasFamilyFeatureAccess,
   } = usePermissions();
 
-  const { open: openAdvisor } = useAIAdvisor();
-
   return (
     <>
       <MobileNavSheet />
 
       <header className="sticky top-0 z-50 hidden border-b border-border-subtle bg-surface-card/90 backdrop-blur-md lg:block">
-        <div className="mx-auto flex h-16 max-w-[1600px] items-center gap-6 px-6 xl:px-8">
+        <div className="mx-auto flex h-16 max-w-[1600px] items-center gap-3 px-5 xl:gap-4 xl:px-8">
           <Link href="/dashboard" className="shrink-0">
             <Logo />
           </Link>
 
           <nav
             aria-label="Primary"
-            className="flex flex-1 items-center justify-center gap-0.5"
+            className="flex min-w-0 flex-1 items-center justify-center gap-0 overflow-x-auto"
           >
             {PRIMARY_NAV_ITEMS.map((item) => {
               const badge = shouldShowPremiumBadge(
@@ -69,27 +64,24 @@ export default function AppHeader() {
             })}
           </nav>
 
-          <div className="flex shrink-0 items-center gap-2">
-            <div className="w-56 xl:w-64">
-              <SearchField />
-            </div>
+          <div className="flex shrink-0 items-center gap-1.5 xl:gap-2">
+            <SearchField collapsible />
 
-            <QuickAddMenu />
+            <div className="hidden xl:block">
+              <QuickAddMenu />
+            </div>
+            <div className="xl:hidden">
+              <QuickAddMenu iconOnly />
+            </div>
 
             <NotificationBell />
 
-            {canViewFeature("aiAdvisor") ? (
-              <button
-                type="button"
-                onClick={openAdvisor}
-                className="htv-focus-ring inline-flex h-10 items-center gap-2 rounded-[var(--radius-button)] border border-border-subtle bg-surface-card px-3 text-sm font-medium text-text-secondary transition hover:bg-surface-sunken hover:text-text-primary"
-              >
-                <Sparkles size={16} />
-                <span className="hidden xl:inline">AI Advisor</span>
-              </button>
-            ) : null}
-
-            <ProfileMenu />
+            <div className="hidden 2xl:block">
+              <ProfileMenu />
+            </div>
+            <div className="2xl:hidden">
+              <ProfileMenu compact />
+            </div>
           </div>
         </div>
       </header>

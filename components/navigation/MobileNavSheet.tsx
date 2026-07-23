@@ -8,7 +8,7 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
-import { LogOut, Menu, Search, Sparkles, X } from "lucide-react";
+import { LogOut, Menu, Sparkles, X } from "lucide-react";
 import {
   AnimatePresence,
   motion,
@@ -17,7 +17,9 @@ import {
 import Logo from "@/components/brand/Logo";
 import Button from "@/components/ui/Button";
 
+import NotificationBell from "@/components/NotificationBell";
 import { MobileNavLink } from "@/components/navigation/PrimaryNavLink";
+import ProfileMenu from "@/components/navigation/ProfileMenu";
 import QuickAddMenu from "@/components/navigation/QuickAddMenu";
 import SearchField from "@/components/navigation/SearchField";
 
@@ -38,7 +40,6 @@ export default function MobileNavSheet() {
   const router = useRouter();
 
   const [open, setOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
 
   const { user, isDemo } = useDemoMode();
 
@@ -53,8 +54,9 @@ export default function MobileNavSheet() {
   const { open: openAdvisor } = useAIAdvisor();
 
   useEffect(() => {
+    // Close the sheet after client navigations, including browser history changes.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- sync open state to route changes
     setOpen(false);
-    setSearchOpen(false);
   }, [pathname]);
 
   useEffect(() => {
@@ -110,18 +112,14 @@ export default function MobileNavSheet() {
     );
   }
 
-  function openSheet() {
-    setOpen(true);
-  }
-
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-border-subtle bg-surface-card/90 backdrop-blur-md lg:hidden">
-        <div className="flex h-14 items-center gap-2 px-4">
+        <div className="flex h-14 items-center gap-1.5 px-3 sm:gap-2 sm:px-4">
           <button
             type="button"
-            onClick={openSheet}
-            className="htv-focus-ring flex h-10 w-10 items-center justify-center rounded-[var(--radius-button)] text-text-primary hover:bg-surface-sunken"
+            onClick={() => setOpen(true)}
+            className="htv-focus-ring flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-button)] text-text-primary hover:bg-surface-sunken"
             aria-label="Open navigation menu"
           >
             <Menu size={20} />
@@ -131,24 +129,12 @@ export default function MobileNavSheet() {
             <Logo collapsed />
           </Link>
 
-          <button
-            type="button"
-            onClick={() => {
-              setSearchOpen((current) => !current);
-              setOpen(true);
-            }}
-            className="htv-focus-ring flex h-10 w-10 items-center justify-center rounded-[var(--radius-button)] text-text-primary hover:bg-surface-sunken"
-            aria-label="Open search"
-          >
-            <Search size={20} />
-          </button>
-        </div>
+          <SearchField collapsible />
 
-        {searchOpen && !open ? (
-          <div className="border-t border-border-subtle px-4 py-3">
-            <SearchField compact />
-          </div>
-        ) : null}
+          <NotificationBell />
+
+          <ProfileMenu compact />
+        </div>
       </header>
 
       <AnimatePresence>
@@ -201,7 +187,7 @@ export default function MobileNavSheet() {
               </div>
 
               <div className="space-y-4 border-b border-border-subtle p-4">
-                <SearchField compact />
+                <SearchField compact autoFocus />
 
                 <div className="flex flex-wrap gap-2">
                   <QuickAddMenu compact />
