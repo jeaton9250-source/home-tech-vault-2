@@ -169,6 +169,30 @@ export async function requireHouseholdMember(
   };
 }
 
+/**
+ * Require an authenticated household member with edit permission (admin or member).
+ */
+export async function requireHouseholdMutator(
+  householdIdInput: unknown
+): Promise<HouseholdMemberContext> {
+  const context =
+    await requireHouseholdMember(
+      householdIdInput
+    );
+
+  if (
+    context.normalizedRole !== "member" &&
+    context.normalizedRole !== "admin"
+  ) {
+    throw new HouseholdAdminAccessError(
+      "FORBIDDEN",
+      "Household edit permission required."
+    );
+  }
+
+  return context;
+}
+
 export function householdAccessResponse(
   error: unknown
 ) {

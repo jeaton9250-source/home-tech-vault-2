@@ -102,6 +102,12 @@ export const SECONDARY_ROUTE_ITEMS: ProfileNavItem[] = [
     feature: "networkDiscover",
   },
   {
+    label: "Review Connector Discovery",
+    href: "/network/discovery",
+    icon: Radar,
+    feature: "networkDiscover",
+  },
+  {
     label: "Edit Network",
     href: "/network/edit",
     icon: Settings,

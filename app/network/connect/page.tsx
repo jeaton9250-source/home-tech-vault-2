@@ -69,15 +69,15 @@ const STEPS = [
     number: 3,
     title: "Scan the local network",
     description:
-      "The connector will discover devices on your LAN in a later release. Phase 2A adds pairing and heartbeat only.",
-    badge: "Coming in Phase 2B",
+      "The connector submits discovered devices from your LAN. Matching and enrichment run automatically for reliable matches.",
+    badge: null,
   },
   {
     number: 4,
     title: "Review devices before importing",
     description:
-      "You will choose which discovered devices to add to your vault after scanning is available.",
-    badge: "Coming in Phase 2B",
+      "Review matched, possible, new, and ignored devices before confirming imports or enriching your vault.",
+    badge: null,
   },
 ] as const;
 
@@ -875,23 +875,32 @@ export default function NetworkConnectPage() {
       ) : null}
 
       <PageCard className="mt-8 p-6">
-        <div className="flex items-start gap-4">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal">
-            <Radar size={20} />
-          </div>
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-start gap-4">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal">
+              <Radar size={20} />
+            </div>
 
-          <div>
-            <h2 className="text-lg font-semibold text-text-primary">
-              Prepare device monitoring
-            </h2>
+            <div>
+              <h2 className="text-lg font-semibold text-text-primary">
+                Review connector discovery
+              </h2>
 
               <p className="mt-2 max-w-3xl text-sm leading-6 text-text-secondary">
-              Phase 2A adds macOS pairing, secure token
-              storage, and heartbeat monitoring. Network
-              scanning and device import arrive in Phase
-              2B.
-            </p>
+                After a connector scan syncs devices, review
+                automatic matches, confirm possible matches,
+                import new devices, or ignore network noise.
+              </p>
+            </div>
           </div>
+
+          <Link
+            href="/network/discovery"
+            className="inline-flex items-center justify-center gap-2 rounded-full border border-neutral-200 bg-white px-4 py-2 text-sm font-medium text-text-primary transition hover:border-neutral-300"
+          >
+            <Radar size={16} />
+            Open discovery review
+          </Link>
         </div>
       </PageCard>
     </PageShell>
