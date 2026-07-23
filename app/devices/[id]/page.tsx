@@ -1686,7 +1686,7 @@ export default function DevicePage() {
                     className="hidden"
                   />
                 </label>
-              ) : (
+              ) : isGuestDemo ? (
                 <Button
                   type="button"
                   variant="secondary"
@@ -1695,7 +1695,7 @@ export default function DevicePage() {
                   <ImagePlus size={16} />
                   Upload photos
                 </Button>
-              )}
+              ) : null}
             </div>
 
             {profilePhotos.length === 0 ? (
