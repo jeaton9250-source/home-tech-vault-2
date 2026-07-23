@@ -1,4 +1,5 @@
 import { getDemoImagePathForDeviceId } from "@/lib/devices/demoDeviceImages";
+import { applyDemoDeviceNetworkFields } from "@/lib/demo/demoDeviceNetworkProfiles";
 import type { DemoDevice } from "@/lib/demo/types";
 
 type DeviceSeed = Omit<
@@ -11,33 +12,32 @@ type DeviceSeed = Omit<
   | "discovery_source"
   | "photo_url"
   | "demo_image"
+  | "hostname"
+  | "connector_id"
+  | "first_seen_at"
+  | "network_updated_at"
 > & {
   online?: boolean;
   ip_suffix?: number;
 };
 
 function buildDevice(seed: DeviceSeed): DemoDevice {
-  const ipSuffix = seed.ip_suffix ?? 20;
-  const online = seed.online ?? true;
   const demoImage =
     getDemoImagePathForDeviceId(seed.id) ?? "";
 
-  return {
+  const base: DemoDevice = {
     ...seed,
-    online,
-    last_seen_at: online
-      ? new Date().toISOString()
-      : "2026-07-19T08:15:00.000Z",
-    ip_address: ipSuffix > 0 ? `192.168.1.${ipSuffix}` : "",
-    mac_address:
-      ipSuffix > 0
-        ? `AA:BB:CC:${String(ipSuffix).padStart(2, "0")}:01:02`
-        : "",
+    online: seed.online ?? false,
+    last_seen_at: "",
+    ip_address: "",
+    mac_address: "",
     manufacturer: seed.brand,
     discovery_source: "Network Scan",
     photo_url: "",
     demo_image: demoImage,
   };
+
+  return applyDemoDeviceNetworkFields(base) as DemoDevice;
 }
 
 export const morganDevices: DemoDevice[] = [

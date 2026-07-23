@@ -3,6 +3,7 @@ import Link from "next/link";
 import Button from "@/components/ui/Button";
 import PageCard from "@/components/ui/PageCard";
 import { formatConnectorRelativeTime } from "@/lib/connector/scanHistory";
+import { formatDemoRelativeTime } from "@/lib/demo/demoNetworkTime";
 
 import type { DiscoveredDeviceSummary } from "@/lib/connector/discoveryTypes";
 import type { NetworkPageData } from "@/hooks/useNetworkPageData";
@@ -82,15 +83,23 @@ type NetworkDiscoveryTabProps = {
   data: NetworkPageData;
   activeFilter: DiscoveryFilterId;
   onFilterChange: (filter: DiscoveryFilterId) => void;
+  isDemo?: boolean;
 };
 
 export default function NetworkDiscoveryTab({
   data,
   activeFilter,
   onFilterChange,
+  isDemo = false,
 }: NetworkDiscoveryTabProps) {
   const { devices, summary } = data;
   const filtered = filterDevices(devices, activeFilter).slice(0, 8);
+
+  function formatLastDetected(value: string) {
+    return isDemo
+      ? formatDemoRelativeTime(value)
+      : formatConnectorRelativeTime(value);
+  }
 
   return (
     <div className="space-y-6">
@@ -165,8 +174,7 @@ export default function NetworkDiscoveryTab({
                       {statusLabel(device)}
                     </span>
                     <span className="rounded-full bg-surface-sunken px-3 py-1 text-text-secondary">
-                      Last detected{" "}
-                      {formatConnectorRelativeTime(device.lastSeenAt)}
+                      Last detected {formatLastDetected(device.lastSeenAt)}
                     </span>
                   </div>
                 </div>

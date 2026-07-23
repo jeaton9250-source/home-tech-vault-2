@@ -3,6 +3,7 @@
 import {
   useCallback,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 import Link from "next/link";
@@ -13,10 +14,17 @@ import PageShell from "@/components/ui/PageShell";
 import PageHero from "@/components/ui/PageHero";
 import Button from "@/components/ui/Button";
 
+import DemoConnectorExplorationBanner from "@/components/demo/DemoConnectorExplorationBanner";
 import { useDemoReadOnlyAction } from "@/components/demo/DemoExperienceProvider";
 import { usePermissions } from "@/hooks/usePermissions";
 import { supabase } from "@/lib/supabase";
 import { applyHouseholdScope } from "@/lib/data/householdScope";
+
+import {
+  buildDemoDiscoveryReviewConnectors,
+  buildDemoNetworkPagePayload,
+  buildDemoVaultDeviceOptions,
+} from "@/lib/demo/demoConnectorExperience";
 
 import type {
   DiscoveredDeviceSummary,
@@ -46,6 +54,7 @@ type VaultDeviceOption = {
 function DiscoveryReviewContent() {
   const {
     user,
+    isDemo,
     householdId,
     canEdit,
     loading: permissionsLoading,
@@ -74,6 +83,26 @@ function DiscoveryReviewContent() {
 
   const reloadReviewData = useCallback(
     async (showSpinner = true) => {
+      if (isDemo || !user) {
+        if (showSpinner) {
+          setLoading(true);
+        } else {
+          setRefreshing(true);
+        }
+
+        setErrorMessage("");
+
+        const payload = buildDemoNetworkPagePayload();
+
+        setDevices(payload.devices);
+        setStats(payload.stats);
+        setConnectors(buildDemoDiscoveryReviewConnectors());
+        setVaultDevices(buildDemoVaultDeviceOptions());
+        setLoading(false);
+        setRefreshing(false);
+        return;
+      }
+
       if (!householdId || !user?.id) {
         return;
       }
@@ -162,22 +191,41 @@ function DiscoveryReviewContent() {
         setRefreshing(false);
       }
     },
-    [householdId, user]
+    [householdId, isDemo, user]
   );
+
+  const demoReviewData = useMemo(() => {
+    if (!isDemo && user) {
+      return null;
+    }
+
+    const payload = buildDemoNetworkPagePayload();
+
+    return {
+      devices: payload.devices,
+      stats: payload.stats,
+      connectors: buildDemoDiscoveryReviewConnectors(),
+      vaultDevices: buildDemoVaultDeviceOptions(),
+    };
+  }, [isDemo, user]);
 
   useEffect(() => {
     if (permissionsLoading) {
       return;
     }
 
+    if (demoReviewData) {
+      return;
+    }
+
     void reloadReviewData();
-  }, [permissionsLoading, reloadReviewData]);
+  }, [demoReviewData, permissionsLoading, reloadReviewData]);
 
   async function runAction(
     discoveryId: string,
     action: () => Promise<Response>
   ) {
-    if (!canEdit) {
+    if (isDemo || !canEdit) {
       showReadOnlyModal();
       return;
     }
@@ -228,7 +276,7 @@ function DiscoveryReviewContent() {
     }
   }
 
-  if (loading || permissionsLoading) {
+  if ((loading || permissionsLoading) && !demoReviewData) {
     return (
       <PageShell>
         <div className="flex min-h-72 items-center justify-center rounded-3xl border border-neutral-200 bg-white">
@@ -241,8 +289,19 @@ function DiscoveryReviewContent() {
     );
   }
 
+  const reviewDevices = demoReviewData?.devices ?? devices;
+  const reviewStats = demoReviewData?.stats ?? stats;
+  const reviewConnectors = demoReviewData?.connectors ?? connectors;
+  const reviewVaultDevices = demoReviewData?.vaultDevices ?? vaultDevices;
+
   return (
     <PageShell>
+      {isDemo ? (
+        <div className="mb-6">
+          <DemoConnectorExplorationBanner />
+        </div>
+      ) : null}
+
       <PageHero
         section="network"
         eyebrow="Network discovery"
@@ -266,15 +325,22 @@ function DiscoveryReviewContent() {
       </PageHero>
 
       <NetworkDiscoveryDashboard
-        devices={devices}
-        stats={stats}
-        connectors={connectors}
-        vaultDevices={vaultDevices}
-        canEdit={canEdit}
+        devices={reviewDevices}
+        stats={reviewStats}
+        connectors={reviewConnectors}
+        vaultDevices={reviewVaultDevices}
+        canEdit={isDemo || canEdit}
         refreshing={refreshing}
         errorMessage={errorMessage}
         busyId={busyId}
-        onRefresh={() => void reloadReviewData(false)}
+        onRefresh={() => {
+          if (isDemo) {
+            showReadOnlyModal();
+            return;
+          }
+
+          void reloadReviewData(false);
+        }}
         onConfirmMatch={(discovery, vaultDeviceId) => {
           if (!householdId) {
             return;

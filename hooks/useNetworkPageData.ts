@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { checkConnectorUpdate } from "@/lib/connector/updates";
 import { buildConnectorMonitoringSummary } from "@/lib/connector/connectorMonitoring";
+import { buildDemoNetworkPagePayload } from "@/lib/demo/demoConnectorExperience";
 import { buildNetworkActivityItems } from "@/lib/network/activity";
 import {
   buildNetworkHeaderSummary,
@@ -39,6 +40,7 @@ type UseNetworkPageDataInput = {
   isPlatformAdmin: boolean;
   canUseMonitoring: boolean;
   enabled?: boolean;
+  isDemo?: boolean;
 };
 
 async function fetchNetworkPagePayload(householdId: string) {
@@ -99,6 +101,10 @@ export function useNetworkPageData(
   const [error, setError] = useState<string | null>(null);
 
   const loadNetworkPageData = useCallback(async () => {
+    if (input.isDemo) {
+      return;
+    }
+
     if (!input.householdId || input.enabled === false) {
       setConnectors([]);
       setDevices([]);
@@ -127,9 +133,18 @@ export function useNetworkPageData(
     } finally {
       setLoading(false);
     }
-  }, [input.enabled, input.householdId]);
+  }, [input.enabled, input.householdId, input.isDemo]);
+
+  const demoPayload = useMemo(
+    () => (input.isDemo ? buildDemoNetworkPagePayload() : null),
+    [input.isDemo]
+  );
 
   useEffect(() => {
+    if (input.isDemo) {
+      return;
+    }
+
     let cancelled = false;
 
     async function run() {
@@ -179,19 +194,28 @@ export function useNetworkPageData(
     return () => {
       cancelled = true;
     };
-  }, [input.enabled, input.householdId]);
+  }, [input.enabled, input.householdId, input.isDemo]);
 
-  const monitoringEnabled = input.canUseMonitoring;
+  const monitoringEnabled = input.isDemo
+    ? true
+    : input.canUseMonitoring;
+
+  const effectiveConnectors =
+    demoPayload?.connectors ?? connectors;
+  const effectiveDevices = demoPayload?.devices ?? devices;
+  const effectiveStats = demoPayload?.stats ?? stats;
+  const effectiveLoading = input.isDemo ? false : loading;
+  const effectiveError = input.isDemo ? null : error;
 
   const summary = useMemo(
     () =>
       buildNetworkSummary({
-        connectors,
-        devices,
-        stats,
+        connectors: effectiveConnectors,
+        devices: effectiveDevices,
+        stats: effectiveStats,
         monitoringEnabled,
       }),
-    [connectors, devices, stats, monitoringEnabled]
+    [effectiveConnectors, effectiveDevices, effectiveStats, monitoringEnabled]
   );
 
   const monitoringSummary = useMemo(
@@ -206,11 +230,11 @@ export function useNetworkPageData(
   const activityItems = useMemo(
     () =>
       buildNetworkActivityItems({
-        devices,
-        connectors,
+        devices: effectiveDevices,
+        connectors: effectiveConnectors,
         reviewCount: summary.reviewCount,
       }),
-    [devices, connectors, summary.reviewCount]
+    [effectiveDevices, effectiveConnectors, summary.reviewCount]
   );
 
   const updateCheck = summary.primaryConnector
@@ -218,13 +242,13 @@ export function useNetworkPageData(
     : null;
 
   return {
-    loading,
-    error,
+    loading: effectiveLoading,
+    error: effectiveError,
     summary,
-    headerSummary: buildNetworkHeaderSummary(summary, loading),
-    devices,
-    connectors,
-    stats,
+    headerSummary: buildNetworkHeaderSummary(summary, effectiveLoading),
+    devices: effectiveDevices,
+    connectors: effectiveConnectors,
+    stats: effectiveStats,
     monitoringEnabled,
     monitoringSummary,
     activityItems,

@@ -17,6 +17,7 @@ import ConnectorMonitoringBadge from "@/components/connector/ConnectorMonitoring
 import InstallationGuideDialog from "@/components/connector/InstallationGuideDialog";
 import ReleaseNotesModal from "@/components/connector/ReleaseNotesModal";
 import ConnectorUpgradePrompt from "@/components/connector/ConnectorUpgradePrompt";
+import DemoSmartConnectorCard from "@/components/demo/DemoSmartConnectorCard";
 import { useDemoReadOnlyAction } from "@/components/demo/DemoExperienceProvider";
 import {
   describeConnectorPlatform,
@@ -66,6 +67,10 @@ export default function NetworkConnectorTab({
       ),
     [data.connectors]
   );
+
+  if (isDemo) {
+    return <DemoSmartConnectorCard />;
+  }
 
   if (!householdId && !isDemo) {
     return (

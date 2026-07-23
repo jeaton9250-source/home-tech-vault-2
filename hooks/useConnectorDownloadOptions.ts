@@ -13,13 +13,20 @@ type UseConnectorDownloadOptionsResult = {
   error: boolean;
 };
 
-export function useConnectorDownloadOptions(): UseConnectorDownloadOptionsResult {
+export function useConnectorDownloadOptions(input?: {
+  enabled?: boolean;
+}): UseConnectorDownloadOptionsResult {
+  const enabled = input?.enabled !== false;
   const [options, setOptions] =
     useState<ConnectorDownloadOptionsMap | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(enabled);
   const [error, setError] = useState(false);
 
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+
     let cancelled = false;
 
     async function loadDownloadOptions() {
@@ -55,7 +62,11 @@ export function useConnectorDownloadOptions(): UseConnectorDownloadOptionsResult
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [enabled]);
 
-  return { options, loading, error };
+  return {
+    options: enabled ? options : null,
+    loading: enabled ? loading : false,
+    error: enabled ? error : false,
+  };
 }

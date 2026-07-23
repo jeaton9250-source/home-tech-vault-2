@@ -44,12 +44,12 @@ export default function DemoReadOnlyModal({
           id="demo-readonly-title"
           className="mt-5 text-xl font-semibold tracking-[-0.02em] text-text-primary"
         >
-          Ready to build your own Home Tech Vault?
+          Ready to connect your own home?
         </h2>
 
         <p className="mt-3 text-sm leading-7 text-text-secondary">
-          Create your free vault to save your own devices, warranties,
-          documents and home technology.
+          Create your Home Tech Vault to download the Smart Connector, scan your
+          network, and organize your own devices.
         </p>
 
         <div className="mt-8 flex flex-col gap-3">

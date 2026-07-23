@@ -7,10 +7,12 @@ import type { NetworkPageData } from "@/hooks/useNetworkPageData";
 
 type NetworkMonitoringTabProps = {
   data: NetworkPageData;
+  isDemo?: boolean;
 };
 
 export default function NetworkMonitoringTab({
   data,
+  isDemo = false,
 }: NetworkMonitoringTabProps) {
   const { summary, monitoringEnabled, monitoringSummary } = data;
 
@@ -118,8 +120,8 @@ export default function NetworkMonitoringTab({
         </div>
 
         <div className="mt-6 flex flex-wrap gap-3">
-          <Button href="/network/connect" variant="secondary">
-            Manage Connector
+          <Button href={isDemo ? "/network/discovery" : "/network/connect"} variant="secondary">
+            {isDemo ? "Open Discovery Review" : "Manage Connector"}
           </Button>
         </div>
       </PageCard>

@@ -48,6 +48,7 @@ import {
 } from "@/components/ui/PermissionUI";
 import { useDemoReadOnlyAction } from "@/components/demo/DemoExperienceProvider";
 import { formatDevicePresenceListLine } from "@/lib/devices/devicePresence";
+import { formatDemoDevicePresenceListLine } from "@/lib/demo/demoNetworkTime";
 
 type DeviceRecord = BaseDevice & {
   id: string;
@@ -1058,6 +1059,7 @@ export default function DevicesPage() {
               <ModernDeviceCard
                 key={device.id}
                 device={device}
+                isDemo={isDemo}
               />
             )
           )}
@@ -1187,8 +1189,10 @@ export default function DevicesPage() {
 
 function ModernDeviceCard({
   device,
+  isDemo = false,
 }: {
   device: DeviceRecord;
+  isDemo?: boolean;
 }) {
   const warranty =
     getWarrantyStatus(
@@ -1236,12 +1240,19 @@ function ModernDeviceCard({
             </p>
 
             <p className="mt-2 text-sm text-text-secondary">
-              {formatDevicePresenceListLine({
-                online: device.online,
-                lastSeenAt: device.last_seen_at,
-                firstSeenAt: device.first_seen_at,
-                networkUpdatedAt: device.network_updated_at,
-              })}
+              {isDemo
+                ? formatDemoDevicePresenceListLine({
+                    online: device.online,
+                    lastSeenAt: device.last_seen_at,
+                    firstSeenAt: device.first_seen_at,
+                    networkUpdatedAt: device.network_updated_at,
+                  })
+                : formatDevicePresenceListLine({
+                    online: device.online,
+                    lastSeenAt: device.last_seen_at,
+                    firstSeenAt: device.first_seen_at,
+                    networkUpdatedAt: device.network_updated_at,
+                  })}
             </p>
           </div>
 

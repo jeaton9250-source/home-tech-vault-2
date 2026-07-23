@@ -18,6 +18,10 @@ export type DemoDevice = {
   discovery_source: string;
   photo_url: string;
   demo_image: string;
+  hostname?: string | null;
+  connector_id?: string | null;
+  first_seen_at?: string | null;
+  network_updated_at?: string | null;
 };
 
 export type DemoSubscription = {

@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 
 import ConnectorDownloadActions from "@/components/connector/ConnectorDownloadActions";
+import DemoConnectorExplorationBanner from "@/components/demo/DemoConnectorExplorationBanner";
+import DemoSmartConnectorCard from "@/components/demo/DemoSmartConnectorCard";
 import ConnectorMultiList from "@/components/connector/ConnectorMultiList";
 import ConnectorPlatformList from "@/components/connector/ConnectorPlatformList";
 import ConnectorUpgradePrompt from "@/components/connector/ConnectorUpgradePrompt";
@@ -362,6 +364,45 @@ export default function NetworkConnectPage() {
             <Loader2 className="animate-spin" size={22} />
             Loading connector setup...
           </div>
+        </div>
+      </PageShell>
+    );
+  }
+
+  if (isDemo) {
+    return (
+      <PageShell>
+        <div className="mb-6">
+          <Link
+            href="/network"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-text-secondary transition hover:text-text-primary"
+          >
+            <ArrowLeft size={16} />
+            Back to Network
+          </Link>
+        </div>
+
+        <DemoConnectorExplorationBanner />
+
+        <div className="mt-6 space-y-6">
+          <DemoSmartConnectorCard />
+
+          <PageCard className="p-7">
+            <h2 className="text-xl font-semibold text-text-primary">
+              Explore discovery review
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-text-secondary">
+              Browse matched devices, review new discoveries, and see how
+              connector results flow into your vault — all with simulated demo
+              data.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Button href="/network/discovery">Open Discovery Review</Button>
+              <Button href="/network?tab=discovery" variant="secondary">
+                Network discovery tab
+              </Button>
+            </div>
+          </PageCard>
         </div>
       </PageShell>
     );

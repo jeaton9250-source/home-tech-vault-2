@@ -4,6 +4,7 @@ import type { NetworkPageData } from "@/hooks/useNetworkPageData";
 
 type NetworkOverviewTabProps = {
   data: NetworkPageData;
+  isDemo?: boolean;
 };
 
 function SummaryMetric({

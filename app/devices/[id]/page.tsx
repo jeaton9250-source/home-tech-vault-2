@@ -52,6 +52,7 @@ import Button from "@/components/ui/Button";
 
 import { useDemoReadOnlyAction } from "@/components/demo/DemoExperienceProvider";
 import { useDeviceNetworkRefresh } from "@/hooks/useDeviceNetworkRefresh";
+import { DEMO_CONNECTOR_NAME } from "@/lib/demo/demoDeviceNetworkProfiles";
 
 type Device = {
   id: string;
@@ -333,6 +334,14 @@ export default function DevicePage() {
               sampleDevice.manufacturer,
             discovery_source:
               sampleDevice.discovery_source,
+            hostname: sampleDevice.hostname ?? null,
+            connector_id: sampleDevice.connector_id ?? null,
+            first_seen_at: sampleDevice.first_seen_at ?? null,
+            network_updated_at:
+              sampleDevice.network_updated_at ?? null,
+            network_fingerprint: sampleDevice.connector_id
+              ? `demo:${sampleDevice.id}`
+              : null,
           });
 
           const demoImage =
@@ -953,6 +962,8 @@ export default function DevicePage() {
 
   const isGuestDemo = isDemo || !user;
 
+  const demoConnectorName = isGuestDemo ? DEMO_CONNECTOR_NAME : null;
+
   return (
     <DeviceProfile
       device={device}
@@ -1000,7 +1011,9 @@ export default function DevicePage() {
           />
         ) : undefined
       }
-      connectorName={connectorName}
+      connectorName={
+        isGuestDemo ? demoConnectorName : connectorName
+      }
       connectorStatusMayBeOutdated={connectorStatusMayBeOutdated}
     />
   );

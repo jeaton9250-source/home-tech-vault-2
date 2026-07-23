@@ -17,6 +17,11 @@ import {
   morganTimelineEvents,
 } from "@/lib/demo/morganTimeline";
 import { morganNetwork } from "@/lib/demo/morganNetwork";
+import {
+  buildDemoDiscoveredDevices,
+  buildDemoDiscoveryStats,
+  buildDemoNetworkPagePayload,
+} from "@/lib/demo/demoConnectorExperience";
 import type { DemoWarranty } from "@/lib/demo/types";
 
 export { getDemoTimelineForDevice };
@@ -26,6 +31,12 @@ export const demoDevices = morganDevices;
 export const demoSubscriptions = morganSubscriptions;
 
 export const demoNetwork = morganNetwork;
+
+export {
+  buildDemoDiscoveredDevices,
+  buildDemoDiscoveryStats,
+  buildDemoNetworkPagePayload,
+};
 
 export const demoMaintenance = morganMaintenance;
 

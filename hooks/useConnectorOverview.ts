@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { buildDemoNetworkPagePayload } from "@/lib/demo/demoConnectorExperience";
 import { buildConnectorAccessContext } from "@/lib/connector/access";
 import { computeConnectorHealth } from "@/lib/connector/health";
 import { buildConnectorScanHistory } from "@/lib/connector/scanHistory";
@@ -43,6 +44,7 @@ type UseConnectorOverviewInput = {
   isPlatformAdmin: boolean;
   canUseMonitoring: boolean;
   enabled?: boolean;
+  isDemo?: boolean;
 };
 
 export function useConnectorOverview(
@@ -59,6 +61,10 @@ export function useConnectorOverview(
   );
 
   const refresh = useCallback(async () => {
+    if (input.isDemo) {
+      return;
+    }
+
     if (!input.householdId || input.enabled === false) {
       setConnectors([]);
       setStats(null);
@@ -112,22 +118,42 @@ export function useConnectorOverview(
     } finally {
       setLoading(false);
     }
-  }, [input.enabled, input.householdId]);
+  }, [input.enabled, input.householdId, input.isDemo]);
 
-  useEffect(() => {
-    void refresh();
-  }, [refresh]);
-
-  const activeConnectors = useMemo(
-    () =>
-      connectors.filter(
-        (connector) => connector.status !== "revoked"
-      ),
-    [connectors]
+  const demoPayload = useMemo(
+    () => (input.isDemo ? buildDemoNetworkPagePayload() : null),
+    [input.isDemo]
   );
 
+  useEffect(() => {
+    if (input.isDemo) {
+      return;
+    }
+
+    void refresh();
+  }, [input.isDemo, refresh]);
+
+  const activeConnectors = useMemo(
+    () => {
+      const source = demoPayload?.connectors ?? connectors;
+
+      return source.filter(
+        (connector) => connector.status !== "revoked"
+      );
+    },
+    [connectors, demoPayload?.connectors]
+  );
+
+  const effectiveConnectors =
+    demoPayload?.connectors ?? connectors;
+  const effectiveStats = demoPayload?.stats ?? stats;
+  const effectiveLoading = input.isDemo ? false : loading;
+  const effectiveError = input.isDemo ? null : error;
+
   const primaryConnector = activeConnectors[0] ?? null;
-  const monitoringEnabled = input.canUseMonitoring;
+  const monitoringEnabled = input.isDemo
+    ? true
+    : input.canUseMonitoring;
   const access = buildConnectorAccessContext({
     plan: input.plan,
     isPlatformAdmin: input.isPlatformAdmin,
@@ -136,15 +162,15 @@ export function useConnectorOverview(
   });
 
   const health = computeConnectorHealth({
-    connectors,
+    connectors: effectiveConnectors,
     monitoringEnabled,
-    stats,
+    stats: effectiveStats,
   });
 
-  const scanHistory = buildConnectorScanHistory(connectors);
+  const scanHistory = buildConnectorScanHistory(effectiveConnectors);
   const smartHomeSummary = buildSmartHomeSummary({
-    connectors,
-    stats,
+    connectors: effectiveConnectors,
+    stats: effectiveStats,
     monitoringEnabled,
   });
 
@@ -157,10 +183,10 @@ export function useConnectorOverview(
     : "Manual scans only";
 
   return {
-    loading,
-    error,
-    connectors,
-    stats,
+    loading: effectiveLoading,
+    error: effectiveError,
+    connectors: effectiveConnectors,
+    stats: effectiveStats,
     activeConnectors,
     primaryConnector,
     isInstalled: activeConnectors.length > 0,

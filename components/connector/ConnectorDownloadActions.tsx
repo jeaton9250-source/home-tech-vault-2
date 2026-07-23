@@ -3,6 +3,7 @@
 import { Download } from "lucide-react";
 
 import Button from "@/components/ui/Button";
+import DemoConnectorDownloadGate from "@/components/demo/DemoConnectorDownloadGate";
 import { cn } from "@/lib/design-system/cn";
 import {
   detectBrowserPlatformHint,
@@ -10,6 +11,7 @@ import {
   type ConnectorDownloadPlatformId,
 } from "@/lib/connector/downloadOptions";
 import { useConnectorDownloadOptions } from "@/hooks/useConnectorDownloadOptions";
+import { usePermissions } from "@/hooks/usePermissions";
 
 type ConnectorDownloadActionsProps = {
   layout?: "row" | "stack";
@@ -24,8 +26,23 @@ export default function ConnectorDownloadActions({
   platformIds,
   showVersionLabel = true,
 }: ConnectorDownloadActionsProps) {
+  const { isDemo } = usePermissions();
   const browserPlatform = detectBrowserPlatformHint();
-  const { options, loading } = useConnectorDownloadOptions();
+  const { options, loading } = useConnectorDownloadOptions({
+    enabled: !isDemo,
+  });
+
+  if (isDemo) {
+    return (
+      <DemoConnectorDownloadGate
+        className={cn(
+          layout === "stack" &&
+            "rounded-[20px] border border-border-subtle bg-surface-sunken p-4",
+          className
+        )}
+      />
+    );
+  }
 
   const orderedPlatforms =
     platformIds ??

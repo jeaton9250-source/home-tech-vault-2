@@ -13,6 +13,7 @@ import NetworkOverviewTab from "@/components/network/NetworkOverviewTab";
 import { NetworkPageSkeleton } from "@/components/network/NetworkSkeleton";
 import NetworkTabs from "@/components/network/NetworkTabs";
 import PageShell from "@/components/ui/PageShell";
+import DemoConnectorExplorationBanner from "@/components/demo/DemoConnectorExplorationBanner";
 import { useDemoReadOnlyAction } from "@/components/demo/DemoExperienceProvider";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useNetworkPageData } from "@/hooks/useNetworkPageData";
@@ -45,7 +46,8 @@ function NetworkPageInner() {
     plan,
     isPlatformAdmin,
     canUseMonitoring: monitoringEnabled,
-    enabled: !permissionsLoading && Boolean(householdId) && !isDemo,
+    enabled: !permissionsLoading && (Boolean(householdId) || isDemo),
+    isDemo,
   });
 
   async function handleRevoke(connectorId: string) {
@@ -93,6 +95,12 @@ function NetworkPageInner() {
 
   return (
     <PageShell>
+      {isDemo ? (
+        <div className="mb-6">
+          <DemoConnectorExplorationBanner />
+        </div>
+      ) : null}
+
       <NetworkHeader
         summary={loading ? null : data.summary}
         headerSummary={data.headerSummary}
@@ -111,7 +119,7 @@ function NetworkPageInner() {
         ) : (
           <>
             {activeTab === "overview" ? (
-              <NetworkOverviewTab data={data} />
+              <NetworkOverviewTab data={data} isDemo={isDemo} />
             ) : null}
 
             {activeTab === "discovery" ? (
@@ -119,11 +127,12 @@ function NetworkPageInner() {
                 data={data}
                 activeFilter={discoveryFilter}
                 onFilterChange={setDiscoveryFilter}
+                isDemo={isDemo}
               />
             ) : null}
 
             {activeTab === "monitoring" ? (
-              <NetworkMonitoringTab data={data} />
+              <NetworkMonitoringTab data={data} isDemo={isDemo} />
             ) : null}
 
             {activeTab === "connector" ? (

@@ -61,7 +61,8 @@ export default function ConnectorHubSection({
     plan,
     isPlatformAdmin,
     canUseMonitoring: monitoringEnabled,
-    enabled: !permissionsLoading && Boolean(householdId) && !isDemo,
+    enabled: !permissionsLoading && (Boolean(householdId) || isDemo),
+    isDemo,
   });
 
   const selectedConnector = useMemo(() => {
