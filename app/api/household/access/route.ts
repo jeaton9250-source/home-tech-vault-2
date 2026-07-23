@@ -211,7 +211,7 @@ export async function GET(request: Request) {
           household.owner_id,
         rawHouseholdRole:
           membershipResult.rawHouseholdRole ??
-          "viewer",
+          membershipResult.membership.role,
         ownerPlan:
           ownerBilling.ownerPlan,
         ownerStatus:

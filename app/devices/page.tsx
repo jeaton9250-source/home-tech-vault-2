@@ -83,6 +83,7 @@ export default function DevicesPage() {
     user,
     isDemo,
     householdId,
+    role,
     canCreate,
     isViewer,
     loading: permissionsLoading,
@@ -91,6 +92,21 @@ export default function DevicesPage() {
   const quota = useHouseholdLimits();
 
   const showReadOnlyModal = useDemoReadOnlyAction();
+
+  const canAddDevices =
+    role === "admin" ||
+    role === "member";
+
+  const showAddDeviceAction =
+    !permissionsLoading &&
+    (canCreate || canAddDevices) &&
+    role !== "viewer";
+
+  const showViewerAccess =
+    !permissionsLoading &&
+    !isDemo &&
+    Boolean(user) &&
+    role === "viewer";
 
   const [devices, setDevices] =
     useState<DeviceRecord[]>([]);
@@ -685,7 +701,7 @@ export default function DevicesPage() {
       return "Checking allowance…";
     }
 
-    if (isViewer) {
+    if (role === "viewer" || isViewer) {
       return "Viewer · Read Only";
     }
 
@@ -714,8 +730,8 @@ export default function DevicesPage() {
       return;
     }
 
-    if (!canCreate) {
-      if (isViewer) {
+    if (!canCreate && !canAddDevices) {
+      if (role === "viewer" || isViewer) {
         router.push("/family");
         return;
       }
@@ -760,7 +776,8 @@ export default function DevicesPage() {
             : "Everything you own, organized in one calm and secure place."
         }
       >
-        {canCreate ? (
+        {showAddDeviceAction ||
+        (permissionsLoading && Boolean(user) && !isDemo) ? (
           <Button
             type="button"
             onClick={handleAddDevice}
@@ -789,22 +806,20 @@ export default function DevicesPage() {
             <Plus size={17} />
             Create Your Vault
           </Button>
-        ) : (
+        ) : showViewerAccess ? (
           <div className="rounded-[var(--radius-button)] border border-border-subtle bg-surface-card/80 px-4 py-3 text-sm font-medium text-text-secondary shadow-[var(--shadow-sm)]">
             Viewer Access · Read Only
           </div>
-        )}
+        ) : null}
       </PageHero>
       </div>
 
-      <ViewerBanner
-        show={!isDemo && Boolean(user)}
-        description={
-          user
-            ? "You can view shared devices, search records, and open device details. Viewer access cannot add, edit, upload, or delete devices."
-            : undefined
-        }
-      />
+      {showViewerAccess ? (
+        <ViewerBanner
+          show
+          description="You can view shared devices, search records, and open device details. Viewer access cannot add, edit, upload, or delete devices."
+        />
+      ) : null}
 
       {errorMessage && (
         <PageCard className="border-danger/30 bg-danger-soft text-danger">
@@ -1086,7 +1101,7 @@ export default function DevicesPage() {
           description="Add your first device to organize its photos, purchase details, warranty, and documents in one calm place."
           section="technology"
         >
-          {canCreate ? (
+          {showAddDeviceAction ? (
             <Button
               type="button"
               onClick={handleAddDevice}
@@ -1119,13 +1134,13 @@ export default function DevicesPage() {
               <Plus size={17} aria-hidden />
               Create your vault
             </Button>
-          ) : (
+          ) : showViewerAccess ? (
             <div className="mx-auto mt-6 max-w-md rounded-[var(--radius-button)] bg-surface-sunken px-5 py-4 text-sm text-text-secondary">
               You have viewer access. You can view
               shared devices, but you cannot add or
               change them.
             </div>
-          )}
+          ) : null}
         </EmptyState>
       )}
 

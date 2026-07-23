@@ -38,12 +38,14 @@ export function ViewerBanner({
   const {
     isDemo,
     isViewer,
+    role,
     loading,
   } = usePermissions();
 
   const shouldShow =
-    show ??
-    (!loading && isViewer);
+    !loading &&
+    role === "viewer" &&
+    (show ?? isViewer);
 
   if (!shouldShow) {
     return null;

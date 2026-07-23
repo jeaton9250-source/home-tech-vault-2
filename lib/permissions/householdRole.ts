@@ -29,6 +29,7 @@ export function normalizeRawHouseholdRole(
 
   if (
     token === "admin" ||
+    token === "family_admin" ||
     token === "household_admin"
   ) {
     return "admin";

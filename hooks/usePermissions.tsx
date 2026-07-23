@@ -116,6 +116,44 @@ function normalizeRawHouseholdRoleValue(
   return normalizeRawHouseholdRole(value);
 }
 
+/**
+ * Map household membership role strings to frontend capability roles.
+ * Returns null while membership is unknown so UI does not flash Viewer Access.
+ * Treats both `admin` and `family_admin` as admin.
+ */
+function normalizeRole(
+  value: string | null | undefined
+): HouseholdRole | null {
+  if (value == null || value.trim() === "") {
+    return null;
+  }
+
+  const token = value
+    .trim()
+    .toLowerCase()
+    .replace(/[\s-]+/g, "_");
+
+  if (
+    token === "admin" ||
+    token === "family_admin" ||
+    token === "household_admin" ||
+    token === "owner" ||
+    token === "household_owner"
+  ) {
+    return "admin";
+  }
+
+  if (token === "member") {
+    return "member";
+  }
+
+  if (token === "viewer") {
+    return "viewer";
+  }
+
+  return normalizeHouseholdRole(value);
+}
+
 function normalizeSubscriptionPlan(
   value: string | null | undefined
 ): SubscriptionPlan {
@@ -205,7 +243,7 @@ function applyHouseholdAccess(
   );
 
   setters.setRole(
-    normalizeHouseholdRole(
+    normalizeRole(
       accessData.rawHouseholdRole
     )
   );
