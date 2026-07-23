@@ -45,6 +45,13 @@ export const PRIMARY_NAV_ITEMS: PrimaryNavItem[] = [
     activePrefixes: ["/warranties"],
   },
   {
+    label: "Maintenance",
+    href: "/maintenance",
+    icon: Wrench,
+    feature: "maintenance",
+    activePrefixes: ["/maintenance"],
+  },
+  {
     label: "Network",
     href: "/network",
     feature: "network",

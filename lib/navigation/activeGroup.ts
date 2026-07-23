@@ -62,5 +62,9 @@ export function resolveActiveNavGroup(
     return "technology";
   }
 
+  if (active === "/maintenance") {
+    return "technology";
+  }
+
   return null;
 }

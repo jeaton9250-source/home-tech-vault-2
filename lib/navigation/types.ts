@@ -29,6 +29,7 @@ export type NavMenuGroup = {
 export type PrimaryNavItem = {
   label: string;
   href: string;
+  icon?: LucideIcon;
   feature?: FeatureKey;
   /** Path prefixes that should highlight this nav item */
   activePrefixes?: string[];
