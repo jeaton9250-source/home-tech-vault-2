@@ -15,7 +15,7 @@ import {
   Trash2,
 } from "lucide-react";
 
-import ConnectorDownloadButton from "@/components/connector/ConnectorDownloadButton";
+import ConnectorDownloadActions from "@/components/connector/ConnectorDownloadActions";
 import ConnectorMultiList from "@/components/connector/ConnectorMultiList";
 import ConnectorPlatformList from "@/components/connector/ConnectorPlatformList";
 import ConnectorUpgradePrompt from "@/components/connector/ConnectorUpgradePrompt";
@@ -382,7 +382,7 @@ export default function NetworkConnectPage() {
         description="Download, pair, and manage connectors for your household. Manual discovery is included on Free; automatic monitoring requires Pro."
       >
         <div className="flex flex-wrap gap-3">
-          <ConnectorDownloadButton />
+          <ConnectorDownloadActions />
           <Button
             type="button"
             variant="secondary"
@@ -518,7 +518,7 @@ export default function NetworkConnectPage() {
             and import are included on Free.
           </p>
           <div className="mt-5">
-            <ConnectorDownloadButton />
+            <ConnectorDownloadActions />
           </div>
           <div className="mt-6">
             <ConnectorPlatformList />

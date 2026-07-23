@@ -33,7 +33,7 @@ export function buildHomePulseConnectorSignals(input: {
       id: "connector-install",
       title: "Install the connector",
       message:
-        "Pair a Mac to discover and monitor devices on your home network.",
+        "Pair a connector to discover and monitor devices on your home network.",
       href: "/network/connect",
       priority: 90,
       tone: "warning",
@@ -46,7 +46,7 @@ export function buildHomePulseConnectorSignals(input: {
       id: "connector-offline",
       title: "Connector offline",
       message:
-        "Your connector has not checked in recently. Open the connector app on your Mac.",
+        "Your connector has not checked in recently. Open the connector app on your computer.",
       href: "/network",
       priority: 85,
       tone: "warning",

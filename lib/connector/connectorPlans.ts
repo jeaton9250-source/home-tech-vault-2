@@ -58,8 +58,8 @@ export function describeConnectorAccess(
   }
 
   if (access.maxConnectors === 1) {
-    return "1 Mac on Free";
+    return "1 connector on Free";
   }
 
-  return `Up to ${access.maxConnectors} Macs on Pro`;
+  return `Up to ${access.maxConnectors} connectors on Pro`;
 }

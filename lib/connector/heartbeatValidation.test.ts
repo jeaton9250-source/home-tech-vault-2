@@ -24,13 +24,23 @@ test("parseHeartbeatPayload accepts valid macOS payload", () => {
   assert.equal(payload.deviceName, "Jason's MacBook");
 });
 
+test("parseHeartbeatPayload accepts valid Windows payload", () => {
+  const payload = parseHeartbeatPayload({
+    appVersion: "0.1.0",
+    platform: "windows",
+    deviceName: "Office PC",
+  });
+
+  assert.equal(payload.platform, "windows");
+});
+
 test("parseHeartbeatPayload rejects unsupported platform", () => {
   assert.throws(
     () =>
       parseHeartbeatPayload({
         appVersion: "0.1.0",
-        platform: "windows",
-        deviceName: "PC",
+        platform: "linux",
+        deviceName: "Server",
       }),
     HeartbeatValidationError
   );

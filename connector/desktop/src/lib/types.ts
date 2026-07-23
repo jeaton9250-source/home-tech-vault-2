@@ -6,6 +6,9 @@ export type ConnectorMetadata = {
   lastScanAt?: string | null;
   lastScanDeviceCount?: number | null;
   scanConsentAccepted?: boolean;
+  monitoringEnabled?: boolean;
+  monitoringPaused?: boolean;
+  autostartEnabled?: boolean;
 };
 
 export type ScannedDevice = {

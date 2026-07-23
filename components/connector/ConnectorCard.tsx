@@ -14,7 +14,7 @@ import {
 
 import Button from "@/components/ui/Button";
 import PageCard from "@/components/ui/PageCard";
-import ConnectorDownloadButton from "@/components/connector/ConnectorDownloadButton";
+import ConnectorDownloadActions from "@/components/connector/ConnectorDownloadActions";
 import ConnectorMonitoringBadge from "@/components/connector/ConnectorMonitoringBadge";
 import ConnectorUpgradePrompt from "@/components/connector/ConnectorUpgradePrompt";
 import InstallationGuideDialog from "@/components/connector/InstallationGuideDialog";
@@ -106,7 +106,7 @@ export default function ConnectorCard({
             </div>
 
             <div className="flex w-full shrink-0 flex-col gap-3 lg:max-w-xs">
-              <ConnectorDownloadButton fullWidth />
+              <ConnectorDownloadActions layout="stack" />
               <Button
                 type="button"
                 variant="secondary"
@@ -205,10 +205,7 @@ export default function ConnectorCard({
           </div>
 
           <div className="flex w-full shrink-0 flex-col gap-3 lg:max-w-xs">
-            <ConnectorDownloadButton
-              variant="secondary"
-              fullWidth
-            />
+            <ConnectorDownloadActions />
             <Button href="/network/connect" variant="secondary" fullWidth>
               <RefreshCw size={16} />
               Reconnect

@@ -1,5 +1,11 @@
-import { getConnectorMacosDownloadUrl } from "@/lib/connector/release";
-import { CONNECTOR_MACOS_APP_VERSION } from "@/lib/connector/constants";
+import {
+  getConnectorMacosDownloadUrl,
+  getConnectorWindowsDownloadUrl,
+} from "@/lib/connector/release";
+import {
+  CONNECTOR_MACOS_APP_VERSION,
+  CONNECTOR_WINDOWS_APP_VERSION,
+} from "@/lib/connector/constants";
 
 export type ConnectorPlatformId =
   | "macos"
@@ -19,13 +25,14 @@ export type ConnectorPlatformDefinition = {
   downloadUrl: string | null;
   version: string | null;
   description: string;
+  unavailableMessage?: string | null;
 };
 
 const PLATFORM_DEFINITIONS: Record<
   ConnectorPlatformId,
   Omit<
     ConnectorPlatformDefinition,
-    "downloadUrl" | "version" | "availability"
+    "downloadUrl" | "version" | "availability" | "unavailableMessage"
   >
 > = {
   macos: {
@@ -40,7 +47,7 @@ const PLATFORM_DEFINITIONS: Record<
     label: "Windows",
     shortLabel: "PC",
     description:
-      "Windows connector support is planned for a future release.",
+      "Install on a Windows PC that stays on your home network.",
   },
   linux: {
     id: "linux",
@@ -53,6 +60,7 @@ const PLATFORM_DEFINITIONS: Record<
 
 export function getConnectorPlatforms(): ConnectorPlatformDefinition[] {
   const macosDownloadUrl = getConnectorMacosDownloadUrl();
+  const windowsDownloadUrl = getConnectorWindowsDownloadUrl();
 
   return (
     Object.keys(PLATFORM_DEFINITIONS) as ConnectorPlatformId[]
@@ -67,6 +75,23 @@ export function getConnectorPlatforms(): ConnectorPlatformDefinition[] {
           : "unavailable",
         downloadUrl: macosDownloadUrl,
         version: CONNECTOR_MACOS_APP_VERSION,
+        unavailableMessage: macosDownloadUrl
+          ? null
+          : "Download coming soon.",
+      };
+    }
+
+    if (id === "windows") {
+      return {
+        ...base,
+        availability: windowsDownloadUrl
+          ? "available"
+          : "coming_soon",
+        downloadUrl: windowsDownloadUrl,
+        version: CONNECTOR_WINDOWS_APP_VERSION,
+        unavailableMessage: windowsDownloadUrl
+          ? null
+          : "Windows version coming soon",
       };
     }
 
@@ -75,6 +100,7 @@ export function getConnectorPlatforms(): ConnectorPlatformDefinition[] {
       availability: "coming_soon",
       downloadUrl: null,
       version: null,
+      unavailableMessage: "Coming Soon",
     };
   });
 }

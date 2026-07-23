@@ -1,7 +1,9 @@
 export const CONNECTOR_MACOS_APP_VERSION = "0.1.0";
+export const CONNECTOR_WINDOWS_APP_VERSION = "0.1.0";
 
 export const CONNECTOR_SUPPORTED_PLATFORMS = [
   "macos",
+  "windows",
 ] as const;
 
 export type ConnectorPlatform =

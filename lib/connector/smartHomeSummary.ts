@@ -32,7 +32,7 @@ export function buildSmartHomeSummary(input: {
           id: "connectors",
           label: "Connectors",
           value: "0",
-          detail: "No Mac paired yet",
+          detail: "No connector paired yet",
         },
         {
           id: "discovered",
@@ -48,7 +48,7 @@ export function buildSmartHomeSummary(input: {
         },
       ],
       recommendations: [
-        "Download and pair the connector on a home Mac.",
+        "Download and pair the connector on a home computer.",
         "Run a manual scan to populate discovery results.",
       ],
     };
@@ -74,7 +74,7 @@ export function buildSmartHomeSummary(input: {
         detail:
           activeConnectors.length === 1
             ? activeConnectors[0].name
-            : `${activeConnectors.length} paired Macs`,
+            : `${activeConnectors.length} paired connectors`,
       },
       {
         id: "discovered",

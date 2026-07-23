@@ -1,8 +1,9 @@
 import { StrictMode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { getCurrentWindow } from "@tauri-apps/api/window";
+import { listen } from "@tauri-apps/api/event";
 
 import { confirmPairing, sendHeartbeat } from "./lib/api";
+import { getAutostartEnabled, setAutostartEnabled } from "./lib/autostart";
 import { APP_VERSION, getApiBaseUrl } from "./lib/config";
 import {
   cancelLocalNetworkScan,
@@ -22,6 +23,20 @@ import {
   type HeartbeatTickResult,
 } from "./lib/heartbeatScheduler";
 import { logConnectorEvent } from "./lib/logger";
+import { startMonitoringScheduler } from "./lib/monitoringScheduler";
+import {
+  credentialStoreLabel,
+  detectConnectorOsPlatform,
+  platformDisplayName,
+} from "./lib/platform";
+import {
+  quitConnectorApp,
+  setConnectorRuntimePreferences,
+} from "./lib/runtimePreferences";
+import {
+  checkConnectorForUpdates,
+  openOfficialConnectorDownloadPage,
+} from "./lib/updates";
 import { ConnectorApiError } from "./lib/types";
 
 import type {
@@ -89,9 +104,24 @@ function App() {
     useState(false);
   const [lastScanDeviceCount, setLastScanDeviceCount] =
     useState<number | null>(null);
+  const [autostartEnabled, setAutostartEnabledState] =
+    useState(false);
 
   const metadataRef = useRef(metadata);
   metadataRef.current = metadata;
+
+  const osPlatform = useMemo(
+    () => detectConnectorOsPlatform(),
+    []
+  );
+  const secureStoreLabel = useMemo(
+    () => credentialStoreLabel(osPlatform),
+    [osPlatform]
+  );
+  const devicePlatformLabel = useMemo(
+    () => platformDisplayName(osPlatform),
+    [osPlatform]
+  );
 
   const apiBaseUrl = useMemo(
     () => getApiBaseUrl(),
@@ -157,7 +187,7 @@ function App() {
           logConnectorEvent("token_missing");
           await clearIncompletePairing();
           setErrorMessage(
-            "Connector token missing from Keychain. Pair this Mac again."
+            `Connector token missing from ${secureStoreLabel}. Pair this device again.`
           );
           return {
             ok: false,
@@ -212,7 +242,7 @@ function App() {
             );
           } else {
             setErrorMessage(
-              "Connector token was rejected by Home Tech Vault. Disconnect this Mac and pair again."
+              `Connector token was rejected by Home Tech Vault. Disconnect this ${devicePlatformLabel} device and pair again.`
             );
           }
 
@@ -282,7 +312,7 @@ function App() {
         }
       }
     },
-    [clearIncompletePairing]
+    [clearIncompletePairing, secureStoreLabel, devicePlatformLabel]
   );
 
   useEffect(() => {
@@ -294,13 +324,16 @@ function App() {
           storedMetadata,
           token,
           deviceName,
+          autostart,
         ] = await Promise.all([
           loadConnectorMetadata(),
           loadConnectorToken(),
           getDeviceName(),
+          getAutostartEnabled().catch(() => false),
         ]);
 
         setConnectorName(deviceName);
+        setAutostartEnabledState(autostart);
 
         if (storedMetadata && !token) {
           await deleteConnectorMetadata();
@@ -394,7 +427,7 @@ function App() {
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : "Unable to pair this Mac."
+          : `Unable to pair this ${devicePlatformLabel} device.`
       );
     }
   }
@@ -410,7 +443,56 @@ function App() {
   }
 
   async function handleQuit() {
-    await getCurrentWindow().close();
+    await quitConnectorApp();
+  }
+
+  async function handleCheckForUpdates() {
+    const platform =
+      osPlatform === "windows" ? "windows" : "macos";
+    const result = await checkConnectorForUpdates(platform);
+
+    if (result.downloadUrl) {
+      window.open(result.downloadUrl, "_blank", "noopener,noreferrer");
+    } else {
+      openOfficialConnectorDownloadPage();
+    }
+
+    setStatusMessage(result.message);
+  }
+
+  async function handleAutostartToggle(enabled: boolean) {
+    await setAutostartEnabled(enabled);
+    setAutostartEnabledState(enabled);
+
+    if (metadata) {
+      const nextMetadata = {
+        ...metadata,
+        autostartEnabled: enabled,
+      };
+      await saveConnectorMetadata(nextMetadata);
+      setMetadata(nextMetadata);
+    }
+  }
+
+  async function handleMonitoringToggle(enabled: boolean) {
+    if (!metadata) {
+      return;
+    }
+
+    const nextMetadata = {
+      ...metadata,
+      monitoringEnabled: enabled,
+      monitoringPaused: enabled
+        ? metadata.monitoringPaused ?? false
+        : true,
+    };
+
+    await saveConnectorMetadata(nextMetadata);
+    setMetadata(nextMetadata);
+    await setConnectorRuntimePreferences({
+      minimizeToTray: enabled,
+      monitoringPaused: Boolean(nextMetadata.monitoringPaused),
+    });
   }
 
   async function handleNetworkScan() {
@@ -422,10 +504,16 @@ function App() {
     await runNetworkScan();
   }
 
-  async function runNetworkScan() {
-    setErrorMessage(null);
-    setStatusMessage(null);
-    setScanPhase("scanning");
+  async function runNetworkScan(silent = false) {
+    if (!silent) {
+      setErrorMessage(null);
+      setStatusMessage(null);
+    }
+
+    if (!silent) {
+      setScanPhase("scanning");
+    }
+
     logConnectorEvent("discovery_scan_started");
 
     try {
@@ -434,11 +522,13 @@ function App() {
 
       if (!token) {
         throw new Error(
-          "Connector token missing from Keychain. Pair this Mac again."
+          `Connector token missing from ${secureStoreLabel}. Pair this device again.`
         );
       }
 
-      setScanPhase("scanning");
+      if (!silent) {
+        setScanPhase("scanning");
+      }
 
       const { scan, sync } =
         await scanAndSyncDiscovery({
@@ -450,7 +540,9 @@ function App() {
         });
 
       if (scan.cancelled) {
-        setStatusMessage("Network scan cancelled.");
+        if (!silent) {
+          setStatusMessage("Network scan cancelled.");
+        }
         return;
       }
 
@@ -462,9 +554,15 @@ function App() {
 
       setLastScanDeviceCount(deviceCount);
 
+      const currentMetadata = metadataRef.current;
+
+      if (!currentMetadata) {
+        return;
+      }
+
       const nextMetadata: ConnectorMetadata =
         {
-          ...metadata!,
+          ...currentMetadata,
           lastScanAt: scannedAt,
           lastScanDeviceCount: deviceCount,
           scanConsentAccepted: true,
@@ -481,19 +579,105 @@ function App() {
       });
 
       setStatusMessage(
-        `Scan complete. ${deviceCount} device${deviceCount === 1 ? "" : "s"} found and synced to Home Tech Vault.`
+        silent
+          ? `Automatic scan complete. ${deviceCount} device${deviceCount === 1 ? "" : "s"} synced.`
+          : `Scan complete. ${deviceCount} device${deviceCount === 1 ? "" : "s"} found and synced to Home Tech Vault.`
       );
     } catch (error) {
-      setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "Unable to complete the network scan."
-      );
+      if (!silent) {
+        setErrorMessage(
+          error instanceof Error
+            ? error.message
+            : "Unable to complete the network scan."
+        );
+      }
     } finally {
-      setScanPhase("idle");
-      setScanConsentOpen(false);
+      if (!silent) {
+        setScanPhase("idle");
+        setScanConsentOpen(false);
+      }
     }
   }
+
+  useEffect(() => {
+    if (screen !== "connected" || !metadata) {
+      return;
+    }
+
+    void setConnectorRuntimePreferences({
+      minimizeToTray: Boolean(metadata.monitoringEnabled),
+      monitoringPaused: Boolean(metadata.monitoringPaused),
+    });
+  }, [
+    screen,
+    metadata?.monitoringEnabled,
+    metadata?.monitoringPaused,
+  ]);
+
+  useEffect(() => {
+    if (screen !== "connected" || !metadata?.monitoringEnabled) {
+      return;
+    }
+
+    const scheduler = startMonitoringScheduler({
+      isPaused: () =>
+        Boolean(metadataRef.current?.monitoringPaused),
+      onTick: async () => {
+        await runNetworkScan(true);
+      },
+    });
+
+    scheduler.start();
+
+    return () => {
+      scheduler.stop();
+    };
+  }, [screen, metadata?.monitoringEnabled, metadata?.monitoringPaused]);
+
+  useEffect(() => {
+    const unlisteners = [
+      listen("connector://scan-requested", () => {
+        void handleNetworkScan();
+      }),
+      listen("connector://monitoring-paused", async () => {
+        if (!metadataRef.current) {
+          return;
+        }
+
+        const nextMetadata = {
+          ...metadataRef.current,
+          monitoringPaused: true,
+        };
+
+        await saveConnectorMetadata(nextMetadata);
+        setMetadata(nextMetadata);
+      }),
+      listen("connector://monitoring-resumed", async () => {
+        if (!metadataRef.current) {
+          return;
+        }
+
+        const nextMetadata = {
+          ...metadataRef.current,
+          monitoringPaused: false,
+        };
+
+        await saveConnectorMetadata(nextMetadata);
+        setMetadata(nextMetadata);
+      }),
+      listen("connector://check-updates-requested", () => {
+        void handleCheckForUpdates();
+      }),
+    ];
+
+    return () => {
+      void Promise.all(unlisteners).then((handles) => {
+        handles.forEach((handle) => {
+          void handle();
+        });
+      });
+    };
+  }, []);
 
   function handleCancelScan() {
     void cancelLocalNetworkScan();
@@ -524,13 +708,12 @@ function App() {
         {screen === "unpaired" ? (
           <>
             <h1>
-              Connect this Mac to your
+              Connect this {devicePlatformLabel} device to your
               household
             </h1>
             <p className="lede">
-              Pair this Mac with your Home
-              Tech Vault household using a
-              one-time code.
+              Pair this device with your Home Tech Vault household
+              using a one-time code.
             </p>
 
             <label className="field">
@@ -556,7 +739,11 @@ function App() {
                     event.target.value
                   )
                 }
-                placeholder="Jason’s MacBook"
+                placeholder={
+                  osPlatform === "windows"
+                    ? "Jason’s PC"
+                    : "Jason’s MacBook"
+                }
               />
             </label>
 
@@ -602,9 +789,8 @@ function App() {
               Connected to Home Tech Vault
             </h1>
             <p className="lede">
-              This Mac sends automatic
-              heartbeats every 5 minutes
-              while the app is running.
+              This device sends automatic heartbeats every 5
+              minutes while the connector is running.
             </p>
 
             <dl className="details">
@@ -653,6 +839,52 @@ function App() {
                 </dd>
               </div>
             </dl>
+
+            <section className="scan-panel">
+              <h2>Monitoring</h2>
+              <p className="help">
+                Enable automatic monitoring to scan your private
+                network every 15 minutes. Requires a Pro or Family
+                plan in Home Tech Vault.
+              </p>
+              <label className="toggle-row">
+                <input
+                  type="checkbox"
+                  checked={Boolean(metadata.monitoringEnabled)}
+                  onChange={(event) =>
+                    void handleMonitoringToggle(
+                      event.target.checked
+                    )
+                  }
+                />
+                <span>Enable automatic monitoring</span>
+              </label>
+              {metadata.monitoringEnabled ? (
+                <p className="help">
+                  {metadata.monitoringPaused
+                    ? "Monitoring is paused."
+                    : "Monitoring is active every 15 minutes."}
+                </p>
+              ) : null}
+            </section>
+
+            <section className="scan-panel">
+              <h2>Startup</h2>
+              <label className="toggle-row">
+                <input
+                  type="checkbox"
+                  checked={autostartEnabled}
+                  onChange={(event) =>
+                    void handleAutostartToggle(
+                      event.target.checked
+                    )
+                  }
+                />
+                <span>
+                  Start Home Tech Vault Connector when I sign in
+                </span>
+              </label>
+            </section>
 
             <section className="scan-panel">
               <h2>Network scan</h2>
@@ -746,10 +978,20 @@ function App() {
                 className="secondary"
                 type="button"
                 onClick={() =>
+                  void handleCheckForUpdates()
+                }
+              >
+                Check for Updates
+              </button>
+
+              <button
+                className="secondary"
+                type="button"
+                onClick={() =>
                   void handleDisconnect()
                 }
               >
-                Disconnect This Mac
+                Disconnect This Device
               </button>
 
               <button
@@ -764,11 +1006,9 @@ function App() {
             </div>
 
             <p className="help">
-              Disconnect locally removes this
-              Mac&apos;s Keychain token. To
-              revoke server-side access, use
-              Home Tech Vault → Network →
-              Connect Your Home Network.
+              Disconnect locally removes this device&apos;s token
+              from {secureStoreLabel}. To revoke server-side
+              access, use Home Tech Vault → Network → Connect.
             </p>
           </>
         ) : null}

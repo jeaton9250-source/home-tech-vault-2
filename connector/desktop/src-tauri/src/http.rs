@@ -16,6 +16,16 @@ const DEV_ORIGINS: [&str; 4] = [
 
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
 
+pub fn connector_platform() -> &'static str {
+    if cfg!(target_os = "windows") {
+        "windows"
+    } else if cfg!(target_os = "macos") {
+        "macos"
+    } else {
+        "unknown"
+    }
+}
+
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct ConnectorCommandError {
@@ -278,7 +288,7 @@ pub async fn pair_connector_request(
         json!({
             "code": code,
             "connectorName": connector_name,
-            "platform": "macos",
+            "platform": connector_platform(),
             "appVersion": app_version,
         }),
         None,
@@ -330,7 +340,7 @@ pub async fn send_heartbeat_request(
         &url,
         json!({
             "appVersion": app_version,
-            "platform": "macos",
+            "platform": connector_platform(),
             "deviceName": device_name,
         }),
         Some(&connector_token),

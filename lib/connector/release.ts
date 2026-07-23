@@ -11,6 +11,17 @@ export function getConnectorMacosDownloadUrl(): string | null {
   return value || null;
 }
 
+/**
+ * Public Windows connector download URL.
+ * Set only when a signed or private-testing installer exists.
+ */
+export function getConnectorWindowsDownloadUrl(): string | null {
+  const value =
+    process.env.NEXT_PUBLIC_CONNECTOR_WINDOWS_DOWNLOAD_URL?.trim();
+
+  return value || null;
+}
+
 export function getConnectorMacosReleaseLabel() {
   return {
     version: CONNECTOR_MACOS_APP_VERSION,

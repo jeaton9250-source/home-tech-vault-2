@@ -62,10 +62,10 @@ export function connectorLimitLabel(
   }
 
   if (limit === 1) {
-    return "1 paired Mac on Free";
+    return "1 paired connector on Free";
   }
 
-  return `Up to ${limit} paired Macs on Pro`;
+  return `Up to ${limit} paired connectors on Pro`;
 }
 
 export function buildConnectorAccessContext(input: {

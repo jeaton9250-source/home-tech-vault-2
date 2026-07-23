@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 
+import { defaultConnectorDeviceLabel } from "./platform";
 import type { ConnectorMetadata } from "./types";
 
 export async function saveConnectorToken(
@@ -49,7 +50,7 @@ export async function getDeviceName() {
     "get_device_name"
   );
 
-  return name.trim() || "My Mac";
+  return name.trim() || defaultConnectorDeviceLabel();
 }
 
 export async function disconnectLocally() {

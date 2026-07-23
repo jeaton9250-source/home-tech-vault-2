@@ -64,7 +64,7 @@ describe("connector access", () => {
   });
 
   it("describes connector limits by plan", () => {
-    assert.match(connectorLimitLabel("free"), /1 paired Mac/);
+    assert.match(connectorLimitLabel("free"), /1 paired connector/);
     assert.match(connectorLimitLabel("pro"), /3/);
     assert.match(connectorLimitLabel("family"), /Unlimited/);
   });

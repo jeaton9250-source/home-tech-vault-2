@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 
 import Button from "@/components/ui/Button";
-import ConnectorDownloadButton from "@/components/connector/ConnectorDownloadButton";
+import ConnectorDownloadActions from "@/components/connector/ConnectorDownloadActions";
 import ConnectorModal from "@/components/connector/ConnectorModal";
 import {
   CONNECTOR_INSTALLATION_COMPLETE_MESSAGE,
@@ -81,7 +81,7 @@ export default function InstallationGuideDialog({
 
         {activeStep.id === "download" ? (
           <div className="mt-5">
-            <ConnectorDownloadButton />
+            <ConnectorDownloadActions layout="stack" />
           </div>
         ) : null}
 

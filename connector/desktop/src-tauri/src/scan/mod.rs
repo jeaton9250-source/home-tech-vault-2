@@ -1,14 +1,19 @@
-mod arp;
+mod common;
 mod fingerprint;
 mod oui;
+
+#[cfg(target_os = "macos")]
+mod macos;
+#[cfg(target_os = "windows")]
+mod windows;
 
 use if_addrs::IfAddr;
 use std::sync::atomic::{AtomicBool, Ordering};
 
+use common::{is_private_ipv4, ArpEntry};
 use serde::Serialize;
 
-pub static SCAN_CANCEL_REQUESTED: AtomicBool =
-    AtomicBool::new(false);
+pub static SCAN_CANCEL_REQUESTED: AtomicBool = AtomicBool::new(false);
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -53,42 +58,33 @@ fn is_scan_cancelled() -> bool {
     SCAN_CANCEL_REQUESTED.load(Ordering::SeqCst)
 }
 
+fn read_arp_table() -> Result<Vec<ArpEntry>, String> {
+    #[cfg(target_os = "macos")]
+    {
+        return macos::read_arp_table();
+    }
+
+    #[cfg(target_os = "windows")]
+    {
+        return windows::read_arp_table();
+    }
+
+    #[cfg(not(any(target_os = "macos", target_os = "windows")))]
+    {
+        Err("Network scanning is not supported on this platform yet.".into())
+    }
+}
+
 pub fn scan_local_network() -> Result<ScanSummary, String> {
     reset_scan_cancel();
 
     let started_at = chrono_now_iso();
     let interfaces = list_private_interfaces()?;
-
-    if is_scan_cancelled() {
-        return Ok(ScanSummary {
-            started_at,
-            completed_at: chrono_now_iso(),
-            interfaces,
-            devices: Vec::new(),
-            cancelled: true,
-        });
-    }
-
-    let arp_devices = arp::read_arp_table()?;
-
-    if is_scan_cancelled() {
-        return Ok(ScanSummary {
-            started_at,
-            completed_at: chrono_now_iso(),
-            interfaces,
-            devices: Vec::new(),
-            cancelled: true,
-        });
-    }
-
+    let arp_devices = read_arp_table()?;
     let mut devices = Vec::new();
 
     for entry in arp_devices {
-        if is_scan_cancelled() {
-            break;
-        }
-
-        if !arp::is_private_ipv4(&entry.ip_address) {
+        if is_scan_cancelled() || !is_private_ipv4(&entry.ip_address) {
             continue;
         }
 
@@ -102,13 +98,12 @@ pub fn scan_local_network() -> Result<ScanSummary, String> {
             manufacturer.as_deref(),
         );
 
-        let local_fingerprint =
-            fingerprint::stable_fingerprint(
-                entry.mac_address.as_deref(),
-                entry.hostname.as_deref(),
-                manufacturer.as_deref(),
-                None,
-            )?;
+        let local_fingerprint = fingerprint::stable_fingerprint(
+            entry.mac_address.as_deref(),
+            entry.hostname.as_deref(),
+            manufacturer.as_deref(),
+            None,
+        )?;
 
         devices.push(ScannedDevice {
             local_fingerprint,
@@ -145,7 +140,7 @@ fn list_private_interfaces() -> Result<Vec<LocalInterfaceSummary>, String> {
 
         let ip_address = v4.ip.to_string();
 
-        if !arp::is_private_ipv4(&ip_address) {
+        if !is_private_ipv4(&ip_address) {
             continue;
         }
 
@@ -170,40 +165,20 @@ fn guess_device_type(
     )
     .to_lowercase();
 
-    if haystack.contains("iphone")
-        || haystack.contains("ipad")
-        || haystack.contains("android")
-    {
+    if haystack.contains("iphone") || haystack.contains("android") {
         return Some("Mobile".into());
     }
 
     if haystack.contains("macbook")
-        || haystack.contains("imac")
         || haystack.contains("laptop")
+        || haystack.contains("desktop")
+        || haystack.contains("pc")
     {
         return Some("Computer".into());
     }
 
-    if haystack.contains("router")
-        || haystack.contains("gateway")
-        || haystack.contains("eero")
-        || haystack.contains("unifi")
-    {
+    if haystack.contains("router") || haystack.contains("gateway") {
         return Some("Networking".into());
-    }
-
-    if haystack.contains("roku")
-        || haystack.contains("apple-tv")
-        || haystack.contains(" tv")
-    {
-        return Some("TV & Streaming".into());
-    }
-
-    if haystack.contains("nest")
-        || haystack.contains("echo")
-        || haystack.contains("homepod")
-    {
-        return Some("Smart Home".into());
     }
 
     None
@@ -218,24 +193,14 @@ mod tests {
     use super::*;
 
     #[test]
+    #[cfg(any(target_os = "macos", target_os = "windows"))]
     fn live_local_network_scan_reports_private_devices_only() {
-        let started = std::time::Instant::now();
-        let summary = scan_local_network().expect("scan should succeed on macOS");
+        let summary = scan_local_network().expect("scan should succeed");
 
         for device in &summary.devices {
             if let Some(ip) = &device.ip_address {
-                assert!(
-                    arp::is_private_ipv4(ip),
-                    "public IP leaked into scan results: {ip}"
-                );
+                assert!(is_private_ipv4(ip));
             }
         }
-
-        eprintln!(
-            "Live scan completed in {:?}: {} interface(s), {} device(s)",
-            started.elapsed(),
-            summary.interfaces.len(),
-            summary.devices.len()
-        );
     }
 }
