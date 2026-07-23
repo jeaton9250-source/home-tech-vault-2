@@ -8,6 +8,9 @@ import {
   computeStableFingerprint,
   normalizeMacAddress,
 } from "@/lib/connector/network";
+import {
+  validateSsdpDescriptionUrl,
+} from "@/lib/connector/ssdpValidation";
 
 export type DiscoverySyncDeviceInput = {
   localFingerprint?: string;
@@ -17,8 +20,13 @@ export type DiscoverySyncDeviceInput = {
   manufacturer?: string;
   model?: string;
   serialNumber?: string;
+  friendlyName?: string;
   deviceType?: string;
   discoverySource?: string;
+  discoverySources?: string[];
+  mdnsServices?: string[];
+  ssdpDeviceType?: string;
+  ssdpDescriptionUrl?: string;
   firstSeenAt?: string;
   lastSeenAt?: string;
   online?: boolean;
@@ -39,8 +47,12 @@ export type ParsedDiscoveryDevice = {
   manufacturer: string | null;
   model: string | null;
   serialNumber: string | null;
+  friendlyName: string | null;
   deviceType: string | null;
-  discoverySource: string;
+  discoverySources: string[];
+  mdnsServices: string[];
+  ssdpDeviceType: string | null;
+  ssdpDescriptionUrl: string | null;
   firstSeenAt: string;
   lastSeenAt: string;
   online: boolean;
@@ -57,6 +69,7 @@ export class DiscoveryValidationError extends Error {
 const MAX_DEVICES_PER_SYNC = 500;
 const MAX_TEXT_FIELD = 200;
 const MAX_FINGERPRINT = 256;
+const MAX_SERVICE_LIST = 32;
 
 function trimOptional(
   value: unknown,
@@ -79,6 +92,44 @@ function trimOptional(
   }
 
   return trimmed;
+}
+
+function parseStringArray(
+  value: unknown,
+  fieldName: string,
+  maxItems: number,
+  maxLength: number
+): string[] {
+  if (value === undefined || value === null) {
+    return [];
+  }
+
+  if (!Array.isArray(value)) {
+    throw new DiscoveryValidationError(
+      `${fieldName} must be an array.`
+    );
+  }
+
+  if (value.length > maxItems) {
+    throw new DiscoveryValidationError(
+      `${fieldName} may include at most ${maxItems} entries.`
+    );
+  }
+
+  return value.map((entry, index) => {
+    const trimmed = trimOptional(
+      entry,
+      maxLength
+    );
+
+    if (!trimmed) {
+      throw new DiscoveryValidationError(
+        `${fieldName}[${index}] must be a non-empty string.`
+      );
+    }
+
+    return trimmed;
+  });
 }
 
 function parseIsoTimestamp(
@@ -151,6 +202,47 @@ function parseMacAddress(
   return normalized;
 }
 
+function parseDiscoverySources(
+  device: DiscoverySyncDeviceInput
+): string[] {
+  const fromArray = parseStringArray(
+    device.discoverySources,
+    "discoverySources",
+    MAX_SERVICE_LIST,
+    MAX_TEXT_FIELD
+  );
+
+  if (fromArray.length > 0) {
+    return fromArray;
+  }
+
+  const legacy = trimOptional(
+    device.discoverySource,
+    MAX_TEXT_FIELD
+  );
+
+  return legacy ? [legacy] : ["Connector Scan"];
+}
+
+function parseSsdpDescriptionUrl(
+  value: unknown,
+  index: number
+): string | null {
+  const trimmed = trimOptional(value, 512);
+
+  if (!trimmed) {
+    return null;
+  }
+
+  try {
+    return validateSsdpDescriptionUrl(trimmed).url;
+  } catch {
+    throw new DiscoveryValidationError(
+      `devices[${index}].ssdpDescriptionUrl must be a valid private local description URL.`
+    );
+  }
+}
+
 export function parseDiscoverySyncPayload(
   body: DiscoverySyncRequestBody,
   nowIso: string
@@ -210,15 +302,31 @@ export function parseDiscoverySyncPayload(
         device.serialNumber,
         MAX_TEXT_FIELD
       );
+      const friendlyName = trimOptional(
+        device.friendlyName,
+        CONNECTOR_FIELD_LIMITS.deviceName
+      );
       const deviceType = trimOptional(
         device.deviceType,
         MAX_TEXT_FIELD
       );
-      const discoverySource =
-        trimOptional(
-          device.discoverySource,
-          MAX_TEXT_FIELD
-        ) ?? "Connector Scan";
+      const discoverySources = parseDiscoverySources(
+        device
+      );
+      const mdnsServices = parseStringArray(
+        device.mdnsServices,
+        `devices[${index}].mdnsServices`,
+        MAX_SERVICE_LIST,
+        MAX_TEXT_FIELD
+      );
+      const ssdpDeviceType = trimOptional(
+        device.ssdpDeviceType,
+        MAX_TEXT_FIELD
+      );
+      const ssdpDescriptionUrl = parseSsdpDescriptionUrl(
+        device.ssdpDescriptionUrl,
+        index
+      );
 
       const firstSeenAt = parseIsoTimestamp(
         device.firstSeenAt,
@@ -266,8 +374,12 @@ export function parseDiscoverySyncPayload(
         manufacturer,
         model,
         serialNumber,
+        friendlyName,
         deviceType,
-        discoverySource,
+        discoverySources,
+        mdnsServices,
+        ssdpDeviceType,
+        ssdpDescriptionUrl,
         firstSeenAt,
         lastSeenAt,
         online,

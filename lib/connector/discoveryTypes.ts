@@ -70,6 +70,13 @@ export type DiscoveryNetworkFields = {
   networkFingerprint: string;
 };
 
+export type IdentificationConfidence =
+  | "exact"
+  | "high"
+  | "medium"
+  | "low"
+  | "unknown";
+
 export type DiscoveredDeviceRow = {
   id: string;
   household_id: string;
@@ -82,6 +89,15 @@ export type DiscoveredDeviceRow = {
   ip_address: string | null;
   mac_address: string | null;
   device_type: string | null;
+  friendly_name: string | null;
+  mdns_services: string[];
+  ssdp_device_type: string | null;
+  ssdp_description_url: string | null;
+  likely_category: string | null;
+  likely_brand: string | null;
+  identification_confidence: IdentificationConfidence | null;
+  identification_reasons: string[];
+  identification_display_name: string | null;
   online: boolean;
   discovery_sources: string[];
   first_seen_at: string;
@@ -121,6 +137,15 @@ export type DiscoveredDeviceSummary = {
   ipAddress: string | null;
   macAddress: string | null;
   deviceType: string | null;
+  friendlyName: string | null;
+  mdnsServices: string[];
+  ssdpDeviceType: string | null;
+  ssdpDescriptionUrl: string | null;
+  likelyCategory: string | null;
+  likelyBrand: string | null;
+  identificationConfidence: IdentificationConfidence | null;
+  identificationReasons: string[];
+  identificationDisplayName: string | null;
   online: boolean;
   discoverySources: string[];
   firstSeenAt: string;

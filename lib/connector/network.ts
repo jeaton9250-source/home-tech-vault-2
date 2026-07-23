@@ -260,7 +260,7 @@ export function manufacturerIsMoreSpecific(
 
 export function mergeDiscoverySources(
   existing: string[] | null | undefined,
-  incoming: string | null | undefined
+  incoming: string | string[] | null | undefined
 ): string[] {
   const set = new Set(
     (existing ?? []).map((value) =>
@@ -268,8 +268,31 @@ export function mergeDiscoverySources(
     ).filter(Boolean)
   );
 
-  if (incoming?.trim()) {
+  if (Array.isArray(incoming)) {
+    for (const value of incoming) {
+      if (value?.trim()) {
+        set.add(value.trim());
+      }
+    }
+  } else if (incoming?.trim()) {
     set.add(incoming.trim());
+  }
+
+  return [...set];
+}
+
+export function mergeStringArrays(
+  existing: string[] | null | undefined,
+  incoming: string[] | null | undefined
+): string[] {
+  const set = new Set(
+    (existing ?? []).map((value) => value.trim()).filter(Boolean)
+  );
+
+  for (const value of incoming ?? []) {
+    if (value?.trim()) {
+      set.add(value.trim());
+    }
   }
 
   return [...set];

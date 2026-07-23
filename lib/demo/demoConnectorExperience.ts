@@ -1,3 +1,4 @@
+import { identifyDiscoveredDevice } from "@/lib/connector/deviceIdentification";
 import type {
   DiscoveredDeviceSummary,
   DiscoveryStatsSummary,
@@ -16,6 +17,7 @@ import {
   demoTimestampDaysAgo,
   demoTimestampMinutesAgo,
 } from "@/lib/demo/demoNetworkTime";
+import { computeDiscoveryStats } from "@/lib/connector/discoveryStats";
 
 export {
   applyDemoDeviceNetworkFields,
@@ -48,6 +50,55 @@ function vaultDeviceById(deviceId: string) {
   return morganDevices.find((device) => device.id === deviceId) ?? null;
 }
 
+function enrichDemoIdentification(
+  device: DiscoveredDeviceSummary
+): DiscoveredDeviceSummary {
+  if (device.matchStatus === "matched" && device.matchedDevice) {
+    return {
+      ...device,
+      friendlyName: device.matchedDevice.deviceName,
+      mdnsServices: device.mdnsServices ?? [],
+      ssdpDeviceType: device.ssdpDeviceType ?? null,
+      ssdpDescriptionUrl: device.ssdpDescriptionUrl ?? null,
+      likelyCategory: device.matchedDevice.category,
+      likelyBrand: device.matchedDevice.manufacturer,
+      identificationConfidence: "exact",
+      identificationReasons: [
+        "Previously confirmed by household member",
+        "Stable fingerprint relationship preserved",
+      ],
+      identificationDisplayName:
+        device.matchedDevice.deviceName ??
+        device.hostname ??
+        "Confirmed device",
+    };
+  }
+
+  const identification = identifyDiscoveredDevice({
+    hostname: device.hostname,
+    manufacturer: device.manufacturer,
+    model: device.model,
+    discoverySources: device.discoverySources,
+    mdnsServices: device.mdnsServices,
+    ssdpDeviceType: device.ssdpDeviceType,
+    ipAddress: device.ipAddress,
+    macAddress: device.macAddress,
+  });
+
+  return {
+    ...device,
+    friendlyName: device.friendlyName ?? null,
+    mdnsServices: device.mdnsServices ?? [],
+    ssdpDeviceType: device.ssdpDeviceType ?? null,
+    ssdpDescriptionUrl: device.ssdpDescriptionUrl ?? null,
+    likelyCategory: identification.likelyCategory,
+    likelyBrand: identification.likelyBrand,
+    identificationConfidence: identification.identificationConfidence,
+    identificationReasons: identification.identificationReasons,
+    identificationDisplayName: identification.displayName,
+  };
+}
+
 function matchedSummary(
   deviceId: string,
   overrides?: Partial<DiscoveredDeviceSummary>
@@ -59,7 +110,7 @@ function matchedSummary(
     throw new Error(`Missing demo discovery profile for ${deviceId}`);
   }
 
-  return {
+  return enrichDemoIdentification({
     id: `demo-discovered-${deviceId}`,
     connectorId: DEMO_CONNECTOR_ID,
     localFingerprint: `demo:mac:${profile.macAddress.toLowerCase()}`,
@@ -70,6 +121,15 @@ function matchedSummary(
     ipAddress: profile.ipAddress,
     macAddress: profile.macAddress,
     deviceType: vault.category,
+    friendlyName: null,
+    mdnsServices: [],
+    ssdpDeviceType: null,
+    ssdpDescriptionUrl: null,
+    likelyCategory: null,
+    likelyBrand: null,
+    identificationConfidence: null,
+    identificationReasons: [],
+    identificationDisplayName: null,
     online: profile.online,
     discoverySources: [profile.discoverySource],
     firstSeenAt: demoTimestampDaysAgo(profile.firstSeenDaysAgo),
@@ -90,7 +150,7 @@ function matchedSummary(
       location: vault.location,
     },
     ...overrides,
-  };
+  });
 }
 
 const MATCHED_DEVICE_IDS = [
@@ -114,7 +174,7 @@ export function buildDemoDiscoveredDevices(): DiscoveredDeviceSummary[] {
   );
 
   const needsReview: DiscoveredDeviceSummary[] = [
-    {
+    enrichDemoIdentification({
       id: "demo-discovered-echo-show-review",
       connectorId: DEMO_CONNECTOR_ID,
       localFingerprint: "demo:mac:aa:bb:cc:55:01:02",
@@ -127,6 +187,15 @@ export function buildDemoDiscoveredDevices(): DiscoveredDeviceSummary[] {
       deviceType: "Smart Home",
       online: true,
       discoverySources: [DEMO_DISCOVERY_SOURCE],
+      mdnsServices: ["_amzn-wplay._tcp.local"],
+      ssdpDeviceType: "urn:schemas-upnp-org:device:MediaRenderer:1",
+      ssdpDescriptionUrl: null,
+      friendlyName: null,
+      likelyCategory: null,
+      likelyBrand: null,
+      identificationConfidence: null,
+      identificationReasons: [],
+      identificationDisplayName: null,
       firstSeenAt: demoTimestampDaysAgo(3),
       lastSeenAt: demoTimestampMinutesAgo(14),
       importedDeviceId: null,
@@ -146,8 +215,8 @@ export function buildDemoDiscoveredDevices(): DiscoveredDeviceSummary[] {
         modelNumber: '15"',
         location: "Kitchen",
       },
-    },
-    {
+    }),
+    enrichDemoIdentification({
       id: "demo-discovered-hue-bridge-review",
       connectorId: DEMO_CONNECTOR_ID,
       localFingerprint: "demo:mac:aa:bb:cc:58:01:02",
@@ -160,6 +229,15 @@ export function buildDemoDiscoveredDevices(): DiscoveredDeviceSummary[] {
       deviceType: "Smart Home",
       online: true,
       discoverySources: [DEMO_DISCOVERY_SOURCE],
+      mdnsServices: ["_hue._tcp.local"],
+      ssdpDeviceType: null,
+      ssdpDescriptionUrl: null,
+      friendlyName: null,
+      likelyCategory: null,
+      likelyBrand: null,
+      identificationConfidence: null,
+      identificationReasons: [],
+      identificationDisplayName: null,
       firstSeenAt: demoTimestampDaysAgo(2),
       lastSeenAt: demoTimestampMinutesAgo(20),
       importedDeviceId: null,
@@ -171,11 +249,44 @@ export function buildDemoDiscoveredDevices(): DiscoveredDeviceSummary[] {
       matchedDeviceId: null,
       candidateDeviceIds: [],
       matchedDevice: null,
-    },
+    }),
+    enrichDemoIdentification({
+      id: "demo-discovered-reef-light-review",
+      connectorId: DEMO_CONNECTOR_ID,
+      localFingerprint: "demo:host:reef-light-display",
+      hostname: "reef-light-display.local",
+      manufacturer: "Espressif Inc.",
+      model: null,
+      serialNumber: null,
+      ipAddress: "192.168.1.59",
+      macAddress: "AA:BB:CC:59:01:02",
+      deviceType: null,
+      online: true,
+      discoverySources: [DEMO_DISCOVERY_SOURCE],
+      mdnsServices: [],
+      ssdpDeviceType: null,
+      ssdpDescriptionUrl: null,
+      friendlyName: null,
+      likelyCategory: null,
+      likelyBrand: null,
+      identificationConfidence: null,
+      identificationReasons: [],
+      identificationDisplayName: null,
+      firstSeenAt: demoTimestampDaysAgo(1),
+      lastSeenAt: demoTimestampMinutesAgo(8),
+      importedDeviceId: null,
+      matchConfirmedAt: null,
+      ignoredAt: null,
+      matchStatus: "new",
+      matchConfidence: null,
+      matchReason: null,
+      matchedDeviceId: null,
+      matchedDevice: null,
+    }),
   ];
 
   const newDevices: DiscoveredDeviceSummary[] = [
-    {
+    enrichDemoIdentification({
       id: "demo-discovered-guest-ipad",
       connectorId: DEMO_CONNECTOR_ID,
       localFingerprint: "demo:mac:aa:bb:cc:61:01:02",
@@ -188,6 +299,15 @@ export function buildDemoDiscoveredDevices(): DiscoveredDeviceSummary[] {
       deviceType: "Mobile",
       online: true,
       discoverySources: [DEMO_DISCOVERY_SOURCE],
+      mdnsServices: ["_apple-mobdev2._tcp.local"],
+      ssdpDeviceType: null,
+      ssdpDescriptionUrl: null,
+      friendlyName: null,
+      likelyCategory: null,
+      likelyBrand: null,
+      identificationConfidence: null,
+      identificationReasons: [],
+      identificationDisplayName: null,
       firstSeenAt: demoTimestampDaysAgo(1),
       lastSeenAt: demoTimestampMinutesAgo(11),
       importedDeviceId: null,
@@ -198,8 +318,8 @@ export function buildDemoDiscoveredDevices(): DiscoveredDeviceSummary[] {
       matchReason: null,
       matchedDeviceId: null,
       matchedDevice: null,
-    },
-    {
+    }),
+    enrichDemoIdentification({
       id: "demo-discovered-roku-stick",
       connectorId: DEMO_CONNECTOR_ID,
       localFingerprint: "demo:mac:aa:bb:cc:62:01:02",
@@ -212,6 +332,15 @@ export function buildDemoDiscoveredDevices(): DiscoveredDeviceSummary[] {
       deviceType: "Streaming",
       online: true,
       discoverySources: [DEMO_DISCOVERY_SOURCE],
+      mdnsServices: ["_roku._tcp.local"],
+      ssdpDeviceType: null,
+      ssdpDescriptionUrl: null,
+      friendlyName: null,
+      likelyCategory: null,
+      likelyBrand: null,
+      identificationConfidence: null,
+      identificationReasons: [],
+      identificationDisplayName: null,
       firstSeenAt: demoTimestampMinutesAgo(26 * 60),
       lastSeenAt: demoTimestampMinutesAgo(16),
       importedDeviceId: null,
@@ -222,11 +351,11 @@ export function buildDemoDiscoveredDevices(): DiscoveredDeviceSummary[] {
       matchReason: null,
       matchedDeviceId: null,
       matchedDevice: null,
-    },
+    }),
   ];
 
   const ignored: DiscoveredDeviceSummary[] = [
-    {
+    enrichDemoIdentification({
       id: "demo-discovered-chromecast-ignored",
       connectorId: DEMO_CONNECTOR_ID,
       localFingerprint: "demo:mac:aa:bb:cc:63:01:02",
@@ -239,6 +368,15 @@ export function buildDemoDiscoveredDevices(): DiscoveredDeviceSummary[] {
       deviceType: "Streaming",
       online: false,
       discoverySources: [DEMO_DISCOVERY_SOURCE],
+      mdnsServices: ["_googlecast._tcp.local"],
+      ssdpDeviceType: null,
+      ssdpDescriptionUrl: null,
+      friendlyName: null,
+      likelyCategory: null,
+      likelyBrand: null,
+      identificationConfidence: null,
+      identificationReasons: [],
+      identificationDisplayName: null,
       firstSeenAt: demoTimestampDaysAgo(120),
       lastSeenAt: demoTimestampDaysAgo(14),
       importedDeviceId: null,
@@ -249,7 +387,7 @@ export function buildDemoDiscoveredDevices(): DiscoveredDeviceSummary[] {
       matchReason: null,
       matchedDeviceId: null,
       matchedDevice: null,
-    },
+    }),
   ];
 
   return [...matched, ...needsReview, ...newDevices, ...ignored];
@@ -258,37 +396,11 @@ export function buildDemoDiscoveredDevices(): DiscoveredDeviceSummary[] {
 export function buildDemoDiscoveryStats(
   devices: DiscoveredDeviceSummary[]
 ): DiscoveryStatsSummary {
-  const matchedDevices = devices.filter(
-    (device) => device.matchStatus === "matched"
-  ).length;
-  const needsReview = devices.filter(
-    (device) =>
-      device.matchStatus === "new" ||
-      device.matchStatus === "possible_match"
-  ).length;
-  const newDevices = devices.filter(
-    (device) => device.matchStatus === "new"
-  ).length;
-  const ignoredDevices = devices.filter(
-    (device) => device.matchStatus === "ignored"
-  ).length;
-  const onlineDevices = devices.filter((device) => device.online).length;
-  const recentlyDetected = devices.filter((device) => {
-    const lastSeenMs = new Date(device.lastSeenAt).getTime();
-    const anchorMs = new Date(DEMO_NETWORK_ANCHOR).getTime();
-    return anchorMs - lastSeenMs <= 30 * 60 * 1000;
-  }).length;
-
-  return {
-    totalDevices: devices.length,
-    totalDiscovered: devices.length,
-    matchedDevices,
-    needsReview,
-    newDevices,
-    ignoredDevices,
-    onlineDevices,
-    recentlyDetected,
-  };
+  return computeDiscoveryStats({
+    devices,
+    totalVaultDevices: devices.length,
+    onlineVaultDevices: devices.filter((device) => device.online).length,
+  });
 }
 
 export function buildDemoNetworkPagePayload() {

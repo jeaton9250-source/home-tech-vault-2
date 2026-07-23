@@ -25,6 +25,11 @@ import {
   buildMatchReasonSignals,
   formatMatchConfidenceLabel,
 } from "@/lib/connector/matchReasons";
+import {
+  buildIdentificationReasonSignals,
+  discoveryDeviceTitle,
+  formatIdentificationLabel,
+} from "@/lib/connector/identificationReasons";
 
 import type {
   DiscoveredDeviceSummary,
@@ -90,12 +95,7 @@ function formatTimestamp(
 }
 
 function deviceTitle(device: DiscoveredDeviceSummary) {
-  return (
-    device.hostname ??
-    device.manufacturer ??
-    device.ipAddress ??
-    "Discovered device"
-  );
+  return discoveryDeviceTitle(device);
 }
 
 export default function NetworkDiscoveryDashboard(props: {
@@ -189,7 +189,11 @@ export default function NetworkDiscoveryDashboard(props: {
     const needsReview = props.devices.filter(
       (device) =>
         device.matchStatus === "possible_match" ||
-        device.matchStatus === "new"
+        device.matchStatus === "new" ||
+        ((device.identificationConfidence === "unknown" ||
+          device.identificationConfidence === "medium") &&
+          device.matchStatus !== "ignored" &&
+          device.matchStatus !== "matched")
     );
 
     if (pageTab === "review") {
@@ -499,7 +503,11 @@ function DiscoveryDeviceCard({
   onTreatAsNew: () => void;
 }) {
   const signals = buildMatchReasonSignals(device);
+  const identificationSignals =
+    buildIdentificationReasonSignals(device);
   const confidenceLabel = formatMatchConfidenceLabel(device);
+  const identificationLabel =
+    formatIdentificationLabel(device);
   const matchedVaultDevice = device.matchedDevice;
   const selectedVault = vaultDevices.find(
     (candidate) => candidate.id === selectedVaultDeviceId
@@ -514,6 +522,11 @@ function DiscoveryDeviceCard({
               {deviceTitle(device)}
             </h2>
             <StatusBadge status={device.matchStatus} />
+            {identificationLabel ? (
+              <span className="rounded-full bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-800">
+                {identificationLabel}
+              </span>
+            ) : null}
             {confidenceLabel ? (
               <span className="rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-medium text-text-secondary">
                 {confidenceLabel}
@@ -521,17 +534,42 @@ function DiscoveryDeviceCard({
             ) : null}
           </div>
 
+          {device.likelyCategory ? (
+            <p className="mt-2 text-sm text-text-secondary">
+              Likely category: {device.likelyCategory}
+              {device.manufacturer ? ` · ${device.manufacturer}` : ""}
+            </p>
+          ) : null}
+
           {device.matchReason ? (
             <p className="mt-2 text-sm text-text-secondary">
               {device.matchReason}
             </p>
           ) : null}
 
+          {identificationSignals.length > 0 ? (
+            <ul className="mt-4 space-y-2">
+              {identificationSignals.map((signal) => (
+                <li
+                  key={signal.label}
+                  className="flex items-center gap-2 text-sm text-text-secondary"
+                >
+                  {signal.matched ? (
+                    <Check size={16} className="text-sky-600" />
+                  ) : (
+                    <span className="inline-block h-4 w-4 rounded-full border border-neutral-300" />
+                  )}
+                  {signal.label}
+                </li>
+              ))}
+            </ul>
+          ) : null}
+
           {signals.length > 0 ? (
             <ul className="mt-4 space-y-2">
               {signals.map((signal) => (
                 <li
-                  key={signal.label}
+                  key={`match-${signal.label}`}
                   className="flex items-center gap-2 text-sm text-text-secondary"
                 >
                   {signal.matched ? (
@@ -539,7 +577,7 @@ function DiscoveryDeviceCard({
                   ) : (
                     <span className="inline-block h-4 w-4 rounded-full border border-neutral-300" />
                   )}
-                  {signal.label}
+                  Match: {signal.label}
                 </li>
               ))}
             </ul>
@@ -601,7 +639,7 @@ function DiscoveryDeviceCard({
               {device.matchStatus === "possible_match" ? (
                 <>
                   <ActionButton
-                    label="Confirm Match"
+                    label="Confirm Identity"
                     icon={<CheckCircle2 size={16} />}
                     busy={busy}
                     disabled={!selectedVaultDeviceId}
@@ -612,6 +650,18 @@ function DiscoveryDeviceCard({
                     variant="secondary"
                     busy={busy}
                     onClick={onTreatAsNew}
+                  />
+                </>
+              ) : null}
+
+              {device.matchStatus === "new" ? (
+                <>
+                  <ActionButton
+                    label="Confirm Identity"
+                    icon={<CheckCircle2 size={16} />}
+                    variant="secondary"
+                    busy={busy}
+                    onClick={onImport}
                   />
                 </>
               ) : null}

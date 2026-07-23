@@ -1,14 +1,20 @@
 mod common;
 mod fingerprint;
+mod mdns;
+mod merge;
 mod oui;
+mod ssdp;
 
 #[cfg(target_os = "macos")]
 mod macos;
 #[cfg(target_os = "windows")]
 mod windows;
 
-use if_addrs::IfAddr;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::time::Duration;
+
+use if_addrs::IfAddr;
+use merge::merge_scan_observations;
 
 use common::{is_private_ipv4, ArpEntry};
 use serde::Serialize;
@@ -31,8 +37,14 @@ pub struct ScannedDevice {
     pub mac_address: Option<String>,
     pub hostname: Option<String>,
     pub manufacturer: Option<String>,
+    pub model: Option<String>,
+    pub friendly_name: Option<String>,
     pub device_type: Option<String>,
     pub discovery_source: String,
+    pub discovery_sources: Vec<String>,
+    pub mdns_services: Vec<String>,
+    pub ssdp_device_type: Option<String>,
+    pub ssdp_description_url: Option<String>,
     pub online: bool,
 }
 
@@ -81,41 +93,24 @@ pub fn scan_local_network() -> Result<ScanSummary, String> {
     let started_at = chrono_now_iso();
     let interfaces = list_private_interfaces()?;
     let arp_devices = read_arp_table()?;
-    let mut devices = Vec::new();
 
-    for entry in arp_devices {
-        if is_scan_cancelled() || !is_private_ipv4(&entry.ip_address) {
-            continue;
-        }
+    let mdns_observations = if is_scan_cancelled() {
+        Vec::new()
+    } else {
+        mdns::discover_mdns(Duration::from_secs(3)).unwrap_or_default()
+    };
 
-        let manufacturer = entry
-            .mac_address
-            .as_deref()
-            .and_then(oui::lookup_manufacturer);
+    let ssdp_observations = if is_scan_cancelled() {
+        Vec::new()
+    } else {
+        ssdp::discover_ssdp(Duration::from_secs(2)).unwrap_or_default()
+    };
 
-        let device_type = guess_device_type(
-            entry.hostname.as_deref(),
-            manufacturer.as_deref(),
-        );
-
-        let local_fingerprint = fingerprint::stable_fingerprint(
-            entry.mac_address.as_deref(),
-            entry.hostname.as_deref(),
-            manufacturer.as_deref(),
-            None,
-        )?;
-
-        devices.push(ScannedDevice {
-            local_fingerprint,
-            ip_address: Some(entry.ip_address),
-            mac_address: entry.mac_address,
-            hostname: entry.hostname,
-            manufacturer,
-            device_type,
-            discovery_source: "ARP".into(),
-            online: true,
-        });
-    }
+    let devices = merge_scan_observations(
+        arp_devices,
+        mdns_observations,
+        ssdp_observations,
+    )?;
 
     Ok(ScanSummary {
         started_at,
@@ -152,36 +147,6 @@ fn list_private_interfaces() -> Result<Vec<LocalInterfaceSummary>, String> {
     }
 
     Ok(interfaces)
-}
-
-fn guess_device_type(
-    hostname: Option<&str>,
-    manufacturer: Option<&str>,
-) -> Option<String> {
-    let haystack = format!(
-        "{} {}",
-        hostname.unwrap_or(""),
-        manufacturer.unwrap_or("")
-    )
-    .to_lowercase();
-
-    if haystack.contains("iphone") || haystack.contains("android") {
-        return Some("Mobile".into());
-    }
-
-    if haystack.contains("macbook")
-        || haystack.contains("laptop")
-        || haystack.contains("desktop")
-        || haystack.contains("pc")
-    {
-        return Some("Computer".into());
-    }
-
-    if haystack.contains("router") || haystack.contains("gateway") {
-        return Some("Networking".into());
-    }
-
-    None
 }
 
 fn chrono_now_iso() -> String {

@@ -1,6 +1,10 @@
 import "server-only";
 
-import { mergeDiscoverySources } from "@/lib/connector/network";
+import {
+  buildIdentificationForParsedDevice,
+  identificationFieldsFromResult,
+} from "@/lib/connector/discoveryIdentification";
+import { mergeDiscoverySources, mergeStringArrays } from "@/lib/connector/network";
 
 import type {
   DiscoverySyncResponse,
@@ -19,7 +23,6 @@ type UpsertDiscoveredDevicesInput = {
 /**
  * Phase 2B.1 — upsert discovered device observations only.
  * Does not match, enrich vault devices, or import.
- * Writes foundation-schema columns only (model/serial added in 2B.2 migration).
  */
 export async function upsertDiscoveredDevices(
   input: UpsertDiscoveredDevicesInput
@@ -38,7 +41,7 @@ export async function upsertDiscoveredDevices(
     const existingResult = await admin
       .from("discovered_devices")
       .select(
-        "id, imported_device_id, ignored_at, first_seen_at, discovery_sources"
+        "id, imported_device_id, ignored_at, first_seen_at, discovery_sources, mdns_services"
       )
       .eq("connector_id", connectorId)
       .eq(
@@ -60,8 +63,14 @@ export async function upsertDiscoveredDevices(
     const mergedSources =
       mergeDiscoverySources(
         existingResult.data?.discovery_sources,
-        device.discoverySource
+        device.discoverySources
       );
+    const mergedMdnsServices = mergeStringArrays(
+      existingResult.data?.mdns_services,
+      device.mdnsServices
+    );
+    const identification =
+      buildIdentificationForParsedDevice(device);
 
     const { error: upsertError } = await admin
       .from("discovered_devices")
@@ -73,9 +82,21 @@ export async function upsertDiscoveredDevices(
             device.localFingerprint,
           hostname: device.hostname,
           manufacturer: device.manufacturer,
+          model: device.model ?? identification.model,
           ip_address: device.ipAddress,
           mac_address: device.macAddress,
-          device_type: device.deviceType,
+          device_type:
+            device.deviceType ??
+            identification.likelyCategory,
+          friendly_name:
+            device.friendlyName ??
+            identification.friendlyName,
+          mdns_services: mergedMdnsServices,
+          ssdp_device_type: device.ssdpDeviceType,
+          ssdp_description_url: device.ssdpDescriptionUrl,
+          ...identificationFieldsFromResult(
+            identification
+          ),
           online: device.online,
           discovery_sources: mergedSources,
           first_seen_at: preservedFirstSeenAt,

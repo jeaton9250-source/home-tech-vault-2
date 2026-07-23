@@ -24,13 +24,10 @@ const FILTERS: Array<{
   { id: "ignored", label: "Ignored" },
 ];
 
+import { discoveryDeviceTitle } from "@/lib/connector/identificationReasons";
+
 function deviceTitle(device: DiscoveredDeviceSummary): string {
-  return (
-    device.hostname ??
-    device.manufacturer ??
-    device.ipAddress ??
-    "Discovered device"
-  );
+  return discoveryDeviceTitle(device);
 }
 
 function filterDevices(

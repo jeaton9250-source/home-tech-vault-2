@@ -15,8 +15,16 @@ import {
   shouldAutoLinkMatch,
 } from "@/lib/connector/matching";
 import {
-  mergeDiscoverySources,
-} from "@/lib/connector/network";
+  buildIdentificationForParsedDevice,
+  identificationFieldsFromResult,
+} from "@/lib/connector/discoveryIdentification";
+import {
+  identificationFromConfirmedVaultDevice,
+  identifyDiscoveredDevice,
+  type IdentificationResult,
+} from "@/lib/connector/deviceIdentification";
+import type { ParsedDiscoveryDevice } from "@/lib/connector/discoveryValidation";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type {
   DeviceMatchResult,
@@ -24,8 +32,10 @@ import type {
   DiscoveredDeviceSummary,
   DiscoverySyncResponse,
 } from "@/lib/connector/discoveryTypes";
-import type { ParsedDiscoveryDevice } from "@/lib/connector/discoveryValidation";
-import type { SupabaseClient } from "@supabase/supabase-js";
+import {
+  mergeDiscoverySources,
+  mergeStringArrays,
+} from "@/lib/connector/network";
 
 type SyncDiscoveredDevicesInput = {
   admin: SupabaseClient;
@@ -44,7 +54,7 @@ const VAULT_DEVICE_SELECT_FOUNDATION =
 
 /** Foundation schema only — safe before 2B.2 discovered_devices match columns. */
 const DISCOVERED_DEVICE_SELECT_FOUNDATION =
-  "id, household_id, connector_id, local_fingerprint, hostname, manufacturer, ip_address, mac_address, device_type, online, discovery_sources, first_seen_at, last_seen_at, imported_device_id, ignored_at, created_at, updated_at";
+  "id, household_id, connector_id, local_fingerprint, hostname, manufacturer, model, serial_number, ip_address, mac_address, device_type, friendly_name, mdns_services, ssdp_device_type, ssdp_description_url, likely_category, likely_brand, identification_confidence, identification_reasons, identification_display_name, online, discovery_sources, first_seen_at, last_seen_at, imported_device_id, match_confirmed_at, ignored_at, created_at, updated_at";
 
 function toDiscoveryNetworkFields(
   device: ParsedDiscoveryDevice,
@@ -59,7 +69,7 @@ function toDiscoveryNetworkFields(
     online: device.online,
     firstSeenAt: device.firstSeenAt,
     lastSeenAt: device.lastSeenAt,
-    discoverySource: device.discoverySource,
+    discoverySource: device.discoverySources[0] ?? "Connector Scan",
     connectorId,
     networkFingerprint:
       device.localFingerprint,
@@ -176,7 +186,7 @@ export async function syncDiscoveredDevicesWithMatching(
     const existingResult = await admin
       .from("discovered_devices")
       .select(
-        "id, imported_device_id, ignored_at, first_seen_at, discovery_sources"
+        "id, imported_device_id, ignored_at, first_seen_at, discovery_sources, mdns_services, match_confirmed_at"
       )
       .eq("connector_id", connectorId)
       .eq(
@@ -201,8 +211,39 @@ export async function syncDiscoveredDevicesWithMatching(
     const mergedSources =
       mergeDiscoverySources(
         existingResult.data?.discovery_sources,
-        device.discoverySource
+        device.discoverySources
       );
+    const mergedMdnsServices = mergeStringArrays(
+      existingResult.data?.mdns_services,
+      device.mdnsServices
+    );
+
+    const confirmedVaultDevice =
+      preservedImportedDeviceId
+        ? vaultDevices.find(
+            (candidate) =>
+              candidate.id ===
+              preservedImportedDeviceId
+          ) ?? null
+        : null;
+
+    const identification =
+      preservedImportedDeviceId &&
+      confirmedVaultDevice
+        ? identificationFromConfirmedVaultDevice({
+            deviceName:
+              confirmedVaultDevice.deviceName,
+            brand: confirmedVaultDevice.brand,
+            manufacturer:
+              confirmedVaultDevice.manufacturer,
+            modelNumber:
+              confirmedVaultDevice.modelNumber,
+            category:
+              confirmedVaultDevice.category,
+          })
+        : buildIdentificationForParsedDevice(
+            device
+          );
 
     const upsertPayload: Record<string, unknown> = {
       household_id: householdId,
@@ -210,9 +251,21 @@ export async function syncDiscoveredDevicesWithMatching(
       local_fingerprint: device.localFingerprint,
       hostname: device.hostname,
       manufacturer: device.manufacturer,
+      model: device.model ?? identification.model,
       ip_address: device.ipAddress,
       mac_address: device.macAddress,
-      device_type: device.deviceType,
+      device_type:
+        device.deviceType ??
+        identification.likelyCategory,
+      friendly_name:
+        device.friendlyName ??
+        identification.friendlyName,
+      mdns_services: mergedMdnsServices,
+      ssdp_device_type: device.ssdpDeviceType,
+      ssdp_description_url: device.ssdpDescriptionUrl,
+      ...identificationFieldsFromResult(
+        identification
+      ),
       online: device.online,
       discovery_sources: mergedSources,
       first_seen_at: preservedFirstSeenAt,
@@ -477,6 +530,47 @@ export function summarizeDiscoveredDevice(
     location?: string | null;
   } | null
 ): DiscoveredDeviceSummary {
+  const identification =
+    row.imported_device_id && matchedDevice
+      ? identificationFromConfirmedVaultDevice({
+          deviceName: matchedDevice.device_name,
+          brand: null,
+          manufacturer: matchedDevice.manufacturer,
+          modelNumber: matchedDevice.model_number,
+          category: matchedDevice.category,
+        })
+      : row.identification_confidence &&
+          row.identification_display_name
+        ? {
+            likelyCategory:
+              (row.likely_category as IdentificationResult["likelyCategory"]) ??
+              null,
+            likelyBrand: row.likely_brand,
+            friendlyName: row.friendly_name,
+            model: row.model,
+            identificationConfidence:
+              row.identification_confidence,
+            identificationReasons:
+              row.identification_reasons ?? [],
+            displayName: row.identification_display_name,
+          }
+        : identifyDiscoveredDevice({
+            ipAddress:
+              row.ip_address === null
+                ? null
+                : String(row.ip_address),
+            macAddress: row.mac_address,
+            hostname: row.hostname,
+            manufacturer: row.manufacturer,
+            model: row.model,
+            friendlyName: row.friendly_name,
+            discoverySources: row.discovery_sources,
+            mdnsServices: row.mdns_services ?? [],
+            ssdpDeviceType: row.ssdp_device_type,
+            ssdpDescriptionUrl: row.ssdp_description_url,
+            stableFingerprint: row.local_fingerprint,
+          });
+
   return {
     id: row.id,
     connectorId: row.connector_id,
@@ -491,6 +585,24 @@ export function summarizeDiscoveredDevice(
         : String(row.ip_address),
     macAddress: row.mac_address,
     deviceType: row.device_type,
+    friendlyName: row.friendly_name,
+    mdnsServices: row.mdns_services ?? [],
+    ssdpDeviceType: row.ssdp_device_type,
+    ssdpDescriptionUrl: row.ssdp_description_url,
+    likelyCategory:
+      identification.likelyCategory ?? row.likely_category,
+    likelyBrand:
+      identification.likelyBrand ?? row.likely_brand,
+    identificationConfidence:
+      identification.identificationConfidence ??
+      row.identification_confidence,
+    identificationReasons:
+      identification.identificationReasons.length > 0
+        ? identification.identificationReasons
+        : row.identification_reasons ?? [],
+    identificationDisplayName:
+      identification.displayName ??
+      row.identification_display_name,
     online: row.online,
     discoverySources: row.discovery_sources,
     firstSeenAt: row.first_seen_at,

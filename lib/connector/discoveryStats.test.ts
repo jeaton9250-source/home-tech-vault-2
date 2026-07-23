@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import { computeDiscoveryStats } from "./discoveryStats";
+import { deviceNeedsIdentificationReview } from "./identificationReasons";
 
 import type { DiscoveredDeviceSummary } from "./discoveryTypes";
 
@@ -19,6 +20,15 @@ function summary(
     ipAddress: "192.168.1.10",
     macAddress: "aa:bb:cc:dd:ee:01",
     deviceType: "Computer",
+    friendlyName: null,
+    mdnsServices: [],
+    ssdpDeviceType: null,
+    ssdpDescriptionUrl: null,
+    likelyCategory: "Computer",
+    likelyBrand: "Apple",
+    identificationConfidence: "high",
+    identificationReasons: ["Manufacturer is Apple"],
+    identificationDisplayName: "Likely Apple Computer",
     online: true,
     discoverySources: ["ARP"],
     firstSeenAt: "2026-07-23T00:00:00.000Z",

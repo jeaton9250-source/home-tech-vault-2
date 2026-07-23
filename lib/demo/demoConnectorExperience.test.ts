@@ -73,13 +73,18 @@ describe("buildDemoDiscoveryStats", () => {
     const stats = buildDemoDiscoveryStats(devices);
 
     assert.equal(stats.totalDiscovered, devices.length);
+    assert.ok(stats.needsReview >= 2);
     assert.equal(
       stats.needsReview,
-      devices.filter(
-        (device) =>
-          device.matchStatus === "new" ||
-          device.matchStatus === "possible_match"
-      ).length
+      devices.filter((device) => device.matchStatus === "possible_match")
+        .length +
+        devices.filter(
+          (device) =>
+            (device.identificationConfidence === "unknown" ||
+              device.identificationConfidence === "medium") &&
+            device.matchStatus !== "matched" &&
+            device.matchStatus !== "ignored"
+        ).length
     );
   });
 });

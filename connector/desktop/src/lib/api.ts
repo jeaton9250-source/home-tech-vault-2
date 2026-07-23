@@ -230,8 +230,14 @@ type SyncDevicePayload = {
   macAddress: string | null;
   hostname: string | null;
   manufacturer: string | null;
+  model?: string | null;
+  friendlyName?: string | null;
   deviceType: string | null;
   discoverySource: string;
+  discoverySources?: string[];
+  mdnsServices?: string[];
+  ssdpDeviceType?: string | null;
+  ssdpDescriptionUrl?: string | null;
   firstSeenAt: string;
   lastSeenAt: string;
   online: boolean;
