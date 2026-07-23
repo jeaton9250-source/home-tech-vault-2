@@ -94,12 +94,21 @@ export default function LandingHeader({
 
         <div className="hidden items-center gap-3 md:flex">
           {!isSignedIn ? (
-            <Link
-              href={MARKETING_ROUTES.login}
-              className="rounded-full px-3 py-2 text-sm text-[#667085] transition hover:text-[#172033] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#183B56]"
-            >
-              Sign In
-            </Link>
+            <>
+              <Link
+                href={MARKETING_ROUTES.demo}
+                className="rounded-full px-3 py-2 text-sm text-[#667085] transition hover:text-[#172033] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#183B56]"
+              >
+                Demo
+              </Link>
+
+              <Link
+                href={MARKETING_ROUTES.login}
+                className="rounded-full px-3 py-2 text-sm text-[#667085] transition hover:text-[#172033] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#183B56]"
+              >
+                Sign In
+              </Link>
+            </>
           ) : null}
 
           <LandingTrackedLink
@@ -159,13 +168,23 @@ export default function LandingHeader({
             ))}
 
             {!isSignedIn ? (
-              <Link
-                href={MARKETING_ROUTES.login}
-                className="mt-2 rounded-xl px-3 py-3 text-sm font-medium text-[#667085] hover:bg-[#EDF3F7]"
-                onClick={() => setMobileOpen(false)}
-              >
-                Sign In
-              </Link>
+              <>
+                <Link
+                  href={MARKETING_ROUTES.demo}
+                  className="rounded-xl px-3 py-3 text-sm font-medium text-[#667085] hover:bg-[#EDF3F7] hover:text-[#172033]"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  Explore Demo
+                </Link>
+
+                <Link
+                  href={MARKETING_ROUTES.login}
+                  className="mt-2 rounded-xl px-3 py-3 text-sm font-medium text-[#667085] hover:bg-[#EDF3F7]"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  Sign In
+                </Link>
+              </>
             ) : null}
           </nav>
         </div>

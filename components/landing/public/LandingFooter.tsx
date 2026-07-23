@@ -22,6 +22,10 @@ const footerLinks = [
     href: `#${LANDING_PUBLIC_SECTION_IDS.pricing}`,
   },
   {
+    label: "Interactive Demo",
+    href: MARKETING_ROUTES.demo,
+  },
+  {
     label: "Sign In",
     href: MARKETING_ROUTES.login,
   },

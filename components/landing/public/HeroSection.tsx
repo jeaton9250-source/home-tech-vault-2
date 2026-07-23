@@ -48,7 +48,7 @@ export default function HeroSection({
             secure place.
           </p>
 
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
             <LandingTrackedLink
               href={primaryHref}
               eventName={
@@ -63,6 +63,18 @@ export default function HeroSection({
                 aria-hidden
               />
             </LandingTrackedLink>
+
+            {!isSignedIn ? (
+              <LandingTrackedLink
+                href={MARKETING_ROUTES.demo}
+                eventName={
+                  LANDING_ANALYTICS_EVENTS.heroExploreDemo
+                }
+                className={landingTheme.btnSecondary}
+              >
+                Explore Demo
+              </LandingTrackedLink>
+            ) : null}
 
             <LandingScrollLink
               sectionId={

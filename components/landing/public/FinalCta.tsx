@@ -43,7 +43,7 @@ export default function FinalCta({
             find.
           </p>
 
-          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row sm:flex-wrap">
             <LandingTrackedLink
               href={primaryHref}
               eventName={
@@ -60,12 +60,24 @@ export default function FinalCta({
             </LandingTrackedLink>
 
             {!isSignedIn ? (
-              <Link
-                href={MARKETING_ROUTES.login}
-                className={landingTheme.link}
-              >
-                Sign In
-              </Link>
+              <>
+                <LandingTrackedLink
+                  href={MARKETING_ROUTES.demo}
+                  eventName={
+                    LANDING_ANALYTICS_EVENTS.finalCtaExploreDemo
+                  }
+                  className={landingTheme.btnSecondary}
+                >
+                  Explore Demo
+                </LandingTrackedLink>
+
+                <Link
+                  href={MARKETING_ROUTES.login}
+                  className={landingTheme.link}
+                >
+                  Sign In
+                </Link>
+              </>
             ) : null}
           </div>
         </div>
