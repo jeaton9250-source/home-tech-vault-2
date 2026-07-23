@@ -123,8 +123,8 @@ export const motion = {
 
 export const brand = {
   name: "Home Tech Vault",
-  tagline: "Your home's digital memory.",
-  taglineLines: ["Your home's", "digital memory."],
+  tagline: "Organize Your Home Technology",
+  taglineLines: ["Organize Your", "Home Technology"],
   identity:
     "The digital home for everything that powers your home.",
   greeting: "Welcome home",

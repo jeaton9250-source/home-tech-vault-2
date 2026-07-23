@@ -1,16 +1,15 @@
 import { MARKETING_ROUTES } from "@/lib/marketing/routes";
-import {
-  LANDING_SUPPORTING_MESSAGE,
-  LANDING_TAGLINE,
-} from "@/lib/marketing/landingContent";
+import { LANDING_PUBLIC_SECTION_IDS } from "@/lib/marketing/landingPublicContent";
 
 export const LANDING_SECTION_IDS = {
-  forHomes: "for-homes",
-  smartConnector: "smart-connector",
-  yourHome: "your-home",
-  memories: "memories",
-  vault: "vault",
-  pricing: "pricing",
+  ...LANDING_PUBLIC_SECTION_IDS,
+  /** @deprecated Legacy landing section aliases */
+  forHomes: LANDING_PUBLIC_SECTION_IDS.digitalBinder,
+  smartConnector: LANDING_PUBLIC_SECTION_IDS.digitalBinder,
+  yourHome: LANDING_PUBLIC_SECTION_IDS.features,
+  memories: LANDING_PUBLIC_SECTION_IDS.features,
+  vault: LANDING_PUBLIC_SECTION_IDS.features,
+  homePulse: LANDING_PUBLIC_SECTION_IDS.features,
 } as const;
 
 export type LandingSectionId =
@@ -18,16 +17,12 @@ export type LandingSectionId =
 
 export const LANDING_NAV_LINKS = [
   {
-    label: "For Your Home",
-    sectionId: LANDING_SECTION_IDS.forHomes,
+    label: "How It Works",
+    sectionId: LANDING_SECTION_IDS.howItWorks,
   },
   {
-    label: "Smart Connector",
-    sectionId: LANDING_SECTION_IDS.smartConnector,
-  },
-  {
-    label: "Your Home",
-    sectionId: LANDING_SECTION_IDS.yourHome,
+    label: "Features",
+    sectionId: LANDING_SECTION_IDS.features,
   },
   {
     label: "Pricing",
@@ -35,7 +30,8 @@ export const LANDING_NAV_LINKS = [
   },
 ] as const;
 
-export const LANDING_ANNOUNCEMENT = `${LANDING_TAGLINE} — ${LANDING_SUPPORTING_MESSAGE}`;
+export const LANDING_ANNOUNCEMENT =
+  "Organize your home's technology in one secure place.";
 
 export function landingSectionHref(
   sectionId: LandingSectionId
@@ -48,22 +44,24 @@ export const LANDING_SUPPORT_QUESTIONS = [
     question:
       "Do I need an account to explore Home Tech Vault?",
     answer:
-      "No. Tap Explore Demo to walk through a sample home. Create a free account when you're ready to start remembering yours.",
+      "No. Tap Explore Demo to walk through a sample home. Create a free account when you're ready to start organizing yours.",
     href: MARKETING_ROUTES.demo,
     linkLabel: "Explore the demo",
   },
   {
     question: "What does the Smart Connector do?",
     answer:
-      "Install it once and it quietly helps keep your home's technology up to date — discovering devices and syncing what matters to your vault.",
+      "It is an optional desktop helper that can discover devices on your home network. It is not required to start organizing your home records.",
     href: MARKETING_ROUTES.demo,
     linkLabel: "See it in the demo",
   },
   {
     question: "Can I share with household members?",
     answer:
-      "Family plans let everyone who helps care for your home share the same trusted memory — with roles and permissions that fit your household.",
+      "Yes. The Family plan lets you invite household members with viewer, member, or admin roles.",
     href: MARKETING_ROUTES.faq,
     linkLabel: "Learn about sharing",
   },
 ] as const;
+
+export { LANDING_PUBLIC_SECTION_IDS };

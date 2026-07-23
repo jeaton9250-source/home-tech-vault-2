@@ -3,25 +3,31 @@
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
 
-import LandingFinalCtaSection from "@/components/landing/LandingFinalCtaSection";
-import LandingHeroSection from "@/components/landing/LandingHeroSection";
-import LandingMemoriesSection from "@/components/landing/LandingMemoriesSection";
-import LandingPricingSection from "@/components/landing/LandingPricingSection";
-import LandingRealHomesSection from "@/components/landing/LandingRealHomesSection";
-import LandingRoomsSection from "@/components/landing/LandingRoomsSection";
-import LandingSmartConnectorSection from "@/components/landing/LandingSmartConnectorSection";
-import LandingVaultSection from "@/components/landing/LandingVaultSection";
-import MarketingLayout from "@/components/marketing/MarketingLayout";
+import DigitalBinderSection from "@/components/landing/public/DigitalBinderSection";
+import FinalCta from "@/components/landing/public/FinalCta";
+import HeroSection from "@/components/landing/public/HeroSection";
+import HomeVaultEstimator from "@/components/landing/public/HomeVaultEstimator";
+import HowItWorksSection from "@/components/landing/public/HowItWorksSection";
+import LandingFaq from "@/components/landing/public/LandingFaq";
+import LandingFooter from "@/components/landing/public/LandingFooter";
+import LandingHeader from "@/components/landing/public/LandingHeader";
+import { landingTheme } from "@/components/landing/public/landingTheme";
+import PricingSection from "@/components/landing/public/PricingSection";
+import ProblemSection from "@/components/landing/public/ProblemSection";
+import ProductShowcase from "@/components/landing/public/ProductShowcase";
+import ScenarioSection from "@/components/landing/public/ScenarioSection";
+import SecuritySection from "@/components/landing/public/SecuritySection";
+import StructuredData from "@/components/marketing/StructuredData";
 import { useDemoMode } from "@/hooks/useDemoMode";
-import type { LandingSectionId } from "@/lib/marketing/landingNav";
-import type { PublicFoundingProgramSummary } from "@/lib/founding-members/types";
+import type { LandingPublicSectionId } from "@/lib/marketing/landingPublicContent";
+import { createOrganizationJsonLd } from "@/lib/marketing/metadata";
 
 type LandingPageProps = {
-  foundingSummary?: PublicFoundingProgramSummary | null;
+  foundingSummary?: unknown;
 };
 
-function scrollToLandingSection(
-  sectionId: LandingSectionId
+function scrollToSection(
+  sectionId: LandingPublicSectionId
 ) {
   const target = document.getElementById(sectionId);
 
@@ -36,32 +42,29 @@ function scrollToLandingSection(
 }
 
 export default function LandingPage({
-  foundingSummary = null,
+  foundingSummary: _foundingSummary = null,
 }: LandingPageProps) {
-  const {
-    user,
-    loading,
-  } = useDemoMode();
+  const { user, loading } = useDemoMode();
 
   useEffect(() => {
     const hash = window.location.hash.replace(
       "#",
       ""
-    ) as LandingSectionId;
+    ) as LandingPublicSectionId;
 
     if (!hash) {
       return;
     }
 
     window.requestAnimationFrame(() => {
-      scrollToLandingSection(hash);
+      scrollToSection(hash);
     });
   }, []);
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-surface-base">
-        <div className="flex items-center gap-3 text-text-secondary">
+      <div className="flex min-h-screen items-center justify-center bg-[#FAFAF8]">
+        <div className="flex items-center gap-3 text-[#667085]">
           <Loader2
             size={22}
             className="animate-spin"
@@ -76,19 +79,23 @@ export default function LandingPage({
   const isSignedIn = Boolean(user);
 
   return (
-    <MarketingLayout
-      mainClassName="overflow-x-hidden"
-      foundingSummary={foundingSummary}
-      minimalNav
-    >
-      <LandingHeroSection isSignedIn={isSignedIn} />
-      <LandingRealHomesSection />
-      <LandingSmartConnectorSection isSignedIn={isSignedIn} />
-      <LandingRoomsSection />
-      <LandingMemoriesSection />
-      <LandingVaultSection />
-      <LandingPricingSection isSignedIn={isSignedIn} />
-      <LandingFinalCtaSection isSignedIn={isSignedIn} />
-    </MarketingLayout>
+    <div className={landingTheme.page}>
+      <StructuredData data={createOrganizationJsonLd()} />
+      <LandingHeader isSignedIn={isSignedIn} />
+      <main id="main-content">
+        <HeroSection isSignedIn={isSignedIn} />
+        <ProblemSection />
+        <DigitalBinderSection />
+        <HowItWorksSection />
+        <HomeVaultEstimator isSignedIn={isSignedIn} />
+        <ScenarioSection />
+        <ProductShowcase />
+        <SecuritySection />
+        <PricingSection isSignedIn={isSignedIn} />
+        <LandingFaq />
+        <FinalCta isSignedIn={isSignedIn} />
+      </main>
+      <LandingFooter />
+    </div>
   );
 }

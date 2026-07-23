@@ -9,17 +9,18 @@ import {
 import { MARKETING_ROUTES } from "@/lib/marketing/routes";
 
 export const metadata = createPageMetadata({
-  title: "Home Tech Vault",
+  title: "Organize Your Home Technology",
   description:
-    "Everything your home remembers. Home Tech Vault quietly remembers devices, warranties, receipts, maintenance, and your network so you can enjoy your home.",
+    "Organize your home's devices, receipts, warranties, manuals, maintenance records, and network details in one secure place.",
   path: MARKETING_ROUTES.home,
   keywords: [
-    "home digital memory",
     "home technology organizer",
-    "smart home companion",
-    "warranty tracker",
-    "home tech vault",
     "device organizer",
+    "warranty tracker",
+    "home receipts",
+    "home manuals",
+    "home maintenance tracker",
+    "home tech vault",
   ],
 });
 

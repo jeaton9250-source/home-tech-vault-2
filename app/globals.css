@@ -406,6 +406,27 @@ textarea::placeholder {
   box-shadow: var(--shadow-md);
 }
 
+@keyframes htv-hero-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.htv-hero-float {
+  animation: htv-hero-float 4.5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .htv-hero-float {
+    animation: none;
+  }
+}
+
 .htv-well {
   border-radius: var(--radius-button);
   border: 1px solid var(--color-border-subtle);
