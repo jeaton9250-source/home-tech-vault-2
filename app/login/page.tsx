@@ -78,6 +78,9 @@ export default function LoginPage() {
     "/family/accept/"
   );
 
+  const isLostInviteConfirmRedirect =
+    redirectPath === "/auth/confirm";
+
   const isCreateAccountInvitation =
     redirectPath.startsWith("/invite/setup") ||
     redirectPath.startsWith("/onboarding/create-household");
@@ -344,6 +347,38 @@ export default function LoginPage() {
       : isCreateAccountInvitation
         ? "Continue setting up the Home Tech Vault account you were invited to create."
         : "Sign in to access your devices, warranties, documents, subscriptions, and household technology records.";
+
+  if (isLostInviteConfirmRedirect) {
+    return (
+      <AuthLayout
+        headline={brand.identity}
+        description="Organize your devices, warranties, receipts, subscriptions, and important documents in one secure place."
+        benefits={[...loginBenefits]}
+        brandHref="/"
+      >
+        <AuthCard
+          overline="Account invitation"
+          title="Invitation link incomplete"
+          description="This invitation link could not be completed because its secure token was lost. Please open a newly sent invitation email."
+        >
+          <Alert variant="warning" className="mb-5">
+            Do not use this sign-in page to finish a new
+            account invitation. The secure token is only included
+            in the invitation email button link.
+          </Alert>
+
+          <div className="flex flex-col gap-3">
+            <Button href="/contact" variant="secondary">
+              Contact support
+            </Button>
+            <Button href="/login" variant="secondary">
+              I already have an account
+            </Button>
+          </div>
+        </AuthCard>
+      </AuthLayout>
+    );
+  }
 
   if (checkingInviteSession) {
     return (

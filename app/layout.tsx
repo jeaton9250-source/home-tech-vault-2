@@ -3,7 +3,7 @@ import { GeistSans } from "geist/font/sans";
 
 import "./globals.css";
 
-import AppChrome from "@/components/AppChrome";
+import ConditionalAppChrome from "@/components/ConditionalAppChrome";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 import { rootSiteMetadata } from "@/lib/marketing/socialMetadata";
 
@@ -21,7 +21,7 @@ export default function RootLayout({
     >
       <body className="bg-surface-base text-text-primary antialiased">
         <GoogleAnalytics />
-        <AppChrome>{children}</AppChrome>
+        <ConditionalAppChrome>{children}</ConditionalAppChrome>
       </body>
     </html>
   );

@@ -25,19 +25,40 @@ export const PUBLIC_AUTH_PATHS = [
   "/onboarding/create-household",
 ] as const;
 
+export const PUBLIC_AUTH_PATH_SET = new Set<string>(
+  PUBLIC_AUTH_PATHS
+);
+
 export function isPublicAuthPath(
   pathname: string | null | undefined
 ): boolean {
-  const path =
-    !pathname || pathname === ""
-      ? "/"
-      : pathname;
+  const path = normalizePublicAuthPathname(pathname);
 
-  return PUBLIC_AUTH_PATHS.some(
-    (route) =>
-      path === route ||
-      path.startsWith(`${route}/`)
-  );
+  if (PUBLIC_AUTH_PATH_SET.has(path)) {
+    return true;
+  }
+
+  for (const route of PUBLIC_AUTH_PATHS) {
+    if (path.startsWith(`${route}/`)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function normalizePublicAuthPathname(
+  pathname: string | null | undefined
+): string {
+  if (!pathname || pathname === "") {
+    return "/";
+  }
+
+  if (pathname.length > 1 && pathname.endsWith("/")) {
+    return pathname.slice(0, -1);
+  }
+
+  return pathname;
 }
 
 /** Routes accessible without signing in. */

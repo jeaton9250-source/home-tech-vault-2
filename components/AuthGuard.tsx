@@ -36,6 +36,10 @@ export default function AuthGuard({
     accountBlockedMessage,
     setAccountBlockedMessage,
   ] = useState<string | null>(null);
+  const [
+    checkingAuth,
+    setCheckingAuth,
+  ] = useState(true);
 
   const routeIsPublicAuth =
     isPublicAuthPath(normalizedPath);
@@ -45,9 +49,9 @@ export default function AuthGuard({
     isProtectedRoute(normalizedPath);
 
   useEffect(() => {
-    console.info("AuthGuard route check", {
+    console.info("Auth route guard", {
       pathname: normalizedPath,
-      isPublicAuthPath: routeIsPublicAuth,
+      publicRoute: routeIsPublicAuth,
       hasUser: Boolean(user),
     });
   }, [
@@ -57,13 +61,21 @@ export default function AuthGuard({
   ]);
 
   useEffect(() => {
-    if (routeIsPublicAuth || !routeIsProtected) {
+    if (routeIsPublicAuth) {
+      setCheckingAuth(false);
+      return;
+    }
+
+    if (!routeIsProtected) {
+      setCheckingAuth(false);
       return;
     }
 
     if (loading) {
       return;
     }
+
+    setCheckingAuth(false);
 
     if (!user && !isDemo) {
       router.replace(
@@ -126,11 +138,11 @@ export default function AuthGuard({
     router,
   ]);
 
-  if (routeIsPublic) {
+  if (routeIsPublicAuth || routeIsPublic) {
     return <>{children}</>;
   }
 
-  if (loading) {
+  if (loading || checkingAuth) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-surface-sunken">
         <div className="flex items-center gap-3 text-text-secondary">
