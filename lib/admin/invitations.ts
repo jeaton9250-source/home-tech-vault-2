@@ -20,6 +20,10 @@ import {
   buildJoinHouseholdInviteRedirectUrl,
 } from "@/lib/admin/inviteAuthRedirect";
 import {
+  assertCreateAccountSecureActionUrl,
+  logCreateAccountEmailLinkType,
+} from "@/lib/admin/createAccountInviteEmailLink";
+import {
   generateCreateAccountSecureInviteLink,
   logCreateAccountInviteLink,
 } from "@/lib/admin/secureInviteLink";
@@ -713,9 +717,10 @@ async function deliverCreateAccountInvitationEmail(input: {
   existingAuthUser: Awaited<
     ReturnType<typeof findAuthUserByEmail>
   >;
+  inviteRoutePath: string;
 }): Promise<{
   ok: boolean;
-  delivery: "auth_invite" | "account_email";
+  delivery: "account_email";
   deliveryWarning?: string | null;
   error?: string;
   status?: number;
@@ -741,59 +746,6 @@ async function deliverCreateAccountInvitationEmail(input: {
       ),
     }
   );
-
-  if (!input.existingAuthUser) {
-    logInviteStage("send_auth_invite", {
-      email: input.email,
-    });
-
-    const authInviteError = await sendAuthInviteEmail(
-      input.admin,
-      {
-        email: input.email,
-        redirectTo,
-        metadata,
-      }
-    );
-
-    if (!authInviteError) {
-      logCreateAccountInviteLink({
-        deliveryMethod: "supabase",
-        redirectTo,
-        usesTokenHashConfirm: true,
-      });
-
-      return {
-        ok: true,
-        delivery: "auth_invite",
-      };
-    }
-
-    console.error("[admin-invite] Supabase invite failed:", {
-      message: authInviteError.message,
-      status: authInviteError.status,
-      code: authInviteError.code,
-    });
-
-    const message = authInviteError.message.toLowerCase();
-
-    if (
-      !(
-        message.includes("already") ||
-        message.includes("registered") ||
-        message.includes("exists")
-      )
-    ) {
-      return {
-        ok: false,
-        delivery: "account_email",
-        status: authInviteError.status || 500,
-        error: mapAuthInviteErrorMessage(
-          authInviteError.message
-        ),
-      };
-    }
-  }
 
   logInviteStage("send_account_email_token_hash", {
     email: input.email,
@@ -827,6 +779,14 @@ async function deliverCreateAccountInvitationEmail(input: {
     };
   }
 
+  const secureActionUrl = generatedLink.confirmUrl;
+
+  assertCreateAccountSecureActionUrl(secureActionUrl);
+  logCreateAccountEmailLinkType({
+    route: input.inviteRoutePath,
+    secureActionUrl,
+  });
+
   logCreateAccountInviteLink({
     deliveryMethod: "resend",
     redirectTo: generatedLink.redirectTo,
@@ -836,7 +796,7 @@ async function deliverCreateAccountInvitationEmail(input: {
   const emailResult = await sendNewAccountInvitationEmail({
     email: input.email,
     inviterName: input.inviterName,
-    secureActionUrl: generatedLink.confirmUrl,
+    secureActionUrl,
     expiresAt: input.expiresAt,
     inviteeFirstName: input.firstName,
   });
@@ -1113,6 +1073,7 @@ export async function createAdminUserInvitation(input: {
     fullName?: string | null;
   };
   payload: AdminInviteUserInput;
+  inviteRoutePath?: string;
 }) {
   const email = normalizeInviteEmail(input.payload.email);
   const invitationType =
@@ -1149,6 +1110,9 @@ export async function createAdminUserInvitation(input: {
       firstName,
       lastName,
       inviterName,
+      inviteRoutePath:
+        input.inviteRoutePath ??
+        "/api/admin/users/invite",
     });
   }
 
@@ -1191,6 +1155,7 @@ async function createNewAccountInvitation(input: {
   firstName: string | null;
   lastName: string | null;
   inviterName: string;
+  inviteRoutePath: string;
 }) {
   logInviteStage("validate_new_account", {
     email: input.email,
@@ -1251,6 +1216,7 @@ async function createNewAccountInvitation(input: {
       inviterName: input.inviterName,
       expiresAt,
       existingAuthUser,
+      inviteRoutePath: input.inviteRoutePath,
     });
 
   if (!deliveryResult.ok) {
@@ -1263,8 +1229,8 @@ async function createNewAccountInvitation(input: {
     };
   }
 
-  const authInviteSent =
-    deliveryResult.delivery === "auth_invite";
+  const shouldCleanupAuthUserOnDbFailure =
+    !existingAuthUser;
 
   const recordPayload: Record<string, unknown> = {
     invitation_type: INVITATION_TYPE_CREATE_ACCOUNT,
@@ -1300,9 +1266,9 @@ async function createNewAccountInvitation(input: {
         : undefined
     );
   } catch (insertError) {
-    if (authInviteSent) {
+    if (shouldCleanupAuthUserOnDbFailure) {
       console.error(
-        "[admin-invite] Auth invitation succeeded but database record failed:",
+        "[admin-invite] Invitation email succeeded but database record failed:",
         {
           email: input.email,
         }
@@ -1326,8 +1292,7 @@ async function createNewAccountInvitation(input: {
 
   let deliveryWarning: string | null =
     deliveryResult.deliveryWarning ?? null;
-  let delivery: "auth_invite" | "account_email" =
-    deliveryResult.delivery;
+  const delivery = deliveryResult.delivery;
 
   const [mapped] = await mapInvitationRows(input.admin, [
     invitation,
@@ -1343,10 +1308,7 @@ async function createNewAccountInvitation(input: {
     invitation: mapped,
     delivery,
     deliveryWarning,
-    message:
-      delivery === "auth_invite"
-        ? `Invitation sent to ${input.email}. The invitee will create their password and set up their own household.`
-        : `Invitation sent to ${input.email}. The invitee can complete account setup from the email link.`,
+    message: `Invitation sent to ${input.email}. The invitee can complete account setup from the email link.`,
   };
 }
 
@@ -1603,6 +1565,7 @@ export async function resendAdminUserInvitation(input: {
     fullName?: string | null;
   };
   invitationId: string;
+  inviteRoutePath?: string;
 }) {
   const row = await selectInvitationById(
     input.admin,
@@ -1657,6 +1620,9 @@ export async function resendAdminUserInvitation(input: {
         inviterName,
         expiresAt: row.expires_at,
         existingAuthUser,
+        inviteRoutePath:
+          input.inviteRoutePath ??
+          "/api/admin/users/invitations/resend",
       });
 
     if (!deliveryResult.ok) {
@@ -1672,9 +1638,7 @@ export async function resendAdminUserInvitation(input: {
     return {
       ok: true as const,
       message:
-        deliveryResult.delivery === "auth_invite"
-          ? "Invitation resent through Supabase Auth."
-          : "Invitation resent with a secure setup link.",
+        "Invitation resent with a secure setup link.",
       deliveryWarning:
         deliveryResult.deliveryWarning ?? undefined,
     };

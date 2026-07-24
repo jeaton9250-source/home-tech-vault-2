@@ -4,7 +4,7 @@ You've been invited to create your own Home Tech Vault.
 Use the secure button below to verify your invitation, set your password, and create your vault.
 If you were not expecting this invitation, you can safely ignore this email.
 
-Create My Home Tech Vault: {{ .ConfirmationURL }}
+Create My Home Tech Vault: {{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=invite&next=/invite/setup
 
 This invitation link is personal to you.
 

@@ -84,6 +84,8 @@ export async function POST(request: Request) {
       .eq("id", session.userId)
       .maybeSingle();
 
+    const inviteRoutePath = new URL(request.url).pathname;
+
     const result = await createAdminUserInvitation({
       admin,
       actor: {
@@ -107,6 +109,7 @@ export async function POST(request: Request) {
             ? body.fullName.trim().split(/\s+/).slice(1).join(" ")
             : undefined),
       },
+      inviteRoutePath,
     });
 
     if (!result.ok) {

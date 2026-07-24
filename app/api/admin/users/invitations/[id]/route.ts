@@ -19,13 +19,14 @@ type RouteContext = {
 };
 
 export async function POST(
-  _request: Request,
+  request: Request,
   context: RouteContext
 ) {
   try {
     const session = await requirePlatformAdminSession();
     const admin = createAdminClient();
     const { id } = await context.params;
+    const inviteRoutePath = new URL(request.url).pathname;
 
     const { data: profile } = await admin
       .from("profiles")
@@ -41,6 +42,7 @@ export async function POST(
         fullName: profile?.full_name ?? null,
       },
       invitationId: id,
+      inviteRoutePath,
     });
 
     if (!result.ok) {

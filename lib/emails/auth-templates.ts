@@ -1,6 +1,8 @@
 /** Supabase Go template variables — preserved verbatim in generated HTML. */
 export const supabaseVars = {
   confirmationUrl: "{{ .ConfirmationURL }}",
+  inviteConfirmUrl:
+    "{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=invite&next=/invite/setup",
   token: "{{ .Token }}",
   email: "{{ .Email }}",
   newEmail: "{{ .NewEmail }}",

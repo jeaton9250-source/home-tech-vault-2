@@ -12,13 +12,25 @@ import {
   supabaseVars,
 } from "@/lib/emails/auth-templates";
 
+function resolveAuthEmailActionUrl(
+  template: AuthEmailTemplateDefinition
+) {
+  if (template.id === "invite") {
+    return supabaseVars.inviteConfirmUrl;
+  }
+
+  return supabaseVars.confirmationUrl;
+}
+
 export function renderAuthEmailHtml(
   template: AuthEmailTemplateDefinition
 ) {
+  const actionUrl = resolveAuthEmailActionUrl(template);
+
   const cardBody = `
     ${renderEmailParagraphs(template.paragraphs)}
     ${renderEmailButton({
-      href: supabaseVars.confirmationUrl,
+      href: actionUrl,
       label: template.buttonLabel,
     })}
     ${
@@ -27,7 +39,7 @@ export function renderAuthEmailHtml(
         : ""
     }
     ${renderSecurityNote(template.securityNote)}
-    ${renderFallbackLink(supabaseVars.confirmationUrl)}
+    ${renderFallbackLink(actionUrl)}
   `;
 
   return renderAuthEmailLayout({
@@ -41,12 +53,14 @@ export function renderAuthEmailHtml(
 export function renderAuthEmailText(
   template: AuthEmailTemplateDefinition
 ) {
+  const actionUrl = resolveAuthEmailActionUrl(template);
+
   const lines = [
     template.headline,
     "",
     ...template.paragraphs,
     "",
-    `${template.buttonLabel}: ${supabaseVars.confirmationUrl}`,
+    `${template.buttonLabel}: ${actionUrl}`,
   ];
 
   if (template.includeOtp) {
