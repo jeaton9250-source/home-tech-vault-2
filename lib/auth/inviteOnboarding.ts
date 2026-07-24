@@ -50,7 +50,12 @@ export function isCreateAccountInviteUser(
 export function needsCreateAccountOnboarding(input: {
   user: Pick<User, "user_metadata">;
   hasHousehold: boolean;
+  isPlatformAdmin?: boolean;
 }) {
+  if (input.isPlatformAdmin) {
+    return false;
+  }
+
   if (!isCreateAccountInviteUser(input.user)) {
     return false;
   }
@@ -67,6 +72,7 @@ export function needsCreateAccountOnboarding(input: {
 export function resolveCreateAccountInvitePath(input: {
   user: Pick<User, "user_metadata">;
   hasHousehold: boolean;
+  isPlatformAdmin?: boolean;
 }) {
   if (!needsCreateAccountOnboarding(input)) {
     return null;
@@ -81,6 +87,20 @@ export function resolveCreateAccountInvitePath(input: {
   }
 
   return "/onboarding/create-household";
+}
+
+export async function loadIsPlatformAdmin(
+  userId: string
+) {
+  const { supabase } = await import("@/lib/supabase");
+
+  const { data } = await supabase
+    .from("profiles")
+    .select("is_admin")
+    .eq("id", userId)
+    .maybeSingle();
+
+  return data?.is_admin === true;
 }
 
 export async function userHasHouseholdMembership(
@@ -113,6 +133,7 @@ export async function userHasHouseholdMembership(
 export async function resolveAuthenticatedInviteDestination(input: {
   user: User;
   requestedPath?: string | null;
+  isPlatformAdmin?: boolean;
 }) {
   const hasHousehold =
     await userHasHouseholdMembership(input.user.id);
@@ -120,6 +141,7 @@ export async function resolveAuthenticatedInviteDestination(input: {
   const invitePath = resolveCreateAccountInvitePath({
     user: input.user,
     hasHousehold,
+    isPlatformAdmin: input.isPlatformAdmin,
   });
 
   if (invitePath) {

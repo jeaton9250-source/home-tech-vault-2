@@ -17,6 +17,7 @@ import Button from "@/components/ui/Button";
 import FormInput from "@/components/ui/FormInput";
 import {
   isCreateAccountInviteUser,
+  loadIsPlatformAdmin,
   resolveAuthenticatedInviteDestination,
 } from "@/lib/auth/inviteOnboarding";
 import { brand } from "@/lib/design-system/tokens";
@@ -109,10 +110,14 @@ export default function LoginPage() {
         return false;
       }
 
+      const isPlatformAdmin =
+        await loadIsPlatformAdmin(user.id);
+
       const destination =
         await resolveAuthenticatedInviteDestination({
           user,
           requestedPath: redirectPath,
+          isPlatformAdmin,
         });
 
       if (!destination) {
@@ -197,10 +202,14 @@ export default function LoginPage() {
         return;
       }
 
+      const isPlatformAdmin =
+        await loadIsPlatformAdmin(user.id);
+
       const destination =
         await resolveAuthenticatedInviteDestination({
           user,
           requestedPath: redirectPath,
+          isPlatformAdmin,
         });
 
       if (!destination) {
@@ -275,10 +284,14 @@ export default function LoginPage() {
         return;
       }
 
+      const isPlatformAdmin =
+        await loadIsPlatformAdmin(data.user.id);
+
       const inviteDestination =
         await resolveAuthenticatedInviteDestination({
           user: data.user,
           requestedPath: redirectPath,
+          isPlatformAdmin,
         });
 
       if (inviteDestination) {

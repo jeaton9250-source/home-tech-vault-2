@@ -393,15 +393,14 @@ function usePermissionsState() {
 
   const loadHouseholdContext =
     useCallback(async () => {
+      if (demoLoading) {
+        return;
+      }
+
       try {
         setRoleLoading(true);
         setHouseholdContextLoaded(false);
         setRoleError(null);
-
-        if (demoLoading) {
-          setHouseholdContextLoaded(false);
-          return;
-        }
 
         if (isDemo || !user) {
           clearHouseholdState(
@@ -505,6 +504,11 @@ function usePermissionsState() {
               accessData.canUseProFeatures ??
               null,
           });
+          setHouseholdContextLoaded(true);
+        } else {
+          clearHouseholdState(
+            householdSetters
+          );
           setHouseholdContextLoaded(true);
         }
       } catch (caughtError) {

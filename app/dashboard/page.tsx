@@ -29,6 +29,8 @@ export default function DashboardPage() {
     isDemo,
     householdId,
     loading: permissionsLoading,
+    permissionsReady,
+    isVerifiedPlatformAdmin,
   } = usePermissions();
 
   const [firstName, setFirstName] =
@@ -46,7 +48,12 @@ export default function DashboardPage() {
     useState("");
 
   useEffect(() => {
-    if (permissionsLoading || isDemo || !user) {
+    if (
+      !permissionsReady ||
+      isDemo ||
+      !user ||
+      isVerifiedPlatformAdmin
+    ) {
       return;
     }
 
@@ -72,6 +79,7 @@ export default function DashboardPage() {
       const invitePath = resolveCreateAccountInvitePath({
         user: activeUser,
         hasHousehold,
+        isPlatformAdmin: false,
       });
 
       if (!invitePath) {
@@ -102,24 +110,33 @@ export default function DashboardPage() {
     user,
     isDemo,
     householdId,
-    permissionsLoading,
+    permissionsReady,
+    isVerifiedPlatformAdmin,
     router,
   ]);
 
   useEffect(() => {
+    let cancelled = false;
+
     async function loadDashboard() {
-      if (permissionsLoading) {
+      if (!permissionsReady) {
+        return;
+      }
+
+      if (isDemo || !user) {
+        if (!cancelled) {
+          setFirstName(demoDashboard.firstName);
+          setHomeHealth(buildDemoHomeHealth());
+          setErrorMessage("");
+          setLoadingDashboard(false);
+        }
         return;
       }
 
       try {
-        setLoadingDashboard(true);
-        setErrorMessage("");
-
-        if (isDemo || !user) {
-          setFirstName(demoDashboard.firstName);
-          setHomeHealth(buildDemoHomeHealth());
-          return;
+        if (!cancelled) {
+          setLoadingDashboard(true);
+          setErrorMessage("");
         }
 
         const metrics =
@@ -127,6 +144,10 @@ export default function DashboardPage() {
             user,
             householdId
           );
+
+        if (cancelled) {
+          return;
+        }
 
         setFirstName(metrics.firstName);
         setHomeHealth(metrics.homeHealth);
@@ -136,27 +157,34 @@ export default function DashboardPage() {
           error
         );
 
-        setErrorMessage(
-          "Unable to load your Home Pulse dashboard."
-        );
+        if (!cancelled) {
+          setHomeHealth(null);
+          setErrorMessage(
+            error instanceof Error
+              ? error.message
+              : "Unable to load your Home Pulse dashboard."
+          );
+        }
       } finally {
-        setLoadingDashboard(false);
+        if (!cancelled) {
+          setLoadingDashboard(false);
+        }
       }
     }
 
     void loadDashboard();
+
+    return () => {
+      cancelled = true;
+    };
   }, [
     user,
     isDemo,
     householdId,
-    permissionsLoading,
+    permissionsReady,
   ]);
 
-  if (
-    permissionsLoading ||
-    loadingDashboard ||
-    !homeHealth
-  ) {
+  if (permissionsLoading || loadingDashboard) {
     return (
       <PageShell>
         <DashboardSkeleton />
@@ -175,6 +203,14 @@ export default function DashboardPage() {
             {errorMessage}
           </p>
         </PageCard>
+      </PageShell>
+    );
+  }
+
+  if (!homeHealth) {
+    return (
+      <PageShell>
+        <DashboardSkeleton />
       </PageShell>
     );
   }
