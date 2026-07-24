@@ -34,6 +34,10 @@ import {
 } from "@/lib/email/resend";
 import type { AdminConfigCheck } from "@/lib/admin/types";
 import {
+  ensureProfilesForAuthUsers,
+  listAuthUsersForAdmin,
+} from "@/lib/admin/data/profileSync";
+import {
   isMissingAdminControlsSchema,
   normalizeAdminAccountStatus,
 } from "@/lib/admin/data/schemaFallback";
@@ -82,9 +86,11 @@ async function getAuthMap(
 type AdminProfileListRow = {
   id: string;
   full_name: string | null;
+  household_name?: string | null;
   is_admin: boolean | null;
   created_at: string | null;
   account_status?: string | null;
+  onboarding_completed_at?: string | null;
 };
 
 async function loadAdminProfileListRows(
@@ -127,7 +133,7 @@ async function loadAdminProfileListRows(
   };
 
   const withControls = await buildQuery(
-    "id, full_name, is_admin, account_status, created_at"
+    "id, full_name, household_name, is_admin, account_status, onboarding_completed_at, created_at"
   );
 
   if (!withControls.error) {
@@ -149,7 +155,7 @@ async function loadAdminProfileListRows(
   }
 
   const base = await buildQuery(
-    "id, full_name, is_admin, created_at"
+    "id, full_name, household_name, is_admin, created_at"
   );
 
   if (base.error) {
@@ -176,7 +182,7 @@ async function loadAdminProfileDetailRow(
   const withControls = await admin
     .from("profiles")
     .select(
-      "id, full_name, is_admin, account_status, deactivated_at, deactivation_reason, created_at"
+      "id, full_name, is_admin, account_status, deactivated_at, deactivation_reason, onboarding_completed_at, created_at"
     )
     .eq("id", userId)
     .maybeSingle();
@@ -246,31 +252,44 @@ export async function loadAdminUsers(options: {
     options.pagination ?? {}
   );
 
-  const {
-    rows: profileRows,
-    count,
-    hasAccountStatus,
-  } = await loadAdminProfileListRows(
-    admin,
-    {
-      pagination,
+  const { users: authUsers, total: authTotal } =
+    await listAuthUsersForAdmin(admin, {
+      page: pagination.page,
+      perPage: pagination.limit,
       q: options.q,
-      admin: options.admin,
-    }
-  );
+    });
 
-  const userIds = profileRows.map(
-    (row) => row.id
-  );
+  if (authUsers.length === 0) {
+    return {
+      users: [],
+      pagination: buildPaginationMeta(
+        authTotal,
+        pagination
+      ),
+    };
+  }
 
-  const authMap = await getAuthMap(
+  await ensureProfilesForAuthUsers(
     admin,
-    userIds
+    authUsers
+  );
+
+  const userIds = authUsers.map((user) => user.id);
+
+  const { rows: profileRows, hasAccountStatus } =
+    await loadAdminProfileRowsByIds(
+      admin,
+      userIds
+    );
+
+  const profileMap = new Map(
+    profileRows.map((row) => [row.id, row])
   );
 
   const [
     subscriptionsResult,
     membershipsResult,
+    ownedHouseholdsResult,
     deviceCounts,
     documentCounts,
     ticketCounts,
@@ -288,6 +307,11 @@ export async function loadAdminUsers(options: {
         "user_id, household_id, role"
       )
       .in("user_id", userIds),
+
+    admin
+      .from("households")
+      .select("id, name, owner_id")
+      .in("owner_id", userIds),
 
     Promise.all(
       userIds.map(async (userId) => {
@@ -350,29 +374,73 @@ export async function loadAdminUsers(options: {
     )
   );
 
+  const ownedHouseholdMap = new Map(
+    (ownedHouseholdsResult.data ?? []).map(
+      (row) => [row.owner_id, row]
+    )
+  );
+
+  const householdIds = [
+    ...new Set(
+      (membershipsResult.data ?? [])
+        .map((row) => row.household_id)
+        .filter(Boolean)
+    ),
+  ];
+
+  const { data: memberHouseholds } =
+    householdIds.length > 0
+      ? await admin
+          .from("households")
+          .select("id, name")
+          .in("id", householdIds)
+      : { data: [] as Array<{ id: string; name: string | null }> };
+
+  const householdNameMap = new Map(
+    (memberHouseholds ?? []).map(
+      (row) => [row.id, row.name as string | null]
+    )
+  );
+
   const deviceMap = new Map(deviceCounts);
   const documentMap = new Map(documentCounts);
   const ticketMap = new Map(ticketCounts);
 
-  let users: AdminUserSummary[] =
-    profileRows.map((profile) => {
-      const auth = authMap.get(profile.id);
+  let users: AdminUserSummary[] = authUsers.map(
+    (authUser) => {
+      const profile = profileMap.get(authUser.id);
       const subscription =
-        subscriptionMap.get(profile.id);
+        subscriptionMap.get(authUser.id);
       const membership =
-        membershipMap.get(profile.id);
+        membershipMap.get(authUser.id);
+      const ownedHousehold =
+        ownedHouseholdMap.get(authUser.id);
+
+      const householdId =
+        membership?.household_id ??
+        ownedHousehold?.id ??
+        null;
+
+      const householdName =
+        (householdId
+          ? householdNameMap.get(householdId)
+          : null) ??
+        (ownedHousehold?.name as string | null) ??
+        profile?.household_name ??
+        null;
 
       return {
-        id: profile.id,
-        email: auth?.email ?? null,
+        id: authUser.id,
+        email: authUser.email ?? null,
         fullName:
-          profile.full_name?.trim() || null,
+          profile?.full_name?.trim() ||
+          readAuthDisplayName(authUser),
         createdAt:
-          profile.created_at ??
-          auth?.createdAt ??
+          profile?.created_at ??
+          authUser.created_at ??
           null,
         lastSignInAt:
-          auth?.lastSignInAt ?? null,
+          authUser.last_sign_in_at ?? null,
         personalPlan: normalizePlan(
           subscription?.plan
         ),
@@ -380,24 +448,41 @@ export async function loadAdminUsers(options: {
           subscription?.status?.trim().toLowerCase() ||
           "inactive",
         isPlatformAdmin:
-          profile.is_admin === true,
+          profile?.is_admin === true,
         accountStatus: hasAccountStatus
           ? normalizeAdminAccountStatus(
-              profile.account_status
+              profile?.account_status
             )
           : "active",
-        householdId:
-          membership?.household_id ?? null,
+        householdId,
+        householdName,
         householdRole:
-          membership?.role ?? null,
+          membership?.role ??
+          (ownedHousehold ? "owner" : null),
+        onboardingCompleted: Boolean(
+          profile?.onboarding_completed_at
+        ),
         deviceCount:
-          deviceMap.get(profile.id) ?? 0,
+          deviceMap.get(authUser.id) ?? 0,
         documentCount:
-          documentMap.get(profile.id) ?? 0,
+          documentMap.get(authUser.id) ?? 0,
         supportTicketCount:
-          ticketMap.get(profile.id) ?? 0,
+          ticketMap.get(authUser.id) ?? 0,
       };
-    });
+    }
+  );
+
+  if (options.admin === "true") {
+    users = users.filter(
+      (user) => user.isPlatformAdmin
+    );
+  }
+
+  if (options.admin === "false") {
+    users = users.filter(
+      (user) => !user.isPlatformAdmin
+    );
+  }
 
   if (options.plan) {
     users = users.filter(
@@ -409,9 +494,83 @@ export async function loadAdminUsers(options: {
   return {
     users,
     pagination: buildPaginationMeta(
-      count ?? users.length,
+      options.admin || options.plan
+        ? users.length
+        : authTotal,
       pagination
     ),
+  };
+}
+
+function readAuthDisplayName(
+  user: {
+    email?: string | null;
+    user_metadata?: Record<string, unknown>;
+  }
+) {
+  const metadata = user.user_metadata ?? {};
+  const fullName =
+    typeof metadata.full_name === "string"
+      ? metadata.full_name.trim()
+      : "";
+
+  if (fullName) {
+    return fullName;
+  }
+
+  return user.email?.split("@")[0] ?? null;
+}
+
+async function loadAdminProfileRowsByIds(
+  admin: ReturnType<typeof createAdminClient>,
+  userIds: string[]
+) {
+  if (userIds.length === 0) {
+    return {
+      rows: [] as AdminProfileListRow[],
+      hasAccountStatus: true,
+    };
+  }
+
+  const withControls = await admin
+    .from("profiles")
+    .select(
+      "id, full_name, household_name, is_admin, account_status, onboarding_completed_at, created_at"
+    )
+    .in("id", userIds);
+
+  if (!withControls.error) {
+    return {
+      rows:
+        (withControls.data ??
+          []) as unknown as AdminProfileListRow[],
+      hasAccountStatus: true,
+    };
+  }
+
+  if (
+    !isMissingAdminControlsSchema(
+      withControls.error
+    )
+  ) {
+    throw withControls.error;
+  }
+
+  const base = await admin
+    .from("profiles")
+    .select(
+      "id, full_name, household_name, is_admin, created_at"
+    )
+    .in("id", userIds);
+
+  if (base.error) {
+    throw base.error;
+  }
+
+  return {
+    rows:
+      (base.data ?? []) as unknown as AdminProfileListRow[],
+    hasAccountStatus: false,
   };
 }
 
@@ -419,6 +578,17 @@ export async function loadAdminUserDetail(
   userId: string
 ): Promise<AdminUserDetail | null> {
   const admin = createAdminClient();
+
+  const { data: authData, error: authError } =
+    await admin.auth.admin.getUserById(userId);
+
+  if (authError || !authData.user) {
+    return null;
+  }
+
+  await ensureProfilesForAuthUsers(admin, [
+    authData.user,
+  ]);
 
   const profile =
     await loadAdminProfileDetailRow(
@@ -433,10 +603,12 @@ export async function loadAdminUserDetail(
   const hasAccountStatus =
     "account_status" in profile;
 
-  const authMap = await getAuthMap(admin, [
-    userId,
-  ]);
-  const auth = authMap.get(userId);
+  const auth = {
+    email: authData.user.email ?? null,
+    createdAt: authData.user.created_at ?? null,
+    lastSignInAt:
+      authData.user.last_sign_in_at ?? null,
+  };
 
   const [
     subscriptionResult,
@@ -732,9 +904,15 @@ export async function loadAdminUserDetail(
       : "active",
     householdId:
       membershipResult.data?.household_id ??
+      ownedHouseholdResult.data?.id ??
       null,
     householdRole:
-      membershipResult.data?.role ?? null,
+      membershipResult.data?.role ??
+      (ownedHouseholdResult.data ? "owner" : null),
+    onboardingCompleted: Boolean(
+      (profile as AdminProfileListRow)
+        .onboarding_completed_at
+    ),
     deviceCount:
       deviceCountResult.count ?? 0,
     documentCount:

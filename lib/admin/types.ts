@@ -49,7 +49,9 @@ export type AdminUserSummary = {
   isPlatformAdmin: boolean;
   accountStatus: "active" | "deactivated";
   householdId: string | null;
+  householdName: string | null;
   householdRole: string | null;
+  onboardingCompleted: boolean;
   deviceCount: number;
   documentCount: number;
   supportTicketCount: number;

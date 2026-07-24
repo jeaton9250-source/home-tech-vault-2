@@ -4,6 +4,8 @@ import UsersAdminClient from "@/components/admin/users/UsersAdminClient";
 import { AdminLoadingState } from "@/components/admin/layout/AdminPageLayout";
 import { loadAdminDashboardMetrics } from "@/lib/admin/data/dashboard";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Users — Home Tech Vault Admin",
 };

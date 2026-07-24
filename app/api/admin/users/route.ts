@@ -7,6 +7,7 @@ import {
 import { loadAdminUsers } from "@/lib/admin/data/loaders";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   try {

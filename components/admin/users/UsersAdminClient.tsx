@@ -9,7 +9,7 @@ import {
 } from "react";
 import { useSearchParams } from "next/navigation";
 
-import { Plus, Users } from "lucide-react";
+import { Plus, RefreshCw, Users } from "lucide-react";
 
 import PlanAccessAdminSection from "@/components/admin/users/PlanAccessAdminSection";
 import FoundingMemberAdminSection from "@/components/admin/users/FoundingMemberAdminSection";
@@ -34,6 +34,10 @@ import {
 } from "@/components/admin/layout/AdminPageLayout";
 import { formatAdminDate } from "@/components/admin/AdminPanel";
 import Button from "@/components/ui/Button";
+import {
+  formatAdminHouseholdLabel,
+  getAdminUserDisplayName,
+} from "@/lib/admin/displayName";
 import type {
   AdminPendingInvitation,
   AdminUserDetail,
@@ -97,6 +101,7 @@ export default function UsersAdminClient({
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteActionLoading, setInviteActionLoading] =
     useState(false);
+  const [repairLoading, setRepairLoading] = useState(false);
 
   const loadUsers = useCallback(async () => {
     try {
@@ -132,9 +137,12 @@ export default function UsersAdminClient({
 
       const [usersResponse, invitationsResponse] =
         await Promise.all([
-          fetch(`/api/admin/users?${params.toString()}`),
+          fetch(`/api/admin/users?${params.toString()}`, {
+            cache: "no-store",
+          }),
           fetch(
-            `/api/admin/users/invitations?${invitationParams.toString()}`
+            `/api/admin/users/invitations?${invitationParams.toString()}`,
+            { cache: "no-store" }
           ),
         ]);
 
@@ -423,19 +431,81 @@ export default function UsersAdminClient({
     }
   }
 
+  async function repairMissingProfiles() {
+    try {
+      setRepairLoading(true);
+      setAdminMessage("");
+
+      const response = await fetch(
+        "/api/admin/users/repair-profiles",
+        { method: "POST" }
+      );
+
+      const payload = (await response.json()) as {
+        message?: string;
+        repaired?: number;
+        error?: string;
+      };
+
+      if (!response.ok) {
+        throw new Error(
+          payload.error ||
+            "Unable to repair missing profiles."
+        );
+      }
+
+      setAdminMessage(
+        payload.message ||
+          "Missing profile repair completed."
+      );
+      void loadUsers();
+    } catch (actionError) {
+      setAdminMessage(
+        actionError instanceof Error
+          ? actionError.message
+          : "Unable to repair missing profiles."
+      );
+    } finally {
+      setRepairLoading(false);
+    }
+  }
+
   return (
     <>
       <AdminPageHero
         title="Users"
         description="Search accounts, invite new independent households or household members, and manage platform-admin access."
         action={
-          <Button
-            type="button"
-            onClick={() => setInviteOpen(true)}
-          >
-            <Plus size={17} />
-            Invite User
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => {
+                void loadUsers();
+              }}
+              disabled={loading}
+            >
+              <RefreshCw size={16} />
+              Refresh
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => {
+                void repairMissingProfiles();
+              }}
+              disabled={repairLoading}
+            >
+              {repairLoading ? "Repairing…" : "Repair Missing Profiles"}
+            </Button>
+            <Button
+              type="button"
+              onClick={() => setInviteOpen(true)}
+            >
+              <Plus size={17} />
+              Invite User
+            </Button>
+          </div>
         }
       />
 
@@ -617,12 +687,24 @@ export default function UsersAdminClient({
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                       <p className="font-medium text-text-primary">
-                        {user.fullName || user.email || user.id}
+                        {getAdminUserDisplayName({
+                          fullName: user.fullName,
+                          email: user.email,
+                        })}
                       </p>
                       <p className="mt-1 text-sm text-text-secondary">
-                        {user.email}
+                        {user.email || "No email available"}
                       </p>
                       <div className="mt-2 flex flex-wrap gap-2">
+                        {user.accountStatus === "deactivated" ? (
+                          <AdminStatusBadge tone="danger">
+                            Deactivated
+                          </AdminStatusBadge>
+                        ) : (
+                          <AdminStatusBadge tone="success">
+                            Active
+                          </AdminStatusBadge>
+                        )}
                         {user.isPlatformAdmin ? (
                           <AdminStatusBadge tone="warning">
                             Platform admin
@@ -640,10 +722,26 @@ export default function UsersAdminClient({
                         {user.personalPlan}
                       </p>
                       <p className="mt-1 text-xs capitalize text-text-secondary">
-                        {user.householdRole || "No role"}
+                        {user.isPlatformAdmin
+                          ? "Platform admin"
+                          : "Standard User"}
+                      </p>
+                      <p className="mt-1 text-xs capitalize text-text-secondary">
+                        {formatAdminHouseholdLabel({
+                          householdName: user.householdName,
+                          householdId: user.householdId,
+                        })}
+                      </p>
+                      <p className="mt-1 text-xs capitalize text-text-secondary">
+                        {user.householdRole || "No household role"}
                       </p>
                       <p className="mt-1 text-xs text-text-tertiary">
-                        {formatAdminDate(user.createdAt)}
+                        {user.lastSignInAt
+                          ? `Last sign-in ${formatAdminDate(user.lastSignInAt)}`
+                          : "Last sign-in not available"}
+                      </p>
+                      <p className="mt-1 text-xs text-text-tertiary">
+                        Joined {formatAdminDate(user.createdAt)}
                       </p>
                     </div>
                   </div>
@@ -840,11 +938,10 @@ export default function UsersAdminClient({
               />
               <AdminDetailField
                 label="Household"
-                value={
-                  detail.householdName ||
-                  detail.householdId ||
-                  "—"
-                }
+                value={formatAdminHouseholdLabel({
+                  householdName: detail.householdName,
+                  householdId: detail.householdId,
+                })}
               />
               <AdminDetailField
                 label="Household role"
