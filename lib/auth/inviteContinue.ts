@@ -131,10 +131,15 @@ export async function resolveCreateAccountInviteSecureLink(
     );
 
   if (!generatedLink.ok) {
+    const linkError = generatedLink.error as {
+      message?: string;
+    };
+
     return {
       ok: false as const,
       status: 500,
       error:
+        linkError.message ||
         "Unable to generate a secure invitation link.",
     };
   }

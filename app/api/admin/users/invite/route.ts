@@ -42,7 +42,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           error:
-            "Server configuration is incomplete. Set SUPABASE_SECRET_KEY or SUPABASE_SERVICE_ROLE_KEY on the server.",
+            "Server configuration is incomplete. Set SUPABASE_SERVICE_ROLE_KEY on the server with the current service_role secret from Supabase Dashboard → Settings → API.",
         },
         { status: 500 }
       );

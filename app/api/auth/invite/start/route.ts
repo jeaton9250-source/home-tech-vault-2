@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 
 import { resolveCreateAccountInviteSecureLink } from "@/lib/auth/inviteContinue";
 import { createAdminClient } from "@/lib/supabase/admin";
+import {
+  formatSupabaseJwtConfigurationError,
+  isSupabaseJwtConfigurationError,
+  resolveSupabaseAdminKey,
+} from "@/lib/supabase/resolveAdminKey";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -34,6 +39,29 @@ export async function POST(request: Request) {
       );
 
     if (!result.ok) {
+      if (
+        result.error &&
+        isSupabaseJwtConfigurationError(result.error)
+      ) {
+        let source;
+
+        try {
+          source = resolveSupabaseAdminKey().source;
+        } catch {
+          source = undefined;
+        }
+
+        return NextResponse.json(
+          {
+            error:
+              formatSupabaseJwtConfigurationError(
+                source
+              ),
+          },
+          { status: 500 }
+        );
+      }
+
       return NextResponse.json(
         { error: result.error },
         { status: result.status }
@@ -53,6 +81,31 @@ export async function POST(request: Request) {
       "[invite-start] unexpected error:",
       error
     );
+
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Unable to start invitation setup.";
+
+    if (isSupabaseJwtConfigurationError(message)) {
+      let source;
+
+      try {
+        source = resolveSupabaseAdminKey().source;
+      } catch {
+        source = undefined;
+      }
+
+      return NextResponse.json(
+        {
+          error:
+            formatSupabaseJwtConfigurationError(
+              source
+            ),
+        },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json(
       {

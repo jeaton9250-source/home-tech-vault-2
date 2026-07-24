@@ -1684,6 +1684,15 @@ export async function loadAdminSystemHealth(): Promise<AdminSystemHealth> {
       detail: "Server-side only",
     },
     {
+      id: "supabase-secret-key",
+      label: "Supabase secret key override",
+      status: process.env.SUPABASE_SECRET_KEY
+        ? "configured"
+        : "missing",
+      detail:
+        "Optional fallback only; must not replace service_role",
+    },
+    {
       id: "resend",
       label: "Resend API key",
       status: isResendConfigured()
