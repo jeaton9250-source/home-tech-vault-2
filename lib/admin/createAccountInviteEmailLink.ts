@@ -1,4 +1,5 @@
 import { getSiteUrl } from "@/lib/marketing/site";
+import { tokenLooksLikeJwt } from "@/lib/auth/emailTokenHash";
 
 const TOKEN_HASH_CONFIRM_PREFIX =
   "/auth/confirm?token_hash=";
@@ -30,9 +31,21 @@ export function assertCreateAccountSecureActionUrl(
     );
   }
 
+  const tokenHash =
+    parsed.searchParams.get("token_hash");
+
+  if (
+    tokenHash &&
+    tokenLooksLikeJwt(tokenHash)
+  ) {
+    throw new Error(
+      "Create-account invitation email URL contains a JWT instead of an OTP hash."
+    );
+  }
+
   if (
     !parsed.pathname.endsWith("/auth/confirm") ||
-    !parsed.searchParams.get("token_hash") ||
+    !tokenHash ||
     parsed.searchParams.get("type") !== "invite"
   ) {
     throw new Error(

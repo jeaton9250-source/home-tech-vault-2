@@ -4,13 +4,18 @@ import {
 import { NextResponse } from "next/server";
 
 import {
-  ALLOWED_OTP_TYPES,
   authConfirmErrorPath,
   resolveConfirmNextPath,
 } from "@/lib/auth/confirmRoute";
 import { resolveInviteNextPathFromUser } from "@/lib/auth/callbackDestination";
+import {
+  describeEmailTokenHash,
+  tokenLooksLikeJwt,
+} from "@/lib/auth/emailTokenHash";
 import { getSiteUrl } from "@/lib/marketing/site";
-import { createClient } from "@/lib/supabase/server";
+import {
+  createAuthVerificationClient,
+} from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,58 +25,80 @@ export async function GET(request: Request) {
   const origin = getSiteUrl();
 
   const tokenHash =
-    url.searchParams.get("token_hash");
+    url.searchParams
+      .get("token_hash")
+      ?.trim() ?? null;
   const requestedType =
-    url.searchParams.get("type");
+    url.searchParams.get("type")?.trim() ??
+    null;
   const requestedNext =
     url.searchParams.get("next");
 
+  console.info("Invite token received", {
+    ...describeEmailTokenHash(tokenHash),
+    type: requestedType,
+  });
+
   const otpType =
     requestedType as EmailOtpType;
-
   const fallbackNextPath = resolveConfirmNextPath(
     requestedNext,
     otpType
   );
 
-  console.info("Auth confirmation request", {
-    hasTokenHash: Boolean(tokenHash),
-    type: requestedType,
-    nextPath: fallbackNextPath,
-    origin,
-  });
-
   if (
     !tokenHash ||
-    !requestedType ||
-    !ALLOWED_OTP_TYPES.has(otpType)
+    requestedType !== "invite"
   ) {
     return NextResponse.redirect(
       new URL(
         authConfirmErrorPath(
-          "Invalid or incomplete authentication link."
+          "Invalid invitation link."
         ),
         origin
       )
     );
   }
 
-  const supabase = await createClient();
+  if (tokenLooksLikeJwt(tokenHash)) {
+    console.error(
+      "Invite confirmation received a JWT instead of an OTP hash",
+      {
+        tokenLength: tokenHash.length,
+        looksLikeJwt: true,
+      }
+    );
+
+    return NextResponse.redirect(
+      new URL(
+        authConfirmErrorPath(
+          "The invitation link was generated incorrectly."
+        ),
+        origin
+      )
+    );
+  }
+
+  const supabase =
+    await createAuthVerificationClient();
 
   const { data, error } =
     await supabase.auth.verifyOtp({
       token_hash: tokenHash,
-      type: otpType,
+      type: "invite",
     });
 
   if (error) {
     console.error(
-      "Supabase email verification failed",
+      "Invitation OTP verification failed",
       {
-        type: requestedType,
         message: error.message,
         status: error.status,
         code: error.code,
+        tokenLength: tokenHash.length,
+        looksLikeJwt: tokenLooksLikeJwt(
+          tokenHash
+        ),
       }
     );
 
@@ -85,19 +112,31 @@ export async function GET(request: Request) {
     );
   }
 
-  const nextPath = data.user
-    ? resolveInviteNextPathFromUser(
-        requestedNext,
-        data.user
+  if (!data.user) {
+    return NextResponse.redirect(
+      new URL(
+        authConfirmErrorPath(
+          "Invitation verification did not create a user session."
+        ),
+        origin
       )
-    : fallbackNextPath;
+    );
+  }
+
+  const nextPath = resolveInviteNextPathFromUser(
+    requestedNext,
+    data.user
+  );
 
   console.info("Auth confirmation success", {
     type: requestedType,
-    nextPath,
+    nextPath: nextPath || fallbackNextPath,
   });
 
   return NextResponse.redirect(
-    new URL(nextPath, origin)
+    new URL(
+      nextPath || fallbackNextPath,
+      origin
+    )
   );
 }

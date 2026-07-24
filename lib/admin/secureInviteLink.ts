@@ -5,16 +5,10 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { buildCreateAccountInviteRedirectUrl } from "@/lib/admin/inviteAuthRedirect";
 import { buildAuthConfirmUrl } from "@/lib/auth/buildAuthConfirmUrl";
-
-export function assertInviteTokenHash(
-  value: unknown
-): asserts value is string {
-  if (typeof value !== "string" || value.length === 0) {
-    throw new Error(
-      "Supabase did not return an invitation token hash."
-    );
-  }
-}
+import {
+  assertValidEmailTokenHash,
+  tokenLooksLikeJwt,
+} from "@/lib/auth/emailTokenHash";
 
 export function logCreateAccountInviteLink(input: {
   deliveryMethod: "supabase" | "resend";
@@ -26,6 +20,32 @@ export function logCreateAccountInviteLink(input: {
     redirectTo: input.redirectTo,
     usesTokenHashConfirm:
       input.usesTokenHashConfirm,
+  });
+}
+
+function logGeneratedCreateAccountInvite(
+  properties: {
+    hashed_token?: string;
+    action_link?: string;
+  } | null
+  | undefined
+) {
+  const tokenHash = properties?.hashed_token;
+
+  console.info("Generated create-account invite", {
+    hasHashedToken:
+      typeof tokenHash === "string",
+    tokenLength:
+      typeof tokenHash === "string"
+        ? tokenHash.length
+        : null,
+    tokenLooksLikeJwt:
+      typeof tokenHash === "string"
+        ? tokenLooksLikeJwt(tokenHash)
+        : null,
+    hasActionLink: Boolean(
+      properties?.action_link
+    ),
   });
 }
 
@@ -71,11 +91,13 @@ export async function generateCreateAccountSecureInviteLink(
     };
   }
 
-  const hashedToken =
-    data.properties?.hashed_token ?? null;
+  const properties = data.properties;
+  const tokenHash = properties?.hashed_token ?? null;
+
+  logGeneratedCreateAccountInvite(properties);
 
   try {
-    assertInviteTokenHash(hashedToken);
+    assertValidEmailTokenHash(tokenHash);
   } catch (validationError) {
     return {
       ok: false as const,
@@ -84,13 +106,13 @@ export async function generateCreateAccountSecureInviteLink(
         validationError instanceof Error
           ? validationError
           : new Error(
-              "Supabase did not return an invitation token hash."
+              "Supabase did not return a valid invitation token hash."
             ),
     };
   }
 
   const confirmUrl = buildAuthConfirmUrl({
-    tokenHash: hashedToken,
+    tokenHash,
     type: "invite" as EmailOtpType,
     next: confirmNext,
   });
