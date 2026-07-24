@@ -7,9 +7,7 @@ export function buildCreateAccountInviteCallbackUrl() {
 }
 
 export function buildJoinHouseholdInviteCallbackUrl() {
-  const next = encodeURIComponent("/set-password");
-
-  return absoluteUrl(`/auth/callback?next=${next}`);
+  return absoluteUrl("/auth/callback");
 }
 
 /** @deprecated Use buildCreateAccountInviteCallbackUrl or buildJoinHouseholdInviteCallbackUrl */
