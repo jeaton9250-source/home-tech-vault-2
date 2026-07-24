@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import type { EmailOtpType } from "@supabase/supabase-js";
 
 import {
   INVITATION_TYPE_CREATE_ACCOUNT,
@@ -71,39 +72,81 @@ function resolveInviteNextPath(
   return "/invite/setup";
 }
 
+function authErrorRedirect(origin: string, reason: string) {
+  return NextResponse.redirect(
+    `${origin}/auth/error?reason=${encodeURIComponent(reason)}`
+  );
+}
+
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
+  const tokenHash =
+    requestUrl.searchParams.get("token_hash");
+  const otpType = requestUrl.searchParams.get("type");
   const requestedNext =
     requestUrl.searchParams.get("next");
   const origin = requestUrl.origin;
 
-  if (!code) {
-    console.error("[auth-callback] Missing authorization code.");
+  if (!code && !(tokenHash && otpType)) {
+    console.error(
+      "[auth-callback] Missing authorization code or token hash."
+    );
 
-    return NextResponse.redirect(
-      `${origin}/auth/error?reason=missing_auth_code`
+    return authErrorRedirect(
+      origin,
+      "missing_auth_code"
     );
   }
 
   const supabase = await createClient();
-  const { data, error } =
-    await supabase.auth.exchangeCodeForSession(code);
+  let metadata: Record<string, unknown> | undefined;
 
-  if (error) {
-    console.error("[auth-callback] Session exchange failed:", {
-      message: error.message,
-      status: error.status,
-      code: error.code,
-    });
+  if (code) {
+    const { data, error } =
+      await supabase.auth.exchangeCodeForSession(code);
 
-    return NextResponse.redirect(
-      `${origin}/auth/error?reason=auth_callback_failed`
-    );
+    if (error) {
+      console.error("[auth-callback] Session exchange failed:", {
+        message: error.message,
+        status: error.status,
+        code: error.code,
+      });
+
+      return authErrorRedirect(
+        origin,
+        "auth_callback_failed"
+      );
+    }
+
+    metadata = data.session?.user.user_metadata as
+      | Record<string, unknown>
+      | undefined;
+  } else if (tokenHash && otpType) {
+    const { data, error } =
+      await supabase.auth.verifyOtp({
+        token_hash: tokenHash,
+        type: otpType as EmailOtpType,
+      });
+
+    if (error) {
+      console.error("[auth-callback] OTP verification failed:", {
+        message: error.message,
+        status: error.status,
+        code: error.code,
+        type: otpType,
+      });
+
+      return authErrorRedirect(
+        origin,
+        "auth_callback_failed"
+      );
+    }
+
+    metadata = data.user?.user_metadata as
+      | Record<string, unknown>
+      | undefined;
   }
-
-  const metadata = data.session?.user
-    .user_metadata as Record<string, unknown> | undefined;
 
   const safeNext = resolveInviteNextPath(
     requestedNext,
@@ -112,6 +155,7 @@ export async function GET(request: Request) {
 
   console.info("Invite callback", {
     hasCode: Boolean(code),
+    hasTokenHash: Boolean(tokenHash),
     requestedNext,
     safeNext,
     invitationType: metadata?.invitation_type ?? null,

@@ -11,7 +11,7 @@ import { EmailButton } from "@/emails/components/EmailButton";
 
 export type NewAccountInvitationEmailProps = {
   inviterName: string;
-  acceptanceUrl: string;
+  secureActionUrl: string;
   expirationLabel?: string | null;
   inviteeFirstName?: string | null;
 };
@@ -36,10 +36,8 @@ ${greeting}
 
 You've been invited to create your own Home Tech Vault.
 
-Organize your devices, warranties, documents, maintenance records, and home network in one secure place.
-
-Click below to set your password and create your vault:
-${props.acceptanceUrl}
+Use the secure link below to verify your invitation, set your password, and create your vault:
+${props.secureActionUrl}
 ${expiration}
 Security note: This link is personal to you. Do not forward it. If you were not expecting this invitation, you can safely ignore this email.
 
@@ -51,7 +49,7 @@ ${emailTheme.brand.siteUrl}`;
 
 export default function NewAccountInvitationEmail({
   inviterName,
-  acceptanceUrl,
+  secureActionUrl,
   expirationLabel,
   inviteeFirstName,
 }: NewAccountInvitationEmailProps) {
@@ -74,15 +72,12 @@ export default function NewAccountInvitationEmail({
           You&apos;ve been invited to create your own Home Tech Vault.
         </EmailParagraph>
         <EmailParagraph>
-          Organize your devices, warranties, documents, maintenance
-          records, and home network in one secure place.
-        </EmailParagraph>
-        <EmailParagraph>
-          Click below to set your password and create your vault.
+          Use the secure button below to verify your invitation, set your
+          password, and create your vault.
         </EmailParagraph>
 
         <EmailButton
-          href={acceptanceUrl}
+          href={secureActionUrl}
           label="Create My Home Tech Vault"
         />
 
@@ -98,7 +93,7 @@ export default function NewAccountInvitationEmail({
           ignore this email.
         </EmailSecurityNote>
 
-        <EmailFallbackLink href={acceptanceUrl} />
+        <EmailFallbackLink href={secureActionUrl} />
       </EmailCard>
     </EmailLayout>
   );
@@ -106,7 +101,8 @@ export default function NewAccountInvitationEmail({
 
 NewAccountInvitationEmail.PreviewProps = {
   inviterName: "Alex Morgan",
-  acceptanceUrl: "https://hometechvault.com/invite/setup",
+  secureActionUrl:
+    "https://project.supabase.co/auth/v1/verify?type=invite&token=example",
   expirationLabel: "August 20, 2026",
   inviteeFirstName: "Jordan",
 } satisfies NewAccountInvitationEmailProps;

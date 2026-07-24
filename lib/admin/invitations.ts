@@ -20,6 +20,10 @@ import {
   buildJoinHouseholdInviteCallbackUrl,
 } from "@/lib/admin/inviteAuthRedirect";
 import {
+  generateCreateAccountSecureInviteLink,
+  logCreateAccountInviteLink,
+} from "@/lib/admin/secureInviteLink";
+import {
   INVITATION_TYPE_CREATE_ACCOUNT,
   INVITATION_TYPE_JOIN_HOUSEHOLD,
   isUuid,
@@ -559,12 +563,6 @@ function buildHouseholdAcceptanceUrl(token: string) {
   );
 }
 
-function buildNewAccountLoginResumeUrl() {
-  const next = encodeURIComponent("/invite/setup");
-
-  return absoluteUrl(`/login?redirect=${next}`);
-}
-
 function buildFullName(
   firstName?: string | null,
   lastName?: string | null
@@ -674,7 +672,7 @@ async function sendHouseholdInvitationEmail(input: {
 async function sendNewAccountInvitationEmail(input: {
   email: string;
   inviterName: string;
-  acceptanceUrl: string;
+  secureActionUrl: string;
   expiresAt: string;
   inviteeFirstName?: string | null;
 }) {
@@ -687,13 +685,13 @@ async function sendNewAccountInvitationEmail(input: {
     subject: newAccountInvitationSubject,
     template: createElement(NewAccountInvitationEmail, {
       inviterName: input.inviterName,
-      acceptanceUrl: input.acceptanceUrl,
+      secureActionUrl: input.secureActionUrl,
       expirationLabel,
       inviteeFirstName: input.inviteeFirstName,
     }),
     text: renderNewAccountInvitationPlainText({
       inviterName: input.inviterName,
-      acceptanceUrl: input.acceptanceUrl,
+      secureActionUrl: input.secureActionUrl,
       expirationLabel,
       inviteeFirstName: input.inviteeFirstName,
     }),
@@ -701,6 +699,148 @@ async function sendNewAccountInvitationEmail(input: {
       { name: "category", value: "create_account_invitation" },
     ],
   });
+}
+
+async function deliverCreateAccountInvitationEmail(input: {
+  admin: SupabaseClient;
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+  invitationToken: string;
+  actorUserId: string;
+  inviterName: string;
+  expiresAt: string;
+  existingAuthUser: Awaited<
+    ReturnType<typeof findAuthUserByEmail>
+  >;
+}): Promise<{
+  ok: boolean;
+  delivery: "auth_invite" | "account_email";
+  deliveryWarning?: string | null;
+  error?: string;
+  status?: number;
+}> {
+  const redirectTo =
+    buildCreateAccountInviteCallbackUrl();
+  const metadata = buildCreateAccountAuthInviteMetadata({
+    firstName: input.firstName,
+    lastName: input.lastName,
+    invitationToken: input.invitationToken,
+    invitedByPlatformAdmin: input.actorUserId,
+  });
+
+  if (!input.existingAuthUser) {
+    logInviteStage("send_auth_invite", {
+      email: input.email,
+    });
+
+    const authInviteError = await sendAuthInviteEmail(
+      input.admin,
+      {
+        email: input.email,
+        redirectTo,
+        metadata,
+      }
+    );
+
+    if (!authInviteError) {
+      logCreateAccountInviteLink({
+        deliveryMethod: "supabase",
+        redirectTo,
+      });
+
+      return {
+        ok: true,
+        delivery: "auth_invite",
+      };
+    }
+
+    console.error("[admin-invite] Supabase invite failed:", {
+      message: authInviteError.message,
+      status: authInviteError.status,
+      code: authInviteError.code,
+    });
+
+    const message = authInviteError.message.toLowerCase();
+
+    if (
+      !(
+        message.includes("already") ||
+        message.includes("registered") ||
+        message.includes("exists")
+      )
+    ) {
+      return {
+        ok: false,
+        delivery: "account_email",
+        status: authInviteError.status || 500,
+        error: mapAuthInviteErrorMessage(
+          authInviteError.message
+        ),
+      };
+    }
+  }
+
+  logInviteStage("send_account_email_secure_link", {
+    email: input.email,
+    hasExistingAuthUser: Boolean(input.existingAuthUser),
+  });
+
+  const generatedLink =
+    await generateCreateAccountSecureInviteLink(
+      input.admin,
+      {
+        email: input.email,
+        metadata,
+        redirectTo,
+      }
+    );
+
+  if (!generatedLink.ok) {
+    const linkError = generatedLink.error as {
+      message?: string;
+      status?: number;
+    };
+
+    return {
+      ok: false,
+      delivery: "account_email",
+      status: linkError.status || 500,
+      error: mapAuthInviteErrorMessage(
+        linkError.message || "Unable to generate invitation link."
+      ),
+    };
+  }
+
+  logCreateAccountInviteLink({
+    deliveryMethod: "resend",
+    redirectTo: generatedLink.redirectTo,
+    secureActionUrl: generatedLink.secureActionUrl,
+  });
+
+  const emailResult = await sendNewAccountInvitationEmail({
+    email: input.email,
+    inviterName: input.inviterName,
+    secureActionUrl: generatedLink.secureActionUrl,
+    expiresAt: input.expiresAt,
+    inviteeFirstName: input.firstName,
+  });
+
+  if (!emailResult.ok) {
+    return {
+      ok: true,
+      delivery: "account_email",
+      deliveryWarning:
+        emailResult.code === "not_configured"
+          ? "Invitation saved, but email delivery is not configured. Set RESEND_API_KEY or resend the invitation after configuring email."
+          : "Invitation saved, but the email could not be delivered. You can resend it from the directory.",
+    };
+  }
+
+  return {
+    ok: true,
+    delivery: "account_email",
+  };
 }
 
 async function selectInvitationById(
@@ -1085,55 +1225,31 @@ async function createNewAccountInvitation(input: {
   const token = generateInvitationToken();
   const expiresAt = buildInvitationExpiresAt();
 
-  let authInviteSent = false;
-
-  if (!existingAuthUser) {
-    logInviteStage("send_auth_invite", {
+  const deliveryResult =
+    await deliverCreateAccountInvitationEmail({
+      admin: input.admin,
       email: input.email,
+      firstName: input.firstName,
+      lastName: input.lastName,
+      invitationToken: token,
+      actorUserId: input.actorUserId,
+      inviterName: input.inviterName,
+      expiresAt,
+      existingAuthUser,
     });
 
-    const authInviteError = await sendAuthInviteEmail(
-      input.admin,
-      {
-        email: input.email,
-        redirectTo: buildCreateAccountInviteCallbackUrl(),
-        metadata: buildCreateAccountAuthInviteMetadata({
-          firstName: input.firstName,
-          lastName: input.lastName,
-          invitationToken: token,
-          invitedByPlatformAdmin: input.actorUserId,
-        }),
-      }
-    );
-
-    if (authInviteError) {
-      console.error("[admin-invite] Supabase invite failed:", {
-        message: authInviteError.message,
-        status: authInviteError.status,
-        code: authInviteError.code,
-      });
-
-      const message = authInviteError.message.toLowerCase();
-
-      if (
-        !(
-          message.includes("already") ||
-          message.includes("registered") ||
-          message.includes("exists")
-        )
-      ) {
-        return {
-          ok: false as const,
-          status: authInviteError.status || 500,
-          error: mapAuthInviteErrorMessage(
-            authInviteError.message
-          ),
-        };
-      }
-    } else {
-      authInviteSent = true;
-    }
+  if (!deliveryResult.ok) {
+    return {
+      ok: false as const,
+      status: deliveryResult.status || 500,
+      error:
+        deliveryResult.error ||
+        "The invitation email could not be sent.",
+    };
   }
+
+  const authInviteSent =
+    deliveryResult.delivery === "auth_invite";
 
   const recordPayload: Record<string, unknown> = {
     invitation_type: INVITATION_TYPE_CREATE_ACCOUNT,
@@ -1193,30 +1309,10 @@ async function createNewAccountInvitation(input: {
     };
   }
 
-  let deliveryWarning: string | null = null;
+  let deliveryWarning: string | null =
+    deliveryResult.deliveryWarning ?? null;
   let delivery: "auth_invite" | "account_email" =
-    authInviteSent ? "auth_invite" : "account_email";
-
-  if (!authInviteSent) {
-    logInviteStage("send_account_email_fallback", {
-      email: input.email,
-    });
-
-    const emailResult = await sendNewAccountInvitationEmail({
-      email: input.email,
-      inviterName: input.inviterName,
-      acceptanceUrl: buildNewAccountLoginResumeUrl(),
-      expiresAt: invitation.expires_at,
-      inviteeFirstName: input.firstName,
-    });
-
-    if (!emailResult.ok) {
-      deliveryWarning =
-        emailResult.code === "not_configured"
-          ? "Invitation saved, but email delivery is not configured. Set RESEND_API_KEY or resend the invitation after configuring email."
-          : "Invitation saved, but the email could not be delivered. You can resend it from the directory.";
-    }
-  }
+    deliveryResult.delivery;
 
   const [mapped] = await mapInvitationRows(input.admin, [
     invitation,
@@ -1535,55 +1631,37 @@ export async function resendAdminUserInvitation(input: {
   );
 
   if (invitationType === INVITATION_TYPE_CREATE_ACCOUNT) {
-    if (!existingAuthUser) {
-      const authInviteError = await sendAuthInviteEmail(
-        input.admin,
-        {
-          email: normalizeInviteEmail(row.email),
-          redirectTo: buildCreateAccountInviteCallbackUrl(),
-          metadata: buildCreateAccountAuthInviteMetadata({
-            firstName: row.first_name,
-            lastName: row.last_name,
-            invitationToken: row.token,
-            invitedByPlatformAdmin: input.actor.userId,
-          }),
-        }
-      );
+    const deliveryResult =
+      await deliverCreateAccountInvitationEmail({
+        admin: input.admin,
+        email: normalizeInviteEmail(row.email),
+        firstName: row.first_name ?? null,
+        lastName: row.last_name ?? null,
+        invitationToken: row.token,
+        actorUserId: input.actor.userId,
+        inviterName,
+        expiresAt: row.expires_at,
+        existingAuthUser,
+      });
 
-      if (
-        !authInviteError ||
-        authInviteError.message
-          .toLowerCase()
-          .includes("already")
-      ) {
-        if (!authInviteError) {
-          return {
-            ok: true as const,
-            message: "Invitation resent.",
-          };
-        }
-      }
-    }
-
-    const emailResult = await sendNewAccountInvitationEmail({
-      email: normalizeInviteEmail(row.email),
-      inviterName,
-      acceptanceUrl: buildNewAccountLoginResumeUrl(),
-      expiresAt: row.expires_at,
-      inviteeFirstName: row.first_name,
-    });
-
-    if (!emailResult.ok) {
+    if (!deliveryResult.ok) {
       return {
         ok: false as const,
-        status: 500,
-        error: "Unable to resend the invitation email.",
+        status: deliveryResult.status || 500,
+        error:
+          deliveryResult.error ||
+          "Unable to resend the invitation email.",
       };
     }
 
     return {
       ok: true as const,
-      message: "Invitation resent.",
+      message:
+        deliveryResult.delivery === "auth_invite"
+          ? "Invitation resent through Supabase Auth."
+          : "Invitation resent with a secure setup link.",
+      deliveryWarning:
+        deliveryResult.deliveryWarning ?? undefined,
     };
   }
 

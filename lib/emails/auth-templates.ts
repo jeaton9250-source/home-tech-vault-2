@@ -84,17 +84,18 @@ export const authEmailTemplates: AuthEmailTemplateDefinition[] =
     {
       id: "invite",
       filename: "invite.html",
-      subject: "You're invited to Home Tech Vault",
+      subject: "Create your Home Tech Vault",
       preheader:
-        "Accept your invitation to join Home Tech Vault.",
-      headline: "You're invited.",
+        "You've been invited to create your own Home Tech Vault.",
+      headline: "Create your Home Tech Vault",
       subheading:
-        "Join Home Tech Vault and start organizing with your household.",
+        "Set your password and create your vault.",
       paragraphs: [
-        "Accept the invitation below to create your account and access your shared home technology vault.",
+        "You've been invited to create your own Home Tech Vault.",
+        "Use the secure button below to verify your invitation, set your password, and create your vault.",
         "If you were not expecting this invitation, you can safely ignore this email.",
       ],
-      buttonLabel: "Accept Invitation",
+      buttonLabel: "Create My Home Tech Vault",
       securityNote:
         "This invitation link is personal to you.",
     },

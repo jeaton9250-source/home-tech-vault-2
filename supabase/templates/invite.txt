@@ -1,9 +1,10 @@
-You're invited.
+Create your Home Tech Vault
 
-Accept the invitation below to create your account and access your shared home technology vault.
+You've been invited to create your own Home Tech Vault.
+Use the secure button below to verify your invitation, set your password, and create your vault.
 If you were not expecting this invitation, you can safely ignore this email.
 
-Accept Invitation: {{ .ConfirmationURL }}
+Create My Home Tech Vault: {{ .ConfirmationURL }}
 
 This invitation link is personal to you.
 
