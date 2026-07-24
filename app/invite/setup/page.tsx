@@ -14,6 +14,15 @@ import AuthLayout from "@/components/auth/AuthLayout";
 import PasswordInput from "@/components/auth/PasswordInput";
 import Button from "@/components/ui/Button";
 import FormInput from "@/components/ui/FormInput";
+import {
+  INVITATION_TYPE_JOIN_HOUSEHOLD,
+  normalizeInvitationType,
+} from "@/lib/admin/invitationTypes";
+import {
+  readInviteUserMetadata,
+  resolveCreateAccountInvitePath,
+  userHasHouseholdMembership,
+} from "@/lib/auth/inviteOnboarding";
 import { brand } from "@/lib/design-system/tokens";
 import { supabase } from "@/lib/supabase";
 
@@ -53,9 +62,51 @@ export default function CreateAccountInviteSetupPage() {
           return;
         }
 
-        if (session) {
-          setSessionReady(true);
+        if (!session) {
+          return;
         }
+
+        const metadata = readInviteUserMetadata(
+          session.user
+        );
+
+        if (
+          metadata.invitationType ===
+          INVITATION_TYPE_JOIN_HOUSEHOLD
+        ) {
+          const token =
+            typeof session.user.user_metadata
+              ?.invitation_token === "string"
+              ? session.user.user_metadata.invitation_token
+              : "";
+
+          if (token) {
+            router.replace(
+              `/family/accept/${encodeURIComponent(token)}`
+            );
+            return;
+          }
+        }
+
+        const hasHousehold =
+          await userHasHouseholdMembership(
+            session.user.id
+          );
+
+        const nextPath = resolveCreateAccountInvitePath({
+          user: session.user,
+          hasHousehold,
+        });
+
+        if (
+          nextPath &&
+          nextPath !== "/invite/setup"
+        ) {
+          router.replace(nextPath);
+          return;
+        }
+
+        setSessionReady(true);
       } finally {
         if (mounted) {
           setCheckingSession(false);
@@ -68,23 +119,18 @@ export default function CreateAccountInviteSetupPage() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!mounted) {
+      if (!mounted || !session) {
         return;
       }
 
-      if (session) {
-        setSessionReady(true);
-        setErrorMessage("");
-      }
-
-      setCheckingSession(false);
+      void establishSession();
     });
 
     return () => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     if (!sessionReady) {
@@ -106,11 +152,18 @@ export default function CreateAccountInviteSetupPage() {
             email: string;
             firstName: string | null;
             lastName: string | null;
+            invitationType?: string | null;
           };
+          redirectTo?: string;
           error?: string;
         };
 
         if (!response.ok) {
+          if (payload.redirectTo) {
+            router.replace(payload.redirectTo);
+            return;
+          }
+
           throw new Error(
             payload.error ||
               "Unable to load this invitation."
@@ -118,6 +171,18 @@ export default function CreateAccountInviteSetupPage() {
         }
 
         if (cancelled || !payload.invitation) {
+          return;
+        }
+
+        const invitationType = normalizeInvitationType(
+          payload.invitation.invitationType
+        );
+
+        if (
+          invitationType ===
+          INVITATION_TYPE_JOIN_HOUSEHOLD
+        ) {
+          router.replace("/set-password");
           return;
         }
 
@@ -190,6 +255,7 @@ export default function CreateAccountInviteSetupPage() {
             full_name: `${firstName.trim()} ${lastName.trim()}`,
             onboarding_mode: "create_household",
             invitation_type: "create_account",
+            password_setup_completed: true,
           },
         });
 

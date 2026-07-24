@@ -4,10 +4,14 @@ import {
   useEffect,
   useState,
 } from "react";
+import { useRouter } from "next/navigation";
 
 import { loadDashboardMetrics } from "@/lib/data/dashboardData";
 import { buildDemoHomeHealth } from "@/lib/home-health/demo";
 import { usePermissions } from "@/hooks/usePermissions";
+import {
+  resolveCreateAccountInvitePath,
+} from "@/lib/auth/inviteOnboarding";
 
 import PageShell from "@/components/ui/PageShell";
 import PageCard from "@/components/ui/PageCard";
@@ -18,6 +22,7 @@ import type { HomeHealthResult } from "@/lib/home-health/types";
 import { demoDashboard } from "@/lib/demoData";
 
 export default function DashboardPage() {
+  const router = useRouter();
   const {
     user,
     isDemo,
@@ -38,6 +43,37 @@ export default function DashboardPage() {
 
   const [errorMessage, setErrorMessage] =
     useState("");
+
+  useEffect(() => {
+    if (permissionsLoading || isDemo || !user) {
+      return;
+    }
+
+    const invitePath = resolveCreateAccountInvitePath({
+      user,
+      hasHousehold: Boolean(householdId),
+    });
+
+    if (invitePath) {
+      console.info("Invite onboarding route", {
+        userId: user.id,
+        invitationType:
+          user.user_metadata?.invitation_type ?? null,
+        onboardingMode:
+          user.user_metadata?.onboarding_mode ?? null,
+        hasHousehold: Boolean(householdId),
+        destination: invitePath,
+      });
+
+      router.replace(invitePath);
+    }
+  }, [
+    user,
+    isDemo,
+    householdId,
+    permissionsLoading,
+    router,
+  ]);
 
   useEffect(() => {
     async function loadDashboard() {

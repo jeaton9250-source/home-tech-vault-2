@@ -13,6 +13,11 @@ import AuthCard from "@/components/auth/AuthCard";
 import AuthLayout from "@/components/auth/AuthLayout";
 import Button from "@/components/ui/Button";
 import FormInput from "@/components/ui/FormInput";
+import {
+  readInviteUserMetadata,
+  resolveCreateAccountInvitePath,
+  userHasHouseholdMembership,
+} from "@/lib/auth/inviteOnboarding";
 import { brand } from "@/lib/design-system/tokens";
 import { supabase } from "@/lib/supabase";
 
@@ -52,21 +57,49 @@ export default function CreateHouseholdOnboardingPage() {
           return;
         }
 
+        const hasHousehold =
+          await userHasHouseholdMembership(
+            session.user.id
+          );
+
+        const invitePath = resolveCreateAccountInvitePath({
+          user: session.user,
+          hasHousehold,
+        });
+
+        if (invitePath === "/invite/setup") {
+          router.replace("/invite/setup");
+          return;
+        }
+
+        if (hasHousehold) {
+          router.replace("/dashboard");
+          return;
+        }
+
+        const metadata = readInviteUserMetadata(
+          session.user
+        );
+
+        console.info("Invite onboarding route", {
+          userId: session.user.id,
+          invitationType: metadata.invitationType,
+          onboardingMode: metadata.onboardingMode,
+          hasHousehold,
+        });
+
         setSessionReady(true);
 
-        const metadata = session.user.user_metadata as Record<
-          string,
-          unknown
-        >;
-
         setFirstName(
-          typeof metadata.first_name === "string"
-            ? metadata.first_name
+          typeof session.user.user_metadata
+            ?.first_name === "string"
+            ? session.user.user_metadata.first_name
             : ""
         );
         setLastName(
-          typeof metadata.last_name === "string"
-            ? metadata.last_name
+          typeof session.user.user_metadata
+            ?.last_name === "string"
+            ? session.user.user_metadata.last_name
             : ""
         );
       } finally {

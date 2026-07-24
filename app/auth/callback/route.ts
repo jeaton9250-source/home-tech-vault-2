@@ -12,8 +12,8 @@ export const runtime = "nodejs";
 
 const ALLOWED_NEXT_PATHS = new Set([
   "/invite/setup",
-  "/set-password",
   "/onboarding/create-household",
+  "/set-password",
   "/onboarding",
   "/dashboard",
 ]);
@@ -62,12 +62,20 @@ function resolveInviteNextPath(
     return requestedNext;
   }
 
-  return "/set-password";
+  if (
+    metadata?.onboarding_mode === "create_household"
+  ) {
+    return "/invite/setup";
+  }
+
+  return "/invite/setup";
 }
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
+  const requestedNext =
+    requestUrl.searchParams.get("next");
   const origin = requestUrl.origin;
 
   if (!code) {
@@ -97,10 +105,18 @@ export async function GET(request: Request) {
   const metadata = data.session?.user
     .user_metadata as Record<string, unknown> | undefined;
 
-  const next = resolveInviteNextPath(
-    requestUrl.searchParams.get("next"),
+  const safeNext = resolveInviteNextPath(
+    requestedNext,
     metadata
   );
 
-  return NextResponse.redirect(`${origin}${next}`);
+  console.info("Invite callback", {
+    hasCode: Boolean(code),
+    requestedNext,
+    safeNext,
+    invitationType: metadata?.invitation_type ?? null,
+    onboardingMode: metadata?.onboarding_mode ?? null,
+  });
+
+  return NextResponse.redirect(`${origin}${safeNext}`);
 }

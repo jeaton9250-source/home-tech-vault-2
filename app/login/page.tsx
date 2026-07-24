@@ -3,6 +3,7 @@
 import Link from "next/link";
 import {
   FormEvent,
+  useEffect,
   useState,
 } from "react";
 import { useRouter } from "next/navigation";
@@ -13,6 +14,9 @@ import PasswordInput from "@/components/auth/PasswordInput";
 import Alert from "@/components/ui/Alert";
 import Button from "@/components/ui/Button";
 import FormInput from "@/components/ui/FormInput";
+import {
+  resolveAuthenticatedInviteDestination,
+} from "@/lib/auth/inviteOnboarding";
 import { brand } from "@/lib/design-system/tokens";
 import { supabase } from "@/lib/supabase";
 import { resolvePostAuthRedirect } from "@/lib/onboarding/redirect";
@@ -70,6 +74,47 @@ export default function LoginPage() {
 
     return "/dashboard";
   });
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function redirectAuthenticatedInvitee() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!mounted || !user) {
+        return;
+      }
+
+      const destination =
+        await resolveAuthenticatedInviteDestination({
+          user,
+          requestedPath: redirectPath,
+        });
+
+      if (!destination) {
+        return;
+      }
+
+      if (
+        destination === redirectPath ||
+        destination.startsWith("/invite/setup") ||
+        destination.startsWith(
+          "/onboarding/create-household"
+        ) ||
+        destination.startsWith("/family/accept/")
+      ) {
+        router.replace(destination);
+      }
+    }
+
+    void redirectAuthenticatedInvitee();
+
+    return () => {
+      mounted = false;
+    };
+  }, [redirectPath, router]);
 
   async function handleSignIn(
     event: FormEvent<HTMLFormElement>
@@ -133,6 +178,18 @@ export default function LoginPage() {
         return;
       }
 
+      const inviteDestination =
+        await resolveAuthenticatedInviteDestination({
+          user: data.user,
+          requestedPath: redirectPath,
+        });
+
+      if (inviteDestination) {
+        router.replace(inviteDestination);
+        router.refresh();
+        return;
+      }
+
       const destination =
         await resolvePostAuthRedirect(
           supabase,
@@ -178,13 +235,23 @@ export default function LoginPage() {
       "/family/accept/"
     );
 
+  const isCreateAccountInvitation =
+    redirectPath.startsWith("/invite/setup") ||
+    redirectPath.startsWith(
+      "/onboarding/create-household"
+    );
+
   const loginTitle = isFamilyInvitation
     ? "Continue to your invitation"
-    : "Welcome back";
+    : isCreateAccountInvitation
+      ? "Finish creating your vault"
+      : "Welcome back";
 
   const loginDescription = isFamilyInvitation
     ? "Use the email address that received the household invitation. You will return to the invitation after signing in."
-    : "Sign in to access your devices, warranties, documents, subscriptions, and household technology records.";
+    : isCreateAccountInvitation
+      ? "Continue setting up the Home Tech Vault account you were invited to create."
+      : "Sign in to access your devices, warranties, documents, subscriptions, and household technology records.";
 
   return (
     <AuthLayout
@@ -197,7 +264,9 @@ export default function LoginPage() {
         overline={
           isFamilyInvitation
             ? "Household invitation"
-            : "Welcome back"
+            : isCreateAccountInvitation
+              ? "Account invitation"
+              : "Welcome back"
         }
         title={loginTitle}
         description={loginDescription}
