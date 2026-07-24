@@ -3,12 +3,100 @@ import {
   resolveDiscoveredIdentification,
   type IdentificationResult,
 } from "@/lib/connector/deviceIdentification";
+import { toLegacyCategory } from "@/lib/device-intelligence/categoryMap";
+import { isDeviceIntelligenceV3Enabled } from "@/lib/device-intelligence/featureFlag";
+import { identifyDevice } from "@/lib/device-intelligence/identifyDevice";
+import { isVisibleToCustomer } from "@/lib/device-intelligence/rejectArtifacts";
 
 import type { ParsedDiscoveryDevice } from "@/lib/connector/discoveryValidation";
+
+function mapIntelligenceToIdentification(
+  device: ParsedDiscoveryDevice
+): IdentificationResult {
+  const result = identifyDevice({
+    observationId: device.localFingerprint,
+    ipAddress: device.ipAddress,
+    macAddress: device.macAddress,
+    hostname: device.hostname,
+    manufacturer: device.manufacturer,
+    model: device.model,
+    friendlyName: device.friendlyName,
+    discoverySources: device.discoverySources,
+    mdnsServices: device.mdnsServices,
+    ssdpDeviceType: device.ssdpDeviceType,
+    ssdpDescriptionUrl: device.ssdpDescriptionUrl,
+    localFingerprint: device.localFingerprint,
+    firstSeenAt: device.firstSeenAt,
+    lastSeenAt: device.lastSeenAt,
+    online: device.online,
+  });
+
+  const best = result.bestCandidate;
+
+  if (!best) {
+    return {
+      likelyCategory: null,
+      likelyBrand: null,
+      friendlyName: device.friendlyName,
+      model: device.model,
+      identificationConfidence: "unknown",
+      identificationReasons: [
+        "Insufficient evidence for identification",
+        "Needs identification",
+      ],
+      displayName:
+        device.friendlyName?.trim() ||
+        device.hostname?.trim() ||
+        "Unknown network device",
+    };
+  }
+
+  const reasons = [
+    ...best.evidence
+      .filter((item) => item.matched && item.label)
+      .map((item) => item.label),
+    ...best.conflictingEvidence.map(
+      (item) => `Conflict: ${item.label}`
+    ),
+  ];
+
+  if (result.alternatives.length > 0) {
+    reasons.push(
+      `Other possibilities: ${result.alternatives
+        .map((alt) => alt.suggestedName)
+        .join(", ")}`
+    );
+  }
+
+  reasons.push(
+    `Rules ${result.ruleSetVersion} · catalog ${result.catalogVersion}`
+  );
+
+  return {
+    likelyCategory: toLegacyCategory(best.category),
+    likelyBrand: best.manufacturer,
+    friendlyName:
+      device.friendlyName?.trim() || best.suggestedName,
+    model: device.model?.trim() || best.family,
+    identificationConfidence: result.confidence,
+    identificationReasons:
+      reasons.length > 0
+        ? reasons
+        : ["Limited supporting evidence"],
+    displayName:
+      device.friendlyName?.trim() ||
+      best.suggestedName ||
+      "Unknown network device",
+  };
+}
 
 export function buildIdentificationForParsedDevice(
   device: ParsedDiscoveryDevice
 ): IdentificationResult {
+  if (isDeviceIntelligenceV3Enabled()) {
+    return mapIntelligenceToIdentification(device);
+  }
+
   return identifyDiscoveredDevice({
     ipAddress: device.ipAddress,
     macAddress: device.macAddress,
@@ -23,6 +111,23 @@ export function buildIdentificationForParsedDevice(
     stableFingerprint: device.localFingerprint,
     firstSeenAt: device.firstSeenAt,
     lastSeenAt: device.lastSeenAt,
+  });
+}
+
+/**
+ * Customer-visible discovery rows only — network artifacts are hidden.
+ */
+export function shouldPersistDiscoveredDevice(
+  device: ParsedDiscoveryDevice
+): boolean {
+  return isVisibleToCustomer({
+    ipAddress: device.ipAddress,
+    macAddress: device.macAddress,
+    hostname: device.hostname,
+    manufacturer: device.manufacturer,
+    friendlyName: device.friendlyName,
+    mdnsServices: device.mdnsServices,
+    ssdpDeviceType: device.ssdpDeviceType,
   });
 }
 

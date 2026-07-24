@@ -47,6 +47,22 @@ pub fn lookup_manufacturer(mac_address: &str) -> Option<String> {
         return None;
     }
 
+    // Locally administered / private MAC — OUI is not authoritative.
+    if let Ok(first_octet) = u8::from_str_radix(&normalized[..2], 16) {
+        if (first_octet & 0b10) != 0 {
+            return None;
+        }
+
+        // Multicast bit
+        if (first_octet & 0b1) != 0 {
+            return None;
+        }
+    }
+
+    if normalized == "ffffffffffff" {
+        return None;
+    }
+
     let prefix = &normalized[..6];
     let map = oui_map();
 
@@ -69,6 +85,14 @@ mod tests {
         assert_eq!(
             lookup_manufacturer("28:f0:76:12:34:56").as_deref(),
             Some("Apple")
+        );
+    }
+
+    #[test]
+    fn ignores_private_mac_oui() {
+        assert_eq!(
+            lookup_manufacturer("86:eb:52:28:4c:ee"),
+            None
         );
     }
 }

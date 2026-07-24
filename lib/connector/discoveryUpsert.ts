@@ -3,6 +3,7 @@ import "server-only";
 import {
   buildIdentificationForParsedDevice,
   identificationFieldsFromResult,
+  shouldPersistDiscoveredDevice,
 } from "@/lib/connector/discoveryIdentification";
 import {
   mergeDiscoverySources,
@@ -43,7 +44,14 @@ export async function upsertDiscoveredDevices(
   let upserted = 0;
   let enriched = 0;
 
+  let skippedArtifacts = 0;
+
   for (const device of devices) {
+    if (!shouldPersistDiscoveredDevice(device)) {
+      skippedArtifacts += 1;
+      continue;
+    }
+
     const existingResult = await admin
       .from("discovered_devices")
       .select(
@@ -170,7 +178,7 @@ export async function upsertDiscoveredDevices(
     autoMatched: 0,
     enriched,
     possibleMatches: 0,
-    ignored: 0,
-    newDevices: devices.length,
+    ignored: skippedArtifacts,
+    newDevices: devices.length - skippedArtifacts,
   };
 }

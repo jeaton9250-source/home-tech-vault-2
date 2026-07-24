@@ -17,6 +17,7 @@ import {
 import {
   buildIdentificationForParsedDevice,
   identificationFieldsFromResult,
+  shouldPersistDiscoveredDevice,
 } from "@/lib/connector/discoveryIdentification";
 import {
   identificationFromConfirmedVaultDevice,
@@ -183,6 +184,11 @@ export async function syncDiscoveredDevicesWithMatching(
   let newDevices = 0;
 
   for (const device of devices) {
+    if (!shouldPersistDiscoveredDevice(device)) {
+      ignored += 1;
+      continue;
+    }
+
     const existingResult = await admin
       .from("discovered_devices")
       .select(

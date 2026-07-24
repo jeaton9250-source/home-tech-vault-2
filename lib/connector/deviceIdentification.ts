@@ -383,15 +383,15 @@ export function formatIdentificationConfidenceLabel(
 ): string {
   switch (confidence) {
     case "exact":
-      return "Exact confidence";
+      return "Exact identity";
     case "high":
       return "High confidence";
     case "medium":
-      return "Medium confidence";
+      return "Possible match";
     case "low":
-      return "Low confidence";
+      return "Low-confidence suggestion";
     default:
-      return "Needs identification";
+      return "Unknown device";
   }
 }
 
