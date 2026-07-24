@@ -1,6 +1,6 @@
 import "server-only";
 
-import { randomBytes } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import { createElement } from "react";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -15,7 +15,18 @@ import NewAccountInvitationEmail, {
   renderNewAccountInvitationPlainText,
 } from "@/emails/templates/NewAccountInvitationEmail";
 import { sendReactEmail } from "@/lib/email/sendEmail";
-import { buildInviteAuthCallbackUrl } from "@/lib/admin/inviteAuthRedirect";
+import {
+  buildCreateAccountInviteCallbackUrl,
+  buildJoinHouseholdInviteCallbackUrl,
+} from "@/lib/admin/inviteAuthRedirect";
+import {
+  INVITATION_TYPE_CREATE_ACCOUNT,
+  INVITATION_TYPE_JOIN_HOUSEHOLD,
+  isUuid,
+  normalizeInvitationType,
+} from "@/lib/admin/invitationTypes";
+import { normalizeInviteEmail } from "@/lib/admin/invitationLookup";
+import { completeCreateAccountHousehold } from "@/lib/invite/createAccountHousehold";
 import { absoluteUrl } from "@/lib/marketing/site";
 import type {
   AdminHouseholdInviteRole,
@@ -54,9 +65,8 @@ type InvitationRow = {
   invitation_type?: string | null;
 };
 
-export function normalizeInviteEmail(value: string) {
-  return value.trim().toLowerCase();
-}
+
+export { normalizeInviteEmail } from "@/lib/admin/invitationLookup";
 
 export function isValidInviteEmail(email: string) {
   return (
@@ -89,20 +99,13 @@ export function parseInviteRole(
 export function parseInvitationType(
   value: unknown
 ): AdminInvitationType | null {
-  if (typeof value !== "string") {
+  const normalized = normalizeInvitationType(value);
+
+  if (!normalized) {
     return null;
   }
 
-  const normalized = value.trim().toLowerCase();
-
-  if (
-    normalized === "new_account" ||
-    normalized === "household_member"
-  ) {
-    return normalized;
-  }
-
-  return null;
+  return normalized;
 }
 
 const INVITATION_EXPIRY_DAYS = 7;
@@ -115,7 +118,40 @@ type DbError = {
 };
 
 function generateInvitationToken() {
-  return randomBytes(24).toString("base64url");
+  return randomUUID();
+}
+
+function validateInvitationUuidInputs(input: {
+  invitedBy?: unknown;
+  householdId?: unknown;
+  token?: unknown;
+  invitationType?: unknown;
+}) {
+  const fields: Array<[string, unknown]> = [
+    ["invited_by", input.invitedBy],
+    ["household_id", input.householdId],
+    ["token", input.token],
+  ];
+
+  for (const [field, value] of fields) {
+    if (
+      value != null &&
+      value !== "" &&
+      !isUuid(value)
+    ) {
+      console.error("Invitation insert UUID inputs", {
+        requesterAuthId: input.invitedBy,
+        householdId: input.householdId,
+        invitationType: input.invitationType,
+        invalidField: field,
+        invalidValue: value,
+      });
+
+      throw new Error(
+        `Invalid UUID for ${field}.`
+      );
+    }
+  }
 }
 
 function buildInvitationExpiresAt(
@@ -275,30 +311,53 @@ function mapAuthInviteErrorMessage(message: string) {
   return message || "The invitation email could not be sent.";
 }
 
-function buildAuthInviteMetadata(input: {
-  fullName?: string | null;
+function buildCreateAccountAuthInviteMetadata(input: {
+  firstName?: string | null;
+  lastName?: string | null;
   invitationToken: string;
-  invitationType: AdminInvitationType;
-  invitedBy: string;
-  householdId?: string | null;
-  householdRole?: AdminHouseholdInviteRole | null;
+  invitedByPlatformAdmin: string;
 }) {
+  const firstName = input.firstName?.trim() || "";
+  const lastName = input.lastName?.trim() || "";
+  const fullName = buildFullName(firstName, lastName);
+
   return {
-    full_name: input.fullName || undefined,
-    account_role: "user",
-    onboarding_mode:
-      input.invitationType === "new_account"
-        ? "create_household"
-        : "join_household",
-    invited_by: input.invitedBy,
+    first_name: firstName || undefined,
+    last_name: lastName || undefined,
+    full_name: fullName || undefined,
+    invitation_type: INVITATION_TYPE_CREATE_ACCOUNT,
+    onboarding_mode: "create_household",
+    platform_access: "standard_user",
+    invited_by_platform_admin:
+      input.invitedByPlatformAdmin,
     invitation_token: input.invitationToken,
-    invitation_type: input.invitationType,
-    ...(input.householdId
-      ? { household_id: input.householdId }
-      : {}),
-    ...(input.householdRole
-      ? { household_role: input.householdRole }
-      : {}),
+  };
+}
+
+function buildJoinHouseholdAuthInviteMetadata(input: {
+  firstName?: string | null;
+  lastName?: string | null;
+  invitationToken: string;
+  invitedByPlatformAdmin: string;
+  householdId: string;
+  householdRole: AdminHouseholdInviteRole;
+}) {
+  const firstName = input.firstName?.trim() || "";
+  const lastName = input.lastName?.trim() || "";
+  const fullName = buildFullName(firstName, lastName);
+
+  return {
+    first_name: firstName || undefined,
+    last_name: lastName || undefined,
+    full_name: fullName || undefined,
+    invitation_type: INVITATION_TYPE_JOIN_HOUSEHOLD,
+    onboarding_mode: "join_household",
+    platform_access: "standard_user",
+    invited_by_platform_admin:
+      input.invitedByPlatformAdmin,
+    invitation_token: input.invitationToken,
+    household_id: input.householdId,
+    household_role: input.householdRole,
   };
 }
 
@@ -309,6 +368,13 @@ async function saveInvitationRecord(
     existingId?: string;
   }
 ) {
+  validateInvitationUuidInputs({
+    invitedBy: payload.invited_by,
+    householdId: payload.household_id,
+    token: payload.token,
+    invitationType: payload.invitation_type,
+  });
+
   if (options?.existingId) {
     const { data, error } = await admin
       .from("household_invitations")
@@ -333,7 +399,7 @@ async function saveInvitationRecord(
 
   if (
     error &&
-    payload.invitation_type === "new_account" &&
+    payload.invitation_type === INVITATION_TYPE_CREATE_ACCOUNT &&
     (error.message?.includes("invitation_type") ||
       error.message?.includes("first_name") ||
       error.message?.includes("last_name"))
@@ -375,7 +441,7 @@ async function saveInvitationRecord(
   return data as InvitationRow;
 }
 
-async function findNewAccountInvitationByEmail(
+async function findCreateAccountInvitationByEmail(
   admin: SupabaseClient,
   email: string
 ) {
@@ -383,7 +449,10 @@ async function findNewAccountInvitationByEmail(
     .from("household_invitations")
     .select(INVITATION_SELECT)
     .ilike("email", email)
-    .eq("invitation_type", "new_account")
+    .in("invitation_type", [
+      INVITATION_TYPE_CREATE_ACCOUNT,
+      "new_account",
+    ])
     .is("accepted_at", null)
     .order("created_at", { ascending: false })
     .limit(1)
@@ -441,12 +510,13 @@ async function sendAuthInviteEmail(
   input: {
     email: string;
     metadata: Record<string, unknown>;
+    redirectTo: string;
   }
 ) {
   const { error } = await admin.auth.admin.inviteUserByEmail(
     input.email,
     {
-      redirectTo: buildInviteAuthCallbackUrl(),
+      redirectTo: input.redirectTo,
       data: input.metadata,
     }
   );
@@ -489,10 +559,10 @@ function buildHouseholdAcceptanceUrl(token: string) {
   );
 }
 
-function buildNewAccountSetupUrl(token: string) {
-  return absoluteUrl(
-    `/invite/setup/${encodeURIComponent(token)}`
-  );
+function buildNewAccountLoginResumeUrl() {
+  const next = encodeURIComponent("/invite/setup");
+
+  return absoluteUrl(`/login?redirect=${next}`);
 }
 
 function buildFullName(
@@ -507,11 +577,24 @@ function buildFullName(
 
 function resolveInvitationType(
   row: InvitationRow
-): AdminInvitationType {
-  return (
-    parseInvitationType(row.invitation_type) ??
-    (row.household_id ? "household_member" : "new_account")
+): AdminInvitationType | null {
+  const parsed = parseInvitationType(
+    row.invitation_type
   );
+
+  if (parsed) {
+    return parsed;
+  }
+
+  if (row.invitation_type != null) {
+    return null;
+  }
+
+  if (!row.household_id) {
+    return INVITATION_TYPE_CREATE_ACCOUNT;
+  }
+
+  return INVITATION_TYPE_JOIN_HOUSEHOLD;
 }
 
 async function findAuthUserByEmail(
@@ -591,11 +674,10 @@ async function sendHouseholdInvitationEmail(input: {
 async function sendNewAccountInvitationEmail(input: {
   email: string;
   inviterName: string;
-  token: string;
+  acceptanceUrl: string;
   expiresAt: string;
   inviteeFirstName?: string | null;
 }) {
-  const acceptanceUrl = buildNewAccountSetupUrl(input.token);
   const expirationLabel = formatExpirationLabel(
     input.expiresAt
   );
@@ -605,18 +687,18 @@ async function sendNewAccountInvitationEmail(input: {
     subject: newAccountInvitationSubject,
     template: createElement(NewAccountInvitationEmail, {
       inviterName: input.inviterName,
-      acceptanceUrl,
+      acceptanceUrl: input.acceptanceUrl,
       expirationLabel,
       inviteeFirstName: input.inviteeFirstName,
     }),
     text: renderNewAccountInvitationPlainText({
       inviterName: input.inviterName,
-      acceptanceUrl,
+      acceptanceUrl: input.acceptanceUrl,
       expirationLabel,
       inviteeFirstName: input.inviteeFirstName,
     }),
     tags: [
-      { name: "category", value: "new_account_invitation" },
+      { name: "category", value: "create_account_invitation" },
     ],
   });
 }
@@ -824,12 +906,16 @@ async function mapInvitationRows(
     .map((row) => {
       const invitationType = resolveInvitationType(row);
       const role =
-        invitationType === "household_member"
+        invitationType === INVITATION_TYPE_JOIN_HOUSEHOLD
           ? parseInviteRole(row.role)
           : null;
 
+      if (!invitationType) {
+        return null;
+      }
+
       if (
-        invitationType === "household_member" &&
+        invitationType === INVITATION_TYPE_JOIN_HOUSEHOLD &&
         !role
       ) {
         return null;
@@ -875,8 +961,15 @@ export async function createAdminUserInvitation(input: {
 }) {
   const email = normalizeInviteEmail(input.payload.email);
   const invitationType =
-    parseInvitationType(input.payload.invitationType) ??
-    "new_account";
+    parseInvitationType(input.payload.invitationType);
+
+  if (!invitationType) {
+    return {
+      ok: false as const,
+      status: 400,
+      error: "Select a valid invitation type.",
+    };
+  }
   const firstName = input.payload.firstName?.trim() || null;
   const lastName = input.payload.lastName?.trim() || null;
 
@@ -893,7 +986,7 @@ export async function createAdminUserInvitation(input: {
     input.actor.email ||
     "A Home Tech Vault administrator";
 
-  if (invitationType === "new_account") {
+  if (invitationType === INVITATION_TYPE_CREATE_ACCOUNT) {
     return createNewAccountInvitation({
       admin: input.admin,
       actorUserId: input.actor.userId,
@@ -965,13 +1058,13 @@ async function createNewAccountInvitation(input: {
         ok: false as const,
         status: 409,
         error:
-          "A user with this email address already exists.",
+          "This email already has a Home Tech Vault account.",
       };
     }
   }
 
   const existingInvite =
-    await findNewAccountInvitationByEmail(
+    await findCreateAccountInvitationByEmail(
       input.admin,
       input.email
     );
@@ -991,10 +1084,6 @@ async function createNewAccountInvitation(input: {
 
   const token = generateInvitationToken();
   const expiresAt = buildInvitationExpiresAt();
-  const fullName = buildFullName(
-    input.firstName,
-    input.lastName
-  );
 
   let authInviteSent = false;
 
@@ -1007,11 +1096,12 @@ async function createNewAccountInvitation(input: {
       input.admin,
       {
         email: input.email,
-        metadata: buildAuthInviteMetadata({
-          fullName,
+        redirectTo: buildCreateAccountInviteCallbackUrl(),
+        metadata: buildCreateAccountAuthInviteMetadata({
+          firstName: input.firstName,
+          lastName: input.lastName,
           invitationToken: token,
-          invitationType: "new_account",
-          invitedBy: input.actorUserId,
+          invitedByPlatformAdmin: input.actorUserId,
         }),
       }
     );
@@ -1046,7 +1136,7 @@ async function createNewAccountInvitation(input: {
   }
 
   const recordPayload: Record<string, unknown> = {
-    invitation_type: "new_account",
+    invitation_type: INVITATION_TYPE_CREATE_ACCOUNT,
     household_id: null,
     role: null,
     email: input.email,
@@ -1115,7 +1205,7 @@ async function createNewAccountInvitation(input: {
     const emailResult = await sendNewAccountInvitationEmail({
       email: input.email,
       inviterName: input.inviterName,
-      token: invitation.token,
+      acceptanceUrl: buildNewAccountLoginResumeUrl(),
       expiresAt: invitation.expires_at,
       inviteeFirstName: input.firstName,
     });
@@ -1225,7 +1315,7 @@ async function createHouseholdMemberInvitation(input: {
   const expiresAt = buildInvitationExpiresAt();
 
   const insertPayload: Record<string, unknown> = {
-    invitation_type: "household_member",
+    invitation_type: INVITATION_TYPE_JOIN_HOUSEHOLD,
     household_id: input.householdId,
     email: input.email,
     role: input.role,
@@ -1265,11 +1355,12 @@ async function createHouseholdMemberInvitation(input: {
       input.admin,
       {
         email: input.email,
-        metadata: buildAuthInviteMetadata({
-          fullName,
+        redirectTo: buildJoinHouseholdInviteCallbackUrl(),
+        metadata: buildJoinHouseholdAuthInviteMetadata({
+          firstName: input.firstName,
+          lastName: input.lastName,
           invitationToken: token,
-          invitationType: "household_member",
-          invitedBy: input.actorUserId,
+          invitedByPlatformAdmin: input.actorUserId,
           householdId: input.householdId,
           householdRole: input.role,
         }),
@@ -1424,6 +1515,15 @@ export async function resendAdminUserInvitation(input: {
   }
 
   const invitationType = resolveInvitationType(row);
+
+  if (!invitationType) {
+    return {
+      ok: false as const,
+      status: 400,
+      error: "This invitation has an invalid type.",
+    };
+  }
+
   const inviterName =
     input.actor.fullName?.trim() ||
     input.actor.email ||
@@ -1434,22 +1534,18 @@ export async function resendAdminUserInvitation(input: {
     row.email
   );
 
-  if (invitationType === "new_account") {
-    const fullName = buildFullName(
-      row.first_name,
-      row.last_name
-    );
-
+  if (invitationType === INVITATION_TYPE_CREATE_ACCOUNT) {
     if (!existingAuthUser) {
       const authInviteError = await sendAuthInviteEmail(
         input.admin,
         {
           email: normalizeInviteEmail(row.email),
-          metadata: buildAuthInviteMetadata({
-            fullName,
+          redirectTo: buildCreateAccountInviteCallbackUrl(),
+          metadata: buildCreateAccountAuthInviteMetadata({
+            firstName: row.first_name,
+            lastName: row.last_name,
             invitationToken: row.token,
-            invitationType: "new_account",
-            invitedBy: input.actor.userId,
+            invitedByPlatformAdmin: input.actor.userId,
           }),
         }
       );
@@ -1472,7 +1568,7 @@ export async function resendAdminUserInvitation(input: {
     const emailResult = await sendNewAccountInvitationEmail({
       email: normalizeInviteEmail(row.email),
       inviterName,
-      token: row.token,
+      acceptanceUrl: buildNewAccountLoginResumeUrl(),
       expiresAt: row.expires_at,
       inviteeFirstName: row.first_name,
     });
@@ -1512,20 +1608,16 @@ export async function resendAdminUserInvitation(input: {
     "Home Tech Vault household";
 
   if (!existingAuthUser) {
-    const fullName = buildFullName(
-      row.first_name,
-      row.last_name
-    );
-
     const authInviteError = await sendAuthInviteEmail(
       input.admin,
       {
         email: normalizeInviteEmail(row.email),
-        metadata: buildAuthInviteMetadata({
-          fullName,
+        redirectTo: buildJoinHouseholdInviteCallbackUrl(),
+        metadata: buildJoinHouseholdAuthInviteMetadata({
+          firstName: row.first_name,
+          lastName: row.last_name,
           invitationToken: row.token,
-          invitationType: "household_member",
-          invitedBy: input.actor.userId,
+          invitedByPlatformAdmin: input.actor.userId,
           householdId: row.household_id,
           householdRole: role,
         }),
@@ -1661,7 +1753,7 @@ export async function acceptNewAccountInvitation(input: {
 
   const invitationType = resolveInvitationType(invitation);
 
-  if (invitationType !== "new_account") {
+  if (invitationType !== INVITATION_TYPE_CREATE_ACCOUNT) {
     return {
       ok: false as const,
       status: 400,
@@ -1670,126 +1762,19 @@ export async function acceptNewAccountInvitation(input: {
     };
   }
 
-  const inviteEmail = normalizeInviteEmail(invitation.email);
-  const sessionEmail = normalizeInviteEmail(
-    input.userEmail || ""
-  );
-
-  if (!sessionEmail || sessionEmail !== inviteEmail) {
-    return {
-      ok: false as const,
-      status: 403,
-      error:
-        "Sign in with the invited email address to finish setup.",
-    };
-  }
-
-  const firstName = input.firstName.trim();
-  const lastName = input.lastName.trim();
-  const householdName = input.householdName.trim();
-
-  if (!firstName || !lastName) {
-    return {
-      ok: false as const,
-      status: 400,
-      error: "Enter your first and last name.",
-    };
-  }
-
-  if (!householdName) {
-    return {
-      ok: false as const,
-      status: 400,
-      error: "Enter a household name.",
-    };
-  }
-
-  const { data: existingOwned } = await input.admin
-    .from("households")
-    .select("id")
-    .eq("owner_id", input.userId)
-    .maybeSingle();
-
-  if (existingOwned) {
-    return {
-      ok: false as const,
-      status: 409,
-      error: "Your account already owns a household.",
-    };
-  }
-
-  const fullName = buildFullName(firstName, lastName);
-
-  const { error: profileError } = await input.admin
-    .from("profiles")
-    .upsert({
-      id: input.userId,
-      full_name: fullName,
-      household_name: householdName,
-    });
-
-  if (profileError) {
-    throw profileError;
-  }
-
-  const { data: household, error: householdError } =
-    await input.admin
-      .from("households")
-      .insert({
-        owner_id: input.userId,
-        name: householdName,
-      })
-      .select("id, name")
-      .single();
-
-  if (householdError) {
-    throw householdError;
-  }
-
-  const { error: membershipError } = await input.admin
-    .from("household_members")
-    .insert({
-      household_id: household.id,
-      user_id: input.userId,
-      role: "owner",
-      invited_by: invitation.invited_by,
-    });
-
-  if (
-    membershipError &&
-    !membershipError.message.toLowerCase().includes("duplicate")
-  ) {
-    await input.admin
-      .from("households")
-      .delete()
-      .eq("id", household.id);
-
-    throw membershipError;
-  }
-
-  const { error: acceptError } = await input.admin
-    .from("household_invitations")
-    .update({
-      accepted_at: new Date().toISOString(),
-      accepted_by: input.userId,
-    })
-    .eq("id", invitation.id)
-    .is("accepted_at", null);
-
-  if (acceptError) {
-    throw acceptError;
-  }
-
-  return {
-    ok: true as const,
-    householdId: household.id as string,
-    householdName: household.name as string,
-    message: "Your household is ready.",
-  };
+  return completeCreateAccountHousehold({
+    admin: input.admin,
+    userId: input.userId,
+    userEmail: input.userEmail,
+    firstName: input.firstName,
+    lastName: input.lastName,
+    householdName: input.householdName,
+    invitation,
+  });
 }
 
 export function getInvitationTypeFromRow(
   row: InvitationRow
-): AdminInvitationType {
+): AdminInvitationType | null {
   return resolveInvitationType(row);
 }

@@ -15,7 +15,21 @@ type InviteMetadata = {
   invitation_type?: string;
 };
 
-function resolveInviteDestination(metadata: InviteMetadata | undefined) {
+function resolveInviteDestination(
+  metadata: InviteMetadata | undefined
+) {
+  const invitationType =
+    typeof metadata?.invitation_type === "string"
+      ? metadata.invitation_type.trim().toLowerCase()
+      : "";
+
+  if (
+    invitationType === "create_account" ||
+    invitationType === "new_account"
+  ) {
+    return "/invite/setup";
+  }
+
   const token =
     typeof metadata?.invitation_token === "string"
       ? metadata.invitation_token.trim()
@@ -25,16 +39,14 @@ function resolveInviteDestination(metadata: InviteMetadata | undefined) {
     return null;
   }
 
-  const invitationType =
-    typeof metadata?.invitation_type === "string"
-      ? metadata.invitation_type.trim().toLowerCase()
-      : "";
-
-  if (invitationType === "household_member") {
+  if (
+    invitationType === "join_household" ||
+    invitationType === "household_member"
+  ) {
     return `/family/accept/${encodeURIComponent(token)}`;
   }
 
-  return `/invite/setup/${encodeURIComponent(token)}`;
+  return `/family/accept/${encodeURIComponent(token)}`;
 }
 
 export default function SetPasswordPage() {
@@ -125,13 +137,13 @@ export default function SetPasswordPage() {
       description={`Continue setting up your ${brand.name} account.`}
       benefits={[
         "Create your password securely",
-        "Set up your own household vault",
+        "Join the household associated with your invitation",
         "Keep your devices and documents private",
       ]}
     >
       <AuthCard
         title="Checking your invitation"
-        description="We are preparing your account setup."
+        description="We are preparing your household invitation."
       >
         {checkingSession ? (
           <div className="flex items-center justify-center gap-3 py-8 text-text-secondary">

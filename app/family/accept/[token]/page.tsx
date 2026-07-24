@@ -119,13 +119,13 @@ export default function AcceptFamilyInvitationPage() {
           invitationPreview &&
           (
             invitationPreview.invitation_type ===
+              "create_account" ||
+            invitationPreview.invitation_type ===
               "new_account" ||
             !invitationPreview.household_id
           )
         ) {
-          router.replace(
-            `/invite/setup/${encodeURIComponent(token)}`
-          );
+          router.replace("/invite/setup");
           return;
         }
 

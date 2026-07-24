@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 
 import {
-  acceptNewAccountInvitation,
   getInvitationTypeFromRow,
   loadInvitationByToken,
   normalizeInviteEmail,
 } from "@/lib/admin/invitations";
+import {
+  INVITATION_TYPE_CREATE_ACCOUNT,
+} from "@/lib/admin/invitationTypes";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -55,7 +57,7 @@ export async function GET(
 
     const invitationType = getInvitationTypeFromRow(invitation);
 
-    if (invitationType !== "new_account") {
+    if (invitationType !== INVITATION_TYPE_CREATE_ACCOUNT) {
       return NextResponse.json(
         {
           error:

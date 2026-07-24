@@ -30,13 +30,13 @@ const INVITE_TYPE_OPTIONS: Array<{
   description: string;
 }> = [
   {
-    value: "new_account",
+    value: "create_account",
     label: "Create New Account",
     description:
       "Invite this person to create their own Home Tech Vault account and household.",
   },
   {
-    value: "household_member",
+    value: "join_household",
     label: "Add to Existing Household",
     description:
       "Invite this person to join an existing household with a household role.",
@@ -74,7 +74,7 @@ export default function InviteUserModal({
   onInvited,
 }: InviteUserModalProps) {
   const [invitationType, setInvitationType] =
-    useState<AdminInvitationType>("new_account");
+    useState<AdminInvitationType>("create_account");
   const [email, setEmail] = useState("");
   const [householdId, setHouseholdId] = useState("");
   const [role, setRole] =
@@ -90,7 +90,7 @@ export default function InviteUserModal({
   const [error, setError] = useState("");
 
   const isHouseholdInvite =
-    invitationType === "household_member";
+    invitationType === "join_household";
 
   useEffect(() => {
     if (!open || !isHouseholdInvite) {
@@ -176,7 +176,7 @@ export default function InviteUserModal({
   }
 
   function resetForm() {
-    setInvitationType("new_account");
+    setInvitationType("create_account");
     setEmail("");
     setHouseholdId("");
     setRole("member");

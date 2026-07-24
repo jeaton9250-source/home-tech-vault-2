@@ -17,7 +17,7 @@ export type NewAccountInvitationEmailProps = {
 };
 
 export const newAccountInvitationSubject =
-  "You're invited to create a Home Tech Vault account";
+  "Create your Home Tech Vault";
 
 export function renderNewAccountInvitationPlainText(
   props: NewAccountInvitationEmailProps
@@ -34,11 +34,11 @@ export function renderNewAccountInvitationPlainText(
 
 ${greeting}
 
-${props.inviterName} invited you to create your own Home Tech Vault account and household.
+You've been invited to create your own Home Tech Vault.
 
-Accept the invitation, create your password, and set up your household. Your vault stays separate from the administrator who invited you.
+Organize your devices, warranties, documents, maintenance records, and home network in one secure place.
 
-Accept invitation:
+Click below to set your password and create your vault:
 ${props.acceptanceUrl}
 ${expiration}
 Security note: This link is personal to you. Do not forward it. If you were not expecting this invitation, you can safely ignore this email.
@@ -61,28 +61,29 @@ export default function NewAccountInvitationEmail({
 
   return (
     <EmailLayout
-      preview={`${inviterName} invited you to create a Home Tech Vault account.`}
+      preview="You've been invited to create your own Home Tech Vault."
     >
       <EmailHeader
-        headline="Create your account."
+        headline="Create your Home Tech Vault"
         subheading={`${inviterName} invited you to Home Tech Vault.`}
       />
 
       <EmailCard>
         <EmailParagraph>{greeting}</EmailParagraph>
         <EmailParagraph>
-          You have been invited to create your own Home Tech Vault account and
-          household. After you accept, you will set up your password and name
-          your household.
+          You&apos;ve been invited to create your own Home Tech Vault.
         </EmailParagraph>
         <EmailParagraph>
-          Your vault remains independent. Platform-admin access is not included
-          with this invitation.
+          Organize your devices, warranties, documents, maintenance
+          records, and home network in one secure place.
+        </EmailParagraph>
+        <EmailParagraph>
+          Click below to set your password and create your vault.
         </EmailParagraph>
 
         <EmailButton
           href={acceptanceUrl}
-          label="Accept Invitation"
+          label="Create My Home Tech Vault"
         />
 
         {expirationLabel ? (
@@ -105,8 +106,7 @@ export default function NewAccountInvitationEmail({
 
 NewAccountInvitationEmail.PreviewProps = {
   inviterName: "Alex Morgan",
-  acceptanceUrl:
-    "https://hometechvault.com/invite/setup/sample-token",
+  acceptanceUrl: "https://hometechvault.com/invite/setup",
   expirationLabel: "August 20, 2026",
   inviteeFirstName: "Jordan",
 } satisfies NewAccountInvitationEmailProps;

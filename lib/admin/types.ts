@@ -174,8 +174,8 @@ export type AdminHouseholdInviteRole =
   | "viewer";
 
 export type AdminInvitationType =
-  | "new_account"
-  | "household_member";
+  | "create_account"
+  | "join_household";
 
 export type AdminPendingInvitation = {
   id: string;

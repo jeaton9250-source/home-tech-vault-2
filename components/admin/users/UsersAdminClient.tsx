@@ -552,7 +552,7 @@ export default function UsersAdminClient({
             <AdminList>
               {filteredInvitations.map((invitation) => {
                 const isNewAccount =
-                  invitation.invitationType === "new_account";
+                  invitation.invitationType === "create_account";
 
                 return (
                   <AdminListItem
@@ -694,13 +694,13 @@ export default function UsersAdminClient({
                 label="Invitation type"
                 value={
                   selectedInvitation.invitationType ===
-                  "new_account"
+                  "create_account"
                     ? "New Account Invitation"
                     : "Household Invitation"
                 }
               />
               {selectedInvitation.invitationType ===
-              "household_member" ? (
+              "join_household" ? (
                 <>
                   <AdminDetailField
                     label="Household"
@@ -754,7 +754,7 @@ export default function UsersAdminClient({
                 label="Invitation status"
                 value={
                   selectedInvitation.invitationType ===
-                  "new_account"
+                  "create_account"
                     ? "Awaiting account setup"
                     : "Invitation Pending"
                 }
@@ -789,7 +789,7 @@ export default function UsersAdminClient({
               </div>
 
               {selectedInvitation.invitationType ===
-                "household_member" &&
+                "join_household" &&
               selectedInvitation.householdId ? (
                 <Link
                   href={`/admin/households?selected=${selectedInvitation.householdId}`}

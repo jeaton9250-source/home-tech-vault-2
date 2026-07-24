@@ -61,10 +61,14 @@ export async function POST(request: Request) {
     };
 
     const invitationType =
-      parseInvitationType(body.invitationType) ??
-      (body.createOwnHousehold === false
-        ? "household_member"
-        : "new_account");
+      parseInvitationType(body.invitationType);
+
+    if (!invitationType) {
+      return NextResponse.json(
+        { error: "Select a valid invitation type." },
+        { status: 400 }
+      );
+    }
 
     logInviteRoute("validate_payload", {
       invitationType,

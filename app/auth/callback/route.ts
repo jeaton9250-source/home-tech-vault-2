@@ -1,35 +1,86 @@
 import { NextResponse } from "next/server";
 
+import {
+  INVITATION_TYPE_CREATE_ACCOUNT,
+  INVITATION_TYPE_JOIN_HOUSEHOLD,
+  isUuid,
+  normalizeInvitationType,
+} from "@/lib/admin/invitationTypes";
 import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
-function sanitizeNextPath(value: string | null) {
-  if (!value || !value.startsWith("/") || value.startsWith("//")) {
+const ALLOWED_NEXT_PATHS = new Set([
+  "/invite/setup",
+  "/set-password",
+  "/onboarding/create-household",
+  "/onboarding",
+  "/dashboard",
+]);
+
+function isAllowedNextPath(path: string) {
+  if (ALLOWED_NEXT_PATHS.has(path)) {
+    return true;
+  }
+
+  return /^\/family\/accept\/[0-9a-f-]{36}$/i.test(path);
+}
+
+function resolveInviteNextPath(
+  requestedNext: string | null,
+  metadata: Record<string, unknown> | undefined
+) {
+  const invitationType = normalizeInvitationType(
+    metadata?.invitation_type
+  );
+
+  if (invitationType === INVITATION_TYPE_CREATE_ACCOUNT) {
+    return "/invite/setup";
+  }
+
+  if (invitationType === INVITATION_TYPE_JOIN_HOUSEHOLD) {
+    const token = metadata?.invitation_token;
+
+    if (typeof token === "string" && isUuid(token)) {
+      return `/family/accept/${token}`;
+    }
+
+    if (
+      requestedNext &&
+      isAllowedNextPath(requestedNext)
+    ) {
+      return requestedNext;
+    }
+
     return "/set-password";
   }
 
-  return value;
+  if (
+    requestedNext &&
+    isAllowedNextPath(requestedNext)
+  ) {
+    return requestedNext;
+  }
+
+  return "/set-password";
 }
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
-  const next = sanitizeNextPath(
-    requestUrl.searchParams.get("next")
-  );
   const origin = requestUrl.origin;
 
   if (!code) {
     console.error("[auth-callback] Missing authorization code.");
 
     return NextResponse.redirect(
-      `${origin}/login?error=missing_auth_code`
+      `${origin}/auth/error?reason=missing_auth_code`
     );
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.exchangeCodeForSession(code);
+  const { data, error } =
+    await supabase.auth.exchangeCodeForSession(code);
 
   if (error) {
     console.error("[auth-callback] Session exchange failed:", {
@@ -39,9 +90,17 @@ export async function GET(request: Request) {
     });
 
     return NextResponse.redirect(
-      `${origin}/login?error=auth_callback_failed`
+      `${origin}/auth/error?reason=auth_callback_failed`
     );
   }
+
+  const metadata = data.session?.user
+    .user_metadata as Record<string, unknown> | undefined;
+
+  const next = resolveInviteNextPath(
+    requestUrl.searchParams.get("next"),
+    metadata
+  );
 
   return NextResponse.redirect(`${origin}${next}`);
 }

@@ -15,9 +15,11 @@ import type {
 
 const ONBOARDING_BYPASS_PREFIXES = [
   "/family/accept/",
-  "/invite/setup/",
+  "/invite/setup",
+  "/onboarding/create-household",
   "/set-password",
   "/auth/callback",
+  "/auth/error",
 ] as const;
 
 export function shouldBypassOnboardingRedirect(
