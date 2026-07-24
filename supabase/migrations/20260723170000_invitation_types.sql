@@ -53,7 +53,7 @@ BEGIN
           invitation_type = 'household_member'
           AND household_id IS NOT NULL
           AND role IS NOT NULL
-          AND lower(role) IN ('admin', 'member', 'viewer')
+          AND lower(role::text) IN ('admin', 'member', 'viewer')
         )
         OR (
           invitation_type = 'new_account'
