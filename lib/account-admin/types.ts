@@ -19,10 +19,19 @@ export type DeletionBlockCode =
   | "ACTIVE_DELETION_JOB"
   | "TARGET_IS_PLATFORM_ADMIN";
 
+export type DeleteStage =
+  | "authorization"
+  | "target_lookup"
+  | "ownership_validation"
+  | "auth_deletion"
+  | "application_cleanup"
+  | "audit_logging";
+
 export type DeletionPreview = {
   userId: string;
   email: string | null;
   fullName: string | null;
+  isPlatformAdmin: boolean;
   accountStatus: AccountStatus;
   personalPlan: string;
   subscriptionStatus: string;

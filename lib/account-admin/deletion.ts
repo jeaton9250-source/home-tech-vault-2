@@ -488,6 +488,29 @@ async function authUserExists(
   return Boolean(data.user?.id);
 }
 
+async function deleteAuthUser(
+  admin: SupabaseClient,
+  targetUserId: string
+) {
+  const { data, error } =
+    await admin.auth.admin.deleteUser(
+      targetUserId
+    );
+
+  if (error) {
+    console.error("Auth user deletion failed", {
+      targetUserId,
+      message: error.message,
+      status: error.status,
+      code: error.code,
+    });
+
+    throw error;
+  }
+
+  return data;
+}
+
 export async function createDeletionJob(
   admin: SupabaseClient,
   options: {
@@ -495,7 +518,7 @@ export async function createDeletionJob(
     actorId: string;
     reason: string;
     notes?: string | null;
-    emailConfirmation: string;
+    confirmText: string;
     transferOwnerUserId?: string | null;
     deleteHouseholdData?: boolean;
   }
@@ -520,18 +543,12 @@ export async function createDeletionJob(
     };
   }
 
-  if (
-    !preview.email ||
-    preview.email.trim().toLowerCase() !==
-      options.emailConfirmation
-        .trim()
-        .toLowerCase()
-  ) {
+  if (options.confirmText.trim() !== "DELETE") {
     return {
       ok: false as const,
-      code: "EMAIL_MISMATCH",
+      code: "CONFIRMATION_MISMATCH",
       message:
-        "Email confirmation does not match.",
+        "Type DELETE to confirm permanent deletion.",
     };
   }
 
@@ -1198,22 +1215,6 @@ export async function processDeletionJob(
       .delete()
       .eq("author_id", targetUserId);
 
-    if (await profileExists(admin, targetUserId)) {
-      await updateJob(admin, jobId, {
-        current_step: "delete_profile",
-      });
-      await extendProcessorLease(
-        admin,
-        jobId,
-        actorId
-      );
-
-      await admin
-        .from("profiles")
-        .delete()
-        .eq("id", targetUserId);
-    }
-
     if (await authUserExists(admin, targetUserId)) {
       await updateJob(admin, jobId, {
         current_step: "delete_auth_user",
@@ -1224,13 +1225,38 @@ export async function processDeletionJob(
         actorId
       );
 
-      const { error: authDeleteError } =
-        await admin.auth.admin.deleteUser(
-          targetUserId
-        );
+      await deleteAuthUser(
+        admin,
+        targetUserId
+      );
+    }
 
-      if (authDeleteError) {
-        throw authDeleteError;
+    if (await profileExists(admin, targetUserId)) {
+      await updateJob(admin, jobId, {
+        current_step: "delete_profile",
+      });
+      await extendProcessorLease(
+        admin,
+        jobId,
+        actorId
+      );
+
+      const { error: profileDeleteError } =
+        await admin
+          .from("profiles")
+          .delete()
+          .eq("id", targetUserId);
+
+      if (profileDeleteError) {
+        console.error(
+          "Profile cleanup after auth deletion failed",
+          {
+            targetUserId,
+            message:
+              profileDeleteError.message,
+            code: profileDeleteError.code,
+          }
+        );
       }
     }
 
@@ -1255,7 +1281,19 @@ export async function processDeletionJob(
       targetUserId: null,
       targetEmailSnapshot:
         job.target_email_snapshot,
-      metadata: { jobId },
+      metadata: {
+        jobId,
+        action: "user_permanently_deleted",
+        deletionMode: job.delete_household_data
+          ? "delete_user_and_empty_household"
+          : "remove_user_preserve_household",
+        householdImpact:
+          job.delete_household_data
+            ? "household_deleted"
+            : job.transfer_owner_user_id
+              ? "ownership_transferred"
+              : "membership_removed",
+      },
     });
 
     return {
@@ -1296,6 +1334,90 @@ export async function processDeletionJob(
       message,
     };
   }
+}
+
+export async function permanentlyDeleteUser(
+  admin: SupabaseClient,
+  options: {
+    targetUserId: string;
+    actorId: string;
+    reason: string;
+    notes?: string | null;
+    confirmText: string;
+    transferOwnerUserId?: string | null;
+    deleteHouseholdData?: boolean;
+  }
+) {
+  const createResult = await createDeletionJob(
+    admin,
+    options
+  );
+
+  if (!createResult.ok) {
+    return {
+      ok: false as const,
+      stage: "authorization" as const,
+      code: createResult.code,
+      message: createResult.message,
+      preview: createResult.preview ?? null,
+      job: createResult.job ?? null,
+      jobView: createResult.jobView ?? null,
+    };
+  }
+
+  const processResult = await processDeletionJob(
+    admin,
+    createResult.job.id,
+    options.actorId
+  );
+
+  if (
+    !processResult.ok ||
+    processResult.job?.status !== "completed"
+  ) {
+    return {
+      ok: false as const,
+      stage:
+        processResult.job?.current_step ===
+        "delete_auth_user"
+          ? ("auth_deletion" as const)
+          : ("application_cleanup" as const),
+      message:
+        processResult.message ??
+        "Deletion could not be completed.",
+      preview: createResult.preview ?? null,
+      job: processResult.job ?? createResult.job,
+      jobView:
+        processResult.jobView ??
+        createResult.jobView ??
+        null,
+    };
+  }
+
+  const authStillExists = await authUserExists(
+    admin,
+    options.targetUserId
+  );
+
+  if (authStillExists) {
+    return {
+      ok: false as const,
+      stage: "auth_deletion" as const,
+      message:
+        "The application cleanup finished, but the Supabase Auth user still exists. Retry deletion or repair the account manually.",
+      preview: createResult.preview ?? null,
+      job: processResult.job,
+      jobView: processResult.jobView ?? null,
+    };
+  }
+
+  return {
+    ok: true as const,
+    deleted: true as const,
+    preview: createResult.preview ?? null,
+    job: processResult.job,
+    jobView: processResult.jobView ?? null,
+  };
 }
 
 export async function getLatestDeletionJob(

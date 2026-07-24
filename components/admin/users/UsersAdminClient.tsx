@@ -994,7 +994,16 @@ export default function UsersAdminClient({
                     await loadDetail(selection.id);
                   }
 
-                  void loadUsers();
+                  await loadUsers();
+                }}
+                onDeleted={async () => {
+                  setSelection(null);
+                  setSelectedInvitation(null);
+                  setDetail(null);
+                  setAdminMessage(
+                    "User permanently deleted from Home Tech Vault and Supabase Authentication."
+                  );
+                  await loadUsers();
                 }}
               />
 

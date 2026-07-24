@@ -74,32 +74,77 @@ export async function ensureProfilesForAuthUsers(
 
   const userIds = users.map((user) => user.id);
 
-  const { data: existingRows, error: existingError } =
-    await admin
+  const [
+    { data: existingRows, error: existingError },
+    { data: failedDeletionRows, error: failedDeletionError },
+  ] = await Promise.all([
+    admin
       .from("profiles")
       .select("id")
-      .in("id", userIds);
+      .in("id", userIds),
+    admin
+      .from("admin_account_deletion_jobs")
+      .select("target_user_id, current_step")
+      .in("target_user_id", userIds)
+      .eq("status", "failed")
+      .in("current_step", [
+        "delete_auth_user",
+        "delete_profile",
+      ]),
+  ]);
 
   if (existingError) {
     throw existingError;
   }
+
+  if (failedDeletionError) {
+    console.warn(
+      "[profile-sync] unable to inspect failed deletion jobs:",
+      failedDeletionError.message
+    );
+  }
+
+  const failedDeletionIds = new Set(
+    (failedDeletionRows ?? []).map(
+      (row) => row.target_user_id
+    )
+  );
 
   const existingIds = new Set(
     (existingRows ?? []).map((row) => row.id)
   );
 
   const missingUsers = users.filter(
-    (user) => !existingIds.has(user.id)
+    (user) =>
+      !existingIds.has(user.id) &&
+      !failedDeletionIds.has(user.id)
   );
 
   if (missingUsers.length === 0) {
     return 0;
   }
 
+  const verifiedMissingUsers: User[] = [];
+
+  for (const user of missingUsers) {
+    const { data, error } =
+      await admin.auth.admin.getUserById(user.id);
+
+    if (error || !data.user?.id) {
+      continue;
+    }
+
+    verifiedMissingUsers.push(user);
+  }
+
+  if (verifiedMissingUsers.length === 0) {
+    return 0;
+  }
+
   const { error: insertError } = await admin
     .from("profiles")
     .upsert(
-      missingUsers.map(
+      verifiedMissingUsers.map(
         buildProfileInsertFromAuthUser
       ),
       { onConflict: "id" }

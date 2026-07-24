@@ -22,7 +22,7 @@ type RouteContext = {
 type DeletionPostBody = {
   reason?: string;
   notes?: string;
-  emailConfirmation?: string;
+  confirmText?: string;
   transferOwnerUserId?: string | null;
   deleteHouseholdData?: boolean;
   confirmIrreversible?: boolean;
@@ -117,14 +117,13 @@ export async function POST(
       );
     }
 
-    const emailConfirmation =
-      body.emailConfirmation?.trim();
+    const confirmText = body.confirmText?.trim();
 
-    if (!emailConfirmation) {
+    if (confirmText !== "DELETE") {
       return NextResponse.json(
         {
           error:
-            "Email confirmation is required.",
+            "Type DELETE to confirm permanent deletion.",
         },
         { status: 400 }
       );
@@ -154,7 +153,7 @@ export async function POST(
         actorId: session.userId,
         reason,
         notes: body.notes ?? null,
-        emailConfirmation,
+        confirmText,
         transferOwnerUserId:
           body.transferOwnerUserId ?? null,
         deleteHouseholdData:

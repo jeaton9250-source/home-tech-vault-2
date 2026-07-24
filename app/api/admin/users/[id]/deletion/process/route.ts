@@ -94,6 +94,28 @@ export async function POST(
       result.ok &&
       result.job?.status === "completed"
     ) {
+      const { data: authUserData, error: authLookupError } =
+        await admin.auth.admin.getUserById(id);
+
+      const authStillExists =
+        !authLookupError &&
+        Boolean(authUserData.user?.id);
+
+      if (authStillExists) {
+        return NextResponse.json(
+          {
+            ok: false,
+            deleted: false,
+            stage: "auth_deletion",
+            job: result.job,
+            jobView: result.jobView ?? null,
+            error:
+              "Application cleanup finished, but the Supabase Auth user still exists. Retry deletion or repair manually.",
+          },
+          { status: 400 }
+        );
+      }
+
       return NextResponse.json({
         ok: true,
         deleted: true,

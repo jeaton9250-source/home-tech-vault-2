@@ -1,0 +1,21 @@
+-- PROPOSAL ONLY: review before applying in production.
+--
+-- Goal: ensure deleting auth.users removes matching public.profiles automatically.
+-- Current behavior: profiles are deleted explicitly in the account-admin deletion job
+-- after auth.admin.deleteUser() succeeds. This migration would make that redundant
+-- and prevent orphan profiles if Auth deletion succeeds but profile cleanup fails.
+--
+-- Impact:
+-- - profiles rows cascade away when auth.users rows are removed
+-- - household owner references and other FKs must be reviewed separately
+--
+-- Uncomment and apply only after confirming no conflicting constraints exist.
+
+-- ALTER TABLE public.profiles
+--   DROP CONSTRAINT IF EXISTS profiles_id_fkey;
+--
+-- ALTER TABLE public.profiles
+--   ADD CONSTRAINT profiles_id_fkey
+--   FOREIGN KEY (id)
+--   REFERENCES auth.users(id)
+--   ON DELETE CASCADE;

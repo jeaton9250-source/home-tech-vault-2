@@ -32,18 +32,41 @@ export async function buildDeletionPreview(
   targetUserId: string,
   actorId: string
 ): Promise<DeletionPreview | null> {
-  const profile =
+  let profile =
     await loadProfileAccountRecord(
       admin,
       targetUserId
     );
 
+  const authEmail =
+    await getAuthEmail(admin, targetUserId);
+
   if (!profile) {
-    return null;
+    if (!authEmail) {
+      return null;
+    }
+
+    const { data: authUserData } =
+      await admin.auth.admin.getUserById(
+        targetUserId
+      );
+
+    const metadata =
+      (authUserData.user?.user_metadata ??
+        {}) as Record<string, unknown>;
+
+    profile = {
+      id: targetUserId,
+      account_status: "active",
+      is_admin: false,
+      full_name:
+        typeof metadata.full_name === "string"
+          ? metadata.full_name
+          : null,
+    };
   }
 
-  const email =
-    await getAuthEmail(admin, targetUserId);
+  const email = authEmail;
 
   const [
     subscriptionResult,
@@ -292,6 +315,7 @@ export async function buildDeletionPreview(
     userId: targetUserId,
     email,
     fullName: profile.full_name,
+    isPlatformAdmin: profile.is_admin === true,
     accountStatus: profile.account_status,
     personalPlan:
       subscription?.plan ?? "free",

@@ -19,6 +19,7 @@ type DeletionPreview = {
   userId: string;
   email: string | null;
   fullName: string | null;
+  isPlatformAdmin?: boolean;
   accountStatus: "active" | "deactivated";
   personalPlan: string;
   subscriptionStatus: string;
@@ -69,6 +70,7 @@ type DeletionJob = DeletionJobView;
 type AccountDangerZoneProps = {
   detail: AdminUserDetail;
   onUpdated: () => Promise<void>;
+  onDeleted?: () => Promise<void>;
 };
 
 function accountStatusLabel(
@@ -116,6 +118,7 @@ function accountStatusLabel(
 export default function AccountDangerZone({
   detail,
   onUpdated,
+  onDeleted,
 }: AccountDangerZoneProps) {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -140,15 +143,13 @@ export default function AccountDangerZone({
     useState("");
   const [deleteNotes, setDeleteNotes] =
     useState("");
-  const [emailConfirmation, setEmailConfirmation] =
+  const [deleteConfirmText, setDeleteConfirmText] =
     useState("");
   const [transferOwnerUserId, setTransferOwnerUserId] =
     useState("");
   const [deleteHouseholdData, setDeleteHouseholdData] =
     useState(false);
   const [deleteConfirm, setDeleteConfirm] =
-    useState(false);
-  const [deleteFinalConfirm, setDeleteFinalConfirm] =
     useState(false);
   const [latestJob, setLatestJob] =
     useState<DeletionJobView | null>(null);
@@ -428,10 +429,15 @@ export default function AccountDangerZone({
   }
 
   async function handlePermanentDelete() {
-    if (!deleteConfirm || !deleteFinalConfirm) {
+    if (!deleteConfirm) {
       setError(
-        "Complete both confirmation steps before permanent deletion."
+        "Confirm that you understand this action is irreversible."
       );
+      return;
+    }
+
+    if (deleteConfirmText.trim() !== "DELETE") {
+      setError("Type DELETE to confirm permanent deletion.");
       return;
     }
 
@@ -440,17 +446,17 @@ export default function AccountDangerZone({
       setError("");
       setMessage("");
 
-      const createResponse = await fetch(
-        `/api/admin/users/${detail.id}/deletion`,
+      const response = await fetch(
+        `/api/admin/users/${detail.id}/delete`,
         {
-          method: "POST",
+          method: "DELETE",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
             reason: deleteReason,
             notes: deleteNotes.trim() || null,
-            emailConfirmation,
+            confirmText: deleteConfirmText.trim(),
             transferOwnerUserId:
               transferOwnerUserId || null,
             deleteHouseholdData,
@@ -459,86 +465,42 @@ export default function AccountDangerZone({
         }
       );
 
-      const createPayload =
-        (await createResponse.json()) as {
-          job?: { id: string };
-          jobView?: DeletionJobView;
-          error?: string;
-        };
-
-      if (!createResponse.ok) {
-        if (createPayload.jobView) {
-          setLatestJob(createPayload.jobView);
-        }
-
-        throw new Error(
-          createPayload.error ||
-            "Unable to start permanent deletion."
-        );
-      }
-
-      const jobId =
-        createPayload.jobView?.jobId ??
-        createPayload.job?.id;
-
-      if (!jobId) {
-        throw new Error(
-          "Deletion job was not created."
-        );
-      }
-
-      setLatestJob(
-        createPayload.jobView ?? null
-      );
-
-      const processResponse = await fetch(
-        `/api/admin/users/${detail.id}/deletion/process`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            jobId,
-            confirm: true,
-          }),
-        }
-      );
-
-      const processPayload =
-        (await processResponse.json()) as {
+      const payload =
+        (await response.json()) as {
           deleted?: boolean;
           jobView?: DeletionJobView;
           error?: string;
+          stage?: string;
         };
 
-      if (!processResponse.ok) {
-        setLatestJob(
-          processPayload.jobView ??
-            createPayload.jobView ??
-            null
-        );
+      if (!response.ok || !payload.deleted) {
+        if (payload.jobView) {
+          setLatestJob(payload.jobView);
+        }
+
         throw new Error(
-          processPayload.error ||
-            "Deletion could not be completed."
+          payload.error ||
+            "Unable to permanently delete this user."
         );
       }
 
-      setLatestJob(
-        processPayload.jobView ?? null
+      setLatestJob(payload.jobView ?? null);
+      setDeleteOpen(false);
+      setDeleteReason("");
+      setDeleteNotes("");
+      setDeleteConfirmText("");
+      setDeleteConfirm(false);
+      setTransferOwnerUserId("");
+      setDeleteHouseholdData(false);
+      setMessage(
+        "User permanently deleted from Home Tech Vault and Supabase Authentication."
       );
 
-      if (processPayload.deleted) {
-        setDeleteOpen(false);
-        setMessage(
-          "Account permanently deleted."
-        );
+      if (onDeleted) {
+        await onDeleted();
+      } else {
         await onUpdated();
-        return;
       }
-
-      setMessage("Deletion job completed.");
-      await onUpdated();
     } catch (actionError) {
       setError(
         actionError instanceof Error
@@ -591,13 +553,18 @@ export default function AccountDangerZone({
 
       if (payload.deleted) {
         setMessage(
-          "Account permanently deleted."
+          "User permanently deleted from Home Tech Vault and Supabase Authentication."
         );
+
+        if (onDeleted) {
+          await onDeleted();
+        } else {
+          await onUpdated();
+        }
       } else {
         setMessage("Deletion retry completed.");
+        await onUpdated();
       }
-
-      await onUpdated();
     } catch (actionError) {
       setError(
         actionError instanceof Error
@@ -872,11 +839,10 @@ export default function AccountDangerZone({
               setDeactivateOpen(false);
               setError("");
               setMessage("");
-              setEmailConfirmation("");
+              setDeleteConfirmText("");
               setDeleteReason("");
               setDeleteNotes("");
               setDeleteConfirm(false);
-              setDeleteFinalConfirm(false);
               setTransferOwnerUserId("");
               setDeleteHouseholdData(false);
             }}
@@ -1229,17 +1195,18 @@ export default function AccountDangerZone({
 
           <label className="block">
             <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.12em] text-text-tertiary">
-              Type email to confirm
+              Type DELETE to confirm
             </span>
             <input
-              value={emailConfirmation}
+              value={deleteConfirmText}
               onChange={(event) =>
-                setEmailConfirmation(
+                setDeleteConfirmText(
                   event.target.value
                 )
               }
               className="w-full rounded-xl border border-border-subtle px-3 py-2.5 text-sm"
-              placeholder={detail.email || ""}
+              placeholder="DELETE"
+              autoComplete="off"
             />
           </label>
 
@@ -1255,25 +1222,8 @@ export default function AccountDangerZone({
               className="mt-1"
             />
             <span>
-              I understand this permanently deletes the account
-              and associated application data.
-            </span>
-          </label>
-
-          <label className="flex items-start gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={deleteFinalConfirm}
-              onChange={(event) =>
-                setDeleteFinalConfirm(
-                  event.target.checked
-                )
-              }
-              className="mt-1"
-            />
-            <span>
-              This action is irreversible. I want to permanently
-              delete this account.
+              I understand this permanently deletes the user&apos;s
+              login and cannot be undone.
             </span>
           </label>
 
@@ -1292,9 +1242,8 @@ export default function AccountDangerZone({
                 submitting ||
                 hardBlockers.length > 0 ||
                 !deleteReason ||
-                !emailConfirmation.trim() ||
+                deleteConfirmText.trim() !== "DELETE" ||
                 !deleteConfirm ||
-                !deleteFinalConfirm ||
                 (householdTransferRequired &&
                   !transferOwnerUserId)
               }
@@ -1309,7 +1258,7 @@ export default function AccountDangerZone({
                   className="animate-spin"
                 />
               ) : (
-                "Permanently delete account"
+                "Permanently Delete User"
               )}
             </Button>
           </div>
