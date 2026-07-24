@@ -47,11 +47,28 @@ export function isCreateAccountInviteUser(
   );
 }
 
-export function resolveCreateAccountInvitePath(input: {
+export function needsCreateAccountOnboarding(input: {
   user: Pick<User, "user_metadata">;
   hasHousehold: boolean;
 }) {
   if (!isCreateAccountInviteUser(input.user)) {
+    return false;
+  }
+
+  const metadata = readInviteUserMetadata(input.user);
+
+  if (!metadata.passwordSetupCompleted) {
+    return true;
+  }
+
+  return !input.hasHousehold;
+}
+
+export function resolveCreateAccountInvitePath(input: {
+  user: Pick<User, "user_metadata">;
+  hasHousehold: boolean;
+}) {
+  if (!needsCreateAccountOnboarding(input)) {
     return null;
   }
 
@@ -63,11 +80,7 @@ export function resolveCreateAccountInvitePath(input: {
     return "/invite/setup";
   }
 
-  if (!input.hasHousehold) {
-    return "/onboarding/create-household";
-  }
-
-  return null;
+  return "/onboarding/create-household";
 }
 
 export async function userHasHouseholdMembership(

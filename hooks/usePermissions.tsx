@@ -399,6 +399,7 @@ function usePermissionsState() {
         setRoleError(null);
 
         if (demoLoading) {
+          setHouseholdContextLoaded(false);
           return;
         }
 
@@ -529,9 +530,7 @@ function usePermissionsState() {
         });
         setHouseholdContextLoaded(true);
       } finally {
-        if (!demoLoading) {
-          setRoleLoading(false);
-        }
+        setRoleLoading(false);
       }
     }, [
       demoLoading,

@@ -283,7 +283,6 @@ export default function LoginPage() {
 
       if (inviteDestination) {
         router.replace(inviteDestination);
-        router.refresh();
         return;
       }
 
@@ -294,7 +293,6 @@ export default function LoginPage() {
       );
 
       router.replace(destination);
-      router.refresh();
     } catch (error) {
       console.error("Sign-in error:", error);
 

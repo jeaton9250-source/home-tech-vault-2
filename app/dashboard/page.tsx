@@ -11,6 +11,7 @@ import { buildDemoHomeHealth } from "@/lib/home-health/demo";
 import { usePermissions } from "@/hooks/usePermissions";
 import {
   resolveCreateAccountInvitePath,
+  userHasHouseholdMembership,
 } from "@/lib/auth/inviteOnboarding";
 
 import PageShell from "@/components/ui/PageShell";
@@ -49,24 +50,54 @@ export default function DashboardPage() {
       return;
     }
 
-    const invitePath = resolveCreateAccountInvitePath({
-      user,
-      hasHousehold: Boolean(householdId),
-    });
+    let cancelled = false;
 
-    if (invitePath) {
+    async function redirectIncompleteInvitee() {
+      const activeUser = user;
+
+      if (!activeUser) {
+        return;
+      }
+
+      const hasHousehold = householdId
+        ? true
+        : await userHasHouseholdMembership(
+            activeUser.id
+          );
+
+      if (cancelled) {
+        return;
+      }
+
+      const invitePath = resolveCreateAccountInvitePath({
+        user: activeUser,
+        hasHousehold,
+      });
+
+      if (!invitePath) {
+        return;
+      }
+
       console.info("Invite onboarding route", {
-        userId: user.id,
+        userId: activeUser.id,
         invitationType:
-          user.user_metadata?.invitation_type ?? null,
+          activeUser.user_metadata?.invitation_type ??
+          null,
         onboardingMode:
-          user.user_metadata?.onboarding_mode ?? null,
-        hasHousehold: Boolean(householdId),
+          activeUser.user_metadata?.onboarding_mode ??
+          null,
+        hasHousehold,
         destination: invitePath,
       });
 
       router.replace(invitePath);
     }
+
+    void redirectIncompleteInvitee();
+
+    return () => {
+      cancelled = true;
+    };
   }, [
     user,
     isDemo,
