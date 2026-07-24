@@ -57,13 +57,12 @@ import {
 import { isDemoDeviceAssetPath } from "@/lib/devices/demoDeviceImages";
 import {
   displayValue,
-  formatLastSeen,
   formatNetworkUpdatedAt,
   formatProfileCurrency,
   formatProfileDate,
   getWarrantyPresentation,
-  presentDeviceNetworkPresence,
 } from "@/lib/devices/deviceProfileUtils";
+import { getDevicePresence } from "@/lib/devices/devicePresence";
 import {
   calculateDeviceHealth,
   getDeviceHealthLabel,
@@ -1144,31 +1143,14 @@ export default function DevicePage() {
 
   const healthLabel = getDeviceHealthLabel(healthScore);
 
-  const networkPresence = presentDeviceNetworkPresence({
+  const devicePresence = getDevicePresence({
     online: device.online,
     lastSeenAt: device.last_seen_at,
     firstSeenAt: device.first_seen_at,
     networkUpdatedAt: device.network_updated_at,
   });
 
-  const statusBadge =
-    device.online === true
-      ? {
-          label: "Online",
-          className: "bg-home-health-soft text-home-health",
-          dotClassName: "bg-home-health",
-        }
-      : device.online === false
-        ? {
-            label: "Offline",
-            className: "bg-surface-sunken text-text-secondary",
-            dotClassName: "bg-text-tertiary",
-          }
-        : {
-            label: "Unknown",
-            className: "bg-surface-sunken text-text-secondary",
-            dotClassName: "bg-text-tertiary",
-          };
+  const statusBadge = devicePresence.badge;
 
   const brandModel = [device.brand, device.model_number]
     .filter(Boolean)
@@ -1339,8 +1321,8 @@ export default function DevicePage() {
         <SummaryCard
           icon={Radio}
           label="Last Seen"
-          value={formatLastSeen(device.last_seen_at)}
-          detail={networkPresence.label}
+          value={devicePresence.lastActiveLabel}
+          detail={devicePresence.label}
         />
         <SummaryCard
           icon={FileText}
@@ -1569,11 +1551,11 @@ export default function DevicePage() {
                 <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                   <DetailCard
                     label="Online status"
-                    value={networkPresence.label}
+                    value={devicePresence.label}
                   />
                   <DetailCard
                     label="Last seen"
-                    value={formatLastSeen(device.last_seen_at)}
+                    value={devicePresence.lastActiveLabel}
                   />
                   <DetailCard
                     label="IP address"

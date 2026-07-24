@@ -47,7 +47,7 @@ import {
   ViewerBanner,
 } from "@/components/ui/PermissionUI";
 import { useDemoReadOnlyAction } from "@/components/demo/DemoExperienceProvider";
-import { formatDevicePresenceListLine } from "@/lib/devices/devicePresence";
+import { formatDevicePresenceListLine, getDevicePresence } from "@/lib/devices/devicePresence";
 import { normalizeMacAddress } from "@/lib/connector/network";
 import {
   mergePresenceFromDiscovery,
@@ -1408,12 +1408,12 @@ function ModernDeviceCard({
                     firstSeenAt: device.first_seen_at,
                     networkUpdatedAt: device.network_updated_at,
                   })
-                : formatDevicePresenceListLine({
+                : getDevicePresence({
                     online: device.online,
                     lastSeenAt: device.last_seen_at,
                     firstSeenAt: device.first_seen_at,
                     networkUpdatedAt: device.network_updated_at,
-                  })}
+                  }).listLine}
             </p>
           </div>
 

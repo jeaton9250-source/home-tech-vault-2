@@ -134,6 +134,101 @@ export function presentDeviceNetworkPresence(
   };
 }
 
+export function resolveLatestPresenceTimestamp(input: {
+  lastSeenAt?: string | null;
+  networkUpdatedAt?: string | null;
+}): string | null {
+  return (
+    [input.lastSeenAt, input.networkUpdatedAt]
+      .filter(
+        (value): value is string =>
+          typeof value === "string" && value.trim().length > 0
+      )
+      .map((value) => ({
+        value,
+        ms: new Date(value).getTime(),
+      }))
+      .filter((entry) => Number.isFinite(entry.ms))
+      .sort((left, right) => right.ms - left.ms)[0]?.value ??
+    input.lastSeenAt ??
+    null
+  );
+}
+
+export type DevicePresenceBadge = {
+  label: string;
+  className: string;
+  dotClassName: string;
+};
+
+export type DevicePresenceView = DevicePresencePresentation & {
+  latestTimestamp: string | null;
+  lastActiveLabel: string;
+  listLine: string;
+  badge: DevicePresenceBadge;
+};
+
+function getPresenceBadge(
+  presentation: DevicePresencePresentation
+): DevicePresenceBadge {
+  switch (presentation.state) {
+    case "online":
+      return {
+        label: presentation.listLabel,
+        className: "bg-home-health-soft text-home-health",
+        dotClassName: "bg-home-health",
+      };
+    case "recently_detected":
+      return {
+        label: presentation.listLabel,
+        className: "bg-warning-soft text-warning",
+        dotClassName: "bg-warning",
+      };
+    case "not_recently_detected":
+      return {
+        label: presentation.listLabel,
+        className: "bg-surface-sunken text-text-secondary",
+        dotClassName: "bg-text-tertiary",
+      };
+    case "unknown":
+    default:
+      return {
+        label: presentation.listLabel,
+        className: "bg-surface-sunken text-text-secondary",
+        dotClassName: "bg-text-tertiary",
+      };
+  }
+}
+
+export function getDevicePresence(
+  input: DevicePresenceInput
+): DevicePresenceView {
+  const latestTimestamp = resolveLatestPresenceTimestamp({
+    lastSeenAt: input.lastSeenAt,
+    networkUpdatedAt: input.networkUpdatedAt,
+  });
+  const presentation = presentDeviceNetworkPresence({
+    ...input,
+    lastSeenAt: latestTimestamp,
+  });
+  const lastActiveLabel = formatPresenceLastSeen(
+    latestTimestamp,
+    input.now
+  );
+  const listLine =
+    presentation.state === "online"
+      ? `${presentation.listEmoji} ${presentation.listLabel} · Active now`
+      : `${presentation.listEmoji} ${presentation.listLabel} · ${lastActiveLabel}`;
+
+  return {
+    ...presentation,
+    latestTimestamp,
+    lastActiveLabel,
+    listLine,
+    badge: getPresenceBadge(presentation),
+  };
+}
+
 export type VaultDevicePresenceRow = {
   online?: boolean | null;
   last_seen_at?: string | null;
@@ -189,32 +284,7 @@ export function formatDevicePresenceListLine(input: {
   firstSeenAt?: string | null;
   networkUpdatedAt?: string | null;
 }): string {
-  const latestLastSeen =
-    [input.lastSeenAt, input.networkUpdatedAt]
-      .filter(
-        (value): value is string =>
-          typeof value === "string" && value.trim().length > 0
-      )
-      .map((value) => ({
-        value,
-        ms: new Date(value).getTime(),
-      }))
-      .filter((entry) => Number.isFinite(entry.ms))
-      .sort((a, b) => b.ms - a.ms)[0]?.value ??
-    input.lastSeenAt ??
-    null;
-
-  const presentation = presentDeviceNetworkPresence({
-    ...input,
-    lastSeenAt: latestLastSeen,
-  });
-  const lastSeenLabel = formatPresenceLastSeen(latestLastSeen);
-
-  if (presentation.state === "online") {
-    return `${presentation.listEmoji} ${presentation.listLabel} · Active now`;
-  }
-
-  return `${presentation.listEmoji} ${presentation.listLabel} · ${lastSeenLabel}`;
+  return getDevicePresence(input).listLine;
 }
 
 export function formatPresenceLastSeen(

@@ -2,6 +2,7 @@ import {
   formatDevicePresenceListLine,
   formatNetworkUpdatedAt,
   formatPresenceLastSeen,
+  getDevicePresence,
   presentDeviceNetworkPresence,
 } from "@/lib/devices/devicePresence";
 
@@ -121,12 +122,13 @@ export function formatNetworkPresence(input: {
   firstSeenAt?: string | null;
   networkUpdatedAt?: string | null;
 }): string {
-  return presentDeviceNetworkPresence(input).label;
+  return getDevicePresence(input).label;
 }
 
 export {
   formatDevicePresenceListLine,
   formatNetworkUpdatedAt,
+  getDevicePresence,
   presentDeviceNetworkPresence,
 };
 

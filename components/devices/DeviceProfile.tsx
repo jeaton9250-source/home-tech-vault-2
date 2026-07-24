@@ -38,12 +38,11 @@ import {
 import { cn } from "@/lib/design-system/cn";
 import {
   displayValue,
-  formatLastSeen,
   formatNetworkUpdatedAt,
   formatProfileCurrency,
   formatProfileDate,
+  getDevicePresence,
   getWarrantyPresentation,
-  presentDeviceNetworkPresence,
 } from "@/lib/devices/deviceProfileUtils";
 import PageShell from "@/components/ui/PageShell";
 import PageCard from "@/components/ui/PageCard";
@@ -176,7 +175,7 @@ export default function DeviceProfile({
       device.online !== null
   );
 
-  const networkPresence = presentDeviceNetworkPresence({
+  const devicePresence = getDevicePresence({
     online: device.online,
     lastSeenAt: device.last_seen_at,
     firstSeenAt: device.first_seen_at,
@@ -702,12 +701,12 @@ export default function DeviceProfile({
             <FactCard
               icon={Wifi}
               label="Status"
-              value={networkPresence.label}
+              value={devicePresence.label}
             />
             <FactCard
               icon={Radio}
               label="Last Detected"
-              value={formatLastSeen(device.last_seen_at)}
+              value={devicePresence.lastActiveLabel}
             />
             <FactCard
               icon={Radio}

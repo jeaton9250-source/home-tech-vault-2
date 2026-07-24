@@ -5,6 +5,7 @@ import {
   computeHomePulseDevicePresenceCounts,
   deriveDeviceNetworkPresence,
   formatDevicePresenceListLine,
+  getDevicePresence,
   presentDeviceNetworkPresence,
 } from "./devicePresence";
 
@@ -96,6 +97,25 @@ describe("presentDeviceNetworkPresence", () => {
       "Not Recently Detected"
     );
     assert.equal(presentation.listEmoji, "⚪");
+  });
+});
+
+describe("getDevicePresence", () => {
+  it("does not show online when online=true but last seen is stale", () => {
+    const now = Date.UTC(2026, 6, 23, 12, 0, 0);
+    const lastSeenAt = new Date(now - 9 * 60 * 60 * 1000).toISOString();
+
+    const presence = getDevicePresence({
+      online: true,
+      lastSeenAt,
+      networkUpdatedAt: lastSeenAt,
+      now,
+    });
+
+    assert.equal(presence.state, "not_recently_detected");
+    assert.equal(presence.badge.label, "Not Recently Detected");
+    assert.match(presence.listLine, /Not Recently Detected · Last active 9 hours ago/);
+    assert.equal(presence.label, presence.badge.label);
   });
 });
 
