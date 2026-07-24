@@ -1761,7 +1761,7 @@ export async function loadAdminSystemHealth(): Promise<AdminSystemHealth> {
       detail:
         process.env.NEXT_PUBLIC_SITE_URL ||
         process.env.VERCEL_PROJECT_PRODUCTION_URL ||
-        "https://hometechvault.com",
+        "https://www.hometechvault.com",
     },
   ];
 

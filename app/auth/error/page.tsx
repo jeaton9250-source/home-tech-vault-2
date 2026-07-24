@@ -6,7 +6,7 @@ import Button from "@/components/ui/Button";
 
 const REASON_MESSAGES: Record<string, string> = {
   missing_auth_code:
-    "This sign-in link is incomplete. Open the link from your invitation email again.",
+    "This sign-in link is incomplete. Ask your administrator to resend the invitation, then open the newest email. The secure link should start with https://www.hometechvault.com/auth/invite/continue.",
   auth_callback_failed:
     "We could not verify your invitation link. It may have expired, already been used, or been opened by an email scanner before you clicked it. Ask your administrator to resend the invitation, then use the newest email.",
   invalid_redirect:

@@ -312,7 +312,7 @@ function mapAuthInviteErrorMessage(message: string) {
     normalized.includes("redirect") ||
     normalized.includes("url")
   ) {
-    return "The invitation redirect URL is not allowed in Supabase. Add your site URL and /auth/callback to the Supabase redirect allowlist.";
+    return "The invitation redirect URL is not allowed in Supabase. Add https://www.hometechvault.com/auth/callback and https://www.hometechvault.com/auth/callback** to the Supabase redirect allowlist.";
   }
 
   return message || "The invitation email could not be sent.";
@@ -733,61 +733,16 @@ async function deliverCreateAccountInvitationEmail(input: {
   });
 
   if (!input.existingAuthUser) {
-    logInviteStage("send_auth_invite", {
+    logInviteStage("send_account_email_secure_link", {
       email: input.email,
+      hasExistingAuthUser: false,
     });
-
-    const authInviteError = await sendAuthInviteEmail(
-      input.admin,
-      {
-        email: input.email,
-        redirectTo,
-        metadata,
-      }
-    );
-
-    if (!authInviteError) {
-      logCreateAccountInviteLink({
-        deliveryMethod: "supabase",
-        redirectTo,
-      });
-
-      return {
-        ok: true,
-        delivery: "auth_invite",
-      };
-    }
-
-    console.error("[admin-invite] Supabase invite failed:", {
-      message: authInviteError.message,
-      status: authInviteError.status,
-      code: authInviteError.code,
+  } else {
+    logInviteStage("send_account_email_secure_link", {
+      email: input.email,
+      hasExistingAuthUser: true,
     });
-
-    const message = authInviteError.message.toLowerCase();
-
-    if (
-      !(
-        message.includes("already") ||
-        message.includes("registered") ||
-        message.includes("exists")
-      )
-    ) {
-      return {
-        ok: false,
-        delivery: "account_email",
-        status: authInviteError.status || 500,
-        error: mapAuthInviteErrorMessage(
-          authInviteError.message
-        ),
-      };
-    }
   }
-
-  logInviteStage("send_account_email_secure_link", {
-    email: input.email,
-    hasExistingAuthUser: Boolean(input.existingAuthUser),
-  });
 
   const generatedLink =
     await generateCreateAccountSecureInviteLink(

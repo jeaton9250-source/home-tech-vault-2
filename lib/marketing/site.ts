@@ -1,7 +1,21 @@
 import { brand } from "@/lib/design-system/tokens";
 
 const DEFAULT_SITE_URL =
-  "https://hometechvault.com";
+  "https://www.hometechvault.com";
+
+function normalizeCanonicalSiteUrl(url: string) {
+  try {
+    const parsed = new URL(url);
+
+    if (parsed.hostname === "hometechvault.com") {
+      parsed.hostname = "www.hometechvault.com";
+    }
+
+    return parsed.origin.replace(/\/$/, "");
+  } catch {
+    return url.replace(/\/$/, "");
+  }
+}
 
 export function getSiteUrl(): string {
   const configured =
@@ -11,7 +25,7 @@ export function getSiteUrl(): string {
     return DEFAULT_SITE_URL;
   }
 
-  return configured.replace(/\/$/, "");
+  return normalizeCanonicalSiteUrl(configured);
 }
 
 export function absoluteUrl(path: string): string {
