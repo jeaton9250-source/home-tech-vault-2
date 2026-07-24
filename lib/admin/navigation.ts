@@ -41,10 +41,10 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
   },
   {
     id: "devices",
-    href: "/admin/analytics",
+    href: "/admin/devices",
     label: "Devices",
     icon: Cpu,
-    description: "Inventory totals in reports",
+    description: "Cross-household inventory",
   },
   {
     id: "reports",
@@ -126,11 +126,11 @@ export const ADMIN_HEADER_NAV_ITEMS: AdminHeaderNavItem[] = [
   },
   {
     id: "devices",
-    href: "/admin/analytics",
+    href: "/admin/devices",
     label: "Devices",
     isActive: (pathname) =>
-      pathname === "/admin/analytics" ||
-      pathname.startsWith("/admin/analytics/"),
+      pathname === "/admin/devices" ||
+      pathname.startsWith("/admin/devices/"),
   },
   {
     id: "reports",

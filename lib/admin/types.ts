@@ -202,3 +202,66 @@ export type AdminInviteUserInput = {
   firstName?: string | null;
   lastName?: string | null;
 };
+
+export type AdminDeviceOnlineStatus =
+  | "online"
+  | "offline"
+  | "unknown";
+
+export type AdminDeviceWarrantyStatus =
+  | "active"
+  | "expiring"
+  | "expired"
+  | "missing";
+
+export type AdminDeviceSummary = {
+  id: string;
+  deviceName: string | null;
+  brand: string | null;
+  modelNumber: string | null;
+  serialNumber: string | null;
+  category: string | null;
+  photoUrl: string | null;
+  householdId: string | null;
+  householdName: string | null;
+  householdOwnerId: string | null;
+  householdOwnerName: string | null;
+  householdOwnerEmail: string | null;
+  onlineStatus: AdminDeviceOnlineStatus;
+  lastSeenAt: string | null;
+  warrantyDate: string | null;
+  warrantyStatus: AdminDeviceWarrantyStatus;
+  documentCount: number;
+  createdAt: string | null;
+};
+
+export type AdminDeviceDetail = AdminDeviceSummary & {
+  purchaseDate: string | null;
+  purchasePrice: number | null;
+  location: string | null;
+  ipAddress: string | null;
+  macAddress: string | null;
+  manufacturer: string | null;
+  discoverySource: string | null;
+  firstSeenAt: string | null;
+  networkUpdatedAt: string | null;
+  photoCount: number;
+  maintenanceCount: number;
+};
+
+export type AdminDeviceListSummary = {
+  totalDevices: number;
+  online: number;
+  offline: number;
+  unknown: number;
+  expiringWarranties: number;
+  scope: "filtered" | "platform";
+};
+
+export type AdminDeviceSortOption =
+  | "newest"
+  | "oldest"
+  | "name"
+  | "household"
+  | "last_seen"
+  | "warranty";
