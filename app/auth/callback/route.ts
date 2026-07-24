@@ -86,7 +86,28 @@ export async function GET(request: Request) {
   const otpType = requestUrl.searchParams.get("type");
   const requestedNext =
     requestUrl.searchParams.get("next");
+  const authError =
+    requestUrl.searchParams.get("error");
+  const authErrorDescription =
+    requestUrl.searchParams.get(
+      "error_description"
+    );
   const origin = requestUrl.origin;
+
+  if (authError) {
+    console.error(
+      "[auth-callback] Provider returned an error:",
+      {
+        error: authError,
+        description: authErrorDescription,
+      }
+    );
+
+    return authErrorRedirect(
+      origin,
+      "auth_callback_failed"
+    );
+  }
 
   if (!code && !(tokenHash && otpType)) {
     console.error(

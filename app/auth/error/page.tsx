@@ -8,7 +8,7 @@ const REASON_MESSAGES: Record<string, string> = {
   missing_auth_code:
     "This sign-in link is incomplete. Open the link from your invitation email again.",
   auth_callback_failed:
-    "We could not verify your invitation link. It may have expired or already been used.",
+    "We could not verify your invitation link. It may have expired, already been used, or been opened by an email scanner before you clicked it. Ask your administrator to resend the invitation, then use the newest email.",
   invalid_redirect:
     "This invitation link could not continue to the expected setup page.",
 };

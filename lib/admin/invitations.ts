@@ -31,6 +31,9 @@ import {
 } from "@/lib/admin/invitationTypes";
 import { normalizeInviteEmail } from "@/lib/admin/invitationLookup";
 import { completeCreateAccountHousehold } from "@/lib/invite/createAccountHousehold";
+import {
+  buildCreateAccountInviteContinueUrl,
+} from "@/lib/auth/inviteContinue";
 import { absoluteUrl } from "@/lib/marketing/site";
 import type {
   AdminHouseholdInviteRole,
@@ -818,10 +821,15 @@ async function deliverCreateAccountInvitationEmail(input: {
     secureActionUrl: generatedLink.secureActionUrl,
   });
 
+  const inviteActionUrl =
+    buildCreateAccountInviteContinueUrl(
+      input.invitationToken
+    );
+
   const emailResult = await sendNewAccountInvitationEmail({
     email: input.email,
     inviterName: input.inviterName,
-    secureActionUrl: generatedLink.secureActionUrl,
+    secureActionUrl: inviteActionUrl,
     expiresAt: input.expiresAt,
     inviteeFirstName: input.firstName,
   });

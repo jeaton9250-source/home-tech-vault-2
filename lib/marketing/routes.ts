@@ -20,6 +20,7 @@ export const PUBLIC_AUTH_PATHS = [
   "/set-password",
   "/auth/callback",
   "/auth/error",
+  "/auth/invite/continue",
   "/invite/setup",
   "/onboarding/create-household",
 ] as const;

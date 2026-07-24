@@ -3,9 +3,7 @@ import "server-only";
 import { absoluteUrl } from "@/lib/marketing/site";
 
 export function buildCreateAccountInviteCallbackUrl() {
-  const next = encodeURIComponent("/invite/setup");
-
-  return absoluteUrl(`/auth/callback?next=${next}`);
+  return absoluteUrl("/auth/callback");
 }
 
 export function buildJoinHouseholdInviteCallbackUrl() {
