@@ -248,7 +248,7 @@
       <tr>
         <td align="center">
           <a
-            href="{{ .ConfirmationURL }}"
+            href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=invite&amp;next=/invite/setup"
             class="email-button-link email-button"
             style="
               display: inline-block;
@@ -296,8 +296,8 @@
       "
     >
       Button not working? Copy and paste this link:<br />
-      <a href="{{ .ConfirmationURL }}" style="color: #78716C;">
-        {{ .ConfirmationURL }}
+      <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=invite&amp;next=/invite/setup" style="color: #78716C;">
+        {{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=invite&amp;next=/invite/setup
       </a>
     </p>
   

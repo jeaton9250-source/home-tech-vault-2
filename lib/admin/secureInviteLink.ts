@@ -1,28 +1,17 @@
 import "server-only";
 
+import type { EmailOtpType } from "@supabase/supabase-js";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { buildCreateAccountInviteCallbackUrl } from "@/lib/admin/inviteAuthRedirect";
+import { buildCreateAccountInviteRedirectUrl } from "@/lib/admin/inviteAuthRedirect";
+import { buildAuthConfirmUrl } from "@/lib/auth/buildAuthConfirmUrl";
 
-export function assertSecureInviteActionUrl(
+export function assertInviteTokenHash(
   value: unknown
 ): asserts value is string {
   if (typeof value !== "string" || value.length === 0) {
     throw new Error(
-      "Supabase did not return an invitation action link."
-    );
-  }
-
-  const parsed = new URL(value);
-
-  const isSupabaseAuthLink =
-    parsed.pathname.includes("/auth/v1/verify") ||
-    parsed.searchParams.has("token") ||
-    parsed.searchParams.has("token_hash");
-
-  if (!isSupabaseAuthLink) {
-    throw new Error(
-      "The invitation email URL is not a secure Supabase authentication link."
+      "Supabase did not return an invitation token hash."
     );
   }
 }
@@ -30,23 +19,13 @@ export function assertSecureInviteActionUrl(
 export function logCreateAccountInviteLink(input: {
   deliveryMethod: "supabase" | "resend";
   redirectTo: string;
-  secureActionUrl?: string | null;
+  usesTokenHashConfirm: boolean;
 }) {
-  let actionUrlHost: string | null = null;
-
-  if (input.secureActionUrl) {
-    try {
-      actionUrlHost = new URL(input.secureActionUrl).host;
-    } catch {
-      actionUrlHost = null;
-    }
-  }
-
   console.info("Create-account invite link", {
     deliveryMethod: input.deliveryMethod,
     redirectTo: input.redirectTo,
-    hasSecureActionUrl: Boolean(input.secureActionUrl),
-    actionUrlHost,
+    usesTokenHashConfirm:
+      input.usesTokenHashConfirm,
   });
 }
 
@@ -56,11 +35,14 @@ export async function generateCreateAccountSecureInviteLink(
     email: string;
     metadata: Record<string, unknown>;
     redirectTo?: string;
+    confirmNext?: string;
   }
 ) {
   const redirectTo =
     input.redirectTo ??
-    buildCreateAccountInviteCallbackUrl();
+    buildCreateAccountInviteRedirectUrl();
+  const confirmNext =
+    input.confirmNext ?? "/invite/setup";
 
   const { data, error } =
     await admin.auth.admin.generateLink({
@@ -89,11 +71,11 @@ export async function generateCreateAccountSecureInviteLink(
     };
   }
 
-  const secureActionUrl =
-    data.properties?.action_link ?? null;
+  const hashedToken =
+    data.properties?.hashed_token ?? null;
 
   try {
-    assertSecureInviteActionUrl(secureActionUrl);
+    assertInviteTokenHash(hashedToken);
   } catch (validationError) {
     return {
       ok: false as const,
@@ -102,14 +84,20 @@ export async function generateCreateAccountSecureInviteLink(
         validationError instanceof Error
           ? validationError
           : new Error(
-              "Supabase did not return an invitation action link."
+              "Supabase did not return an invitation token hash."
             ),
     };
   }
 
+  const confirmUrl = buildAuthConfirmUrl({
+    tokenHash: hashedToken,
+    type: "invite" as EmailOtpType,
+    next: confirmNext,
+  });
+
   return {
     ok: true as const,
     redirectTo,
-    secureActionUrl,
+    confirmUrl,
   };
 }

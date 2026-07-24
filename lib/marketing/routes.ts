@@ -19,8 +19,8 @@ export const PUBLIC_AUTH_PATHS = [
   "/reset-password",
   "/set-password",
   "/auth/callback",
+  "/auth/confirm",
   "/auth/error",
-  "/auth/invite/continue",
   "/invite/setup",
   "/onboarding/create-household",
 ] as const;

@@ -1,16 +1,32 @@
 import "server-only";
 
-import { absoluteUrl } from "@/lib/marketing/site";
+import { getSiteUrl } from "@/lib/marketing/site";
 
+/** Post-verification destination passed to Supabase invite APIs. */
+export function buildCreateAccountInviteRedirectUrl() {
+  return `${getSiteUrl()}/invite/setup`;
+}
+
+/** PKCE/OAuth callback — not used for invite email links. */
+export function buildAuthCallbackUrl() {
+  return `${getSiteUrl()}/auth/callback`;
+}
+
+export function buildJoinHouseholdInviteRedirectUrl() {
+  return `${getSiteUrl()}/set-password`;
+}
+
+/** @deprecated Use buildCreateAccountInviteRedirectUrl */
 export function buildCreateAccountInviteCallbackUrl() {
-  return absoluteUrl("/auth/callback");
+  return buildAuthCallbackUrl();
 }
 
+/** @deprecated Use buildJoinHouseholdInviteRedirectUrl */
 export function buildJoinHouseholdInviteCallbackUrl() {
-  return absoluteUrl("/auth/callback");
+  return buildAuthCallbackUrl();
 }
 
-/** @deprecated Use buildCreateAccountInviteCallbackUrl or buildJoinHouseholdInviteCallbackUrl */
+/** @deprecated Use buildJoinHouseholdInviteRedirectUrl */
 export function buildInviteAuthCallbackUrl() {
-  return buildJoinHouseholdInviteCallbackUrl();
+  return buildAuthCallbackUrl();
 }

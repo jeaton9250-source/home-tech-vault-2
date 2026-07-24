@@ -79,26 +79,3 @@ export function resolveInviteNextPathFromUser(
       | undefined
   );
 }
-
-export function readHashAuthParams() {
-  if (typeof window === "undefined") {
-    return {
-      accessToken: null,
-      refreshToken: null,
-      tokenHash: null,
-      type: null,
-    };
-  }
-
-  const hash = window.location.hash.startsWith("#")
-    ? window.location.hash.slice(1)
-    : window.location.hash;
-  const params = new URLSearchParams(hash);
-
-  return {
-    accessToken: params.get("access_token"),
-    refreshToken: params.get("refresh_token"),
-    tokenHash: params.get("token_hash"),
-    type: params.get("type"),
-  };
-}

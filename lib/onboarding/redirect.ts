@@ -16,7 +16,7 @@ import type {
 const ONBOARDING_BYPASS_PREFIXES = [
   "/family/accept/",
   "/invite/setup",
-  "/auth/invite/continue",
+  "/auth/confirm",
   "/onboarding/create-household",
   "/set-password",
   "/auth/callback",

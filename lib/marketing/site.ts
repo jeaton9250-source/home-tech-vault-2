@@ -11,9 +11,9 @@ function normalizeCanonicalSiteUrl(url: string) {
       parsed.hostname = "www.hometechvault.com";
     }
 
-    return parsed.origin.replace(/\/$/, "");
+    return parsed.origin.replace(/\/+$/, "");
   } catch {
-    return url.replace(/\/$/, "");
+    return url.replace(/\/+$/, "");
   }
 }
 

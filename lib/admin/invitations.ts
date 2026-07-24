@@ -16,8 +16,8 @@ import NewAccountInvitationEmail, {
 } from "@/emails/templates/NewAccountInvitationEmail";
 import { sendReactEmail } from "@/lib/email/sendEmail";
 import {
-  buildCreateAccountInviteCallbackUrl,
-  buildJoinHouseholdInviteCallbackUrl,
+  buildCreateAccountInviteRedirectUrl,
+  buildJoinHouseholdInviteRedirectUrl,
 } from "@/lib/admin/inviteAuthRedirect";
 import {
   generateCreateAccountSecureInviteLink,
@@ -31,10 +31,7 @@ import {
 } from "@/lib/admin/invitationTypes";
 import { normalizeInviteEmail } from "@/lib/admin/invitationLookup";
 import { completeCreateAccountHousehold } from "@/lib/invite/createAccountHousehold";
-import {
-  buildCreateAccountInviteContinueUrl,
-} from "@/lib/auth/inviteContinue";
-import { absoluteUrl } from "@/lib/marketing/site";
+import { absoluteUrl, getSiteUrl } from "@/lib/marketing/site";
 import type {
   AdminHouseholdInviteRole,
   AdminInvitationType,
@@ -312,7 +309,7 @@ function mapAuthInviteErrorMessage(message: string) {
     normalized.includes("redirect") ||
     normalized.includes("url")
   ) {
-    return "The invitation redirect URL is not allowed in Supabase. Add https://www.hometechvault.com/auth/callback and https://www.hometechvault.com/auth/callback** to the Supabase redirect allowlist.";
+    return "The invitation redirect URL is not allowed in Supabase. Add https://www.hometechvault.com/auth/confirm and https://www.hometechvault.com/invite/setup to the Supabase redirect allowlist.";
   }
 
   return message || "The invitation email could not be sent.";
@@ -723,8 +720,9 @@ async function deliverCreateAccountInvitationEmail(input: {
   error?: string;
   status?: number;
 }> {
+  const siteUrl = getSiteUrl();
   const redirectTo =
-    buildCreateAccountInviteCallbackUrl();
+    buildCreateAccountInviteRedirectUrl();
   const metadata = buildCreateAccountAuthInviteMetadata({
     firstName: input.firstName,
     lastName: input.lastName,
@@ -732,17 +730,75 @@ async function deliverCreateAccountInvitationEmail(input: {
     invitedByPlatformAdmin: input.actorUserId,
   });
 
+  console.info(
+    "Create account invitation configuration",
+    {
+      siteUrl,
+      redirectTo,
+      invitationType: "create_account",
+      hasExistingAuthUser: Boolean(
+        input.existingAuthUser
+      ),
+    }
+  );
+
   if (!input.existingAuthUser) {
-    logInviteStage("send_account_email_secure_link", {
+    logInviteStage("send_auth_invite", {
       email: input.email,
-      hasExistingAuthUser: false,
     });
-  } else {
-    logInviteStage("send_account_email_secure_link", {
-      email: input.email,
-      hasExistingAuthUser: true,
+
+    const authInviteError = await sendAuthInviteEmail(
+      input.admin,
+      {
+        email: input.email,
+        redirectTo,
+        metadata,
+      }
+    );
+
+    if (!authInviteError) {
+      logCreateAccountInviteLink({
+        deliveryMethod: "supabase",
+        redirectTo,
+        usesTokenHashConfirm: true,
+      });
+
+      return {
+        ok: true,
+        delivery: "auth_invite",
+      };
+    }
+
+    console.error("[admin-invite] Supabase invite failed:", {
+      message: authInviteError.message,
+      status: authInviteError.status,
+      code: authInviteError.code,
     });
+
+    const message = authInviteError.message.toLowerCase();
+
+    if (
+      !(
+        message.includes("already") ||
+        message.includes("registered") ||
+        message.includes("exists")
+      )
+    ) {
+      return {
+        ok: false,
+        delivery: "account_email",
+        status: authInviteError.status || 500,
+        error: mapAuthInviteErrorMessage(
+          authInviteError.message
+        ),
+      };
+    }
   }
+
+  logInviteStage("send_account_email_token_hash", {
+    email: input.email,
+    hasExistingAuthUser: Boolean(input.existingAuthUser),
+  });
 
   const generatedLink =
     await generateCreateAccountSecureInviteLink(
@@ -751,6 +807,7 @@ async function deliverCreateAccountInvitationEmail(input: {
         email: input.email,
         metadata,
         redirectTo,
+        confirmNext: "/invite/setup",
       }
     );
 
@@ -773,18 +830,13 @@ async function deliverCreateAccountInvitationEmail(input: {
   logCreateAccountInviteLink({
     deliveryMethod: "resend",
     redirectTo: generatedLink.redirectTo,
-    secureActionUrl: generatedLink.secureActionUrl,
+    usesTokenHashConfirm: true,
   });
-
-  const inviteActionUrl =
-    buildCreateAccountInviteContinueUrl(
-      input.invitationToken
-    );
 
   const emailResult = await sendNewAccountInvitationEmail({
     email: input.email,
     inviterName: input.inviterName,
-    secureActionUrl: inviteActionUrl,
+    secureActionUrl: generatedLink.confirmUrl,
     expiresAt: input.expiresAt,
     inviteeFirstName: input.firstName,
   });
@@ -1414,7 +1466,7 @@ async function createHouseholdMemberInvitation(input: {
       input.admin,
       {
         email: input.email,
-        redirectTo: buildJoinHouseholdInviteCallbackUrl(),
+        redirectTo: buildJoinHouseholdInviteRedirectUrl(),
         metadata: buildJoinHouseholdAuthInviteMetadata({
           firstName: input.firstName,
           lastName: input.lastName,
@@ -1653,7 +1705,7 @@ export async function resendAdminUserInvitation(input: {
       input.admin,
       {
         email: normalizeInviteEmail(row.email),
-        redirectTo: buildJoinHouseholdInviteCallbackUrl(),
+        redirectTo: buildJoinHouseholdInviteRedirectUrl(),
         metadata: buildJoinHouseholdAuthInviteMetadata({
           firstName: row.first_name,
           lastName: row.last_name,
