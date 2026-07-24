@@ -1,4 +1,5 @@
 import {
+  isPublicAuthPath,
   PUBLIC_AUTH_PATHS,
   PUBLIC_MARKETING_PATHS,
   PUBLIC_METADATA_PATHS,
@@ -76,6 +77,10 @@ export function isPublicRoute(
   }
 
   if (isMetadataOrStaticRoute(path)) {
+    return true;
+  }
+
+  if (isPublicAuthPath(path)) {
     return true;
   }
 

@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
 import { useDemoMode } from "@/hooks/useDemoMode";
+import { isPublicAuthPath } from "@/lib/marketing/routes";
 import {
   isProtectedRoute,
   isPublicRoute,
@@ -36,13 +37,27 @@ export default function AuthGuard({
     setAccountBlockedMessage,
   ] = useState<string | null>(null);
 
+  const routeIsPublicAuth =
+    isPublicAuthPath(normalizedPath);
   const routeIsPublic =
     isPublicRoute(normalizedPath);
   const routeIsProtected =
     isProtectedRoute(normalizedPath);
 
   useEffect(() => {
-    if (!routeIsProtected) {
+    console.info("AuthGuard route check", {
+      pathname: normalizedPath,
+      isPublicAuthPath: routeIsPublicAuth,
+      hasUser: Boolean(user),
+    });
+  }, [
+    normalizedPath,
+    routeIsPublicAuth,
+    user,
+  ]);
+
+  useEffect(() => {
+    if (routeIsPublicAuth || !routeIsProtected) {
       return;
     }
 
@@ -60,12 +75,19 @@ export default function AuthGuard({
     isDemo,
     loading,
     routeIsProtected,
+    routeIsPublicAuth,
     router,
     normalizedPath,
   ]);
 
   useEffect(() => {
-    if (!routeIsProtected || loading || isDemo || !user) {
+    if (
+      routeIsPublicAuth ||
+      !routeIsProtected ||
+      loading ||
+      isDemo ||
+      !user
+    ) {
       setAccountBlockedMessage(null);
       return;
     }
@@ -100,6 +122,7 @@ export default function AuthGuard({
     isDemo,
     loading,
     routeIsProtected,
+    routeIsPublicAuth,
     router,
   ]);
 

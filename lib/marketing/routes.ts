@@ -25,6 +25,21 @@ export const PUBLIC_AUTH_PATHS = [
   "/onboarding/create-household",
 ] as const;
 
+export function isPublicAuthPath(
+  pathname: string | null | undefined
+): boolean {
+  const path =
+    !pathname || pathname === ""
+      ? "/"
+      : pathname;
+
+  return PUBLIC_AUTH_PATHS.some(
+    (route) =>
+      path === route ||
+      path.startsWith(`${route}/`)
+  );
+}
+
 /** Routes accessible without signing in. */
 export const PUBLIC_MARKETING_PATHS = [
   MARKETING_ROUTES.home,
