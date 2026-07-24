@@ -5,6 +5,7 @@ import {
   useEffect,
   useState,
 } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
@@ -32,6 +33,8 @@ const setupBenefits = [
   "Stay separate from the administrator who invited you",
 ] as const;
 
+const SESSION_BOOTSTRAP_MS = 4000;
+
 export default function CreateAccountInviteSetupPage() {
   const router = useRouter();
 
@@ -51,84 +54,111 @@ export default function CreateAccountInviteSetupPage() {
 
   useEffect(() => {
     let mounted = true;
+    let resolved = false;
 
-    async function establishSession() {
-      try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
+    async function bootstrapFromUser(
+      user: NonNullable<
+        Awaited<
+          ReturnType<typeof supabase.auth.getUser>
+        >["data"]["user"]
+      >
+    ) {
+      const metadata = readInviteUserMetadata(user);
 
-        if (!mounted) {
-          return;
-        }
+      console.info("Invite setup session", {
+        hasUser: true,
+        email: user.email ?? null,
+        invitationType: metadata.invitationType,
+        onboardingMode: metadata.onboardingMode,
+        passwordSetupCompleted:
+          metadata.passwordSetupCompleted,
+      });
 
-        if (!session) {
-          return;
-        }
+      if (
+        metadata.invitationType ===
+        INVITATION_TYPE_JOIN_HOUSEHOLD
+      ) {
+        const token =
+          typeof user.user_metadata?.invitation_token ===
+          "string"
+            ? user.user_metadata.invitation_token
+            : "";
 
-        const metadata = readInviteUserMetadata(
-          session.user
-        );
-
-        if (
-          metadata.invitationType ===
-          INVITATION_TYPE_JOIN_HOUSEHOLD
-        ) {
-          const token =
-            typeof session.user.user_metadata
-              ?.invitation_token === "string"
-              ? session.user.user_metadata.invitation_token
-              : "";
-
-          if (token) {
-            router.replace(
-              `/family/accept/${encodeURIComponent(token)}`
-            );
-            return;
-          }
-        }
-
-        const hasHousehold =
-          await userHasHouseholdMembership(
-            session.user.id
+        if (token) {
+          router.replace(
+            `/family/accept/${encodeURIComponent(token)}`
           );
-
-        const nextPath = resolveCreateAccountInvitePath({
-          user: session.user,
-          hasHousehold,
-        });
-
-        if (
-          nextPath &&
-          nextPath !== "/invite/setup"
-        ) {
-          router.replace(nextPath);
           return;
-        }
-
-        setSessionReady(true);
-      } finally {
-        if (mounted) {
-          setCheckingSession(false);
         }
       }
-    }
 
-    void establishSession();
+      const hasHousehold =
+        await userHasHouseholdMembership(user.id);
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!mounted || !session) {
+      const nextPath = resolveCreateAccountInvitePath({
+        user,
+        hasHousehold,
+      });
+
+      if (
+        nextPath &&
+        nextPath !== "/invite/setup"
+      ) {
+        router.replace(nextPath);
         return;
       }
 
-      void establishSession();
-    });
+      if (!mounted) {
+        return;
+      }
+
+      resolved = true;
+      setInviteEmail(user.email ?? "");
+      setSessionReady(true);
+      setCheckingSession(false);
+    }
+
+    async function loadUser() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!mounted) {
+        return;
+      }
+
+      if (user) {
+        await bootstrapFromUser(user);
+      }
+    }
+
+    void loadUser();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        if (!mounted || resolved || !session?.user) {
+          return;
+        }
+
+        await bootstrapFromUser(session.user);
+      }
+    );
+
+    const timeout = window.setTimeout(() => {
+      if (!mounted || resolved) {
+        return;
+      }
+
+      resolved = true;
+      setCheckingSession(false);
+    }, SESSION_BOOTSTRAP_MS);
 
     return () => {
       mounted = false;
       subscription.unsubscribe();
+      window.clearTimeout(timeout);
     };
   }, [router]);
 
@@ -145,7 +175,8 @@ export default function CreateAccountInviteSetupPage() {
         setErrorMessage("");
 
         const response = await fetch(
-          "/api/invite/create-account/session"
+          "/api/invite/create-account/session",
+          { cache: "no-store" }
         );
         const payload = (await response.json()) as {
           invitation?: {
@@ -213,7 +244,7 @@ export default function CreateAccountInviteSetupPage() {
     return () => {
       cancelled = true;
     };
-  }, [sessionReady]);
+  }, [sessionReady, router]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -221,13 +252,18 @@ export default function CreateAccountInviteSetupPage() {
 
     if (!sessionReady) {
       setErrorMessage(
-        "Open the invitation link from your email to continue."
+        "Your invitation session is missing or has expired."
       );
       return;
     }
 
-    if (!firstName.trim() || !lastName.trim()) {
-      setErrorMessage("Enter your first and last name.");
+    if (!firstName.trim()) {
+      setErrorMessage("Enter your first name.");
+      return;
+    }
+
+    if (!lastName.trim()) {
+      setErrorMessage("Enter your last name.");
       return;
     }
 
@@ -239,28 +275,47 @@ export default function CreateAccountInviteSetupPage() {
     }
 
     if (password !== confirmPassword) {
-      setErrorMessage("Your passwords do not match.");
+      setErrorMessage("The passwords do not match.");
       return;
     }
 
     try {
       setSubmitting(true);
 
-      const { error: passwordError } =
+      const fullName = `${firstName.trim()} ${lastName.trim()}`;
+
+      const { data, error: passwordError } =
         await supabase.auth.updateUser({
           password,
           data: {
             first_name: firstName.trim(),
             last_name: lastName.trim(),
-            full_name: `${firstName.trim()} ${lastName.trim()}`,
+            full_name: fullName,
             onboarding_mode: "create_household",
             invitation_type: "create_account",
             password_setup_completed: true,
           },
         });
 
+      console.info("Invite password update", {
+        success: !passwordError,
+        userId: data.user?.id ?? null,
+      });
+
       if (passwordError) {
         throw passwordError;
+      }
+
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session) {
+        setErrorMessage(
+          "Your password was saved, but your session could not be continued. Please sign in with your new password."
+        );
+        router.replace("/login?setup=complete");
+        return;
       }
 
       router.replace("/onboarding/create-household");
@@ -282,7 +337,7 @@ export default function CreateAccountInviteSetupPage() {
       <main className="flex min-h-screen items-center justify-center bg-surface-base px-6">
         <div className="flex items-center gap-3 text-text-secondary">
           <Loader2 size={22} className="animate-spin" />
-          Preparing your account setup…
+          Verifying your invitation…
         </div>
       </main>
     );
@@ -297,14 +352,17 @@ export default function CreateAccountInviteSetupPage() {
       >
         <AuthCard
           overline="Account invitation"
-          title="Open your invitation link"
-          description="Use the secure link from your invitation email to continue. You will set your password on the next step."
+          title="Invitation session expired"
+          description="Your invitation session is missing or has expired. Open the secure link from your invitation email to set your password."
         >
           {errorMessage ? (
             <AuthAlert variant="error">{errorMessage}</AuthAlert>
           ) : null}
 
           <div className="mt-6 flex flex-col gap-3">
+            <Button href="/login" variant="secondary">
+              Go to sign in
+            </Button>
             <Button href="/contact" variant="secondary">
               Contact support
             </Button>
@@ -336,7 +394,7 @@ export default function CreateAccountInviteSetupPage() {
         <form onSubmit={handleSubmit} className="mt-5 space-y-4">
           <FormInput
             id="invite-email"
-            label="Email"
+            label="Email address"
             value={inviteEmail}
             readOnly
             disabled
@@ -368,7 +426,7 @@ export default function CreateAccountInviteSetupPage() {
 
           <PasswordInput
             id="invite-password"
-            label="Password"
+            label="New password"
             value={password}
             onChange={setPassword}
             showPassword={showPassword}
@@ -394,8 +452,8 @@ export default function CreateAccountInviteSetupPage() {
 
           <p className="text-xs leading-5 text-text-tertiary">
             Passwords must be at least 8 characters and match.
-            Platform-admin access is not included with this
-            invitation.
+            You are setting your password for the first time —
+            do not use the sign-in page until setup is complete.
           </p>
 
           <Button
@@ -406,13 +464,23 @@ export default function CreateAccountInviteSetupPage() {
             {submitting ? (
               <>
                 <Loader2 size={16} className="animate-spin" />
-                Saving account…
+                Saving password…
               </>
             ) : (
-              "Create Account"
+              "Set Password and Continue"
             )}
           </Button>
         </form>
+
+        <p className="mt-4 text-center text-xs text-text-muted">
+          Already finished setup?{" "}
+          <Link
+            href="/login?setup=complete"
+            className="font-medium text-interaction underline-offset-4 hover:underline"
+          >
+            Sign in
+          </Link>
+        </p>
       </AuthCard>
     </AuthLayout>
   );

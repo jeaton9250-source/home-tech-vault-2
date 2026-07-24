@@ -7,6 +7,7 @@ import {
   useState,
 } from "react";
 import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
 
 import AuthCard from "@/components/auth/AuthCard";
 import AuthLayout from "@/components/auth/AuthLayout";
@@ -15,6 +16,7 @@ import Alert from "@/components/ui/Alert";
 import Button from "@/components/ui/Button";
 import FormInput from "@/components/ui/FormInput";
 import {
+  isCreateAccountInviteUser,
   resolveAuthenticatedInviteDestination,
 } from "@/lib/auth/inviteOnboarding";
 import { brand } from "@/lib/design-system/tokens";
@@ -28,41 +30,25 @@ const loginBenefits = [
   "Find important documents quickly",
 ] as const;
 
+const INVITE_SESSION_CHECK_MS = 4000;
+
 export default function LoginPage() {
   const router = useRouter();
 
-  const [email, setEmail] =
-    useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const [password, setPassword] =
-    useState("");
-
-  const [
-    showPassword,
-    setShowPassword,
-  ] = useState(false);
-
-  const [
-    submitting,
-    setSubmitting,
-  ] = useState(false);
-
-  const [
-    errorMessage,
-    setErrorMessage,
-  ] = useState("");
-
-  const [
-    redirectPath,
-  ] = useState(() => {
+  const [redirectPath] = useState(() => {
     if (typeof window === "undefined") {
       return "/dashboard";
     }
 
-    const requestedRedirect =
-      new URLSearchParams(
-        window.location.search
-      ).get("redirect");
+    const requestedRedirect = new URLSearchParams(
+      window.location.search
+    ).get("redirect");
 
     if (
       requestedRedirect &&
@@ -75,7 +61,131 @@ export default function LoginPage() {
     return "/dashboard";
   });
 
+  const [setupComplete] = useState(() => {
+    if (typeof window === "undefined") {
+      return false;
+    }
+
+    return (
+      new URLSearchParams(window.location.search).get(
+        "setup"
+      ) === "complete"
+    );
+  });
+
+  const isFamilyInvitation = redirectPath.startsWith(
+    "/family/accept/"
+  );
+
+  const isCreateAccountInvitation =
+    redirectPath.startsWith("/invite/setup") ||
+    redirectPath.startsWith("/onboarding/create-household");
+
+  const isPendingCreateAccountInvite =
+    isCreateAccountInvitation && !setupComplete;
+
+  const [checkingInviteSession, setCheckingInviteSession] =
+    useState(isPendingCreateAccountInvite);
+
+  const [inviteSessionMissing, setInviteSessionMissing] =
+    useState(false);
+
   useEffect(() => {
+    if (!isPendingCreateAccountInvite) {
+      return;
+    }
+
+    let mounted = true;
+    let resolved = false;
+
+    async function handleInviteUser(
+      user: NonNullable<
+        Awaited<
+          ReturnType<typeof supabase.auth.getUser>
+        >["data"]["user"]
+      >
+    ) {
+      if (!isCreateAccountInviteUser(user)) {
+        return false;
+      }
+
+      const destination =
+        await resolveAuthenticatedInviteDestination({
+          user,
+          requestedPath: redirectPath,
+        });
+
+      if (!destination) {
+        return false;
+      }
+
+      resolved = true;
+      router.replace(destination);
+      return true;
+    }
+
+    async function checkInviteSession() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!mounted) {
+        return;
+      }
+
+      if (user && (await handleInviteUser(user))) {
+        return;
+      }
+
+      if (!mounted || resolved) {
+        return;
+      }
+
+      resolved = true;
+      setInviteSessionMissing(true);
+      setCheckingInviteSession(false);
+    }
+
+    void checkInviteSession();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        if (!mounted || resolved || !session?.user) {
+          return;
+        }
+
+        await handleInviteUser(session.user);
+      }
+    );
+
+    const timeout = window.setTimeout(() => {
+      if (!mounted || resolved) {
+        return;
+      }
+
+      resolved = true;
+      setInviteSessionMissing(true);
+      setCheckingInviteSession(false);
+    }, INVITE_SESSION_CHECK_MS);
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+      window.clearTimeout(timeout);
+    };
+  }, [
+    isPendingCreateAccountInvite,
+    redirectPath,
+    router,
+  ]);
+
+  useEffect(() => {
+    if (isPendingCreateAccountInvite) {
+      return;
+    }
+
     let mounted = true;
 
     async function redirectAuthenticatedInvitee() {
@@ -100,9 +210,7 @@ export default function LoginPage() {
       if (
         destination === redirectPath ||
         destination.startsWith("/invite/setup") ||
-        destination.startsWith(
-          "/onboarding/create-household"
-        ) ||
+        destination.startsWith("/onboarding/create-household") ||
         destination.startsWith("/family/accept/")
       ) {
         router.replace(destination);
@@ -114,7 +222,11 @@ export default function LoginPage() {
     return () => {
       mounted = false;
     };
-  }, [redirectPath, router]);
+  }, [
+    isPendingCreateAccountInvite,
+    redirectPath,
+    router,
+  ]);
 
   async function handleSignIn(
     event: FormEvent<HTMLFormElement>
@@ -123,55 +235,40 @@ export default function LoginPage() {
 
     setErrorMessage("");
 
-    const normalizedEmail =
-      email.trim().toLowerCase();
+    const normalizedEmail = email.trim().toLowerCase();
 
     if (!normalizedEmail) {
-      setErrorMessage(
-        "Enter your email address."
-      );
+      setErrorMessage("Enter your email address.");
       return;
     }
 
     if (!password) {
-      setErrorMessage(
-        "Enter your password."
-      );
+      setErrorMessage("Enter your password.");
       return;
     }
 
     try {
       setSubmitting(true);
 
-      window.localStorage.removeItem(
-        "home-tech-vault-demo"
-      );
+      window.localStorage.removeItem("home-tech-vault-demo");
 
-      const {
-        data,
-        error,
-      } =
-        await supabase.auth.signInWithPassword(
-          {
-            email: normalizedEmail,
-            password,
-          }
-        );
+      const { data, error } =
+        await supabase.auth.signInWithPassword({
+          email: normalizedEmail,
+          password,
+        });
 
       if (error) {
         throw error;
       }
 
       if (!data.user) {
-        throw new Error(
-          "Your account could not be loaded."
-        );
+        throw new Error("Your account could not be loaded.");
       }
 
-      const accountCheck =
-        await enforceActiveAccount(
-          data.user.id
-        );
+      const accountCheck = await enforceActiveAccount(
+        data.user.id
+      );
 
       if (!accountCheck.ok) {
         setErrorMessage(accountCheck.message);
@@ -190,21 +287,16 @@ export default function LoginPage() {
         return;
       }
 
-      const destination =
-        await resolvePostAuthRedirect(
-          supabase,
-          data.user.id,
-          redirectPath
-        );
+      const destination = await resolvePostAuthRedirect(
+        supabase,
+        data.user.id,
+        redirectPath
+      );
 
       router.replace(destination);
-
       router.refresh();
     } catch (error) {
-      console.error(
-        "Sign-in error:",
-        error
-      );
+      console.error("Sign-in error:", error);
 
       setErrorMessage(
         error instanceof Error
@@ -218,40 +310,72 @@ export default function LoginPage() {
 
   const signupHref =
     redirectPath !== "/dashboard"
-      ? `/signup?redirect=${encodeURIComponent(
-          redirectPath
-        )}`
+      ? `/signup?redirect=${encodeURIComponent(redirectPath)}`
       : "/signup";
 
   const forgotPasswordHref =
     redirectPath !== "/dashboard"
-      ? `/forgot-password?redirect=${encodeURIComponent(
-          redirectPath
-        )}`
+      ? `/forgot-password?redirect=${encodeURIComponent(redirectPath)}`
       : "/forgot-password";
 
-  const isFamilyInvitation =
-    redirectPath.startsWith(
-      "/family/accept/"
+  const loginTitle = setupComplete
+    ? "Sign in to continue setup"
+    : isFamilyInvitation
+      ? "Continue to your invitation"
+      : isCreateAccountInvitation
+        ? "Finish creating your vault"
+        : "Welcome back";
+
+  const loginDescription = setupComplete
+    ? "Your password has been created. Sign in to continue setting up your vault."
+    : isFamilyInvitation
+      ? "Use the email address that received the household invitation. You will return to the invitation after signing in."
+      : isCreateAccountInvitation
+        ? "Continue setting up the Home Tech Vault account you were invited to create."
+        : "Sign in to access your devices, warranties, documents, subscriptions, and household technology records.";
+
+  if (checkingInviteSession) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-surface-base px-6">
+        <div className="flex items-center gap-3 text-text-secondary">
+          <Loader2 size={22} className="animate-spin" />
+          Verifying your invitation…
+        </div>
+      </main>
     );
+  }
 
-  const isCreateAccountInvitation =
-    redirectPath.startsWith("/invite/setup") ||
-    redirectPath.startsWith(
-      "/onboarding/create-household"
+  if (inviteSessionMissing) {
+    return (
+      <AuthLayout
+        headline={brand.identity}
+        description="Organize your devices, warranties, receipts, subscriptions, and important documents in one secure place."
+        benefits={[...loginBenefits]}
+        brandHref="/"
+      >
+        <AuthCard
+          overline="Account invitation"
+          title="Invitation session expired"
+          description="Your invitation session is missing or has expired. Open the secure link from your invitation email to set your password."
+        >
+          <Alert variant="warning" className="mb-5">
+            This page is not where you create your password.
+            Use the invitation link from your email, or sign in
+            here only after you have finished password setup.
+          </Alert>
+
+          <div className="flex flex-col gap-3">
+            <Button href="/login?setup=complete" variant="secondary">
+              I already set my password
+            </Button>
+            <Button href="/contact" variant="secondary">
+              Contact support
+            </Button>
+          </div>
+        </AuthCard>
+      </AuthLayout>
     );
-
-  const loginTitle = isFamilyInvitation
-    ? "Continue to your invitation"
-    : isCreateAccountInvitation
-      ? "Finish creating your vault"
-      : "Welcome back";
-
-  const loginDescription = isFamilyInvitation
-    ? "Use the email address that received the household invitation. You will return to the invitation after signing in."
-    : isCreateAccountInvitation
-      ? "Continue setting up the Home Tech Vault account you were invited to create."
-      : "Sign in to access your devices, warranties, documents, subscriptions, and household technology records.";
+  }
 
   return (
     <AuthLayout
@@ -262,23 +386,32 @@ export default function LoginPage() {
     >
       <AuthCard
         overline={
-          isFamilyInvitation
-            ? "Household invitation"
-            : isCreateAccountInvitation
-              ? "Account invitation"
-              : "Welcome back"
+          setupComplete
+            ? "Account invitation"
+            : isFamilyInvitation
+              ? "Household invitation"
+              : isCreateAccountInvitation
+                ? "Account invitation"
+                : "Welcome back"
         }
         title={loginTitle}
         description={loginDescription}
       >
+        {setupComplete ? (
+          <Alert variant="success" className="mb-5">
+            Your password has been created. Sign in to continue
+            setting up your vault.
+          </Alert>
+        ) : null}
+
         {isFamilyInvitation ? (
           <Alert
             variant="warning"
             title="Family invitation detected"
             className="mb-5"
           >
-            You will return to the invitation
-            automatically after signing in.
+            You will return to the invitation automatically after
+            signing in.
           </Alert>
         ) : null}
 
@@ -288,9 +421,7 @@ export default function LoginPage() {
           className="mb-5 empty:mb-0"
         >
           {errorMessage ? (
-            <Alert variant="error">
-              {errorMessage}
-            </Alert>
+            <Alert variant="error">{errorMessage}</Alert>
           ) : null}
         </div>
 
@@ -304,9 +435,7 @@ export default function LoginPage() {
             label="Email address"
             type="email"
             value={email}
-            onChange={(event) =>
-              setEmail(event.target.value)
-            }
+            onChange={(event) => setEmail(event.target.value)}
             autoComplete="email"
             placeholder="you@example.com"
             required
@@ -321,9 +450,7 @@ export default function LoginPage() {
             placeholder="Enter your password"
             showPassword={showPassword}
             onToggleVisibility={() =>
-              setShowPassword(
-                (current) => !current
-              )
+              setShowPassword((current) => !current)
             }
             required
           />
