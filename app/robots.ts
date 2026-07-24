@@ -1,10 +1,8 @@
 import type { MetadataRoute } from "next";
 
-const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL?.replace(
-    /\/$/,
-    ""
-  ) ?? "https://hometechvault.com";
+import { getSiteUrl } from "@/lib/marketing/site";
+
+const siteUrl = getSiteUrl();
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -26,6 +24,7 @@ export default function robots(): MetadataRoute.Robots {
         "/settings",
         "/account",
         "/reports",
+        "/admin",
         "/api/",
       ],
     },

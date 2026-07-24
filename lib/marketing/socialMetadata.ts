@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 
-export const SOCIAL_SITE_URL = "https://hometechvault.com";
+import { getSiteUrl } from "@/lib/marketing/site";
+
+export const SOCIAL_SITE_URL = getSiteUrl();
 
 export const SOCIAL_DEFAULT_TITLE =
   "Home Tech Vault | Organize Your Home Technology";

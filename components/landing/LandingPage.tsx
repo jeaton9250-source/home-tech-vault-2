@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import { Loader2 } from "lucide-react";
 
 import DigitalBinderSection from "@/components/landing/public/DigitalBinderSection";
 import FinalCta from "@/components/landing/public/FinalCta";
@@ -61,22 +60,9 @@ export default function LandingPage({
     });
   }, []);
 
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[#FAFAF8]">
-        <div className="flex items-center gap-3 text-[#667085]">
-          <Loader2
-            size={22}
-            className="animate-spin"
-            aria-hidden
-          />
-          Loading...
-        </div>
-      </div>
-    );
-  }
-
-  const isSignedIn = Boolean(user);
+  // Render marketing content immediately for SEO/CWV.
+  // Auth state only swaps header/CTA labels once known.
+  const isSignedIn = !loading && Boolean(user);
 
   return (
     <div className={landingTheme.page}>

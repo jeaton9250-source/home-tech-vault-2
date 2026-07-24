@@ -1,5 +1,10 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { createServerClient } from "@supabase/ssr";
+import { NextResponse, type NextRequest } from "next/server";
+
+import {
+  anonKeyLooksLikeJwt,
+  resolveSupabaseAnonKey,
+} from "@/lib/supabase/resolveAnonKey";
 
 const PUBLIC_AUTH_PATHS = new Set([
   "/login",
@@ -13,6 +18,19 @@ const PUBLIC_AUTH_PATHS = new Set([
   "/invite/setup",
   "/onboarding/create-household",
 ]);
+
+const PUBLIC_MARKETING_PREFIXES = [
+  "/",
+  "/pricing",
+  "/features",
+  "/faq",
+  "/contact",
+  "/privacy",
+  "/terms",
+  "/trust",
+  "/security",
+  "/demo",
+];
 
 function normalizePathname(pathname: string) {
   if (pathname.length > 1 && pathname.endsWith("/")) {
@@ -38,23 +56,94 @@ function isPublicAuthPath(pathname: string) {
   return false;
 }
 
-export function middleware(request: NextRequest) {
-  const pathname = normalizePathname(
-    request.nextUrl.pathname
-  );
+function isPublicMarketingPath(pathname: string) {
+  const path = normalizePathname(pathname);
 
-  const publicRoute = isPublicAuthPath(pathname);
-
-  console.info("Auth route guard", {
-    pathname,
-    publicRoute,
-  });
-
-  if (publicRoute) {
-    return NextResponse.next();
+  if (path === "/") {
+    return true;
   }
 
-  return NextResponse.next();
+  return PUBLIC_MARKETING_PREFIXES.some(
+    (prefix) =>
+      prefix !== "/" &&
+      (path === prefix || path.startsWith(`${prefix}/`))
+  );
+}
+
+/**
+ * Refresh the Supabase auth session on every matched request.
+ * Public auth routes (including /auth/confirm) are never redirected away —
+ * they must remain reachable without a session.
+ */
+export async function middleware(request: NextRequest) {
+  const pathname = normalizePathname(request.nextUrl.pathname);
+  const publicAuth = isPublicAuthPath(pathname);
+
+  let response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  });
+
+  try {
+    const supabaseUrl =
+      process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+    const anonKey = resolveSupabaseAnonKey();
+
+    if (supabaseUrl && anonKey) {
+      const supabase = createServerClient(
+        supabaseUrl,
+        anonKey,
+        {
+          cookies: {
+            getAll() {
+              return request.cookies.getAll();
+            },
+            setAll(cookiesToSet) {
+              cookiesToSet.forEach(({ name, value }) => {
+                request.cookies.set(name, value);
+              });
+
+              response = NextResponse.next({
+                request: {
+                  headers: request.headers,
+                },
+              });
+
+              cookiesToSet.forEach(
+                ({ name, value, options }) => {
+                  response.cookies.set(name, value, options);
+                }
+              );
+            },
+          },
+          ...(anonKeyLooksLikeJwt(anonKey)
+            ? {
+                global: {
+                  headers: {
+                    Authorization: `Bearer ${anonKey}`,
+                  },
+                },
+              }
+            : {}),
+        }
+      );
+
+      // Refresh session cookies; do not gate public auth routes.
+      await supabase.auth.getUser();
+    }
+  } catch (error) {
+    console.error("Middleware session refresh failed:", error);
+  }
+
+  if (!publicAuth && !isPublicMarketingPath(pathname)) {
+    response.headers.set(
+      "Cache-Control",
+      "private, no-store"
+    );
+  }
+
+  return response;
 }
 
 export const config = {

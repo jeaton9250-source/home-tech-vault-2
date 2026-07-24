@@ -46,6 +46,7 @@ import {
   PermissionEmptyState,
   ViewerBanner,
 } from "@/components/ui/PermissionUI";
+import { extractDocumentsStoragePath } from "@/lib/documents/uploadSecurity";
 
 type DocumentRecord = {
   id: string;
@@ -227,10 +228,42 @@ export default function DocumentsPage() {
           return;
         }
 
-        setDocuments(
+        const rows =
           (documentResult.data ??
-            []) as DocumentRecord[]
-        );
+            []) as DocumentRecord[];
+
+        const documentsWithUrls =
+          await Promise.all(
+            rows.map(async (document) => {
+              const storagePath =
+                extractDocumentsStoragePath(
+                  document.file_url
+                );
+
+              if (!storagePath) {
+                return document;
+              }
+
+              const { data, error } =
+                await supabase.storage
+                  .from("documents")
+                  .createSignedUrl(
+                    storagePath,
+                    3600
+                  );
+
+              if (error || !data?.signedUrl) {
+                return document;
+              }
+
+              return {
+                ...document,
+                file_url: data.signedUrl,
+              };
+            })
+          );
+
+        setDocuments(documentsWithUrls);
 
         setDevices(
           (deviceResult.data ??

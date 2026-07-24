@@ -24,6 +24,7 @@ import {
 } from "@/hooks/useHouseholdLimits";
 import { usePermissions } from "@/hooks/usePermissions";
 import DemoWriteGate from "@/components/demo/DemoWriteGate";
+import { validateDocumentUpload } from "@/lib/documents/uploadSecurity";
 
 import PageShell from "@/components/ui/PageShell";
 import PageTitle from "@/components/ui/PageTitle";
@@ -201,6 +202,13 @@ export default function UploadDocumentPage() {
       return;
     }
 
+    const validation = validateDocumentUpload(file);
+
+    if (!validation.ok) {
+      setErrorMessage(validation.error);
+      return;
+    }
+
     try {
       setUploading(true);
 
@@ -226,9 +234,7 @@ export default function UploadDocumentPage() {
           file,
           {
             upsert: false,
-            contentType:
-              file.type ||
-              undefined,
+            contentType: validation.contentType,
           }
         );
 
@@ -236,12 +242,7 @@ export default function UploadDocumentPage() {
         throw uploadError;
       }
 
-      const {
-        data: publicUrlData,
-      } = supabase.storage
-        .from("documents")
-        .getPublicUrl(filePath);
-
+      // Store the storage object path — never a durable public URL.
       const {
         error: dbError,
       } = await supabase
@@ -256,8 +257,7 @@ export default function UploadDocumentPage() {
               document_name:
                 documentName.trim() ||
                 file.name,
-              file_url:
-                publicUrlData.publicUrl,
+              file_url: filePath,
               file_type:
                 fileType,
             },
@@ -495,6 +495,7 @@ export default function UploadDocumentPage() {
           >
             <input
               type="file"
+              accept=".pdf,.jpg,.jpeg,.png,.webp,.heic,.heif,.txt,application/pdf,image/jpeg,image/png,image/webp,text/plain"
               onChange={(event) =>
                 setFile(
                   event.target
@@ -504,6 +505,9 @@ export default function UploadDocumentPage() {
               }
               className="w-full rounded-2xl border border-dashed border-warning/40 bg-surface-sunken p-4 text-sm text-text-secondary"
             />
+            <p className="mt-2 text-xs text-text-tertiary">
+              PDF, JPEG, PNG, WebP, HEIC, or text · max 15 MB
+            </p>
           </FormField>
 
           <div className="flex flex-col-reverse gap-3 border-t border-border-subtle pt-6 sm:flex-row sm:justify-end">

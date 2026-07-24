@@ -770,6 +770,15 @@ function OnboardingFlow() {
       return;
     }
 
+    const { validateDocumentUpload } =
+      await import("@/lib/documents/uploadSecurity");
+    const validation = validateDocumentUpload(file);
+
+    if (!validation.ok) {
+      setErrorMessage(validation.error);
+      return;
+    }
+
     try {
       setSubmitting(true);
 
@@ -795,19 +804,12 @@ function OnboardingFlow() {
         .from("documents")
         .upload(filePath, file, {
           upsert: false,
-          contentType:
-            file.type || undefined,
+          contentType: validation.contentType,
         });
 
       if (uploadError) {
         throw uploadError;
       }
-
-      const {
-        data: publicUrlData,
-      } = supabase.storage
-        .from("documents")
-        .getPublicUrl(filePath);
 
       const { error: dbError } =
         await supabase
@@ -821,8 +823,7 @@ function OnboardingFlow() {
                 document_name:
                   documentName.trim() ||
                   file.name,
-                file_url:
-                  publicUrlData.publicUrl,
+                file_url: filePath,
                 file_type: fileType,
               },
               householdId,

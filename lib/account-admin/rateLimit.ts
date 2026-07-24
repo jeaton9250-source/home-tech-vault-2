@@ -33,7 +33,9 @@ export async function isDestructiveActionRateLimited(
       error
     );
 
-    return false;
+    // Fail closed: do not allow destructive admin actions when
+    // the audit/rate-limit backend is unavailable.
+    return true;
   }
 
   return (count ?? 0) >= DESTRUCTIVE_MAX_ACTIONS;

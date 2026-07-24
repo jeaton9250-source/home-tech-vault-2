@@ -136,11 +136,26 @@ export function createSoftwareApplicationJsonLd() {
     name: siteConfig.name,
     applicationCategory: "UtilitiesApplication",
     operatingSystem: "Web",
-    offers: {
-      "@type": "Offer",
-      price: "0",
-      priceCurrency: "USD",
-    },
+    offers: [
+      {
+        "@type": "Offer",
+        name: "Free",
+        price: "0",
+        priceCurrency: "USD",
+      },
+      {
+        "@type": "Offer",
+        name: "Pro",
+        price: "7.99",
+        priceCurrency: "USD",
+      },
+      {
+        "@type": "Offer",
+        name: "Family",
+        price: "14.99",
+        priceCurrency: "USD",
+      },
+    ],
     url: absoluteUrl("/"),
   };
 }
