@@ -14,6 +14,7 @@ import NewAccountInvitationEmail, {
   renderNewAccountInvitationPlainText,
 } from "@/emails/templates/NewAccountInvitationEmail";
 import { sendReactEmail } from "@/lib/email/sendEmail";
+import { buildInviteAuthCallbackUrl } from "@/lib/admin/inviteAuthRedirect";
 import { absoluteUrl } from "@/lib/marketing/site";
 import type {
   AdminHouseholdInviteRole,
@@ -101,6 +102,158 @@ export function parseInvitationType(
   }
 
   return null;
+}
+
+function logInviteStage(
+  stage: string,
+  details?: Record<string, unknown>
+) {
+  console.info("[admin-invite]", stage, details ?? {});
+}
+
+function mapAuthInviteErrorMessage(message: string) {
+  const normalized = message.toLowerCase();
+
+  if (
+    normalized.includes("already") ||
+    normalized.includes("registered") ||
+    normalized.includes("exists")
+  ) {
+    return "A user with this email address already exists.";
+  }
+
+  if (
+    normalized.includes("rate") ||
+    normalized.includes("limit")
+  ) {
+    return "Too many invitations have been sent. Please try again shortly.";
+  }
+
+  if (
+    normalized.includes("redirect") ||
+    normalized.includes("url")
+  ) {
+    return "The invitation redirect URL is not allowed in Supabase. Add your site URL and /auth/callback to the Supabase redirect allowlist.";
+  }
+
+  return message || "The invitation email could not be sent.";
+}
+
+function buildAuthInviteMetadata(input: {
+  fullName?: string | null;
+  invitationToken: string;
+  invitationType: AdminInvitationType;
+  invitedBy: string;
+  householdId?: string | null;
+  householdRole?: AdminHouseholdInviteRole | null;
+}) {
+  return {
+    full_name: input.fullName || undefined,
+    account_role: "user",
+    onboarding_mode:
+      input.invitationType === "new_account"
+        ? "create_household"
+        : "join_household",
+    invited_by: input.invitedBy,
+    invitation_token: input.invitationToken,
+    invitation_type: input.invitationType,
+    ...(input.householdId
+      ? { household_id: input.householdId }
+      : {}),
+    ...(input.householdRole
+      ? { household_role: input.householdRole }
+      : {}),
+  };
+}
+
+async function insertInvitationRow(
+  admin: SupabaseClient,
+  insertPayload: Record<string, unknown>
+) {
+  const { data, error } = await admin
+    .from("household_invitations")
+    .insert(insertPayload)
+    .select(INVITATION_SELECT)
+    .single();
+
+  if (
+    error &&
+    (error.message?.includes("invitation_type") ||
+      error.message?.includes("first_name") ||
+      error.message?.includes("last_name"))
+  ) {
+    const fallbackPayload = { ...insertPayload };
+    delete fallbackPayload.invitation_type;
+    delete fallbackPayload.first_name;
+    delete fallbackPayload.last_name;
+
+    const fallback = await admin
+      .from("household_invitations")
+      .insert(fallbackPayload)
+      .select(INVITATION_SELECT_FALLBACK)
+      .single();
+
+    if (fallback.error) {
+      throw fallback.error;
+    }
+
+    return fallback.data as InvitationRow;
+  }
+
+  if (error) {
+    throw error;
+  }
+
+  return data as InvitationRow;
+}
+
+async function findPendingNewAccountInvite(
+  admin: SupabaseClient,
+  email: string
+) {
+  const { data, error } = await admin
+    .from("household_invitations")
+    .select("id")
+    .ilike("email", email)
+    .eq("invitation_type", "new_account")
+    .is("accepted_at", null)
+    .maybeSingle();
+
+  if (error?.message?.includes("invitation_type")) {
+    const fallback = await admin
+      .from("household_invitations")
+      .select("id")
+      .ilike("email", email)
+      .is("accepted_at", null)
+      .is("household_id", null)
+      .maybeSingle();
+
+    return fallback.data;
+  }
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+async function sendAuthInviteEmail(
+  admin: SupabaseClient,
+  input: {
+    email: string;
+    metadata: Record<string, unknown>;
+  }
+) {
+  const { error } = await admin.auth.admin.inviteUserByEmail(
+    input.email,
+    {
+      redirectTo: buildInviteAuthCallbackUrl(),
+      data: input.metadata,
+    }
+  );
+
+  return error;
 }
 
 function formatExpirationLabel(expiresAt: string) {
@@ -593,6 +746,10 @@ async function createNewAccountInvitation(input: {
   lastName: string | null;
   inviterName: string;
 }) {
+  logInviteStage("validate_new_account", {
+    email: input.email,
+  });
+
   const existingAuthUser = await findAuthUserByEmail(
     input.admin,
     input.email
@@ -610,18 +767,15 @@ async function createNewAccountInvitation(input: {
         ok: false as const,
         status: 409,
         error:
-          "Unable to send this invitation. Ask the person to sign in if they already have an account.",
+          "A user with this email address already exists.",
       };
     }
   }
 
-  const { data: existingInvite } = await input.admin
-    .from("household_invitations")
-    .select("id")
-    .ilike("email", input.email)
-    .eq("invitation_type", "new_account")
-    .is("accepted_at", null)
-    .maybeSingle();
+  const existingInvite = await findPendingNewAccountInvite(
+    input.admin,
+    input.email
+  );
 
   if (existingInvite) {
     return {
@@ -648,17 +802,31 @@ async function createNewAccountInvitation(input: {
     insertPayload.last_name = input.lastName;
   }
 
-  const { data, error } = await input.admin
-    .from("household_invitations")
-    .insert(insertPayload)
-    .select(INVITATION_SELECT)
-    .single();
+  logInviteStage("insert_invitation_record", {
+    email: input.email,
+  });
 
-  if (error) {
-    throw error;
+  let invitation: InvitationRow;
+
+  try {
+    invitation = await insertInvitationRow(
+      input.admin,
+      insertPayload
+    );
+  } catch (insertError) {
+    console.error(
+      "[admin-invite] invitation insert failed:",
+      insertError
+    );
+
+    return {
+      ok: false as const,
+      status: 500,
+      error:
+        "Unable to save the invitation record. Confirm the latest Supabase migrations are applied.",
+    };
   }
 
-  const invitation = data as InvitationRow;
   let deliveryWarning: string | null = null;
   let delivery: "auth_invite" | "account_email" =
     "account_email";
@@ -667,25 +835,32 @@ async function createNewAccountInvitation(input: {
     input.firstName,
     input.lastName
   );
-  const redirectTo = buildNewAccountSetupUrl(
-    invitation.token
-  );
 
   if (!existingAuthUser) {
-    const { error: authInviteError } =
-      await input.admin.auth.admin.inviteUserByEmail(
-        input.email,
-        {
-          redirectTo,
-          data: {
-            full_name: fullName || undefined,
-            invitation_token: invitation.token,
-            invitation_type: "new_account",
-          },
-        }
-      );
+    logInviteStage("send_auth_invite", {
+      email: input.email,
+    });
+
+    const authInviteError = await sendAuthInviteEmail(
+      input.admin,
+      {
+        email: input.email,
+        metadata: buildAuthInviteMetadata({
+          fullName,
+          invitationToken: invitation.token,
+          invitationType: "new_account",
+          invitedBy: input.actorUserId,
+        }),
+      }
+    );
 
     if (authInviteError) {
+      console.error("[admin-invite] Supabase invite failed:", {
+        message: authInviteError.message,
+        status: authInviteError.status,
+        code: authInviteError.code,
+      });
+
       const message = authInviteError.message.toLowerCase();
 
       if (
@@ -702,9 +877,10 @@ async function createNewAccountInvitation(input: {
 
         return {
           ok: false as const,
-          status: 500,
-          error:
-            "Unable to send the account invitation. Please try again.",
+          status: authInviteError.status || 500,
+          error: mapAuthInviteErrorMessage(
+            authInviteError.message
+          ),
         };
       }
     } else {
@@ -713,6 +889,10 @@ async function createNewAccountInvitation(input: {
   }
 
   if (delivery !== "auth_invite") {
+    logInviteStage("send_account_email_fallback", {
+      email: input.email,
+    });
+
     const emailResult = await sendNewAccountInvitationEmail({
       email: input.email,
       inviterName: input.inviterName,
@@ -723,13 +903,20 @@ async function createNewAccountInvitation(input: {
 
     if (!emailResult.ok) {
       deliveryWarning =
-        "Invitation saved, but the email could not be delivered. You can resend it from the directory.";
+        emailResult.code === "not_configured"
+          ? "Invitation saved, but email delivery is not configured. Set RESEND_API_KEY or resend the invitation after configuring email."
+          : "Invitation saved, but the email could not be delivered. You can resend it from the directory.";
     }
   }
 
   const [mapped] = await mapInvitationRows(input.admin, [
     invitation,
   ]);
+
+  logInviteStage("invite_complete", {
+    email: input.email,
+    delivery,
+  });
 
   return {
     ok: true as const,
@@ -738,8 +925,8 @@ async function createNewAccountInvitation(input: {
     deliveryWarning,
     message:
       delivery === "auth_invite"
-        ? "Invitation sent. The invitee will create their password and set up their own household."
-        : "Invitation sent. The invitee can complete account setup from the email link.",
+        ? `Invitation sent to ${input.email}. The invitee will create their password and set up their own household.`
+        : `Invitation sent to ${input.email}. The invitee can complete account setup from the email link.`,
   };
 }
 
@@ -828,17 +1015,32 @@ async function createHouseholdMemberInvitation(input: {
     insertPayload.last_name = input.lastName;
   }
 
-  const { data, error } = await input.admin
-    .from("household_invitations")
-    .insert(insertPayload)
-    .select(INVITATION_SELECT)
-    .single();
+  logInviteStage("insert_household_invitation", {
+    email: input.email,
+    householdId: input.householdId,
+  });
 
-  if (error) {
-    throw error;
+  let invitation: InvitationRow;
+
+  try {
+    invitation = await insertInvitationRow(
+      input.admin,
+      insertPayload
+    );
+  } catch (insertError) {
+    console.error(
+      "[admin-invite] household invitation insert failed:",
+      insertError
+    );
+
+    return {
+      ok: false as const,
+      status: 500,
+      error:
+        "Unable to save the invitation record. Confirm the latest Supabase migrations are applied.",
+    };
   }
 
-  const invitation = data as InvitationRow;
   const householdName =
     (household.name as string | null)?.trim() ||
     "Home Tech Vault household";
@@ -852,26 +1054,33 @@ async function createHouseholdMemberInvitation(input: {
       input.firstName,
       input.lastName
     );
-    const redirectTo = buildHouseholdAcceptanceUrl(
-      invitation.token
+
+    logInviteStage("send_household_auth_invite", {
+      email: input.email,
+    });
+
+    const authInviteError = await sendAuthInviteEmail(
+      input.admin,
+      {
+        email: input.email,
+        metadata: buildAuthInviteMetadata({
+          fullName,
+          invitationToken: invitation.token,
+          invitationType: "household_member",
+          invitedBy: input.actorUserId,
+          householdId: input.householdId,
+          householdRole: input.role,
+        }),
+      }
     );
 
-    const { error: authInviteError } =
-      await input.admin.auth.admin.inviteUserByEmail(
-        input.email,
-        {
-          redirectTo,
-          data: {
-            full_name: fullName || undefined,
-            invitation_token: invitation.token,
-            invitation_type: "household_member",
-            household_id: input.householdId,
-            household_role: input.role,
-          },
-        }
-      );
-
     if (authInviteError) {
+      console.error("[admin-invite] Supabase invite failed:", {
+        message: authInviteError.message,
+        status: authInviteError.status,
+        code: authInviteError.code,
+      });
+
       const message = authInviteError.message.toLowerCase();
 
       if (
@@ -888,9 +1097,10 @@ async function createHouseholdMemberInvitation(input: {
 
         return {
           ok: false as const,
-          status: 500,
-          error:
-            "Unable to send the account invitation. Please try again.",
+          status: authInviteError.status || 500,
+          error: mapAuthInviteErrorMessage(
+            authInviteError.message
+          ),
         };
       }
     } else {
@@ -899,6 +1109,10 @@ async function createHouseholdMemberInvitation(input: {
   }
 
   if (delivery === "household_email" || existingAuthUser) {
+    logInviteStage("send_household_email_fallback", {
+      email: input.email,
+    });
+
     const emailResult = await sendHouseholdInvitationEmail({
       email: input.email,
       inviterName: input.inviterName,
@@ -910,7 +1124,9 @@ async function createHouseholdMemberInvitation(input: {
 
     if (!emailResult.ok) {
       deliveryWarning =
-        "Invitation saved, but the email could not be delivered. You can resend it from the directory.";
+        emailResult.code === "not_configured"
+          ? "Invitation saved, but email delivery is not configured. Set RESEND_API_KEY or resend the invitation after configuring email."
+          : "Invitation saved, but the email could not be delivered. You can resend it from the directory.";
     }
 
     delivery = "household_email";
@@ -920,6 +1136,11 @@ async function createHouseholdMemberInvitation(input: {
     invitation,
   ]);
 
+  logInviteStage("household_invite_complete", {
+    email: input.email,
+    delivery,
+  });
+
   return {
     ok: true as const,
     invitation: mapped,
@@ -927,8 +1148,8 @@ async function createHouseholdMemberInvitation(input: {
     deliveryWarning,
     message:
       delivery === "auth_invite"
-        ? "Invitation sent. The invitee will create their password and then join the household."
-        : "Invitation sent. The invitee can sign in and accept the household invitation.",
+        ? `Invitation sent to ${input.email}. The invitee will create their password and then join the household.`
+        : `Invitation sent to ${input.email}. The invitee can sign in and accept the household invitation.`,
   };
 }
 
@@ -974,25 +1195,24 @@ export async function resendAdminUserInvitation(input: {
   );
 
   if (invitationType === "new_account") {
-    const redirectTo = buildNewAccountSetupUrl(row.token);
     const fullName = buildFullName(
       row.first_name,
       row.last_name
     );
 
     if (!existingAuthUser) {
-      const { error: authInviteError } =
-        await input.admin.auth.admin.inviteUserByEmail(
-          normalizeInviteEmail(row.email),
-          {
-            redirectTo,
-            data: {
-              full_name: fullName || undefined,
-              invitation_token: row.token,
-              invitation_type: "new_account",
-            },
-          }
-        );
+      const authInviteError = await sendAuthInviteEmail(
+        input.admin,
+        {
+          email: normalizeInviteEmail(row.email),
+          metadata: buildAuthInviteMetadata({
+            fullName,
+            invitationToken: row.token,
+            invitationType: "new_account",
+            invitedBy: input.actor.userId,
+          }),
+        }
+      );
 
       if (
         !authInviteError ||
@@ -1057,20 +1277,20 @@ export async function resendAdminUserInvitation(input: {
       row.last_name
     );
 
-    const { error: authInviteError } =
-      await input.admin.auth.admin.inviteUserByEmail(
-        normalizeInviteEmail(row.email),
-        {
-          redirectTo: buildHouseholdAcceptanceUrl(row.token),
-          data: {
-            full_name: fullName || undefined,
-            invitation_token: row.token,
-            invitation_type: "household_member",
-            household_id: row.household_id,
-            household_role: role,
-          },
-        }
-      );
+    const authInviteError = await sendAuthInviteEmail(
+      input.admin,
+      {
+        email: normalizeInviteEmail(row.email),
+        metadata: buildAuthInviteMetadata({
+          fullName,
+          invitationToken: row.token,
+          invitationType: "household_member",
+          invitedBy: input.actor.userId,
+          householdId: row.household_id,
+          householdRole: role,
+        }),
+      }
+    );
 
     if (!authInviteError) {
       return {

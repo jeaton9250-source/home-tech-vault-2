@@ -17,6 +17,8 @@ export const PUBLIC_AUTH_PATHS = [
   MARKETING_ROUTES.signup,
   "/forgot-password",
   "/reset-password",
+  "/set-password",
+  "/auth/callback",
 ] as const;
 
 /** Routes accessible without signing in. */

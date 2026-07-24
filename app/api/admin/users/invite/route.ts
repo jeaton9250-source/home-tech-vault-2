@@ -12,10 +12,41 @@ import {
 
 export const runtime = "nodejs";
 
+function logInviteRoute(
+  stage: string,
+  details?: Record<string, unknown>
+) {
+  console.info("[admin-invite-route]", stage, details ?? {});
+}
+
 export async function POST(request: Request) {
   try {
+    logInviteRoute("authenticate_requester");
+
     const session = await requirePlatformAdminSession();
-    const admin = createAdminClient();
+
+    logInviteRoute("requester_authorized", {
+      userId: session.userId,
+    });
+
+    let admin;
+
+    try {
+      admin = createAdminClient();
+    } catch (configError) {
+      console.error(
+        "[admin-invite-route] admin client configuration error:",
+        configError
+      );
+
+      return NextResponse.json(
+        {
+          error:
+            "Server configuration is incomplete. Set SUPABASE_SECRET_KEY or SUPABASE_SERVICE_ROLE_KEY on the server.",
+        },
+        { status: 500 }
+      );
+    }
 
     const body = (await request.json()) as {
       invitationType?: string;
@@ -24,10 +55,24 @@ export async function POST(request: Request) {
       role?: string;
       firstName?: string;
       lastName?: string;
+      fullName?: string;
+      accountRole?: string;
+      createOwnHousehold?: boolean;
     };
 
     const invitationType =
-      parseInvitationType(body.invitationType) ?? "new_account";
+      parseInvitationType(body.invitationType) ??
+      (body.createOwnHousehold === false
+        ? "household_member"
+        : "new_account");
+
+    logInviteRoute("validate_payload", {
+      invitationType,
+      email:
+        typeof body.email === "string"
+          ? body.email.trim().toLowerCase()
+          : "",
+    });
 
     const { data: profile } = await admin
       .from("profiles")
@@ -47,19 +92,41 @@ export async function POST(request: Request) {
         email: body.email ?? "",
         householdId: body.householdId ?? null,
         role: (body.role as "admin" | "member" | "viewer") ?? null,
-        firstName: body.firstName,
-        lastName: body.lastName,
+        firstName:
+          body.firstName ??
+          (typeof body.fullName === "string"
+            ? body.fullName.trim().split(/\s+/)[0]
+            : undefined),
+        lastName:
+          body.lastName ??
+          (typeof body.fullName === "string"
+            ? body.fullName.trim().split(/\s+/).slice(1).join(" ")
+            : undefined),
       },
     });
 
     if (!result.ok) {
+      logInviteRoute("invite_failed", {
+        status: result.status,
+        error: result.error,
+      });
+
       return NextResponse.json(
         { error: result.error },
         { status: result.status }
       );
     }
 
+    logInviteRoute("invite_succeeded", {
+      email:
+        typeof body.email === "string"
+          ? body.email.trim().toLowerCase()
+          : "",
+      delivery: result.delivery,
+    });
+
     return NextResponse.json({
+      success: true,
       invitation: result.invitation,
       delivery: result.delivery,
       warning: result.deliveryWarning,
@@ -69,13 +136,20 @@ export async function POST(request: Request) {
     const accessResponse = platformAdminAccessResponse(error);
 
     if (accessResponse) {
+      logInviteRoute("authorization_failed");
+
       return accessResponse;
     }
 
-    console.error("Admin invite user error:", error);
+    console.error("[admin-invite-route] unexpected error:", error);
 
     return NextResponse.json(
-      { error: "Unable to send the invitation." },
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred while sending the invitation.",
+      },
       { status: 500 }
     );
   }

@@ -190,6 +190,13 @@ export default function InviteUserModal({
   ) {
     event.preventDefault();
 
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!normalizedEmail) {
+      setError("Enter a valid email address.");
+      return;
+    }
+
     try {
       setSubmitting(true);
       setError("");
@@ -201,15 +208,17 @@ export default function InviteUserModal({
         },
         body: JSON.stringify({
           invitationType,
-          email,
+          email: normalizedEmail,
           householdId: isHouseholdInvite ? householdId : null,
           role: isHouseholdInvite ? role : null,
           firstName: firstName.trim() || null,
           lastName: lastName.trim() || null,
+          createOwnHousehold: !isHouseholdInvite,
         }),
       });
 
       const payload = (await response.json()) as {
+        success?: boolean;
         message?: string;
         warning?: string | null;
         error?: string;
@@ -217,23 +226,28 @@ export default function InviteUserModal({
 
       if (!response.ok) {
         throw new Error(
-          payload.error || "Unable to send the invitation."
+          payload.error || "The invitation could not be sent."
         );
       }
 
-      resetForm();
+      if (!payload.success) {
+        throw new Error(
+          payload.error || "The invitation could not be sent."
+        );
+      }
 
-      onInvited(
-        payload.warning
-          ? `${payload.message ?? "Invitation saved."} ${payload.warning}`
-          : payload.message || "Invitation sent."
-      );
+      const successMessage = payload.warning
+        ? `${payload.message ?? `Invitation sent to ${normalizedEmail}.`} ${payload.warning}`
+        : payload.message || `Invitation sent to ${normalizedEmail}.`;
+
+      resetForm();
+      onInvited(successMessage);
       onClose();
     } catch (submitError) {
       setError(
         submitError instanceof Error
           ? submitError.message
-          : "Unable to send the invitation."
+          : "The invitation could not be sent."
       );
     } finally {
       setSubmitting(false);
@@ -458,7 +472,7 @@ export default function InviteUserModal({
               {submitting ? (
                 <>
                   <Loader2 size={16} className="animate-spin" />
-                  Sending…
+                  Sending Invitation…
                 </>
               ) : (
                 "Send Invitation"
