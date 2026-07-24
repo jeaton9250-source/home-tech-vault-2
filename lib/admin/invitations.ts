@@ -1,5 +1,6 @@
 import "server-only";
 
+import { randomBytes } from "node:crypto";
 import { createElement } from "react";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -104,6 +105,141 @@ export function parseInvitationType(
   return null;
 }
 
+const INVITATION_EXPIRY_DAYS = 7;
+
+type DbError = {
+  message?: string;
+  code?: string;
+  details?: string | null;
+  hint?: string | null;
+};
+
+function generateInvitationToken() {
+  return randomBytes(24).toString("base64url");
+}
+
+function buildInvitationExpiresAt(
+  days = INVITATION_EXPIRY_DAYS
+) {
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + days);
+  return expiresAt.toISOString();
+}
+
+function logInvitationInsertError(error: DbError) {
+  console.error("Invitation record insert failed:", {
+    message: error.message,
+    code: error.code,
+    details: error.details,
+    hint: error.hint,
+  });
+}
+
+export function mapInvitationInsertError(
+  error: DbError
+): string {
+  const message = (error.message ?? "").toLowerCase();
+  const code = error.code ?? "";
+
+  if (
+    code === "42P01" ||
+    (message.includes("household_invitations") &&
+      message.includes("does not exist"))
+  ) {
+    return "The household_invitations table does not exist. Apply the latest Supabase migrations in your project.";
+  }
+
+  if (
+    code === "42703" &&
+    message.includes("invitation_type")
+  ) {
+    return "The invitation_type column is missing. Apply migration 20260723170000_invitation_types.sql in Supabase.";
+  }
+
+  if (
+    code === "42703" &&
+    (message.includes("first_name") ||
+      message.includes("last_name"))
+  ) {
+    return "Invitation name columns are missing. Apply migration 20260723160000_household_invitation_names.sql in Supabase.";
+  }
+
+  if (code === "23502") {
+    if (message.includes("household_id")) {
+      return "New-account invitations require household_id to be nullable. Apply migration 20260723170000_invitation_types.sql in Supabase.";
+    }
+
+    if (message.includes("role")) {
+      return "New-account invitations require role to be nullable. Apply migration 20260723170000_invitation_types.sql in Supabase.";
+    }
+
+    return "The invitation could not be saved because a required value was missing.";
+  }
+
+  if (code === "23505") {
+    return "An invitation record already exists for this email.";
+  }
+
+  if (code === "23514") {
+    if (
+      message.includes("type_shape_check") ||
+      message.includes("invitation_type")
+    ) {
+      return "The invitation could not be saved because invitation_type, household_id, and role do not match. Apply migration 20260723170000_invitation_types.sql in Supabase.";
+    }
+
+    return "The invitation could not be saved because it violated a database constraint.";
+  }
+
+  if (message.includes("permission denied")) {
+    return "The invitation record could not be saved because database access was denied. Confirm the server admin client is configured.";
+  }
+
+  return (
+    error.message ||
+    "The invitation record could not be saved."
+  );
+}
+
+async function deleteInvitedAuthUserIfNew(
+  admin: SupabaseClient,
+  email: string,
+  hadExistingUser: boolean
+) {
+  if (hadExistingUser) {
+    return;
+  }
+
+  const user = await findAuthUserByEmail(
+    admin,
+    email
+  );
+
+  if (!user) {
+    return;
+  }
+
+  if (
+    user.email_confirmed_at ||
+    user.last_sign_in_at
+  ) {
+    return;
+  }
+
+  const { error } =
+    await admin.auth.admin.deleteUser(user.id);
+
+  if (error) {
+    console.error(
+      "[admin-invite] failed to clean up invited auth user after database error:",
+      {
+        message: error.message,
+        code: error.code,
+      }
+    );
+  }
+}
+
 function logInviteStage(
   stage: string,
   details?: Record<string, unknown>
@@ -166,15 +302,45 @@ function buildAuthInviteMetadata(input: {
   };
 }
 
-async function insertInvitationRow(
+async function saveInvitationRecord(
   admin: SupabaseClient,
-  insertPayload: Record<string, unknown>
+  payload: Record<string, unknown>,
+  options?: {
+    existingId?: string;
+  }
 ) {
+  if (options?.existingId) {
+    const { data, error } = await admin
+      .from("household_invitations")
+      .update(payload)
+      .eq("id", options.existingId)
+      .select(INVITATION_SELECT)
+      .single();
+
+    if (error) {
+      logInvitationInsertError(error);
+      throw error;
+    }
+
+    return data as InvitationRow;
+  }
+
   const { data, error } = await admin
     .from("household_invitations")
-    .insert(insertPayload)
+    .insert(payload)
     .select(INVITATION_SELECT)
     .single();
+
+  if (
+    error &&
+    payload.invitation_type === "new_account" &&
+    (error.message?.includes("invitation_type") ||
+      error.message?.includes("first_name") ||
+      error.message?.includes("last_name"))
+  ) {
+    logInvitationInsertError(error);
+    throw error;
+  }
 
   if (
     error &&
@@ -182,7 +348,7 @@ async function insertInvitationRow(
       error.message?.includes("first_name") ||
       error.message?.includes("last_name"))
   ) {
-    const fallbackPayload = { ...insertPayload };
+    const fallbackPayload = { ...payload };
     delete fallbackPayload.invitation_type;
     delete fallbackPayload.first_name;
     delete fallbackPayload.last_name;
@@ -194,6 +360,7 @@ async function insertInvitationRow(
       .single();
 
     if (fallback.error) {
+      logInvitationInsertError(fallback.error);
       throw fallback.error;
     }
 
@@ -201,41 +368,72 @@ async function insertInvitationRow(
   }
 
   if (error) {
+    logInvitationInsertError(error);
     throw error;
   }
 
   return data as InvitationRow;
 }
 
-async function findPendingNewAccountInvite(
+async function findNewAccountInvitationByEmail(
   admin: SupabaseClient,
   email: string
 ) {
   const { data, error } = await admin
     .from("household_invitations")
-    .select("id")
+    .select(INVITATION_SELECT)
     .ilike("email", email)
     .eq("invitation_type", "new_account")
     .is("accepted_at", null)
+    .order("created_at", { ascending: false })
+    .limit(1)
     .maybeSingle();
 
   if (error?.message?.includes("invitation_type")) {
     const fallback = await admin
       .from("household_invitations")
-      .select("id")
+      .select(INVITATION_SELECT_FALLBACK)
       .ilike("email", email)
       .is("accepted_at", null)
       .is("household_id", null)
+      .order("created_at", { ascending: false })
+      .limit(1)
       .maybeSingle();
 
-    return fallback.data;
+    if (fallback.error) {
+      throw fallback.error;
+    }
+
+    return fallback.data as InvitationRow | null;
   }
 
   if (error) {
     throw error;
   }
 
-  return data;
+  return data as InvitationRow | null;
+}
+
+async function findHouseholdInvitationByEmail(
+  admin: SupabaseClient,
+  email: string,
+  householdId: string
+) {
+  const { data, error } = await admin
+    .from("household_invitations")
+    .select(INVITATION_SELECT)
+    .eq("household_id", householdId)
+    .ilike("email", email)
+    .is("accepted_at", null)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  return data as InvitationRow | null;
 }
 
 async function sendAuthInviteEmail(
@@ -772,69 +970,33 @@ async function createNewAccountInvitation(input: {
     }
   }
 
-  const existingInvite = await findPendingNewAccountInvite(
-    input.admin,
-    input.email
-  );
+  const existingInvite =
+    await findNewAccountInvitationByEmail(
+      input.admin,
+      input.email
+    );
 
-  if (existingInvite) {
+  if (
+    existingInvite &&
+    invitationStatus(existingInvite.expires_at) ===
+      "pending"
+  ) {
     return {
       ok: false as const,
       status: 409,
       error:
-        "A pending new-account invitation already exists for this email.",
+        "An invitation is already pending for this email.",
     };
   }
 
-  const insertPayload: Record<string, unknown> = {
-    invitation_type: "new_account",
-    household_id: null,
-    role: null,
-    email: input.email,
-    invited_by: input.actorUserId,
-  };
-
-  if (input.firstName) {
-    insertPayload.first_name = input.firstName;
-  }
-
-  if (input.lastName) {
-    insertPayload.last_name = input.lastName;
-  }
-
-  logInviteStage("insert_invitation_record", {
-    email: input.email,
-  });
-
-  let invitation: InvitationRow;
-
-  try {
-    invitation = await insertInvitationRow(
-      input.admin,
-      insertPayload
-    );
-  } catch (insertError) {
-    console.error(
-      "[admin-invite] invitation insert failed:",
-      insertError
-    );
-
-    return {
-      ok: false as const,
-      status: 500,
-      error:
-        "Unable to save the invitation record. Confirm the latest Supabase migrations are applied.",
-    };
-  }
-
-  let deliveryWarning: string | null = null;
-  let delivery: "auth_invite" | "account_email" =
-    "account_email";
-
+  const token = generateInvitationToken();
+  const expiresAt = buildInvitationExpiresAt();
   const fullName = buildFullName(
     input.firstName,
     input.lastName
   );
+
+  let authInviteSent = false;
 
   if (!existingAuthUser) {
     logInviteStage("send_auth_invite", {
@@ -847,7 +1009,7 @@ async function createNewAccountInvitation(input: {
         email: input.email,
         metadata: buildAuthInviteMetadata({
           fullName,
-          invitationToken: invitation.token,
+          invitationToken: token,
           invitationType: "new_account",
           invitedBy: input.actorUserId,
         }),
@@ -870,11 +1032,6 @@ async function createNewAccountInvitation(input: {
           message.includes("exists")
         )
       ) {
-        await input.admin
-          .from("household_invitations")
-          .delete()
-          .eq("id", invitation.id);
-
         return {
           ok: false as const,
           status: authInviteError.status || 500,
@@ -884,11 +1041,73 @@ async function createNewAccountInvitation(input: {
         };
       }
     } else {
-      delivery = "auth_invite";
+      authInviteSent = true;
     }
   }
 
-  if (delivery !== "auth_invite") {
+  const recordPayload: Record<string, unknown> = {
+    invitation_type: "new_account",
+    household_id: null,
+    role: null,
+    email: input.email,
+    invited_by: input.actorUserId,
+    token,
+    expires_at: expiresAt,
+  };
+
+  if (input.firstName) {
+    recordPayload.first_name = input.firstName;
+  }
+
+  if (input.lastName) {
+    recordPayload.last_name = input.lastName;
+  }
+
+  logInviteStage("save_invitation_record", {
+    email: input.email,
+    reusingExpiredInvite: Boolean(existingInvite),
+  });
+
+  let invitation: InvitationRow;
+
+  try {
+    invitation = await saveInvitationRecord(
+      input.admin,
+      recordPayload,
+      existingInvite
+        ? { existingId: existingInvite.id }
+        : undefined
+    );
+  } catch (insertError) {
+    if (authInviteSent) {
+      console.error(
+        "[admin-invite] Auth invitation succeeded but database record failed:",
+        {
+          email: input.email,
+        }
+      );
+
+      await deleteInvitedAuthUserIfNew(
+        input.admin,
+        input.email,
+        Boolean(existingAuthUser)
+      );
+    }
+
+    return {
+      ok: false as const,
+      status: 500,
+      error: mapInvitationInsertError(
+        insertError as DbError
+      ),
+    };
+  }
+
+  let deliveryWarning: string | null = null;
+  let delivery: "auth_invite" | "account_email" =
+    authInviteSent ? "auth_invite" : "account_email";
+
+  if (!authInviteSent) {
     logInviteStage("send_account_email_fallback", {
       email: input.email,
     });
@@ -982,22 +1201,28 @@ async function createHouseholdMemberInvitation(input: {
     }
   }
 
-  const { data: existingInvite } = await input.admin
-    .from("household_invitations")
-    .select("id")
-    .eq("household_id", input.householdId)
-    .ilike("email", input.email)
-    .is("accepted_at", null)
-    .maybeSingle();
+  const existingInvite =
+    await findHouseholdInvitationByEmail(
+      input.admin,
+      input.email,
+      input.householdId
+    );
 
-  if (existingInvite) {
+  if (
+    existingInvite &&
+    invitationStatus(existingInvite.expires_at) ===
+      "pending"
+  ) {
     return {
       ok: false as const,
       status: 409,
       error:
-        "A pending invitation already exists for this email in the selected household.",
+        "An invitation is already pending for this email.",
     };
   }
+
+  const token = generateInvitationToken();
+  const expiresAt = buildInvitationExpiresAt();
 
   const insertPayload: Record<string, unknown> = {
     invitation_type: "household_member",
@@ -1005,6 +1230,8 @@ async function createHouseholdMemberInvitation(input: {
     email: input.email,
     role: input.role,
     invited_by: input.actorUserId,
+    token,
+    expires_at: expiresAt,
   };
 
   if (input.firstName) {
@@ -1015,32 +1242,6 @@ async function createHouseholdMemberInvitation(input: {
     insertPayload.last_name = input.lastName;
   }
 
-  logInviteStage("insert_household_invitation", {
-    email: input.email,
-    householdId: input.householdId,
-  });
-
-  let invitation: InvitationRow;
-
-  try {
-    invitation = await insertInvitationRow(
-      input.admin,
-      insertPayload
-    );
-  } catch (insertError) {
-    console.error(
-      "[admin-invite] household invitation insert failed:",
-      insertError
-    );
-
-    return {
-      ok: false as const,
-      status: 500,
-      error:
-        "Unable to save the invitation record. Confirm the latest Supabase migrations are applied.",
-    };
-  }
-
   const householdName =
     (household.name as string | null)?.trim() ||
     "Home Tech Vault household";
@@ -1048,6 +1249,7 @@ async function createHouseholdMemberInvitation(input: {
   let delivery: "auth_invite" | "household_email" =
     "household_email";
   let deliveryWarning: string | null = null;
+  let authInviteSent = false;
 
   if (!existingAuthUser) {
     const fullName = buildFullName(
@@ -1065,7 +1267,7 @@ async function createHouseholdMemberInvitation(input: {
         email: input.email,
         metadata: buildAuthInviteMetadata({
           fullName,
-          invitationToken: invitation.token,
+          invitationToken: token,
           invitationType: "household_member",
           invitedBy: input.actorUserId,
           householdId: input.householdId,
@@ -1090,11 +1292,6 @@ async function createHouseholdMemberInvitation(input: {
           message.includes("exists")
         )
       ) {
-        await input.admin
-          .from("household_invitations")
-          .delete()
-          .eq("id", invitation.id);
-
         return {
           ok: false as const,
           status: authInviteError.status || 500,
@@ -1104,11 +1301,54 @@ async function createHouseholdMemberInvitation(input: {
         };
       }
     } else {
+      authInviteSent = true;
       delivery = "auth_invite";
     }
   }
 
-  if (delivery === "household_email" || existingAuthUser) {
+  logInviteStage("save_household_invitation", {
+    email: input.email,
+    householdId: input.householdId,
+    reusingExpiredInvite: Boolean(existingInvite),
+  });
+
+  let invitation: InvitationRow;
+
+  try {
+    invitation = await saveInvitationRecord(
+      input.admin,
+      insertPayload,
+      existingInvite
+        ? { existingId: existingInvite.id }
+        : undefined
+    );
+  } catch (insertError) {
+    if (authInviteSent) {
+      console.error(
+        "[admin-invite] Auth invitation succeeded but household invitation record failed:",
+        {
+          email: input.email,
+          householdId: input.householdId,
+        }
+      );
+
+      await deleteInvitedAuthUserIfNew(
+        input.admin,
+        input.email,
+        Boolean(existingAuthUser)
+      );
+    }
+
+    return {
+      ok: false as const,
+      status: 500,
+      error: mapInvitationInsertError(
+        insertError as DbError
+      ),
+    };
+  }
+
+  if (!authInviteSent || existingAuthUser) {
     logInviteStage("send_household_email_fallback", {
       email: input.email,
     });
