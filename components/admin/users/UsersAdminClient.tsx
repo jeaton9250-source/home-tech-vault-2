@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import {
   useCallback,
   useEffect,
@@ -11,33 +10,28 @@ import { useSearchParams } from "next/navigation";
 
 import { Plus, RefreshCw, Users } from "lucide-react";
 
-import PlanAccessAdminSection from "@/components/admin/users/PlanAccessAdminSection";
-import FoundingMemberAdminSection from "@/components/admin/users/FoundingMemberAdminSection";
-import AccountDangerZone from "@/components/admin/users/AccountDangerZone";
 import InviteUserModal from "@/components/admin/users/InviteUserModal";
+import UserDetailSlideOver from "@/components/admin/users/UserDetailSlideOver";
+import UsersDirectoryTable, {
+  type UserSortKey,
+} from "@/components/admin/users/UsersDirectoryTable";
+import InvitationsDirectoryTable from "@/components/admin/users/InvitationsDirectoryTable";
+import AdminExportMenu from "@/components/admin/ui/AdminExportMenu";
+import AdminFilterPills from "@/components/admin/ui/AdminFilterPills";
 import {
   AdminContentSection,
-  AdminDetailField,
   AdminEmptyState,
   AdminErrorState,
-  AdminFilterSelect,
-  AdminList,
-  AdminListItem,
   AdminLoadingState,
   AdminPageHero,
   AdminPagination,
   AdminSearchField,
   AdminSearchFilters,
-  AdminStatusBadge,
   AdminSummaryCard,
   AdminSummaryGrid,
 } from "@/components/admin/layout/AdminPageLayout";
-import { formatAdminDate } from "@/components/admin/AdminPanel";
 import Button from "@/components/ui/Button";
-import {
-  formatAdminHouseholdLabel,
-  getAdminUserDisplayName,
-} from "@/lib/admin/displayName";
+import type { AdminUserMetrics } from "@/lib/admin/data/userMetrics";
 import type {
   AdminPendingInvitation,
   AdminUserDetail,
@@ -55,22 +49,30 @@ type UsersResponse = {
   };
 };
 
-type UsersAdminClientProps = {
-  summary: {
-    totalUsers: number;
-    newUsersToday: number;
-    activeSubscriptions: number;
-    paidMembers: number;
-  };
-};
-
 type DirectorySelection =
   | { kind: "user"; id: string }
   | { kind: "invitation"; id: string }
   | null;
 
+const USER_FILTER_OPTIONS = [
+  { id: "all", label: "All Users" },
+  { id: "active", label: "Active" },
+  { id: "invited", label: "Invited" },
+  { id: "suspended", label: "Suspended" },
+  { id: "admins", label: "Admins" },
+  { id: "pro", label: "Pro" },
+  { id: "free", label: "Free" },
+  { id: "never_logged_in", label: "Never Logged In" },
+  { id: "has_connector", label: "Has Connector" },
+  { id: "no_connector", label: "No Connector" },
+];
+
+type UsersAdminClientProps = {
+  metrics: AdminUserMetrics;
+};
+
 export default function UsersAdminClient({
-  summary,
+  metrics,
 }: UsersAdminClientProps) {
   const searchParams = useSearchParams();
   const [users, setUsers] = useState<AdminUserSummary[]>([]);
@@ -86,8 +88,7 @@ export default function UsersAdminClient({
   const [search, setSearch] = useState("");
   const [plan, setPlan] = useState("");
   const [adminFilter, setAdminFilter] = useState("");
-  const [accountStatus, setAccountStatus] = useState("");
-  const [householdRole, setHouseholdRole] = useState("");
+  const [userFilter, setUserFilter] = useState("all");
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState<
     UsersResponse["pagination"] | null
@@ -102,6 +103,11 @@ export default function UsersAdminClient({
   const [inviteActionLoading, setInviteActionLoading] =
     useState(false);
   const [repairLoading, setRepairLoading] = useState(false);
+  const [sortKey, setSortKey] =
+    useState<UserSortKey>("joined");
+  const [sortDirection, setSortDirection] = useState<
+    "asc" | "desc"
+  >("desc");
 
   const loadUsers = useCallback(async () => {
     try {
@@ -129,10 +135,6 @@ export default function UsersAdminClient({
 
       if (search.trim()) {
         invitationParams.set("q", search.trim());
-      }
-
-      if (householdRole) {
-        invitationParams.set("role", householdRole);
       }
 
       const [usersResponse, invitationsResponse] =
@@ -184,7 +186,7 @@ export default function UsersAdminClient({
     } finally {
       setLoading(false);
     }
-  }, [page, search, plan, adminFilter, householdRole]);
+  }, [page, search, plan, adminFilter]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -204,7 +206,9 @@ export default function UsersAdminClient({
       setAdminMessage("");
       setDetailError("");
 
-      const response = await fetch(`/api/admin/users/${userId}`);
+      const response = await fetch(
+        `/api/admin/users/${userId}`
+      );
 
       const payload = (await response.json()) as {
         user?: AdminUserDetail;
@@ -234,8 +238,13 @@ export default function UsersAdminClient({
     }
   }
 
-  function selectInvitation(invitation: AdminPendingInvitation) {
-    setSelection({ kind: "invitation", id: invitation.id });
+  function selectInvitation(
+    invitation: AdminPendingInvitation
+  ) {
+    setSelection({
+      kind: "invitation",
+      id: invitation.id,
+    });
     setSelectedInvitation(invitation);
     setDetail(null);
     setDetailError("");
@@ -243,7 +252,8 @@ export default function UsersAdminClient({
   }
 
   useEffect(() => {
-    const selectedFromUrl = searchParams.get("selected");
+    const selectedFromUrl =
+      searchParams.get("selected");
 
     if (!selectedFromUrl) {
       return;
@@ -258,52 +268,135 @@ export default function UsersAdminClient({
     };
   }, [searchParams]);
 
+  useEffect(() => {
+    if (userFilter === "invited") {
+      setPlan("");
+      setAdminFilter("");
+    } else if (userFilter === "pro") {
+      setPlan("pro");
+    } else if (userFilter === "free") {
+      setPlan("free");
+    } else if (userFilter === "admins") {
+      setAdminFilter("true");
+      setPlan("");
+    } else if (userFilter === "all") {
+      setPlan("");
+      setAdminFilter("");
+    }
+  }, [userFilter]);
+
   const filteredUsers = useMemo(() => {
-    return users.filter((user) => {
-      if (accountStatus === "pending") {
-        return false;
-      }
+    let rows = [...users];
 
-      if (
-        householdRole &&
-        (user.householdRole || "").toLowerCase() !==
-          householdRole
-      ) {
-        return false;
-      }
-
-      return true;
-    });
-  }, [users, accountStatus, householdRole]);
-
-  const filteredInvitations = useMemo(() => {
-    if (accountStatus === "active") {
-      return [];
+    if (userFilter === "suspended") {
+      rows = rows.filter(
+        (user) => user.accountStatus === "deactivated"
+      );
     }
 
-    if (plan || adminFilter) {
-      return [];
+    if (userFilter === "active") {
+      rows = rows.filter(
+        (user) =>
+          user.accountStatus === "active" &&
+          Boolean(user.lastSignInAt)
+      );
     }
 
-    return invitations.filter((invitation) => {
-      if (
-        householdRole &&
-        invitation.role !== householdRole
-      ) {
-        return false;
-      }
+    if (userFilter === "never_logged_in") {
+      rows = rows.filter(
+        (user) => !user.lastSignInAt
+      );
+    }
 
-      return true;
+    if (userFilter === "has_connector") {
+      rows = rows.filter((user) => user.hasConnector);
+    }
+
+    if (userFilter === "no_connector") {
+      rows = rows.filter((user) => !user.hasConnector);
+    }
+
+    rows.sort((left, right) => {
+      const direction =
+        sortDirection === "asc" ? 1 : -1;
+
+      switch (sortKey) {
+        case "name":
+          return (
+            (left.fullName || left.email || "")
+              .localeCompare(
+                right.fullName || right.email || ""
+              ) * direction
+          );
+        case "plan":
+          return (
+            left.personalPlan.localeCompare(
+              right.personalPlan
+            ) * direction
+          );
+        case "devices":
+          return (
+            (left.deviceCount - right.deviceCount) *
+            direction
+          );
+        case "lastActive": {
+          const leftTime = left.lastSignInAt
+            ? new Date(left.lastSignInAt).getTime()
+            : 0;
+          const rightTime = right.lastSignInAt
+            ? new Date(right.lastSignInAt).getTime()
+            : 0;
+          return (leftTime - rightTime) * direction;
+        }
+        case "joined":
+        default: {
+          const leftTime = left.createdAt
+            ? new Date(left.createdAt).getTime()
+            : 0;
+          const rightTime = right.createdAt
+            ? new Date(right.createdAt).getTime()
+            : 0;
+          return (leftTime - rightTime) * direction;
+        }
+      }
     });
+
+    return rows;
   }, [
-    invitations,
-    accountStatus,
-    plan,
-    adminFilter,
-    householdRole,
+    users,
+    userFilter,
+    sortKey,
+    sortDirection,
   ]);
 
-  async function togglePlatformAdmin(nextValue: boolean) {
+  const filteredInvitations = useMemo(() => {
+    if (
+      userFilter !== "all" &&
+      userFilter !== "invited"
+    ) {
+      return [];
+    }
+
+    return invitations;
+  }, [invitations, userFilter]);
+
+  function handleSort(key: UserSortKey) {
+    setSortKey((current) => {
+      if (current === key) {
+        setSortDirection((direction) =>
+          direction === "asc" ? "desc" : "asc"
+        );
+        return current;
+      }
+
+      setSortDirection("desc");
+      return key;
+    });
+  }
+
+  async function togglePlatformAdmin(
+    nextValue: boolean
+  ) {
     if (!selection || selection.kind !== "user") {
       return;
     }
@@ -354,7 +447,9 @@ export default function UsersAdminClient({
     void loadUsers();
   }
 
-  async function resendInvitation(invitationId: string) {
+  async function resendInvitation(
+    invitationId: string
+  ) {
     try {
       setInviteActionLoading(true);
       setAdminMessage("");
@@ -371,11 +466,14 @@ export default function UsersAdminClient({
 
       if (!response.ok) {
         throw new Error(
-          payload.error || "Unable to resend the invitation."
+          payload.error ||
+            "Unable to resend the invitation."
         );
       }
 
-      setAdminMessage(payload.message || "Invitation resent.");
+      setAdminMessage(
+        payload.message || "Invitation resent."
+      );
     } catch (actionError) {
       setAdminMessage(
         actionError instanceof Error
@@ -387,7 +485,9 @@ export default function UsersAdminClient({
     }
   }
 
-  async function revokeInvitation(invitationId: string) {
+  async function revokeInvitation(
+    invitationId: string
+  ) {
     const confirmed = window.confirm(
       "Revoke this pending invitation?"
     );
@@ -412,13 +512,16 @@ export default function UsersAdminClient({
 
       if (!response.ok) {
         throw new Error(
-          payload.error || "Unable to revoke the invitation."
+          payload.error ||
+            "Unable to revoke the invitation."
         );
       }
 
       setSelection(null);
       setSelectedInvitation(null);
-      setAdminMessage(payload.message || "Invitation revoked.");
+      setAdminMessage(
+        payload.message || "Invitation revoked."
+      );
       void loadUsers();
     } catch (actionError) {
       setAdminMessage(
@@ -443,7 +546,6 @@ export default function UsersAdminClient({
 
       const payload = (await response.json()) as {
         message?: string;
-        repaired?: number;
         error?: string;
       };
 
@@ -470,13 +572,22 @@ export default function UsersAdminClient({
     }
   }
 
+  const slideOverOpen = Boolean(selection);
+
   return (
     <>
       <AdminPageHero
         title="Users"
-        description="Search accounts, invite new independent households or household members, and manage platform-admin access."
+        description="Manage accounts, invitations, platform access, and household onboarding from one directory."
         action={
           <div className="flex flex-wrap gap-2">
+            <AdminExportMenu
+              kinds={[
+                "users",
+                "invitations",
+                "activity",
+              ]}
+            />
             <Button
               type="button"
               variant="secondary"
@@ -496,7 +607,9 @@ export default function UsersAdminClient({
               }}
               disabled={repairLoading}
             >
-              {repairLoading ? "Repairing…" : "Repair Missing Profiles"}
+              {repairLoading
+                ? "Repairing…"
+                : "Repair Profiles"}
             </Button>
             <Button
               type="button"
@@ -517,8 +630,8 @@ export default function UsersAdminClient({
 
       <AdminSummaryGrid>
         <AdminSummaryCard
-          label="Total users"
-          value={summary.totalUsers}
+          label="Total Users"
+          value={metrics.totalUsers}
           icon={
             <Users
               aria-hidden="true"
@@ -527,16 +640,33 @@ export default function UsersAdminClient({
           }
         />
         <AdminSummaryCard
-          label="New today"
-          value={summary.newUsersToday}
+          label="Active Today"
+          value={metrics.activeToday}
         />
         <AdminSummaryCard
-          label="Active subscriptions"
-          value={summary.activeSubscriptions}
+          label="Pending Invitations"
+          value={metrics.pendingInvitations}
         />
         <AdminSummaryCard
-          label="Paid members"
-          value={summary.paidMembers}
+          label="Pro Subscribers"
+          value={metrics.proSubscribers}
+        />
+        <AdminSummaryCard
+          label="Free Users"
+          value={metrics.freeUsers}
+        />
+        <AdminSummaryCard
+          label="Suspended Users"
+          value={metrics.suspendedUsers}
+        />
+        <AdminSummaryCard
+          label="New This Week"
+          value={metrics.newThisWeek}
+        />
+        <AdminSummaryCard
+          label="Growth %"
+          value={`${metrics.growthPercent}%`}
+          hint={`${metrics.newThisMonth} new this month`}
         />
       </AdminSummaryGrid>
 
@@ -548,515 +678,187 @@ export default function UsersAdminClient({
             setPage(1);
             setSearch(value);
           }}
-          placeholder="Search name, email, or user ID"
-        />
-        <AdminFilterSelect
-          label="Plan"
-          value={plan}
-          onChange={(value) => {
-            setPage(1);
-            setPlan(value);
-          }}
-          options={[
-            { value: "free", label: "Free" },
-            { value: "pro", label: "Pro" },
-            { value: "family", label: "Family" },
-          ]}
-        />
-        <AdminFilterSelect
-          label="Platform admin"
-          value={adminFilter}
-          onChange={(value) => {
-            setPage(1);
-            setAdminFilter(value);
-          }}
-          options={[
-            { value: "true", label: "Admins only" },
-            { value: "false", label: "Non-admins" },
-          ]}
-        />
-        <AdminFilterSelect
-          label="Account status"
-          value={accountStatus}
-          onChange={(value) => {
-            setPage(1);
-            setAccountStatus(value);
-          }}
-          options={[
-            { value: "active", label: "Active" },
-            { value: "pending", label: "Invitation Pending" },
-          ]}
-        />
-        <AdminFilterSelect
-          label="Household role"
-          value={householdRole}
-          onChange={(value) => {
-            setPage(1);
-            setHouseholdRole(value);
-          }}
-          options={[
-            { value: "admin", label: "Admin" },
-            { value: "member", label: "Member" },
-            { value: "viewer", label: "Viewer" },
-          ]}
+          placeholder="Search name, email, household, or user ID"
         />
       </AdminSearchFilters>
 
-      <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-        <AdminContentSection
-          id="users-directory-heading"
-          title="User directory"
-          subtitle="Select an account or pending invitation to inspect details."
-        >
-          {loading ? (
-            <AdminLoadingState label="Loading users…" />
-          ) : error ? (
-            <AdminErrorState message={error} />
-          ) : filteredUsers.length === 0 &&
-            filteredInvitations.length === 0 ? (
-            <AdminEmptyState
-              title="No users found"
-              description="Try a different search or filter."
-            />
-          ) : (
-            <AdminList>
-              {filteredInvitations.map((invitation) => {
-                const isNewAccount =
-                  invitation.invitationType === "create_account";
+      <AdminFilterPills
+        options={USER_FILTER_OPTIONS}
+        value={userFilter}
+        onChange={(value) => {
+          setPage(1);
+          setUserFilter(value);
+        }}
+      />
 
-                return (
-                  <AdminListItem
-                    key={`invitation-${invitation.id}`}
-                    selected={
-                      selection?.kind === "invitation" &&
-                      selection.id === invitation.id
-                    }
-                    onClick={() => selectInvitation(invitation)}
-                  >
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                      <div>
-                        <p className="font-medium text-text-primary">
-                          {invitation.email}
-                        </p>
-                        <p className="mt-1 text-sm text-text-secondary">
-                          {isNewAccount
-                            ? "New Account"
-                            : invitation.householdName ||
-                              "Unknown household"}
-                        </p>
-                        <div className="mt-2 flex flex-wrap gap-2">
-                          <AdminStatusBadge tone="warning">
-                            {isNewAccount
-                              ? "Awaiting account setup"
-                              : "Invitation Pending"}
-                          </AdminStatusBadge>
-                        </div>
-                      </div>
-                      <div className="text-left sm:text-right">
-                        <p className="text-sm capitalize text-text-primary">
-                          {isNewAccount
-                            ? "New Account Invitation"
-                            : invitation.role}
-                        </p>
-                        <p className="mt-1 text-xs text-text-tertiary">
-                          Invited {formatAdminDate(invitation.createdAt)}
-                        </p>
-                        {isNewAccount ? (
-                          <p className="mt-1 text-xs text-text-tertiary">
-                            Expires{" "}
-                            {formatAdminDate(invitation.expiresAt)}
-                          </p>
-                        ) : null}
-                      </div>
-                    </div>
-                  </AdminListItem>
-                );
-              })}
-
-              {filteredUsers.map((user) => (
-                <AdminListItem
-                  key={user.id}
-                  selected={
-                    selection?.kind === "user" &&
-                    selection.id === user.id
+      <AdminContentSection
+        id="users-directory-heading"
+        title="User directory"
+        subtitle="Professional account table with sortable columns and quick actions."
+      >
+        {loading ? (
+          <AdminLoadingState label="Loading users…" />
+        ) : error ? (
+          <AdminErrorState message={error} />
+        ) : filteredUsers.length === 0 &&
+          filteredInvitations.length === 0 ? (
+          <AdminEmptyState
+            title="No users found"
+            description="Try a different search or filter."
+          />
+        ) : userFilter === "invited" ? null : (
+          <UsersDirectoryTable
+            users={filteredUsers}
+            selectedUserId={
+              selection?.kind === "user"
+                ? selection.id
+                : null
+            }
+            sortKey={sortKey}
+            sortDirection={sortDirection}
+            onSort={handleSort}
+            onSelect={(userId) => {
+              void loadDetail(userId);
+            }}
+            buildActions={(user) => [
+              {
+                id: "view",
+                label: "View Details",
+                onClick: () => {
+                  void loadDetail(user.id);
+                },
+              },
+              {
+                id: "household",
+                label: "View Household",
+                onClick: () => {
+                  if (user.householdId) {
+                    window.location.href = `/admin/households?selected=${user.householdId}`;
                   }
-                  onClick={() => {
-                    void loadDetail(user.id);
-                  }}
-                >
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                      <p className="font-medium text-text-primary">
-                        {getAdminUserDisplayName({
-                          fullName: user.fullName,
-                          email: user.email,
-                        })}
-                      </p>
-                      <p className="mt-1 text-sm text-text-secondary">
-                        {user.email || "No email available"}
-                      </p>
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {user.accountStatus === "deactivated" ? (
-                          <AdminStatusBadge tone="danger">
-                            Deactivated
-                          </AdminStatusBadge>
-                        ) : (
-                          <AdminStatusBadge tone="success">
-                            Active
-                          </AdminStatusBadge>
-                        )}
-                        {user.isPlatformAdmin ? (
-                          <AdminStatusBadge tone="warning">
-                            Platform admin
-                          </AdminStatusBadge>
-                        ) : null}
-                        {user.accountStatus === "deactivated" ? (
-                          <AdminStatusBadge tone="danger">
-                            Deactivated
-                          </AdminStatusBadge>
-                        ) : null}
-                      </div>
-                    </div>
-                    <div className="text-left sm:text-right">
-                      <p className="text-sm capitalize text-text-primary">
-                        {user.personalPlan}
-                      </p>
-                      <p className="mt-1 text-xs capitalize text-text-secondary">
-                        {user.isPlatformAdmin
-                          ? "Platform admin"
-                          : "Standard User"}
-                      </p>
-                      <p className="mt-1 text-xs capitalize text-text-secondary">
-                        {formatAdminHouseholdLabel({
-                          householdName: user.householdName,
-                          householdId: user.householdId,
-                        })}
-                      </p>
-                      <p className="mt-1 text-xs capitalize text-text-secondary">
-                        {user.householdRole || "No household role"}
-                      </p>
-                      <p className="mt-1 text-xs text-text-tertiary">
-                        {user.lastSignInAt
-                          ? `Last sign-in ${formatAdminDate(user.lastSignInAt)}`
-                          : "Last sign-in not available"}
-                      </p>
-                      <p className="mt-1 text-xs text-text-tertiary">
-                        Joined {formatAdminDate(user.createdAt)}
-                      </p>
-                    </div>
-                  </div>
-                </AdminListItem>
-              ))}
-            </AdminList>
-          )}
+                },
+                disabled: !user.householdId,
+              },
+            ]}
+          />
+        )}
 
-          {pagination && accountStatus !== "pending" ? (
+        {pagination &&
+        userFilter !== "invited" ? (
+          <div className="mt-6">
             <AdminPagination
               page={pagination.page}
               totalPages={pagination.totalPages}
               totalLabel={`${pagination.total} users`}
-              hasPreviousPage={pagination.hasPreviousPage}
+              hasPreviousPage={
+                pagination.hasPreviousPage
+              }
               hasNextPage={pagination.hasNextPage}
               onPrevious={() =>
-                setPage((current) => Math.max(1, current - 1))
+                setPage((current) =>
+                  Math.max(1, current - 1)
+                )
               }
-              onNext={() => setPage((current) => current + 1)}
+              onNext={() =>
+                setPage((current) => current + 1)
+              }
             />
-          ) : null}
-        </AdminContentSection>
+          </div>
+        ) : null}
+      </AdminContentSection>
 
-        <AdminContentSection
-          id="users-detail-heading"
-          title="User detail"
-          subtitle="Account context and administrative controls."
-        >
-          {!selection ? (
-            <AdminEmptyState
-              title="Select a user"
-              description="Choose a row to inspect account or invitation details."
-            />
-          ) : selection.kind === "invitation" &&
-            selectedInvitation ? (
-            <div className="space-y-4">
-              <AdminDetailField
-                label="Email"
-                value={selectedInvitation.email}
-                copyValue={selectedInvitation.email}
-                onCopy={() => {
-                  void navigator.clipboard.writeText(
-                    selectedInvitation.email
+      <AdminContentSection
+        id="invitations-directory-heading"
+        title="Pending invitations"
+        subtitle="Resend, revoke, or inspect outstanding account and household invitations."
+      >
+        {loading ? (
+          <AdminLoadingState label="Loading invitations…" />
+        ) : filteredInvitations.length === 0 ? (
+          <AdminEmptyState
+            title="No pending invitations"
+            description="New invitations will appear here after you invite users from Control Center."
+          />
+        ) : (
+          <InvitationsDirectoryTable
+            invitations={filteredInvitations}
+            selectedInvitationId={
+              selection?.kind === "invitation"
+                ? selection.id
+                : null
+            }
+            onSelect={selectInvitation}
+            buildActions={(invitation) => [
+              {
+                id: "view",
+                label: "View Details",
+                onClick: () => {
+                  selectInvitation(invitation);
+                },
+              },
+              {
+                id: "resend",
+                label: "Resend",
+                onClick: () => {
+                  void resendInvitation(
+                    invitation.id
                   );
-                }}
-              />
-              <AdminDetailField
-                label="Invitation type"
-                value={
-                  selectedInvitation.invitationType ===
-                  "create_account"
-                    ? "New Account Invitation"
-                    : "Household Invitation"
-                }
-              />
-              {selectedInvitation.invitationType ===
-              "join_household" ? (
-                <>
-                  <AdminDetailField
-                    label="Household"
-                    value={
-                      selectedInvitation.householdName ||
-                      selectedInvitation.householdId ||
-                      "—"
-                    }
-                  />
-                  <AdminDetailField
-                    label="Selected role"
-                    value={selectedInvitation.role || "—"}
-                  />
-                </>
-              ) : (
-                <AdminDetailField
-                  label="Setup status"
-                  value="Awaiting account setup"
-                />
-              )}
-              {(selectedInvitation.firstName ||
-                selectedInvitation.lastName) && (
-                <AdminDetailField
-                  label="Suggested name"
-                  value={[
-                    selectedInvitation.firstName,
-                    selectedInvitation.lastName,
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
-                />
-              )}
-              <AdminDetailField
-                label="Invited by"
-                value={
-                  selectedInvitation.invitedByName ||
-                  selectedInvitation.invitedByEmail ||
-                  selectedInvitation.invitedBy ||
-                  "—"
-                }
-              />
-              <AdminDetailField
-                label="Date invited"
-                value={formatAdminDate(selectedInvitation.createdAt)}
-              />
-              <AdminDetailField
-                label="Expiration date"
-                value={formatAdminDate(selectedInvitation.expiresAt)}
-              />
-              <AdminDetailField
-                label="Invitation status"
-                value={
-                  selectedInvitation.invitationType ===
-                  "create_account"
-                    ? "Awaiting account setup"
-                    : "Invitation Pending"
-                }
-              />
-
-              {adminMessage ? (
-                <p className="text-sm text-text-secondary">
-                  {adminMessage}
-                </p>
-              ) : null}
-
-              <div className="flex flex-wrap gap-2 border-t border-border-subtle pt-4">
-                <Button
-                  type="button"
-                  onClick={() => {
-                    void resendInvitation(selectedInvitation.id);
-                  }}
-                  disabled={inviteActionLoading}
-                >
-                  Resend Invitation
-                </Button>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => {
-                    void revokeInvitation(selectedInvitation.id);
-                  }}
-                  disabled={inviteActionLoading}
-                >
-                  Revoke Invitation
-                </Button>
-              </div>
-
-              {selectedInvitation.invitationType ===
-                "join_household" &&
-              selectedInvitation.householdId ? (
-                <Link
-                  href={`/admin/households?selected=${selectedInvitation.householdId}`}
-                  className="inline-flex text-sm font-semibold text-interaction"
-                >
-                  View household
-                </Link>
-              ) : null}
-            </div>
-          ) : detailLoading ? (
-            <AdminLoadingState label="Loading details…" />
-          ) : detailError ? (
-            <AdminEmptyState
-              title="User unavailable"
-              description={detailError}
-            />
-          ) : detail ? (
-            <div className="space-y-4">
-              <AdminDetailField
-                label="Name"
-                value={detail.fullName || "—"}
-              />
-              <AdminDetailField
-                label="Email"
-                value={detail.email || "—"}
-                copyValue={detail.email || ""}
-                onCopy={() => {
-                  void navigator.clipboard.writeText(
-                    detail.email || ""
+                },
+              },
+              {
+                id: "revoke",
+                label: "Revoke",
+                tone: "danger",
+                onClick: () => {
+                  void revokeInvitation(
+                    invitation.id
                   );
-                }}
-              />
-              <AdminDetailField
-                label="User ID"
-                value={detail.id}
-                copyValue={detail.id}
-                onCopy={() => {
-                  void navigator.clipboard.writeText(detail.id);
-                }}
-              />
-              <AdminDetailField
-                label="Created"
-                value={formatAdminDate(detail.createdAt)}
-              />
-              <AdminDetailField
-                label="Last sign-in"
-                value={formatAdminDate(detail.lastSignInAt)}
-              />
-              <AdminDetailField
-                label="Household"
-                value={formatAdminHouseholdLabel({
-                  householdName: detail.householdName,
-                  householdId: detail.householdId,
-                })}
-              />
-              <AdminDetailField
-                label="Household role"
-                value={detail.householdRole || "—"}
-              />
-              <AdminDetailField
-                label="Devices"
-                value={String(detail.deviceCount)}
-              />
-              <AdminDetailField
-                label="Documents"
-                value={String(detail.documentCount)}
-              />
-              <AdminDetailField
-                label="Support tickets"
-                value={String(detail.supportTicketCount)}
-              />
+                },
+              },
+            ]}
+          />
+        )}
+      </AdminContentSection>
 
-              {detail.householdId ? (
-                <Link
-                  href={`/admin/households?selected=${detail.householdId}`}
-                  className="inline-flex text-sm font-semibold text-interaction"
-                >
-                  View household
-                </Link>
-              ) : null}
-
-              <PlanAccessAdminSection
-                detail={detail}
-                onUpdated={async () => {
-                  if (selection?.kind === "user") {
-                    await loadDetail(selection.id);
-                  }
-                }}
-              />
-
-              <FoundingMemberAdminSection
-                detail={detail}
-                onUpdated={async () => {
-                  if (selection?.kind === "user") {
-                    await loadDetail(selection.id);
-                  }
-                }}
-              />
-
-              <AccountDangerZone
-                detail={detail}
-                onUpdated={async () => {
-                  if (selection?.kind === "user") {
-                    await loadDetail(selection.id);
-                  }
-
-                  await loadUsers();
-                }}
-                onDeleted={async () => {
-                  setSelection(null);
-                  setSelectedInvitation(null);
-                  setDetail(null);
-                  setAdminMessage(
-                    "User permanently deleted from Home Tech Vault and Supabase Authentication."
-                  );
-                  await loadUsers();
-                }}
-              />
-
-              <div className="border-t border-border-subtle pt-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-text-tertiary">
-                  Platform admin access
-                </p>
-
-                {adminMessage ? (
-                  <p className="mt-2 text-sm text-text-secondary">
-                    {adminMessage}
-                  </p>
-                ) : null}
-
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {detail.isPlatformAdmin ? (
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={() => {
-                        void togglePlatformAdmin(false);
-                      }}
-                    >
-                      Remove platform admin
-                    </Button>
-                  ) : (
-                    <Button
-                      type="button"
-                      onClick={() => {
-                        void togglePlatformAdmin(true);
-                      }}
-                    >
-                      Grant platform admin
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </div>
-          ) : (
-            <AdminEmptyState
-              title="User unavailable"
-              description="This account could not be loaded."
-            />
-          )}
-        </AdminContentSection>
-      </section>
+      <UserDetailSlideOver
+        open={slideOverOpen}
+        onClose={() => {
+          setSelection(null);
+          setSelectedInvitation(null);
+          setDetail(null);
+          setDetailError("");
+          setAdminMessage("");
+        }}
+        loading={detailLoading}
+        error={detailError}
+        detail={detail}
+        invitation={selectedInvitation}
+        adminMessage={adminMessage}
+        inviteActionLoading={inviteActionLoading}
+        onResendInvitation={resendInvitation}
+        onRevokeInvitation={revokeInvitation}
+        onTogglePlatformAdmin={togglePlatformAdmin}
+        onDetailUpdated={async () => {
+          if (selection?.kind === "user") {
+            await loadDetail(selection.id);
+          }
+        }}
+        onUserDeleted={async () => {
+          setSelection(null);
+          setSelectedInvitation(null);
+          setDetail(null);
+          setAdminMessage(
+            "User permanently deleted from Home Tech Vault and Supabase Authentication."
+          );
+          await loadUsers();
+        }}
+      />
 
       <InviteUserModal
         open={inviteOpen}
         onClose={() => setInviteOpen(false)}
         onInvited={(message) => {
           setAdminMessage(message);
-          setAccountStatus("pending");
+          setUserFilter("invited");
           setPage(1);
           void loadUsers();
         }}

@@ -402,6 +402,35 @@ export async function loadAdminUsers(options: {
     )
   );
 
+  const allHouseholdIdsForConnectors = [
+    ...new Set([
+      ...householdIds,
+      ...(ownedHouseholdsResult.data ?? []).map(
+        (row) => row.id
+      ),
+    ]),
+  ];
+
+  const { data: connectorRows } =
+    allHouseholdIdsForConnectors.length > 0
+      ? await admin
+          .from("connector_installations")
+          .select("household_id")
+          .in(
+            "household_id",
+            allHouseholdIdsForConnectors
+          )
+          .is("revoked_at", null)
+      : {
+          data: [] as Array<{ household_id: string }>,
+        };
+
+  const connectorHouseholdSet = new Set(
+    (connectorRows ?? []).map(
+      (row) => row.household_id
+    )
+  );
+
   const deviceMap = new Map(deviceCounts);
   const documentMap = new Map(documentCounts);
   const ticketMap = new Map(ticketCounts);
@@ -468,6 +497,11 @@ export async function loadAdminUsers(options: {
           documentMap.get(authUser.id) ?? 0,
         supportTicketCount:
           ticketMap.get(authUser.id) ?? 0,
+        hasConnector: householdId
+          ? connectorHouseholdSet.has(
+              householdId
+            )
+          : false,
       };
     }
   );
@@ -617,6 +651,9 @@ export async function loadAdminUserDetail(
     deviceCountResult,
     documentCountResult,
     ticketCountResult,
+    warrantyCountResult,
+    maintenanceCountResult,
+    recentActivityResult,
   ] = await Promise.all([
     admin
       .from("user_subscriptions")
@@ -663,6 +700,30 @@ export async function loadAdminUserDetail(
         head: true,
       })
       .eq("user_id", userId),
+
+    admin
+      .from("devices")
+      .select("id", {
+        count: "exact",
+        head: true,
+      })
+      .eq("user_id", userId)
+      .not("warranty_date", "is", null),
+
+    admin
+      .from("maintenance_tasks")
+      .select("id", {
+        count: "exact",
+        head: true,
+      })
+      .eq("user_id", userId),
+
+    admin
+      .from("platform_admin_audit_events")
+      .select("id, event_type, created_at")
+      .eq("target_user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(5),
   ]);
 
   const deletionJob =
@@ -880,6 +941,25 @@ export async function loadAdminUserDetail(
     );
   }
 
+  const resolvedHouseholdId =
+    membershipResult.data?.household_id ??
+    ownedHouseholdResult.data?.id ??
+    null;
+
+  const connectorInfo =
+    await loadConnectorForHousehold(
+      admin,
+      resolvedHouseholdId
+    );
+
+  const recentActivity = (
+    recentActivityResult.data ?? []
+  ).map((row) => ({
+    id: row.id,
+    title: row.event_type.replace(/_/g, " "),
+    createdAt: row.created_at,
+  }));
+
   return {
     id: profile.id,
     email: auth?.email ?? null,
@@ -902,10 +982,7 @@ export async function loadAdminUserDetail(
           profile.account_status
         )
       : "active",
-    householdId:
-      membershipResult.data?.household_id ??
-      ownedHouseholdResult.data?.id ??
-      null,
+    householdId: resolvedHouseholdId,
     householdRole:
       membershipResult.data?.role ??
       (ownedHouseholdResult.data ? "owner" : null),
@@ -919,6 +996,8 @@ export async function loadAdminUserDetail(
       documentCountResult.count ?? 0,
     supportTicketCount:
       ticketCountResult.count ?? 0,
+    hasConnector:
+      connectorInfo.hasConnectorInstalled,
     effectivePlan: effective.effectivePlan,
     effectivePlanSource:
       formatEffectivePlanSourceLabel(
@@ -1000,6 +1079,44 @@ export async function loadAdminUserDetail(
     foundingMemberEnrolledAt,
     foundingMemberBenefitMode,
     foundingMemberPlanGrantId,
+    warrantyCount:
+      warrantyCountResult.count ?? 0,
+    maintenanceTaskCount:
+      maintenanceCountResult.count ?? 0,
+    hasConnectorInstalled:
+      connectorInfo.hasConnectorInstalled,
+    connectorVersion:
+      connectorInfo.connectorVersion,
+    recentActivity,
+  };
+}
+
+async function loadConnectorForHousehold(
+  admin: ReturnType<typeof createAdminClient>,
+  householdId: string | null
+) {
+  if (!householdId) {
+    return {
+      hasConnectorInstalled: false,
+      connectorVersion: null as string | null,
+    };
+  }
+
+  const { data } = await admin
+    .from("connector_installations")
+    .select("app_version, revoked_at")
+    .eq("household_id", householdId)
+    .is("revoked_at", null)
+    .order("last_seen_at", {
+      ascending: false,
+      nullsFirst: false,
+    })
+    .limit(1)
+    .maybeSingle();
+
+  return {
+    hasConnectorInstalled: Boolean(data),
+    connectorVersion: data?.app_version ?? null,
   };
 }
 
@@ -1059,6 +1176,7 @@ export async function loadAdminHouseholds(options: {
           deviceCount,
           documentCount,
           openTickets,
+          connectorCount,
         ] = await Promise.all([
           admin
             .from("household_members")
@@ -1124,6 +1242,15 @@ export async function loadAdminHouseholds(options: {
               "in_progress",
               "waiting_on_customer",
             ]),
+
+          admin
+            .from("connector_installations")
+            .select("id", {
+              count: "exact",
+              head: true,
+            })
+            .eq("household_id", household.id)
+            .is("revoked_at", null),
         ]);
 
         const ownerAuth = authMap.get(
@@ -1150,6 +1277,8 @@ export async function loadAdminHouseholds(options: {
             documentCount.count ?? 0,
           openSupportTickets:
             openTickets.count ?? 0,
+          connectorCount:
+            connectorCount.count ?? 0,
         };
       })
     );
@@ -1205,6 +1334,7 @@ export async function loadAdminHouseholdDetail(
       deviceCount: 0,
       documentCount: 0,
       openSupportTickets: 0,
+      connectorCount: 0,
     } satisfies AdminHouseholdSummary);
 
   return loadMembersForHousehold(summary);
@@ -1246,6 +1376,36 @@ async function loadMembersForHousehold(
     ])
   );
 
+  const [
+    { data: connectors },
+    { data: auditEvents },
+  ] = await Promise.all([
+    admin
+      .from("connector_installations")
+      .select(
+        "id, name, platform, app_version, status, last_seen_at"
+      )
+      .eq("household_id", summary.id)
+      .is("revoked_at", null)
+      .order("last_seen_at", {
+        ascending: false,
+        nullsFirst: false,
+      }),
+
+    memberIds.length > 0
+      ? admin
+          .from("platform_admin_audit_events")
+          .select(
+            "id, event_type, created_at, target_user_id"
+          )
+          .in("target_user_id", memberIds)
+          .order("created_at", {
+            ascending: false,
+          })
+          .limit(5)
+      : Promise.resolve({ data: [] }),
+  ]);
+
   return {
     ...summary,
     members: (members ?? []).map(
@@ -1260,6 +1420,26 @@ async function loadMembersForHousehold(
             ?.trim() || null,
         role: member.role,
         joinedAt: member.joined_at,
+      })
+    ),
+    connectors: (connectors ?? []).map(
+      (connector) => ({
+        id: connector.id,
+        name: connector.name,
+        platform: connector.platform,
+        appVersion: connector.app_version,
+        status: connector.status,
+        lastSeenAt: connector.last_seen_at,
+      })
+    ),
+    recentActivity: (auditEvents ?? []).map(
+      (event) => ({
+        id: event.id,
+        title: event.event_type.replace(
+          /_/g,
+          " "
+        ),
+        createdAt: event.created_at,
       })
     ),
   };

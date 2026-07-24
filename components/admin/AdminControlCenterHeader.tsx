@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 import AdminAccountMenu from "@/components/admin/AdminAccountMenu";
 import AdminGlobalSearch from "@/components/admin/founder-control-center/AdminGlobalSearch";
+import AdminNotificationBell from "@/components/admin/ui/AdminNotificationBell";
 import Logo from "@/components/brand/Logo";
 import Button from "@/components/ui/Button";
 import {
@@ -72,6 +73,8 @@ export default function AdminControlCenterHeader() {
           >
             View App
           </Button>
+
+          <AdminNotificationBell />
 
           <AdminAccountMenu />
         </div>

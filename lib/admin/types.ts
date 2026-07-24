@@ -55,6 +55,7 @@ export type AdminUserSummary = {
   deviceCount: number;
   documentCount: number;
   supportTicketCount: number;
+  hasConnector: boolean;
 };
 
 export type AdminUserDetail = AdminUserSummary & {
@@ -93,6 +94,15 @@ export type AdminUserDetail = AdminUserSummary & {
   foundingMemberEnrolledAt: string | null;
   foundingMemberBenefitMode: string | null;
   foundingMemberPlanGrantId: string | null;
+  warrantyCount: number;
+  maintenanceTaskCount: number;
+  hasConnectorInstalled: boolean;
+  connectorVersion: string | null;
+  recentActivity: Array<{
+    id: string;
+    title: string;
+    createdAt: string;
+  }>;
 };
 
 export type AdminHouseholdSummary = {
@@ -107,6 +117,7 @@ export type AdminHouseholdSummary = {
   deviceCount: number;
   documentCount: number;
   openSupportTickets: number;
+  connectorCount: number;
 };
 
 export type AdminHouseholdDetail = AdminHouseholdSummary & {
@@ -116,6 +127,19 @@ export type AdminHouseholdDetail = AdminHouseholdSummary & {
     fullName: string | null;
     role: string;
     joinedAt: string | null;
+  }>;
+  connectors: Array<{
+    id: string;
+    name: string;
+    platform: string | null;
+    appVersion: string | null;
+    status: string | null;
+    lastSeenAt: string | null;
+  }>;
+  recentActivity: Array<{
+    id: string;
+    title: string;
+    createdAt: string;
   }>;
 };
 

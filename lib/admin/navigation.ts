@@ -3,6 +3,7 @@ import {
   Cpu,
   Home,
   Mail,
+  Plug,
   Server,
   Users,
   UsersRound,
@@ -38,6 +39,20 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     label: "Households",
     icon: UsersRound,
     description: "Membership and ownership",
+  },
+  {
+    id: "activity",
+    href: "/admin/activity",
+    label: "Activity",
+    icon: Activity,
+    description: "Platform timeline",
+  },
+  {
+    id: "connectors",
+    href: "/admin/connectors",
+    label: "Connectors",
+    icon: Plug,
+    description: "Heartbeat and installs",
   },
   {
     id: "devices",
@@ -123,6 +138,22 @@ export const ADMIN_HEADER_NAV_ITEMS: AdminHeaderNavItem[] = [
     isActive: (pathname) =>
       pathname === "/admin/households" ||
       pathname.startsWith("/admin/households/"),
+  },
+  {
+    id: "activity",
+    href: "/admin/activity",
+    label: "Activity",
+    isActive: (pathname) =>
+      pathname === "/admin/activity" ||
+      pathname.startsWith("/admin/activity/"),
+  },
+  {
+    id: "connectors",
+    href: "/admin/connectors",
+    label: "Connectors",
+    isActive: (pathname) =>
+      pathname === "/admin/connectors" ||
+      pathname.startsWith("/admin/connectors/"),
   },
   {
     id: "devices",
