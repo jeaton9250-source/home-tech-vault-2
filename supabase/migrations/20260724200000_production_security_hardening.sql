@@ -115,8 +115,39 @@ CREATE TRIGGER connector_installations_protect_secrets
   EXECUTE FUNCTION public.protect_connector_installation_secrets();
 
 -- =========================================================
--- 4. Tighten device identity confirmation policies
+-- 4. Device identity confirmations (create if missing, then harden RLS)
+-- Table may not exist yet if Device Intelligence Phase 3A was not applied.
 -- =========================================================
+CREATE TABLE IF NOT EXISTS public.device_identity_confirmations (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  household_id uuid NOT NULL REFERENCES public.households(id) ON DELETE CASCADE,
+  device_id uuid NOT NULL REFERENCES public.devices(id) ON DELETE CASCADE,
+  discovered_device_id uuid REFERENCES public.discovered_devices(id) ON DELETE SET NULL,
+  stable_fingerprint_hash text,
+  normalized_mac text,
+  ssdp_usn_hash text,
+  mdns_identity_hash text,
+  confirmed_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+  confirmed_at timestamptz NOT NULL DEFAULT now(),
+  revoked_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS device_identity_confirmations_household_idx
+  ON public.device_identity_confirmations (household_id)
+  WHERE revoked_at IS NULL;
+
+CREATE INDEX IF NOT EXISTS device_identity_confirmations_fingerprint_idx
+  ON public.device_identity_confirmations (household_id, stable_fingerprint_hash)
+  WHERE revoked_at IS NULL AND stable_fingerprint_hash IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS device_identity_confirmations_mac_idx
+  ON public.device_identity_confirmations (household_id, normalized_mac)
+  WHERE revoked_at IS NULL AND normalized_mac IS NOT NULL;
+
+ALTER TABLE public.device_identity_confirmations ENABLE ROW LEVEL SECURITY;
+
 DROP POLICY IF EXISTS device_identity_confirmations_select_household
   ON public.device_identity_confirmations;
 DROP POLICY IF EXISTS device_identity_confirmations_insert_household
