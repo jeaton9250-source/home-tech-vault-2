@@ -140,8 +140,7 @@ export function computePermissions(
     !context.isDemo && roleCanMutate;
 
   const canDelete =
-    !context.isDemo &&
-    (isPersonalVault || isAdmin);
+    !context.isDemo && roleCanMutate;
 
   const canUpload =
     !context.isDemo && roleCanMutate;

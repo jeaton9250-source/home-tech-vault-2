@@ -2,6 +2,7 @@ import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { loadHouseholdMembershipForUser } from "@/lib/permissions/householdMembership";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -14,38 +15,74 @@ export class DeviceDeleteError extends Error {
   }
 }
 
-function mapRpcError(message: string): DeviceDeleteError {
-  const normalized = message.toUpperCase();
+type DeviceRow = {
+  id: string;
+  user_id: string;
+  household_id: string | null;
+  device_name: string | null;
+};
 
-  if (normalized.includes("FORBIDDEN")) {
-    return new DeviceDeleteError(
-      403,
-      "You do not have permission to delete this device."
-    );
+/**
+ * Match product rules: personal vault + household owner/admin/member can delete.
+ * Viewers cannot. Platform admins can.
+ */
+async function userCanDeleteDevice(
+  admin: SupabaseClient,
+  userId: string,
+  device: DeviceRow,
+  isPlatformAdmin: boolean
+): Promise<boolean> {
+  if (isPlatformAdmin) {
+    return true;
   }
 
-  if (normalized.includes("NOT_AUTHENTICATED")) {
-    return new DeviceDeleteError(
-      401,
-      "You must be signed in to delete a device."
-    );
+  // Device owner can always remove their own device.
+  if (device.user_id === userId) {
+    return true;
   }
 
-  if (
-    normalized.includes("DEVICE_NOT_FOUND") ||
-    normalized.includes("P0002")
-  ) {
-    return new DeviceDeleteError(
-      404,
-      "Device not found."
+  const householdId = device.household_id;
+
+  if (householdId) {
+    const { data: household } = await admin
+      .from("households")
+      .select("owner_id")
+      .eq("id", householdId)
+      .maybeSingle();
+
+    if (household?.owner_id === userId) {
+      return true;
+    }
+
+    const membership = await loadHouseholdMembershipForUser(
+      admin,
+      userId,
+      householdId
     );
+
+    const role = membership.normalizedRole;
+    // owner/admin normalize to "admin"; members may delete; viewers may not.
+    return role === "admin" || role === "member";
   }
 
-  // Surface the real DB message so we can see FK / policy failures.
-  return new DeviceDeleteError(
-    500,
-    message || "Unable to delete this device."
+  // Legacy personal-shaped rows: household admins/members of the owner's household.
+  const { data: ownedHousehold } = await admin
+    .from("households")
+    .select("id")
+    .eq("owner_id", device.user_id)
+    .maybeSingle();
+
+  if (!ownedHousehold?.id) {
+    return false;
+  }
+
+  const membership = await loadHouseholdMembershipForUser(
+    admin,
+    userId,
+    ownedHousehold.id
   );
+  const role = membership.normalizedRole;
+  return role === "admin" || role === "member";
 }
 
 async function removeStoragePaths(
@@ -68,9 +105,7 @@ async function removeStoragePaths(
     return;
   }
 
-  const { error } = await admin.storage
-    .from(bucket)
-    .remove(unique);
+  const { error } = await admin.storage.from(bucket).remove(unique);
 
   if (error) {
     console.error(
@@ -80,9 +115,74 @@ async function removeStoragePaths(
   }
 }
 
+async function deleteByDeviceId(
+  admin: SupabaseClient,
+  table: string,
+  deviceId: string
+) {
+  const { error } = await admin
+    .from(table)
+    .delete()
+    .eq("device_id", deviceId);
+
+  if (!error) {
+    return;
+  }
+
+  const message = error.message?.toLowerCase() ?? "";
+  const missing =
+    error.code === "42P01" ||
+    error.code === "PGRST205" ||
+    message.includes("does not exist") ||
+    message.includes("could not find the table");
+
+  if (missing) {
+    return;
+  }
+
+  throw error;
+}
+
+async function nullDeviceIdReferences(
+  admin: SupabaseClient,
+  table: string,
+  column: string,
+  deviceId: string
+) {
+  const { error } = await admin
+    .from(table)
+    .update({ [column]: null })
+    .eq(column, deviceId);
+
+  if (!error) {
+    return;
+  }
+
+  const message = error.message?.toLowerCase() ?? "";
+  const missing =
+    error.code === "42P01" ||
+    error.code === "PGRST205" ||
+    message.includes("does not exist") ||
+    message.includes("could not find");
+
+  if (missing) {
+    return;
+  }
+
+  // Column may not exist on older schemas — ignore.
+  if (
+    message.includes("column") ||
+    error.code === "PGRST204"
+  ) {
+    return;
+  }
+
+  throw error;
+}
+
 /**
- * Delete a device via SECURITY DEFINER RPC (clears FK dependents),
- * then best-effort storage cleanup with the service role.
+ * Delete a device with service-role cascade after authz.
+ * Does not depend on optional SQL RPCs.
  */
 export async function deleteDeviceForViewer(
   deviceId: string
@@ -100,50 +200,56 @@ export async function deleteDeviceForViewer(
     );
   }
 
-  // Load storage paths before the row is removed.
   const admin = createAdminClient();
 
-  const [
-    imagesResult,
-    documentsResult,
-  ] = await Promise.all([
+  const { data: profile } = await admin
+    .from("profiles")
+    .select("is_admin")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  const isPlatformAdmin = profile?.is_admin === true;
+
+  const { data: device, error: deviceError } = await admin
+    .from("devices")
+    .select("id, user_id, household_id, device_name")
+    .eq("id", deviceId)
+    .maybeSingle();
+
+  if (deviceError) {
+    throw deviceError;
+  }
+
+  if (!device) {
+    throw new DeviceDeleteError(404, "Device not found.");
+  }
+
+  const deviceRow = device as DeviceRow;
+
+  const allowed = await userCanDeleteDevice(
+    admin,
+    user.id,
+    deviceRow,
+    isPlatformAdmin
+  );
+
+  if (!allowed) {
+    throw new DeviceDeleteError(
+      403,
+      "You do not have permission to delete this device."
+    );
+  }
+
+  const [imagesResult, documentsResult] = await Promise.all([
     admin
       .from("device_images")
       .select("image_url")
-      .eq("device_id", deviceId),
+      .eq("device_id", deviceRow.id),
     admin
       .from("device_documents")
       .select("file_path")
-      .eq("device_id", deviceId),
+      .eq("device_id", deviceRow.id),
   ]);
-
-  const { data, error } = await supabase.rpc(
-    "delete_vault_device",
-    { p_device_id: deviceId }
-  );
-
-  if (error) {
-    console.error(
-      "delete_vault_device RPC error:",
-      error.message,
-      error.code,
-      error.details
-    );
-    throw mapRpcError(error.message);
-  }
-
-  const payload = data as {
-    ok?: boolean;
-    id?: string;
-    device_name?: string | null;
-  } | null;
-
-  if (!payload?.ok || !payload.id) {
-    throw new DeviceDeleteError(
-      500,
-      "Device could not be deleted."
-    );
-  }
 
   await removeStoragePaths(
     admin,
@@ -161,8 +267,59 @@ export async function deleteDeviceForViewer(
     )
   );
 
+  // Detach optional FKs that may block DELETE.
+  await nullDeviceIdReferences(
+    admin,
+    "documents",
+    "device_id",
+    deviceRow.id
+  );
+  await nullDeviceIdReferences(
+    admin,
+    "discovered_devices",
+    "imported_device_id",
+    deviceRow.id
+  );
+  await nullDeviceIdReferences(
+    admin,
+    "device_monitor_events",
+    "device_id",
+    deviceRow.id
+  );
+
+  for (const table of [
+    "device_events",
+    "device_images",
+    "device_documents",
+    "maintenance_tasks",
+    "device_identity_confirmations",
+  ]) {
+    await deleteByDeviceId(admin, table, deviceRow.id);
+  }
+
+  const { data: deleted, error: deleteError } = await admin
+    .from("devices")
+    .delete()
+    .eq("id", deviceRow.id)
+    .select("id")
+    .maybeSingle();
+
+  if (deleteError) {
+    throw new DeviceDeleteError(
+      500,
+      deleteError.message || "Unable to delete this device."
+    );
+  }
+
+  if (!deleted) {
+    throw new DeviceDeleteError(
+      500,
+      "Device could not be deleted."
+    );
+  }
+
   return {
-    id: payload.id,
-    deviceName: payload.device_name ?? null,
+    id: deviceRow.id,
+    deviceName: deviceRow.device_name,
   };
 }
