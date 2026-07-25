@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "@/lib/supabase";
 import { usePermissions } from "@/hooks/usePermissions";
 import { Trash2 } from "lucide-react";
 
@@ -34,22 +33,19 @@ export default function DeleteDeviceButton({
     try {
       setDeleting(true);
 
-      // Delete by id only — RLS enforces household admin / owner access.
-      // Do not also filter household_id: older rows may still have a null
-      // household_id and that filter would match 0 rows with no error.
-      const { data, error } = await supabase
-        .from("devices")
-        .delete()
-        .eq("id", deviceId)
-        .select("id");
+      const response = await fetch(
+        `/api/devices/${encodeURIComponent(deviceId)}`,
+        { method: "DELETE" }
+      );
 
-      if (error) {
-        throw error;
-      }
+      const payload = (await response.json().catch(
+        () => null
+      )) as { error?: string } | null;
 
-      if (!data?.length) {
+      if (!response.ok) {
         throw new Error(
-          "You do not have permission to delete this device, or it was already removed."
+          payload?.error ||
+            "Unable to delete this device. Please try again."
         );
       }
 
@@ -61,7 +57,9 @@ export default function DeleteDeviceButton({
       );
 
       alert(
-        "Unable to delete this device. Please try again."
+        error instanceof Error
+          ? error.message
+          : "Unable to delete this device. Please try again."
       );
     } finally {
       setDeleting(false);

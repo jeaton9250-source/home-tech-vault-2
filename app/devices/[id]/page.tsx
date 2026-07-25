@@ -123,10 +123,6 @@ type DeviceImage = DeviceImageRow & {
   signedUrl: string;
 };
 
-type DocumentStorageRow = {
-  file_path: string;
-};
-
 type DeviceDetailTab =
   | "overview"
   | "network"
@@ -923,108 +919,21 @@ export default function DevicePage() {
         deviceId: device.id,
       });
 
-      const imagePaths =
-        images.map(
-          (image) =>
-            image.image_url
-        );
+      const response = await fetch(
+        `/api/devices/${encodeURIComponent(device.id)}`,
+        { method: "DELETE" }
+      );
 
-      if (
-        imagePaths.length > 0
-      ) {
-        const {
-          error:
-            imageStorageError,
-        } =
-          await supabase.storage
-            .from(
-              "device-images"
-            )
-            .remove(imagePaths);
+      const payload = (await response
+        .json()
+        .catch(() => null)) as {
+        error?: string;
+      } | null;
 
-        // Soft-fail: do not block device delete if storage RLS denies a
-        // cross-member path; DB row delete + policies are the source of truth.
-        if (imageStorageError) {
-          console.error(
-            "Unable to remove device images from storage:",
-            imageStorageError
-          );
-        }
-      }
-
-      const {
-        data: documentRows,
-        error:
-          documentLoadError,
-      } = await supabase
-        .from(
-          "device_documents"
-        )
-        .select("file_path")
-        .eq(
-          "device_id",
-          device.id
-        );
-
-      if (
-        documentLoadError
-      ) {
-        console.error(
-          "Unable to load device documents before deletion:",
-          documentLoadError
-        );
-      }
-
-      const documentPaths =
-        (
-          (documentRows ??
-            []) as DocumentStorageRow[]
-        ).map(
-          (document) =>
-            document.file_path
-        );
-
-      if (
-        documentPaths.length > 0
-      ) {
-        const {
-          error:
-            documentStorageError,
-        } =
-          await supabase.storage
-            .from(
-              "device-documents"
-            )
-            .remove(
-              documentPaths
-            );
-
-        if (documentStorageError) {
-          console.error(
-            "Unable to remove device documents from storage:",
-            documentStorageError
-          );
-        }
-      }
-
-      // Delete by id only — RLS enforces admin/owner. Avoid household_id
-      // filters that miss legacy rows with null household_id.
-      const {
-        data: deletedRows,
-        error: deleteError,
-      } = await supabase
-        .from("devices")
-        .delete()
-        .eq("id", device.id)
-        .select("id");
-
-      if (deleteError) {
-        throw deleteError;
-      }
-
-      if (!deletedRows?.length) {
+      if (!response.ok) {
         throw new Error(
-          "You do not have permission to delete this device, or it was already removed."
+          payload?.error ||
+            "Unable to delete this device."
         );
       }
 
