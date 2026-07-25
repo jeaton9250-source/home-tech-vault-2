@@ -7,6 +7,11 @@ import type { SeoFaqItem } from "@/components/seo/Faq";
 export type SeoLandingScreenshot = {
   title: string;
   caption: string;
+  /** Optional image under /public. When omitted, a placeholder is shown. */
+  src?: string;
+  alt?: string;
+  /** Span the full screenshots row (good for wide product shots). */
+  wide?: boolean;
 };
 
 export type SeoLandingBenefit = {
@@ -107,14 +112,22 @@ export const SEO_LANDING_PAGES: Record<
       {
         title: "Device directory",
         caption: "Searchable list of every device with room, category, and status.",
+        src: "/seo/screenshots/device-directory.png",
+        alt: "Home Tech Vault device directory showing Air Purifier, Apple TV 4K, and Canon Printer cards",
+        wide: true,
       },
       {
         title: "Device profile",
         caption: "One page for specs, photos, notes, and linked documents.",
+        src: "/seo/screenshots/device-profile.png",
+        alt: "Home Tech Vault device profile for an Air Purifier with health, warranty, documents, and photos",
+        wide: true,
       },
       {
         title: "Quick add",
         caption: "Add a new device in a calm form built for real households.",
+        src: "/seo/screenshots/quick-add.png",
+        alt: "Home Tech Vault Quick Add menu with options for device, document, maintenance task, and subscription",
       },
     ],
     featuresTitle: "Inventory features that stay useful",

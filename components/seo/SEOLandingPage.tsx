@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ImageIcon } from "lucide-react";
 
@@ -17,35 +18,61 @@ import { cn } from "@/lib/design-system/cn";
 import {
   breadcrumbsForLanding,
   type SeoLandingPageContent,
+  type SeoLandingScreenshot,
 } from "@/lib/seo/landingPages";
 
 type SEOLandingPageProps = {
   page: SeoLandingPageContent;
 };
 
-function ScreenshotPlaceholder({
+function ScreenshotCard({
   title,
   caption,
-}: {
-  title: string;
-  caption: string;
-}) {
+  src,
+  alt,
+  wide,
+}: SeoLandingScreenshot) {
   return (
-    <figure className="overflow-hidden border border-border-subtle bg-surface-card">
+    <figure
+      className={cn(
+        "overflow-hidden border border-border-subtle bg-surface-card",
+        wide && "md:col-span-3"
+      )}
+    >
       <div
         className={cn(
-          "flex aspect-[16/10] flex-col items-center justify-center gap-3",
-          "bg-[linear-gradient(160deg,var(--color-surface-raised)_0%,var(--color-surface-card)_55%,#EEF3F7_100%)]"
+          "relative",
+          wide ? "aspect-[21/9] sm:aspect-[24/9]" : "aspect-[16/10]",
+          !src &&
+            "flex flex-col items-center justify-center gap-3 bg-[linear-gradient(160deg,var(--color-surface-raised)_0%,var(--color-surface-card)_55%,#EEF3F7_100%)]"
         )}
-        aria-hidden
       >
-        <ImageIcon
-          size={28}
-          className="text-text-muted"
-        />
-        <span className="px-4 text-center text-sm font-medium text-text-muted">
-          Screenshot placeholder
-        </span>
+        {src ? (
+          <Image
+            src={src}
+            alt={alt ?? title}
+            fill
+            sizes={
+              wide
+                ? "(max-width: 768px) 100vw, 1120px"
+                : "(max-width: 768px) 100vw, 33vw"
+            }
+            className={cn(
+              wide ? "object-contain object-center bg-surface-raised" : "object-cover object-top"
+            )}
+          />
+        ) : (
+          <>
+            <ImageIcon
+              size={28}
+              className="text-text-muted"
+              aria-hidden
+            />
+            <span className="px-4 text-center text-sm font-medium text-text-muted">
+              Screenshot placeholder
+            </span>
+          </>
+        )}
       </div>
       <figcaption className="border-t border-border-subtle px-4 py-3">
         <p className="text-sm font-medium text-text-primary">
@@ -135,11 +162,7 @@ export default function SEOLandingPage({
             </h2>
             <div className="mt-8 grid gap-6 md:grid-cols-3">
               {page.screenshots.map((shot) => (
-                <ScreenshotPlaceholder
-                  key={shot.title}
-                  title={shot.title}
-                  caption={shot.caption}
-                />
+                <ScreenshotCard key={shot.title} {...shot} />
               ))}
             </div>
           </section>
