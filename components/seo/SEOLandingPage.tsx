@@ -35,7 +35,8 @@ function ScreenshotCard({
     <figure className="overflow-hidden border border-border-subtle bg-surface-card">
       <div
         className={cn(
-          "relative aspect-[16/10] bg-surface-raised",
+          // Taller than 16/10 so portrait app screenshots fit fully in a 3-col row.
+          "relative aspect-[4/5] bg-surface-raised",
           !src &&
             "flex flex-col items-center justify-center gap-3 bg-[linear-gradient(160deg,var(--color-surface-raised)_0%,var(--color-surface-card)_55%,#EEF3F7_100%)]"
         )}
@@ -48,7 +49,7 @@ function ScreenshotCard({
             // Serve the original PNG so UI text stays sharp (no optimizer soft resize).
             unoptimized
             sizes="(max-width: 768px) 100vw, 33vw"
-            className="object-cover object-top"
+            className="object-contain object-center p-2"
           />
         ) : (
           <>
