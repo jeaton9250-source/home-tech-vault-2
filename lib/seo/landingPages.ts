@@ -114,14 +114,12 @@ export const SEO_LANDING_PAGES: Record<
         caption: "Searchable list of every device with room, category, and status.",
         src: "/seo/screenshots/device-directory.png",
         alt: "Home Tech Vault device directory showing Air Purifier, Apple TV 4K, and Canon Printer cards",
-        wide: true,
       },
       {
         title: "Device profile",
         caption: "One page for specs, photos, notes, and linked documents.",
         src: "/seo/screenshots/device-profile.png",
         alt: "Home Tech Vault device profile for an Air Purifier with health, warranty, documents, and photos",
-        wide: true,
       },
       {
         title: "Quick add",

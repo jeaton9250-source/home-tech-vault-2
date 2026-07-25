@@ -30,19 +30,12 @@ function ScreenshotCard({
   caption,
   src,
   alt,
-  wide,
 }: SeoLandingScreenshot) {
   return (
-    <figure
-      className={cn(
-        "overflow-hidden border border-border-subtle bg-surface-card",
-        wide && "md:col-span-3"
-      )}
-    >
+    <figure className="overflow-hidden border border-border-subtle bg-surface-card">
       <div
         className={cn(
-          "relative",
-          wide ? "aspect-[21/9] sm:aspect-[24/9]" : "aspect-[16/10]",
+          "relative aspect-[16/10] bg-surface-raised",
           !src &&
             "flex flex-col items-center justify-center gap-3 bg-[linear-gradient(160deg,var(--color-surface-raised)_0%,var(--color-surface-card)_55%,#EEF3F7_100%)]"
         )}
@@ -52,14 +45,10 @@ function ScreenshotCard({
             src={src}
             alt={alt ?? title}
             fill
-            sizes={
-              wide
-                ? "(max-width: 768px) 100vw, 1120px"
-                : "(max-width: 768px) 100vw, 33vw"
-            }
-            className={cn(
-              wide ? "object-contain object-center bg-surface-raised" : "object-cover object-top"
-            )}
+            // Serve the original PNG so UI text stays sharp (no optimizer soft resize).
+            unoptimized
+            sizes="(max-width: 768px) 100vw, 33vw"
+            className="object-cover object-top"
           />
         ) : (
           <>
