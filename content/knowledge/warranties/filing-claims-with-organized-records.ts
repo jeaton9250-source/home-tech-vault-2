@@ -8,152 +8,124 @@ const article = {
   "description": "A claim walkthrough: what support asks for, how to prepare, and how a clean device record shortens the process.",
   "publishedAt": "2026-05-09",
   "updatedAt": "2026-05-09",
-  "heroCaption": "Placeholder hero: scene illustrating filing warranty claims with organized records.",
+  "heroCaption": "A claim walkthrough: what support asks for, how to prepare, and how a clean device record shortens the process.",
   "intro": [
-    "A claim walkthrough: what support asks for, how to prepare, and how a clean device record shortens the process \u2014 yet most homes only assemble those details after something goes wrong.",
-    "This guide shows a practical way to handle filing warranty claims with organized records with records you can find under stress, not another abandoned checklist.",
-    "You will define what to capture, where it lives, who can see it, and how to keep filing warranty claims with organized records current as gear and people change.",
-    "Home Tech Vault fits this guide because devices, documents, warranties, and household sharing can live together \u2014 so these habits become a living system instead of a weekend project that expires."
+    "A claim walkthrough: what support asks for, how to prepare, and how a clean device record shortens the process. Most homes only feel the gap when something breaks, goes missing, or a stranger on the phone asks for details nobody wrote down.",
+    "You will leave with a practical way to handle this that fits a real household — short enough to keep, specific enough to use under stress.",
+    "We will cover what to write down, where it should live, who can see it, and how to keep it current as gear and people change.",
+    "Home Tech Vault is useful here because devices, documents, warranties, and household sharing can live in one place — so this stays a living habit instead of a weekend project that quietly expires."
   ],
   "sections": [
     {
-      "id": "capture-coverage-on-day-one-for-filing-claims",
-      "heading": "Capture coverage on day one for filing claims",
+      "id": "open-serial-receipt-and-symptoms-first",
+      "heading": "Open serial receipt and symptoms first",
       "paragraphs": [
-        "Write the minimum fields that make filing warranty claims with organized records usable during a stressful call focusing on filing. Keep secrets for filing warranty claims with organized records in a password manager and store only pointers about records in shared notes. Update the same day the physical gear or policy changes. Even if a vendor app stores \u201ccapture coverage on day one for filing claims\u201d, keep a household-facing summary where the right people can find it.",
-        "For \u201cCapture coverage on day one for filing claims\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cCapture coverage on day one for filing claims\u201d, pick the one a tired adult can follow. If two adults share the house, name the primary editor. Even if a vendor app stores \u201ccapture coverage on day one for filing claims\u201d, keep a household-facing summary where the right people can find it.",
-        "Correct mismatches in \u201cCapture coverage on day one for filing claims\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cCapture coverage on day one for filing claims\u201d. Tag retired items instead of deleting history you may need later. Even if a vendor app stores \u201ccapture coverage on day one for filing claims\u201d, keep a household-facing summary where the right people can find it.",
-        "Add one house-specific example under Capture coverage on day one for filing claims. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201ccapture coverage on day one for filing claims\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “open serial receipt and symptoms first” using your rooms, people, and gear — not a generic internet checklist. Save proof of purchase the day it arrives, while email search still finds it. That sounds small until you are the person on the phone trying to remember it.",
+        "If two adults share the house, name who updates this so it is not ambient guilt. Date the last review even if nothing changed, so the record feels alive.",
+        "When “open serial receipt and symptoms first” is good enough to use tonight, stop polishing and move on. Write it while the thing is in your hands; memory gets creative after a week.",
+        "The first version of these warranty notes should be usable tonight, not impressive next year. Keep it next to the related device or document so you are not reconstructing it from a text thread later.",
+        "If nothing changed since last time, still jot the review date — it proves the record is alive."
       ]
     },
     {
-      "id": "store-proof-of-purchase-for-claims-organized",
-      "heading": "Store proof of purchase for claims organized",
+      "id": "photograph-the-failure-when-useful",
+      "heading": "Photograph the failure when useful",
       "paragraphs": [
-        "Name who updates filing warranty claims with organized records so the job is not ambient guilt especially for claims. When gear is replaced, close or retire the old filing warranty claims with organized records record tied to filing cleanly. If two adults share the house, name the primary editor. For secrets related to \u201cstore proof of purchase for claims organized\u201d, use a password manager and store only pointers in shared records.",
-        "For \u201cStore proof of purchase for claims organized\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cStore proof of purchase for claims organized\u201d, pick the one a tired adult can follow. Tag retired items instead of deleting history you may need later. For secrets related to \u201cstore proof of purchase for claims organized\u201d, use a password manager and store only pointers in shared records.",
-        "Correct mismatches in \u201cStore proof of purchase for claims organized\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cStore proof of purchase for claims organized\u201d. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. For secrets related to \u201cstore proof of purchase for claims organized\u201d, use a password manager and store only pointers in shared records.",
-        "Add one house-specific example under Store proof of purchase for claims organized. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cstore proof of purchase for claims organized\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “photograph the failure when useful” using your rooms, people, and gear — not a generic internet checklist. Write coverage end dates even if you are optimistic you will remember. If two people share the house, decide who owns the update so it does not float as ambient guilt.",
+        "Leave blanks when you are unsure — a visible gap beats a confident wrong answer. Keep notes short enough that you will open them again next month.",
+        "When “photograph the failure when useful” is good enough to use tonight, stop polishing and move on. The goal is calmer Tuesdays, not a museum-quality archive.",
+        "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked. That is the kind of detail that feels optional until the week you need it.",
+        "When the house and the notes disagree, believe the house and fix the notes the same day."
       ]
     },
     {
-      "id": "track-extended-plans-for-organized-records",
-      "heading": "Track extended plans for organized records",
+      "id": "write-a-short-timeline",
+      "heading": "Write a short timeline",
       "paragraphs": [
-        "Prefer one vault record over screenshots scattered across phones for filing warranty claims with organized records and organized. Export or snapshot filing warranty claims with organized records after major purchases or policy changes involving claims. Tag retired items instead of deleting history you may need later. Photograph labels for \u201ctrack extended plans for organized records\u201d only when characters are tiny; file the photo beside typed fields.",
-        "For \u201cTrack extended plans for organized records\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cTrack extended plans for organized records\u201d, pick the one a tired adult can follow. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. Photograph labels for \u201ctrack extended plans for organized records\u201d only when characters are tiny; file the photo beside typed fields.",
-        "Correct mismatches in \u201cTrack extended plans for organized records\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cTrack extended plans for organized records\u201d. Update the same day the physical gear or policy changes. Photograph labels for \u201ctrack extended plans for organized records\u201d only when characters are tiny; file the photo beside typed fields.",
-        "Add one house-specific example under Track extended plans for organized records. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201ctrack extended plans for organized records\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “write a short timeline” using your rooms, people, and gear — not a generic internet checklist. Manufacturer versus store versus card benefit — pick which door you will try first. That sounds small until you are the person on the phone trying to remember it.",
+        "Date the last review even if nothing changed, so the record feels alive. When the house and your notes disagree, trust the house and fix the notes the same day.",
+        "When “write a short timeline” is good enough to use tonight, stop polishing and move on. Write it while the thing is in your hands; memory gets creative after a week.",
+        "If only one person knows where the record is, you do not have a household system yet. Your future self will care more about clarity than completeness.",
+        "Share the location of this record with one other adult so it is not trapped on a single laptop."
       ]
     },
     {
-      "id": "sort-coverage-types-for-records",
-      "heading": "Sort coverage types for records",
+      "id": "know-where-to-file",
+      "heading": "Know where to file",
       "paragraphs": [
-        "Photograph labels only when typing would lose detail related to records in filing warranty claims with organized records. Teach household members where filing warranty claims with organized records lives so parallel trackers about organized die. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. Close the loop on \u201csort coverage types for records\u201d by naming the next action and the person responsible.",
-        "For \u201cSort coverage types for records\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cSort coverage types for records\u201d, pick the one a tired adult can follow. Update the same day the physical gear or policy changes. Close the loop on \u201csort coverage types for records\u201d by naming the next action and the person responsible.",
-        "Correct mismatches in \u201cSort coverage types for records\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cSort coverage types for records\u201d. If two adults share the house, name the primary editor. Close the loop on \u201csort coverage types for records\u201d by naming the next action and the person responsible.",
-        "Add one house-specific example under Sort coverage types for records. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201csort coverage types for records\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “know where to file” using your rooms, people, and gear — not a generic internet checklist. Extended plans need plan numbers beside the device, not in a forgotten PDF pile. If two people share the house, decide who owns the update so it does not float as ambient guilt.",
+        "Keep notes short enough that you will open them again next month. If two adults share the house, name who updates this so it is not ambient guilt.",
+        "When “know where to file” is good enough to use tonight, stop polishing and move on. The goal is calmer Tuesdays, not a museum-quality archive.",
+        "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate. If it takes more than a minute to find, the system is still too scattered.",
+        "Stop when it is useful. A short living note beats a long abandoned one."
       ]
     },
     {
-      "id": "prepare-claim-packets-for-filing",
-      "heading": "Prepare claim packets for filing",
+      "id": "track-ticket-numbers",
+      "heading": "Track ticket numbers",
       "paragraphs": [
-        "Date-stamp the last review of filing warranty claims with organized records even when nothing changed around filing. During service calls, pull filing warranty claims with organized records details for records before the technician arrives. Update the same day the physical gear or policy changes. Write \u201cprepare claim packets for filing\u201d as if a house guest with average tech confidence had to use it tonight.",
-        "For \u201cPrepare claim packets for filing\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cPrepare claim packets for filing\u201d, pick the one a tired adult can follow. If two adults share the house, name the primary editor. Write \u201cprepare claim packets for filing\u201d as if a house guest with average tech confidence had to use it tonight.",
-        "Correct mismatches in \u201cPrepare claim packets for filing\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cPrepare claim packets for filing\u201d. Tag retired items instead of deleting history you may need later. Write \u201cprepare claim packets for filing\u201d as if a house guest with average tech confidence had to use it tonight.",
-        "Add one house-specific example under Prepare claim packets for filing. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cprepare claim packets for filing\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “track ticket numbers” using your rooms, people, and gear — not a generic internet checklist. Before you call about a claim, open serial, receipt, and symptom notes together. That sounds small until you are the person on the phone trying to remember it.",
+        "When the house and your notes disagree, trust the house and fix the notes the same day. Leave blanks when you are unsure — a visible gap beats a confident wrong answer.",
+        "When “track ticket numbers” is good enough to use tonight, stop polishing and move on. Write it while the thing is in your hands; memory gets creative after a week.",
+        "When support asks for something you lack, add it immediately so the next call is shorter. Keep it next to the related device or document so you are not reconstructing it from a text thread later."
       ]
     },
     {
-      "id": "set-expiration-alerts-for-claims",
-      "heading": "Set expiration alerts for claims",
+      "id": "share-access-with-the-claim-owner",
+      "heading": "Share access with the claim owner",
       "paragraphs": [
-        "Link related documents next to the filing warranty claims with organized records entry for claims instead of a generic Downloads folder. For travel or sitters, share only the slice of filing warranty claims with organized records about filing they need. If two adults share the house, name the primary editor. Stale notes for \u201cset expiration alerts for claims\u201d create false confidence \u2014 worse than marking a field unknown.",
-        "For \u201cSet expiration alerts for claims\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cSet expiration alerts for claims\u201d, pick the one a tired adult can follow. Tag retired items instead of deleting history you may need later. Stale notes for \u201cset expiration alerts for claims\u201d create false confidence \u2014 worse than marking a field unknown.",
-        "Correct mismatches in \u201cSet expiration alerts for claims\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cSet expiration alerts for claims\u201d. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. Stale notes for \u201cset expiration alerts for claims\u201d create false confidence \u2014 worse than marking a field unknown.",
-        "Add one house-specific example under Set expiration alerts for claims. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cset expiration alerts for claims\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “share access with the claim owner” using your rooms, people, and gear — not a generic internet checklist. Gifts and hand-me-downs still deserve serials and whatever proof you can gather. If two people share the house, decide who owns the update so it does not float as ambient guilt.",
+        "If two adults share the house, name who updates this so it is not ambient guilt. Date the last review even if nothing changed, so the record feels alive.",
+        "When “share access with the claim owner” is good enough to use tonight, stop polishing and move on. The goal is calmer Tuesdays, not a museum-quality archive.",
+        "Trust the physical house over stale notes — then fix the notes the same day. That is the kind of detail that feels optional until the week you need it."
       ]
     },
     {
-      "id": "handle-gifts-and-used-gear-for-organized",
-      "heading": "Handle gifts and used gear for organized",
+      "id": "close-the-loop-after-resolution",
+      "heading": "Close the loop after resolution",
       "paragraphs": [
-        "If a vendor app already stores part of filing warranty claims with organized records, still keep a household-facing summary about organized. After holidays or moves, schedule a catch-up pass for filing warranty claims with organized records covering claims. Tag retired items instead of deleting history you may need later. Even if a vendor app stores \u201chandle gifts and used gear for organized\u201d, keep a household-facing summary where the right people can find it.",
-        "For \u201cHandle gifts and used gear for organized\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cHandle gifts and used gear for organized\u201d, pick the one a tired adult can follow. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. Even if a vendor app stores \u201chandle gifts and used gear for organized\u201d, keep a household-facing summary where the right people can find it.",
-        "Correct mismatches in \u201cHandle gifts and used gear for organized\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cHandle gifts and used gear for organized\u201d. Update the same day the physical gear or policy changes. Even if a vendor app stores \u201chandle gifts and used gear for organized\u201d, keep a household-facing summary where the right people can find it.",
-        "Add one house-specific example under Handle gifts and used gear for organized. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201chandle gifts and used gear for organized\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “close the loop after resolution” using your rooms, people, and gear — not a generic internet checklist. When coverage expires, mark it expired; do not delete the history. That sounds small until you are the person on the phone trying to remember it.",
+        "Leave blanks when you are unsure — a visible gap beats a confident wrong answer. Keep notes short enough that you will open them again next month.",
+        "When “close the loop after resolution” is good enough to use tonight, stop polishing and move on. Write it while the thing is in your hands; memory gets creative after a week."
       ]
     },
     {
-      "id": "avoid-duplicate-policies-for-records",
-      "heading": "Avoid duplicate policies for records",
+      "id": "improve-the-packet-for-next-time",
+      "heading": "Improve the packet for next time",
       "paragraphs": [
-        "Keep secrets for filing warranty claims with organized records in a password manager and store only pointers about records in shared notes. Mark unknown fields for organized visibly rather than inventing guesses about filing warranty claims with organized records. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. For secrets related to \u201cavoid duplicate policies for records\u201d, use a password manager and store only pointers in shared records.",
-        "For \u201cAvoid duplicate policies for records\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cAvoid duplicate policies for records\u201d, pick the one a tired adult can follow. Update the same day the physical gear or policy changes. For secrets related to \u201cavoid duplicate policies for records\u201d, use a password manager and store only pointers in shared records.",
-        "Correct mismatches in \u201cAvoid duplicate policies for records\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cAvoid duplicate policies for records\u201d. If two adults share the house, name the primary editor. For secrets related to \u201cavoid duplicate policies for records\u201d, use a password manager and store only pointers in shared records.",
-        "Add one house-specific example under Avoid duplicate policies for records. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cavoid duplicate policies for records\u201d, use a password manager and store only pointers in shared records."
-      ]
-    },
-    {
-      "id": "link-to-devices-for-filing",
-      "heading": "Link to devices for filing",
-      "paragraphs": [
-        "When gear is replaced, close or retire the old filing warranty claims with organized records record tied to filing cleanly. Connect filing warranty claims with organized records to device inventory so records notes do not float unattached. Update the same day the physical gear or policy changes. Photograph labels for \u201clink to devices for filing\u201d only when characters are tiny; file the photo beside typed fields.",
-        "For \u201cLink to devices for filing\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cLink to devices for filing\u201d, pick the one a tired adult can follow. If two adults share the house, name the primary editor. Photograph labels for \u201clink to devices for filing\u201d only when characters are tiny; file the photo beside typed fields.",
-        "Correct mismatches in \u201cLink to devices for filing\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cLink to devices for filing\u201d. Tag retired items instead of deleting history you may need later. Photograph labels for \u201clink to devices for filing\u201d only when characters are tiny; file the photo beside typed fields.",
-        "Add one house-specific example under Link to devices for filing. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201clink to devices for filing\u201d, use a password manager and store only pointers in shared records."
-      ]
-    },
-    {
-      "id": "review-renewals-deliberately-for-claims",
-      "heading": "Review renewals deliberately for claims",
-      "paragraphs": [
-        "Export or snapshot filing warranty claims with organized records after major purchases or policy changes involving claims. Use short free-text notes for quirks about filing that do not fit structured fields in filing warranty claims with organized records. If two adults share the house, name the primary editor. Close the loop on \u201creview renewals deliberately for claims\u201d by naming the next action and the person responsible.",
-        "For \u201cReview renewals deliberately for claims\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cReview renewals deliberately for claims\u201d, pick the one a tired adult can follow. Tag retired items instead of deleting history you may need later. Close the loop on \u201creview renewals deliberately for claims\u201d by naming the next action and the person responsible.",
-        "Correct mismatches in \u201cReview renewals deliberately for claims\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cReview renewals deliberately for claims\u201d. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. Close the loop on \u201creview renewals deliberately for claims\u201d by naming the next action and the person responsible.",
-        "Add one house-specific example under Review renewals deliberately for claims. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201creview renewals deliberately for claims\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “improve the packet for next time” using your rooms, people, and gear — not a generic internet checklist. Hang warranty notes on the device record so they are impossible to orphan. If two people share the house, decide who owns the update so it does not float as ambient guilt.",
+        "Date the last review even if nothing changed, so the record feels alive. When the house and your notes disagree, trust the house and fix the notes the same day.",
+        "When “improve the packet for next time” is good enough to use tonight, stop polishing and move on. The goal is calmer Tuesdays, not a museum-quality archive."
       ]
     }
   ],
   "faq": [
     {
-      "question": "How detailed should filing warranty claims with organized records be?",
-      "answer": "Detailed enough that a trusted adult can act without calling you. Skip decorative fields you will not maintain."
+      "question": "How perfect does this need to be?",
+      "answer": "Good enough to act under stress. Skip fields you will not maintain."
     },
     {
-      "question": "Where should we store filing warranty claims with organized records?",
-      "answer": "In one household vault with clear permissions \u2014 not in three apps and a group chat."
+      "question": "Where should the notes live?",
+      "answer": "In one household place with clear permissions — not scattered across apps and chats."
     },
     {
-      "question": "Who should edit filing warranty claims with organized records?",
-      "answer": "Name a primary editor, then grant viewers for people who only need to look."
+      "question": "Who should edit?",
+      "answer": "Name a primary editor, then give others view access as needed."
     },
     {
-      "question": "How often should we review filing warranty claims with organized records?",
-      "answer": "On unbox, gift, sale, move, and once a season for a short spot check."
+      "question": "What if details are missing?",
+      "answer": "Mark them unknown and schedule a catch-up. Visible gaps beat false confidence."
     },
     {
-      "question": "What if we are missing information?",
-      "answer": "Mark fields unknown and schedule a catch-up. Visible gaps beat false confidence."
+      "question": "How often should we review?",
+      "answer": "On unbox, gift, sale, move, and a short seasonal spot check."
     },
     {
       "question": "How does Home Tech Vault help?",
-      "answer": "It keeps filing warranty claims with organized records next to devices, documents, and household sharing so the system stays usable."
+      "answer": "It keeps devices, documents, and household sharing together so habits stick."
     }
   ],
   "internalLinks": [
-    {
-      "href": "/knowledge/devices/serial-numbers-and-why-they-matter",
-      "label": "Serial Numbers And Why They Matter",
-      "description": "Continue with this related Knowledge Center guide."
-    },
-    {
-      "href": "/knowledge/warranties/proof-of-purchase-for-electronics",
-      "label": "Proof Of Purchase For Electronics",
-      "description": "Continue with this related Knowledge Center guide."
-    },
     {
       "href": "/warranty-tracker",
       "label": "Warranty tracker",
@@ -175,7 +147,7 @@ const article = {
     "warranty claim checklist",
     "device support documentation"
   ],
-  "readingMinutes": 13
+  "readingMinutes": 7
 } satisfies Omit<KnowledgeArticle, "readingMinutes"> & {
   readingMinutes: number;
 };

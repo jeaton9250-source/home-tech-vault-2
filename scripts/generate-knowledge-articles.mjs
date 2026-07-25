@@ -1,44 +1,17 @@
 #!/usr/bin/env node
 /**
- * Regenerates Knowledge Center article modules from knowledge-defs.json
+ * Regenerates Knowledge Center article modules from personal seeds.
  * Usage: node scripts/generate-knowledge-articles.mjs
  */
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import seeds from "./knowledge-personal-seeds.mjs";
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, "..");
-const defs = JSON.parse(
-  fs.readFileSync(path.join(__dirname, "knowledge-defs.json"), "utf8")
-);
 const outRoot = path.join(root, "content", "knowledge");
-
-const HABITS = [
-  "Update the same day the physical gear or policy changes.",
-  "Prefer typed fields plus one label photo over unmarked screenshot piles.",
-  "If two adults share the house, name the primary editor.",
-  "Keep notes short enough that you will maintain them next month.",
-  "Tag retired items instead of deleting history you may need later.",
-  "Store a copy reachable if your home network is offline.",
-  "Attach the habit to something you already do — bill pay, filter changes, or seasonal cleaning.",
-  "When support asks for a missing detail, add it immediately so the next call is shorter.",
-];
-
-const DEEP = [
-  (t) =>
-    `Write “${t}” as if a house guest with average tech confidence had to use it tonight.`,
-  (t) =>
-    `Stale notes for “${t}” create false confidence — worse than marking a field unknown.`,
-  (t) =>
-    `Even if a vendor app stores “${t}”, keep a household-facing summary where the right people can find it.`,
-  (t) =>
-    `For secrets related to “${t}”, use a password manager and store only pointers in shared records.`,
-  (t) =>
-    `Photograph labels for “${t}” only when characters are tiny; file the photo beside typed fields.`,
-  (t) =>
-    `Close the loop on “${t}” by naming the next action and the person responsible.`,
-];
 
 function slugify(h) {
   return h
@@ -48,8 +21,9 @@ function slugify(h) {
 }
 
 function sent(s) {
-  let t = s.trim();
-  if (!t.endsWith(".")) t += ".";
+  let t = String(s).trim();
+  if (!t) return "";
+  if (!/[.!?]$/.test(t)) t += ".";
   if (t[0] && t[0] === t[0].toLowerCase()) {
     t = t[0].toUpperCase() + t.slice(1);
   }
@@ -63,39 +37,123 @@ function wordCount(parts) {
 function linkSet(cat) {
   const map = {
     devices: [
-      ["/device-inventory", "Device inventory", "Build a living device list in Home Tech Vault."],
-      ["/warranty-tracker", "Warranty tracker", "Attach coverage dates to each device."],
-      ["/home-tech-inventory", "Home tech inventory", "See the broader inventory approach."],
+      [
+        "/device-inventory",
+        "Device inventory",
+        "Keep your living device list in one place.",
+      ],
+      [
+        "/warranty-tracker",
+        "Warranty tracker",
+        "Hang coverage dates on each device.",
+      ],
+      [
+        "/home-tech-inventory",
+        "Home tech inventory",
+        "See the broader inventory approach.",
+      ],
     ],
     networking: [
-      ["/network-documentation", "Network documentation", "Keep router and Wi-Fi notes in one place."],
-      ["/device-inventory", "Device inventory", "List networking gear beside other devices."],
-      ["/knowledge/networking/documenting-your-home-network", "Document your network", "Practical network notebook method."],
+      [
+        "/network-documentation",
+        "Network documentation",
+        "Keep router and Wi-Fi notes together.",
+      ],
+      [
+        "/device-inventory",
+        "Device inventory",
+        "List networking gear beside everything else.",
+      ],
+      [
+        "/knowledge/networking/documenting-your-home-network",
+        "Document your network",
+        "A practical home network notebook.",
+      ],
     ],
     "smart-home": [
-      ["/smart-home-organizer", "Smart home organizer", "Organize connected gear above vendor apps."],
-      ["/device-inventory", "Device inventory", "Inventory hubs, sensors, and speakers."],
-      ["/network-documentation", "Network documentation", "Smart homes depend on clear network notes."],
+      [
+        "/smart-home-organizer",
+        "Smart home organizer",
+        "Organize connected gear above vendor apps.",
+      ],
+      [
+        "/device-inventory",
+        "Device inventory",
+        "Inventory hubs, sensors, and speakers.",
+      ],
+      [
+        "/network-documentation",
+        "Network documentation",
+        "Smart homes still need clear network notes.",
+      ],
     ],
     security: [
-      ["/digital-home-vault", "Digital home vault", "Keep private household records organized."],
-      ["/home-document-organizer", "Document organizer", "Store proofs and photos with context."],
-      ["/device-inventory", "Device inventory", "Insurance-ready device lists start here."],
+      [
+        "/digital-home-vault",
+        "Digital home vault",
+        "Keep private household records organized.",
+      ],
+      [
+        "/home-document-organizer",
+        "Document organizer",
+        "Store proofs and photos with context.",
+      ],
+      [
+        "/device-inventory",
+        "Device inventory",
+        "Insurance-ready device lists start here.",
+      ],
     ],
     warranties: [
-      ["/warranty-tracker", "Warranty tracker", "Track coverage dates and documents."],
-      ["/device-inventory", "Device inventory", "Warranties belong on device records."],
-      ["/home-document-organizer", "Document organizer", "Keep receipts findable."],
+      [
+        "/warranty-tracker",
+        "Warranty tracker",
+        "Track coverage dates and documents.",
+      ],
+      [
+        "/device-inventory",
+        "Device inventory",
+        "Warranties belong on device records.",
+      ],
+      [
+        "/home-document-organizer",
+        "Document organizer",
+        "Keep receipts findable.",
+      ],
     ],
     maintenance: [
-      ["/home-tech-checklist", "Home tech checklist", "Seasonal and routine tech checklists."],
-      ["/device-inventory", "Device inventory", "Hang maintenance notes on device records."],
-      ["/knowledge/maintenance/seasonal-home-tech-maintenance", "Seasonal maintenance", "Spring and fall tech checkups."],
+      [
+        "/home-tech-checklist",
+        "Home tech checklist",
+        "Seasonal and routine tech checklists.",
+      ],
+      [
+        "/device-inventory",
+        "Device inventory",
+        "Hang maintenance notes on device records.",
+      ],
+      [
+        "/knowledge/maintenance/seasonal-home-tech-maintenance",
+        "Seasonal maintenance",
+        "Spring and fall tech checkups.",
+      ],
     ],
     "buying-guides": [
-      ["/home-tech-checklist", "Home tech checklist", "Capture constraints before you buy."],
-      ["/device-inventory", "Device inventory", "Add new gear the day it arrives."],
-      ["/network-documentation", "Network documentation", "Buy gear that fits your network."],
+      [
+        "/home-tech-checklist",
+        "Home tech checklist",
+        "Capture constraints before you buy.",
+      ],
+      [
+        "/device-inventory",
+        "Device inventory",
+        "Add new gear the day it arrives.",
+      ],
+      [
+        "/network-documentation",
+        "Network documentation",
+        "Buy gear that fits your network.",
+      ],
     ],
   };
   return map[cat].map(([href, label, description]) => ({
@@ -105,37 +163,42 @@ function linkSet(cat) {
   }));
 }
 
-function buildArticle(d) {
-  const tips = d.pipes.map((pipe) => {
-    const parts = pipe
-      .split("|")
-      .map((x) => sent(x))
-      .filter(Boolean);
-    while (parts.length < 6) {
-      parts.push(
-        sent(
-          "Keep this note current when the related gear or paperwork changes"
-        )
-      );
-    }
-    return parts.slice(0, 6);
-  });
+const BRIDGE = [
+  "That sounds small until you are the person on the phone trying to remember it.",
+  "You do not need a perfect system — just one your household will actually open again.",
+  "Write it while the thing is in your hands; memory gets creative after a week.",
+  "If two people share the house, decide who owns the update so it does not float as ambient guilt.",
+  "Leave blanks when you are unsure. A visible gap beats a confident wrong answer.",
+  "The goal is calmer Tuesdays, not a museum-quality archive.",
+];
 
-  const sections = d.headings.map((heading, hi) => {
-    const facts = tips[hi];
-    const paragraphs = [];
-    for (let i = 0; i < 6; i += 2) {
+function weaveTips(tips, sectionIndex) {
+  const clean = tips.map(sent).filter(Boolean);
+  const paragraphs = [];
+
+  for (let i = 0; i < clean.length; i += 2) {
+    const a = clean[i];
+    const b = clean[i + 1];
+    const bridge = BRIDGE[(sectionIndex * 3 + paragraphs.length) % BRIDGE.length];
+    // Only add a bridge on alternating paragraphs so the voice stays natural
+    if (b) {
       paragraphs.push(
-        `${facts[i]} ${facts[i + 1]} ${HABITS[(hi * 10 + i) % HABITS.length]} ${DEEP[(hi + 2) % DEEP.length](heading.toLowerCase())}`
+        paragraphs.length % 2 === 0 ? `${a} ${b} ${bridge}` : `${a} ${b}`
       );
+    } else {
+      paragraphs.push(`${a} ${bridge}`);
     }
-    while (paragraphs.length < 4) {
-      paragraphs.push(
-        `${sent(`Add one house-specific example under ${heading}`)} ${sent("If nothing changed since last review still write the review date")} ${HABITS[paragraphs.length % HABITS.length]} ${DEEP[paragraphs.length % DEEP.length](heading.toLowerCase())}`
-      );
-    }
-    return { id: slugify(heading), heading, paragraphs };
-  });
+  }
+
+  return paragraphs;
+}
+
+function buildArticle(d) {
+  const sections = d.sections.map((section, hi) => ({
+    id: slugify(section.heading),
+    heading: section.heading,
+    paragraphs: weaveTips(section.tips, hi),
+  }));
 
   const article = {
     slug: d.slug,
@@ -146,13 +209,16 @@ function buildArticle(d) {
     updatedAt: d.publishedAt,
     heroCaption: d.heroCaption,
     intro: [
-      d.situation,
-      d.promise,
-      d.scope,
-      "Home Tech Vault fits this guide because devices, documents, warranties, and household sharing can live together — so these habits become a living system instead of a weekend project that expires.",
+      sent(d.situation),
+      sent(d.promise),
+      sent(d.scope),
+      "Home Tech Vault is useful here because devices, documents, warranties, and household sharing can live in one place — so this stays a living habit instead of a weekend project that quietly expires.",
     ],
     sections,
-    faq: d.faqs.map(([question, answer]) => ({ question, answer })),
+    faq: d.faqs.map(([question, answer]) => ({
+      question,
+      answer: sent(answer),
+    })),
     internalLinks: linkSet(d.category),
     keywords: d.keywords,
     readingMinutes: 1,
@@ -166,19 +232,47 @@ function buildArticle(d) {
     ...a.faq.flatMap((f) => [f.question, f.answer]),
   ];
 
+  const asides = (d.asides || []).map(sent).filter(Boolean);
   let count = wordCount(collect(article));
+
+  // One personal aside per section — expand slightly so articles stay substantial
+  asides.slice(0, article.sections.length).forEach((aside, i) => {
+    const section = article.sections[i];
+    const extras = [
+      "Keep it next to the related device or document so you are not reconstructing it from a text thread later.",
+      "That is the kind of detail that feels optional until the week you need it.",
+      "Your future self will care more about clarity than completeness.",
+      "If it takes more than a minute to find, the system is still too scattered.",
+    ];
+    section.paragraphs.push(`${aside} ${extras[i % extras.length]}`);
+    count = wordCount(collect(article));
+  });
+
+  const closers = [
+    "If nothing changed since last time, still jot the review date — it proves the record is alive.",
+    "When the house and the notes disagree, believe the house and fix the notes the same day.",
+    "Share the location of this record with one other adult so it is not trapped on a single laptop.",
+    "Stop when it is useful. A short living note beats a long abandoned one.",
+  ];
   let n = 0;
-  while (count < 2050 && n < 80) {
-    const section = article.sections[n % article.sections.length];
-    const angle = d.pads[n % d.pads.length];
+  while (count < 1400 && n < article.sections.length) {
+    article.sections[n].paragraphs.push(closers[n % closers.length]);
+    count = wordCount(collect(article));
+    n += 1;
+  }
+
+  // Final gentle fill with section-specific reminders (not slogan spam)
+  n = 0;
+  while (count < 1400 && n < article.sections.length) {
+    const section = article.sections[n];
     section.paragraphs.push(
-      `${angle} Apply that standard to “${section.heading}” while the related gear, paperwork, or account screen is in front of you. If the artifact disagrees with your notes, trust what you are holding and correct the record immediately. Households that postpone corrections accumulate silent errors that surface during outages, claims, travel, or handoffs to a house sitter. A two-minute fix today prevents a long reconstruction later. Keep Home Tech Vault open while you walk the house so updates land in the same place you will search under stress.`
+      `Revisit “${section.heading.toLowerCase()}” only to change what is true today — not to rebuild the whole section from scratch.`
     );
     count = wordCount(collect(article));
     n += 1;
   }
 
-  article.readingMinutes = Math.max(8, Math.round(count / 220));
+  article.readingMinutes = Math.max(7, Math.round(count / 220));
   return { article, count };
 }
 
@@ -200,20 +294,38 @@ export default article as KnowledgeArticle;
 `;
 }
 
+if (!Array.isArray(seeds) || seeds.length !== 50) {
+  throw new Error(
+    `Expected 50 personal seeds, got ${Array.isArray(seeds) ? seeds.length : typeof seeds}`
+  );
+}
+
 const results = [];
-for (const d of defs) {
+for (const d of seeds) {
   const { article, count } = buildArticle(d);
-  if (count < 2000) {
-    throw new Error(`${article.slug} has ${count} words`);
+  if (count < 1100) {
+    throw new Error(`${article.slug} has only ${count} words`);
   }
   const dir = path.join(outRoot, article.category);
   fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(
-    path.join(dir, `${article.slug}.ts`),
-    serialize(article)
-  );
+  fs.writeFileSync(path.join(dir, `${article.slug}.ts`), serialize(article));
   results.push({ slug: article.slug, count });
 }
+
+// Keep defs in sync for anyone inspecting the JSON source of truth
+fs.writeFileSync(
+  path.join(__dirname, "knowledge-defs.json"),
+  JSON.stringify(
+    seeds.map((d) => ({
+      ...d,
+      headings: d.sections.map((s) => s.heading),
+      pipes: d.sections.map((s) => s.tips.join("|")),
+      pads: d.asides || [],
+    })),
+    null,
+    2
+  )
+);
 
 console.log(`Generated ${results.length} articles`);
 console.log(

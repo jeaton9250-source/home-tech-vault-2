@@ -8,152 +8,122 @@ const article = {
   "description": "Measurements, network constraints, and household needs to record before checkout so the right device arrives once.",
   "publishedAt": "2026-06-01",
   "updatedAt": "2026-06-01",
-  "heroCaption": "Placeholder hero: scene illustrating what to capture before you buy home tech.",
+  "heroCaption": "Measurements, network constraints, and household needs to record before checkout so the right device arrives once.",
   "intro": [
-    "Measurements, network constraints, and household needs to record before checkout so the right device arrives once \u2014 yet most homes only assemble those details after something goes wrong.",
-    "This guide shows a practical way to handle what to capture before you buy home tech with records you can find under stress, not another abandoned checklist.",
-    "You will define what to capture, where it lives, who can see it, and how to keep what to capture before you buy home tech current as gear and people change.",
-    "Home Tech Vault fits this guide because devices, documents, warranties, and household sharing can live together \u2014 so these habits become a living system instead of a weekend project that expires."
+    "Measurements, network constraints, and household needs to record before checkout so the right device arrives once. Most homes only feel the gap when something breaks, goes missing, or a stranger on the phone asks for details nobody wrote down.",
+    "You will leave with a practical way to handle this that fits a real household — short enough to keep, specific enough to use under stress.",
+    "We will cover what to write down, where it should live, who can see it, and how to keep it current as gear and people change.",
+    "Home Tech Vault is useful here because devices, documents, warranties, and household sharing can live in one place — so this stays a living habit instead of a weekend project that quietly expires."
   ],
   "sections": [
     {
-      "id": "capture-constraints-first-for-capture-before",
-      "heading": "Capture constraints first for capture before",
+      "id": "measure-the-space-before-you-browse",
+      "heading": "Measure the space before you browse",
       "paragraphs": [
-        "Write the minimum fields that make what to capture before you buy home tech usable during a stressful call focusing on capture. Keep secrets for what to capture before you buy home tech in a password manager and store only pointers about before in shared notes. Update the same day the physical gear or policy changes. Even if a vendor app stores \u201ccapture constraints first for capture before\u201d, keep a household-facing summary where the right people can find it.",
-        "For \u201cCapture constraints first for capture before\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cCapture constraints first for capture before\u201d, pick the one a tired adult can follow. If two adults share the house, name the primary editor. Even if a vendor app stores \u201ccapture constraints first for capture before\u201d, keep a household-facing summary where the right people can find it.",
-        "Correct mismatches in \u201cCapture constraints first for capture before\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cCapture constraints first for capture before\u201d. Tag retired items instead of deleting history you may need later. Even if a vendor app stores \u201ccapture constraints first for capture before\u201d, keep a household-facing summary where the right people can find it.",
-        "Add one house-specific example under Capture constraints first for capture before. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201ccapture constraints first for capture before\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “measure the space before you browse” using your rooms, people, and gear — not a generic internet checklist. Measure the shelf and check the outlet before the product page talks you into it. That sounds small until you are the person on the phone trying to remember it.",
+        "If two adults share the house, name who updates this so it is not ambient guilt. Date the last review even if nothing changed, so the record feels alive.",
+        "When “measure the space before you browse” is good enough to use tonight, stop polishing and move on. Write it while the thing is in your hands; memory gets creative after a week.",
+        "The first version of these buying notes should be usable tonight, not impressive next year. Keep it next to the related device or document so you are not reconstructing it from a text thread later.",
+        "If nothing changed since last time, still jot the review date — it proves the record is alive."
       ]
     },
     {
-      "id": "score-real-household-fit-for-before-buy",
-      "heading": "Score real household fit for before buy",
+      "id": "write-network-constraints-you-already-know",
+      "heading": "Write network constraints you already know",
       "paragraphs": [
-        "Name who updates what to capture before you buy home tech so the job is not ambient guilt especially for before. When gear is replaced, close or retire the old what to capture before you buy home tech record tied to buy cleanly. If two adults share the house, name the primary editor. For secrets related to \u201cscore real household fit for before buy\u201d, use a password manager and store only pointers in shared records.",
-        "For \u201cScore real household fit for before buy\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cScore real household fit for before buy\u201d, pick the one a tired adult can follow. Tag retired items instead of deleting history you may need later. For secrets related to \u201cscore real household fit for before buy\u201d, use a password manager and store only pointers in shared records.",
-        "Correct mismatches in \u201cScore real household fit for before buy\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cScore real household fit for before buy\u201d. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. For secrets related to \u201cscore real household fit for before buy\u201d, use a password manager and store only pointers in shared records.",
-        "Add one house-specific example under Score real household fit for before buy. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cscore real household fit for before buy\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “write network constraints you already know” using your rooms, people, and gear — not a generic internet checklist. Buy for the Wi-Fi and ports you have, not the ones in the marketing photo. If two people share the house, decide who owns the update so it does not float as ambient guilt.",
+        "Leave blanks when you are unsure — a visible gap beats a confident wrong answer. Keep notes short enough that you will open them again next month.",
+        "When “write network constraints you already know” is good enough to use tonight, stop polishing and move on. The goal is calmer Tuesdays, not a museum-quality archive.",
+        "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked. That is the kind of detail that feels optional until the week you need it.",
+        "When the house and the notes disagree, believe the house and fix the notes the same day."
       ]
     },
     {
-      "id": "document-after-purchase-for-buy",
-      "heading": "Document after purchase for buy",
+      "id": "list-who-has-to-live-with-it",
+      "heading": "List who has to live with it",
       "paragraphs": [
-        "Prefer one vault record over screenshots scattered across phones for what to capture before you buy home tech and buy. Export or snapshot what to capture before you buy home tech after major purchases or policy changes involving capture. Tag retired items instead of deleting history you may need later. Photograph labels for \u201cdocument after purchase for buy\u201d only when characters are tiny; file the photo beside typed fields.",
-        "For \u201cDocument after purchase for buy\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cDocument after purchase for buy\u201d, pick the one a tired adult can follow. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. Photograph labels for \u201cdocument after purchase for buy\u201d only when characters are tiny; file the photo beside typed fields.",
-        "Correct mismatches in \u201cDocument after purchase for buy\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cDocument after purchase for buy\u201d. Update the same day the physical gear or policy changes. Photograph labels for \u201cdocument after purchase for buy\u201d only when characters are tiny; file the photo beside typed fields.",
-        "Add one house-specific example under Document after purchase for buy. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cdocument after purchase for buy\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “list who has to live with it” using your rooms, people, and gear — not a generic internet checklist. Write who will own the account and the warranty in a shared household. That sounds small until you are the person on the phone trying to remember it.",
+        "Date the last review even if nothing changed, so the record feels alive. When the house and your notes disagree, trust the house and fix the notes the same day.",
+        "When “list who has to live with it” is good enough to use tonight, stop polishing and move on. Write it while the thing is in your hands; memory gets creative after a week.",
+        "If only one person knows where the record is, you do not have a household system yet. Your future self will care more about clarity than completeness."
       ]
     },
     {
-      "id": "handle-gifts-and-returns-for-capture",
-      "heading": "Handle gifts and returns for capture",
+      "id": "note-power-ports-and-cable-realities",
+      "heading": "Note power ports and cable realities",
       "paragraphs": [
-        "Photograph labels only when typing would lose detail related to capture in what to capture before you buy home tech. Teach household members where what to capture before you buy home tech lives so parallel trackers about before die. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. Close the loop on \u201chandle gifts and returns for capture\u201d by naming the next action and the person responsible.",
-        "For \u201cHandle gifts and returns for capture\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cHandle gifts and returns for capture\u201d, pick the one a tired adult can follow. Update the same day the physical gear or policy changes. Close the loop on \u201chandle gifts and returns for capture\u201d by naming the next action and the person responsible.",
-        "Correct mismatches in \u201cHandle gifts and returns for capture\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cHandle gifts and returns for capture\u201d. If two adults share the house, name the primary editor. Close the loop on \u201chandle gifts and returns for capture\u201d by naming the next action and the person responsible.",
-        "Add one house-specific example under Handle gifts and returns for capture. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201chandle gifts and returns for capture\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “note power ports and cable realities” using your rooms, people, and gear — not a generic internet checklist. If it is used or refurbished, verify reset status and serial before you pay. If two people share the house, decide who owns the update so it does not float as ambient guilt.",
+        "Keep notes short enough that you will open them again next month. If two adults share the house, name who updates this so it is not ambient guilt.",
+        "When “note power ports and cable realities” is good enough to use tonight, stop polishing and move on. The goal is calmer Tuesdays, not a museum-quality archive.",
+        "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate. If it takes more than a minute to find, the system is still too scattered."
       ]
     },
     {
-      "id": "match-network-reality-for-before",
-      "heading": "Match network reality for before",
+      "id": "capture-return-and-warranty-expectations",
+      "heading": "Capture return and warranty expectations",
       "paragraphs": [
-        "Date-stamp the last review of what to capture before you buy home tech even when nothing changed around before. During service calls, pull what to capture before you buy home tech details for buy before the technician arrives. Update the same day the physical gear or policy changes. Write \u201cmatch network reality for before\u201d as if a house guest with average tech confidence had to use it tonight.",
-        "For \u201cMatch network reality for before\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cMatch network reality for before\u201d, pick the one a tired adult can follow. If two adults share the house, name the primary editor. Write \u201cmatch network reality for before\u201d as if a house guest with average tech confidence had to use it tonight.",
-        "Correct mismatches in \u201cMatch network reality for before\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cMatch network reality for before\u201d. Tag retired items instead of deleting history you may need later. Write \u201cmatch network reality for before\u201d as if a house guest with average tech confidence had to use it tonight.",
-        "Add one house-specific example under Match network reality for before. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cmatch network reality for before\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “capture return and warranty expectations” using your rooms, people, and gear — not a generic internet checklist. Unbox into your records the same day — serials vanish with packaging. That sounds small until you are the person on the phone trying to remember it.",
+        "When the house and your notes disagree, trust the house and fix the notes the same day. Leave blanks when you are unsure — a visible gap beats a confident wrong answer.",
+        "When “capture return and warranty expectations” is good enough to use tonight, stop polishing and move on. Write it while the thing is in your hands; memory gets creative after a week.",
+        "When support asks for something you lack, add it immediately so the next call is shorter. Keep it next to the related device or document so you are not reconstructing it from a text thread later."
       ]
     },
     {
-      "id": "vet-used-gear-for-buy",
-      "heading": "Vet used gear for buy",
+      "id": "compare-against-what-you-own",
+      "heading": "Compare against what you own",
       "paragraphs": [
-        "Link related documents next to the what to capture before you buy home tech entry for buy instead of a generic Downloads folder. For travel or sitters, share only the slice of what to capture before you buy home tech about capture they need. If two adults share the house, name the primary editor. Stale notes for \u201cvet used gear for buy\u201d create false confidence \u2014 worse than marking a field unknown.",
-        "For \u201cVet used gear for buy\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cVet used gear for buy\u201d, pick the one a tired adult can follow. Tag retired items instead of deleting history you may need later. Stale notes for \u201cvet used gear for buy\u201d create false confidence \u2014 worse than marking a field unknown.",
-        "Correct mismatches in \u201cVet used gear for buy\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cVet used gear for buy\u201d. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. Stale notes for \u201cvet used gear for buy\u201d create false confidence \u2014 worse than marking a field unknown.",
-        "Add one house-specific example under Vet used gear for buy. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cvet used gear for buy\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “compare against what you own” using your rooms, people, and gear — not a generic internet checklist. Keep gift receipts and return windows where calm-you can find them. If two people share the house, decide who owns the update so it does not float as ambient guilt.",
+        "If two adults share the house, name who updates this so it is not ambient guilt. Date the last review even if nothing changed, so the record feels alive.",
+        "When “compare against what you own” is good enough to use tonight, stop polishing and move on. The goal is calmer Tuesdays, not a museum-quality archive.",
+        "Trust the physical house over stale notes — then fix the notes the same day. That is the kind of detail that feels optional until the week you need it."
       ]
     },
     {
-      "id": "align-shared-ownership-for-capture",
-      "heading": "Align shared ownership for capture",
+      "id": "decide-account-ownership-up-front",
+      "heading": "Decide account ownership up front",
       "paragraphs": [
-        "If a vendor app already stores part of what to capture before you buy home tech, still keep a household-facing summary about capture. After holidays or moves, schedule a catch-up pass for what to capture before you buy home tech covering before. Tag retired items instead of deleting history you may need later. Even if a vendor app stores \u201calign shared ownership for capture\u201d, keep a household-facing summary where the right people can find it.",
-        "For \u201cAlign shared ownership for capture\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cAlign shared ownership for capture\u201d, pick the one a tired adult can follow. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. Even if a vendor app stores \u201calign shared ownership for capture\u201d, keep a household-facing summary where the right people can find it.",
-        "Correct mismatches in \u201cAlign shared ownership for capture\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cAlign shared ownership for capture\u201d. Update the same day the physical gear or policy changes. Even if a vendor app stores \u201calign shared ownership for capture\u201d, keep a household-facing summary where the right people can find it.",
-        "Add one house-specific example under Align shared ownership for capture. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201calign shared ownership for capture\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “decide account ownership up front” using your rooms, people, and gear — not a generic internet checklist. Score options against real rooms and real people, not feature checklists alone. That sounds small until you are the person on the phone trying to remember it.",
+        "Leave blanks when you are unsure — a visible gap beats a confident wrong answer. Keep notes short enough that you will open them again next month.",
+        "When “decide account ownership up front” is good enough to use tonight, stop polishing and move on. Write it while the thing is in your hands; memory gets creative after a week."
       ]
     },
     {
-      "id": "weigh-repair-vs-upgrade-for-before",
-      "heading": "Weigh repair vs upgrade for before",
+      "id": "save-the-shortlist-where-checkout-cannot-ignore-it",
+      "heading": "Save the shortlist where checkout cannot ignore it",
       "paragraphs": [
-        "Keep secrets for what to capture before you buy home tech in a password manager and store only pointers about before in shared notes. Mark unknown fields for buy visibly rather than inventing guesses about what to capture before you buy home tech. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. For secrets related to \u201cweigh repair vs upgrade for before\u201d, use a password manager and store only pointers in shared records.",
-        "For \u201cWeigh repair vs upgrade for before\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cWeigh repair vs upgrade for before\u201d, pick the one a tired adult can follow. Update the same day the physical gear or policy changes. For secrets related to \u201cweigh repair vs upgrade for before\u201d, use a password manager and store only pointers in shared records.",
-        "Correct mismatches in \u201cWeigh repair vs upgrade for before\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cWeigh repair vs upgrade for before\u201d. If two adults share the house, name the primary editor. For secrets related to \u201cweigh repair vs upgrade for before\u201d, use a password manager and store only pointers in shared records.",
-        "Add one house-specific example under Weigh repair vs upgrade for before. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cweigh repair vs upgrade for before\u201d, use a password manager and store only pointers in shared records."
-      ]
-    },
-    {
-      "id": "avoid-duplicate-accounts-for-buy",
-      "heading": "Avoid duplicate accounts for buy",
-      "paragraphs": [
-        "When gear is replaced, close or retire the old what to capture before you buy home tech record tied to buy cleanly. Connect what to capture before you buy home tech to device inventory so capture notes do not float unattached. Update the same day the physical gear or policy changes. Photograph labels for \u201cavoid duplicate accounts for buy\u201d only when characters are tiny; file the photo beside typed fields.",
-        "For \u201cAvoid duplicate accounts for buy\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cAvoid duplicate accounts for buy\u201d, pick the one a tired adult can follow. If two adults share the house, name the primary editor. Photograph labels for \u201cavoid duplicate accounts for buy\u201d only when characters are tiny; file the photo beside typed fields.",
-        "Correct mismatches in \u201cAvoid duplicate accounts for buy\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cAvoid duplicate accounts for buy\u201d. Tag retired items instead of deleting history you may need later. Photograph labels for \u201cavoid duplicate accounts for buy\u201d only when characters are tiny; file the photo beside typed fields.",
-        "Add one house-specific example under Avoid duplicate accounts for buy. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cavoid duplicate accounts for buy\u201d, use a password manager and store only pointers in shared records."
-      ]
-    },
-    {
-      "id": "close-the-loop-in-inventory-for-capture",
-      "heading": "Close the loop in inventory for capture",
-      "paragraphs": [
-        "Export or snapshot what to capture before you buy home tech after major purchases or policy changes involving capture. Use short free-text notes for quirks about before that do not fit structured fields in what to capture before you buy home tech. If two adults share the house, name the primary editor. Close the loop on \u201cclose the loop in inventory for capture\u201d by naming the next action and the person responsible.",
-        "For \u201cClose the loop in inventory for capture\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cClose the loop in inventory for capture\u201d, pick the one a tired adult can follow. Tag retired items instead of deleting history you may need later. Close the loop on \u201cclose the loop in inventory for capture\u201d by naming the next action and the person responsible.",
-        "Correct mismatches in \u201cClose the loop in inventory for capture\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cClose the loop in inventory for capture\u201d. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. Close the loop on \u201cclose the loop in inventory for capture\u201d by naming the next action and the person responsible.",
-        "Add one house-specific example under Close the loop in inventory for capture. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cclose the loop in inventory for capture\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “save the shortlist where checkout cannot ignore it” using your rooms, people, and gear — not a generic internet checklist. For upgrade versus repair, write cost, remaining coverage, and household friction side by side. If two people share the house, decide who owns the update so it does not float as ambient guilt.",
+        "Date the last review even if nothing changed, so the record feels alive. When the house and your notes disagree, trust the house and fix the notes the same day.",
+        "When “save the shortlist where checkout cannot ignore it” is good enough to use tonight, stop polishing and move on. The goal is calmer Tuesdays, not a museum-quality archive."
       ]
     }
   ],
   "faq": [
     {
-      "question": "How detailed should what to capture before you buy home tech be?",
-      "answer": "Detailed enough that a trusted adult can act without calling you. Skip decorative fields you will not maintain."
+      "question": "How perfect does this need to be?",
+      "answer": "Good enough to act under stress. Skip fields you will not maintain."
     },
     {
-      "question": "Where should we store what to capture before you buy home tech?",
-      "answer": "In one household vault with clear permissions \u2014 not in three apps and a group chat."
+      "question": "Where should the notes live?",
+      "answer": "In one household place with clear permissions — not scattered across apps and chats."
     },
     {
-      "question": "Who should edit what to capture before you buy home tech?",
-      "answer": "Name a primary editor, then grant viewers for people who only need to look."
+      "question": "Who should edit?",
+      "answer": "Name a primary editor, then give others view access as needed."
     },
     {
-      "question": "How often should we review what to capture before you buy home tech?",
-      "answer": "On unbox, gift, sale, move, and once a season for a short spot check."
+      "question": "What if details are missing?",
+      "answer": "Mark them unknown and schedule a catch-up. Visible gaps beat false confidence."
     },
     {
-      "question": "What if we are missing information?",
-      "answer": "Mark fields unknown and schedule a catch-up. Visible gaps beat false confidence."
+      "question": "How often should we review?",
+      "answer": "On unbox, gift, sale, move, and a short seasonal spot check."
     },
     {
       "question": "How does Home Tech Vault help?",
-      "answer": "It keeps what to capture before you buy home tech next to devices, documents, and household sharing so the system stays usable."
+      "answer": "It keeps devices, documents, and household sharing together so habits stick."
     }
   ],
   "internalLinks": [
-    {
-      "href": "/knowledge/buying-guides/comparing-devices-with-a-household-checklist",
-      "label": "Comparing Devices With A Household Checklist",
-      "description": "Continue with this related Knowledge Center guide."
-    },
-    {
-      "href": "/knowledge/buying-guides/choosing-devices-that-fit-your-network",
-      "label": "Choosing Devices That Fit Your Network",
-      "description": "Continue with this related Knowledge Center guide."
-    },
     {
       "href": "/home-tech-checklist",
       "label": "Home tech checklist",
@@ -175,7 +145,7 @@ const article = {
     "home tech buying checklist",
     "device purchase prep"
   ],
-  "readingMinutes": 13
+  "readingMinutes": 7
 } satisfies Omit<KnowledgeArticle, "readingMinutes"> & {
   readingMinutes: number;
 };

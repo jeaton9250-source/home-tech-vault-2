@@ -8,147 +8,125 @@ const article = {
   "description": "Safe cleaning habits for screens, keyboards, cameras, and vents that extend life without voiding common-sense care.",
   "publishedAt": "2026-05-21",
   "updatedAt": "2026-05-21",
-  "heroCaption": "Placeholder hero: scene illustrating cleaning and care for household electronics.",
+  "heroCaption": "Safe cleaning habits for screens, keyboards, cameras, and vents that extend life without voiding common-sense care.",
   "intro": [
-    "Safe cleaning habits for screens, keyboards, cameras, and vents that extend life without voiding common-sense care \u2014 yet most homes only assemble those details after something goes wrong.",
-    "This guide shows a practical way to handle cleaning and care for household electronics with records you can find under stress, not another abandoned checklist.",
-    "You will define what to capture, where it lives, who can see it, and how to keep cleaning and care for household electronics current as gear and people change.",
-    "Home Tech Vault fits this guide because devices, documents, warranties, and household sharing can live together \u2014 so these habits become a living system instead of a weekend project that expires."
+    "Safe cleaning habits for screens, keyboards, cameras, and vents that extend life without voiding common-sense care. Most homes only feel the gap when something breaks, goes missing, or a stranger on the phone asks for details nobody wrote down.",
+    "You will leave with a practical way to handle this that fits a real household — short enough to keep, specific enough to use under stress.",
+    "We will cover what to write down, where it should live, who can see it, and how to keep it current as gear and people change.",
+    "Home Tech Vault is useful here because devices, documents, warranties, and household sharing can live in one place — so this stays a living habit instead of a weekend project that quietly expires."
   ],
   "sections": [
     {
-      "id": "set-a-seasonal-rhythm-for-cleaning-care",
-      "heading": "Set a seasonal rhythm for cleaning care",
+      "id": "use-safe-light-cleaning-habits",
+      "heading": "Use safe light cleaning habits",
       "paragraphs": [
-        "Write the minimum fields that make cleaning and care for household electronics usable during a stressful call focusing on cleaning. Keep secrets for cleaning and care for household electronics in a password manager and store only pointers about care in shared notes. Update the same day the physical gear or policy changes. Even if a vendor app stores \u201cset a seasonal rhythm for cleaning care\u201d, keep a household-facing summary where the right people can find it.",
-        "For \u201cSet a seasonal rhythm for cleaning care\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cSet a seasonal rhythm for cleaning care\u201d, pick the one a tired adult can follow. If two adults share the house, name the primary editor. Even if a vendor app stores \u201cset a seasonal rhythm for cleaning care\u201d, keep a household-facing summary where the right people can find it.",
-        "Correct mismatches in \u201cSet a seasonal rhythm for cleaning care\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cSet a seasonal rhythm for cleaning care\u201d. Tag retired items instead of deleting history you may need later. Even if a vendor app stores \u201cset a seasonal rhythm for cleaning care\u201d, keep a household-facing summary where the right people can find it.",
-        "Add one house-specific example under Set a seasonal rhythm for cleaning care. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cset a seasonal rhythm for cleaning care\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “use safe light cleaning habits” using your rooms, people, and gear — not a generic internet checklist. Attach the chore to a real device so it is not floating on a sticky note forever. That sounds small until you are the person on the phone trying to remember it.",
+        "If two adults share the house, name who updates this so it is not ambient guilt. Date the last review even if nothing changed, so the record feels alive.",
+        "When “use safe light cleaning habits” is good enough to use tonight, stop polishing and move on. Write it while the thing is in your hands; memory gets creative after a week.",
+        "The first version of these maintenance notes should be usable tonight, not impressive next year. Keep it next to the related device or document so you are not reconstructing it from a text thread later.",
+        "If nothing changed since last time, still jot the review date — it proves the record is alive."
       ]
     },
     {
-      "id": "schedule-firmware-windows-for-care-electronics",
-      "heading": "Schedule firmware windows for care electronics",
+      "id": "keep-liquids-far-from-keyboards",
+      "heading": "Keep liquids far from keyboards",
       "paragraphs": [
-        "Name who updates cleaning and care for household electronics so the job is not ambient guilt especially for care. When gear is replaced, close or retire the old cleaning and care for household electronics record tied to electronics cleanly. If two adults share the house, name the primary editor. For secrets related to \u201cschedule firmware windows for care electronics\u201d, use a password manager and store only pointers in shared records.",
-        "For \u201cSchedule firmware windows for care electronics\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cSchedule firmware windows for care electronics\u201d, pick the one a tired adult can follow. Tag retired items instead of deleting history you may need later. For secrets related to \u201cschedule firmware windows for care electronics\u201d, use a password manager and store only pointers in shared records.",
-        "Correct mismatches in \u201cSchedule firmware windows for care electronics\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cSchedule firmware windows for care electronics\u201d. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. For secrets related to \u201cschedule firmware windows for care electronics\u201d, use a password manager and store only pointers in shared records.",
-        "Add one house-specific example under Schedule firmware windows for care electronics. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cschedule firmware windows for care electronics\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “keep liquids far from keyboards” using your rooms, people, and gear — not a generic internet checklist. Two sentences in a log help the next person more than a perfect spreadsheet. If two people share the house, decide who owns the update so it does not float as ambient guilt.",
+        "Leave blanks when you are unsure — a visible gap beats a confident wrong answer. Keep notes short enough that you will open them again next month.",
+        "When “keep liquids far from keyboards” is good enough to use tonight, stop polishing and move on. The goal is calmer Tuesdays, not a museum-quality archive.",
+        "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked. That is the kind of detail that feels optional until the week you need it.",
+        "When the house and the notes disagree, believe the house and fix the notes the same day."
       ]
     },
     {
-      "id": "track-batteries-for-electronics",
-      "heading": "Track batteries for electronics",
+      "id": "dust-vents-before-heat-waves",
+      "heading": "Dust vents before heat waves",
       "paragraphs": [
-        "Prefer one vault record over screenshots scattered across phones for cleaning and care for household electronics and electronics. Export or snapshot cleaning and care for household electronics after major purchases or policy changes involving cleaning. Tag retired items instead of deleting history you may need later. Photograph labels for \u201ctrack batteries for electronics\u201d only when characters are tiny; file the photo beside typed fields.",
-        "For \u201cTrack batteries for electronics\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cTrack batteries for electronics\u201d, pick the one a tired adult can follow. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. Photograph labels for \u201ctrack batteries for electronics\u201d only when characters are tiny; file the photo beside typed fields.",
-        "Correct mismatches in \u201cTrack batteries for electronics\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cTrack batteries for electronics\u201d. Update the same day the physical gear or policy changes. Photograph labels for \u201ctrack batteries for electronics\u201d only when characters are tiny; file the photo beside typed fields.",
-        "Add one house-specific example under Track batteries for electronics. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201ctrack batteries for electronics\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “dust vents before heat waves” using your rooms, people, and gear — not a generic internet checklist. Replace remote batteries on a rhythm, not when something dies mid-movie. That sounds small until you are the person on the phone trying to remember it.",
+        "Date the last review even if nothing changed, so the record feels alive. When the house and your notes disagree, trust the house and fix the notes the same day.",
+        "When “dust vents before heat waves” is good enough to use tonight, stop polishing and move on. Write it while the thing is in your hands; memory gets creative after a week.",
+        "If only one person knows where the record is, you do not have a household system yet. Your future self will care more about clarity than completeness.",
+        "Share the location of this record with one other adult so it is not trapped on a single laptop."
       ]
     },
     {
-      "id": "clean-safely-for-cleaning",
-      "heading": "Clean safely for cleaning",
+      "id": "avoid-heroic-disassembly",
+      "heading": "Avoid heroic disassembly",
       "paragraphs": [
-        "Photograph labels only when typing would lose detail related to cleaning in cleaning and care for household electronics. Teach household members where cleaning and care for household electronics lives so parallel trackers about care die. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. Close the loop on \u201cclean safely for cleaning\u201d by naming the next action and the person responsible.",
-        "For \u201cClean safely for cleaning\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cClean safely for cleaning\u201d, pick the one a tired adult can follow. Update the same day the physical gear or policy changes. Close the loop on \u201cclean safely for cleaning\u201d by naming the next action and the person responsible.",
-        "Correct mismatches in \u201cClean safely for cleaning\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cClean safely for cleaning\u201d. If two adults share the house, name the primary editor. Close the loop on \u201cclean safely for cleaning\u201d by naming the next action and the person responsible.",
-        "Add one house-specific example under Clean safely for cleaning. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cclean safely for cleaning\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “avoid heroic disassembly” using your rooms, people, and gear — not a generic internet checklist. Firmware updates go smoother when you note the last good date. If two people share the house, decide who owns the update so it does not float as ambient guilt.",
+        "Keep notes short enough that you will open them again next month. If two adults share the house, name who updates this so it is not ambient guilt.",
+        "When “avoid heroic disassembly” is good enough to use tonight, stop polishing and move on. The goal is calmer Tuesdays, not a museum-quality archive.",
+        "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate. If it takes more than a minute to find, the system is still too scattered.",
+        "Stop when it is useful. A short living note beats a long abandoned one."
       ]
     },
     {
-      "id": "service-filters-and-vents-for-care",
-      "heading": "Service filters and vents for care",
+      "id": "note-manufacturer-warnings",
+      "heading": "Note manufacturer warnings",
       "paragraphs": [
-        "Date-stamp the last review of cleaning and care for household electronics even when nothing changed around care. During service calls, pull cleaning and care for household electronics details for electronics before the technician arrives. Update the same day the physical gear or policy changes. Write \u201cservice filters and vents for care\u201d as if a house guest with average tech confidence had to use it tonight.",
-        "For \u201cService filters and vents for care\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cService filters and vents for care\u201d, pick the one a tired adult can follow. If two adults share the house, name the primary editor. Write \u201cservice filters and vents for care\u201d as if a house guest with average tech confidence had to use it tonight.",
-        "Correct mismatches in \u201cService filters and vents for care\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cService filters and vents for care\u201d. Tag retired items instead of deleting history you may need later. Write \u201cservice filters and vents for care\u201d as if a house guest with average tech confidence had to use it tonight.",
-        "Add one house-specific example under Service filters and vents for care. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cservice filters and vents for care\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “note manufacturer warnings” using your rooms, people, and gear — not a generic internet checklist. Clean lightly and safely — heroic methods brick more gear than dust does. That sounds small until you are the person on the phone trying to remember it.",
+        "When the house and your notes disagree, trust the house and fix the notes the same day. Leave blanks when you are unsure — a visible gap beats a confident wrong answer.",
+        "When “note manufacturer warnings” is good enough to use tonight, stop polishing and move on. Write it while the thing is in your hands; memory gets creative after a week.",
+        "When support asks for something you lack, add it immediately so the next call is shorter. Keep it next to the related device or document so you are not reconstructing it from a text thread later.",
+        "If nothing changed since last time, still jot the review date — it proves the record is alive."
       ]
     },
     {
-      "id": "decide-retirement-for-electronics",
-      "heading": "Decide retirement for electronics",
+      "id": "schedule-light-cleans-seasonally",
+      "heading": "Schedule light cleans seasonally",
       "paragraphs": [
-        "Link related documents next to the cleaning and care for household electronics entry for electronics instead of a generic Downloads folder. For travel or sitters, share only the slice of cleaning and care for household electronics about cleaning they need. If two adults share the house, name the primary editor. Stale notes for \u201cdecide retirement for electronics\u201d create false confidence \u2014 worse than marking a field unknown.",
-        "For \u201cDecide retirement for electronics\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cDecide retirement for electronics\u201d, pick the one a tired adult can follow. Tag retired items instead of deleting history you may need later. Stale notes for \u201cdecide retirement for electronics\u201d create false confidence \u2014 worse than marking a field unknown.",
-        "Correct mismatches in \u201cDecide retirement for electronics\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cDecide retirement for electronics\u201d. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. Stale notes for \u201cdecide retirement for electronics\u201d create false confidence \u2014 worse than marking a field unknown.",
-        "Add one house-specific example under Decide retirement for electronics. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cdecide retirement for electronics\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “schedule light cleans seasonally” using your rooms, people, and gear — not a generic internet checklist. HVAC and console vents clog quietly; seasonal checks catch them. If two people share the house, decide who owns the update so it does not float as ambient guilt.",
+        "If two adults share the house, name who updates this so it is not ambient guilt. Date the last review even if nothing changed, so the record feels alive.",
+        "When “schedule light cleans seasonally” is good enough to use tonight, stop polishing and move on. The goal is calmer Tuesdays, not a museum-quality archive.",
+        "Trust the physical house over stale notes — then fix the notes the same day. That is the kind of detail that feels optional until the week you need it."
       ]
     },
     {
-      "id": "log-service-history-for-cleaning",
-      "heading": "Log service history for cleaning",
+      "id": "stop-when-something-feels-risky",
+      "heading": "Stop when something feels risky",
       "paragraphs": [
-        "If a vendor app already stores part of cleaning and care for household electronics, still keep a household-facing summary about cleaning. After holidays or moves, schedule a catch-up pass for cleaning and care for household electronics covering care. Tag retired items instead of deleting history you may need later. Even if a vendor app stores \u201clog service history for cleaning\u201d, keep a household-facing summary where the right people can find it.",
-        "For \u201cLog service history for cleaning\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cLog service history for cleaning\u201d, pick the one a tired adult can follow. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. Even if a vendor app stores \u201clog service history for cleaning\u201d, keep a household-facing summary where the right people can find it.",
-        "Correct mismatches in \u201cLog service history for cleaning\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cLog service history for cleaning\u201d. Update the same day the physical gear or policy changes. Even if a vendor app stores \u201clog service history for cleaning\u201d, keep a household-facing summary where the right people can find it.",
-        "Add one house-specific example under Log service history for cleaning. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201clog service history for cleaning\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “stop when something feels risky” using your rooms, people, and gear — not a generic internet checklist. Retire devices when updates stop and repair quotes get silly. That sounds small until you are the person on the phone trying to remember it.",
+        "Leave blanks when you are unsure — a visible gap beats a confident wrong answer. Keep notes short enough that you will open them again next month.",
+        "When “stop when something feels risky” is good enough to use tonight, stop polishing and move on. Write it while the thing is in your hands; memory gets creative after a week."
       ]
     },
     {
-      "id": "prevent-surprise-failures-for-care",
-      "heading": "Prevent surprise failures for care",
+      "id": "log-damage-you-notice",
+      "heading": "Log damage you notice",
       "paragraphs": [
-        "Keep secrets for cleaning and care for household electronics in a password manager and store only pointers about care in shared notes. Mark unknown fields for electronics visibly rather than inventing guesses about cleaning and care for household electronics. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. For secrets related to \u201cprevent surprise failures for care\u201d, use a password manager and store only pointers in shared records.",
-        "For \u201cPrevent surprise failures for care\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cPrevent surprise failures for care\u201d, pick the one a tired adult can follow. Update the same day the physical gear or policy changes. For secrets related to \u201cprevent surprise failures for care\u201d, use a password manager and store only pointers in shared records.",
-        "Correct mismatches in \u201cPrevent surprise failures for care\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cPrevent surprise failures for care\u201d. If two adults share the house, name the primary editor. For secrets related to \u201cprevent surprise failures for care\u201d, use a password manager and store only pointers in shared records.",
-        "Add one house-specific example under Prevent surprise failures for care. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cprevent surprise failures for care\u201d, use a password manager and store only pointers in shared records."
-      ]
-    },
-    {
-      "id": "coordinate-household-chores-for-electronics",
-      "heading": "Coordinate household chores for electronics",
-      "paragraphs": [
-        "When gear is replaced, close or retire the old cleaning and care for household electronics record tied to electronics cleanly. Connect cleaning and care for household electronics to device inventory so cleaning notes do not float unattached. Update the same day the physical gear or policy changes. Photograph labels for \u201ccoordinate household chores for electronics\u201d only when characters are tiny; file the photo beside typed fields.",
-        "For \u201cCoordinate household chores for electronics\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cCoordinate household chores for electronics\u201d, pick the one a tired adult can follow. If two adults share the house, name the primary editor. Photograph labels for \u201ccoordinate household chores for electronics\u201d only when characters are tiny; file the photo beside typed fields.",
-        "Correct mismatches in \u201cCoordinate household chores for electronics\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cCoordinate household chores for electronics\u201d. Tag retired items instead of deleting history you may need later. Photograph labels for \u201ccoordinate household chores for electronics\u201d only when characters are tiny; file the photo beside typed fields.",
-        "Add one house-specific example under Coordinate household chores for electronics. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201ccoordinate household chores for electronics\u201d, use a password manager and store only pointers in shared records."
-      ]
-    },
-    {
-      "id": "review-after-storms-for-cleaning",
-      "heading": "Review after storms for cleaning",
-      "paragraphs": [
-        "Export or snapshot cleaning and care for household electronics after major purchases or policy changes involving cleaning. Use short free-text notes for quirks about care that do not fit structured fields in cleaning and care for household electronics. If two adults share the house, name the primary editor. Close the loop on \u201creview after storms for cleaning\u201d by naming the next action and the person responsible.",
-        "For \u201cReview after storms for cleaning\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cReview after storms for cleaning\u201d, pick the one a tired adult can follow. Tag retired items instead of deleting history you may need later. Close the loop on \u201creview after storms for cleaning\u201d by naming the next action and the person responsible.",
-        "Correct mismatches in \u201cReview after storms for cleaning\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cReview after storms for cleaning\u201d. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. Close the loop on \u201creview after storms for cleaning\u201d by naming the next action and the person responsible.",
-        "Add one house-specific example under Review after storms for cleaning. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201creview after storms for cleaning\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “log damage you notice” using your rooms, people, and gear — not a generic internet checklist. Hand a technician your short log instead of reconstructing a year from memory. If two people share the house, decide who owns the update so it does not float as ambient guilt.",
+        "Date the last review even if nothing changed, so the record feels alive. When the house and your notes disagree, trust the house and fix the notes the same day.",
+        "When “log damage you notice” is good enough to use tonight, stop polishing and move on. The goal is calmer Tuesdays, not a museum-quality archive."
       ]
     }
   ],
   "faq": [
     {
-      "question": "How detailed should cleaning and care for household electronics be?",
-      "answer": "Detailed enough that a trusted adult can act without calling you. Skip decorative fields you will not maintain."
+      "question": "How perfect does this need to be?",
+      "answer": "Good enough to act under stress. Skip fields you will not maintain."
     },
     {
-      "question": "Where should we store cleaning and care for household electronics?",
-      "answer": "In one household vault with clear permissions \u2014 not in three apps and a group chat."
+      "question": "Where should the notes live?",
+      "answer": "In one household place with clear permissions — not scattered across apps and chats."
     },
     {
-      "question": "Who should edit cleaning and care for household electronics?",
-      "answer": "Name a primary editor, then grant viewers for people who only need to look."
+      "question": "Who should edit?",
+      "answer": "Name a primary editor, then give others view access as needed."
     },
     {
-      "question": "How often should we review cleaning and care for household electronics?",
-      "answer": "On unbox, gift, sale, move, and once a season for a short spot check."
+      "question": "What if details are missing?",
+      "answer": "Mark them unknown and schedule a catch-up. Visible gaps beat false confidence."
     },
     {
-      "question": "What if we are missing information?",
-      "answer": "Mark fields unknown and schedule a catch-up. Visible gaps beat false confidence."
+      "question": "How often should we review?",
+      "answer": "On unbox, gift, sale, move, and a short seasonal spot check."
     },
     {
       "question": "How does Home Tech Vault help?",
-      "answer": "It keeps cleaning and care for household electronics next to devices, documents, and household sharing so the system stays usable."
+      "answer": "It keeps devices, documents, and household sharing together so habits stick."
     }
   ],
   "internalLinks": [
-    {
-      "href": "/knowledge/maintenance/filter-and-vent-maintenance-for-tech",
-      "label": "Filter And Vent Maintenance For Tech",
-      "description": "Continue with this related Knowledge Center guide."
-    },
     {
       "href": "/home-tech-checklist",
       "label": "Home tech checklist",
@@ -170,7 +148,7 @@ const article = {
     "device care tips home",
     "screen and keyboard cleaning"
   ],
-  "readingMinutes": 13
+  "readingMinutes": 7
 } satisfies Omit<KnowledgeArticle, "readingMinutes"> & {
   readingMinutes: number;
 };

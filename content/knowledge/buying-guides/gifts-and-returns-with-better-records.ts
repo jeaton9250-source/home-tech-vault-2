@@ -8,152 +8,124 @@ const article = {
   "description": "Keep gift receipts, return windows, and serials organized so exchanges are calm instead of frantic.",
   "publishedAt": "2026-06-07",
   "updatedAt": "2026-06-07",
-  "heroCaption": "Placeholder hero: scene illustrating gifts and returns with better records.",
+  "heroCaption": "Keep gift receipts, return windows, and serials organized so exchanges are calm instead of frantic.",
   "intro": [
-    "Keep gift receipts, return windows, and serials organized so exchanges are calm instead of frantic \u2014 yet most homes only assemble those details after something goes wrong.",
-    "This guide shows a practical way to handle gifts and returns with better records with records you can find under stress, not another abandoned checklist.",
-    "You will define what to capture, where it lives, who can see it, and how to keep gifts and returns with better records current as gear and people change.",
-    "Home Tech Vault fits this guide because devices, documents, warranties, and household sharing can live together \u2014 so these habits become a living system instead of a weekend project that expires."
+    "Keep gift receipts, return windows, and serials organized so exchanges are calm instead of frantic. Most homes only feel the gap when something breaks, goes missing, or a stranger on the phone asks for details nobody wrote down.",
+    "You will leave with a practical way to handle this that fits a real household — short enough to keep, specific enough to use under stress.",
+    "We will cover what to write down, where it should live, who can see it, and how to keep it current as gear and people change.",
+    "Home Tech Vault is useful here because devices, documents, warranties, and household sharing can live in one place — so this stays a living habit instead of a weekend project that quietly expires."
   ],
   "sections": [
     {
-      "id": "capture-constraints-first-for-gifts-returns",
-      "heading": "Capture constraints first for gifts returns",
+      "id": "save-gift-receipts-separately",
+      "heading": "Save gift receipts separately",
       "paragraphs": [
-        "Write the minimum fields that make gifts and returns with better records usable during a stressful call focusing on gifts. Keep secrets for gifts and returns with better records in a password manager and store only pointers about records in shared notes. Update the same day the physical gear or policy changes. Even if a vendor app stores \u201ccapture constraints first for gifts returns\u201d, keep a household-facing summary where the right people can find it.",
-        "For \u201cCapture constraints first for gifts returns\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cCapture constraints first for gifts returns\u201d, pick the one a tired adult can follow. If two adults share the house, name the primary editor. Even if a vendor app stores \u201ccapture constraints first for gifts returns\u201d, keep a household-facing summary where the right people can find it.",
-        "Correct mismatches in \u201cCapture constraints first for gifts returns\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cCapture constraints first for gifts returns\u201d. Tag retired items instead of deleting history you may need later. Even if a vendor app stores \u201ccapture constraints first for gifts returns\u201d, keep a household-facing summary where the right people can find it.",
-        "Add one house-specific example under Capture constraints first for gifts returns. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201ccapture constraints first for gifts returns\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “save gift receipts separately” using your rooms, people, and gear — not a generic internet checklist. Measure the shelf and check the outlet before the product page talks you into it. That sounds small until you are the person on the phone trying to remember it.",
+        "If two adults share the house, name who updates this so it is not ambient guilt. Date the last review even if nothing changed, so the record feels alive.",
+        "When “save gift receipts separately” is good enough to use tonight, stop polishing and move on. Write it while the thing is in your hands; memory gets creative after a week.",
+        "The first version of these buying notes should be usable tonight, not impressive next year. Keep it next to the related device or document so you are not reconstructing it from a text thread later.",
+        "If nothing changed since last time, still jot the review date — it proves the record is alive."
       ]
     },
     {
-      "id": "score-real-household-fit-for-returns-better",
-      "heading": "Score real household fit for returns better",
+      "id": "note-return-windows-in-plain-dates",
+      "heading": "Note return windows in plain dates",
       "paragraphs": [
-        "Name who updates gifts and returns with better records so the job is not ambient guilt especially for returns. When gear is replaced, close or retire the old gifts and returns with better records record tied to gifts cleanly. If two adults share the house, name the primary editor. For secrets related to \u201cscore real household fit for returns better\u201d, use a password manager and store only pointers in shared records.",
-        "For \u201cScore real household fit for returns better\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cScore real household fit for returns better\u201d, pick the one a tired adult can follow. Tag retired items instead of deleting history you may need later. For secrets related to \u201cscore real household fit for returns better\u201d, use a password manager and store only pointers in shared records.",
-        "Correct mismatches in \u201cScore real household fit for returns better\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cScore real household fit for returns better\u201d. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. For secrets related to \u201cscore real household fit for returns better\u201d, use a password manager and store only pointers in shared records.",
-        "Add one house-specific example under Score real household fit for returns better. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cscore real household fit for returns better\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “note return windows in plain dates” using your rooms, people, and gear — not a generic internet checklist. Buy for the Wi-Fi and ports you have, not the ones in the marketing photo. If two people share the house, decide who owns the update so it does not float as ambient guilt.",
+        "Leave blanks when you are unsure — a visible gap beats a confident wrong answer. Keep notes short enough that you will open them again next month.",
+        "When “note return windows in plain dates” is good enough to use tonight, stop polishing and move on. The goal is calmer Tuesdays, not a museum-quality archive.",
+        "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked. That is the kind of detail that feels optional until the week you need it.",
+        "When the house and the notes disagree, believe the house and fix the notes the same day."
       ]
     },
     {
-      "id": "document-after-purchase-for-better-records",
-      "heading": "Document after purchase for better records",
+      "id": "capture-serials-even-for-gifts",
+      "heading": "Capture serials even for gifts",
       "paragraphs": [
-        "Prefer one vault record over screenshots scattered across phones for gifts and returns with better records and better. Export or snapshot gifts and returns with better records after major purchases or policy changes involving returns. Tag retired items instead of deleting history you may need later. Photograph labels for \u201cdocument after purchase for better records\u201d only when characters are tiny; file the photo beside typed fields.",
-        "For \u201cDocument after purchase for better records\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cDocument after purchase for better records\u201d, pick the one a tired adult can follow. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. Photograph labels for \u201cdocument after purchase for better records\u201d only when characters are tiny; file the photo beside typed fields.",
-        "Correct mismatches in \u201cDocument after purchase for better records\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cDocument after purchase for better records\u201d. Update the same day the physical gear or policy changes. Photograph labels for \u201cdocument after purchase for better records\u201d only when characters are tiny; file the photo beside typed fields.",
-        "Add one house-specific example under Document after purchase for better records. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cdocument after purchase for better records\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “capture serials even for gifts” using your rooms, people, and gear — not a generic internet checklist. Write who will own the account and the warranty in a shared household. That sounds small until you are the person on the phone trying to remember it.",
+        "Date the last review even if nothing changed, so the record feels alive. When the house and your notes disagree, trust the house and fix the notes the same day.",
+        "When “capture serials even for gifts” is good enough to use tonight, stop polishing and move on. Write it while the thing is in your hands; memory gets creative after a week.",
+        "If only one person knows where the record is, you do not have a household system yet. Your future self will care more about clarity than completeness.",
+        "Share the location of this record with one other adult so it is not trapped on a single laptop."
       ]
     },
     {
-      "id": "handle-gifts-and-returns-for-records",
-      "heading": "Handle gifts and returns for records",
+      "id": "handle-missing-proof-gracefully",
+      "heading": "Handle missing proof gracefully",
       "paragraphs": [
-        "Photograph labels only when typing would lose detail related to records in gifts and returns with better records. Teach household members where gifts and returns with better records lives so parallel trackers about better die. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. Close the loop on \u201chandle gifts and returns for records\u201d by naming the next action and the person responsible.",
-        "For \u201cHandle gifts and returns for records\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cHandle gifts and returns for records\u201d, pick the one a tired adult can follow. Update the same day the physical gear or policy changes. Close the loop on \u201chandle gifts and returns for records\u201d by naming the next action and the person responsible.",
-        "Correct mismatches in \u201cHandle gifts and returns for records\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cHandle gifts and returns for records\u201d. If two adults share the house, name the primary editor. Close the loop on \u201chandle gifts and returns for records\u201d by naming the next action and the person responsible.",
-        "Add one house-specific example under Handle gifts and returns for records. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201chandle gifts and returns for records\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “handle missing proof gracefully” using your rooms, people, and gear — not a generic internet checklist. If it is used or refurbished, verify reset status and serial before you pay. If two people share the house, decide who owns the update so it does not float as ambient guilt.",
+        "Keep notes short enough that you will open them again next month. If two adults share the house, name who updates this so it is not ambient guilt.",
+        "When “handle missing proof gracefully” is good enough to use tonight, stop polishing and move on. The goal is calmer Tuesdays, not a museum-quality archive.",
+        "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate. If it takes more than a minute to find, the system is still too scattered.",
+        "Stop when it is useful. A short living note beats a long abandoned one."
       ]
     },
     {
-      "id": "match-network-reality-for-gifts",
-      "heading": "Match network reality for gifts",
+      "id": "coordinate-with-the-giver",
+      "heading": "Coordinate with the giver",
       "paragraphs": [
-        "Date-stamp the last review of gifts and returns with better records even when nothing changed around gifts. During service calls, pull gifts and returns with better records details for records before the technician arrives. Update the same day the physical gear or policy changes. Write \u201cmatch network reality for gifts\u201d as if a house guest with average tech confidence had to use it tonight.",
-        "For \u201cMatch network reality for gifts\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cMatch network reality for gifts\u201d, pick the one a tired adult can follow. If two adults share the house, name the primary editor. Write \u201cmatch network reality for gifts\u201d as if a house guest with average tech confidence had to use it tonight.",
-        "Correct mismatches in \u201cMatch network reality for gifts\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cMatch network reality for gifts\u201d. Tag retired items instead of deleting history you may need later. Write \u201cmatch network reality for gifts\u201d as if a house guest with average tech confidence had to use it tonight.",
-        "Add one house-specific example under Match network reality for gifts. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cmatch network reality for gifts\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “coordinate with the giver” using your rooms, people, and gear — not a generic internet checklist. Unbox into your records the same day — serials vanish with packaging. That sounds small until you are the person on the phone trying to remember it.",
+        "When the house and your notes disagree, trust the house and fix the notes the same day. Leave blanks when you are unsure — a visible gap beats a confident wrong answer.",
+        "When “coordinate with the giver” is good enough to use tonight, stop polishing and move on. Write it while the thing is in your hands; memory gets creative after a week.",
+        "When support asks for something you lack, add it immediately so the next call is shorter. Keep it next to the related device or document so you are not reconstructing it from a text thread later."
       ]
     },
     {
-      "id": "vet-used-gear-for-returns",
-      "heading": "Vet used gear for returns",
+      "id": "keep-calm-packaging-for-a-bit",
+      "heading": "Keep calm packaging for a bit",
       "paragraphs": [
-        "Link related documents next to the gifts and returns with better records entry for returns instead of a generic Downloads folder. For travel or sitters, share only the slice of gifts and returns with better records about gifts they need. If two adults share the house, name the primary editor. Stale notes for \u201cvet used gear for returns\u201d create false confidence \u2014 worse than marking a field unknown.",
-        "For \u201cVet used gear for returns\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cVet used gear for returns\u201d, pick the one a tired adult can follow. Tag retired items instead of deleting history you may need later. Stale notes for \u201cvet used gear for returns\u201d create false confidence \u2014 worse than marking a field unknown.",
-        "Correct mismatches in \u201cVet used gear for returns\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cVet used gear for returns\u201d. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. Stale notes for \u201cvet used gear for returns\u201d create false confidence \u2014 worse than marking a field unknown.",
-        "Add one house-specific example under Vet used gear for returns. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cvet used gear for returns\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “keep calm packaging for a bit” using your rooms, people, and gear — not a generic internet checklist. Keep gift receipts and return windows where calm-you can find them. If two people share the house, decide who owns the update so it does not float as ambient guilt.",
+        "If two adults share the house, name who updates this so it is not ambient guilt. Date the last review even if nothing changed, so the record feels alive.",
+        "When “keep calm packaging for a bit” is good enough to use tonight, stop polishing and move on. The goal is calmer Tuesdays, not a museum-quality archive.",
+        "Trust the physical house over stale notes — then fix the notes the same day. That is the kind of detail that feels optional until the week you need it."
       ]
     },
     {
-      "id": "align-shared-ownership-for-better",
-      "heading": "Align shared ownership for better",
+      "id": "update-inventory-on-keep-or-return",
+      "heading": "Update inventory on keep-or-return",
       "paragraphs": [
-        "If a vendor app already stores part of gifts and returns with better records, still keep a household-facing summary about better. After holidays or moves, schedule a catch-up pass for gifts and returns with better records covering returns. Tag retired items instead of deleting history you may need later. Even if a vendor app stores \u201calign shared ownership for better\u201d, keep a household-facing summary where the right people can find it.",
-        "For \u201cAlign shared ownership for better\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cAlign shared ownership for better\u201d, pick the one a tired adult can follow. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. Even if a vendor app stores \u201calign shared ownership for better\u201d, keep a household-facing summary where the right people can find it.",
-        "Correct mismatches in \u201cAlign shared ownership for better\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cAlign shared ownership for better\u201d. Update the same day the physical gear or policy changes. Even if a vendor app stores \u201calign shared ownership for better\u201d, keep a household-facing summary where the right people can find it.",
-        "Add one house-specific example under Align shared ownership for better. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201calign shared ownership for better\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “update inventory on keep-or-return” using your rooms, people, and gear — not a generic internet checklist. Score options against real rooms and real people, not feature checklists alone. That sounds small until you are the person on the phone trying to remember it.",
+        "Leave blanks when you are unsure — a visible gap beats a confident wrong answer. Keep notes short enough that you will open them again next month.",
+        "When “update inventory on keep-or-return” is good enough to use tonight, stop polishing and move on. Write it while the thing is in your hands; memory gets creative after a week."
       ]
     },
     {
-      "id": "weigh-repair-vs-upgrade-for-records",
-      "heading": "Weigh repair vs upgrade for records",
+      "id": "avoid-duplicate-mystery-devices",
+      "heading": "Avoid duplicate mystery devices",
       "paragraphs": [
-        "Keep secrets for gifts and returns with better records in a password manager and store only pointers about records in shared notes. Mark unknown fields for better visibly rather than inventing guesses about gifts and returns with better records. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. For secrets related to \u201cweigh repair vs upgrade for records\u201d, use a password manager and store only pointers in shared records.",
-        "For \u201cWeigh repair vs upgrade for records\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cWeigh repair vs upgrade for records\u201d, pick the one a tired adult can follow. Update the same day the physical gear or policy changes. For secrets related to \u201cweigh repair vs upgrade for records\u201d, use a password manager and store only pointers in shared records.",
-        "Correct mismatches in \u201cWeigh repair vs upgrade for records\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cWeigh repair vs upgrade for records\u201d. If two adults share the house, name the primary editor. For secrets related to \u201cweigh repair vs upgrade for records\u201d, use a password manager and store only pointers in shared records.",
-        "Add one house-specific example under Weigh repair vs upgrade for records. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cweigh repair vs upgrade for records\u201d, use a password manager and store only pointers in shared records."
-      ]
-    },
-    {
-      "id": "avoid-duplicate-accounts-for-gifts",
-      "heading": "Avoid duplicate accounts for gifts",
-      "paragraphs": [
-        "When gear is replaced, close or retire the old gifts and returns with better records record tied to gifts cleanly. Connect gifts and returns with better records to device inventory so records notes do not float unattached. Update the same day the physical gear or policy changes. Photograph labels for \u201cavoid duplicate accounts for gifts\u201d only when characters are tiny; file the photo beside typed fields.",
-        "For \u201cAvoid duplicate accounts for gifts\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cAvoid duplicate accounts for gifts\u201d, pick the one a tired adult can follow. If two adults share the house, name the primary editor. Photograph labels for \u201cavoid duplicate accounts for gifts\u201d only when characters are tiny; file the photo beside typed fields.",
-        "Correct mismatches in \u201cAvoid duplicate accounts for gifts\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cAvoid duplicate accounts for gifts\u201d. Tag retired items instead of deleting history you may need later. Photograph labels for \u201cavoid duplicate accounts for gifts\u201d only when characters are tiny; file the photo beside typed fields.",
-        "Add one house-specific example under Avoid duplicate accounts for gifts. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cavoid duplicate accounts for gifts\u201d, use a password manager and store only pointers in shared records."
-      ]
-    },
-    {
-      "id": "close-the-loop-in-inventory-for-returns",
-      "heading": "Close the loop in inventory for returns",
-      "paragraphs": [
-        "Export or snapshot gifts and returns with better records after major purchases or policy changes involving returns. Use short free-text notes for quirks about gifts that do not fit structured fields in gifts and returns with better records. If two adults share the house, name the primary editor. Close the loop on \u201cclose the loop in inventory for returns\u201d by naming the next action and the person responsible.",
-        "For \u201cClose the loop in inventory for returns\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cClose the loop in inventory for returns\u201d, pick the one a tired adult can follow. Tag retired items instead of deleting history you may need later. Close the loop on \u201cclose the loop in inventory for returns\u201d by naming the next action and the person responsible.",
-        "Correct mismatches in \u201cClose the loop in inventory for returns\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cClose the loop in inventory for returns\u201d. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. Close the loop on \u201cclose the loop in inventory for returns\u201d by naming the next action and the person responsible.",
-        "Add one house-specific example under Close the loop in inventory for returns. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cclose the loop in inventory for returns\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “avoid duplicate mystery devices” using your rooms, people, and gear — not a generic internet checklist. For upgrade versus repair, write cost, remaining coverage, and household friction side by side. If two people share the house, decide who owns the update so it does not float as ambient guilt.",
+        "Date the last review even if nothing changed, so the record feels alive. When the house and your notes disagree, trust the house and fix the notes the same day.",
+        "When “avoid duplicate mystery devices” is good enough to use tonight, stop polishing and move on. The goal is calmer Tuesdays, not a museum-quality archive."
       ]
     }
   ],
   "faq": [
     {
-      "question": "How detailed should gifts and returns with better records be?",
-      "answer": "Detailed enough that a trusted adult can act without calling you. Skip decorative fields you will not maintain."
+      "question": "How perfect does this need to be?",
+      "answer": "Good enough to act under stress. Skip fields you will not maintain."
     },
     {
-      "question": "Where should we store gifts and returns with better records?",
-      "answer": "In one household vault with clear permissions \u2014 not in three apps and a group chat."
+      "question": "Where should the notes live?",
+      "answer": "In one household place with clear permissions — not scattered across apps and chats."
     },
     {
-      "question": "Who should edit gifts and returns with better records?",
-      "answer": "Name a primary editor, then grant viewers for people who only need to look."
+      "question": "Who should edit?",
+      "answer": "Name a primary editor, then give others view access as needed."
     },
     {
-      "question": "How often should we review gifts and returns with better records?",
-      "answer": "On unbox, gift, sale, move, and once a season for a short spot check."
+      "question": "What if details are missing?",
+      "answer": "Mark them unknown and schedule a catch-up. Visible gaps beat false confidence."
     },
     {
-      "question": "What if we are missing information?",
-      "answer": "Mark fields unknown and schedule a catch-up. Visible gaps beat false confidence."
+      "question": "How often should we review?",
+      "answer": "On unbox, gift, sale, move, and a short seasonal spot check."
     },
     {
       "question": "How does Home Tech Vault help?",
-      "answer": "It keeps gifts and returns with better records next to devices, documents, and household sharing so the system stays usable."
+      "answer": "It keeps devices, documents, and household sharing together so habits stick."
     }
   ],
   "internalLinks": [
-    {
-      "href": "/knowledge/warranties/warranties-for-gifted-and-used-devices",
-      "label": "Warranties For Gifted And Used Devices",
-      "description": "Continue with this related Knowledge Center guide."
-    },
-    {
-      "href": "/knowledge/warranties/proof-of-purchase-for-electronics",
-      "label": "Proof Of Purchase For Electronics",
-      "description": "Continue with this related Knowledge Center guide."
-    },
     {
       "href": "/home-tech-checklist",
       "label": "Home tech checklist",
@@ -175,7 +147,7 @@ const article = {
     "return window tracking",
     "holiday gadget documentation"
   ],
-  "readingMinutes": 13
+  "readingMinutes": 7
 } satisfies Omit<KnowledgeArticle, "readingMinutes"> & {
   readingMinutes: number;
 };

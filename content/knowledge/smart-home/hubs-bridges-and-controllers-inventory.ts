@@ -5,155 +5,126 @@ const article = {
   "slug": "hubs-bridges-and-controllers-inventory",
   "category": "smart-home" as const,
   "title": "Hubs, Bridges, and Controllers: What to Inventory",
-  "description": "Capture the brains of your smart home \u2014 hubs, bridges, and controllers \u2014 so replacements and migrations are less painful.",
+  "description": "Capture the brains of your smart home — hubs, bridges, and controllers — so replacements and migrations are less painful.",
   "publishedAt": "2026-04-03",
   "updatedAt": "2026-04-03",
-  "heroCaption": "Placeholder hero: scene illustrating hubs, bridges, and controllers.",
+  "heroCaption": "Capture the brains of your smart home — hubs, bridges, and controllers — so replacements and migrations are less painful.",
   "intro": [
-    "Capture the brains of your smart home \u2014 hubs, bridges, and controllers \u2014 so replacements and migrations are less painful \u2014 yet most homes only assemble those details after something goes wrong.",
-    "This guide shows a practical way to handle hubs, bridges, and controllers with records you can find under stress, not another abandoned checklist.",
-    "You will define what to capture, where it lives, who can see it, and how to keep hubs, bridges, and controllers current as gear and people change.",
-    "Home Tech Vault fits this guide because devices, documents, warranties, and household sharing can live together \u2014 so these habits become a living system instead of a weekend project that expires."
+    "Capture the brains of your smart home — hubs, bridges, and controllers — so replacements and migrations are less painful. Most homes only feel the gap when something breaks, goes missing, or a stranger on the phone asks for details nobody wrote down.",
+    "You will leave with a practical way to handle this that fits a real household — short enough to keep, specific enough to use under stress.",
+    "We will cover what to write down, where it should live, who can see it, and how to keep it current as gear and people change.",
+    "Home Tech Vault is useful here because devices, documents, warranties, and household sharing can live in one place — so this stays a living habit instead of a weekend project that quietly expires."
   ],
   "sections": [
     {
-      "id": "inventory-above-apps-for-hubs-bridges",
-      "heading": "Inventory above apps for hubs bridges",
+      "id": "list-every-hub-and-bridge",
+      "heading": "List every hub and bridge",
       "paragraphs": [
-        "Write the minimum fields that make hubs, bridges, and controllers usable during a stressful call focusing on hubs. Keep secrets for hubs, bridges, and controllers in a password manager and store only pointers about inventory in shared notes. Update the same day the physical gear or policy changes. Even if a vendor app stores \u201cinventory above apps for hubs bridges\u201d, keep a household-facing summary where the right people can find it.",
-        "For \u201cInventory above apps for hubs bridges\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cInventory above apps for hubs bridges\u201d, pick the one a tired adult can follow. If two adults share the house, name the primary editor. Even if a vendor app stores \u201cinventory above apps for hubs bridges\u201d, keep a household-facing summary where the right people can find it.",
-        "Correct mismatches in \u201cInventory above apps for hubs bridges\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cInventory above apps for hubs bridges\u201d. Tag retired items instead of deleting history you may need later. Even if a vendor app stores \u201cinventory above apps for hubs bridges\u201d, keep a household-facing summary where the right people can find it.",
-        "Add one house-specific example under Inventory above apps for hubs bridges. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cinventory above apps for hubs bridges\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “list every hub and bridge” using your rooms, people, and gear — not a generic internet checklist. List hubs and bridges before bulbs — the brain of the house fails first in your memory. That sounds small until you are the person on the phone trying to remember it.",
+        "If two adults share the house, name who updates this so it is not ambient guilt. Date the last review even if nothing changed, so the record feels alive.",
+        "When “list every hub and bridge” is good enough to use tonight, stop polishing and move on. Write it while the thing is in your hands; memory gets creative after a week.",
+        "The first version of these smart home notes should be usable tonight, not impressive next year. Keep it next to the related device or document so you are not reconstructing it from a text thread later.",
+        "If nothing changed since last time, still jot the review date — it proves the record is alive."
       ]
     },
     {
-      "id": "map-hubs-and-bridges-for-bridges-controllers",
-      "heading": "Map hubs and bridges for bridges controllers",
+      "id": "note-which-radios-and-protocols",
+      "heading": "Note which radios and protocols",
       "paragraphs": [
-        "Name who updates hubs, bridges, and controllers so the job is not ambient guilt especially for bridges. When gear is replaced, close or retire the old hubs, bridges, and controllers record tied to hubs cleanly. If two adults share the house, name the primary editor. For secrets related to \u201cmap hubs and bridges for bridges controllers\u201d, use a password manager and store only pointers in shared records.",
-        "For \u201cMap hubs and bridges for bridges controllers\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cMap hubs and bridges for bridges controllers\u201d, pick the one a tired adult can follow. Tag retired items instead of deleting history you may need later. For secrets related to \u201cmap hubs and bridges for bridges controllers\u201d, use a password manager and store only pointers in shared records.",
-        "Correct mismatches in \u201cMap hubs and bridges for bridges controllers\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cMap hubs and bridges for bridges controllers\u201d. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. For secrets related to \u201cmap hubs and bridges for bridges controllers\u201d, use a password manager and store only pointers in shared records.",
-        "Add one house-specific example under Map hubs and bridges for bridges controllers. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cmap hubs and bridges for bridges controllers\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “note which radios and protocols” using your rooms, people, and gear — not a generic internet checklist. Name devices the way people yell them across the room. If two people share the house, decide who owns the update so it does not float as ambient guilt.",
+        "Leave blanks when you are unsure — a visible gap beats a confident wrong answer. Keep notes short enough that you will open them again next month.",
+        "When “note which radios and protocols” is good enough to use tonight, stop polishing and move on. The goal is calmer Tuesdays, not a museum-quality archive.",
+        "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked. That is the kind of detail that feels optional until the week you need it.",
+        "When the house and the notes disagree, believe the house and fix the notes the same day."
       ]
     },
     {
-      "id": "record-rooms-and-scenes-for-controllers-inventory",
-      "heading": "Record rooms and scenes for controllers inventory",
+      "id": "write-account-and-backup-paths",
+      "heading": "Write account and backup paths",
       "paragraphs": [
-        "Prefer one vault record over screenshots scattered across phones for hubs, bridges, and controllers and controllers. Export or snapshot hubs, bridges, and controllers after major purchases or policy changes involving bridges. Tag retired items instead of deleting history you may need later. Photograph labels for \u201crecord rooms and scenes for controllers inventory\u201d only when characters are tiny; file the photo beside typed fields.",
-        "For \u201cRecord rooms and scenes for controllers inventory\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cRecord rooms and scenes for controllers inventory\u201d, pick the one a tired adult can follow. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. Photograph labels for \u201crecord rooms and scenes for controllers inventory\u201d only when characters are tiny; file the photo beside typed fields.",
-        "Correct mismatches in \u201cRecord rooms and scenes for controllers inventory\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cRecord rooms and scenes for controllers inventory\u201d. Update the same day the physical gear or policy changes. Photograph labels for \u201crecord rooms and scenes for controllers inventory\u201d only when characters are tiny; file the photo beside typed fields.",
-        "Add one house-specific example under Record rooms and scenes for controllers inventory. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201crecord rooms and scenes for controllers inventory\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “write account and backup paths” using your rooms, people, and gear — not a generic internet checklist. Write which email owns the account that can factory-reset the thing. That sounds small until you are the person on the phone trying to remember it.",
+        "Date the last review even if nothing changed, so the record feels alive. When the house and your notes disagree, trust the house and fix the notes the same day.",
+        "When “write account and backup paths” is good enough to use tonight, stop polishing and move on. Write it while the thing is in your hands; memory gets creative after a week.",
+        "If only one person knows where the record is, you do not have a household system yet. Your future self will care more about clarity than completeness.",
+        "Share the location of this record with one other adult so it is not trapped on a single laptop."
       ]
     },
     {
-      "id": "track-batteries-for-inventory",
-      "heading": "Track batteries for inventory",
+      "id": "map-what-depends-on-each-hub",
+      "heading": "Map what depends on each hub",
       "paragraphs": [
-        "Photograph labels only when typing would lose detail related to inventory in hubs, bridges, and controllers. Teach household members where hubs, bridges, and controllers lives so parallel trackers about controllers die. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. Close the loop on \u201ctrack batteries for inventory\u201d by naming the next action and the person responsible.",
-        "For \u201cTrack batteries for inventory\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cTrack batteries for inventory\u201d, pick the one a tired adult can follow. Update the same day the physical gear or policy changes. Close the loop on \u201ctrack batteries for inventory\u201d by naming the next action and the person responsible.",
-        "Correct mismatches in \u201cTrack batteries for inventory\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cTrack batteries for inventory\u201d. If two adults share the house, name the primary editor. Close the loop on \u201ctrack batteries for inventory\u201d by naming the next action and the person responsible.",
-        "Add one house-specific example under Track batteries for inventory. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201ctrack batteries for inventory\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “map what depends on each hub” using your rooms, people, and gear — not a generic internet checklist. If a scene needs three devices, say that in one plain sentence. If two people share the house, decide who owns the update so it does not float as ambient guilt.",
+        "Keep notes short enough that you will open them again next month. If two adults share the house, name who updates this so it is not ambient guilt.",
+        "When “map what depends on each hub” is good enough to use tonight, stop polishing and move on. The goal is calmer Tuesdays, not a museum-quality archive.",
+        "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate. If it takes more than a minute to find, the system is still too scattered."
       ]
     },
     {
-      "id": "document-accounts-for-hubs",
-      "heading": "Document accounts for hubs",
+      "id": "prepare-for-a-hub-death-day",
+      "heading": "Prepare for a hub death day",
       "paragraphs": [
-        "Date-stamp the last review of hubs, bridges, and controllers even when nothing changed around hubs. During service calls, pull hubs, bridges, and controllers details for inventory before the technician arrives. Update the same day the physical gear or policy changes. Write \u201cdocument accounts for hubs\u201d as if a house guest with average tech confidence had to use it tonight.",
-        "For \u201cDocument accounts for hubs\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cDocument accounts for hubs\u201d, pick the one a tired adult can follow. If two adults share the house, name the primary editor. Write \u201cdocument accounts for hubs\u201d as if a house guest with average tech confidence had to use it tonight.",
-        "Correct mismatches in \u201cDocument accounts for hubs\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cDocument accounts for hubs\u201d. Tag retired items instead of deleting history you may need later. Write \u201cdocument accounts for hubs\u201d as if a house guest with average tech confidence had to use it tonight.",
-        "Add one house-specific example under Document accounts for hubs. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cdocument accounts for hubs\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “prepare for a hub death day” using your rooms, people, and gear — not a generic internet checklist. Battery sensors die quietly; inventory them before they chirp at 2 a.m. That sounds small until you are the person on the phone trying to remember it.",
+        "When the house and your notes disagree, trust the house and fix the notes the same day. Leave blanks when you are unsure — a visible gap beats a confident wrong answer.",
+        "When “prepare for a hub death day” is good enough to use tonight, stop polishing and move on. Write it while the thing is in your hands; memory gets creative after a week.",
+        "When support asks for something you lack, add it immediately so the next call is shorter. Keep it next to the related device or document so you are not reconstructing it from a text thread later."
       ]
     },
     {
-      "id": "backup-automations-for-bridges",
-      "heading": "Backup automations for bridges",
+      "id": "keep-firmware-dates-light",
+      "heading": "Keep firmware dates light",
       "paragraphs": [
-        "Link related documents next to the hubs, bridges, and controllers entry for bridges instead of a generic Downloads folder. For travel or sitters, share only the slice of hubs, bridges, and controllers about hubs they need. If two adults share the house, name the primary editor. Stale notes for \u201cbackup automations for bridges\u201d create false confidence \u2014 worse than marking a field unknown.",
-        "For \u201cBackup automations for bridges\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cBackup automations for bridges\u201d, pick the one a tired adult can follow. Tag retired items instead of deleting history you may need later. Stale notes for \u201cbackup automations for bridges\u201d create false confidence \u2014 worse than marking a field unknown.",
-        "Correct mismatches in \u201cBackup automations for bridges\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cBackup automations for bridges\u201d. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. Stale notes for \u201cbackup automations for bridges\u201d create false confidence \u2014 worse than marking a field unknown.",
-        "Add one house-specific example under Backup automations for bridges. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cbackup automations for bridges\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “keep firmware dates light” using your rooms, people, and gear — not a generic internet checklist. Voice speakers need room names and account ownership, not just cute nicknames. If two people share the house, decide who owns the update so it does not float as ambient guilt.",
+        "If two adults share the house, name who updates this so it is not ambient guilt. Date the last review even if nothing changed, so the record feels alive.",
+        "When “keep firmware dates light” is good enough to use tonight, stop polishing and move on. The goal is calmer Tuesdays, not a museum-quality archive.",
+        "Trust the physical house over stale notes — then fix the notes the same day. That is the kind of detail that feels optional until the week you need it."
       ]
     },
     {
-      "id": "note-dependencies-for-controllers",
-      "heading": "Note dependencies for controllers",
+      "id": "share-reset-knowledge-carefully",
+      "heading": "Share reset knowledge carefully",
       "paragraphs": [
-        "If a vendor app already stores part of hubs, bridges, and controllers, still keep a household-facing summary about controllers. After holidays or moves, schedule a catch-up pass for hubs, bridges, and controllers covering bridges. Tag retired items instead of deleting history you may need later. Even if a vendor app stores \u201cnote dependencies for controllers\u201d, keep a household-facing summary where the right people can find it.",
-        "For \u201cNote dependencies for controllers\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cNote dependencies for controllers\u201d, pick the one a tired adult can follow. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. Even if a vendor app stores \u201cnote dependencies for controllers\u201d, keep a household-facing summary where the right people can find it.",
-        "Correct mismatches in \u201cNote dependencies for controllers\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cNote dependencies for controllers\u201d. Update the same day the physical gear or policy changes. Even if a vendor app stores \u201cnote dependencies for controllers\u201d, keep a household-facing summary where the right people can find it.",
-        "Add one house-specific example under Note dependencies for controllers. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cnote dependencies for controllers\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “share reset knowledge carefully” using your rooms, people, and gear — not a generic internet checklist. When you rebuild automations after an app outage, keep a short offline note of the important ones. That sounds small until you are the person on the phone trying to remember it.",
+        "Leave blanks when you are unsure — a visible gap beats a confident wrong answer. Keep notes short enough that you will open them again next month.",
+        "When “share reset knowledge carefully” is good enough to use tonight, stop polishing and move on. Write it while the thing is in your hands; memory gets creative after a week."
       ]
     },
     {
-      "id": "handle-guests-for-inventory",
-      "heading": "Handle guests for inventory",
+      "id": "retire-old-controllers-cleanly",
+      "heading": "Retire old controllers cleanly",
       "paragraphs": [
-        "Keep secrets for hubs, bridges, and controllers in a password manager and store only pointers about inventory in shared notes. Mark unknown fields for controllers visibly rather than inventing guesses about hubs, bridges, and controllers. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. For secrets related to \u201chandle guests for inventory\u201d, use a password manager and store only pointers in shared records.",
-        "For \u201cHandle guests for inventory\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cHandle guests for inventory\u201d, pick the one a tired adult can follow. Update the same day the physical gear or policy changes. For secrets related to \u201chandle guests for inventory\u201d, use a password manager and store only pointers in shared records.",
-        "Correct mismatches in \u201cHandle guests for inventory\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cHandle guests for inventory\u201d. If two adults share the house, name the primary editor. For secrets related to \u201chandle guests for inventory\u201d, use a password manager and store only pointers in shared records.",
-        "Add one house-specific example under Handle guests for inventory. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201chandle guests for inventory\u201d, use a password manager and store only pointers in shared records."
-      ]
-    },
-    {
-      "id": "retire-dead-nodes-for-hubs",
-      "heading": "Retire dead nodes for hubs",
-      "paragraphs": [
-        "When gear is replaced, close or retire the old hubs, bridges, and controllers record tied to hubs cleanly. Connect hubs, bridges, and controllers to device inventory so inventory notes do not float unattached. Update the same day the physical gear or policy changes. Photograph labels for \u201cretire dead nodes for hubs\u201d only when characters are tiny; file the photo beside typed fields.",
-        "For \u201cRetire dead nodes for hubs\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cRetire dead nodes for hubs\u201d, pick the one a tired adult can follow. If two adults share the house, name the primary editor. Photograph labels for \u201cretire dead nodes for hubs\u201d only when characters are tiny; file the photo beside typed fields.",
-        "Correct mismatches in \u201cRetire dead nodes for hubs\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cRetire dead nodes for hubs\u201d. Tag retired items instead of deleting history you may need later. Photograph labels for \u201cretire dead nodes for hubs\u201d only when characters are tiny; file the photo beside typed fields.",
-        "Add one house-specific example under Retire dead nodes for hubs. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cretire dead nodes for hubs\u201d, use a password manager and store only pointers in shared records."
-      ]
-    },
-    {
-      "id": "keep-names-sane-for-bridges",
-      "heading": "Keep names sane for bridges",
-      "paragraphs": [
-        "Export or snapshot hubs, bridges, and controllers after major purchases or policy changes involving bridges. Use short free-text notes for quirks about hubs that do not fit structured fields in hubs, bridges, and controllers. If two adults share the house, name the primary editor. Close the loop on \u201ckeep names sane for bridges\u201d by naming the next action and the person responsible.",
-        "For \u201cKeep names sane for bridges\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cKeep names sane for bridges\u201d, pick the one a tired adult can follow. Tag retired items instead of deleting history you may need later. Close the loop on \u201ckeep names sane for bridges\u201d by naming the next action and the person responsible.",
-        "Correct mismatches in \u201cKeep names sane for bridges\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cKeep names sane for bridges\u201d. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. Close the loop on \u201ckeep names sane for bridges\u201d by naming the next action and the person responsible.",
-        "Add one house-specific example under Keep names sane for bridges. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201ckeep names sane for bridges\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “retire old controllers cleanly” using your rooms, people, and gear — not a generic internet checklist. Retire abandoned bulbs and dead automations so the list matches reality. If two people share the house, decide who owns the update so it does not float as ambient guilt.",
+        "Date the last review even if nothing changed, so the record feels alive. When the house and your notes disagree, trust the house and fix the notes the same day.",
+        "When “retire old controllers cleanly” is good enough to use tonight, stop polishing and move on. The goal is calmer Tuesdays, not a museum-quality archive."
       ]
     }
   ],
   "faq": [
     {
-      "question": "How detailed should hubs, bridges, and controllers be?",
-      "answer": "Detailed enough that a trusted adult can act without calling you. Skip decorative fields you will not maintain."
+      "question": "How perfect does this need to be?",
+      "answer": "Good enough to act under stress. Skip fields you will not maintain."
     },
     {
-      "question": "Where should we store hubs, bridges, and controllers?",
-      "answer": "In one household vault with clear permissions \u2014 not in three apps and a group chat."
+      "question": "Where should the notes live?",
+      "answer": "In one household place with clear permissions — not scattered across apps and chats."
     },
     {
-      "question": "Who should edit hubs, bridges, and controllers?",
-      "answer": "Name a primary editor, then grant viewers for people who only need to look."
+      "question": "Who should edit?",
+      "answer": "Name a primary editor, then give others view access as needed."
     },
     {
-      "question": "How often should we review hubs, bridges, and controllers?",
-      "answer": "On unbox, gift, sale, move, and once a season for a short spot check."
+      "question": "What if details are missing?",
+      "answer": "Mark them unknown and schedule a catch-up. Visible gaps beat false confidence."
     },
     {
-      "question": "What if we are missing information?",
-      "answer": "Mark fields unknown and schedule a catch-up. Visible gaps beat false confidence."
+      "question": "How often should we review?",
+      "answer": "On unbox, gift, sale, move, and a short seasonal spot check."
     },
     {
       "question": "How does Home Tech Vault help?",
-      "answer": "It keeps hubs, bridges, and controllers next to devices, documents, and household sharing so the system stays usable."
+      "answer": "It keeps devices, documents, and household sharing together so habits stick."
     }
   ],
   "internalLinks": [
-    {
-      "href": "/knowledge/smart-home/organizing-smart-home-devices",
-      "label": "Organizing Smart Home Devices",
-      "description": "Continue with this related Knowledge Center guide."
-    },
-    {
-      "href": "/knowledge/smart-home/when-smart-devices-need-manual-backups",
-      "label": "When Smart Devices Need Manual Backups",
-      "description": "Continue with this related Knowledge Center guide."
-    },
     {
       "href": "/smart-home-organizer",
       "label": "Smart home organizer",
@@ -167,7 +138,7 @@ const article = {
     {
       "href": "/network-documentation",
       "label": "Network documentation",
-      "description": "Smart homes depend on clear network notes."
+      "description": "Smart homes still need clear network notes."
     }
   ],
   "keywords": [
@@ -175,7 +146,7 @@ const article = {
     "zigbee bridge records",
     "home assistant documentation"
   ],
-  "readingMinutes": 12
+  "readingMinutes": 7
 } satisfies Omit<KnowledgeArticle, "readingMinutes"> & {
   readingMinutes: number;
 };

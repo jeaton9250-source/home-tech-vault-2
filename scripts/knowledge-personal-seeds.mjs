@@ -1,4 +1,5 @@
-[
+/** Personal Knowledge Center seeds — human voice, not template filler. */
+export default [
   {
     "slug": "how-to-inventory-every-device-in-your-home",
     "category": "devices",
@@ -115,34 +116,6 @@
       ]
     ],
     "asides": [
-      "The first version of these device notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Decide what actually counts",
-      "Pick one place to keep the list",
-      "Walk the house in a fixed order",
-      "Write down what you will need later",
-      "Attach paperwork while it is still nearby",
-      "Treat shared and personal gear differently",
-      "Keep the list from going stale",
-      "Use the list when it counts"
-    ],
-    "pipes": [
-      "Count powered and networked gear that costs real money to replace.|Include smart appliances and mesh nodes even when they feel like fixtures.|Skip cheap cables on pass one unless unlabeled cords cause weekly friction.|Ask whether model or serial would matter for warranty or insurance.",
-      "Choose a household vault instead of three spreadsheets and a chat photo album.|Name who primarily edits so updates belong to someone.|Treat side notes as temporary staging, not competing systems.|Make sure someone besides one locked laptop can reach the records.",
-      "Start at the router, then move room by room so you do not double-count.|Open media cabinets and utility closets where remotes and spare nodes hide.|Inventory first and declutter second.|If a room stalls, capture names and locations, then return later for serials.",
-      "Brand, model, serial or IMEI, room, and primary user cover most emergencies.|Add purchase date and price while the receipt is still findable.|Record MAC addresses for devices you may whitelist later.|Use a short note for quirks like required cable types.",
-      "Link order emails and PDF receipts the day you unbox.|Photograph serial labels before mounting or hiding gear.|Scan paper warranty cards once, both sides.|Keep warranty PDFs beside the device, not in a generic Downloads pile.",
-      "Shared living-room gear should be household-visible; phones can stay limited-access.|Record who pays which cellular line on family plans.|Store parental control hints privately, not on sticky notes.|Write down ownership decisions when they are ambiguous.",
-      "Update on unbox, gift, sale, or move.|Seasonally spot-check one room for ten minutes.|Retire devices with a status flag instead of deleting history.|After holidays, schedule a catch-up for gifted gadgets.",
-      "Room photos with devices in context help insurance adjusters.|Serials without purchase proof rarely satisfy claims.|Pull model and install date before a technician arrives.|Keep a copy you can reach if the home network is offline."
-    ],
-    "pads": [
       "The first version of these device notes should be usable tonight, not impressive next year.",
       "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
       "If only one person knows where the record is, you do not have a household system yet.",
@@ -267,34 +240,6 @@
       ]
     ],
     "asides": [
-      "The first version of these device notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Why serials suddenly matter",
-      "Where they actually hide",
-      "Save more than the digits",
-      "When the sticker is gone",
-      "Keep them findable without a secret stash",
-      "Make label photos actually useful",
-      "Update when gear changes",
-      "Use them on real calls"
-    ],
-    "pipes": [
-      "Support and insurance treat the serial as the device's fingerprint.|Marketing names are friendly; serials unlock tickets.|If you only save one identifier, make it the serial.|Stolen-device reports often stall without it.",
-      "Check the underside, battery bay, box, and Settings About screen.|TVs hide labels on the back or behind HDMI flaps.|Routers print serials on the bottom and in admin status.|Phones may show IMEI in settings and on the SIM tray.",
-      "Write brand and exact model beside every serial.|Note where you found it so the next search is faster.|Photograph tiny labels, then type the digits while readable.|For phones, keep IMEI and the account that can lock the device.",
-      "Mark unknown instead of inventing digits.|Check order emails and purchase history before you give up.|Ask the retailer for an invoice if you are still in the return window.|For used gear, note seller contact and any partial ID.",
-      "Keep serials next to the device record, not in a random notes app.|Avoid posting them publicly even though they are not passwords.|Do not bury them only inside a vendor app you might lose.|Share view access with whoever handles warranties.",
-      "Photograph labels straight-on with glare minimized.|Crop so digits are readable without opening a huge album.|File the photo on the device record the same day.|Retake if 8/B or 0/O look ambiguous.",
-      "Retire old serials when you replace a device.|Ask whether a board-level repair changed the serial.|Gifted devices need a fresh entry.|Delete duplicates so support never gets the wrong number.",
-      "Have serial, model, and proof open before you call.|Paste carefully — transposed digits waste whole calls.|Pair serials with room photos for insurance.|Verify trade-in serials match the device in your hand."
-    ],
-    "pads": [
       "The first version of these device notes should be usable tonight, not impressive next year.",
       "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
       "If only one person knows where the record is, you do not have a household system yet.",
@@ -433,34 +378,6 @@
       "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
       "When support asks for something you lack, add it immediately so the next call is shorter.",
       "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Pick an order you will finish",
-      "Capture only what matters in each room",
-      "Open cabinets and closets you usually skip",
-      "Park unknowns without losing them",
-      "Handle shared rooms without debate",
-      "Stop at good enough",
-      "Close the room before you leave",
-      "Turn the walk into a living list"
-    ],
-    "pipes": [
-      "Get specific about “pick an order you will finish” using your rooms, people, and gear — not a generic internet checklist.|Walk to the device and write what you see — not what you remember from last year.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “pick an order you will finish” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “capture only what matters in each room” using your rooms, people, and gear — not a generic internet checklist.|If two chargers look identical, add a one-line note that prevents the weekly argument.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “capture only what matters in each room” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “open cabinets and closets you usually skip” using your rooms, people, and gear — not a generic internet checklist.|Room plus a short placement note is enough; you are not drafting architecture plans.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “open cabinets and closets you usually skip” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “park unknowns without losing them” using your rooms, people, and gear — not a generic internet checklist.|When a device is employer-owned, say so so insurance claims stay clean.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “park unknowns without losing them” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “handle shared rooms without debate” using your rooms, people, and gear — not a generic internet checklist.|Unbox into the inventory while the receipt is still in the shopping tab.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “handle shared rooms without debate” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “stop at good enough” using your rooms, people, and gear — not a generic internet checklist.|Personal phones can stay limited-access; living-room gear should be household-visible.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “stop at good enough” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “close the room before you leave” using your rooms, people, and gear — not a generic internet checklist.|Retire sold or recycled devices with a status instead of pretending they still live here.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “close the room before you leave” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “turn the walk into a living list” using your rooms, people, and gear — not a generic internet checklist.|Before a technician arrives, pull model, serial, and install date into one screen.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “turn the walk into a living list” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
-      "The first version of these device notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
     ]
   },
   {
@@ -587,34 +504,6 @@
       ]
     ],
     "asides": [
-      "The first version of these device notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Label the confusing stuff first",
-      "Prefer tiny tags over sticker explosions",
-      "Match labels to inventory nicknames",
-      "Handle chargers and lookalikes",
-      "Keep guest-friendly labels",
-      "Avoid labeling that shames the room",
-      "Update labels when gear moves",
-      "Know when not to label"
-    ],
-    "pipes": [
-      "Get specific about “label the confusing stuff first” using your rooms, people, and gear — not a generic internet checklist.|Walk to the device and write what you see — not what you remember from last year.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “label the confusing stuff first” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “prefer tiny tags over sticker explosions” using your rooms, people, and gear — not a generic internet checklist.|If two chargers look identical, add a one-line note that prevents the weekly argument.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “prefer tiny tags over sticker explosions” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “match labels to inventory nicknames” using your rooms, people, and gear — not a generic internet checklist.|Room plus a short placement note is enough; you are not drafting architecture plans.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “match labels to inventory nicknames” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “handle chargers and lookalikes” using your rooms, people, and gear — not a generic internet checklist.|When a device is employer-owned, say so so insurance claims stay clean.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “handle chargers and lookalikes” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “keep guest-friendly labels” using your rooms, people, and gear — not a generic internet checklist.|Unbox into the inventory while the receipt is still in the shopping tab.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “keep guest-friendly labels” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “avoid labeling that shames the room” using your rooms, people, and gear — not a generic internet checklist.|Personal phones can stay limited-access; living-room gear should be household-visible.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “avoid labeling that shames the room” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “update labels when gear moves” using your rooms, people, and gear — not a generic internet checklist.|Retire sold or recycled devices with a status instead of pretending they still live here.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “update labels when gear moves” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “know when not to label” using your rooms, people, and gear — not a generic internet checklist.|Before a technician arrives, pull model, serial, and install date into one screen.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “know when not to label” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
       "The first version of these device notes should be usable tonight, not impressive next year.",
       "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
       "If only one person knows where the record is, you do not have a household system yet.",
@@ -753,34 +642,6 @@
       "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
       "When support asks for something you lack, add it immediately so the next call is shorter.",
       "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "List people and their primary devices",
-      "Capture IMEI and find-my accounts",
-      "Note who pays which line",
-      "Handle school and work devices",
-      "Share just enough with the household",
-      "Plan for travel and loss",
-      "Retire old phones cleanly",
-      "Review after back-to-school and holidays"
-    ],
-    "pipes": [
-      "Get specific about “list people and their primary devices” using your rooms, people, and gear — not a generic internet checklist.|Walk to the device and write what you see — not what you remember from last year.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “list people and their primary devices” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “capture IMEI and find-my accounts” using your rooms, people, and gear — not a generic internet checklist.|If two chargers look identical, add a one-line note that prevents the weekly argument.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “capture IMEI and find-my accounts” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “note who pays which line” using your rooms, people, and gear — not a generic internet checklist.|Room plus a short placement note is enough; you are not drafting architecture plans.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “note who pays which line” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “handle school and work devices” using your rooms, people, and gear — not a generic internet checklist.|When a device is employer-owned, say so so insurance claims stay clean.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “handle school and work devices” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “share just enough with the household” using your rooms, people, and gear — not a generic internet checklist.|Unbox into the inventory while the receipt is still in the shopping tab.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “share just enough with the household” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “plan for travel and loss” using your rooms, people, and gear — not a generic internet checklist.|Personal phones can stay limited-access; living-room gear should be household-visible.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “plan for travel and loss” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “retire old phones cleanly” using your rooms, people, and gear — not a generic internet checklist.|Retire sold or recycled devices with a status instead of pretending they still live here.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “retire old phones cleanly” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “review after back-to-school and holidays” using your rooms, people, and gear — not a generic internet checklist.|Before a technician arrives, pull model, serial, and install date into one screen.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “review after back-to-school and holidays” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
-      "The first version of these device notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
     ]
   },
   {
@@ -907,34 +768,6 @@
       ]
     ],
     "asides": [
-      "The first version of these device notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Find the model plate without drama",
-      "Include HVAC, laundry, and garage gear",
-      "Save install dates and filter sizes",
-      "Attach manuals you will actually open",
-      "Prepare for service calls",
-      "Track warranties on big appliances",
-      "Note shutoff quirks",
-      "Review before selling or moving"
-    ],
-    "pipes": [
-      "Get specific about “find the model plate without drama” using your rooms, people, and gear — not a generic internet checklist.|Walk to the device and write what you see — not what you remember from last year.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “find the model plate without drama” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “include HVAC, laundry, and garage gear” using your rooms, people, and gear — not a generic internet checklist.|If two chargers look identical, add a one-line note that prevents the weekly argument.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “include HVAC, laundry, and garage gear” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “save install dates and filter sizes” using your rooms, people, and gear — not a generic internet checklist.|Room plus a short placement note is enough; you are not drafting architecture plans.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “save install dates and filter sizes” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “attach manuals you will actually open” using your rooms, people, and gear — not a generic internet checklist.|When a device is employer-owned, say so so insurance claims stay clean.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “attach manuals you will actually open” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “prepare for service calls” using your rooms, people, and gear — not a generic internet checklist.|Unbox into the inventory while the receipt is still in the shopping tab.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “prepare for service calls” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “track warranties on big appliances” using your rooms, people, and gear — not a generic internet checklist.|Personal phones can stay limited-access; living-room gear should be household-visible.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “track warranties on big appliances” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “note shutoff quirks” using your rooms, people, and gear — not a generic internet checklist.|Retire sold or recycled devices with a status instead of pretending they still live here.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “note shutoff quirks” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “review before selling or moving” using your rooms, people, and gear — not a generic internet checklist.|Before a technician arrives, pull model, serial, and install date into one screen.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “review before selling or moving” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
       "The first version of these device notes should be usable tonight, not impressive next year.",
       "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
       "If only one person knows where the record is, you do not have a household system yet.",
@@ -1073,34 +906,6 @@
       "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
       "When support asks for something you lack, add it immediately so the next call is shorter.",
       "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Do it while everything is still on the table",
-      "Save receipt and order number first",
-      "Photograph serials before mounting",
-      "Write setup choices you will forget",
-      "Create the inventory entry immediately",
-      "Store packaging only if returns need it",
-      "Invite the household owner into the record",
-      "Close the loop the same day"
-    ],
-    "pipes": [
-      "Get specific about “do it while everything is still on the table” using your rooms, people, and gear — not a generic internet checklist.|Walk to the device and write what you see — not what you remember from last year.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “do it while everything is still on the table” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “save receipt and order number first” using your rooms, people, and gear — not a generic internet checklist.|If two chargers look identical, add a one-line note that prevents the weekly argument.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “save receipt and order number first” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “photograph serials before mounting” using your rooms, people, and gear — not a generic internet checklist.|Room plus a short placement note is enough; you are not drafting architecture plans.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “photograph serials before mounting” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “write setup choices you will forget” using your rooms, people, and gear — not a generic internet checklist.|When a device is employer-owned, say so so insurance claims stay clean.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “write setup choices you will forget” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “create the inventory entry immediately” using your rooms, people, and gear — not a generic internet checklist.|Unbox into the inventory while the receipt is still in the shopping tab.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “create the inventory entry immediately” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “store packaging only if returns need it” using your rooms, people, and gear — not a generic internet checklist.|Personal phones can stay limited-access; living-room gear should be household-visible.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “store packaging only if returns need it” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “invite the household owner into the record” using your rooms, people, and gear — not a generic internet checklist.|Retire sold or recycled devices with a status instead of pretending they still live here.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “invite the household owner into the record” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “close the loop the same day” using your rooms, people, and gear — not a generic internet checklist.|Before a technician arrives, pull model, serial, and install date into one screen.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “close the loop the same day” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
-      "The first version of these device notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
     ]
   },
   {
@@ -1227,34 +1032,6 @@
       ]
     ],
     "asides": [
-      "The first version of these network notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Sketch the real path of the internet",
-      "Inventory modem, router, and nodes",
-      "Write Wi-Fi names people actually use",
-      "Keep admin context without storing passwords",
-      "Note wired exceptions",
-      "Prepare an outage cheat sheet",
-      "Update after any swap",
-      "Make it usable for a non-expert"
-    ],
-    "pipes": [
-      "Get specific about “sketch the real path of the internet” using your rooms, people, and gear — not a generic internet checklist.|Start at the modem and follow the cables until you hit Wi-Fi — write that path down.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “sketch the real path of the internet” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “inventory modem, router, and nodes” using your rooms, people, and gear — not a generic internet checklist.|Nickname gear after rooms so non-techy adults can point to it.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “inventory modem, router, and nodes” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “write Wi-Fi names people actually use” using your rooms, people, and gear — not a generic internet checklist.|Passwords belong in a password manager; the vault holds where the gear lives.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “write Wi-Fi names people actually use” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “keep admin context without storing passwords” using your rooms, people, and gear — not a generic internet checklist.|Label wall jacks and the one mystery Ethernet run before you move furniture again.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “keep admin context without storing passwords” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “note wired exceptions” using your rooms, people, and gear — not a generic internet checklist.|Keep ISP account number and modem ID where you can read them during an outage call.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “note wired exceptions” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “prepare an outage cheat sheet” using your rooms, people, and gear — not a generic internet checklist.|Guest Wi-Fi notes save text threads at every dinner party.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “prepare an outage cheat sheet” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “update after any swap” using your rooms, people, and gear — not a generic internet checklist.|After you replace a router, close the old record the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “update after any swap” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “make it usable for a non-expert” using your rooms, people, and gear — not a generic internet checklist.|Once a year, pretend you are the house sitter and try to find the network notes.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “make it usable for a non-expert” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
       "The first version of these network notes should be usable tonight, not impressive next year.",
       "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
       "If only one person knows where the record is, you do not have a household system yet.",
@@ -1393,34 +1170,6 @@
       "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
       "When support asks for something you lack, add it immediately so the next call is shorter.",
       "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "What belongs in notes versus a password manager",
-      "Record model, serial, and firmware habits",
-      "Document port forwards you care about",
-      "Note DNS or parental-control choices",
-      "Track who has admin access",
-      "Prepare for a reset day",
-      "Keep ISP handoff details nearby",
-      "Review after major changes"
-    ],
-    "pipes": [
-      "Get specific about “what belongs in notes versus a password manager” using your rooms, people, and gear — not a generic internet checklist.|Start at the modem and follow the cables until you hit Wi-Fi — write that path down.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “what belongs in notes versus a password manager” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “record model, serial, and firmware habits” using your rooms, people, and gear — not a generic internet checklist.|Nickname gear after rooms so non-techy adults can point to it.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “record model, serial, and firmware habits” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “document port forwards you care about” using your rooms, people, and gear — not a generic internet checklist.|Passwords belong in a password manager; the vault holds where the gear lives.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “document port forwards you care about” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “note DNS or parental-control choices” using your rooms, people, and gear — not a generic internet checklist.|Label wall jacks and the one mystery Ethernet run before you move furniture again.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “note DNS or parental-control choices” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “track who has admin access” using your rooms, people, and gear — not a generic internet checklist.|Keep ISP account number and modem ID where you can read them during an outage call.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “track who has admin access” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “prepare for a reset day” using your rooms, people, and gear — not a generic internet checklist.|Guest Wi-Fi notes save text threads at every dinner party.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “prepare for a reset day” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “keep ISP handoff details nearby” using your rooms, people, and gear — not a generic internet checklist.|After you replace a router, close the old record the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “keep ISP handoff details nearby” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “review after major changes” using your rooms, people, and gear — not a generic internet checklist.|Once a year, pretend you are the house sitter and try to find the network notes.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “review after major changes” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
-      "The first version of these network notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
     ]
   },
   {
@@ -1547,34 +1296,6 @@
       ]
     ],
     "asides": [
-      "The first version of these network notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Name networks the way guests will ask",
-      "Keep passwords out of shared notes",
-      "Set up guest access on purpose",
-      "Separate IoT from main Wi-Fi when you can",
-      "Write who knows the credentials",
-      "Update after rotations",
-      "Help sitters without oversharing",
-      "Recover calmly from lockouts"
-    ],
-    "pipes": [
-      "Get specific about “name networks the way guests will ask” using your rooms, people, and gear — not a generic internet checklist.|Start at the modem and follow the cables until you hit Wi-Fi — write that path down.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “name networks the way guests will ask” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “keep passwords out of shared notes” using your rooms, people, and gear — not a generic internet checklist.|Nickname gear after rooms so non-techy adults can point to it.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “keep passwords out of shared notes” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “set up guest access on purpose” using your rooms, people, and gear — not a generic internet checklist.|Passwords belong in a password manager; the vault holds where the gear lives.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “set up guest access on purpose” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “separate IoT from main Wi-Fi when you can” using your rooms, people, and gear — not a generic internet checklist.|Label wall jacks and the one mystery Ethernet run before you move furniture again.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “separate IoT from main Wi-Fi when you can” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “write who knows the credentials” using your rooms, people, and gear — not a generic internet checklist.|Keep ISP account number and modem ID where you can read them during an outage call.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “write who knows the credentials” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “update after rotations” using your rooms, people, and gear — not a generic internet checklist.|Guest Wi-Fi notes save text threads at every dinner party.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “update after rotations” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “help sitters without oversharing” using your rooms, people, and gear — not a generic internet checklist.|After you replace a router, close the old record the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “help sitters without oversharing” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “recover calmly from lockouts” using your rooms, people, and gear — not a generic internet checklist.|Once a year, pretend you are the house sitter and try to find the network notes.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “recover calmly from lockouts” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
       "The first version of these network notes should be usable tonight, not impressive next year.",
       "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
       "If only one person knows where the record is, you do not have a household system yet.",
@@ -1713,34 +1434,6 @@
       "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
       "When support asks for something you lack, add it immediately so the next call is shorter.",
       "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Name nodes by room or floor",
-      "Photograph placement once",
-      "Note power quirks and Ethernet backhaul",
-      "Track which node covers which dead zone",
-      "Plan replacements without guessing",
-      "Update after furniture moves",
-      "Keep serials per node",
-      "Test after storms or outages"
-    ],
-    "pipes": [
-      "Get specific about “name nodes by room or floor” using your rooms, people, and gear — not a generic internet checklist.|Start at the modem and follow the cables until you hit Wi-Fi — write that path down.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “name nodes by room or floor” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “photograph placement once” using your rooms, people, and gear — not a generic internet checklist.|Nickname gear after rooms so non-techy adults can point to it.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “photograph placement once” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “note power quirks and Ethernet backhaul” using your rooms, people, and gear — not a generic internet checklist.|Passwords belong in a password manager; the vault holds where the gear lives.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “note power quirks and Ethernet backhaul” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “track which node covers which dead zone” using your rooms, people, and gear — not a generic internet checklist.|Label wall jacks and the one mystery Ethernet run before you move furniture again.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “track which node covers which dead zone” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “plan replacements without guessing” using your rooms, people, and gear — not a generic internet checklist.|Keep ISP account number and modem ID where you can read them during an outage call.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “plan replacements without guessing” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “update after furniture moves” using your rooms, people, and gear — not a generic internet checklist.|Guest Wi-Fi notes save text threads at every dinner party.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “update after furniture moves” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “keep serials per node” using your rooms, people, and gear — not a generic internet checklist.|After you replace a router, close the old record the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “keep serials per node” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “test after storms or outages” using your rooms, people, and gear — not a generic internet checklist.|Once a year, pretend you are the house sitter and try to find the network notes.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “test after storms or outages” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
-      "The first version of these network notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
     ]
   },
   {
@@ -1867,34 +1560,6 @@
       ]
     ],
     "asides": [
-      "The first version of these network notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Save account number and phone shortcuts",
-      "Write modem and gateway IDs",
-      "Note plan speed for sanity checks",
-      "Keep ticket history pointers",
-      "Share outage steps with the household",
-      "Prepare a no-Wi-Fi lookup path",
-      "Update after equipment swaps",
-      "Know when to escalate"
-    ],
-    "pipes": [
-      "Get specific about “save account number and phone shortcuts” using your rooms, people, and gear — not a generic internet checklist.|Start at the modem and follow the cables until you hit Wi-Fi — write that path down.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “save account number and phone shortcuts” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “write modem and gateway IDs” using your rooms, people, and gear — not a generic internet checklist.|Nickname gear after rooms so non-techy adults can point to it.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “write modem and gateway IDs” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “note plan speed for sanity checks” using your rooms, people, and gear — not a generic internet checklist.|Passwords belong in a password manager; the vault holds where the gear lives.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “note plan speed for sanity checks” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “keep ticket history pointers” using your rooms, people, and gear — not a generic internet checklist.|Label wall jacks and the one mystery Ethernet run before you move furniture again.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “keep ticket history pointers” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “share outage steps with the household” using your rooms, people, and gear — not a generic internet checklist.|Keep ISP account number and modem ID where you can read them during an outage call.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “share outage steps with the household” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “prepare a no-Wi-Fi lookup path” using your rooms, people, and gear — not a generic internet checklist.|Guest Wi-Fi notes save text threads at every dinner party.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “prepare a no-Wi-Fi lookup path” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “update after equipment swaps” using your rooms, people, and gear — not a generic internet checklist.|After you replace a router, close the old record the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “update after equipment swaps” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “know when to escalate” using your rooms, people, and gear — not a generic internet checklist.|Once a year, pretend you are the house sitter and try to find the network notes.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “know when to escalate” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
       "The first version of these network notes should be usable tonight, not impressive next year.",
       "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
       "If only one person knows where the record is, you do not have a household system yet.",
@@ -2033,34 +1698,6 @@
       "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
       "When support asks for something you lack, add it immediately so the next call is shorter.",
       "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Label wall jacks in plain language",
-      "Map switch ports that matter",
-      "Note which TV or desk is hardwired",
-      "Document adapters and odd cables",
-      "Plan for moves and rewires",
-      "Keep a photo of the messy cabinet",
-      "Update after adding a switch",
-      "Avoid mystery cables"
-    ],
-    "pipes": [
-      "Get specific about “label wall jacks in plain language” using your rooms, people, and gear — not a generic internet checklist.|Start at the modem and follow the cables until you hit Wi-Fi — write that path down.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “label wall jacks in plain language” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “map switch ports that matter” using your rooms, people, and gear — not a generic internet checklist.|Nickname gear after rooms so non-techy adults can point to it.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “map switch ports that matter” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “note which TV or desk is hardwired” using your rooms, people, and gear — not a generic internet checklist.|Passwords belong in a password manager; the vault holds where the gear lives.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “note which TV or desk is hardwired” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “document adapters and odd cables” using your rooms, people, and gear — not a generic internet checklist.|Label wall jacks and the one mystery Ethernet run before you move furniture again.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “document adapters and odd cables” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “plan for moves and rewires” using your rooms, people, and gear — not a generic internet checklist.|Keep ISP account number and modem ID where you can read them during an outage call.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “plan for moves and rewires” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “keep a photo of the messy cabinet” using your rooms, people, and gear — not a generic internet checklist.|Guest Wi-Fi notes save text threads at every dinner party.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “keep a photo of the messy cabinet” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “update after adding a switch” using your rooms, people, and gear — not a generic internet checklist.|After you replace a router, close the old record the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “update after adding a switch” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “avoid mystery cables” using your rooms, people, and gear — not a generic internet checklist.|Once a year, pretend you are the house sitter and try to find the network notes.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “avoid mystery cables” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
-      "The first version of these network notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
     ]
   },
   {
@@ -2187,34 +1824,6 @@
       ]
     ],
     "asides": [
-      "The first version of these network notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Export settings before you swap",
-      "List cables and ports to reconnect",
-      "Preserve Wi-Fi names when you can",
-      "Re-document serials and admin pointers",
-      "Verify ISP login after cutover",
-      "Retire the old gear record",
-      "Tell the household what changed",
-      "Schedule a one-week follow-up"
-    ],
-    "pipes": [
-      "Get specific about “export settings before you swap” using your rooms, people, and gear — not a generic internet checklist.|Start at the modem and follow the cables until you hit Wi-Fi — write that path down.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “export settings before you swap” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “list cables and ports to reconnect” using your rooms, people, and gear — not a generic internet checklist.|Nickname gear after rooms so non-techy adults can point to it.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “list cables and ports to reconnect” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “preserve Wi-Fi names when you can” using your rooms, people, and gear — not a generic internet checklist.|Passwords belong in a password manager; the vault holds where the gear lives.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “preserve Wi-Fi names when you can” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “re-document serials and admin pointers” using your rooms, people, and gear — not a generic internet checklist.|Label wall jacks and the one mystery Ethernet run before you move furniture again.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “re-document serials and admin pointers” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “verify ISP login after cutover” using your rooms, people, and gear — not a generic internet checklist.|Keep ISP account number and modem ID where you can read them during an outage call.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “verify ISP login after cutover” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “retire the old gear record” using your rooms, people, and gear — not a generic internet checklist.|Guest Wi-Fi notes save text threads at every dinner party.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “retire the old gear record” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “tell the household what changed” using your rooms, people, and gear — not a generic internet checklist.|After you replace a router, close the old record the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “tell the household what changed” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “schedule a one-week follow-up” using your rooms, people, and gear — not a generic internet checklist.|Once a year, pretend you are the house sitter and try to find the network notes.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “schedule a one-week follow-up” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
       "The first version of these network notes should be usable tonight, not impressive next year.",
       "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
       "If only one person knows where the record is, you do not have a household system yet.",
@@ -2353,34 +1962,6 @@
       "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
       "When support asks for something you lack, add it immediately so the next call is shorter.",
       "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Start above the vendor apps",
-      "Name things the way people talk",
-      "Inventory hubs before bulbs",
-      "Capture account ownership",
-      "Note scenes that matter",
-      "Handle batteries and offline gear",
-      "Share access without chaos",
-      "Retire abandoned devices"
-    ],
-    "pipes": [
-      "Get specific about “start above the vendor apps” using your rooms, people, and gear — not a generic internet checklist.|List hubs and bridges before bulbs — the brain of the house fails first in your memory.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “start above the vendor apps” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “name things the way people talk” using your rooms, people, and gear — not a generic internet checklist.|Name devices the way people yell them across the room.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “name things the way people talk” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “inventory hubs before bulbs” using your rooms, people, and gear — not a generic internet checklist.|Write which email owns the account that can factory-reset the thing.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “inventory hubs before bulbs” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “capture account ownership” using your rooms, people, and gear — not a generic internet checklist.|If a scene needs three devices, say that in one plain sentence.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “capture account ownership” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “note scenes that matter” using your rooms, people, and gear — not a generic internet checklist.|Battery sensors die quietly; inventory them before they chirp at 2 a.m.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “note scenes that matter” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “handle batteries and offline gear” using your rooms, people, and gear — not a generic internet checklist.|Voice speakers need room names and account ownership, not just cute nicknames.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “handle batteries and offline gear” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “share access without chaos” using your rooms, people, and gear — not a generic internet checklist.|When you rebuild automations after an app outage, keep a short offline note of the important ones.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “share access without chaos” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “retire abandoned devices” using your rooms, people, and gear — not a generic internet checklist.|Retire abandoned bulbs and dead automations so the list matches reality.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “retire abandoned devices” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
-      "The first version of these smart home notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
     ]
   },
   {
@@ -2507,34 +2088,6 @@
       ]
     ],
     "asides": [
-      "The first version of these smart home notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "List every hub and bridge",
-      "Note which radios and protocols",
-      "Write account and backup paths",
-      "Map what depends on each hub",
-      "Prepare for a hub death day",
-      "Keep firmware dates light",
-      "Share reset knowledge carefully",
-      "Retire old controllers cleanly"
-    ],
-    "pipes": [
-      "Get specific about “list every hub and bridge” using your rooms, people, and gear — not a generic internet checklist.|List hubs and bridges before bulbs — the brain of the house fails first in your memory.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “list every hub and bridge” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “note which radios and protocols” using your rooms, people, and gear — not a generic internet checklist.|Name devices the way people yell them across the room.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “note which radios and protocols” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “write account and backup paths” using your rooms, people, and gear — not a generic internet checklist.|Write which email owns the account that can factory-reset the thing.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “write account and backup paths” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “map what depends on each hub” using your rooms, people, and gear — not a generic internet checklist.|If a scene needs three devices, say that in one plain sentence.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “map what depends on each hub” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “prepare for a hub death day” using your rooms, people, and gear — not a generic internet checklist.|Battery sensors die quietly; inventory them before they chirp at 2 a.m.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “prepare for a hub death day” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “keep firmware dates light” using your rooms, people, and gear — not a generic internet checklist.|Voice speakers need room names and account ownership, not just cute nicknames.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “keep firmware dates light” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “share reset knowledge carefully” using your rooms, people, and gear — not a generic internet checklist.|When you rebuild automations after an app outage, keep a short offline note of the important ones.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “share reset knowledge carefully” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “retire old controllers cleanly” using your rooms, people, and gear — not a generic internet checklist.|Retire abandoned bulbs and dead automations so the list matches reality.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “retire old controllers cleanly” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
       "The first version of these smart home notes should be usable tonight, not impressive next year.",
       "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
       "If only one person knows where the record is, you do not have a household system yet.",
@@ -2673,34 +2226,6 @@
       "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
       "When support asks for something you lack, add it immediately so the next call is shorter.",
       "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Inventory bulbs and switches by room",
-      "Write scene meanings in plain language",
-      "Note physical vs app control",
-      "Capture bridge dependencies",
-      "Handle guest-proof lighting",
-      "Track failures and replacements",
-      "Share without exposing accounts",
-      "Clean up dead scenes"
-    ],
-    "pipes": [
-      "Get specific about “inventory bulbs and switches by room” using your rooms, people, and gear — not a generic internet checklist.|List hubs and bridges before bulbs — the brain of the house fails first in your memory.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “inventory bulbs and switches by room” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “write scene meanings in plain language” using your rooms, people, and gear — not a generic internet checklist.|Name devices the way people yell them across the room.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “write scene meanings in plain language” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “note physical vs app control” using your rooms, people, and gear — not a generic internet checklist.|Write which email owns the account that can factory-reset the thing.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “note physical vs app control” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “capture bridge dependencies” using your rooms, people, and gear — not a generic internet checklist.|If a scene needs three devices, say that in one plain sentence.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “capture bridge dependencies” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “handle guest-proof lighting” using your rooms, people, and gear — not a generic internet checklist.|Battery sensors die quietly; inventory them before they chirp at 2 a.m.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “handle guest-proof lighting” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “track failures and replacements” using your rooms, people, and gear — not a generic internet checklist.|Voice speakers need room names and account ownership, not just cute nicknames.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “track failures and replacements” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “share without exposing accounts” using your rooms, people, and gear — not a generic internet checklist.|When you rebuild automations after an app outage, keep a short offline note of the important ones.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “share without exposing accounts” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “clean up dead scenes” using your rooms, people, and gear — not a generic internet checklist.|Retire abandoned bulbs and dead automations so the list matches reality.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “clean up dead scenes” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
-      "The first version of these smart home notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
     ]
   },
   {
@@ -2827,34 +2352,6 @@
       ]
     ],
     "asides": [
-      "The first version of these smart home notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Map speakers to rooms",
-      "Note which account owns each",
-      "Document routines worth keeping",
-      "Handle multi-user households",
-      "Prepare for a wipe or move",
-      "Keep privacy choices visible",
-      "Share house-sitter basics",
-      "Retire unused speakers"
-    ],
-    "pipes": [
-      "Get specific about “map speakers to rooms” using your rooms, people, and gear — not a generic internet checklist.|List hubs and bridges before bulbs — the brain of the house fails first in your memory.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “map speakers to rooms” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “note which account owns each” using your rooms, people, and gear — not a generic internet checklist.|Name devices the way people yell them across the room.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “note which account owns each” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “document routines worth keeping” using your rooms, people, and gear — not a generic internet checklist.|Write which email owns the account that can factory-reset the thing.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “document routines worth keeping” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “handle multi-user households” using your rooms, people, and gear — not a generic internet checklist.|If a scene needs three devices, say that in one plain sentence.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “handle multi-user households” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “prepare for a wipe or move” using your rooms, people, and gear — not a generic internet checklist.|Battery sensors die quietly; inventory them before they chirp at 2 a.m.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “prepare for a wipe or move” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “keep privacy choices visible” using your rooms, people, and gear — not a generic internet checklist.|Voice speakers need room names and account ownership, not just cute nicknames.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “keep privacy choices visible” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “share house-sitter basics” using your rooms, people, and gear — not a generic internet checklist.|When you rebuild automations after an app outage, keep a short offline note of the important ones.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “share house-sitter basics” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “retire unused speakers” using your rooms, people, and gear — not a generic internet checklist.|Retire abandoned bulbs and dead automations so the list matches reality.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “retire unused speakers” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
       "The first version of these smart home notes should be usable tonight, not impressive next year.",
       "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
       "If only one person knows where the record is, you do not have a household system yet.",
@@ -2993,34 +2490,6 @@
       "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
       "When support asks for something you lack, add it immediately so the next call is shorter.",
       "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "List sensors before they die quietly",
-      "Map cameras to entrances",
-      "Note power and battery realities",
-      "Capture automation dependencies",
-      "Document alert destinations",
-      "Share monitoring access carefully",
-      "Plan replacements",
-      "Purge ghost devices"
-    ],
-    "pipes": [
-      "Get specific about “list sensors before they die quietly” using your rooms, people, and gear — not a generic internet checklist.|List hubs and bridges before bulbs — the brain of the house fails first in your memory.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “list sensors before they die quietly” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “map cameras to entrances” using your rooms, people, and gear — not a generic internet checklist.|Name devices the way people yell them across the room.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “map cameras to entrances” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “note power and battery realities” using your rooms, people, and gear — not a generic internet checklist.|Write which email owns the account that can factory-reset the thing.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “note power and battery realities” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “capture automation dependencies” using your rooms, people, and gear — not a generic internet checklist.|If a scene needs three devices, say that in one plain sentence.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “capture automation dependencies” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “document alert destinations” using your rooms, people, and gear — not a generic internet checklist.|Battery sensors die quietly; inventory them before they chirp at 2 a.m.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “document alert destinations” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “share monitoring access carefully” using your rooms, people, and gear — not a generic internet checklist.|Voice speakers need room names and account ownership, not just cute nicknames.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “share monitoring access carefully” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “plan replacements” using your rooms, people, and gear — not a generic internet checklist.|When you rebuild automations after an app outage, keep a short offline note of the important ones.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “plan replacements” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “purge ghost devices” using your rooms, people, and gear — not a generic internet checklist.|Retire abandoned bulbs and dead automations so the list matches reality.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “purge ghost devices” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
-      "The first version of these smart home notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
     ]
   },
   {
@@ -3147,34 +2616,6 @@
       ]
     ],
     "asides": [
-      "The first version of these smart home notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Capture model and install notes",
-      "Write schedule intent in plain language",
-      "Note HVAC quirks",
-      "Save installer or support contacts",
-      "Document sensors and zones",
-      "Prepare for outages",
-      "Share household preferences",
-      "Track filter reminders"
-    ],
-    "pipes": [
-      "Get specific about “capture model and install notes” using your rooms, people, and gear — not a generic internet checklist.|List hubs and bridges before bulbs — the brain of the house fails first in your memory.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “capture model and install notes” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “write schedule intent in plain language” using your rooms, people, and gear — not a generic internet checklist.|Name devices the way people yell them across the room.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “write schedule intent in plain language” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “note HVAC quirks” using your rooms, people, and gear — not a generic internet checklist.|Write which email owns the account that can factory-reset the thing.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “note HVAC quirks” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “save installer or support contacts” using your rooms, people, and gear — not a generic internet checklist.|If a scene needs three devices, say that in one plain sentence.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “save installer or support contacts” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “document sensors and zones” using your rooms, people, and gear — not a generic internet checklist.|Battery sensors die quietly; inventory them before they chirp at 2 a.m.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “document sensors and zones” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “prepare for outages” using your rooms, people, and gear — not a generic internet checklist.|Voice speakers need room names and account ownership, not just cute nicknames.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “prepare for outages” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “share household preferences” using your rooms, people, and gear — not a generic internet checklist.|When you rebuild automations after an app outage, keep a short offline note of the important ones.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “share household preferences” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “track filter reminders” using your rooms, people, and gear — not a generic internet checklist.|Retire abandoned bulbs and dead automations so the list matches reality.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “track filter reminders” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
       "The first version of these smart home notes should be usable tonight, not impressive next year.",
       "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
       "If only one person knows where the record is, you do not have a household system yet.",
@@ -3313,34 +2754,6 @@
       "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
       "When support asks for something you lack, add it immediately so the next call is shorter.",
       "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Decide what is worth backing up",
-      "Export before major app changes",
-      "Keep offline notes for key automations",
-      "Photograph rare wiring",
-      "Store backups where others can find them",
-      "Test a restore once",
-      "Avoid duplicate conflicting exports",
-      "Update after big redesigns"
-    ],
-    "pipes": [
-      "Get specific about “decide what is worth backing up” using your rooms, people, and gear — not a generic internet checklist.|List hubs and bridges before bulbs — the brain of the house fails first in your memory.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “decide what is worth backing up” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “export before major app changes” using your rooms, people, and gear — not a generic internet checklist.|Name devices the way people yell them across the room.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “export before major app changes” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “keep offline notes for key automations” using your rooms, people, and gear — not a generic internet checklist.|Write which email owns the account that can factory-reset the thing.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “keep offline notes for key automations” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “photograph rare wiring” using your rooms, people, and gear — not a generic internet checklist.|If a scene needs three devices, say that in one plain sentence.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “photograph rare wiring” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “store backups where others can find them” using your rooms, people, and gear — not a generic internet checklist.|Battery sensors die quietly; inventory them before they chirp at 2 a.m.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “store backups where others can find them” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “test a restore once” using your rooms, people, and gear — not a generic internet checklist.|Voice speakers need room names and account ownership, not just cute nicknames.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “test a restore once” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “avoid duplicate conflicting exports” using your rooms, people, and gear — not a generic internet checklist.|When you rebuild automations after an app outage, keep a short offline note of the important ones.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “avoid duplicate conflicting exports” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “update after big redesigns” using your rooms, people, and gear — not a generic internet checklist.|Retire abandoned bulbs and dead automations so the list matches reality.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “update after big redesigns” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
-      "The first version of these smart home notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
     ]
   },
   {
@@ -3467,34 +2880,6 @@
       ]
     ],
     "asides": [
-      "The first version of these security notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Sort secrets from useful context",
-      "Choose one private vault",
-      "Point to the password manager",
-      "Set household permissions",
-      "Avoid chat-thread archives",
-      "Prepare for life changes",
-      "Review quarterly",
-      "Know what never to store"
-    ],
-    "pipes": [
-      "Get specific about “sort secrets from useful context” using your rooms, people, and gear — not a generic internet checklist.|Decide what is a secret versus what is just useful household context.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “sort secrets from useful context” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “choose one private vault” using your rooms, people, and gear — not a generic internet checklist.|A house sitter needs the alarm panel path, not your password manager.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “choose one private vault” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “point to the password manager” using your rooms, people, and gear — not a generic internet checklist.|Insurance wants photos, serials, and receipts more than a narrative essay.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “point to the password manager” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “set household permissions” using your rooms, people, and gear — not a generic internet checklist.|Travel packets should list critical devices and who to call, not every gadget you own.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “set household permissions” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “avoid chat-thread archives” using your rooms, people, and gear — not a generic internet checklist.|Cameras need location, account owner, and how to re-add them after a reset.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “avoid chat-thread archives” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “prepare for life changes” using your rooms, people, and gear — not a generic internet checklist.|If someone moves out, revoke shared access the same week — not later.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “prepare for life changes” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “review quarterly” using your rooms, people, and gear — not a generic internet checklist.|Keep an emergency copy reachable if the house Wi-Fi is dead.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “review quarterly” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “know what never to store” using your rooms, people, and gear — not a generic internet checklist.|Review the private vault after a breakup, roommate change, or contractor visit.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “know what never to store” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
       "The first version of these security notes should be usable tonight, not impressive next year.",
       "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
       "If only one person knows where the record is, you do not have a household system yet.",
@@ -3633,34 +3018,6 @@
       "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
       "When support asks for something you lack, add it immediately so the next call is shorter.",
       "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Share enough for daily life",
-      "Keep admin powers limited",
-      "Use roles instead of full forwards",
-      "Help kids and guests appropriately",
-      "Avoid password texting",
-      "Revoke access on change",
-      "Document what was shared",
-      "Prefer view-only when possible"
-    ],
-    "pipes": [
-      "Get specific about “share enough for daily life” using your rooms, people, and gear — not a generic internet checklist.|Decide what is a secret versus what is just useful household context.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “share enough for daily life” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “keep admin powers limited” using your rooms, people, and gear — not a generic internet checklist.|A house sitter needs the alarm panel path, not your password manager.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “keep admin powers limited” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “use roles instead of full forwards” using your rooms, people, and gear — not a generic internet checklist.|Insurance wants photos, serials, and receipts more than a narrative essay.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “use roles instead of full forwards” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “help kids and guests appropriately” using your rooms, people, and gear — not a generic internet checklist.|Travel packets should list critical devices and who to call, not every gadget you own.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “help kids and guests appropriately” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “avoid password texting” using your rooms, people, and gear — not a generic internet checklist.|Cameras need location, account owner, and how to re-add them after a reset.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “avoid password texting” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “revoke access on change” using your rooms, people, and gear — not a generic internet checklist.|If someone moves out, revoke shared access the same week — not later.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “revoke access on change” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “document what was shared” using your rooms, people, and gear — not a generic internet checklist.|Keep an emergency copy reachable if the house Wi-Fi is dead.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “document what was shared” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “prefer view-only when possible” using your rooms, people, and gear — not a generic internet checklist.|Review the private vault after a breakup, roommate change, or contractor visit.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “prefer view-only when possible” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
-      "The first version of these security notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
     ]
   },
   {
@@ -3787,34 +3144,6 @@
       ]
     ],
     "asides": [
-      "The first version of these security notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Photograph rooms with devices in context",
-      "Pair serials with receipts",
-      "Export dated snapshots",
-      "Store proofs off the dead laptop",
-      "Include high-value accessories",
-      "Update after big purchases",
-      "Share with whoever files claims",
-      "Practice finding the packet"
-    ],
-    "pipes": [
-      "Get specific about “photograph rooms with devices in context” using your rooms, people, and gear — not a generic internet checklist.|Decide what is a secret versus what is just useful household context.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “photograph rooms with devices in context” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “pair serials with receipts” using your rooms, people, and gear — not a generic internet checklist.|A house sitter needs the alarm panel path, not your password manager.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “pair serials with receipts” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “export dated snapshots” using your rooms, people, and gear — not a generic internet checklist.|Insurance wants photos, serials, and receipts more than a narrative essay.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “export dated snapshots” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “store proofs off the dead laptop” using your rooms, people, and gear — not a generic internet checklist.|Travel packets should list critical devices and who to call, not every gadget you own.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “store proofs off the dead laptop” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “include high-value accessories” using your rooms, people, and gear — not a generic internet checklist.|Cameras need location, account owner, and how to re-add them after a reset.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “include high-value accessories” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “update after big purchases” using your rooms, people, and gear — not a generic internet checklist.|If someone moves out, revoke shared access the same week — not later.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “update after big purchases” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “share with whoever files claims” using your rooms, people, and gear — not a generic internet checklist.|Keep an emergency copy reachable if the house Wi-Fi is dead.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “share with whoever files claims” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “practice finding the packet” using your rooms, people, and gear — not a generic internet checklist.|Review the private vault after a breakup, roommate change, or contractor visit.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “practice finding the packet” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
       "The first version of these security notes should be usable tonight, not impressive next year.",
       "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
       "If only one person knows where the record is, you do not have a household system yet.",
@@ -3953,34 +3282,6 @@
       "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
       "When support asks for something you lack, add it immediately so the next call is shorter.",
       "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Build a short sitter packet",
-      "Include network and alarm basics",
-      "List critical device oddities",
-      "Share temporary access only",
-      "Keep secrets out of the packet",
-      "Add emergency contacts",
-      "Test the packet before you leave",
-      "Revoke access when you return"
-    ],
-    "pipes": [
-      "Get specific about “build a short sitter packet” using your rooms, people, and gear — not a generic internet checklist.|Decide what is a secret versus what is just useful household context.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “build a short sitter packet” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “include network and alarm basics” using your rooms, people, and gear — not a generic internet checklist.|A house sitter needs the alarm panel path, not your password manager.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “include network and alarm basics” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “list critical device oddities” using your rooms, people, and gear — not a generic internet checklist.|Insurance wants photos, serials, and receipts more than a narrative essay.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “list critical device oddities” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “share temporary access only” using your rooms, people, and gear — not a generic internet checklist.|Travel packets should list critical devices and who to call, not every gadget you own.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “share temporary access only” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “keep secrets out of the packet” using your rooms, people, and gear — not a generic internet checklist.|Cameras need location, account owner, and how to re-add them after a reset.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “keep secrets out of the packet” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “add emergency contacts” using your rooms, people, and gear — not a generic internet checklist.|If someone moves out, revoke shared access the same week — not later.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “add emergency contacts” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “test the packet before you leave” using your rooms, people, and gear — not a generic internet checklist.|Keep an emergency copy reachable if the house Wi-Fi is dead.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “test the packet before you leave” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “revoke access when you return” using your rooms, people, and gear — not a generic internet checklist.|Review the private vault after a breakup, roommate change, or contractor visit.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “revoke access when you return” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
-      "The first version of these security notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
     ]
   },
   {
@@ -4107,34 +3408,6 @@
       ]
     ],
     "asides": [
-      "The first version of these security notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Define roles clearly",
-      "Separate viewers from admins",
-      "Onboard new adults carefully",
-      "Handle roommates and partners",
-      "Review after breakups or moves",
-      "Avoid shared master passwords",
-      "Document exceptions",
-      "Keep kids access age-appropriate"
-    ],
-    "pipes": [
-      "Get specific about “define roles clearly” using your rooms, people, and gear — not a generic internet checklist.|Decide what is a secret versus what is just useful household context.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “define roles clearly” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “separate viewers from admins” using your rooms, people, and gear — not a generic internet checklist.|A house sitter needs the alarm panel path, not your password manager.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “separate viewers from admins” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “onboard new adults carefully” using your rooms, people, and gear — not a generic internet checklist.|Insurance wants photos, serials, and receipts more than a narrative essay.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “onboard new adults carefully” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “handle roommates and partners” using your rooms, people, and gear — not a generic internet checklist.|Travel packets should list critical devices and who to call, not every gadget you own.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “handle roommates and partners” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “review after breakups or moves” using your rooms, people, and gear — not a generic internet checklist.|Cameras need location, account owner, and how to re-add them after a reset.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “review after breakups or moves” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “avoid shared master passwords” using your rooms, people, and gear — not a generic internet checklist.|If someone moves out, revoke shared access the same week — not later.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “avoid shared master passwords” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “document exceptions” using your rooms, people, and gear — not a generic internet checklist.|Keep an emergency copy reachable if the house Wi-Fi is dead.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “document exceptions” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “keep kids access age-appropriate” using your rooms, people, and gear — not a generic internet checklist.|Review the private vault after a breakup, roommate change, or contractor visit.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “keep kids access age-appropriate” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
       "The first version of these security notes should be usable tonight, not impressive next year.",
       "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
       "If only one person knows where the record is, you do not have a household system yet.",
@@ -4273,34 +3546,6 @@
       "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
       "When support asks for something you lack, add it immediately so the next call is shorter.",
       "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Map device locations",
-      "Note account owners",
-      "Write reset and re-add steps",
-      "Capture monitoring contacts",
-      "Share emergency views carefully",
-      "Keep offline access notes",
-      "Update after renovations",
-      "Retire old cameras"
-    ],
-    "pipes": [
-      "Get specific about “map device locations” using your rooms, people, and gear — not a generic internet checklist.|Decide what is a secret versus what is just useful household context.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “map device locations” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “note account owners” using your rooms, people, and gear — not a generic internet checklist.|A house sitter needs the alarm panel path, not your password manager.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “note account owners” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “write reset and re-add steps” using your rooms, people, and gear — not a generic internet checklist.|Insurance wants photos, serials, and receipts more than a narrative essay.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “write reset and re-add steps” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “capture monitoring contacts” using your rooms, people, and gear — not a generic internet checklist.|Travel packets should list critical devices and who to call, not every gadget you own.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “capture monitoring contacts” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “share emergency views carefully” using your rooms, people, and gear — not a generic internet checklist.|Cameras need location, account owner, and how to re-add them after a reset.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “share emergency views carefully” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “keep offline access notes” using your rooms, people, and gear — not a generic internet checklist.|If someone moves out, revoke shared access the same week — not later.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “keep offline access notes” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “update after renovations” using your rooms, people, and gear — not a generic internet checklist.|Keep an emergency copy reachable if the house Wi-Fi is dead.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “update after renovations” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “retire old cameras” using your rooms, people, and gear — not a generic internet checklist.|Review the private vault after a breakup, roommate change, or contractor visit.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “retire old cameras” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
-      "The first version of these security notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
     ]
   },
   {
@@ -4427,34 +3672,6 @@
       ]
     ],
     "asides": [
-      "The first version of these security notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Define the minimum packet",
-      "Keep an offsite-reachable copy",
-      "Include identity of critical gear",
-      "Add contacts and account pointers",
-      "Practice retrieving it",
-      "Update after major changes",
-      "Do not rely on home Wi-Fi alone",
-      "Keep it short enough to maintain"
-    ],
-    "pipes": [
-      "Get specific about “define the minimum packet” using your rooms, people, and gear — not a generic internet checklist.|Decide what is a secret versus what is just useful household context.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “define the minimum packet” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “keep an offsite-reachable copy” using your rooms, people, and gear — not a generic internet checklist.|A house sitter needs the alarm panel path, not your password manager.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “keep an offsite-reachable copy” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “include identity of critical gear” using your rooms, people, and gear — not a generic internet checklist.|Insurance wants photos, serials, and receipts more than a narrative essay.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “include identity of critical gear” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “add contacts and account pointers” using your rooms, people, and gear — not a generic internet checklist.|Travel packets should list critical devices and who to call, not every gadget you own.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “add contacts and account pointers” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “practice retrieving it” using your rooms, people, and gear — not a generic internet checklist.|Cameras need location, account owner, and how to re-add them after a reset.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “practice retrieving it” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “update after major changes” using your rooms, people, and gear — not a generic internet checklist.|If someone moves out, revoke shared access the same week — not later.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “update after major changes” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “do not rely on home Wi-Fi alone” using your rooms, people, and gear — not a generic internet checklist.|Keep an emergency copy reachable if the house Wi-Fi is dead.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “do not rely on home Wi-Fi alone” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “keep it short enough to maintain” using your rooms, people, and gear — not a generic internet checklist.|Review the private vault after a breakup, roommate change, or contractor visit.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “keep it short enough to maintain” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
       "The first version of these security notes should be usable tonight, not impressive next year.",
       "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
       "If only one person knows where the record is, you do not have a household system yet.",
@@ -4593,34 +3810,6 @@
       "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
       "When support asks for something you lack, add it immediately so the next call is shorter.",
       "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Capture coverage on arrival",
-      "Hang dates on device records",
-      "Skip noise alerts for cheap gear",
-      "Review seasonally",
-      "Handle store vs manufacturer paths",
-      "Keep proof attached",
-      "Retire expired coverage",
-      "Teach the household where it lives"
-    ],
-    "pipes": [
-      "Get specific about “capture coverage on arrival” using your rooms, people, and gear — not a generic internet checklist.|Save proof of purchase the day it arrives, while email search still finds it.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “capture coverage on arrival” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “hang dates on device records” using your rooms, people, and gear — not a generic internet checklist.|Write coverage end dates even if you are optimistic you will remember.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “hang dates on device records” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “skip noise alerts for cheap gear” using your rooms, people, and gear — not a generic internet checklist.|Manufacturer versus store versus card benefit — pick which door you will try first.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “skip noise alerts for cheap gear” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “review seasonally” using your rooms, people, and gear — not a generic internet checklist.|Extended plans need plan numbers beside the device, not in a forgotten PDF pile.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “review seasonally” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “handle store vs manufacturer paths” using your rooms, people, and gear — not a generic internet checklist.|Before you call about a claim, open serial, receipt, and symptom notes together.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “handle store vs manufacturer paths” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “keep proof attached” using your rooms, people, and gear — not a generic internet checklist.|Gifts and hand-me-downs still deserve serials and whatever proof you can gather.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “keep proof attached” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “retire expired coverage” using your rooms, people, and gear — not a generic internet checklist.|When coverage expires, mark it expired; do not delete the history.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “retire expired coverage” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “teach the household where it lives” using your rooms, people, and gear — not a generic internet checklist.|Hang warranty notes on the device record so they are impossible to orphan.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “teach the household where it lives” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
-      "The first version of these warranty notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
     ]
   },
   {
@@ -4747,34 +3936,6 @@
       ]
     ],
     "asides": [
-      "The first version of these warranty notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Save receipts the day you buy",
-      "Prefer PDFs over screenshot piles",
-      "Attach proof to the device",
-      "Handle email-only retailers",
-      "Store gift receipts carefully",
-      "Prepare for claims and returns",
-      "Avoid Downloads-folder graveyards",
-      "Verify the proof opens"
-    ],
-    "pipes": [
-      "Get specific about “save receipts the day you buy” using your rooms, people, and gear — not a generic internet checklist.|Save proof of purchase the day it arrives, while email search still finds it.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “save receipts the day you buy” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “prefer PDFs over screenshot piles” using your rooms, people, and gear — not a generic internet checklist.|Write coverage end dates even if you are optimistic you will remember.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “prefer PDFs over screenshot piles” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “attach proof to the device” using your rooms, people, and gear — not a generic internet checklist.|Manufacturer versus store versus card benefit — pick which door you will try first.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “attach proof to the device” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “handle email-only retailers” using your rooms, people, and gear — not a generic internet checklist.|Extended plans need plan numbers beside the device, not in a forgotten PDF pile.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “handle email-only retailers” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “store gift receipts carefully” using your rooms, people, and gear — not a generic internet checklist.|Before you call about a claim, open serial, receipt, and symptom notes together.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “store gift receipts carefully” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “prepare for claims and returns” using your rooms, people, and gear — not a generic internet checklist.|Gifts and hand-me-downs still deserve serials and whatever proof you can gather.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “prepare for claims and returns” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “avoid Downloads-folder graveyards” using your rooms, people, and gear — not a generic internet checklist.|When coverage expires, mark it expired; do not delete the history.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “avoid Downloads-folder graveyards” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “verify the proof opens” using your rooms, people, and gear — not a generic internet checklist.|Hang warranty notes on the device record so they are impossible to orphan.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “verify the proof opens” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
       "The first version of these warranty notes should be usable tonight, not impressive next year.",
       "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
       "If only one person knows where the record is, you do not have a household system yet.",
@@ -4913,34 +4074,6 @@
       "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
       "When support asks for something you lack, add it immediately so the next call is shorter.",
       "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Decide which plans matter",
-      "Save plan numbers and end dates",
-      "Know what is excluded",
-      "Attach plans to devices",
-      "Set renewal reminders sparingly",
-      "Compare with card benefits",
-      "Keep claim phone numbers handy",
-      "Retire plans you cancel"
-    ],
-    "pipes": [
-      "Get specific about “decide which plans matter” using your rooms, people, and gear — not a generic internet checklist.|Save proof of purchase the day it arrives, while email search still finds it.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “decide which plans matter” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “save plan numbers and end dates” using your rooms, people, and gear — not a generic internet checklist.|Write coverage end dates even if you are optimistic you will remember.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “save plan numbers and end dates” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “know what is excluded” using your rooms, people, and gear — not a generic internet checklist.|Manufacturer versus store versus card benefit — pick which door you will try first.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “know what is excluded” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “attach plans to devices” using your rooms, people, and gear — not a generic internet checklist.|Extended plans need plan numbers beside the device, not in a forgotten PDF pile.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “attach plans to devices” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “set renewal reminders sparingly” using your rooms, people, and gear — not a generic internet checklist.|Before you call about a claim, open serial, receipt, and symptom notes together.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “set renewal reminders sparingly” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “compare with card benefits” using your rooms, people, and gear — not a generic internet checklist.|Gifts and hand-me-downs still deserve serials and whatever proof you can gather.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “compare with card benefits” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “keep claim phone numbers handy” using your rooms, people, and gear — not a generic internet checklist.|When coverage expires, mark it expired; do not delete the history.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “keep claim phone numbers handy” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “retire plans you cancel” using your rooms, people, and gear — not a generic internet checklist.|Hang warranty notes on the device record so they are impossible to orphan.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “retire plans you cancel” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
-      "The first version of these warranty notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
     ]
   },
   {
@@ -5067,34 +4200,6 @@
       ]
     ],
     "asides": [
-      "The first version of these warranty notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Label which policy is primary",
-      "Write contact paths for each",
-      "Keep both proofs if needed",
-      "Know typical failure windows",
-      "Avoid double-paying for panic",
-      "Document handoffs between policies",
-      "Update after returns or exchanges",
-      "Explain it in one household note"
-    ],
-    "pipes": [
-      "Get specific about “label which policy is primary” using your rooms, people, and gear — not a generic internet checklist.|Save proof of purchase the day it arrives, while email search still finds it.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “label which policy is primary” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “write contact paths for each” using your rooms, people, and gear — not a generic internet checklist.|Write coverage end dates even if you are optimistic you will remember.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “write contact paths for each” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “keep both proofs if needed” using your rooms, people, and gear — not a generic internet checklist.|Manufacturer versus store versus card benefit — pick which door you will try first.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “keep both proofs if needed” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “know typical failure windows” using your rooms, people, and gear — not a generic internet checklist.|Extended plans need plan numbers beside the device, not in a forgotten PDF pile.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “know typical failure windows” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “avoid double-paying for panic” using your rooms, people, and gear — not a generic internet checklist.|Before you call about a claim, open serial, receipt, and symptom notes together.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “avoid double-paying for panic” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “document handoffs between policies” using your rooms, people, and gear — not a generic internet checklist.|Gifts and hand-me-downs still deserve serials and whatever proof you can gather.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “document handoffs between policies” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “update after returns or exchanges” using your rooms, people, and gear — not a generic internet checklist.|When coverage expires, mark it expired; do not delete the history.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “update after returns or exchanges” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “explain it in one household note” using your rooms, people, and gear — not a generic internet checklist.|Hang warranty notes on the device record so they are impossible to orphan.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “explain it in one household note” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
       "The first version of these warranty notes should be usable tonight, not impressive next year.",
       "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
       "If only one person knows where the record is, you do not have a household system yet.",
@@ -5233,34 +4338,6 @@
       "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
       "When support asks for something you lack, add it immediately so the next call is shorter.",
       "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Open serial receipt and symptoms first",
-      "Photograph the failure when useful",
-      "Write a short timeline",
-      "Know where to file",
-      "Track ticket numbers",
-      "Share access with the claim owner",
-      "Close the loop after resolution",
-      "Improve the packet for next time"
-    ],
-    "pipes": [
-      "Get specific about “open serial receipt and symptoms first” using your rooms, people, and gear — not a generic internet checklist.|Save proof of purchase the day it arrives, while email search still finds it.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “open serial receipt and symptoms first” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “photograph the failure when useful” using your rooms, people, and gear — not a generic internet checklist.|Write coverage end dates even if you are optimistic you will remember.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “photograph the failure when useful” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “write a short timeline” using your rooms, people, and gear — not a generic internet checklist.|Manufacturer versus store versus card benefit — pick which door you will try first.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “write a short timeline” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “know where to file” using your rooms, people, and gear — not a generic internet checklist.|Extended plans need plan numbers beside the device, not in a forgotten PDF pile.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “know where to file” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “track ticket numbers” using your rooms, people, and gear — not a generic internet checklist.|Before you call about a claim, open serial, receipt, and symptom notes together.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “track ticket numbers” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “share access with the claim owner” using your rooms, people, and gear — not a generic internet checklist.|Gifts and hand-me-downs still deserve serials and whatever proof you can gather.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “share access with the claim owner” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “close the loop after resolution” using your rooms, people, and gear — not a generic internet checklist.|When coverage expires, mark it expired; do not delete the history.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “close the loop after resolution” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “improve the packet for next time” using your rooms, people, and gear — not a generic internet checklist.|Hang warranty notes on the device record so they are impossible to orphan.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “improve the packet for next time” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
-      "The first version of these warranty notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
     ]
   },
   {
@@ -5387,34 +4464,6 @@
       ]
     ],
     "asides": [
-      "The first version of these warranty notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Remind early on expensive coverage",
-      "Skip spammy alerts for junk",
-      "Write why a renewal matters",
-      "Assign who decides",
-      "Handle auto-renew traps",
-      "Review after big purchases",
-      "Clean expired reminders",
-      "Keep dates on the device record"
-    ],
-    "pipes": [
-      "Get specific about “remind early on expensive coverage” using your rooms, people, and gear — not a generic internet checklist.|Save proof of purchase the day it arrives, while email search still finds it.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “remind early on expensive coverage” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “skip spammy alerts for junk” using your rooms, people, and gear — not a generic internet checklist.|Write coverage end dates even if you are optimistic you will remember.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “skip spammy alerts for junk” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “write why a renewal matters” using your rooms, people, and gear — not a generic internet checklist.|Manufacturer versus store versus card benefit — pick which door you will try first.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “write why a renewal matters” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “assign who decides” using your rooms, people, and gear — not a generic internet checklist.|Extended plans need plan numbers beside the device, not in a forgotten PDF pile.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “assign who decides” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “handle auto-renew traps” using your rooms, people, and gear — not a generic internet checklist.|Before you call about a claim, open serial, receipt, and symptom notes together.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “handle auto-renew traps” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “review after big purchases” using your rooms, people, and gear — not a generic internet checklist.|Gifts and hand-me-downs still deserve serials and whatever proof you can gather.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “review after big purchases” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “clean expired reminders” using your rooms, people, and gear — not a generic internet checklist.|When coverage expires, mark it expired; do not delete the history.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “clean expired reminders” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “keep dates on the device record” using your rooms, people, and gear — not a generic internet checklist.|Hang warranty notes on the device record so they are impossible to orphan.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “keep dates on the device record” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
       "The first version of these warranty notes should be usable tonight, not impressive next year.",
       "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
       "If only one person knows where the record is, you do not have a household system yet.",
@@ -5553,34 +4602,6 @@
       "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
       "When support asks for something you lack, add it immediately so the next call is shorter.",
       "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Ask for serials at handoff",
-      "Save whatever proof exists",
-      "Note transfer limitations",
-      "Register when required",
-      "Be honest about unknowns",
-      "Create a fresh inventory entry",
-      "Watch return windows",
-      "Avoid assuming coverage"
-    ],
-    "pipes": [
-      "Get specific about “ask for serials at handoff” using your rooms, people, and gear — not a generic internet checklist.|Save proof of purchase the day it arrives, while email search still finds it.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “ask for serials at handoff” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “save whatever proof exists” using your rooms, people, and gear — not a generic internet checklist.|Write coverage end dates even if you are optimistic you will remember.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “save whatever proof exists” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “note transfer limitations” using your rooms, people, and gear — not a generic internet checklist.|Manufacturer versus store versus card benefit — pick which door you will try first.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “note transfer limitations” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “register when required” using your rooms, people, and gear — not a generic internet checklist.|Extended plans need plan numbers beside the device, not in a forgotten PDF pile.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “register when required” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “be honest about unknowns” using your rooms, people, and gear — not a generic internet checklist.|Before you call about a claim, open serial, receipt, and symptom notes together.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “be honest about unknowns” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “create a fresh inventory entry” using your rooms, people, and gear — not a generic internet checklist.|Gifts and hand-me-downs still deserve serials and whatever proof you can gather.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “create a fresh inventory entry” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “watch return windows” using your rooms, people, and gear — not a generic internet checklist.|When coverage expires, mark it expired; do not delete the history.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “watch return windows” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “avoid assuming coverage” using your rooms, people, and gear — not a generic internet checklist.|Hang warranty notes on the device record so they are impossible to orphan.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “avoid assuming coverage” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
-      "The first version of these warranty notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
     ]
   },
   {
@@ -5707,34 +4728,6 @@
       ]
     ],
     "asides": [
-      "The first version of these maintenance notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Pick spring and fall anchors",
-      "Walk outdoor tech and vents",
-      "Check batteries before extremes",
-      "Update firmware in batches",
-      "Spot-check one room each season",
-      "Log what you skipped",
-      "Involve the household briefly",
-      "Book the next season before you stop"
-    ],
-    "pipes": [
-      "Get specific about “pick spring and fall anchors” using your rooms, people, and gear — not a generic internet checklist.|Attach the chore to a real device so it is not floating on a sticky note forever.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “pick spring and fall anchors” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “walk outdoor tech and vents” using your rooms, people, and gear — not a generic internet checklist.|Two sentences in a log help the next person more than a perfect spreadsheet.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “walk outdoor tech and vents” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “check batteries before extremes” using your rooms, people, and gear — not a generic internet checklist.|Replace remote batteries on a rhythm, not when something dies mid-movie.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “check batteries before extremes” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “update firmware in batches” using your rooms, people, and gear — not a generic internet checklist.|Firmware updates go smoother when you note the last good date.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “update firmware in batches” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “spot-check one room each season” using your rooms, people, and gear — not a generic internet checklist.|Clean lightly and safely — heroic methods brick more gear than dust does.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “spot-check one room each season” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “log what you skipped” using your rooms, people, and gear — not a generic internet checklist.|HVAC and console vents clog quietly; seasonal checks catch them.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “log what you skipped” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “involve the household briefly” using your rooms, people, and gear — not a generic internet checklist.|Retire devices when updates stop and repair quotes get silly.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “involve the household briefly” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “book the next season before you stop” using your rooms, people, and gear — not a generic internet checklist.|Hand a technician your short log instead of reconstructing a year from memory.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “book the next season before you stop” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
       "The first version of these maintenance notes should be usable tonight, not impressive next year.",
       "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
       "If only one person knows where the record is, you do not have a household system yet.",
@@ -5873,34 +4866,6 @@
       "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
       "When support asks for something you lack, add it immediately so the next call is shorter.",
       "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Prefer a calm cadence over random nights",
-      "Note last successful updates",
-      "Update critical security gear first",
-      "Avoid updating everything at once",
-      "Have a rollback note when possible",
-      "Tell the household when Wi-Fi may bounce",
-      "Log failures",
-      "Skip abandoned devices"
-    ],
-    "pipes": [
-      "Get specific about “prefer a calm cadence over random nights” using your rooms, people, and gear — not a generic internet checklist.|Attach the chore to a real device so it is not floating on a sticky note forever.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “prefer a calm cadence over random nights” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “note last successful updates” using your rooms, people, and gear — not a generic internet checklist.|Two sentences in a log help the next person more than a perfect spreadsheet.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “note last successful updates” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “update critical security gear first” using your rooms, people, and gear — not a generic internet checklist.|Replace remote batteries on a rhythm, not when something dies mid-movie.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “update critical security gear first” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “avoid updating everything at once” using your rooms, people, and gear — not a generic internet checklist.|Firmware updates go smoother when you note the last good date.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “avoid updating everything at once” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “have a rollback note when possible” using your rooms, people, and gear — not a generic internet checklist.|Clean lightly and safely — heroic methods brick more gear than dust does.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “have a rollback note when possible” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “tell the household when Wi-Fi may bounce” using your rooms, people, and gear — not a generic internet checklist.|HVAC and console vents clog quietly; seasonal checks catch them.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “tell the household when Wi-Fi may bounce” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “log failures” using your rooms, people, and gear — not a generic internet checklist.|Retire devices when updates stop and repair quotes get silly.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “log failures” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “skip abandoned devices” using your rooms, people, and gear — not a generic internet checklist.|Hand a technician your short log instead of reconstructing a year from memory.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “skip abandoned devices” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
-      "The first version of these maintenance notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
     ]
   },
   {
@@ -6027,34 +4992,6 @@
       ]
     ],
     "asides": [
-      "The first version of these maintenance notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "List battery devices once",
-      "Replace on a rhythm",
-      "Buy the right battery types ahead",
-      "Note hard-to-open gadgets",
-      "Handle smoke and CO detectors seriously",
-      "Log replacements",
-      "Recycle old batteries responsibly",
-      "Review before travel season"
-    ],
-    "pipes": [
-      "Get specific about “list battery devices once” using your rooms, people, and gear — not a generic internet checklist.|Attach the chore to a real device so it is not floating on a sticky note forever.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “list battery devices once” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “replace on a rhythm” using your rooms, people, and gear — not a generic internet checklist.|Two sentences in a log help the next person more than a perfect spreadsheet.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “replace on a rhythm” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “buy the right battery types ahead” using your rooms, people, and gear — not a generic internet checklist.|Replace remote batteries on a rhythm, not when something dies mid-movie.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “buy the right battery types ahead” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “note hard-to-open gadgets” using your rooms, people, and gear — not a generic internet checklist.|Firmware updates go smoother when you note the last good date.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “note hard-to-open gadgets” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “handle smoke and CO detectors seriously” using your rooms, people, and gear — not a generic internet checklist.|Clean lightly and safely — heroic methods brick more gear than dust does.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “handle smoke and CO detectors seriously” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “log replacements” using your rooms, people, and gear — not a generic internet checklist.|HVAC and console vents clog quietly; seasonal checks catch them.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “log replacements” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “recycle old batteries responsibly” using your rooms, people, and gear — not a generic internet checklist.|Retire devices when updates stop and repair quotes get silly.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “recycle old batteries responsibly” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “review before travel season” using your rooms, people, and gear — not a generic internet checklist.|Hand a technician your short log instead of reconstructing a year from memory.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “review before travel season” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
       "The first version of these maintenance notes should be usable tonight, not impressive next year.",
       "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
       "If only one person knows where the record is, you do not have a household system yet.",
@@ -6193,34 +5130,6 @@
       "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
       "When support asks for something you lack, add it immediately so the next call is shorter.",
       "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Use safe light cleaning habits",
-      "Keep liquids far from keyboards",
-      "Dust vents before heat waves",
-      "Avoid heroic disassembly",
-      "Note manufacturer warnings",
-      "Schedule light cleans seasonally",
-      "Stop when something feels risky",
-      "Log damage you notice"
-    ],
-    "pipes": [
-      "Get specific about “use safe light cleaning habits” using your rooms, people, and gear — not a generic internet checklist.|Attach the chore to a real device so it is not floating on a sticky note forever.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “use safe light cleaning habits” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “keep liquids far from keyboards” using your rooms, people, and gear — not a generic internet checklist.|Two sentences in a log help the next person more than a perfect spreadsheet.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “keep liquids far from keyboards” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “dust vents before heat waves” using your rooms, people, and gear — not a generic internet checklist.|Replace remote batteries on a rhythm, not when something dies mid-movie.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “dust vents before heat waves” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “avoid heroic disassembly” using your rooms, people, and gear — not a generic internet checklist.|Firmware updates go smoother when you note the last good date.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “avoid heroic disassembly” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “note manufacturer warnings” using your rooms, people, and gear — not a generic internet checklist.|Clean lightly and safely — heroic methods brick more gear than dust does.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “note manufacturer warnings” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “schedule light cleans seasonally” using your rooms, people, and gear — not a generic internet checklist.|HVAC and console vents clog quietly; seasonal checks catch them.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “schedule light cleans seasonally” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “stop when something feels risky” using your rooms, people, and gear — not a generic internet checklist.|Retire devices when updates stop and repair quotes get silly.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “stop when something feels risky” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “log damage you notice” using your rooms, people, and gear — not a generic internet checklist.|Hand a technician your short log instead of reconstructing a year from memory.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “log damage you notice” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
-      "The first version of these maintenance notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
     ]
   },
   {
@@ -6347,34 +5256,6 @@
       ]
     ],
     "asides": [
-      "The first version of these maintenance notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Find filters before they clog",
-      "Write sizes and replacement links",
-      "Include HVAC and gadget vents",
-      "Set seasonal reminders",
-      "Log pressure or noise changes",
-      "Keep spare filters if critical",
-      "Share the chore",
-      "Watch after renovations"
-    ],
-    "pipes": [
-      "Get specific about “find filters before they clog” using your rooms, people, and gear — not a generic internet checklist.|Attach the chore to a real device so it is not floating on a sticky note forever.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “find filters before they clog” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “write sizes and replacement links” using your rooms, people, and gear — not a generic internet checklist.|Two sentences in a log help the next person more than a perfect spreadsheet.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “write sizes and replacement links” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “include HVAC and gadget vents” using your rooms, people, and gear — not a generic internet checklist.|Replace remote batteries on a rhythm, not when something dies mid-movie.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “include HVAC and gadget vents” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “set seasonal reminders” using your rooms, people, and gear — not a generic internet checklist.|Firmware updates go smoother when you note the last good date.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “set seasonal reminders” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “log pressure or noise changes” using your rooms, people, and gear — not a generic internet checklist.|Clean lightly and safely — heroic methods brick more gear than dust does.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “log pressure or noise changes” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “keep spare filters if critical” using your rooms, people, and gear — not a generic internet checklist.|HVAC and console vents clog quietly; seasonal checks catch them.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “keep spare filters if critical” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “share the chore” using your rooms, people, and gear — not a generic internet checklist.|Retire devices when updates stop and repair quotes get silly.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “share the chore” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “watch after renovations” using your rooms, people, and gear — not a generic internet checklist.|Hand a technician your short log instead of reconstructing a year from memory.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “watch after renovations” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
       "The first version of these maintenance notes should be usable tonight, not impressive next year.",
       "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
       "If only one person knows where the record is, you do not have a household system yet.",
@@ -6513,34 +5394,6 @@
       "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
       "When support asks for something you lack, add it immediately so the next call is shorter.",
       "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Watch for missing security updates",
-      "Weigh repair quotes honestly",
-      "Check remaining warranties",
-      "Plan data wipe and handoff",
-      "Retire inventory records cleanly",
-      "Recycle responsibly",
-      "Replace before failure when risk is high",
-      "Tell the household what changed"
-    ],
-    "pipes": [
-      "Get specific about “watch for missing security updates” using your rooms, people, and gear — not a generic internet checklist.|Attach the chore to a real device so it is not floating on a sticky note forever.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “watch for missing security updates” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “weigh repair quotes honestly” using your rooms, people, and gear — not a generic internet checklist.|Two sentences in a log help the next person more than a perfect spreadsheet.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “weigh repair quotes honestly” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “check remaining warranties” using your rooms, people, and gear — not a generic internet checklist.|Replace remote batteries on a rhythm, not when something dies mid-movie.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “check remaining warranties” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “plan data wipe and handoff” using your rooms, people, and gear — not a generic internet checklist.|Firmware updates go smoother when you note the last good date.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “plan data wipe and handoff” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “retire inventory records cleanly” using your rooms, people, and gear — not a generic internet checklist.|Clean lightly and safely — heroic methods brick more gear than dust does.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “retire inventory records cleanly” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “recycle responsibly” using your rooms, people, and gear — not a generic internet checklist.|HVAC and console vents clog quietly; seasonal checks catch them.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “recycle responsibly” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “replace before failure when risk is high” using your rooms, people, and gear — not a generic internet checklist.|Retire devices when updates stop and repair quotes get silly.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “replace before failure when risk is high” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “tell the household what changed” using your rooms, people, and gear — not a generic internet checklist.|Hand a technician your short log instead of reconstructing a year from memory.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “tell the household what changed” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
-      "The first version of these maintenance notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
     ]
   },
   {
@@ -6667,34 +5520,6 @@
       ]
     ],
     "asides": [
-      "The first version of these maintenance notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Write two useful sentences",
-      "Hang logs on the device",
-      "Include dates and who did the work",
-      "Note parts and filter sizes",
-      "Capture error codes",
-      "Share with technicians",
-      "Keep logs short",
-      "Review before repeat failures"
-    ],
-    "pipes": [
-      "Get specific about “write two useful sentences” using your rooms, people, and gear — not a generic internet checklist.|Attach the chore to a real device so it is not floating on a sticky note forever.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “write two useful sentences” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “hang logs on the device” using your rooms, people, and gear — not a generic internet checklist.|Two sentences in a log help the next person more than a perfect spreadsheet.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “hang logs on the device” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “include dates and who did the work” using your rooms, people, and gear — not a generic internet checklist.|Replace remote batteries on a rhythm, not when something dies mid-movie.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “include dates and who did the work” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “note parts and filter sizes” using your rooms, people, and gear — not a generic internet checklist.|Firmware updates go smoother when you note the last good date.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “note parts and filter sizes” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “capture error codes” using your rooms, people, and gear — not a generic internet checklist.|Clean lightly and safely — heroic methods brick more gear than dust does.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “capture error codes” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “share with technicians” using your rooms, people, and gear — not a generic internet checklist.|HVAC and console vents clog quietly; seasonal checks catch them.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “share with technicians” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “keep logs short” using your rooms, people, and gear — not a generic internet checklist.|Retire devices when updates stop and repair quotes get silly.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “keep logs short” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “review before repeat failures” using your rooms, people, and gear — not a generic internet checklist.|Hand a technician your short log instead of reconstructing a year from memory.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “review before repeat failures” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
       "The first version of these maintenance notes should be usable tonight, not impressive next year.",
       "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
       "If only one person knows where the record is, you do not have a household system yet.",
@@ -6833,34 +5658,6 @@
       "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
       "When support asks for something you lack, add it immediately so the next call is shorter.",
       "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Measure the space before you browse",
-      "Write network constraints you already know",
-      "List who has to live with it",
-      "Note power ports and cable realities",
-      "Capture return and warranty expectations",
-      "Compare against what you own",
-      "Decide account ownership up front",
-      "Save the shortlist where checkout cannot ignore it"
-    ],
-    "pipes": [
-      "Get specific about “measure the space before you browse” using your rooms, people, and gear — not a generic internet checklist.|Measure the shelf and check the outlet before the product page talks you into it.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “measure the space before you browse” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “write network constraints you already know” using your rooms, people, and gear — not a generic internet checklist.|Buy for the Wi-Fi and ports you have, not the ones in the marketing photo.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “write network constraints you already know” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “list who has to live with it” using your rooms, people, and gear — not a generic internet checklist.|Write who will own the account and the warranty in a shared household.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “list who has to live with it” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “note power ports and cable realities” using your rooms, people, and gear — not a generic internet checklist.|If it is used or refurbished, verify reset status and serial before you pay.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “note power ports and cable realities” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “capture return and warranty expectations” using your rooms, people, and gear — not a generic internet checklist.|Unbox into your records the same day — serials vanish with packaging.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “capture return and warranty expectations” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “compare against what you own” using your rooms, people, and gear — not a generic internet checklist.|Keep gift receipts and return windows where calm-you can find them.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “compare against what you own” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “decide account ownership up front” using your rooms, people, and gear — not a generic internet checklist.|Score options against real rooms and real people, not feature checklists alone.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “decide account ownership up front” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “save the shortlist where checkout cannot ignore it” using your rooms, people, and gear — not a generic internet checklist.|For upgrade versus repair, write cost, remaining coverage, and household friction side by side.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “save the shortlist where checkout cannot ignore it” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
-      "The first version of these buying notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
     ]
   },
   {
@@ -6987,34 +5784,6 @@
       ]
     ],
     "asides": [
-      "The first version of these buying notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Score against your real rooms",
-      "Include people constraints",
-      "Weight network fit heavily",
-      "Write must-haves versus nice-to-haves",
-      "Keep the scorecard short",
-      "Involve the people who will use it",
-      "Avoid feature-list theater",
-      "Archive the decision note"
-    ],
-    "pipes": [
-      "Get specific about “score against your real rooms” using your rooms, people, and gear — not a generic internet checklist.|Measure the shelf and check the outlet before the product page talks you into it.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “score against your real rooms” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “include people constraints” using your rooms, people, and gear — not a generic internet checklist.|Buy for the Wi-Fi and ports you have, not the ones in the marketing photo.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “include people constraints” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “weight network fit heavily” using your rooms, people, and gear — not a generic internet checklist.|Write who will own the account and the warranty in a shared household.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “weight network fit heavily” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “write must-haves versus nice-to-haves” using your rooms, people, and gear — not a generic internet checklist.|If it is used or refurbished, verify reset status and serial before you pay.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “write must-haves versus nice-to-haves” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “keep the scorecard short” using your rooms, people, and gear — not a generic internet checklist.|Unbox into your records the same day — serials vanish with packaging.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “keep the scorecard short” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “involve the people who will use it” using your rooms, people, and gear — not a generic internet checklist.|Keep gift receipts and return windows where calm-you can find them.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “involve the people who will use it” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “avoid feature-list theater” using your rooms, people, and gear — not a generic internet checklist.|Score options against real rooms and real people, not feature checklists alone.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “avoid feature-list theater” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “archive the decision note” using your rooms, people, and gear — not a generic internet checklist.|For upgrade versus repair, write cost, remaining coverage, and household friction side by side.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “archive the decision note” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
       "The first version of these buying notes should be usable tonight, not impressive next year.",
       "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
       "If only one person knows where the record is, you do not have a household system yet.",
@@ -7153,34 +5922,6 @@
       "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
       "When support asks for something you lack, add it immediately so the next call is shorter.",
       "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Create the device record on day one",
-      "Save serials before mounting",
-      "Note setup choices",
-      "Attach receipts immediately",
-      "Write Wi-Fi and account links",
-      "Tell the household where it lives",
-      "Schedule a one-week fix pass",
-      "Close packaging only after returns clear"
-    ],
-    "pipes": [
-      "Get specific about “create the device record on day one” using your rooms, people, and gear — not a generic internet checklist.|Measure the shelf and check the outlet before the product page talks you into it.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “create the device record on day one” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “save serials before mounting” using your rooms, people, and gear — not a generic internet checklist.|Buy for the Wi-Fi and ports you have, not the ones in the marketing photo.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “save serials before mounting” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “note setup choices” using your rooms, people, and gear — not a generic internet checklist.|Write who will own the account and the warranty in a shared household.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “note setup choices” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “attach receipts immediately” using your rooms, people, and gear — not a generic internet checklist.|If it is used or refurbished, verify reset status and serial before you pay.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “attach receipts immediately” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “write Wi-Fi and account links” using your rooms, people, and gear — not a generic internet checklist.|Unbox into your records the same day — serials vanish with packaging.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “write Wi-Fi and account links” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “tell the household where it lives” using your rooms, people, and gear — not a generic internet checklist.|Keep gift receipts and return windows where calm-you can find them.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “tell the household where it lives” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “schedule a one-week fix pass” using your rooms, people, and gear — not a generic internet checklist.|Score options against real rooms and real people, not feature checklists alone.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “schedule a one-week fix pass” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “close packaging only after returns clear” using your rooms, people, and gear — not a generic internet checklist.|For upgrade versus repair, write cost, remaining coverage, and household friction side by side.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “close packaging only after returns clear” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
-      "The first version of these buying notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
     ]
   },
   {
@@ -7307,34 +6048,6 @@
       ]
     ],
     "asides": [
-      "The first version of these buying notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Save gift receipts separately",
-      "Note return windows in plain dates",
-      "Capture serials even for gifts",
-      "Handle missing proof gracefully",
-      "Coordinate with the giver",
-      "Keep calm packaging for a bit",
-      "Update inventory on keep-or-return",
-      "Avoid duplicate mystery devices"
-    ],
-    "pipes": [
-      "Get specific about “save gift receipts separately” using your rooms, people, and gear — not a generic internet checklist.|Measure the shelf and check the outlet before the product page talks you into it.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “save gift receipts separately” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “note return windows in plain dates” using your rooms, people, and gear — not a generic internet checklist.|Buy for the Wi-Fi and ports you have, not the ones in the marketing photo.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “note return windows in plain dates” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “capture serials even for gifts” using your rooms, people, and gear — not a generic internet checklist.|Write who will own the account and the warranty in a shared household.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “capture serials even for gifts” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “handle missing proof gracefully” using your rooms, people, and gear — not a generic internet checklist.|If it is used or refurbished, verify reset status and serial before you pay.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “handle missing proof gracefully” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “coordinate with the giver” using your rooms, people, and gear — not a generic internet checklist.|Unbox into your records the same day — serials vanish with packaging.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “coordinate with the giver” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “keep calm packaging for a bit” using your rooms, people, and gear — not a generic internet checklist.|Keep gift receipts and return windows where calm-you can find them.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “keep calm packaging for a bit” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “update inventory on keep-or-return” using your rooms, people, and gear — not a generic internet checklist.|Score options against real rooms and real people, not feature checklists alone.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “update inventory on keep-or-return” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “avoid duplicate mystery devices” using your rooms, people, and gear — not a generic internet checklist.|For upgrade versus repair, write cost, remaining coverage, and household friction side by side.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “avoid duplicate mystery devices” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
       "The first version of these buying notes should be usable tonight, not impressive next year.",
       "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
       "If only one person knows where the record is, you do not have a household system yet.",
@@ -7473,34 +6186,6 @@
       "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
       "When support asks for something you lack, add it immediately so the next call is shorter.",
       "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Document your mesh quirks",
-      "Prefer wired when reliability matters",
-      "Check band and standard realities",
-      "Note guest-network needs",
-      "Avoid orphans that need new hubs",
-      "Write the constraint before shopping",
-      "Retest after purchase",
-      "Update network docs after add"
-    ],
-    "pipes": [
-      "Get specific about “document your mesh quirks” using your rooms, people, and gear — not a generic internet checklist.|Measure the shelf and check the outlet before the product page talks you into it.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “document your mesh quirks” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “prefer wired when reliability matters” using your rooms, people, and gear — not a generic internet checklist.|Buy for the Wi-Fi and ports you have, not the ones in the marketing photo.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “prefer wired when reliability matters” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “check band and standard realities” using your rooms, people, and gear — not a generic internet checklist.|Write who will own the account and the warranty in a shared household.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “check band and standard realities” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “note guest-network needs” using your rooms, people, and gear — not a generic internet checklist.|If it is used or refurbished, verify reset status and serial before you pay.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “note guest-network needs” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “avoid orphans that need new hubs” using your rooms, people, and gear — not a generic internet checklist.|Unbox into your records the same day — serials vanish with packaging.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “avoid orphans that need new hubs” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “write the constraint before shopping” using your rooms, people, and gear — not a generic internet checklist.|Keep gift receipts and return windows where calm-you can find them.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “write the constraint before shopping” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “retest after purchase” using your rooms, people, and gear — not a generic internet checklist.|Score options against real rooms and real people, not feature checklists alone.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “retest after purchase” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “update network docs after add” using your rooms, people, and gear — not a generic internet checklist.|For upgrade versus repair, write cost, remaining coverage, and household friction side by side.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “update network docs after add” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
-      "The first version of these buying notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
     ]
   },
   {
@@ -7627,34 +6312,6 @@
       ]
     ],
     "asides": [
-      "The first version of these buying notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Verify serial and reset status",
-      "Ask for proof of purchase if any",
-      "Inspect ports and batteries",
-      "Check account locks",
-      "Document seller details",
-      "Create inventory on arrival",
-      "Watch return windows closely",
-      "Avoid deals that block registration"
-    ],
-    "pipes": [
-      "Get specific about “verify serial and reset status” using your rooms, people, and gear — not a generic internet checklist.|Measure the shelf and check the outlet before the product page talks you into it.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “verify serial and reset status” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “ask for proof of purchase if any” using your rooms, people, and gear — not a generic internet checklist.|Buy for the Wi-Fi and ports you have, not the ones in the marketing photo.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “ask for proof of purchase if any” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “inspect ports and batteries” using your rooms, people, and gear — not a generic internet checklist.|Write who will own the account and the warranty in a shared household.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “inspect ports and batteries” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “check account locks” using your rooms, people, and gear — not a generic internet checklist.|If it is used or refurbished, verify reset status and serial before you pay.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “check account locks” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “document seller details” using your rooms, people, and gear — not a generic internet checklist.|Unbox into your records the same day — serials vanish with packaging.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “document seller details” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “create inventory on arrival” using your rooms, people, and gear — not a generic internet checklist.|Keep gift receipts and return windows where calm-you can find them.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “create inventory on arrival” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “watch return windows closely” using your rooms, people, and gear — not a generic internet checklist.|Score options against real rooms and real people, not feature checklists alone.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “watch return windows closely” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “avoid deals that block registration” using your rooms, people, and gear — not a generic internet checklist.|For upgrade versus repair, write cost, remaining coverage, and household friction side by side.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “avoid deals that block registration” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
       "The first version of these buying notes should be usable tonight, not impressive next year.",
       "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
       "If only one person knows where the record is, you do not have a household system yet.",
@@ -7793,34 +6450,6 @@
       "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
       "When support asks for something you lack, add it immediately so the next call is shorter.",
       "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Decide ownership before checkout",
-      "Agree on account emails",
-      "Plan warranty responsibility",
-      "Write cost sharing if needed",
-      "Avoid surprise shared-network purchases",
-      "Document the decision",
-      "Onboard everyone to the record",
-      "Revisit after roommate changes"
-    ],
-    "pipes": [
-      "Get specific about “decide ownership before checkout” using your rooms, people, and gear — not a generic internet checklist.|Measure the shelf and check the outlet before the product page talks you into it.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “decide ownership before checkout” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “agree on account emails” using your rooms, people, and gear — not a generic internet checklist.|Buy for the Wi-Fi and ports you have, not the ones in the marketing photo.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “agree on account emails” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “plan warranty responsibility” using your rooms, people, and gear — not a generic internet checklist.|Write who will own the account and the warranty in a shared household.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “plan warranty responsibility” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “write cost sharing if needed” using your rooms, people, and gear — not a generic internet checklist.|If it is used or refurbished, verify reset status and serial before you pay.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “write cost sharing if needed” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “avoid surprise shared-network purchases” using your rooms, people, and gear — not a generic internet checklist.|Unbox into your records the same day — serials vanish with packaging.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “avoid surprise shared-network purchases” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “document the decision” using your rooms, people, and gear — not a generic internet checklist.|Keep gift receipts and return windows where calm-you can find them.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “document the decision” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “onboard everyone to the record” using your rooms, people, and gear — not a generic internet checklist.|Score options against real rooms and real people, not feature checklists alone.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “onboard everyone to the record” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “revisit after roommate changes” using your rooms, people, and gear — not a generic internet checklist.|For upgrade versus repair, write cost, remaining coverage, and household friction side by side.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “revisit after roommate changes” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
-      "The first version of these buying notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
     ]
   },
   {
@@ -7953,34 +6582,6 @@
       "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
       "When support asks for something you lack, add it immediately so the next call is shorter.",
       "Trust the physical house over stale notes — then fix the notes the same day."
-    ],
-    "headings": [
-      "Write repair quote versus replacement cost",
-      "Check remaining coverage",
-      "Note household friction of downtime",
-      "Consider security update status",
-      "Document data backup needs",
-      "Make the call explicit",
-      "Retire or keep with a status",
-      "Review what you learned"
-    ],
-    "pipes": [
-      "Get specific about “write repair quote versus replacement cost” using your rooms, people, and gear — not a generic internet checklist.|Measure the shelf and check the outlet before the product page talks you into it.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “write repair quote versus replacement cost” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “check remaining coverage” using your rooms, people, and gear — not a generic internet checklist.|Buy for the Wi-Fi and ports you have, not the ones in the marketing photo.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “check remaining coverage” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “note household friction of downtime” using your rooms, people, and gear — not a generic internet checklist.|Write who will own the account and the warranty in a shared household.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “note household friction of downtime” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “consider security update status” using your rooms, people, and gear — not a generic internet checklist.|If it is used or refurbished, verify reset status and serial before you pay.|Keep notes short enough that you will open them again next month.|If two adults share the house, name who updates this so it is not ambient guilt.|When “consider security update status” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “document data backup needs” using your rooms, people, and gear — not a generic internet checklist.|Unbox into your records the same day — serials vanish with packaging.|When the house and your notes disagree, trust the house and fix the notes the same day.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|When “document data backup needs” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “make the call explicit” using your rooms, people, and gear — not a generic internet checklist.|Keep gift receipts and return windows where calm-you can find them.|If two adults share the house, name who updates this so it is not ambient guilt.|Date the last review even if nothing changed, so the record feels alive.|When “make the call explicit” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “retire or keep with a status” using your rooms, people, and gear — not a generic internet checklist.|Score options against real rooms and real people, not feature checklists alone.|Leave blanks when you are unsure — a visible gap beats a confident wrong answer.|Keep notes short enough that you will open them again next month.|When “retire or keep with a status” is good enough to use tonight, stop polishing and move on.",
-      "Get specific about “review what you learned” using your rooms, people, and gear — not a generic internet checklist.|For upgrade versus repair, write cost, remaining coverage, and household friction side by side.|Date the last review even if nothing changed, so the record feels alive.|When the house and your notes disagree, trust the house and fix the notes the same day.|When “review what you learned” is good enough to use tonight, stop polishing and move on."
-    ],
-    "pads": [
-      "The first version of these buying notes should be usable tonight, not impressive next year.",
-      "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked.",
-      "If only one person knows where the record is, you do not have a household system yet.",
-      "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate.",
-      "When support asks for something you lack, add it immediately so the next call is shorter.",
-      "Trust the physical house over stale notes — then fix the notes the same day."
     ]
   }
-]
+];

@@ -8,152 +8,125 @@ const article = {
   "description": "Build a claim-ready packet of photos, serials, receipts, and values before you ever need an adjuster.",
   "publishedAt": "2026-04-19",
   "updatedAt": "2026-04-19",
-  "heroCaption": "Placeholder hero: scene illustrating insurance-ready electronics documentation.",
+  "heroCaption": "Build a claim-ready packet of photos, serials, receipts, and values before you ever need an adjuster.",
   "intro": [
-    "Build a claim-ready packet of photos, serials, receipts, and values before you ever need an adjuster \u2014 yet most homes only assemble those details after something goes wrong.",
-    "This guide shows a practical way to handle insurance-ready electronics documentation with records you can find under stress, not another abandoned checklist.",
-    "You will define what to capture, where it lives, who can see it, and how to keep insurance-ready electronics documentation current as gear and people change.",
-    "Home Tech Vault fits this guide because devices, documents, warranties, and household sharing can live together \u2014 so these habits become a living system instead of a weekend project that expires."
+    "Build a claim-ready packet of photos, serials, receipts, and values before you ever need an adjuster. Most homes only feel the gap when something breaks, goes missing, or a stranger on the phone asks for details nobody wrote down.",
+    "You will leave with a practical way to handle this that fits a real household — short enough to keep, specific enough to use under stress.",
+    "We will cover what to write down, where it should live, who can see it, and how to keep it current as gear and people change.",
+    "Home Tech Vault is useful here because devices, documents, warranties, and household sharing can live in one place — so this stays a living habit instead of a weekend project that quietly expires."
   ],
   "sections": [
     {
-      "id": "separate-secrets-from-notes-for-insurance-ready",
-      "heading": "Separate secrets from notes for insurance ready",
+      "id": "photograph-rooms-with-devices-in-context",
+      "heading": "Photograph rooms with devices in context",
       "paragraphs": [
-        "Write the minimum fields that make insurance-ready electronics documentation usable during a stressful call focusing on insurance. Keep secrets for insurance-ready electronics documentation in a password manager and store only pointers about documentation in shared notes. Update the same day the physical gear or policy changes. Even if a vendor app stores \u201cseparate secrets from notes for insurance ready\u201d, keep a household-facing summary where the right people can find it.",
-        "For \u201cSeparate secrets from notes for insurance ready\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cSeparate secrets from notes for insurance ready\u201d, pick the one a tired adult can follow. If two adults share the house, name the primary editor. Even if a vendor app stores \u201cseparate secrets from notes for insurance ready\u201d, keep a household-facing summary where the right people can find it.",
-        "Correct mismatches in \u201cSeparate secrets from notes for insurance ready\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cSeparate secrets from notes for insurance ready\u201d. Tag retired items instead of deleting history you may need later. Even if a vendor app stores \u201cseparate secrets from notes for insurance ready\u201d, keep a household-facing summary where the right people can find it.",
-        "Add one house-specific example under Separate secrets from notes for insurance ready. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cseparate secrets from notes for insurance ready\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “photograph rooms with devices in context” using your rooms, people, and gear — not a generic internet checklist. Decide what is a secret versus what is just useful household context. That sounds small until you are the person on the phone trying to remember it.",
+        "If two adults share the house, name who updates this so it is not ambient guilt. Date the last review even if nothing changed, so the record feels alive.",
+        "When “photograph rooms with devices in context” is good enough to use tonight, stop polishing and move on. Write it while the thing is in your hands; memory gets creative after a week.",
+        "The first version of these security notes should be usable tonight, not impressive next year. Keep it next to the related device or document so you are not reconstructing it from a text thread later.",
+        "If nothing changed since last time, still jot the review date — it proves the record is alive."
       ]
     },
     {
-      "id": "set-sharing-boundaries-for-ready-electronics",
-      "heading": "Set sharing boundaries for ready electronics",
+      "id": "pair-serials-with-receipts",
+      "heading": "Pair serials with receipts",
       "paragraphs": [
-        "Name who updates insurance-ready electronics documentation so the job is not ambient guilt especially for ready. When gear is replaced, close or retire the old insurance-ready electronics documentation record tied to insurance cleanly. If two adults share the house, name the primary editor. For secrets related to \u201cset sharing boundaries for ready electronics\u201d, use a password manager and store only pointers in shared records.",
-        "For \u201cSet sharing boundaries for ready electronics\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cSet sharing boundaries for ready electronics\u201d, pick the one a tired adult can follow. Tag retired items instead of deleting history you may need later. For secrets related to \u201cset sharing boundaries for ready electronics\u201d, use a password manager and store only pointers in shared records.",
-        "Correct mismatches in \u201cSet sharing boundaries for ready electronics\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cSet sharing boundaries for ready electronics\u201d. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. For secrets related to \u201cset sharing boundaries for ready electronics\u201d, use a password manager and store only pointers in shared records.",
-        "Add one house-specific example under Set sharing boundaries for ready electronics. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cset sharing boundaries for ready electronics\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “pair serials with receipts” using your rooms, people, and gear — not a generic internet checklist. A house sitter needs the alarm panel path, not your password manager. If two people share the house, decide who owns the update so it does not float as ambient guilt.",
+        "Leave blanks when you are unsure — a visible gap beats a confident wrong answer. Keep notes short enough that you will open them again next month.",
+        "When “pair serials with receipts” is good enough to use tonight, stop polishing and move on. The goal is calmer Tuesdays, not a museum-quality archive.",
+        "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked. That is the kind of detail that feels optional until the week you need it.",
+        "When the house and the notes disagree, believe the house and fix the notes the same day."
       ]
     },
     {
-      "id": "prepare-claim-packets-for-electronics-documentation",
-      "heading": "Prepare claim packets for electronics documentation",
+      "id": "export-dated-snapshots",
+      "heading": "Export dated snapshots",
       "paragraphs": [
-        "Prefer one vault record over screenshots scattered across phones for insurance-ready electronics documentation and electronics. Export or snapshot insurance-ready electronics documentation after major purchases or policy changes involving ready. Tag retired items instead of deleting history you may need later. Photograph labels for \u201cprepare claim packets for electronics documentation\u201d only when characters are tiny; file the photo beside typed fields.",
-        "For \u201cPrepare claim packets for electronics documentation\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cPrepare claim packets for electronics documentation\u201d, pick the one a tired adult can follow. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. Photograph labels for \u201cprepare claim packets for electronics documentation\u201d only when characters are tiny; file the photo beside typed fields.",
-        "Correct mismatches in \u201cPrepare claim packets for electronics documentation\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cPrepare claim packets for electronics documentation\u201d. Update the same day the physical gear or policy changes. Photograph labels for \u201cprepare claim packets for electronics documentation\u201d only when characters are tiny; file the photo beside typed fields.",
-        "Add one house-specific example under Prepare claim packets for electronics documentation. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cprepare claim packets for electronics documentation\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “export dated snapshots” using your rooms, people, and gear — not a generic internet checklist. Insurance wants photos, serials, and receipts more than a narrative essay. That sounds small until you are the person on the phone trying to remember it.",
+        "Date the last review even if nothing changed, so the record feels alive. When the house and your notes disagree, trust the house and fix the notes the same day.",
+        "When “export dated snapshots” is good enough to use tonight, stop polishing and move on. Write it while the thing is in your hands; memory gets creative after a week.",
+        "If only one person knows where the record is, you do not have a household system yet. Your future self will care more about clarity than completeness.",
+        "Share the location of this record with one other adult so it is not trapped on a single laptop."
       ]
     },
     {
-      "id": "plan-travel-handoffs-for-documentation",
-      "heading": "Plan travel handoffs for documentation",
+      "id": "store-proofs-off-the-dead-laptop",
+      "heading": "Store proofs off the dead laptop",
       "paragraphs": [
-        "Photograph labels only when typing would lose detail related to documentation in insurance-ready electronics documentation. Teach household members where insurance-ready electronics documentation lives so parallel trackers about electronics die. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. Close the loop on \u201cplan travel handoffs for documentation\u201d by naming the next action and the person responsible.",
-        "For \u201cPlan travel handoffs for documentation\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cPlan travel handoffs for documentation\u201d, pick the one a tired adult can follow. Update the same day the physical gear or policy changes. Close the loop on \u201cplan travel handoffs for documentation\u201d by naming the next action and the person responsible.",
-        "Correct mismatches in \u201cPlan travel handoffs for documentation\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cPlan travel handoffs for documentation\u201d. If two adults share the house, name the primary editor. Close the loop on \u201cplan travel handoffs for documentation\u201d by naming the next action and the person responsible.",
-        "Add one house-specific example under Plan travel handoffs for documentation. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cplan travel handoffs for documentation\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “store proofs off the dead laptop” using your rooms, people, and gear — not a generic internet checklist. Travel packets should list critical devices and who to call, not every gadget you own. If two people share the house, decide who owns the update so it does not float as ambient guilt.",
+        "Keep notes short enough that you will open them again next month. If two adults share the house, name who updates this so it is not ambient guilt.",
+        "When “store proofs off the dead laptop” is good enough to use tonight, stop polishing and move on. The goal is calmer Tuesdays, not a museum-quality archive.",
+        "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate. If it takes more than a minute to find, the system is still too scattered.",
+        "Stop when it is useful. A short living note beats a long abandoned one."
       ]
     },
     {
-      "id": "define-household-roles-for-insurance",
-      "heading": "Define household roles for insurance",
+      "id": "include-high-value-accessories",
+      "heading": "Include high-value accessories",
       "paragraphs": [
-        "Date-stamp the last review of insurance-ready electronics documentation even when nothing changed around insurance. During service calls, pull insurance-ready electronics documentation details for documentation before the technician arrives. Update the same day the physical gear or policy changes. Write \u201cdefine household roles for insurance\u201d as if a house guest with average tech confidence had to use it tonight.",
-        "For \u201cDefine household roles for insurance\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cDefine household roles for insurance\u201d, pick the one a tired adult can follow. If two adults share the house, name the primary editor. Write \u201cdefine household roles for insurance\u201d as if a house guest with average tech confidence had to use it tonight.",
-        "Correct mismatches in \u201cDefine household roles for insurance\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cDefine household roles for insurance\u201d. Tag retired items instead of deleting history you may need later. Write \u201cdefine household roles for insurance\u201d as if a house guest with average tech confidence had to use it tonight.",
-        "Add one house-specific example under Define household roles for insurance. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cdefine household roles for insurance\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “include high-value accessories” using your rooms, people, and gear — not a generic internet checklist. Cameras need location, account owner, and how to re-add them after a reset. That sounds small until you are the person on the phone trying to remember it.",
+        "When the house and your notes disagree, trust the house and fix the notes the same day. Leave blanks when you are unsure — a visible gap beats a confident wrong answer.",
+        "When “include high-value accessories” is good enough to use tonight, stop polishing and move on. Write it while the thing is in your hands; memory gets creative after a week.",
+        "When support asks for something you lack, add it immediately so the next call is shorter. Keep it next to the related device or document so you are not reconstructing it from a text thread later.",
+        "If nothing changed since last time, still jot the review date — it proves the record is alive."
       ]
     },
     {
-      "id": "document-cameras-and-alarms-for-ready",
-      "heading": "Document cameras and alarms for ready",
+      "id": "update-after-big-purchases",
+      "heading": "Update after big purchases",
       "paragraphs": [
-        "Link related documents next to the insurance-ready electronics documentation entry for ready instead of a generic Downloads folder. For travel or sitters, share only the slice of insurance-ready electronics documentation about insurance they need. If two adults share the house, name the primary editor. Stale notes for \u201cdocument cameras and alarms for ready\u201d create false confidence \u2014 worse than marking a field unknown.",
-        "For \u201cDocument cameras and alarms for ready\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cDocument cameras and alarms for ready\u201d, pick the one a tired adult can follow. Tag retired items instead of deleting history you may need later. Stale notes for \u201cdocument cameras and alarms for ready\u201d create false confidence \u2014 worse than marking a field unknown.",
-        "Correct mismatches in \u201cDocument cameras and alarms for ready\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cDocument cameras and alarms for ready\u201d. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. Stale notes for \u201cdocument cameras and alarms for ready\u201d create false confidence \u2014 worse than marking a field unknown.",
-        "Add one house-specific example under Document cameras and alarms for ready. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cdocument cameras and alarms for ready\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “update after big purchases” using your rooms, people, and gear — not a generic internet checklist. If someone moves out, revoke shared access the same week — not later. If two people share the house, decide who owns the update so it does not float as ambient guilt.",
+        "If two adults share the house, name who updates this so it is not ambient guilt. Date the last review even if nothing changed, so the record feels alive.",
+        "When “update after big purchases” is good enough to use tonight, stop polishing and move on. The goal is calmer Tuesdays, not a museum-quality archive.",
+        "Trust the physical house over stale notes — then fix the notes the same day. That is the kind of detail that feels optional until the week you need it."
       ]
     },
     {
-      "id": "build-emergency-packets-for-electronics",
-      "heading": "Build emergency packets for electronics",
+      "id": "share-with-whoever-files-claims",
+      "heading": "Share with whoever files claims",
       "paragraphs": [
-        "If a vendor app already stores part of insurance-ready electronics documentation, still keep a household-facing summary about electronics. After holidays or moves, schedule a catch-up pass for insurance-ready electronics documentation covering ready. Tag retired items instead of deleting history you may need later. Even if a vendor app stores \u201cbuild emergency packets for electronics\u201d, keep a household-facing summary where the right people can find it.",
-        "For \u201cBuild emergency packets for electronics\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cBuild emergency packets for electronics\u201d, pick the one a tired adult can follow. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. Even if a vendor app stores \u201cbuild emergency packets for electronics\u201d, keep a household-facing summary where the right people can find it.",
-        "Correct mismatches in \u201cBuild emergency packets for electronics\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cBuild emergency packets for electronics\u201d. Update the same day the physical gear or policy changes. Even if a vendor app stores \u201cbuild emergency packets for electronics\u201d, keep a household-facing summary where the right people can find it.",
-        "Add one house-specific example under Build emergency packets for electronics. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cbuild emergency packets for electronics\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “share with whoever files claims” using your rooms, people, and gear — not a generic internet checklist. Keep an emergency copy reachable if the house Wi-Fi is dead. That sounds small until you are the person on the phone trying to remember it.",
+        "Leave blanks when you are unsure — a visible gap beats a confident wrong answer. Keep notes short enough that you will open them again next month.",
+        "When “share with whoever files claims” is good enough to use tonight, stop polishing and move on. Write it while the thing is in your hands; memory gets creative after a week."
       ]
     },
     {
-      "id": "limit-oversharing-for-documentation",
-      "heading": "Limit oversharing for documentation",
+      "id": "practice-finding-the-packet",
+      "heading": "Practice finding the packet",
       "paragraphs": [
-        "Keep secrets for insurance-ready electronics documentation in a password manager and store only pointers about documentation in shared notes. Mark unknown fields for electronics visibly rather than inventing guesses about insurance-ready electronics documentation. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. For secrets related to \u201climit oversharing for documentation\u201d, use a password manager and store only pointers in shared records.",
-        "For \u201cLimit oversharing for documentation\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cLimit oversharing for documentation\u201d, pick the one a tired adult can follow. Update the same day the physical gear or policy changes. For secrets related to \u201climit oversharing for documentation\u201d, use a password manager and store only pointers in shared records.",
-        "Correct mismatches in \u201cLimit oversharing for documentation\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cLimit oversharing for documentation\u201d. If two adults share the house, name the primary editor. For secrets related to \u201climit oversharing for documentation\u201d, use a password manager and store only pointers in shared records.",
-        "Add one house-specific example under Limit oversharing for documentation. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201climit oversharing for documentation\u201d, use a password manager and store only pointers in shared records."
-      ]
-    },
-    {
-      "id": "review-access-quarterly-for-insurance",
-      "heading": "Review access quarterly for insurance",
-      "paragraphs": [
-        "When gear is replaced, close or retire the old insurance-ready electronics documentation record tied to insurance cleanly. Connect insurance-ready electronics documentation to device inventory so documentation notes do not float unattached. Update the same day the physical gear or policy changes. Photograph labels for \u201creview access quarterly for insurance\u201d only when characters are tiny; file the photo beside typed fields.",
-        "For \u201cReview access quarterly for insurance\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cReview access quarterly for insurance\u201d, pick the one a tired adult can follow. If two adults share the house, name the primary editor. Photograph labels for \u201creview access quarterly for insurance\u201d only when characters are tiny; file the photo beside typed fields.",
-        "Correct mismatches in \u201cReview access quarterly for insurance\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cReview access quarterly for insurance\u201d. Tag retired items instead of deleting history you may need later. Photograph labels for \u201creview access quarterly for insurance\u201d only when characters are tiny; file the photo beside typed fields.",
-        "Add one house-specific example under Review access quarterly for insurance. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201creview access quarterly for insurance\u201d, use a password manager and store only pointers in shared records."
-      ]
-    },
-    {
-      "id": "practice-a-restore-drill-for-ready",
-      "heading": "Practice a restore drill for ready",
-      "paragraphs": [
-        "Export or snapshot insurance-ready electronics documentation after major purchases or policy changes involving ready. Use short free-text notes for quirks about insurance that do not fit structured fields in insurance-ready electronics documentation. If two adults share the house, name the primary editor. Close the loop on \u201cpractice a restore drill for ready\u201d by naming the next action and the person responsible.",
-        "For \u201cPractice a restore drill for ready\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cPractice a restore drill for ready\u201d, pick the one a tired adult can follow. Tag retired items instead of deleting history you may need later. Close the loop on \u201cpractice a restore drill for ready\u201d by naming the next action and the person responsible.",
-        "Correct mismatches in \u201cPractice a restore drill for ready\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cPractice a restore drill for ready\u201d. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. Close the loop on \u201cpractice a restore drill for ready\u201d by naming the next action and the person responsible.",
-        "Add one house-specific example under Practice a restore drill for ready. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cpractice a restore drill for ready\u201d, use a password manager and store only pointers in shared records."
+        "Get specific about “practice finding the packet” using your rooms, people, and gear — not a generic internet checklist. Review the private vault after a breakup, roommate change, or contractor visit. If two people share the house, decide who owns the update so it does not float as ambient guilt.",
+        "Date the last review even if nothing changed, so the record feels alive. When the house and your notes disagree, trust the house and fix the notes the same day.",
+        "When “practice finding the packet” is good enough to use tonight, stop polishing and move on. The goal is calmer Tuesdays, not a museum-quality archive."
       ]
     }
   ],
   "faq": [
     {
-      "question": "How detailed should insurance-ready electronics documentation be?",
-      "answer": "Detailed enough that a trusted adult can act without calling you. Skip decorative fields you will not maintain."
+      "question": "How perfect does this need to be?",
+      "answer": "Good enough to act under stress. Skip fields you will not maintain."
     },
     {
-      "question": "Where should we store insurance-ready electronics documentation?",
-      "answer": "In one household vault with clear permissions \u2014 not in three apps and a group chat."
+      "question": "Where should the notes live?",
+      "answer": "In one household place with clear permissions — not scattered across apps and chats."
     },
     {
-      "question": "Who should edit insurance-ready electronics documentation?",
-      "answer": "Name a primary editor, then grant viewers for people who only need to look."
+      "question": "Who should edit?",
+      "answer": "Name a primary editor, then give others view access as needed."
     },
     {
-      "question": "How often should we review insurance-ready electronics documentation?",
-      "answer": "On unbox, gift, sale, move, and once a season for a short spot check."
+      "question": "What if details are missing?",
+      "answer": "Mark them unknown and schedule a catch-up. Visible gaps beat false confidence."
     },
     {
-      "question": "What if we are missing information?",
-      "answer": "Mark fields unknown and schedule a catch-up. Visible gaps beat false confidence."
+      "question": "How often should we review?",
+      "answer": "On unbox, gift, sale, move, and a short seasonal spot check."
     },
     {
       "question": "How does Home Tech Vault help?",
-      "answer": "It keeps insurance-ready electronics documentation next to devices, documents, and household sharing so the system stays usable."
+      "answer": "It keeps devices, documents, and household sharing together so habits stick."
     }
   ],
   "internalLinks": [
-    {
-      "href": "/knowledge/devices/serial-numbers-and-why-they-matter",
-      "label": "Serial Numbers And Why They Matter",
-      "description": "Continue with this related Knowledge Center guide."
-    },
-    {
-      "href": "/knowledge/warranties/proof-of-purchase-for-electronics",
-      "label": "Proof Of Purchase For Electronics",
-      "description": "Continue with this related Knowledge Center guide."
-    },
     {
       "href": "/digital-home-vault",
       "label": "Digital home vault",
@@ -175,7 +148,7 @@ const article = {
     "home inventory for insurance",
     "device claim documentation"
   ],
-  "readingMinutes": 12
+  "readingMinutes": 7
 } satisfies Omit<KnowledgeArticle, "readingMinutes"> & {
   readingMinutes: number;
 };

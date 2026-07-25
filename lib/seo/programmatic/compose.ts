@@ -136,11 +136,11 @@ function composeOrganizeDevices(brand: SeoBrand): ProgrammaticGuidePage {
     ],
     heroEyebrow: `${brand.name} organization`,
     heroTitle: title,
-    heroDescription: `A practical system for listing ${brand.possessiveLabel} across rooms, accounts, and family members — without another spreadsheet that dies in a week.`,
+    heroDescription: `A lived-in way to keep track of ${brand.possessiveLabel} across rooms and people — without another spreadsheet that dies in a week.`,
     intro: [
       `${brand.name} gear tends to multiply quietly. A household that starts with one ${brand.products[0]} often ends up with ${brand.products.slice(0, 3).join(", ")}, plus accessories nobody wants to claim.`,
       `${brand.facts[0]} That is why a brand-level inventory beats relying on memory or the default ${brand.ecosystem} screens alone.`,
-      `This guide walks through what to capture for ${brand.possessiveLabel}, how to keep rooms and owners straight, and how Home Tech Vault turns those notes into a living record.`,
+      `Here is how to keep ${brand.possessiveLabel} straight by room and owner, and how Home Tech Vault turns those notes into something the household can actually use.`,
     ],
     sections: [
       {
@@ -321,8 +321,8 @@ function composeOrganizeProduct(
         id: "start-with-identity",
         heading: `Identify the exact ${brand.name} ${noun}`,
         paragraphs: [
-          `Write the marketing name and the support model. For ${brand.name}, those are often different strings.`,
-          `Capture the serial from the device label or settings screen. ${brand.facts[1]}`,
+          `Put both the friendly marketing name and the support model on the record. For ${brand.name}, those are often different strings.`,
+          `Grab the serial from the device label or settings screen while you can still see it. ${brand.facts[1]}`,
           isTv
             ? "Photograph the rear input panel and any One Connect / breakout boxes so cable swaps are less mysterious."
             : isRouter
@@ -494,7 +494,7 @@ function composeTrackWarranties(brand: SeoBrand): ProgrammaticGuidePage {
         heading: "Name the coverage you actually have",
         paragraphs: [
           `Separate manufacturer warranty, retailer return window, extended plan, and credit-card protections for each ${brand.name} device.`,
-          `Write the end date for each layer. If you only remember “about two years,” put a revisit reminder instead of a fake date.`,
+          `Note the end date for each coverage layer. If you only remember “about two years,” set a revisit reminder instead of inventing a fake date.`,
           brand.friction[2],
         ],
       },

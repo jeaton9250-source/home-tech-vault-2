@@ -8,161 +8,137 @@ const article = {
   "description": "Where to find serials, how to store them safely, and why they unlock warranties, insurance claims, and support tickets.",
   "publishedAt": "2026-03-04",
   "updatedAt": "2026-03-04",
-  "heroCaption": "Placeholder hero: scene illustrating serial numbers and why they matter for home tech.",
+  "heroCaption": "Where to find serials, how to store them safely, and why they unlock warranties, insurance claims, and support tickets.",
   "intro": [
-    "Where to find serials, how to store them safely, and why they unlock warranties, insurance claims, and support tickets \u2014 yet most homes only assemble those details after something goes wrong.",
-    "This guide shows a practical way to handle serial numbers and why they matter for home tech with records you can find under stress, not another abandoned checklist.",
-    "You will define what to capture, where it lives, who can see it, and how to keep serial numbers and why they matter for home tech current as gear and people change.",
-    "Home Tech Vault fits this guide because devices, documents, warranties, and household sharing can live together \u2014 so these habits become a living system instead of a weekend project that expires."
+    "Where to find serials, how to store them safely, and why they unlock warranties, insurance claims, and support tickets. Most homes only feel the gap when something breaks, goes missing, or a stranger on the phone asks for details nobody wrote down.",
+    "You will leave with a practical way to handle this that fits a real household — short enough to keep, specific enough to use under stress.",
+    "We will cover what to write down, where it should live, who can see it, and how to keep it current as gear and people change.",
+    "Home Tech Vault is useful here because devices, documents, warranties, and household sharing can live in one place — so this stays a living habit instead of a weekend project that quietly expires."
   ],
   "sections": [
     {
-      "id": "define-scope-for-serial-numbers",
-      "heading": "Define scope for serial numbers",
+      "id": "why-serials-suddenly-matter",
+      "heading": "Why serials suddenly matter",
       "paragraphs": [
-        "Write the minimum fields that make serial numbers and why they matter for home tech usable during a stressful call focusing on serial. Keep secrets for serial numbers and why they matter for home tech in a password manager and store only pointers about why in shared notes. Update the same day the physical gear or policy changes. Even if a vendor app stores \u201cdefine scope for serial numbers\u201d, keep a household-facing summary where the right people can find it.",
-        "For \u201cDefine scope for serial numbers\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cDefine scope for serial numbers\u201d, pick the one a tired adult can follow. If two adults share the house, name the primary editor. Even if a vendor app stores \u201cdefine scope for serial numbers\u201d, keep a household-facing summary where the right people can find it.",
-        "Correct mismatches in \u201cDefine scope for serial numbers\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cDefine scope for serial numbers\u201d. Tag retired items instead of deleting history you may need later. Even if a vendor app stores \u201cdefine scope for serial numbers\u201d, keep a household-facing summary where the right people can find it.",
-        "Add one house-specific example under Define scope for serial numbers. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cdefine scope for serial numbers\u201d, use a password manager and store only pointers in shared records."
+        "Support and insurance treat the serial as the device's fingerprint. Marketing names are friendly; serials unlock tickets. That sounds small until you are the person on the phone trying to remember it.",
+        "If you only save one identifier, make it the serial. Stolen-device reports often stall without it.",
+        "The first version of these device notes should be usable tonight, not impressive next year. Keep it next to the related device or document so you are not reconstructing it from a text thread later.",
+        "If nothing changed since last time, still jot the review date — it proves the record is alive.",
+        "Revisit “why serials suddenly matter” only to change what is true today — not to rebuild the whole section from scratch."
       ]
     },
     {
-      "id": "choose-fields-for-numbers-why",
-      "heading": "Choose fields for numbers why",
+      "id": "where-they-actually-hide",
+      "heading": "Where they actually hide",
       "paragraphs": [
-        "Name who updates serial numbers and why they matter for home tech so the job is not ambient guilt especially for numbers. When gear is replaced, close or retire the old serial numbers and why they matter for home tech record tied to they cleanly. If two adults share the house, name the primary editor. For secrets related to \u201cchoose fields for numbers why\u201d, use a password manager and store only pointers in shared records.",
-        "For \u201cChoose fields for numbers why\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cChoose fields for numbers why\u201d, pick the one a tired adult can follow. Tag retired items instead of deleting history you may need later. For secrets related to \u201cchoose fields for numbers why\u201d, use a password manager and store only pointers in shared records.",
-        "Correct mismatches in \u201cChoose fields for numbers why\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cChoose fields for numbers why\u201d. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. For secrets related to \u201cchoose fields for numbers why\u201d, use a password manager and store only pointers in shared records.",
-        "Add one house-specific example under Choose fields for numbers why. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cchoose fields for numbers why\u201d, use a password manager and store only pointers in shared records."
+        "Check the underside, battery bay, box, and Settings About screen. TVs hide labels on the back or behind HDMI flaps. If two people share the house, decide who owns the update so it does not float as ambient guilt.",
+        "Routers print serials on the bottom and in admin status. Phones may show IMEI in settings and on the SIM tray.",
+        "I used to overbuild systems for this. The ones that survived were shorter and lived where we already looked. That is the kind of detail that feels optional until the week you need it.",
+        "When the house and the notes disagree, believe the house and fix the notes the same day.",
+        "Revisit “where they actually hide” only to change what is true today — not to rebuild the whole section from scratch."
       ]
     },
     {
-      "id": "walk-rooms-for-why-they",
-      "heading": "Walk rooms for why they",
+      "id": "save-more-than-the-digits",
+      "heading": "Save more than the digits",
       "paragraphs": [
-        "Prefer one vault record over screenshots scattered across phones for serial numbers and why they matter for home tech and why. Export or snapshot serial numbers and why they matter for home tech after major purchases or policy changes involving matter. Tag retired items instead of deleting history you may need later. Photograph labels for \u201cwalk rooms for why they\u201d only when characters are tiny; file the photo beside typed fields.",
-        "For \u201cWalk rooms for why they\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cWalk rooms for why they\u201d, pick the one a tired adult can follow. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. Photograph labels for \u201cwalk rooms for why they\u201d only when characters are tiny; file the photo beside typed fields.",
-        "Correct mismatches in \u201cWalk rooms for why they\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cWalk rooms for why they\u201d. Update the same day the physical gear or policy changes. Photograph labels for \u201cwalk rooms for why they\u201d only when characters are tiny; file the photo beside typed fields.",
-        "Add one house-specific example under Walk rooms for why they. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cwalk rooms for why they\u201d, use a password manager and store only pointers in shared records."
+        "Write brand and exact model beside every serial. Note where you found it so the next search is faster. That sounds small until you are the person on the phone trying to remember it.",
+        "Photograph tiny labels, then type the digits while readable. For phones, keep IMEI and the account that can lock the device.",
+        "If only one person knows where the record is, you do not have a household system yet. Your future self will care more about clarity than completeness.",
+        "Share the location of this record with one other adult so it is not trapped on a single laptop.",
+        "Revisit “save more than the digits” only to change what is true today — not to rebuild the whole section from scratch."
       ]
     },
     {
-      "id": "capture-identifiers-for-they-matter",
-      "heading": "Capture identifiers for they matter",
+      "id": "when-the-sticker-is-gone",
+      "heading": "When the sticker is gone",
       "paragraphs": [
-        "Photograph labels only when typing would lose detail related to they in serial numbers and why they matter for home tech. Teach household members where serial numbers and why they matter for home tech lives so parallel trackers about serial die. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. Close the loop on \u201ccapture identifiers for they matter\u201d by naming the next action and the person responsible.",
-        "For \u201cCapture identifiers for they matter\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cCapture identifiers for they matter\u201d, pick the one a tired adult can follow. Update the same day the physical gear or policy changes. Close the loop on \u201ccapture identifiers for they matter\u201d by naming the next action and the person responsible.",
-        "Correct mismatches in \u201cCapture identifiers for they matter\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cCapture identifiers for they matter\u201d. If two adults share the house, name the primary editor. Close the loop on \u201ccapture identifiers for they matter\u201d by naming the next action and the person responsible.",
-        "Add one house-specific example under Capture identifiers for they matter. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201ccapture identifiers for they matter\u201d, use a password manager and store only pointers in shared records."
+        "Mark unknown instead of inventing digits. Check order emails and purchase history before you give up. If two people share the house, decide who owns the update so it does not float as ambient guilt.",
+        "Ask the retailer for an invoice if you are still in the return window. For used gear, note seller contact and any partial ID.",
+        "After holidays, moves, or a big purchase, schedule a twenty-minute catch-up before details evaporate. If it takes more than a minute to find, the system is still too scattered.",
+        "Stop when it is useful. A short living note beats a long abandoned one.",
+        "Revisit “when the sticker is gone” only to change what is true today — not to rebuild the whole section from scratch."
       ]
     },
     {
-      "id": "attach-proofs-for-matter",
-      "heading": "Attach proofs for matter",
+      "id": "keep-them-findable-without-a-secret-stash",
+      "heading": "Keep them findable without a secret stash",
       "paragraphs": [
-        "Date-stamp the last review of serial numbers and why they matter for home tech even when nothing changed around matter. During service calls, pull serial numbers and why they matter for home tech details for numbers before the technician arrives. Update the same day the physical gear or policy changes. Write \u201cattach proofs for matter\u201d as if a house guest with average tech confidence had to use it tonight.",
-        "For \u201cAttach proofs for matter\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cAttach proofs for matter\u201d, pick the one a tired adult can follow. If two adults share the house, name the primary editor. Write \u201cattach proofs for matter\u201d as if a house guest with average tech confidence had to use it tonight.",
-        "Correct mismatches in \u201cAttach proofs for matter\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cAttach proofs for matter\u201d. Tag retired items instead of deleting history you may need later. Write \u201cattach proofs for matter\u201d as if a house guest with average tech confidence had to use it tonight.",
-        "Add one house-specific example under Attach proofs for matter. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cattach proofs for matter\u201d, use a password manager and store only pointers in shared records."
+        "Keep serials next to the device record, not in a random notes app. Avoid posting them publicly even though they are not passwords. That sounds small until you are the person on the phone trying to remember it.",
+        "Do not bury them only inside a vendor app you might lose. Share view access with whoever handles warranties.",
+        "When support asks for something you lack, add it immediately so the next call is shorter. Keep it next to the related device or document so you are not reconstructing it from a text thread later.",
+        "If nothing changed since last time, still jot the review date — it proves the record is alive.",
+        "Revisit “keep them findable without a secret stash” only to change what is true today — not to rebuild the whole section from scratch."
       ]
     },
     {
-      "id": "set-ownership-rules-for-serial",
-      "heading": "Set ownership rules for serial",
+      "id": "make-label-photos-actually-useful",
+      "heading": "Make label photos actually useful",
       "paragraphs": [
-        "Link related documents next to the serial numbers and why they matter for home tech entry for serial instead of a generic Downloads folder. For travel or sitters, share only the slice of serial numbers and why they matter for home tech about why they need. If two adults share the house, name the primary editor. Stale notes for \u201cset ownership rules for serial\u201d create false confidence \u2014 worse than marking a field unknown.",
-        "For \u201cSet ownership rules for serial\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cSet ownership rules for serial\u201d, pick the one a tired adult can follow. Tag retired items instead of deleting history you may need later. Stale notes for \u201cset ownership rules for serial\u201d create false confidence \u2014 worse than marking a field unknown.",
-        "Correct mismatches in \u201cSet ownership rules for serial\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cSet ownership rules for serial\u201d. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. Stale notes for \u201cset ownership rules for serial\u201d create false confidence \u2014 worse than marking a field unknown.",
-        "Add one house-specific example under Set ownership rules for serial. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cset ownership rules for serial\u201d, use a password manager and store only pointers in shared records."
+        "Photograph labels straight-on with glare minimized. Crop so digits are readable without opening a huge album. If two people share the house, decide who owns the update so it does not float as ambient guilt.",
+        "File the photo on the device record the same day. Retake if 8/B or 0/O look ambiguous.",
+        "Trust the physical house over stale notes — then fix the notes the same day. That is the kind of detail that feels optional until the week you need it.",
+        "When the house and the notes disagree, believe the house and fix the notes the same day.",
+        "Revisit “make label photos actually useful” only to change what is true today — not to rebuild the whole section from scratch."
       ]
     },
     {
-      "id": "maintain-freshness-for-numbers",
-      "heading": "Maintain freshness for numbers",
+      "id": "update-when-gear-changes",
+      "heading": "Update when gear changes",
       "paragraphs": [
-        "If a vendor app already stores part of serial numbers and why they matter for home tech, still keep a household-facing summary about numbers. After holidays or moves, schedule a catch-up pass for serial numbers and why they matter for home tech covering they. Tag retired items instead of deleting history you may need later. Even if a vendor app stores \u201cmaintain freshness for numbers\u201d, keep a household-facing summary where the right people can find it.",
-        "For \u201cMaintain freshness for numbers\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cMaintain freshness for numbers\u201d, pick the one a tired adult can follow. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. Even if a vendor app stores \u201cmaintain freshness for numbers\u201d, keep a household-facing summary where the right people can find it.",
-        "Correct mismatches in \u201cMaintain freshness for numbers\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cMaintain freshness for numbers\u201d. Update the same day the physical gear or policy changes. Even if a vendor app stores \u201cmaintain freshness for numbers\u201d, keep a household-facing summary where the right people can find it.",
-        "Add one house-specific example under Maintain freshness for numbers. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cmaintain freshness for numbers\u201d, use a password manager and store only pointers in shared records."
+        "Retire old serials when you replace a device. Ask whether a board-level repair changed the serial. That sounds small until you are the person on the phone trying to remember it.",
+        "Gifted devices need a fresh entry. Delete duplicates so support never gets the wrong number.",
+        "Share the location of this record with one other adult so it is not trapped on a single laptop.",
+        "Revisit “update when gear changes” only to change what is true today — not to rebuild the whole section from scratch."
       ]
     },
     {
-      "id": "support-claims-for-why",
-      "heading": "Support claims for why",
+      "id": "use-them-on-real-calls",
+      "heading": "Use them on real calls",
       "paragraphs": [
-        "Keep secrets for serial numbers and why they matter for home tech in a password manager and store only pointers about why in shared notes. Mark unknown fields for matter visibly rather than inventing guesses about serial numbers and why they matter for home tech. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. For secrets related to \u201csupport claims for why\u201d, use a password manager and store only pointers in shared records.",
-        "For \u201cSupport claims for why\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cSupport claims for why\u201d, pick the one a tired adult can follow. Update the same day the physical gear or policy changes. For secrets related to \u201csupport claims for why\u201d, use a password manager and store only pointers in shared records.",
-        "Correct mismatches in \u201cSupport claims for why\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cSupport claims for why\u201d. If two adults share the house, name the primary editor. For secrets related to \u201csupport claims for why\u201d, use a password manager and store only pointers in shared records.",
-        "Add one house-specific example under Support claims for why. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201csupport claims for why\u201d, use a password manager and store only pointers in shared records."
-      ]
-    },
-    {
-      "id": "connect-related-systems-for-they",
-      "heading": "Connect related systems for they",
-      "paragraphs": [
-        "When gear is replaced, close or retire the old serial numbers and why they matter for home tech record tied to they cleanly. Connect serial numbers and why they matter for home tech to device inventory so serial notes do not float unattached. Update the same day the physical gear or policy changes. Photograph labels for \u201cconnect related systems for they\u201d only when characters are tiny; file the photo beside typed fields.",
-        "For \u201cConnect related systems for they\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cConnect related systems for they\u201d, pick the one a tired adult can follow. If two adults share the house, name the primary editor. Photograph labels for \u201cconnect related systems for they\u201d only when characters are tiny; file the photo beside typed fields.",
-        "Correct mismatches in \u201cConnect related systems for they\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cConnect related systems for they\u201d. Tag retired items instead of deleting history you may need later. Photograph labels for \u201cconnect related systems for they\u201d only when characters are tiny; file the photo beside typed fields.",
-        "Add one house-specific example under Connect related systems for they. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cconnect related systems for they\u201d, use a password manager and store only pointers in shared records."
-      ]
-    },
-    {
-      "id": "finish-and-review-for-matter",
-      "heading": "Finish and review for matter",
-      "paragraphs": [
-        "Export or snapshot serial numbers and why they matter for home tech after major purchases or policy changes involving matter. Use short free-text notes for quirks about numbers that do not fit structured fields in serial numbers and why they matter for home tech. If two adults share the house, name the primary editor. Close the loop on \u201cfinish and review for matter\u201d by naming the next action and the person responsible.",
-        "For \u201cFinish and review for matter\u201d, stay specific to this home rather than generic advice. If two options exist for \u201cFinish and review for matter\u201d, pick the one a tired adult can follow. Tag retired items instead of deleting history you may need later. Close the loop on \u201cfinish and review for matter\u201d by naming the next action and the person responsible.",
-        "Correct mismatches in \u201cFinish and review for matter\u201d the same day you notice them. Retire abandoned side notes that compete with \u201cFinish and review for matter\u201d. Attach the habit to something you already do \u2014 bill pay, filter changes, or seasonal cleaning. Close the loop on \u201cfinish and review for matter\u201d by naming the next action and the person responsible.",
-        "Add one house-specific example under Finish and review for matter. If nothing changed since last review still write the review date. Keep notes short enough that you will maintain them next month. For secrets related to \u201cfinish and review for matter\u201d, use a password manager and store only pointers in shared records."
+        "Have serial, model, and proof open before you call. Paste carefully — transposed digits waste whole calls. If two people share the house, decide who owns the update so it does not float as ambient guilt.",
+        "Pair serials with room photos for insurance. Verify trade-in serials match the device in your hand.",
+        "Stop when it is useful. A short living note beats a long abandoned one.",
+        "Revisit “use them on real calls” only to change what is true today — not to rebuild the whole section from scratch."
       ]
     }
   ],
   "faq": [
     {
-      "question": "How detailed should serial numbers and why they matter for home tech be?",
-      "answer": "Detailed enough that a trusted adult can act without calling you. Skip decorative fields you will not maintain."
+      "question": "How perfect does this need to be?",
+      "answer": "Good enough to act under stress. Skip fields you will not maintain."
     },
     {
-      "question": "Where should we store serial numbers and why they matter for home tech?",
-      "answer": "In one household vault with clear permissions \u2014 not in three apps and a group chat."
+      "question": "Where should the notes live?",
+      "answer": "In one household place with clear permissions — not scattered across apps and chats."
     },
     {
-      "question": "Who should edit serial numbers and why they matter for home tech?",
-      "answer": "Name a primary editor, then grant viewers for people who only need to look."
+      "question": "Who should edit?",
+      "answer": "Name a primary editor, then give others view access as needed."
     },
     {
-      "question": "How often should we review serial numbers and why they matter for home tech?",
-      "answer": "On unbox, gift, sale, move, and once a season for a short spot check."
+      "question": "What if details are missing?",
+      "answer": "Mark them unknown and schedule a catch-up. Visible gaps beat false confidence."
     },
     {
-      "question": "What if we are missing information?",
-      "answer": "Mark fields unknown and schedule a catch-up. Visible gaps beat false confidence."
+      "question": "How often should we review?",
+      "answer": "On unbox, gift, sale, move, and a short seasonal spot check."
     },
     {
       "question": "How does Home Tech Vault help?",
-      "answer": "It keeps serial numbers and why they matter for home tech next to devices, documents, and household sharing so the system stays usable."
+      "answer": "It keeps devices, documents, and household sharing together so habits stick."
     }
   ],
   "internalLinks": [
     {
-      "href": "/knowledge/devices/how-to-inventory-every-device-in-your-home",
-      "label": "How To Inventory Every Device In Your Home",
-      "description": "Continue with this related Knowledge Center guide."
-    },
-    {
-      "href": "/knowledge/warranties/proof-of-purchase-for-electronics",
-      "label": "Proof Of Purchase For Electronics",
-      "description": "Continue with this related Knowledge Center guide."
-    },
-    {
       "href": "/device-inventory",
       "label": "Device inventory",
-      "description": "Build a living device list in Home Tech Vault."
+      "description": "Keep your living device list in one place."
     },
     {
       "href": "/warranty-tracker",
       "label": "Warranty tracker",
-      "description": "Attach coverage dates to each device."
+      "description": "Hang coverage dates on each device."
     },
     {
       "href": "/home-tech-inventory",
@@ -175,7 +151,7 @@ const article = {
     "electronics serial",
     "warranty serial number"
   ],
-  "readingMinutes": 13
+  "readingMinutes": 7
 } satisfies Omit<KnowledgeArticle, "readingMinutes"> & {
   readingMinutes: number;
 };
