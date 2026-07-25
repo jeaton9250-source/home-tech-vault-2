@@ -12,6 +12,11 @@ import {
   siteConfig,
 } from "@/lib/marketing/site";
 
+// Prefer `@/lib/seo` for new pages. Re-exports keep a single JSON-LD source.
+export {
+  createBreadcrumbJsonLd,
+} from "@/lib/seo/jsonLd";
+
 type PageMetadataInput = {
   title: string;
   description: string;

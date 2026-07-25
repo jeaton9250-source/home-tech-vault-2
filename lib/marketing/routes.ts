@@ -72,6 +72,19 @@ export const PUBLIC_MARKETING_PATHS = [
   MARKETING_ROUTES.trust,
   MARKETING_ROUTES.privacy,
   MARKETING_ROUTES.terms,
+  "/device-inventory",
+  "/home-tech-inventory",
+  "/warranty-tracker",
+  "/home-document-organizer",
+  "/network-documentation",
+  "/homeowner-tech-management",
+  "/smart-home-organizer",
+  "/home-inventory-software",
+  "/digital-home-vault",
+  "/home-tech-checklist",
+  "/knowledge",
+  "/guides",
+  "/compare",
 ] as const;
 
 export const PUBLIC_UPGRADE_PATHS = [
@@ -110,4 +123,31 @@ export const INDEXABLE_MARKETING_PATHS = [
   MARKETING_ROUTES.trust,
   MARKETING_ROUTES.privacy,
   MARKETING_ROUTES.terms,
+  "/device-inventory",
+  "/home-tech-inventory",
+  "/warranty-tracker",
+  "/home-document-organizer",
+  "/network-documentation",
+  "/homeowner-tech-management",
+  "/smart-home-organizer",
+  "/home-inventory-software",
+  "/digital-home-vault",
+  "/home-tech-checklist",
+  "/knowledge",
+  "/guides",
+  "/compare",
+] as const;
+
+/** SEO landing page paths (subset of indexable marketing URLs). */
+export const SEO_LANDING_PATHS = [
+  "/device-inventory",
+  "/home-tech-inventory",
+  "/warranty-tracker",
+  "/home-document-organizer",
+  "/network-documentation",
+  "/homeowner-tech-management",
+  "/smart-home-organizer",
+  "/home-inventory-software",
+  "/digital-home-vault",
+  "/home-tech-checklist",
 ] as const;

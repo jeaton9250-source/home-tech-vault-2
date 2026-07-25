@@ -30,6 +30,9 @@ const PUBLIC_MARKETING_PREFIXES = [
   "/trust",
   "/security",
   "/demo",
+  "/knowledge",
+  "/guides",
+  "/compare",
 ];
 
 function normalizePathname(pathname: string) {
