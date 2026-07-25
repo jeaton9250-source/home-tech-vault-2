@@ -1,5 +1,6 @@
+import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, ImageIcon } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 import MarketingLayout, {
   MarketingContent,
@@ -12,13 +13,13 @@ import {
   StructuredData,
 } from "@/components/seo";
 import TableOfContents from "@/components/knowledge/TableOfContents";
-import { cn } from "@/lib/design-system/cn";
 import {
   getKnowledgeCategory,
   knowledgeArticlePath,
   knowledgeCategoryPath,
   type KnowledgeCategorySlug,
 } from "@/lib/knowledge/categories";
+import { getKnowledgeHeroImage } from "@/lib/knowledge/heroImages";
 import type { KnowledgeArticle } from "@/lib/knowledge/types";
 import { MARKETING_ROUTES } from "@/lib/marketing/routes";
 import { siteConfig } from "@/lib/marketing/site";
@@ -43,6 +44,7 @@ export default function KnowledgeArticleTemplate({
     article.category,
     article.slug
   );
+  const hero = getKnowledgeHeroImage(article.slug);
 
   const breadcrumbs = [
     { name: "Home", href: "/" },
@@ -80,6 +82,7 @@ export default function KnowledgeArticleTemplate({
       publishedAt: article.publishedAt,
       updatedAt: article.updatedAt,
       keywords: article.keywords,
+      imagePath: hero.src,
     }),
     createSoftwareApplicationJsonLd({
       description: article.description,
@@ -127,23 +130,18 @@ export default function KnowledgeArticleTemplate({
       <MarketingContent className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_280px] lg:gap-14">
         <article className="min-w-0">
           <figure className="overflow-hidden border border-border-subtle bg-surface-card">
-            <div
-              className={cn(
-                "flex aspect-[21/9] flex-col items-center justify-center gap-3",
-                "bg-[linear-gradient(160deg,var(--color-surface-raised)_0%,var(--color-surface-card)_55%,#EEF3F7_100%)]"
-              )}
-              aria-hidden
-            >
-              <ImageIcon
-                size={32}
-                className="text-text-muted"
+            <div className="relative aspect-[21/9] bg-surface-raised">
+              <Image
+                src={hero.src}
+                alt={hero.alt}
+                fill
+                priority
+                sizes="(max-width: 1024px) 100vw, 720px"
+                className="object-cover"
               />
-              <span className="text-sm font-medium text-text-muted">
-                Hero image placeholder
-              </span>
             </div>
             <figcaption className="border-t border-border-subtle px-4 py-3 text-sm text-text-muted">
-              {article.heroCaption}
+              {hero.caption || article.heroCaption}
             </figcaption>
           </figure>
 

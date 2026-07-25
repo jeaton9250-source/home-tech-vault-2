@@ -143,6 +143,8 @@ export function createArticleJsonLd(input: {
   publishedAt: string;
   updatedAt?: string;
   keywords?: string[];
+  /** Optional article hero image path under the site root */
+  imagePath?: string;
 }): JsonLdObject {
   return {
     "@context": "https://schema.org",
@@ -166,7 +168,7 @@ export function createArticleJsonLd(input: {
     },
     mainEntityOfPage: absoluteUrl(input.path),
     keywords: input.keywords?.join(", "),
-    image: absoluteUrl(siteConfig.defaultOgImage),
+    image: absoluteUrl(input.imagePath ?? siteConfig.defaultOgImage),
   };
 }
 

@@ -15,6 +15,7 @@
     "generate:apple-touch-icon": "tsx scripts/generate-apple-touch-icon.tsx",
     "generate:social-assets": "npm run generate:og-image && npm run generate:apple-touch-icon",
     "generate:knowledge": "node scripts/generate-knowledge-articles.mjs",
+    "generate:knowledge-heroes": "node --import tsx scripts/download-knowledge-heroes.ts",
     "audit:links": "node --import tsx scripts/audit-internal-links.ts",
     "email:dev": "email dev --dir emails/templates --port 3001"
   },
