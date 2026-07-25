@@ -234,14 +234,20 @@ export const SEO_LANDING_PAGES: Record<
       {
         title: "Household overview",
         caption: "A calm dashboard of devices and recent activity across the home.",
+        src: "/seo/screenshots/home-tech-overview.png",
+        alt: "Home Tech Vault overall home health score and today's highlights",
       },
       {
         title: "Filtered inventory",
         caption: "Filter by room, category, or warranty status when you need answers fast.",
+        src: "/seo/screenshots/home-tech-filtered.png",
+        alt: "Home Tech Vault location filter with rooms like Bedroom, Kitchen, and Living Room",
       },
       {
         title: "Family access",
         caption: "Shared visibility for the people who help manage the house.",
+        src: "/seo/screenshots/home-tech-family.png",
+        alt: "Home Tech Vault household access list showing members and roles",
       },
     ],
     featuresTitle: "What makes a home tech inventory work",
