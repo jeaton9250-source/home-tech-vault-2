@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { applyHouseholdMutationScope } from "@/lib/data/householdScope";
 import { usePermissions } from "@/hooks/usePermissions";
 import { Trash2 } from "lucide-react";
 
@@ -13,7 +12,6 @@ export default function DeleteDeviceButton({
 }) {
   const {
     user,
-    householdId,
     canDelete,
     isDemo,
   } = usePermissions();
@@ -36,18 +34,23 @@ export default function DeleteDeviceButton({
     try {
       setDeleting(true);
 
-      const { error } =
-        await applyHouseholdMutationScope(
-          supabase
-            .from("devices")
-            .delete()
-            .eq("id", deviceId),
-          householdId,
-          user.id
-        );
+      // Delete by id only — RLS enforces household admin / owner access.
+      // Do not also filter household_id: older rows may still have a null
+      // household_id and that filter would match 0 rows with no error.
+      const { data, error } = await supabase
+        .from("devices")
+        .delete()
+        .eq("id", deviceId)
+        .select("id");
 
       if (error) {
         throw error;
+      }
+
+      if (!data?.length) {
+        throw new Error(
+          "You do not have permission to delete this device, or it was already removed."
+        );
       }
 
       window.location.href = "/devices";

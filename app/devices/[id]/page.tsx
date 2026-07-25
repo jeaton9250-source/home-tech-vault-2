@@ -942,10 +942,13 @@ export default function DevicePage() {
             )
             .remove(imagePaths);
 
-        if (
-          imageStorageError
-        ) {
-          throw imageStorageError;
+        // Soft-fail: do not block device delete if storage RLS denies a
+        // cross-member path; DB row delete + policies are the source of truth.
+        if (imageStorageError) {
+          console.error(
+            "Unable to remove device images from storage:",
+            imageStorageError
+          );
         }
       }
 
@@ -996,26 +999,33 @@ export default function DevicePage() {
               documentPaths
             );
 
-        if (
-          documentStorageError
-        ) {
-          throw documentStorageError;
+        if (documentStorageError) {
+          console.error(
+            "Unable to remove device documents from storage:",
+            documentStorageError
+          );
         }
       }
 
+      // Delete by id only — RLS enforces admin/owner. Avoid household_id
+      // filters that miss legacy rows with null household_id.
       const {
+        data: deletedRows,
         error: deleteError,
-      } = await applyHouseholdMutationScope(
-        supabase
-          .from("devices")
-          .delete()
-          .eq("id", device.id),
-        householdId,
-        user.id
-      );
+      } = await supabase
+        .from("devices")
+        .delete()
+        .eq("id", device.id)
+        .select("id");
 
       if (deleteError) {
         throw deleteError;
+      }
+
+      if (!deletedRows?.length) {
+        throw new Error(
+          "You do not have permission to delete this device, or it was already removed."
+        );
       }
 
       router.push("/devices");
