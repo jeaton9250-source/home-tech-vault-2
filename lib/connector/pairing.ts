@@ -12,10 +12,19 @@ export const PAIRING_CODE_TTL_MS = 10 * 60 * 1000;
 const PAIRING_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ";
 
 function getPairingPepper(): string {
-  return (
-    process.env.CONNECTOR_PAIRING_PEPPER?.trim() ??
-    ""
-  );
+  const pepper =
+    process.env.CONNECTOR_PAIRING_PEPPER?.trim() ?? "";
+
+  if (
+    !pepper &&
+    process.env.NODE_ENV === "production"
+  ) {
+    throw new Error(
+      "CONNECTOR_PAIRING_PEPPER must be set in production."
+    );
+  }
+
+  return pepper;
 }
 
 /**

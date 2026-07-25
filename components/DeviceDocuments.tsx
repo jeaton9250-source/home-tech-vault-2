@@ -16,6 +16,7 @@ import { supabase } from "@/lib/supabase";
 import {
   recordActivity,
 } from "@/lib/activity";
+import { validateDocumentUpload } from "@/lib/documents/uploadSecurity";
 
 type DeviceDocumentRow = {
   id: string;
@@ -152,9 +153,11 @@ export default function DeviceDocuments({
       }
 
       for (const file of files) {
-        if (file.size > 10 * 1024 * 1024) {
+        const validation = validateDocumentUpload(file);
+
+        if (!validation.ok) {
           throw new Error(
-            `${file.name} must be smaller than 10 MB.`
+            `${file.name}: ${validation.error}`
           );
         }
 
@@ -168,7 +171,7 @@ export default function DeviceDocuments({
           .from("device-documents")
           .upload(filePath, file, {
             cacheControl: "3600",
-            contentType: file.type,
+            contentType: validation.contentType,
             upsert: false,
           });
 
@@ -185,7 +188,7 @@ export default function DeviceDocuments({
             document_type: selectedType,
             file_path: filePath,
             file_size: file.size,
-            mime_type: file.type || null,
+            mime_type: validation.contentType,
           });
 
         if (recordError) {
@@ -349,7 +352,7 @@ export default function DeviceDocuments({
                 multiple
                 disabled={uploading}
                 onChange={uploadDocuments}
-                accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
+                accept=".pdf,.txt,.jpg,.jpeg,.png,.webp,.heic,.heif,application/pdf,image/jpeg,image/png,image/webp,text/plain"
                 className="hidden"
               />
             </label>
@@ -393,7 +396,7 @@ export default function DeviceDocuments({
                 multiple
                 disabled={uploading}
                 onChange={uploadDocuments}
-                accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
+                accept=".pdf,.txt,.jpg,.jpeg,.png,.webp,.heic,.heif,application/pdf,image/jpeg,image/png,image/webp,text/plain"
                 className="hidden"
               />
             </label>

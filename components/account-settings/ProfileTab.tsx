@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
+import { stripPrivilegedProfileFields } from "@/lib/auth/stripPrivilegedProfileFields";
 import { usePermissions } from "@/hooks/usePermissions";
 import FoundingMemberBadge from "@/components/founding-members/FoundingMemberBadge";
 
@@ -190,7 +191,7 @@ export default function ProfileTab() {
       const { error } = await supabase
         .from("profiles")
         .upsert(
-          {
+          stripPrivilegedProfileFields({
             id: user.id,
             full_name:
               fullName.trim() || null,
@@ -198,7 +199,7 @@ export default function ProfileTab() {
               householdName.trim() || null,
             city: city.trim() || null,
             phone: phone.trim() || null,
-          },
+          }),
           { onConflict: "id" }
         );
 
