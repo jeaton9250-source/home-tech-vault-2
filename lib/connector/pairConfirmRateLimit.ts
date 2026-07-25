@@ -4,7 +4,7 @@ import { createHash } from "crypto";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-const PAIR_CONFIRM_WINDOW_MS = 15 * 60 * 1000;
+const PAIR_CONFIRM_WINDOW_SECONDS = 15 * 60;
 const PAIR_CONFIRM_MAX_ATTEMPTS = 20;
 
 function hashClientKey(rawKey: string): string {
@@ -53,7 +53,8 @@ export function getPairConfirmClientKey(
 }
 
 /**
- * Shared (DB) rate limit for pair confirm. Fail closed on backend errors.
+ * Shared (DB) rate limit for pair confirm. Uses an advisory-locked RPC when
+ * available; fail closed on backend errors.
  */
 export async function checkPairConfirmRateLimit(
   admin: SupabaseClient,
@@ -62,39 +63,23 @@ export async function checkPairConfirmRateLimit(
   const clientKeyHash = hashClientKey(
     getPairConfirmClientKey(request)
   );
-  const since = new Date(
-    Date.now() - PAIR_CONFIRM_WINDOW_MS
-  ).toISOString();
 
-  const { count, error: countError } = await admin
-    .from("connector_pair_confirm_attempts")
-    .select("id", { count: "exact", head: true })
-    .eq("client_key_hash", clientKeyHash)
-    .gte("created_at", since);
+  const { data, error } = await admin.rpc(
+    "claim_pair_confirm_attempt",
+    {
+      p_client_key_hash: clientKeyHash,
+      p_window_seconds: PAIR_CONFIRM_WINDOW_SECONDS,
+      p_max_attempts: PAIR_CONFIRM_MAX_ATTEMPTS,
+    }
+  );
 
-  if (countError) {
+  if (error) {
     console.error(
       "Unable to evaluate pair confirm rate limit:",
-      countError.message
+      error.message
     );
     return false;
   }
 
-  if ((count ?? 0) >= PAIR_CONFIRM_MAX_ATTEMPTS) {
-    return false;
-  }
-
-  const { error: insertError } = await admin
-    .from("connector_pair_confirm_attempts")
-    .insert({ client_key_hash: clientKeyHash });
-
-  if (insertError) {
-    console.error(
-      "Unable to record pair confirm attempt:",
-      insertError.message
-    );
-    return false;
-  }
-
-  return true;
+  return data === true;
 }
