@@ -14,6 +14,9 @@ import { programmaticGuideSitemapEntries } from "@/lib/seo/programmatic";
 
 const siteUrl = getSiteUrl();
 
+/** Revalidate hourly so Search Console always sees fresh XML, not a stale HTML error page. */
+export const revalidate = 3600;
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date();
 

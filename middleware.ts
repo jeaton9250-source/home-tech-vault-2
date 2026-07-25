@@ -151,6 +151,11 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    /*
+     * Run on all paths except static assets and SEO metadata endpoints.
+     * Keeping /sitemap.xml and /robots.txt out of middleware avoids
+     * private cache headers / auth cookie work that can confuse crawlers.
+     */
+    "/((?!_next/static|_next/image|favicon.ico|robots\\.txt|sitemap\\.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };
