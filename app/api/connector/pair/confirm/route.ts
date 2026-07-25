@@ -60,7 +60,9 @@ function resolveConnectorName(
 
 export async function POST(request: Request) {
   try {
-    if (!checkPairConfirmRateLimit(request)) {
+    const admin = createAdminClient();
+
+    if (!(await checkPairConfirmRateLimit(admin, request))) {
       return connectorErrorResponse(
         "Too many pairing attempts. Please wait and try again.",
         429
@@ -90,7 +92,6 @@ export async function POST(request: Request) {
       );
     }
 
-    const admin = createAdminClient();
     const codeHash =
       hashPairingCode(normalizedCode);
 
@@ -123,19 +124,45 @@ export async function POST(request: Request) {
       pairingSession
     );
 
+    const nowIso = new Date().toISOString();
+
+    // Claim first (atomic). Losers of a race get no token.
+    const {
+      data: claimed,
+      error: claimError,
+    } = await admin
+      .from("connector_pairing_sessions")
+      .update({
+        consumed_at: nowIso,
+      })
+      .eq("id", pairingSession.id)
+      .is("consumed_at", null)
+      .select(
+        "id, household_id, created_by_user_id, code_hash, expires_at, consumed_at, installation_id, created_at"
+      )
+      .maybeSingle();
+
+    if (claimError) {
+      throw claimError;
+    }
+
+    if (!claimed) {
+      throw new PairingValidationError(
+        "INVALID",
+        "This pairing code has already been used."
+      );
+    }
+
     const connectorToken =
       generateConnectorToken();
-
-    const nowIso = new Date().toISOString();
 
     const { data: installation, error: installError } =
       await admin
         .from("connector_installations")
         .insert({
-          household_id:
-            pairingSession.household_id,
+          household_id: claimed.household_id,
           created_by_user_id:
-            pairingSession.created_by_user_id,
+            claimed.created_by_user_id,
           name: connectorName,
           platform:
             body.platform?.trim() || null,
@@ -153,25 +180,33 @@ export async function POST(request: Request) {
         .select("id, household_id, name")
         .single();
 
-    if (installError) {
-      throw installError;
+    if (installError || !installation) {
+      // Release claim so a retry can succeed after a transient install failure.
+      await admin
+        .from("connector_pairing_sessions")
+        .update({
+          consumed_at: null,
+          installation_id: null,
+        })
+        .eq("id", claimed.id)
+        .is("installation_id", null);
+
+      throw installError ?? new Error("Installation create failed.");
     }
 
-    const { error: consumeError } =
-      await admin
-        .from(
-          "connector_pairing_sessions"
-        )
-        .update({
-          consumed_at: nowIso,
-          installation_id:
-            installation.id,
-        })
-        .eq("id", pairingSession.id)
-        .is("consumed_at", null);
+    const { error: linkError } = await admin
+      .from("connector_pairing_sessions")
+      .update({
+        installation_id: installation.id,
+      })
+      .eq("id", claimed.id);
 
-    if (consumeError) {
-      throw consumeError;
+    if (linkError) {
+      // Installation exists and session is consumed — do not re-issue token path.
+      console.error(
+        "Pair confirm linked installation but failed to set installation_id:",
+        linkError.message
+      );
     }
 
     return connectorJsonResponse({

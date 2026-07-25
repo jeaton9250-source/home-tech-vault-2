@@ -61,21 +61,78 @@ const EMAIL_PATTERN =
 const TOKEN_PATTERN =
   /^[A-Za-z0-9_-]{8,128}$/;
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
+const CORS_ALLOW_HEADERS =
+  "authorization, x-client-info, apikey, content-type";
+const CORS_ALLOW_METHODS = "POST, OPTIONS";
+
+function normalizeOrigin(url: string) {
+  try {
+    return new URL(url).origin;
+  } catch {
+    return url.replace(/\/+$/, "");
+  }
+}
+
+function allowedCorsOrigins() {
+  const origins = new Set<string>([
+    "https://www.hometechvault.com",
+    "https://hometechvault.com",
+  ]);
+
+  const appUrl = Deno.env.get("APP_URL")?.trim();
+
+  if (appUrl) {
+    const appOrigin = normalizeOrigin(appUrl);
+    origins.add(appOrigin);
+
+    if (
+      appOrigin.startsWith("http://localhost") ||
+      appOrigin.startsWith("http://127.0.0.1")
+    ) {
+      origins.add("http://localhost:3000");
+      origins.add("http://127.0.0.1:3000");
+    }
+  }
+
+  const siteUrl = Deno.env.get("SITE_URL")?.trim();
+
+  if (siteUrl) {
+    origins.add(normalizeOrigin(siteUrl));
+  }
+
+  return origins;
+}
+
+function corsHeadersFor(request: Request) {
+  const allowed = allowedCorsOrigins();
+  const origin = request.headers.get("Origin")?.trim();
+
+  if (origin && allowed.has(origin)) {
+    return {
+      "Access-Control-Allow-Origin": origin,
+      "Access-Control-Allow-Headers": CORS_ALLOW_HEADERS,
+      "Access-Control-Allow-Methods": CORS_ALLOW_METHODS,
+      Vary: "Origin",
+    };
+  }
+
+  // Non-browser / same-origin callers: omit wildcard; do not reflect unknown Origin.
+  return {
+    "Access-Control-Allow-Headers": CORS_ALLOW_HEADERS,
+    "Access-Control-Allow-Methods": CORS_ALLOW_METHODS,
+    Vary: "Origin",
+  };
+}
 
 function jsonResponse(
+  request: Request,
   body: Record<string, unknown>,
   status = 200
 ) {
   return new Response(JSON.stringify(body), {
     status,
     headers: {
-      ...corsHeaders,
+      ...corsHeadersFor(request),
       "Content-Type": "application/json",
     },
   });
@@ -130,13 +187,21 @@ function buildAcceptanceUrl(
 
 Deno.serve(async (request) => {
   if (request.method === "OPTIONS") {
+    const origin = request.headers.get("Origin")?.trim();
+    const allowed = allowedCorsOrigins();
+
+    if (origin && !allowed.has(origin)) {
+      return new Response("Forbidden", { status: 403 });
+    }
+
     return new Response("ok", {
-      headers: corsHeaders,
+      headers: corsHeadersFor(request),
     });
   }
 
   if (request.method !== "POST") {
     return jsonResponse(
+      request,
       { error: "Method not allowed." },
       405
     );
@@ -165,6 +230,7 @@ Deno.serve(async (request) => {
       );
 
       return jsonResponse(
+        request,
         {
           error:
             "The invitation email service is not configured.",
@@ -179,6 +245,7 @@ Deno.serve(async (request) => {
 
     if (!authorization) {
       return jsonResponse(
+        request,
         { error: "Authentication is required." },
         401
       );
@@ -212,6 +279,7 @@ Deno.serve(async (request) => {
       );
 
       return jsonResponse(
+        request,
         { error: "Authentication is required." },
         401
       );
@@ -222,6 +290,7 @@ Deno.serve(async (request) => {
 
     if (!invitationId) {
       return jsonResponse(
+        request,
         { error: "Invitation ID is required." },
         400
       );
@@ -266,6 +335,7 @@ Deno.serve(async (request) => {
       );
 
       return jsonResponse(
+        request,
         { error: "Invitation not found." },
         404
       );
@@ -280,6 +350,7 @@ Deno.serve(async (request) => {
 
     if (!isValidEmail(recipientEmail)) {
       return jsonResponse(
+        request,
         {
           error:
             "The invitation recipient email is invalid.",
@@ -297,6 +368,7 @@ Deno.serve(async (request) => {
       );
 
       return jsonResponse(
+        request,
         {
           error:
             "The invitation token is invalid.",
@@ -307,6 +379,7 @@ Deno.serve(async (request) => {
 
     if (invitation.accepted_at) {
       return jsonResponse(
+        request,
         {
           error:
             "This invitation has already been accepted.",
@@ -320,6 +393,7 @@ Deno.serve(async (request) => {
       Date.now()
     ) {
       return jsonResponse(
+        request,
         { error: "This invitation has expired." },
         400
       );
@@ -373,6 +447,7 @@ Deno.serve(async (request) => {
       );
 
       return jsonResponse(
+        request,
         { error: "Household not found." },
         404
       );
@@ -522,6 +597,7 @@ Deno.serve(async (request) => {
       (!callerCanManage || !householdHasFamilyPlan)
     ) {
       return jsonResponse(
+        request,
         {
           error:
             "You do not have permission to send this invitation.",
@@ -532,6 +608,7 @@ Deno.serve(async (request) => {
 
     if (invitation.household_id !== household.id) {
       return jsonResponse(
+        request,
         {
           error: "Invitation household mismatch.",
         },
@@ -595,6 +672,7 @@ Deno.serve(async (request) => {
       console.error("Resend email error:", resendResult);
 
       return jsonResponse(
+        request,
         {
           error:
             typeof resendResult.message === "string"
@@ -605,7 +683,7 @@ Deno.serve(async (request) => {
       );
     }
 
-    return jsonResponse({
+    return jsonResponse(request, {
       success: true,
       emailId:
         typeof resendResult.id === "string"
@@ -621,6 +699,7 @@ Deno.serve(async (request) => {
     );
 
     return jsonResponse(
+      request,
       {
         error:
           "Unable to send the invitation email.",

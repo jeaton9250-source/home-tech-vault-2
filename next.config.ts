@@ -33,8 +33,10 @@ const securityHeaders = [
       "object-src 'none'",
       "img-src 'self' data: blob: https:",
       "font-src 'self' data:",
+      // Inline styles remain for existing CSS-in-JS / email-safe patterns.
       "style-src 'self' 'unsafe-inline'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com",
+      // Dropped unsafe-eval. Keep unsafe-inline for GA bootstrap + Next runtime.
+      "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com",
       "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://www.googletagmanager.com https://api.stripe.com https://vitals.vercel-insights.com https://va.vercel-scripts.com",
       "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
       "worker-src 'self' blob:",
