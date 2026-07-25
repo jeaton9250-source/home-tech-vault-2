@@ -905,6 +905,27 @@ export default function DevicePage() {
     try {
       setDeletingDevice(true);
 
+      const response = await fetch(
+        `/api/devices/${encodeURIComponent(device.id)}`,
+        {
+          method: "DELETE",
+          credentials: "same-origin",
+        }
+      );
+
+      const payload = (await response
+        .json()
+        .catch(() => null)) as {
+        error?: string;
+      } | null;
+
+      if (!response.ok) {
+        throw new Error(
+          payload?.error ||
+            `Unable to delete this device (${response.status}).`
+        );
+      }
+
       await recordActivity({
         activityType: "device.deleted",
         title: getDefaultActivityTitle(
@@ -918,24 +939,6 @@ export default function DevicePage() {
         householdId,
         deviceId: device.id,
       });
-
-      const response = await fetch(
-        `/api/devices/${encodeURIComponent(device.id)}`,
-        { method: "DELETE" }
-      );
-
-      const payload = (await response
-        .json()
-        .catch(() => null)) as {
-        error?: string;
-      } | null;
-
-      if (!response.ok) {
-        throw new Error(
-          payload?.error ||
-            "Unable to delete this device."
-        );
-      }
 
       router.push("/devices");
       router.refresh();

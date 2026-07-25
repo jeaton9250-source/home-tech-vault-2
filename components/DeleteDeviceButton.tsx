@@ -35,7 +35,10 @@ export default function DeleteDeviceButton({
 
       const response = await fetch(
         `/api/devices/${encodeURIComponent(deviceId)}`,
-        { method: "DELETE" }
+        {
+          method: "DELETE",
+          credentials: "same-origin",
+        }
       );
 
       const payload = (await response.json().catch(
@@ -45,7 +48,7 @@ export default function DeleteDeviceButton({
       if (!response.ok) {
         throw new Error(
           payload?.error ||
-            "Unable to delete this device. Please try again."
+            `Unable to delete this device (${response.status}).`
         );
       }
 
