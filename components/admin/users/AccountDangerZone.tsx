@@ -148,7 +148,7 @@ export default function AccountDangerZone({
   const [transferOwnerUserId, setTransferOwnerUserId] =
     useState("");
   const [deleteHouseholdData, setDeleteHouseholdData] =
-    useState(false);
+    useState(true);
   const [deleteConfirm, setDeleteConfirm] =
     useState(false);
   const [latestJob, setLatestJob] =
@@ -1143,7 +1143,9 @@ export default function AccountDangerZone({
               />
               <span>
                 Also delete this user&apos;s sole household and
-                its data (devices, documents, storage).
+                its data (devices, documents, storage). Empty
+                sole-owner households are removed automatically
+                so Auth deletion can succeed.
               </span>
             </label>
           ) : null}

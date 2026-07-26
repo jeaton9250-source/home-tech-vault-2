@@ -356,6 +356,24 @@ async function claimDeletionJobFallback(
   };
 }
 
+function isIgnorableSchemaError(error: {
+  code?: string;
+  message?: string;
+}) {
+  const message = error.message ?? "";
+  const code = error.code ?? "";
+
+  return (
+    code === "42P01" ||
+    code === "42703" ||
+    code === "PGRST204" ||
+    code === "PGRST205" ||
+    /does not exist/i.test(message) ||
+    /could not find/i.test(message) ||
+    /schema cache/i.test(message)
+  );
+}
+
 async function deleteWhereUserId(
   admin: SupabaseClient,
   table: string,
@@ -366,7 +384,7 @@ async function deleteWhereUserId(
     .delete()
     .eq("user_id", userId);
 
-  if (error) {
+  if (error && !isIgnorableSchemaError(error)) {
     throw error;
   }
 }
@@ -381,8 +399,72 @@ async function deleteWhereHouseholdId(
     .delete()
     .eq("household_id", householdId);
 
-  if (error) {
+  if (error && !isIgnorableSchemaError(error)) {
     throw error;
+  }
+}
+
+/**
+ * Clear non-cascade auth.users foreign keys that otherwise block
+ * auth.admin.deleteUser (connector creators, discovery confirmations, etc.).
+ */
+async function detachAuthUserReferences(
+  admin: SupabaseClient,
+  options: {
+    targetUserId: string;
+    actorId: string;
+  }
+) {
+  const { targetUserId, actorId } = options;
+
+  const reassignmentTargets: Array<{
+    table: string;
+    column: string;
+  }> = [
+    {
+      table: "connector_installations",
+      column: "created_by_user_id",
+    },
+    {
+      table: "connector_pairing_sessions",
+      column: "created_by_user_id",
+    },
+  ];
+
+  for (const target of reassignmentTargets) {
+    const { error } = await admin
+      .from(target.table)
+      .update({ [target.column]: actorId })
+      .eq(target.column, targetUserId);
+
+    if (error && !isIgnorableSchemaError(error)) {
+      throw error;
+    }
+  }
+
+  const nullableTargets: Array<{
+    table: string;
+    column: string;
+  }> = [
+    {
+      table: "discovered_devices",
+      column: "match_confirmed_by",
+    },
+    {
+      table: "device_identity_confirmations",
+      column: "confirmed_by",
+    },
+  ];
+
+  for (const target of nullableTargets) {
+    const { error } = await admin
+      .from(target.table)
+      .update({ [target.column]: null })
+      .eq(target.column, targetUserId);
+
+    if (error && !isIgnorableSchemaError(error)) {
+      throw error;
+    }
   }
 }
 
@@ -432,6 +514,10 @@ async function deleteHouseholdData(
   householdId: string
 ) {
   const tables = [
+    "device_monitor_events",
+    "discovered_devices",
+    "connector_pairing_sessions",
+    "connector_installations",
     "devices",
     "documents",
     "device_documents",
@@ -505,7 +591,21 @@ async function deleteAuthUser(
       code: error.code,
     });
 
-    throw error;
+    const message = error.message ?? "";
+    if (
+      /foreign key|violates|still referenced|database error deleting user/i.test(
+        message
+      )
+    ) {
+      throw new Error(
+        "Unable to delete the Auth user because related records still reference this account. Retry after household/connector cleanup, or contact support if this persists."
+      );
+    }
+
+    throw new Error(
+      message ||
+        "Unable to delete the Supabase Auth user."
+    );
   }
 
   return data;
@@ -1100,10 +1200,7 @@ export async function processDeletionJob(
       }
     }
 
-    if (
-      ownedHouseholdId &&
-      job.delete_household_data
-    ) {
+    if (ownedHouseholdId) {
       const { count } = await admin
         .from("household_members")
         .select("id", {
@@ -1115,30 +1212,48 @@ export async function processDeletionJob(
           ownedHouseholdId
         );
 
-      if ((count ?? 0) <= 1) {
-        const { data: householdStillExists } =
-          await admin
-            .from("households")
-            .select("id")
-            .eq("id", ownedHouseholdId)
-            .maybeSingle();
+      const { data: householdStillOwned } =
+        await admin
+          .from("households")
+          .select("id, owner_id")
+          .eq("id", ownedHouseholdId)
+          .maybeSingle();
 
-        if (householdStillExists?.id) {
-          await updateJob(admin, jobId, {
-            current_step:
-              "delete_household_data",
-          });
-          await extendProcessorLease(
-            admin,
-            jobId,
-            actorId
-          );
+      const stillOwnedByTarget =
+        householdStillOwned?.owner_id ===
+        targetUserId;
+      const isEmptyOrSoleHousehold =
+        (count ?? 0) <= 1;
 
-          await deleteHouseholdData(
-            admin,
-            ownedHouseholdId
-          );
-        }
+      // Sole-owned households cannot remain after the owner is deleted —
+      // auth.users FKs on households.owner_id would block Auth deletion.
+      const shouldDeleteHousehold =
+        stillOwnedByTarget &&
+        (job.delete_household_data ||
+          isEmptyOrSoleHousehold);
+
+      if (
+        shouldDeleteHousehold &&
+        householdStillOwned?.id
+      ) {
+        await updateJob(admin, jobId, {
+          current_step:
+            "delete_household_data",
+        });
+        await extendProcessorLease(
+          admin,
+          jobId,
+          actorId
+        );
+
+        await deleteHouseholdData(
+          admin,
+          ownedHouseholdId
+        );
+      } else if (stillOwnedByTarget) {
+        throw new Error(
+          "This user still owns a household with other members. Transfer ownership before deleting the account."
+        );
       }
     }
 
@@ -1183,6 +1298,9 @@ export async function processDeletionJob(
       "contact_messages",
       "household_members",
       "user_subscriptions",
+      "notification_preferences",
+      "device_push_tokens",
+      "notifications",
     ];
 
     for (const table of userScopedTables) {
@@ -1214,6 +1332,20 @@ export async function processDeletionJob(
       .from("support_ticket_notes")
       .delete()
       .eq("author_id", targetUserId);
+
+    await updateJob(admin, jobId, {
+      current_step: "detach_auth_references",
+    });
+    await extendProcessorLease(
+      admin,
+      jobId,
+      actorId
+    );
+
+    await detachAuthUserReferences(admin, {
+      targetUserId,
+      actorId,
+    });
 
     if (await authUserExists(admin, targetUserId)) {
       await updateJob(admin, jobId, {
