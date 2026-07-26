@@ -26,7 +26,6 @@ type DeviceRow = {
   model_number: string | null;
   serial_number: string | null;
   category: string | null;
-  photo_url: string | null;
   household_id: string | null;
   online: boolean | null;
   last_seen_at: string | null;
@@ -74,7 +73,6 @@ const DEVICE_SELECT = `
   model_number,
   serial_number,
   category,
-  photo_url,
   household_id,
   online,
   last_seen_at,
@@ -447,6 +445,75 @@ async function loadDocumentCounts(
   return counts;
 }
 
+async function loadPrimaryPhotoUrls(
+  admin: ReturnType<typeof createAdminClient>,
+  deviceIds: string[]
+) {
+  if (deviceIds.length === 0) {
+    return new Map<string, string>();
+  }
+
+  const { data, error } = await admin
+    .from("device_images")
+    .select("device_id, image_url, created_at")
+    .in("device_id", deviceIds)
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    console.error(
+      "Unable to load admin device images:",
+      error
+    );
+    return new Map<string, string>();
+  }
+
+  const pathByDevice = new Map<string, string>();
+
+  for (const row of data ?? []) {
+    if (
+      !row.device_id ||
+      !row.image_url ||
+      pathByDevice.has(row.device_id)
+    ) {
+      continue;
+    }
+
+    pathByDevice.set(row.device_id, row.image_url);
+  }
+
+  const entries = await Promise.all(
+    [...pathByDevice.entries()].map(
+      async ([deviceId, imagePath]) => {
+        if (
+          imagePath.startsWith("http://") ||
+          imagePath.startsWith("https://") ||
+          imagePath.startsWith("/")
+        ) {
+          return [deviceId, imagePath] as const;
+        }
+
+        const { data: signed, error: signedError } =
+          await admin.storage
+            .from("device-images")
+            .createSignedUrl(imagePath, 3600);
+
+        if (signedError || !signed?.signedUrl) {
+          return [deviceId, null] as const;
+        }
+
+        return [deviceId, signed.signedUrl] as const;
+      }
+    )
+  );
+
+  return new Map(
+    entries.filter(
+      (entry): entry is readonly [string, string] =>
+        Boolean(entry[1])
+    )
+  );
+}
+
 async function mapDeviceRows(
   admin: ReturnType<typeof createAdminClient>,
   rows: DeviceRow[]
@@ -457,10 +524,14 @@ async function mapDeviceRows(
     )
     .filter(Boolean) as string[];
 
-  const [authMap, documentCounts] =
+  const [authMap, documentCounts, photoUrls] =
     await Promise.all([
       getAuthMap(admin, ownerIds),
       loadDocumentCounts(
+        admin,
+        rows.map((row) => row.id)
+      ),
+      loadPrimaryPhotoUrls(
         admin,
         rows.map((row) => row.id)
       ),
@@ -498,7 +569,7 @@ async function mapDeviceRows(
       modelNumber: row.model_number,
       serialNumber: row.serial_number,
       category: row.category,
-      photoUrl: row.photo_url,
+      photoUrl: photoUrls.get(row.id) ?? null,
       householdId: row.household_id,
       householdName: household?.name ?? null,
       householdOwnerId:
