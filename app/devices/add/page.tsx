@@ -12,18 +12,13 @@ import {
   Save,
 } from "lucide-react";
 
-import { supabase } from "@/lib/supabase";
-import { applyHouseholdScope } from "@/lib/data/householdScope";
-import {
-  getDefaultActivityTitle,
-  recordActivity,
-} from "@/lib/activity";
 import {
   getHouseholdLimitMessage,
   useHouseholdLimits,
 } from "@/hooks/useHouseholdLimits";
 import { usePermissions } from "@/hooks/usePermissions";
 import DemoWriteGate from "@/components/demo/DemoWriteGate";
+import { addDevice } from "@/app/devices/actions";
 
 import PageShell from "@/components/ui/PageShell";
 import PageTitle from "@/components/ui/PageTitle";
@@ -153,69 +148,45 @@ export default function AddDevicePage() {
     try {
       setSaving(true);
 
-      const locationsResult =
-        await applyHouseholdScope(
-          supabase
-            .from("devices")
-            .select("location"),
-          householdId,
-          user.id
-        );
+      const result = await addDevice({
+        deviceName,
+        category,
+        brand,
+        modelNumber,
+        serialNumber,
+        purchaseDate,
+        warrantyDate,
+        purchasePrice,
+        location,
+        notes,
+      });
 
-      const existingLocations = new Set(
-        (
-          (locationsResult.data ||
-            []) as {
-            location: string | null;
-          }[]
-        )
-          .map((row) =>
-            row.location?.trim().toLowerCase()
-          )
-          .filter(Boolean)
-      );
+      if (!result.success) {
+        if (result.code === "UNAUTHENTICATED") {
+          router.push("/login");
+          return;
+        }
 
-      const trimmedLocation =
-        location.trim();
+        if (result.code === "VIEWER_READ_ONLY") {
+          setErrorMessage(
+            "Viewer access is read-only. You cannot add devices."
+          );
+          return;
+        }
 
-      const { data: createdDevice, error } =
-        await supabase
-          .from("devices")
-          .insert({
-            user_id: user.id,
-            household_id:
-              householdId,
-            device_name:
-              deviceName.trim(),
-            category:
-              category.trim() || null,
-            brand:
-              brand.trim() || null,
-            model_number:
-              modelNumber.trim() || null,
-            serial_number:
-              serialNumber.trim() || null,
-            purchase_date:
-              purchaseDate || null,
-            warranty_date:
-              warrantyDate || null,
-            purchase_price:
-              purchasePrice
-                ? Number(purchasePrice)
-                : null,
-            location:
-              trimmedLocation || null,
-            notes:
-              notes.trim() || null,
-          })
-          .select("id")
-          .single();
-
-      if (error) {
         if (
-          error.message.includes(
+          result.code ===
+          "HOUSEHOLD_DEVICE_LIMIT"
+        ) {
+          router.push("/family");
+          return;
+        }
+
+        if (
+          result.code ===
+            "FREE_DEVICE_LIMIT" ||
+          result.code ===
             "DEVICE_LIMIT_REACHED"
-          )
         ) {
           router.push(
             "/upgrade?reason=device-limit"
@@ -223,63 +194,18 @@ export default function AddDevicePage() {
           return;
         }
 
-        throw error;
-      }
-
-      if (createdDevice?.id) {
-        const name =
-          deviceName.trim();
-
-        await recordActivity({
-          activityType: "device.added",
-          title:
-            getDefaultActivityTitle(
-              "device.added",
-              name
-            ),
-          description:
-            "Device saved to your vault.",
-          userId: user.id,
-          householdId,
-          deviceId: createdDevice.id,
-        });
-
-        if (warrantyDate) {
-          await recordActivity({
-            activityType: "warranty.added",
-            title:
-              getDefaultActivityTitle(
-                "warranty.added",
-                name
-              ),
-            description:
-              "Warranty coverage recorded on the device.",
-            userId: user.id,
-            householdId,
-            deviceId: createdDevice.id,
-          });
+        if (result.code === "VALIDATION_ERROR") {
+          setErrorMessage(
+            "Enter a device name."
+          );
+          return;
         }
 
-        if (
-          trimmedLocation &&
-          !existingLocations.has(
-            trimmedLocation.toLowerCase()
-          )
-        ) {
-          await recordActivity({
-            activityType: "room.created",
-            title:
-              getDefaultActivityTitle(
-                "room.created",
-                trimmedLocation
-              ),
-            description:
-              "A new room was created when this device was assigned a location.",
-            userId: user.id,
-            householdId,
-            entityId: trimmedLocation,
-          });
-        }
+        setErrorMessage(
+          result.error ||
+            "Unable to save this device."
+        );
+        return;
       }
 
       router.push("/devices");
