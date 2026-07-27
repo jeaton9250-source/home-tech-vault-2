@@ -4,7 +4,6 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import {
   applyHouseholdScope,
-  applyOwnerUserScope,
 } from "@/lib/data/householdScope";
 import { parseSearchQuery } from "@/lib/search/queryParser";
 import {
@@ -208,6 +207,34 @@ export async function runSmartSearch(options: {
 }): Promise<SmartSearchResponse> {
   const intent = parseSearchQuery(options.query);
 
+  function logSearchStage(
+    stage: string,
+    category: "devices" | "maintenance" | "documents" | "network",
+    error?: {
+      code?: string | null;
+      message?: string | null;
+      details?: string | null;
+      hint?: string | null;
+    }
+  ) {
+    if (!error) {
+      console.info("[smart-search]", {
+        stage,
+        category,
+      });
+      return;
+    }
+
+    console.error("[smart-search]", {
+      stage,
+      category,
+      code: error.code ?? null,
+      message: error.message ?? null,
+      details: error.details ?? null,
+      hint: error.hint ?? null,
+    });
+  }
+
   if (!intent.normalized) {
     return {
       success: true,
@@ -218,6 +245,11 @@ export async function runSmartSearch(options: {
       suggestions: DEFAULT_SUGGESTIONS,
     };
   }
+
+  logSearchStage("query.start", "devices");
+  logSearchStage("query.start", "maintenance");
+  logSearchStage("query.start", "documents");
+  logSearchStage("query.start", "network");
 
   const [devicesResult, maintenanceResult, documentsResult, networkResult] =
     await Promise.all([
@@ -250,39 +282,63 @@ export async function runSmartSearch(options: {
         options.userId
       ),
 
-      applyOwnerUserScope(
+      applyHouseholdScope(
         options.supabase
-          .from("network_discoveries")
+          .from("discovered_devices")
           .select(
             "id, imported_device_id, friendly_name, hostname, manufacturer, model, serial_number, ip_address, mac_address, likely_category, online, last_seen_at"
           )
           .order("last_seen_at", { ascending: false }),
         options.householdId,
-        options.userId,
-        options.householdOwnerId
+        options.userId
       ),
     ]);
 
+  const unavailableCategories: string[] = [];
+
   if (devicesResult.error) {
-    throw devicesResult.error;
+    logSearchStage("query.error", "devices", devicesResult.error);
+    unavailableCategories.push("devices");
+  } else {
+    logSearchStage("query.success", "devices");
   }
 
   if (maintenanceResult.error) {
-    throw maintenanceResult.error;
+    logSearchStage("query.error", "maintenance", maintenanceResult.error);
+    unavailableCategories.push("maintenance");
+  } else {
+    logSearchStage("query.success", "maintenance");
   }
 
   if (documentsResult.error) {
-    throw documentsResult.error;
+    logSearchStage("query.error", "documents", documentsResult.error);
+    unavailableCategories.push("documents");
+  } else {
+    logSearchStage("query.success", "documents");
   }
 
   if (networkResult.error) {
-    throw networkResult.error;
+    logSearchStage("query.error", "network", networkResult.error);
+    unavailableCategories.push("network");
+  } else {
+    logSearchStage("query.success", "network");
   }
 
-  const devices = (devicesResult.data ?? []) as DeviceRow[];
-  const maintenance = (maintenanceResult.data ?? []) as MaintenanceRow[];
-  const documents = (documentsResult.data ?? []) as DocumentRow[];
-  const network = (networkResult.data ?? []) as NetworkDiscoveryRow[];
+  const devices = devicesResult.error
+    ? []
+    : ((devicesResult.data ?? []) as DeviceRow[]);
+
+  const maintenance = maintenanceResult.error
+    ? []
+    : ((maintenanceResult.data ?? []) as MaintenanceRow[]);
+
+  const documents = documentsResult.error
+    ? []
+    : ((documentsResult.data ?? []) as DocumentRow[]);
+
+  const network = networkResult.error
+    ? []
+    : ((networkResult.data ?? []) as NetworkDiscoveryRow[]);
 
   const deviceNameById = new Map<string, string>();
 
@@ -294,6 +350,18 @@ export async function runSmartSearch(options: {
   }
 
   const results = emptySearchResults();
+
+  const hasGenericTerms =
+    intent.tokens.length > 0 ||
+    intent.phrases.length > 0;
+
+  const hasDeviceScopeIntent =
+    hasGenericTerms ||
+    Boolean(intent.locationHint) ||
+    intent.wantsOnline ||
+    intent.wantsOffline ||
+    intent.olderThanYears !== null ||
+    intent.wantsSerialNumber;
 
   for (const device of devices) {
     const haystack = buildDeviceHaystack(device);
@@ -311,7 +379,21 @@ export async function runSmartSearch(options: {
         ? (ageYears ?? -1) >= intent.olderThanYears
         : true;
 
-    if (tokenMatch && phraseMatch && locationMatch && onlineMatch && offlineMatch && ageMatch) {
+    const baseDeviceMatch =
+      tokenMatch &&
+      phraseMatch &&
+      locationMatch &&
+      onlineMatch &&
+      offlineMatch &&
+      ageMatch;
+
+    const isIntentSpecificWithoutDeviceScope =
+      !hasDeviceScopeIntent &&
+      (intent.wantsWarrantySoon ||
+        intent.wantsMaintenance ||
+        intent.wantsDocuments);
+
+    if (baseDeviceMatch && !isIntentSpecificWithoutDeviceScope) {
       results.devices.push({
         id: `device-${device.id}`,
         group: "devices",
@@ -353,6 +435,15 @@ export async function runSmartSearch(options: {
       continue;
     }
 
+    // Preserve meaningful entity constraints for warranty-focused queries.
+    if (hasGenericTerms && (!tokenMatch || !phraseMatch)) {
+      continue;
+    }
+
+    if (!locationMatch) {
+      continue;
+    }
+
     results.warranties.push({
       id: `warranty-${device.id}`,
       group: "warranties",
@@ -389,10 +480,12 @@ export async function runSmartSearch(options: {
       continue;
     }
 
-    if (!tokenMatch || !phraseMatch) {
-      if (!intent.wantsMaintenance) {
-        continue;
-      }
+    if (hasGenericTerms && (!tokenMatch || !phraseMatch)) {
+      continue;
+    }
+
+    if ((!tokenMatch || !phraseMatch) && !intent.wantsMaintenance) {
+      continue;
     }
 
     results.maintenance.push({
@@ -434,10 +527,12 @@ export async function runSmartSearch(options: {
     const tokenMatch = includesEveryTerm(haystack, intent.tokens);
     const phraseMatch = includesEveryTerm(haystack, intent.phrases);
 
-    if (!tokenMatch || !phraseMatch) {
-      if (!intent.wantsDocuments) {
-        continue;
-      }
+    if (hasGenericTerms && (!tokenMatch || !phraseMatch)) {
+      continue;
+    }
+
+    if ((!tokenMatch || !phraseMatch) && !intent.wantsDocuments) {
+      continue;
     }
 
     results.documents.push({
@@ -522,5 +617,9 @@ export async function runSmartSearch(options: {
     results,
     total,
     suggestions: DEFAULT_SUGGESTIONS,
+    error:
+      unavailableCategories.length > 0
+        ? `Some results are temporarily unavailable: ${unavailableCategories.join(", ")}.`
+        : undefined,
   };
 }
