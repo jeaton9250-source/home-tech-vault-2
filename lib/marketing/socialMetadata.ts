@@ -5,26 +5,26 @@ import { getSiteUrl } from "@/lib/marketing/site";
 export const SOCIAL_SITE_URL = getSiteUrl();
 
 export const SOCIAL_DEFAULT_TITLE =
-  "Home Tech Vault | Organize Your Home Technology";
+  "Home Tech Vault | The Operating System for Your Home's Technology";
 
 export const SOCIAL_DEFAULT_DESCRIPTION =
-  "Keep every device, receipt, warranty, manual, maintenance record, and network detail in one secure place.";
+  "See how healthy your home's technology is, discover what is connected, and get proactive recommendations — all in one calm home operating system.";
 
 export const SOCIAL_OG_TITLE =
-  "Home Tech Vault | Organize Your Home Technology";
+  "Home Tech Vault | Your Home, Understood";
 
 export const SOCIAL_OG_DESCRIPTION =
-  "The easiest way to organize every device, receipt, warranty, and maintenance record in your home.";
+  "Home awareness, network intelligence, and AI-powered guidance for the technology that runs your home.";
 
 export const SOCIAL_TWITTER_TITLE = "Home Tech Vault";
 
 export const SOCIAL_TWITTER_DESCRIPTION =
-  "Everything about your home's technology. Finally organized.";
+  "Wait... this monitors and understands my home's technology?";
 
 export const SOCIAL_OG_IMAGE_PATH = "/og-image.png";
 
 export const SOCIAL_OG_IMAGE_ALT =
-  "Home Tech Vault Dashboard Preview";
+  "Home Tech Vault Home Health Dashboard Preview";
 
 export const SOCIAL_OG_IMAGE = {
   url: SOCIAL_OG_IMAGE_PATH,

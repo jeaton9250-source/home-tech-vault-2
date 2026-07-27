@@ -14,12 +14,11 @@ export default function SecuritySection() {
               Security
             </p>
             <h2 className={cn(landingTheme.headline, "mt-3")}>
-              Your home records deserve a secure place.
+              Built for private household access.
             </h2>
             <p className={cn(landingTheme.body, "mt-4")}>
-              Home Tech Vault uses secure sign-in and
-              household-scoped access so your information
-              stays private to you and the people you
+              Secure sign-in and household permissions keep your
+              home profile private to you and the people you
               invite.
             </p>
           </div>

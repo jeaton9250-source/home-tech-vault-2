@@ -7,7 +7,6 @@ import { loadPublicFoundingProgramSummary } from "@/lib/founding-members/loaders
 import {
   createSoftwareApplicationJsonLd,
 } from "@/lib/marketing/metadata";
-import { MARKETING_ROUTES } from "@/lib/marketing/routes";
 import {
   SOCIAL_DEFAULT_DESCRIPTION,
   SOCIAL_DEFAULT_TITLE,
@@ -27,12 +26,12 @@ export const metadata: Metadata = {
     canonical: SOCIAL_SITE_URL,
   },
   keywords: [
-    "home technology organizer",
-    "device organizer",
-    "warranty tracker",
-    "home receipts",
-    "home manuals",
-    "home maintenance tracker",
+    "home technology operating system",
+    "home health dashboard",
+    "home network discovery",
+    "smart home assistant",
+    "device discovery",
+    "home advisor",
     "home tech vault",
   ],
   openGraph: {

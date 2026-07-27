@@ -1,6 +1,7 @@
 import {
   LANDING_HERO_DEVICES,
   LANDING_HERO_FLOATING,
+  LANDING_HOME_HEALTH,
 } from "@/lib/marketing/landingPublicContent";
 import { cn } from "@/lib/design-system/cn";
 
@@ -30,63 +31,75 @@ export default function HeroVisual() {
         </div>
 
         <div className="space-y-5 p-5 md:p-6">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#667085]">
-              Home Overview
-            </p>
-            <h3 className="mt-1 text-lg font-medium text-[#172033]">
-              Morgan Household
-            </h3>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            {[
-              { label: "Total Devices", value: "28" },
-              { label: "Active Warranties", value: "12" },
-              {
-                label: "Upcoming Maintenance",
-                value: "3",
-              },
-              { label: "Documents", value: "46" },
-            ].map((stat) => (
-              <div
-                key={stat.label}
-                className="rounded-2xl border border-[#E7E9EC] bg-[#FAFAF8] px-4 py-3"
-              >
-                <p className="text-[0.625rem] font-semibold uppercase tracking-wider text-[#667085]">
-                  {stat.label}
-                </p>
-                <p className="mt-1 text-xl font-medium tabular-nums text-[#172033]">
-                  {stat.value}
-                </p>
-              </div>
-            ))}
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#667085]">
+                Home Health
+              </p>
+              <p className="mt-2 text-[2.75rem] font-medium leading-none tracking-[-0.05em] text-[#172033]">
+                {LANDING_HOME_HEALTH.score}
+                <span className="ml-1 text-base font-medium text-[#667085]">
+                  %
+                </span>
+              </p>
+              <p className="mt-2 text-sm font-medium text-[#3BAF75]">
+                {LANDING_HOME_HEALTH.status}
+              </p>
+            </div>
+            <div className="max-w-[11rem] rounded-2xl bg-[#EAF8F0] px-3 py-3 text-xs leading-5 text-[#172033]">
+              {LANDING_HOME_HEALTH.summary}
+            </div>
           </div>
 
           <div className="overflow-hidden rounded-2xl border border-[#E7E9EC]">
             <div className="border-b border-[#E7E9EC] bg-[#FAFAF8] px-4 py-2.5 text-xs font-medium text-[#667085]">
-              Recent devices
+              Needs attention
             </div>
             <ul className="divide-y divide-[#E7E9EC]">
-              {LANDING_HERO_DEVICES.map((device) => (
+              {LANDING_HOME_HEALTH.insights.map((insight) => (
                 <li
-                  key={device.name}
+                  key={insight.title}
                   className="flex items-center justify-between gap-3 px-4 py-3"
                 >
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium text-[#172033]">
-                      {device.name}
+                      {insight.title}
                     </p>
                     <p className="truncate text-xs text-[#667085]">
-                      {device.room}
+                      {insight.detail}
                     </p>
                   </div>
-                  <span className="shrink-0 rounded-full bg-[#EAF8F0] px-2.5 py-1 text-[0.625rem] font-medium text-[#3BAF75]">
-                    {device.status}
+                  <span
+                    className={cn(
+                      "shrink-0 rounded-full px-2.5 py-1 text-[0.625rem] font-medium",
+                      insight.tone === "attention"
+                        ? "bg-[#FFF4E5] text-[#B54708]"
+                        : "bg-[#EAF8F0] text-[#3BAF75]"
+                    )}
+                  >
+                    {insight.tone === "attention"
+                      ? "Attention"
+                      : "Suggestion"}
                   </span>
                 </li>
               ))}
             </ul>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            {LANDING_HERO_DEVICES.slice(0, 4).map((device) => (
+              <div
+                key={device.name}
+                className="rounded-2xl border border-[#E7E9EC] bg-[#FAFAF8] px-3 py-3"
+              >
+                <p className="truncate text-xs font-medium text-[#172033]">
+                  {device.name}
+                </p>
+                <p className="mt-1 truncate text-[0.625rem] text-[#667085]">
+                  {device.status}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </div>

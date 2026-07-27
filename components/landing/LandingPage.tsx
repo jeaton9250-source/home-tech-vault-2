@@ -2,19 +2,20 @@
 
 import { useEffect } from "react";
 
-import DigitalBinderSection from "@/components/landing/public/DigitalBinderSection";
 import FinalCta from "@/components/landing/public/FinalCta";
 import HeroSection from "@/components/landing/public/HeroSection";
-import HomeVaultEstimator from "@/components/landing/public/HomeVaultEstimator";
-import HowItWorksSection from "@/components/landing/public/HowItWorksSection";
+import HomeAdvisorStorySection from "@/components/landing/public/HomeAdvisorStorySection";
+import HomeDiscoverySection from "@/components/landing/public/HomeDiscoverySection";
+import HomeDocumentsSection from "@/components/landing/public/HomeDocumentsSection";
+import HomeFamilySection from "@/components/landing/public/HomeFamilySection";
+import HomeHealthPreviewSection from "@/components/landing/public/HomeHealthPreviewSection";
+import HomeSearchSection from "@/components/landing/public/HomeSearchSection";
 import LandingFaq from "@/components/landing/public/LandingFaq";
 import LandingFooter from "@/components/landing/public/LandingFooter";
 import LandingHeader from "@/components/landing/public/LandingHeader";
 import { landingTheme } from "@/components/landing/public/landingTheme";
 import PricingSection from "@/components/landing/public/PricingSection";
 import ProblemSection from "@/components/landing/public/ProblemSection";
-import ProductShowcase from "@/components/landing/public/ProductShowcase";
-import ScenarioSection from "@/components/landing/public/ScenarioSection";
 import SecuritySection from "@/components/landing/public/SecuritySection";
 import StructuredData from "@/components/marketing/StructuredData";
 import { useDemoMode } from "@/hooks/useDemoMode";
@@ -25,9 +26,7 @@ type LandingPageProps = {
   foundingSummary?: unknown;
 };
 
-function scrollToSection(
-  sectionId: LandingPublicSectionId
-) {
+function scrollToSection(sectionId: LandingPublicSectionId) {
   const target = document.getElementById(sectionId);
 
   if (!target) {
@@ -70,12 +69,13 @@ export default function LandingPage({
       <LandingHeader isSignedIn={isSignedIn} />
       <main id="main-content">
         <HeroSection isSignedIn={isSignedIn} />
+        <HomeHealthPreviewSection />
         <ProblemSection />
-        <DigitalBinderSection />
-        <HowItWorksSection />
-        <HomeVaultEstimator isSignedIn={isSignedIn} />
-        <ScenarioSection />
-        <ProductShowcase />
+        <HomeAdvisorStorySection />
+        <HomeDiscoverySection />
+        <HomeSearchSection />
+        <HomeDocumentsSection />
+        <HomeFamilySection />
         <SecuritySection />
         <PricingSection isSignedIn={isSignedIn} />
         <LandingFaq />

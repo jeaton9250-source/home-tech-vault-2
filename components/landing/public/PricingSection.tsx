@@ -33,9 +33,13 @@ export default function PricingSection({
             Pricing
           </p>
           <h2 className={cn(landingTheme.headline, "mt-3")}>
-            Choose the plan that&apos;s right for your
-            home.
+            Choose the plan that fits how your home
+            works.
           </h2>
+          <p className={cn(landingTheme.body, "mt-4 max-w-xl")}>
+            Start free. Upgrade when you want deeper network
+            intelligence and shared household access.
+          </p>
         </div>
 
         <div className="mt-12 grid gap-6 lg:grid-cols-3">

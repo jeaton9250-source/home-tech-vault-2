@@ -13,12 +13,12 @@ import { cn } from "@/lib/design-system/cn";
 
 const NAV_LINKS = [
   {
-    label: "How It Works",
-    sectionId: LANDING_PUBLIC_SECTION_IDS.howItWorks,
+    label: "Home Health",
+    sectionId: LANDING_PUBLIC_SECTION_IDS.homeHealth,
   },
   {
-    label: "Features",
-    sectionId: LANDING_PUBLIC_SECTION_IDS.features,
+    label: "Advisor",
+    sectionId: LANDING_PUBLIC_SECTION_IDS.advisor,
   },
   {
     label: "Pricing",
@@ -55,7 +55,7 @@ export default function LandingHeader({
     ? "/dashboard"
     : MARKETING_ROUTES.signup;
   const startLabel = isSignedIn
-    ? "Your Vault"
+    ? "Open Home"
     : "Start Free";
 
   return (

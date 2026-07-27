@@ -12,12 +12,12 @@ import { MARKETING_ROUTES } from "@/lib/marketing/routes";
 
 const footerLinks = [
   {
-    label: "Features",
-    href: `#${LANDING_PUBLIC_SECTION_IDS.features}`,
+    label: "Home Health",
+    href: `#${LANDING_PUBLIC_SECTION_IDS.homeHealth}`,
   },
   {
-    label: "How It Works",
-    href: `#${LANDING_PUBLIC_SECTION_IDS.howItWorks}`,
+    label: "Home Advisor",
+    href: `#${LANDING_PUBLIC_SECTION_IDS.advisor}`,
   },
   {
     label: "Pricing",

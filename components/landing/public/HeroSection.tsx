@@ -5,9 +5,7 @@ import LandingTrackedLink, {
   LandingScrollLink,
 } from "@/components/landing/public/LandingTrackedLink";
 import { landingTheme } from "@/components/landing/public/landingTheme";
-import {
-  LANDING_ANALYTICS_EVENTS,
-} from "@/lib/marketing/landingAnalytics";
+import { LANDING_ANALYTICS_EVENTS } from "@/lib/marketing/landingAnalytics";
 import {
   LANDING_HERO_REASSURANCE,
   LANDING_PUBLIC_SECTION_IDS,
@@ -25,35 +23,34 @@ export default function HeroSection({
     ? "/dashboard"
     : MARKETING_ROUTES.signup;
   const primaryLabel = isSignedIn
-    ? "Go to Your Vault"
-    : "Start Organizing Free";
+    ? "Open Your Home"
+    : "Start Free";
 
   return (
     <section className={landingTheme.section}>
       <div
-        className={`${landingTheme.sectionNarrow} grid items-center gap-12 lg:grid-cols-[1.02fr_0.98fr] lg:gap-16`}
+        className={`${landingTheme.sectionNarrow} grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16`}
       >
         <div>
           <p className={landingTheme.pill}>
-            Your digital home binder
+            The operating system for your home&apos;s technology
           </p>
 
-          <h1 className="mt-6 max-w-xl text-4xl font-medium tracking-[-0.04em] text-[#172033] md:text-[3.35rem] md:leading-[1.03]">
-            Your home&apos;s technology. Finally organized.
+          <h1 className="mt-6 max-w-xl text-4xl font-medium tracking-[-0.045em] text-[#172033] md:text-[3.4rem] md:leading-[1.02]">
+            Your home, understood.
           </h1>
 
-          <p className="mt-5 max-w-lg text-base leading-7 text-[#667085]">
-            Keep every device, receipt, warranty, manual,
-            maintenance record, and network detail in one
-            secure place.
+          <p className="mt-5 max-w-lg text-base leading-7 text-[#667085] md:text-[1.0625rem] md:leading-8">
+            Home Tech Vault monitors what is connected, spots
+            what needs attention, and helps you take the next
+            right step — so your home&apos;s technology finally
+            feels under control.
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
             <LandingTrackedLink
               href={primaryHref}
-              eventName={
-                LANDING_ANALYTICS_EVENTS.heroStartFree
-              }
+              eventName={LANDING_ANALYTICS_EVENTS.heroStartFree}
               className={landingTheme.btnPrimary}
             >
               {primaryLabel}
@@ -71,19 +68,17 @@ export default function HeroSection({
               }
               className={landingTheme.btnSecondary}
             >
-              Explore Demo
+              Explore Live Demo
             </LandingTrackedLink>
 
             <LandingScrollLink
-              sectionId={
-                LANDING_PUBLIC_SECTION_IDS.digitalBinder
-              }
+              sectionId={LANDING_PUBLIC_SECTION_IDS.homeHealth}
               eventName={
                 LANDING_ANALYTICS_EVENTS.heroSeeHowItWorks
               }
               className={landingTheme.btnSecondary}
             >
-              See How It Works
+              See What It Can Do
             </LandingScrollLink>
           </div>
 

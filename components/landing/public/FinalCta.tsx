@@ -3,9 +3,7 @@ import { ArrowRight } from "lucide-react";
 
 import LandingTrackedLink from "@/components/landing/public/LandingTrackedLink";
 import { landingTheme } from "@/components/landing/public/landingTheme";
-import {
-  LANDING_ANALYTICS_EVENTS,
-} from "@/lib/marketing/landingAnalytics";
+import { LANDING_ANALYTICS_EVENTS } from "@/lib/marketing/landingAnalytics";
 import { MARKETING_ROUTES } from "@/lib/marketing/routes";
 import { cn } from "@/lib/design-system/cn";
 
@@ -20,8 +18,8 @@ export default function FinalCta({
     ? "/dashboard"
     : MARKETING_ROUTES.signup;
   const primaryLabel = isSignedIn
-    ? "Go to Your Vault"
-    : "Start Organizing Free";
+    ? "Open Your Home"
+    : "Start Free";
 
   return (
     <section className="px-5 py-16 md:px-8 md:py-24 lg:px-10">
@@ -33,22 +31,19 @@ export default function FinalCta({
           )}
         >
           <h2 className="mx-auto max-w-3xl text-3xl font-medium tracking-[-0.03em] text-[#172033] md:text-[2.35rem] md:leading-tight">
-            Your home deserves better than drawers,
-            folders, and sticky notes.
+            Give your home a clearer operating system.
           </h2>
 
           <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-[#667085]">
-            Give every device, document, warranty, and
-            maintenance record a place you can actually
-            find.
+            Start free, explore the demo, and see what it feels
+            like when your home&apos;s technology finally makes
+            sense.
           </p>
 
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row sm:flex-wrap">
             <LandingTrackedLink
               href={primaryHref}
-              eventName={
-                LANDING_ANALYTICS_EVENTS.finalCta
-              }
+              eventName={LANDING_ANALYTICS_EVENTS.finalCta}
               className={landingTheme.btnPrimary}
             >
               {primaryLabel}
@@ -66,7 +61,7 @@ export default function FinalCta({
               }
               className={landingTheme.btnSecondary}
             >
-              Explore Demo
+              Explore Live Demo
             </LandingTrackedLink>
 
             {!isSignedIn ? (

@@ -1,37 +1,50 @@
 import {
-  BookOpen,
-  LayoutGrid,
-  Receipt,
+  Radar,
   ShieldCheck,
+  Sparkles,
+  Users,
   Wifi,
-  Wrench,
+  Activity,
 } from "lucide-react";
 
 import { landingTheme } from "@/components/landing/public/landingTheme";
-import { LANDING_PROBLEM_CARDS } from "@/lib/marketing/landingPublicContent";
+import {
+  LANDING_PROBLEM_CARDS,
+  LANDING_PUBLIC_SECTION_IDS,
+} from "@/lib/marketing/landingPublicContent";
 import { cn } from "@/lib/design-system/cn";
 
 const iconMap = {
-  receipt: Receipt,
-  shield: ShieldCheck,
   wifi: Wifi,
-  book: BookOpen,
-  wrench: Wrench,
-  layout: LayoutGrid,
+  pulse: Activity,
+  radar: Radar,
+  sparkles: Sparkles,
+  shield: ShieldCheck,
+  users: Users,
 } as const;
 
 export default function ProblemSection() {
   return (
-    <section className="bg-[#EDF3F7]/50 px-5 py-16 md:px-8 md:py-24 lg:px-10">
+    <section
+      id={LANDING_PUBLIC_SECTION_IDS.problems}
+      className={cn(
+        "bg-[#EDF3F7]/50 px-5 py-16 md:px-8 md:py-24 lg:px-10",
+        landingTheme.scrollAnchor
+      )}
+    >
       <div className={landingTheme.sectionNarrow}>
         <div className="max-w-2xl">
           <p className={landingTheme.eyebrow}>
-            Sound familiar?
+            Everyday home problems
           </p>
           <h2 className={cn(landingTheme.headline, "mt-3")}>
-            Your home has more technology than ever. Keeping
-            track of it shouldn&apos;t be difficult.
+            Built for the moments homeowners actually face.
           </h2>
+          <p className={cn(landingTheme.body, "mt-4 max-w-xl")}>
+            Not another place to upload paperwork. A clearer way
+            to understand what is happening with the technology
+            that runs your home.
+          </p>
         </div>
 
         <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
