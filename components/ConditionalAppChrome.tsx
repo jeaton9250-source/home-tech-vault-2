@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
 
+import ClearDemoOnAuthRoute from "@/components/auth/ClearDemoOnAuthRoute";
 import AppChrome from "@/components/AppChrome";
 import {
   normalizePathname,
@@ -19,11 +20,18 @@ export default function ConditionalAppChrome({
   const pathname = normalizePathname(
     usePathname()
   );
-  const publicRoute =
+  const publicAuthRoute =
     isPublicAuthPath(pathname);
 
-  if (publicRoute) {
-    return <>{children}</>;
+  // Public auth pages must never inherit app chrome,
+  // AuthGuard, or a stale demo session.
+  if (publicAuthRoute) {
+    return (
+      <>
+        <ClearDemoOnAuthRoute />
+        {children}
+      </>
+    );
   }
 
   return <AppChrome>{children}</AppChrome>;

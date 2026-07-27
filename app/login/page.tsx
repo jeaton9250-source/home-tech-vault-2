@@ -20,10 +20,13 @@ import {
   loadIsPlatformAdmin,
   resolveAuthenticatedInviteDestination,
 } from "@/lib/auth/inviteOnboarding";
+import { resolveSafeAuthRedirect } from "@/lib/auth/safeRedirect";
 import { brand } from "@/lib/design-system/tokens";
+import { clearDemoModeStorage } from "@/lib/demo/demoModeStorage";
 import { supabase } from "@/lib/supabase";
 import { resolvePostAuthRedirect } from "@/lib/onboarding/redirect";
 import { enforceActiveAccount } from "@/lib/auth/enforceActiveAccount";
+import { useDemoMode } from "@/hooks/useDemoMode";
 
 const loginBenefits = [
   "Review every device in one place",
@@ -35,6 +38,7 @@ const INVITE_SESSION_CHECK_MS = 4000;
 
 export default function LoginPage() {
   const router = useRouter();
+  const { exitDemo } = useDemoMode();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -47,20 +51,16 @@ export default function LoginPage() {
       return "/dashboard";
     }
 
-    const requestedRedirect = new URLSearchParams(
-      window.location.search
-    ).get("redirect");
-
-    if (
-      requestedRedirect &&
-      requestedRedirect.startsWith("/") &&
-      !requestedRedirect.startsWith("//")
-    ) {
-      return requestedRedirect;
-    }
-
-    return "/dashboard";
+    return resolveSafeAuthRedirect(
+      window.location.search,
+      "/dashboard"
+    );
   });
+
+  useEffect(() => {
+    clearDemoModeStorage();
+    exitDemo();
+  }, [exitDemo]);
 
   const [setupComplete] = useState(() => {
     if (typeof window === "undefined") {
@@ -262,7 +262,8 @@ export default function LoginPage() {
     try {
       setSubmitting(true);
 
-      window.localStorage.removeItem("home-tech-vault-demo");
+      clearDemoModeStorage();
+      exitDemo();
 
       const { data, error } =
         await supabase.auth.signInWithPassword({

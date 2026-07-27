@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Menu, X } from "lucide-react";
 
 import Logo from "@/components/brand/Logo";
+import SignInLink from "@/components/auth/SignInLink";
 import FoundingMembersBanner from "@/components/landing/FoundingMembersBanner";
 import LandingAnnouncementBar from "@/components/marketing/LandingAnnouncementBar";
 import MarketingNavLink from "@/components/marketing/MarketingNavLink";
@@ -87,12 +88,9 @@ export default function MarketingNav({
 
         <div className="hidden items-center gap-3 md:flex">
           {!loading && !isSignedIn && (
-            <Link
-              href={MARKETING_ROUTES.login}
-              className="rounded-[var(--radius-button)] px-3 py-2 text-[0.9375rem] font-normal text-text-muted transition-colors duration-200 hover:text-text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interaction"
-            >
+            <SignInLink className="rounded-[var(--radius-button)] px-3 py-2 text-[0.9375rem] font-normal text-text-muted transition-colors duration-200 hover:text-text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interaction">
               Sign In
-            </Link>
+            </SignInLink>
           )}
 
           <Button href={startHref} size="sm">
@@ -148,17 +146,15 @@ export default function MarketingNav({
 
             <div className="mt-3 flex flex-col gap-2 border-t border-border-subtle pt-4">
               {!isSignedIn && (
-                <Button
-                  href={MARKETING_ROUTES.login}
-                  variant="secondary"
-                  fullWidth
-                  className={marketingSecondaryButtonClass}
-                  onClick={() =>
-                    setMobileOpen(false)
-                  }
+                <SignInLink
+                  className={cn(
+                    marketingSecondaryButtonClass,
+                    "inline-flex w-full items-center justify-center rounded-[var(--radius-button)] border border-border-subtle bg-surface-card px-4 py-2.5 text-sm font-medium text-text-primary"
+                  )}
+                  onClick={() => setMobileOpen(false)}
                 >
                   Sign In
-                </Button>
+                </SignInLink>
               )}
 
               <Button

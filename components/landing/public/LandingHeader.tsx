@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Sparkles } from "lucide-react";
 
+import SignInLink from "@/components/auth/SignInLink";
 import Logo from "@/components/brand/Logo";
 import LandingTrackedLink from "@/components/landing/public/LandingTrackedLink";
 import { landingTheme } from "@/components/landing/public/landingTheme";
@@ -55,22 +56,22 @@ export default function LandingHeader({
     ? "/dashboard"
     : MARKETING_ROUTES.signup;
   const startLabel = isSignedIn
-    ? "Open Home"
-    : "Start Free";
+    ? "Open Home OS"
+    : "Experience Free";
 
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 transition-all duration-300",
+        "sticky top-0 z-50 transition-all duration-300 px-4 py-3 md:px-8",
         scrolled
-          ? "border-b border-[#E7E9EC] bg-white/95 shadow-[0_8px_30px_-20px_rgba(23,32,51,0.18)] backdrop-blur-md"
-          : "bg-[#FAFAF8]/80 backdrop-blur-sm"
+          ? "border-b border-border-subtle/70 bg-surface-card/85 backdrop-blur-xl shadow-md"
+          : "bg-surface-base/80 backdrop-blur-md"
       )}
     >
-      <div className="mx-auto flex h-[4.25rem] max-w-6xl items-center justify-between gap-4 px-5 md:px-8 lg:px-10">
+      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4">
         <Link
           href={MARKETING_ROUTES.home}
-          className="shrink-0 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#183B56]"
+          className="shrink-0 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-charcoal"
           aria-label="Home Tech Vault home"
           onClick={() => setMobileOpen(false)}
         >
@@ -78,14 +79,14 @@ export default function LandingHeader({
         </Link>
 
         <nav
-          className="hidden items-center gap-8 lg:flex"
+          className="hidden items-center gap-1 rounded-full border border-border-subtle/70 bg-surface-card/90 px-3 py-1.5 shadow-sm backdrop-blur-lg lg:flex"
           aria-label="Primary"
         >
           {NAV_LINKS.map((link) => (
             <a
               key={link.sectionId}
               href={`#${link.sectionId}`}
-              className="rounded-md px-1 py-2 text-sm text-[#667085] transition hover:text-[#172033] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#183B56]"
+              className="rounded-full px-4 py-1.5 text-xs font-semibold text-text-secondary transition-all hover:bg-surface-hover hover:text-text-primary focus-visible:outline-none"
             >
               {link.label}
             </a>
@@ -95,18 +96,16 @@ export default function LandingHeader({
         <div className="hidden items-center gap-3 md:flex">
           <Link
             href={MARKETING_ROUTES.demo}
-            className="rounded-full px-3 py-2 text-sm text-[#667085] transition hover:text-[#172033] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#183B56]"
+            className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-text-secondary transition hover:bg-surface-hover hover:text-text-primary"
           >
-            Demo
+            <Sparkles size={14} className="text-premium" />
+            <span>Live Demo</span>
           </Link>
 
           {!isSignedIn ? (
-            <Link
-              href={MARKETING_ROUTES.login}
-              className="rounded-full px-3 py-2 text-sm text-[#667085] transition hover:text-[#172033] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#183B56]"
-            >
+            <SignInLink className="rounded-full px-4 py-2 text-xs font-semibold text-text-secondary transition hover:bg-surface-hover hover:text-text-primary">
               Sign In
-            </Link>
+            </SignInLink>
           ) : null}
 
           <LandingTrackedLink
@@ -122,7 +121,7 @@ export default function LandingHeader({
             href={startHref}
             className={cn(
               landingTheme.btnPrimary,
-              "min-h-10 px-4 py-2 text-xs"
+              "min-h-9 px-4 py-1.5 text-xs"
             )}
           >
             {startLabel}
@@ -130,7 +129,7 @@ export default function LandingHeader({
 
           <button
             type="button"
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-[#E7E9EC] bg-white text-[#172033] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#183B56]"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-border-subtle bg-surface-card text-text-primary shadow-sm"
             aria-label={
               mobileOpen ? "Close menu" : "Open menu"
             }
@@ -149,16 +148,16 @@ export default function LandingHeader({
       </div>
 
       {mobileOpen ? (
-        <div className="border-t border-[#E7E9EC] bg-white px-5 py-4 md:hidden">
+        <div className="mt-3 rounded-3xl border border-border-subtle bg-surface-card p-5 shadow-xl md:hidden">
           <nav
-            className="flex flex-col gap-1"
+            className="flex flex-col gap-2"
             aria-label="Primary mobile"
           >
             {NAV_LINKS.map((link) => (
               <a
                 key={link.sectionId}
                 href={`#${link.sectionId}`}
-                className="rounded-xl px-3 py-3 text-sm font-medium text-[#667085] hover:bg-[#EDF3F7] hover:text-[#172033]"
+                className="rounded-2xl px-4 py-3 text-sm font-semibold text-text-secondary hover:bg-surface-hover hover:text-text-primary"
                 onClick={() => setMobileOpen(false)}
               >
                 {link.label}
@@ -167,20 +166,19 @@ export default function LandingHeader({
 
             <Link
               href={MARKETING_ROUTES.demo}
-              className="rounded-xl px-3 py-3 text-sm font-medium text-[#667085] hover:bg-[#EDF3F7] hover:text-[#172033]"
+              className="rounded-2xl px-4 py-3 text-sm font-semibold text-text-secondary hover:bg-surface-hover hover:text-text-primary"
               onClick={() => setMobileOpen(false)}
             >
               Explore Demo
             </Link>
 
             {!isSignedIn ? (
-              <Link
-                href={MARKETING_ROUTES.login}
-                className="mt-2 rounded-xl px-3 py-3 text-sm font-medium text-[#667085] hover:bg-[#EDF3F7]"
+              <SignInLink
+                className="rounded-2xl px-4 py-3 text-sm font-semibold text-text-secondary hover:bg-surface-hover"
                 onClick={() => setMobileOpen(false)}
               >
                 Sign In
-              </Link>
+              </SignInLink>
             ) : null}
           </nav>
         </div>
@@ -188,3 +186,4 @@ export default function LandingHeader({
     </header>
   );
 }
+

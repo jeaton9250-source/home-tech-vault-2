@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
 import { useDemoMode } from "@/hooks/useDemoMode";
+import { clearDemoModeStorage } from "@/lib/demo/demoModeStorage";
 import { isPublicAuthPath } from "@/lib/marketing/routes";
 import {
   isProtectedRoute,
@@ -78,8 +79,9 @@ export default function AuthGuard({
     setCheckingAuth(false);
 
     if (!user && !isDemo) {
+      clearDemoModeStorage();
       router.replace(
-        `/login?redirect=${encodeURIComponent(normalizedPath)}`
+        `/login?next=${encodeURIComponent(normalizedPath)}`
       );
     }
   }, [

@@ -5,14 +5,18 @@ import type { User } from "@supabase/supabase-js";
 
 import { supabase } from "@/lib/supabase";
 import {
+  DEMO_CHANGE_EVENT,
+  DEMO_STORAGE_KEY,
+  clearDemoModeStorage,
+  enableDemoModeStorage,
+  getStoredDemoMode,
+} from "@/lib/demo/demoModeStorage";
+import {
   DEMO_DATA_VERSION,
   DEMO_DATA_VERSION_KEY,
   DEMO_TOUR_COMPLETED_KEY,
   DEMO_WELCOME_SEEN_KEY,
 } from "@/lib/demo/morganHousehold";
-
-const DEMO_STORAGE_KEY = "home-tech-vault-demo";
-const DEMO_CHANGE_EVENT = "home-tech-vault-demo-change";
 
 function syncDemoDataVersion() {
   if (typeof window === "undefined") {
@@ -35,16 +39,9 @@ function syncDemoDataVersion() {
   );
 }
 
-function getStoredDemoMode() {
-  if (typeof window === "undefined") {
-    return false;
-  }
-
+function readDemoMode() {
   syncDemoDataVersion();
-
-  return (
-    window.localStorage.getItem(DEMO_STORAGE_KEY) === "true"
-  );
+  return getStoredDemoMode();
 }
 
 export function useDemoMode() {
@@ -54,7 +51,7 @@ export function useDemoMode() {
 
   const loadMode = useCallback(async () => {
     try {
-      const demoEnabled = getStoredDemoMode();
+      const demoEnabled = readDemoMode();
 
       if (demoEnabled) {
         setUser(null);
@@ -79,7 +76,7 @@ export function useDemoMode() {
       }
 
       setUser(session?.user || null);
-      setIsDemo(demoEnabled);
+      setIsDemo(false);
     } catch (error) {
       console.error(
         "Unable to load demo mode:",
@@ -87,7 +84,7 @@ export function useDemoMode() {
       );
 
       setUser(null);
-      setIsDemo(getStoredDemoMode());
+      setIsDemo(readDemoMode());
     } finally {
       setLoading(false);
     }
@@ -102,14 +99,23 @@ export function useDemoMode() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(
       (_event, session) => {
+        const demoEnabled = readDemoMode();
+
+        if (demoEnabled) {
+          setUser(null);
+          setIsDemo(true);
+          setLoading(false);
+          return;
+        }
+
         setUser(session?.user || null);
-        setIsDemo(getStoredDemoMode());
+        setIsDemo(false);
         setLoading(false);
       }
     );
 
     function handleDemoChange() {
-      setIsDemo(getStoredDemoMode());
+      setIsDemo(readDemoMode());
     }
 
     function handleStorageChange(
@@ -119,7 +125,7 @@ export function useDemoMode() {
         event.key === DEMO_STORAGE_KEY ||
         event.key === null
       ) {
-        setIsDemo(getStoredDemoMode());
+        setIsDemo(readDemoMode());
       }
     }
 
@@ -155,28 +161,13 @@ export function useDemoMode() {
     window.localStorage.removeItem(DEMO_WELCOME_SEEN_KEY);
     window.localStorage.removeItem(DEMO_TOUR_COMPLETED_KEY);
 
-    window.localStorage.setItem(
-      DEMO_STORAGE_KEY,
-      "true"
-    );
-
+    enableDemoModeStorage();
     setIsDemo(true);
-
-    window.dispatchEvent(
-      new Event(DEMO_CHANGE_EVENT)
-    );
   }
 
   function exitDemo() {
-    window.localStorage.removeItem(
-      DEMO_STORAGE_KEY
-    );
-
+    clearDemoModeStorage();
     setIsDemo(false);
-
-    window.dispatchEvent(
-      new Event(DEMO_CHANGE_EVENT)
-    );
   }
 
   return {

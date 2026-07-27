@@ -43,7 +43,7 @@ export default function ProfileMenu({
   const router = useRouter();
   const { closeMenu } = useNavMenu();
 
-  const { user, isDemo } = useDemoMode();
+  const { user, isDemo, exitDemo } = useDemoMode();
 
   const {
     planDisplayName,
@@ -99,6 +99,12 @@ export default function ProfileMenu({
   }, [user, isDemo]);
 
   async function signOut() {
+    if (isDemo) {
+      exitDemo();
+      router.push("/login");
+      return;
+    }
+
     await supabase.auth.signOut();
     router.push("/login");
   }

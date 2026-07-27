@@ -14,6 +14,7 @@ import Alert from "@/components/ui/Alert";
 import Button from "@/components/ui/Button";
 import FormInput from "@/components/ui/FormInput";
 import { brand } from "@/lib/design-system/tokens";
+import { clearDemoModeStorage } from "@/lib/demo/demoModeStorage";
 import { supabase } from "@/lib/supabase";
 import { resolvePostAuthRedirect } from "@/lib/onboarding/redirect";
 
@@ -116,9 +117,7 @@ export default function SignupPage() {
     try {
       setSubmitting(true);
 
-      window.localStorage.removeItem(
-        "home-tech-vault-demo"
-      );
+      clearDemoModeStorage();
 
       const {
         data,

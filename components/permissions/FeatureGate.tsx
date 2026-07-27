@@ -75,7 +75,7 @@ export default function FeatureGate({
         redirectPath ?? pathname;
 
       router.replace(
-        `/login?redirect=${encodeURIComponent(destination)}`
+        `/login?next=${encodeURIComponent(destination)}`
       );
     }
   }, [

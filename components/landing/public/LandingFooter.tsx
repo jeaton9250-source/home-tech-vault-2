@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 
+import SignInLink from "@/components/auth/SignInLink";
 import Logo from "@/components/brand/Logo";
 import {
   FOOTER_COPYRIGHT,
@@ -40,10 +43,6 @@ const footerLinks = [
     href: "/compare",
   },
   {
-    label: "Sign In",
-    href: MARKETING_ROUTES.login,
-  },
-  {
     label: "Create Account",
     href: MARKETING_ROUTES.signup,
   },
@@ -56,6 +55,9 @@ const footerLinks = [
     href: MARKETING_ROUTES.terms,
   },
 ] as const;
+
+const footerLinkClassName =
+  "text-sm text-[#667085] transition hover:text-[#172033] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#183B56]";
 
 export default function LandingFooter() {
   return (
@@ -81,12 +83,17 @@ export default function LandingFooter() {
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className="text-sm text-[#667085] transition hover:text-[#172033] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#183B56]"
+                      className={footerLinkClassName}
                     >
                       {link.label}
                     </Link>
                   </li>
                 ))}
+                <li>
+                  <SignInLink className={footerLinkClassName}>
+                    Sign In
+                  </SignInLink>
+                </li>
               </ul>
             </nav>
 
@@ -99,7 +106,7 @@ export default function LandingFooter() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-sm text-[#667085] transition hover:text-[#172033] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#183B56]"
+                      className={footerLinkClassName}
                     >
                       {link.label}
                     </Link>

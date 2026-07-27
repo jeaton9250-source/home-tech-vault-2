@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
+import SignInLink from "@/components/auth/SignInLink";
 import LandingTrackedLink from "@/components/landing/public/LandingTrackedLink";
 import { landingTheme } from "@/components/landing/public/landingTheme";
 import { LANDING_ANALYTICS_EVENTS } from "@/lib/marketing/landingAnalytics";
@@ -65,12 +65,9 @@ export default function FinalCta({
             </LandingTrackedLink>
 
             {!isSignedIn ? (
-              <Link
-                href={MARKETING_ROUTES.login}
-                className={landingTheme.link}
-              >
+              <SignInLink className={landingTheme.link}>
                 Sign In
-              </Link>
+              </SignInLink>
             ) : null}
           </div>
         </div>
