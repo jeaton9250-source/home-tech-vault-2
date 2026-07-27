@@ -54,8 +54,7 @@ const DEVICE_SELECT_FULL = `
   online,
   last_seen_at,
   network_updated_at,
-  first_seen_at,
-  created_at
+  first_seen_at
 `;
 
 const DEVICE_SELECT_WITH_ONLINE = `
@@ -68,8 +67,7 @@ const DEVICE_SELECT_WITH_ONLINE = `
   purchase_date,
   purchase_price,
   warranty_date,
-  online,
-  created_at
+  online
 `;
 
 const DEVICE_SELECT_CORE = `
@@ -81,8 +79,21 @@ const DEVICE_SELECT_CORE = `
   serial_number,
   purchase_date,
   purchase_price,
+  warranty_date
+`;
+
+/** Matches loadDashboardMetrics device columns exactly. */
+const DEVICE_SELECT_DASHBOARD = `
+  id,
+  device_name,
+  brand,
+  location,
+  category,
+  serial_number,
+  purchase_date,
+  purchase_price,
   warranty_date,
-  created_at
+  notes
 `;
 
 const DISCOVERY_SELECT_FULL = `
@@ -151,6 +162,10 @@ async function loadDevicesForAdvisor(
     {
       name: "devices.core",
       columns: DEVICE_SELECT_CORE,
+    },
+    {
+      name: "devices.dashboard",
+      columns: DEVICE_SELECT_DASHBOARD,
     },
   ];
 
@@ -398,18 +413,15 @@ export async function loadHomeAdvisorContext(
       userId
     );
 
-  if (
-    devicesResult.error &&
-    devicesResult.data.length === 0
-  ) {
-    const failure = new Error(
-      devicesResult.error.message ??
-        "Unable to load device records for Home Advisor."
-    ) as Error & { code?: string | null };
-
-    failure.code = devicesResult.error.code ?? null;
-
-    throw failure;
+  if (devicesResult.error) {
+    logAdvisorStage(
+      "context.devices.degraded",
+      "context",
+      {
+        query: "devices",
+        error: devicesResult.error,
+      }
+    );
   }
 
   const devices = devicesResult.data;
