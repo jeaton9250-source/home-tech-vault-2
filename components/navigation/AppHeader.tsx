@@ -16,9 +16,14 @@ import { usePermissions } from "@/hooks/usePermissions";
 import { isPrimaryNavActive } from "@/lib/navigation/activeGroup";
 import { PRIMARY_NAV_ITEMS } from "@/lib/navigation/config";
 import { shouldShowPremiumBadge } from "@/lib/navigation/navVisibility";
+import { normalizePathname } from "@/lib/isChromeFreeRoute";
 
 export default function AppHeader() {
   const pathname = usePathname();
+  const normalizedPath = normalizePathname(pathname);
+  const hideGlobalSearchOnHome =
+    normalizedPath === "/home" ||
+    normalizedPath === "/dashboard";
 
   const {
     canViewFeature,
@@ -64,7 +69,11 @@ export default function AppHeader() {
           </nav>
 
           <div className="min-w-0 flex-1">
-            <SearchField prominent />
+            {hideGlobalSearchOnHome ? (
+              <div aria-hidden="true" className="h-12 w-full" />
+            ) : (
+              <SearchField prominent />
+            )}
           </div>
 
           <div className="flex shrink-0 items-center gap-1.5 xl:gap-2">

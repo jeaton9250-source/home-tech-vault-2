@@ -49,6 +49,7 @@ type DeletionJobView = {
   jobId: string;
   status: string;
   currentStep: string | null;
+  failedStepLabel: string | null;
   safeErrorCode: string | null;
   safeErrorMessage: string | null;
   canRetry: boolean;
@@ -169,6 +170,7 @@ export default function AccountDangerZone({
       jobId: detail.deletionJobId,
       status: detail.deletionJobStatus ?? "unknown",
       currentStep: detail.deletionJobStep,
+      failedStepLabel: null,
       safeErrorCode:
         detail.deletionJobSafeErrorCode,
       safeErrorMessage:
@@ -699,13 +701,22 @@ export default function AccountDangerZone({
               {jobView.message}
             </p>
 
-            {jobView.currentStep ? (
+            {jobView.status === "failed" &&
+            jobView.failedStepLabel ? (
+              <DetailRow
+                label="Failed during"
+                value={jobView.failedStepLabel}
+              />
+            ) : jobView.currentStep ? (
               <DetailRow
                 label="Current step"
-                value={jobView.currentStep.replaceAll(
-                  "_",
-                  " "
-                )}
+                value={
+                  jobView.failedStepLabel ??
+                  jobView.currentStep.replaceAll(
+                    "_",
+                    " "
+                  )
+                }
               />
             ) : null}
 

@@ -1,5 +1,9 @@
 import "server-only";
 
+import {
+  buildFailedDeletionJobMessage,
+  formatDeletionStepLabel,
+} from "@/lib/account-admin/deletionHelpers";
 import type { DeletionJobStatus } from "@/lib/account-admin/types";
 
 export const DELETION_JOB_STALE_THRESHOLD_MS =
@@ -53,6 +57,7 @@ export type DeletionJobView = {
   jobId: string;
   status: DeletionJobRecord["status"];
   currentStep: string | null;
+  failedStepLabel: string | null;
   safeErrorCode: string | null;
   safeErrorMessage: string | null;
   canRetry: boolean;
@@ -217,7 +222,9 @@ export function buildDeletionJobMessage(
     case "blocked":
       return "Deletion requires attention.";
     case "failed":
-      return "Deletion could not be completed.";
+      return buildFailedDeletionJobMessage(
+        job.current_step
+      );
     case "completed":
       return "Account deletion completed.";
     case "canceled":
@@ -249,6 +256,11 @@ export function buildDeletionJobView(
     jobId: job.id,
     status: job.status,
     currentStep: job.current_step,
+    failedStepLabel: formatDeletionStepLabel(
+      job.status === "failed"
+        ? job.current_step
+        : null
+    ),
     safeErrorCode: job.safe_error_code,
     safeErrorMessage: job.safe_error_message,
     canRetry,

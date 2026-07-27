@@ -29,6 +29,7 @@ import { usePermissions } from "@/hooks/usePermissions";
 import { isPrimaryNavActive } from "@/lib/navigation/activeGroup";
 import { MOBILE_NAV_ITEMS } from "@/lib/navigation/config";
 import { shouldShowPremiumBadge } from "@/lib/navigation/navVisibility";
+import { normalizePathname } from "@/lib/isChromeFreeRoute";
 
 import { supabase } from "@/lib/supabase";
 
@@ -36,6 +37,10 @@ import { cn } from "@/lib/design-system/cn";
 
 export default function MobileNavSheet() {
   const pathname = usePathname();
+  const normalizedPath = normalizePathname(pathname);
+  const hideGlobalSearchOnHome =
+    normalizedPath === "/home" ||
+    normalizedPath === "/dashboard";
   const router = useRouter();
 
   const [open, setOpen] = useState(false);
@@ -128,7 +133,11 @@ export default function MobileNavSheet() {
             <Logo collapsed />
           </Link>
 
-          <SearchField collapsible />
+          {hideGlobalSearchOnHome ? (
+            <span aria-hidden="true" className="h-10 w-10 shrink-0" />
+          ) : (
+            <SearchField collapsible />
+          )}
 
           <NotificationBell />
 
@@ -186,7 +195,9 @@ export default function MobileNavSheet() {
               </div>
 
               <div className="space-y-4 border-b border-border-subtle p-4">
-                <SearchField compact autoFocus />
+                {!hideGlobalSearchOnHome ? (
+                  <SearchField compact autoFocus />
+                ) : null}
 
                 {canViewFeature("aiAdvisor") ? (
                   <Button

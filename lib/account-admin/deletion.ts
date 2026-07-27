@@ -4,19 +4,22 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { recordPlatformAdminAudit } from "@/lib/account-admin/audit";
 import {
+  AUTH_USER_REFERENCE_TARGETS,
+  buildDeletionStepLogPayload,
+  resolveDeletionFailure,
+  resolveRetryStartingStep,
+} from "@/lib/account-admin/deletionHelpers";
+import {
   buildDeletionJobView,
   canCancelDeletionJob,
   DELETION_JOB_LEASE_SECONDS,
   type DeletionJobRecord,
   type DeletionJobView,
-  isActiveDeletionStatus,
   isDeletionJobStale,
   mapDeletionJobRow,
 } from "@/lib/account-admin/deletionJobState";
 import { cleanupUserStorage } from "@/lib/account-admin/storageCleanup";
 import { buildDeletionPreview } from "@/lib/account-admin/validation";
-
-import type { DeletionJobStatus } from "@/lib/account-admin/types";
 
 const DELETION_JOB_SELECT =
   "id, target_user_id, target_email_snapshot, requested_by, reason, notes, transfer_owner_user_id, delete_household_data, status, current_step, safe_error_code, safe_error_message, retry_count, started_at, completed_at, failed_at, canceled_at, canceled_by, processor_started_at, processor_lease_expires_at, processor_actor_id, last_heartbeat_at, created_at, updated_at";
@@ -25,6 +28,34 @@ type ClaimResult = {
   claimed: boolean;
   job: DeletionJobRecord | null;
 };
+
+function logDeletionEvent(
+  event:
+    | "step_started"
+    | "step_failed"
+    | "job_failed",
+  options: {
+    jobId: string;
+    currentStep: string | null | undefined;
+    databaseErrorCode?: string | null;
+    message?: string | null;
+  }
+) {
+  const payload = buildDeletionStepLogPayload({
+    event,
+    jobId: options.jobId,
+    currentStep: options.currentStep,
+    databaseErrorCode: options.databaseErrorCode,
+    message: options.message,
+  });
+
+  if (event === "step_started") {
+    console.info("[account-deletion]", payload);
+    return;
+  }
+
+  console.error("[account-deletion]", payload);
+}
 
 async function loadDeletionJobById(
   admin: SupabaseClient,
@@ -105,7 +136,9 @@ export async function markDeletionJobFailed(
   await updateJob(admin, options.jobId, {
     status: "failed",
     current_step:
-      options.currentStep ?? "failed",
+      options.currentStep ??
+      job.current_step ??
+      "unknown",
     failed_at: new Date().toISOString(),
     safe_error_code: options.safeErrorCode,
     safe_error_message:
@@ -297,8 +330,10 @@ async function claimDeletionJobFallback(
     .from("admin_account_deletion_jobs")
     .update({
       status: "processing",
-      current_step:
-        job.current_step ?? "queued",
+      current_step: resolveRetryStartingStep(
+        job.status,
+        job.current_step
+      ),
       started_at:
         job.started_at ??
         new Date().toISOString(),
@@ -417,46 +452,20 @@ async function detachAuthUserReferences(
 ) {
   const { targetUserId, actorId } = options;
 
-  const reassignmentTargets: Array<{
-    table: string;
-    column: string;
-  }> = [
-    {
-      table: "connector_installations",
-      column: "created_by_user_id",
-    },
-    {
-      table: "connector_pairing_sessions",
-      column: "created_by_user_id",
-    },
-  ];
+  for (const target of AUTH_USER_REFERENCE_TARGETS) {
+    if (target.strategy === "reassign") {
+      const { error } = await admin
+        .from(target.table)
+        .update({ [target.column]: actorId })
+        .eq(target.column, targetUserId);
 
-  for (const target of reassignmentTargets) {
-    const { error } = await admin
-      .from(target.table)
-      .update({ [target.column]: actorId })
-      .eq(target.column, targetUserId);
+      if (error && !isIgnorableSchemaError(error)) {
+        throw error;
+      }
 
-    if (error && !isIgnorableSchemaError(error)) {
-      throw error;
+      continue;
     }
-  }
 
-  const nullableTargets: Array<{
-    table: string;
-    column: string;
-  }> = [
-    {
-      table: "discovered_devices",
-      column: "match_confirmed_by",
-    },
-    {
-      table: "device_identity_confirmations",
-      column: "confirmed_by",
-    },
-  ];
-
-  for (const target of nullableTargets) {
     const { error } = await admin
       .from(target.table)
       .update({ [target.column]: null })
@@ -576,7 +585,8 @@ async function authUserExists(
 
 async function deleteAuthUser(
   admin: SupabaseClient,
-  targetUserId: string
+  targetUserId: string,
+  jobId?: string
 ) {
   const { data, error } =
     await admin.auth.admin.deleteUser(
@@ -584,11 +594,11 @@ async function deleteAuthUser(
     );
 
   if (error) {
-    console.error("Auth user deletion failed", {
-      targetUserId,
+    logDeletionEvent("step_failed", {
+      jobId: jobId ?? "unknown",
+      currentStep: "delete_auth_user",
+      databaseErrorCode: error.code ?? null,
       message: error.message,
-      status: error.status,
-      code: error.code,
     });
 
     const message = error.message ?? "";
@@ -1039,6 +1049,12 @@ export async function processDeletionJob(
 
   job = claim.job;
   const targetUserId = job.target_user_id;
+  let activeStep =
+    job.current_step ??
+    resolveRetryStartingStep(
+      job.status,
+      job.current_step
+    );
 
   try {
     await recordPlatformAdminAudit(admin, {
@@ -1097,8 +1113,13 @@ export async function processDeletionJob(
       };
     }
 
+    activeStep = "validate";
     await updateJob(admin, jobId, {
-      current_step: "validate",
+      current_step: activeStep,
+    });
+    logDeletionEvent("step_started", {
+      jobId,
+      currentStep: activeStep,
     });
     await extendProcessorLease(
       admin,
@@ -1169,8 +1190,13 @@ export async function processDeletionJob(
       ownedHouseholdId &&
       job.transfer_owner_user_id
     ) {
+      activeStep = "transfer_household";
       await updateJob(admin, jobId, {
-        current_step: "transfer_household",
+        current_step: activeStep,
+      });
+      logDeletionEvent("step_started", {
+        jobId,
+        currentStep: activeStep,
       });
       await extendProcessorLease(
         admin,
@@ -1236,9 +1262,13 @@ export async function processDeletionJob(
         shouldDeleteHousehold &&
         householdStillOwned?.id
       ) {
+        activeStep = "delete_household_data";
         await updateJob(admin, jobId, {
-          current_step:
-            "delete_household_data",
+          current_step: activeStep,
+        });
+        logDeletionEvent("step_started", {
+          jobId,
+          currentStep: activeStep,
         });
         await extendProcessorLease(
           admin,
@@ -1257,8 +1287,13 @@ export async function processDeletionJob(
       }
     }
 
+    activeStep = "cleanup_storage";
     await updateJob(admin, jobId, {
-      current_step: "cleanup_storage",
+      current_step: activeStep,
+    });
+    logDeletionEvent("step_started", {
+      jobId,
+      currentStep: activeStep,
     });
     await extendProcessorLease(
       admin,
@@ -1275,8 +1310,13 @@ export async function processDeletionJob(
           : [],
     });
 
+    activeStep = "delete_application_data";
     await updateJob(admin, jobId, {
-      current_step: "delete_application_data",
+      current_step: activeStep,
+    });
+    logDeletionEvent("step_started", {
+      jobId,
+      currentStep: activeStep,
     });
     await extendProcessorLease(
       admin,
@@ -1333,8 +1373,13 @@ export async function processDeletionJob(
       .delete()
       .eq("author_id", targetUserId);
 
+    activeStep = "detach_auth_references";
     await updateJob(admin, jobId, {
-      current_step: "detach_auth_references",
+      current_step: activeStep,
+    });
+    logDeletionEvent("step_started", {
+      jobId,
+      currentStep: activeStep,
     });
     await extendProcessorLease(
       admin,
@@ -1347,31 +1392,21 @@ export async function processDeletionJob(
       actorId,
     });
 
-    if (await authUserExists(admin, targetUserId)) {
-      await updateJob(admin, jobId, {
-        current_step: "delete_auth_user",
-      });
-      await extendProcessorLease(
-        admin,
-        jobId,
-        actorId
-      );
-
-      await deleteAuthUser(
-        admin,
-        targetUserId
-      );
-    }
-
     if (await profileExists(admin, targetUserId)) {
+      activeStep = "delete_profile";
       await updateJob(admin, jobId, {
-        current_step: "delete_profile",
+        current_step: activeStep,
       });
       await extendProcessorLease(
         admin,
         jobId,
         actorId
       );
+
+      logDeletionEvent("step_started", {
+        jobId,
+        currentStep: activeStep,
+      });
 
       const { error: profileDeleteError } =
         await admin
@@ -1380,16 +1415,39 @@ export async function processDeletionJob(
           .eq("id", targetUserId);
 
       if (profileDeleteError) {
-        console.error(
-          "Profile cleanup after auth deletion failed",
-          {
-            targetUserId,
-            message:
-              profileDeleteError.message,
-            code: profileDeleteError.code,
-          }
-        );
+        logDeletionEvent("step_failed", {
+          jobId,
+          currentStep: "delete_profile",
+          databaseErrorCode:
+            profileDeleteError.code ?? null,
+          message: profileDeleteError.message,
+        });
+
+        throw profileDeleteError;
       }
+    }
+
+    if (await authUserExists(admin, targetUserId)) {
+      activeStep = "delete_auth_user";
+      await updateJob(admin, jobId, {
+        current_step: activeStep,
+      });
+      await extendProcessorLease(
+        admin,
+        jobId,
+        actorId
+      );
+
+      logDeletionEvent("step_started", {
+        jobId,
+        currentStep: activeStep,
+      });
+
+      await deleteAuthUser(
+        admin,
+        targetUserId,
+        jobId
+      );
     }
 
     await updateJob(admin, jobId, {
@@ -1438,20 +1496,29 @@ export async function processDeletionJob(
         : null,
     };
   } catch (processingError) {
-    const message =
-      processingError instanceof Error
-        ? processingError.message
-        : "Deletion failed.";
+    const failedStep = activeStep;
+    const failure = resolveDeletionFailure(
+      processingError,
+      failedStep
+    );
+
+    logDeletionEvent("job_failed", {
+      jobId,
+      currentStep: failedStep,
+      databaseErrorCode:
+        failure.databaseErrorCode,
+      message: failure.sanitizedMessage,
+    });
 
     const failedJob = await markDeletionJobFailed(
       admin,
       {
         jobId,
         actorId,
-        safeErrorCode: "PROCESSING_FAILED",
+        safeErrorCode: failure.safeErrorCode,
         safeErrorMessage:
-          "Deletion could not be completed. You can retry this job safely.",
-        currentStep: "failed",
+          failure.safeErrorMessage,
+        currentStep: failedStep,
         incrementRetry: true,
         job,
       }
@@ -1463,7 +1530,7 @@ export async function processDeletionJob(
       jobView: failedJob
         ? buildDeletionJobView(failedJob)
         : null,
-      message,
+      message: failure.safeErrorMessage,
     };
   }
 }
