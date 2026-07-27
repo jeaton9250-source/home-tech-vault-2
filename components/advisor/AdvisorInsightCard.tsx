@@ -9,6 +9,9 @@ import {
 } from "lucide-react";
 
 import Button from "@/components/ui/Button";
+import {
+  humanizeAdvisorInsight,
+} from "@/lib/advisor/presentation";
 import type {
   AdvisorInsight,
   AdvisorInsightGroup,
@@ -17,6 +20,7 @@ import type {
 type AdvisorInsightCardProps = {
   insight: AdvisorInsight;
   onDismiss?: (insightId: string) => void;
+  onRestore?: (insightId: string) => void;
   onAskAi?: (query: string) => void;
   showDismiss?: boolean;
 };
@@ -118,14 +122,18 @@ function renderAction(
 export default function AdvisorInsightCard({
   insight,
   onDismiss,
+  onRestore,
   onAskAi,
   showDismiss = true,
 }: AdvisorInsightCardProps) {
-  const styles = GROUP_STYLES[insight.group];
+  const normalized =
+    humanizeAdvisorInsight(insight);
+  const styles =
+    GROUP_STYLES[normalized.group];
   const Icon = styles.icon;
 
   const actions = [
-    ...insight.actions,
+    ...normalized.actions,
     ...(showDismiss
       ? [
           {
@@ -149,17 +157,17 @@ export default function AdvisorInsightCard({
 
         <div className="min-w-0 flex-1">
           <h3 className="text-sm font-medium text-text-primary">
-            {insight.title}
+            {normalized.title}
           </h3>
           <p className="mt-1 text-sm leading-6 text-text-secondary">
-            {insight.message}
+            {normalized.message}
           </p>
 
           {actions.length > 0 ? (
             <div className="mt-3 flex flex-wrap gap-2">
               {actions.map((action) =>
                 renderAction(
-                  insight,
+                  normalized,
                   action,
                   onDismiss,
                   onAskAi
@@ -167,18 +175,23 @@ export default function AdvisorInsightCard({
               )}
             </div>
           ) : null}
+
+          {onRestore ? (
+            <div className="mt-3">
+              <Button
+                type="button"
+                variant="ghost"
+                className="!px-3 !py-1.5 text-xs"
+                onClick={() =>
+                  onRestore(normalized.id)
+                }
+              >
+                Restore
+              </Button>
+            </div>
+          ) : null}
         </div>
       </div>
     </article>
   );
 }
-
-export const ADVISOR_GROUP_LABELS: Record<
-  AdvisorInsightGroup,
-  string
-> = {
-  urgent: "Urgent",
-  attention: "Needs Attention",
-  suggestion: "Suggestions",
-  good: "Everything Looks Good",
-};

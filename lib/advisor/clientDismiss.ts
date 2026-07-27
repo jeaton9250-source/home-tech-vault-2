@@ -55,3 +55,17 @@ export function dismissAdvisorInsight(
   );
   return dismissed;
 }
+
+export function restoreAdvisorInsight(
+  storageKey: string,
+  insightId: string
+): Set<string> {
+  const dismissed =
+    loadDismissedAdvisorInsightIds(storageKey);
+  dismissed.delete(insightId);
+  saveDismissedAdvisorInsightIds(
+    storageKey,
+    dismissed
+  );
+  return dismissed;
+}

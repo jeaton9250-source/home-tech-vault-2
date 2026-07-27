@@ -1,5 +1,6 @@
 import type { User } from "@supabase/supabase-js";
 
+import type { DashboardOverviewStats } from "@/lib/dashboard/types";
 import { applyHouseholdScope } from "@/lib/data/householdScope";
 import {
   calculateHomeHealth,
@@ -7,6 +8,7 @@ import {
   type HomeHealthMaintenanceTask,
   type HomeHealthResult,
 } from "@/lib/home-health";
+import { getWarrantyStatus } from "@/lib/home-health/warranty";
 import {
   calculateVaultScore,
   type VaultDevice,
@@ -24,6 +26,7 @@ type DeviceRow = {
   purchase_date: string | null;
   purchase_price: number | null;
   warranty_date: string | null;
+  online?: boolean | null;
   notes?: string | null;
 };
 
@@ -38,6 +41,7 @@ export type DashboardMetrics = {
   networkConfigured: boolean;
   vaultScore: VaultScoreResult;
   homeHealth: HomeHealthResult;
+  overviewStats: DashboardOverviewStats;
 };
 
 const defaultVaultScore: VaultScoreResult = {
@@ -80,6 +84,7 @@ export async function loadDashboardMetrics(
           purchase_date,
           purchase_price,
           warranty_date,
+          online,
           notes
         `
         ),
@@ -295,6 +300,38 @@ export async function loadDashboardMetrics(
       ? 1
       : membersResult.count || 1;
 
+  const onlineDeviceCount =
+    deviceRows.filter(
+      (device) => device.online === true
+    ).length;
+
+  const offlineDeviceCount =
+    deviceRows.filter(
+      (device) => device.online === false
+    ).length;
+
+  const activeWarrantyCount =
+    deviceRows.filter((device) => {
+      const status = getWarrantyStatus(
+        device.warranty_date
+      );
+
+      return (
+        status === "active" ||
+        status === "expiring"
+      );
+    }).length;
+
+  const overviewStats: DashboardOverviewStats =
+    {
+      deviceCount: deviceRows.length,
+      onlineDeviceCount,
+      offlineDeviceCount,
+      documentCount,
+      activeWarrantyCount,
+      familyMemberCount,
+    };
+
   const homeHealthInput: HomeHealthInput = {
     devices: deviceRows.map((device) => ({
       id: device.id,
@@ -346,5 +383,6 @@ export async function loadDashboardMetrics(
     vaultScore,
     homeHealth:
       calculateHomeHealth(homeHealthInput),
+    overviewStats,
   };
 }

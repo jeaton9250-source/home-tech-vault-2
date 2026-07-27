@@ -19,8 +19,43 @@ import PageCard from "@/components/ui/PageCard";
 import { DashboardSkeleton } from "@/components/ui/Skeleton";
 import HomeHealthDashboard from "@/components/home-health/HomeHealthDashboard";
 
+import type { DashboardOverviewStats } from "@/lib/dashboard/types";
 import type { HomeHealthResult } from "@/lib/home-health/types";
-import { demoDashboard } from "@/lib/demoData";
+import {
+  demoDashboard,
+  demoDevices,
+} from "@/lib/demoData";
+import { getWarrantyStatus } from "@/lib/home-health/warranty";
+
+function buildDemoOverviewStats(): DashboardOverviewStats {
+  const onlineDeviceCount = demoDevices.filter(
+    (device) => device.online
+  ).length;
+  const offlineDeviceCount = demoDevices.filter(
+    (device) => !device.online
+  ).length;
+  const activeWarrantyCount = demoDevices.filter(
+    (device) => {
+      const status = getWarrantyStatus(
+        device.warranty_date || null
+      );
+
+      return (
+        status === "active" ||
+        status === "expiring"
+      );
+    }
+  ).length;
+
+  return {
+    deviceCount: demoDashboard.deviceCount,
+    onlineDeviceCount,
+    offlineDeviceCount,
+    documentCount: demoDashboard.documentCount,
+    activeWarrantyCount,
+    familyMemberCount: 4,
+  };
+}
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -38,6 +73,11 @@ export default function DashboardPage() {
 
   const [homeHealth, setHomeHealth] =
     useState<HomeHealthResult | null>(null);
+
+  const [overviewStats, setOverviewStats] =
+    useState<DashboardOverviewStats | null>(
+      null
+    );
 
   const [
     loadingDashboard,
@@ -127,6 +167,9 @@ export default function DashboardPage() {
         if (!cancelled) {
           setFirstName(demoDashboard.firstName);
           setHomeHealth(buildDemoHomeHealth());
+          setOverviewStats(
+            buildDemoOverviewStats()
+          );
           setErrorMessage("");
           setLoadingDashboard(false);
         }
@@ -151,6 +194,9 @@ export default function DashboardPage() {
 
         setFirstName(metrics.firstName);
         setHomeHealth(metrics.homeHealth);
+        setOverviewStats(
+          metrics.overviewStats
+        );
       } catch (error: unknown) {
         console.error(
           "Unable to load dashboard:",
@@ -159,6 +205,7 @@ export default function DashboardPage() {
 
         if (!cancelled) {
           setHomeHealth(null);
+          setOverviewStats(null);
           setErrorMessage(
             error instanceof Error
               ? error.message
@@ -207,7 +254,7 @@ export default function DashboardPage() {
     );
   }
 
-  if (!homeHealth) {
+  if (!homeHealth || !overviewStats) {
     return (
       <PageShell>
         <DashboardSkeleton />
@@ -216,10 +263,11 @@ export default function DashboardPage() {
   }
 
   return (
-    <PageShell className="!pt-4 md:!pt-5 space-y-6 md:space-y-8">
+    <PageShell className="!pt-4 md:!pt-5">
       <HomeHealthDashboard
         firstName={firstName}
         homeHealth={homeHealth}
+        overviewStats={overviewStats}
       />
     </PageShell>
   );

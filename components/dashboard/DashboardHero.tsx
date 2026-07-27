@@ -6,97 +6,69 @@ import {
 } from "@/lib/home-health/greeting";
 import { usePermissions } from "@/hooks/usePermissions";
 import { MORGAN_HOUSEHOLD } from "@/lib/demo/morganHousehold";
-import { getHomeHealthDisplayMessage } from "@/lib/home-health/display";
-import type { HomeHealthStatusLabel } from "@/lib/home-health/types";
-
-import HomeHealthScoreRing from "@/components/home-health/HomeHealthScoreRing";
+import { humanizeAdvisorText } from "@/lib/advisor/presentation";
 
 type DashboardHeroProps = {
   firstName: string;
   score: number | null;
-  status: HomeHealthStatusLabel | null;
+  healthSummary?: string | null;
 };
 
 export default function DashboardHero({
   firstName,
   score,
-  status,
+  healthSummary,
 }: DashboardHeroProps) {
   const { isDemo } = usePermissions();
 
-  const statusMessage = status
-    ? getHomeHealthDisplayMessage(status)
-    : "Add your first device to start building your home technology command center.";
+  const summary =
+    healthSummary?.trim() ||
+    (score !== null
+      ? "Your home technology overview is ready."
+      : "Add your first device to start building your home technology profile.");
 
   return (
     <header
-      className="rounded-[var(--radius-card)] border border-border-subtle bg-gradient-to-br from-surface-card via-surface-card to-section-home-health-soft/30 p-6 md:p-8"
+      className="px-1 py-2 md:px-2"
       data-tour="home-pulse"
     >
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+      <div className="max-w-3xl space-y-5">
+        {isDemo ? (
+          <h1 className="text-[clamp(2rem,4.5vw,3rem)] font-medium tracking-[-0.04em] text-text-primary">
+            Welcome to the {MORGAN_HOUSEHOLD.name}.
+          </h1>
+        ) : (
+          <h1 className="text-[clamp(2rem,4.5vw,3rem)] font-medium tracking-[-0.04em] text-text-primary">
+            {getTimeGreeting(firstName)}
+          </h1>
+        )}
+
+        <p className="text-sm text-text-secondary">
+          {formatDisplayDate()}
+        </p>
+
         <div className="space-y-3">
-          <p className="text-overline text-home-health">
-            Home Technology Command Center
+          <p className="text-overline text-text-muted">
+            Home Health Score
           </p>
 
-          {isDemo ? (
-            <h1 className="text-[clamp(1.875rem,4vw,2.75rem)] font-medium tracking-[-0.03em] text-text-primary">
-              Welcome to the {MORGAN_HOUSEHOLD.name}.
-            </h1>
+          {score !== null ? (
+            <p className="text-[clamp(2.75rem,7vw,4rem)] font-medium tabular-nums leading-none tracking-[-0.05em] text-text-primary">
+              {score}
+              <span className="ml-1 text-[0.35em] font-medium text-text-secondary">
+                %
+              </span>
+            </p>
           ) : (
-            <h1 className="text-[clamp(1.875rem,4vw,2.75rem)] font-medium tracking-[-0.03em] text-text-primary">
-              {getTimeGreeting(firstName)}
-            </h1>
+            <p className="text-3xl font-medium tracking-[-0.03em] text-text-primary">
+              Getting started
+            </p>
           )}
-
-          <p className="text-sm text-text-secondary">
-            {formatDisplayDate()}
-          </p>
-
-          <div className="pt-2">
-            <p className="text-overline text-text-muted">
-              Your Home Health Score
-            </p>
-            {score !== null && status ? (
-              <div className="mt-2 flex flex-wrap items-end gap-x-4 gap-y-2">
-                <p className="text-[clamp(2.5rem,6vw,3.5rem)] font-medium tabular-nums leading-none tracking-[-0.04em] text-text-primary">
-                  {score}
-                  <span className="text-[0.45em] font-medium text-text-secondary">
-                    %
-                  </span>
-                </p>
-                <p className="pb-1 text-base font-medium text-text-primary">
-                  {status}
-                </p>
-              </div>
-            ) : (
-              <p className="mt-2 text-2xl font-medium text-text-primary">
-                Getting started
-              </p>
-            )}
-          </div>
-
-          <div className="max-w-xl pt-1">
-            <p className="text-overline text-text-muted">
-              Home technology status
-            </p>
-            <p className="mt-2 text-[0.9375rem] leading-7 text-text-secondary">
-              {isDemo
-                ? "Everything is running smoothly today."
-                : statusMessage}
-            </p>
-          </div>
         </div>
 
-        {score !== null && status ? (
-          <div className="hidden lg:block">
-            <HomeHealthScoreRing
-              score={score}
-              status={status}
-              size={160}
-            />
-          </div>
-        ) : null}
+        <p className="max-w-2xl text-base leading-7 text-text-secondary">
+          {humanizeAdvisorText(summary)}
+        </p>
       </div>
     </header>
   );

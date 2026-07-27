@@ -1,43 +1,76 @@
 "use client";
 
-import CommandCenterCards from "@/components/dashboard/CommandCenterCards";
 import DashboardHero from "@/components/dashboard/DashboardHero";
-import HomeAdvisor from "@/components/advisor/HomeAdvisor";
+import DashboardRecentActivity from "@/components/dashboard/DashboardRecentActivity";
+import HomeAdvisorPreview from "@/components/advisor/HomeAdvisorPreview";
+import HomeOverviewStats from "@/components/dashboard/HomeOverviewStats";
+import RecommendedNextStep from "@/components/dashboard/RecommendedNextStep";
 import HomeHealthEmptyState from "@/components/home-health/HomeHealthEmptyState";
-import HomePulseAlerts from "@/components/home-health/HomePulseAlerts";
-import SmartSearch from "@/components/search/SmartSearch";
+import { useHomeAdvisor } from "@/hooks/useHomeAdvisor";
+import { getHomeHealthDisplayMessage } from "@/lib/home-health/display";
+import type { DashboardOverviewStats } from "@/lib/dashboard/types";
 import type { HomeHealthResult } from "@/lib/home-health/types";
 
 type HomeHealthDashboardProps = {
   firstName: string;
   homeHealth: HomeHealthResult;
+  overviewStats: DashboardOverviewStats;
 };
 
 export default function HomeHealthDashboard({
   firstName,
   homeHealth,
+  overviewStats,
 }: HomeHealthDashboardProps) {
+  const {
+    advisor,
+    loading: advisorLoading,
+    error: advisorError,
+  } = useHomeAdvisor();
+
+  const healthSummary =
+    advisor?.summary ||
+    (homeHealth.status
+      ? getHomeHealthDisplayMessage(
+          homeHealth.status
+        )
+      : null);
+
   return (
-    <div className="space-y-6 md:space-y-8">
+    <div className="space-y-10 md:space-y-12">
       <DashboardHero
         firstName={firstName}
         score={homeHealth.score}
-        status={homeHealth.status}
+        healthSummary={healthSummary}
       />
 
-      <HomeAdvisor />
-
-      <SmartSearch mode="dashboard" variant="hero" />
+      <HomeAdvisorPreview
+        advisor={advisor}
+        loading={advisorLoading}
+        error={advisorError}
+      />
 
       {homeHealth.isEmpty ? (
         <HomeHealthEmptyState
-          recommendation={homeHealth.recommendation}
+          recommendation={
+            homeHealth.recommendation
+          }
         />
       ) : (
         <>
-          <HomePulseAlerts highlights={homeHealth.highlights} />
+          <RecommendedNextStep
+            recommendation={
+              homeHealth.recommendation
+            }
+          />
 
-          <CommandCenterCards homeHealth={homeHealth} />
+          <HomeOverviewStats
+            stats={overviewStats}
+          />
+
+          <DashboardRecentActivity
+            limit={5}
+          />
         </>
       )}
     </div>

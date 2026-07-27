@@ -7,9 +7,8 @@ import {
   useState,
 } from "react";
 
-import AdvisorInsightCard, {
-  ADVISOR_GROUP_LABELS,
-} from "@/components/advisor/AdvisorInsightCard";
+import AdvisorInsightCard from "@/components/advisor/AdvisorInsightCard";
+import { ADVISOR_GROUP_LABELS } from "@/lib/advisor/presentation";
 import PageCard from "@/components/ui/PageCard";
 import { DashboardSkeleton } from "@/components/ui/Skeleton";
 import { useAIAdvisor } from "@/hooks/useAIAdvisor";
