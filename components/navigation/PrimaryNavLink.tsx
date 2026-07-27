@@ -28,13 +28,13 @@ export function NavLink({
       href={href}
       onClick={onClick}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full font-medium transition",
+        "inline-flex items-center gap-1.5 rounded-full font-semibold transition-all duration-200",
         compact
-          ? "px-2.5 py-2 text-[13px] lg:px-3 lg:text-sm"
-          : "px-3 py-2 text-sm",
+          ? "px-3 py-1.5 text-xs lg:px-3.5 lg:text-[0.8125rem]"
+          : "px-3.5 py-2 text-xs lg:text-sm",
         isActive
-          ? "bg-surface-sunken text-text-primary shadow-[var(--shadow-inset)]"
-          : "text-text-secondary hover:bg-surface-sunken/70 hover:text-text-primary"
+          ? "bg-charcoal text-white shadow-md scale-[1.02]"
+          : "text-text-secondary hover:bg-surface-sunken/80 hover:text-text-primary"
       )}
       aria-current={isActive ? "page" : undefined}
     >
@@ -69,9 +69,9 @@ export function MobileNavLink({
       href={href}
       onClick={onClick}
       className={cn(
-        "flex items-center gap-3 rounded-[var(--radius-button)] px-3 py-3 text-sm font-medium transition",
+        "flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold transition-all duration-200",
         isActive
-          ? "bg-surface-sunken font-semibold text-text-primary"
+          ? "bg-charcoal text-white shadow-md"
           : "text-text-primary hover:bg-surface-sunken"
       )}
       aria-current={isActive ? "page" : undefined}
@@ -86,3 +86,4 @@ export function MobileNavLink({
     </Link>
   );
 }
+

@@ -1,5 +1,6 @@
 "use client";
 
+import { Sparkles, ShieldCheck } from "lucide-react";
 import {
   formatDisplayDate,
   getTimeGreeting,
@@ -7,6 +8,7 @@ import {
 import { usePermissions } from "@/hooks/usePermissions";
 import { MORGAN_HOUSEHOLD } from "@/lib/demo/morganHousehold";
 import { humanizeAdvisorText } from "@/lib/advisor/presentation";
+import CircularProgressRing from "@/components/ui/CircularProgressRing";
 
 type DashboardHeroProps = {
   firstName: string;
@@ -29,47 +31,69 @@ export default function DashboardHero({
 
   return (
     <header
-      className="px-1 py-2 md:px-2"
+      className="htv-glass-card-elevated relative overflow-hidden p-6 md:p-10 htv-ambient-emerald"
       data-tour="home-pulse"
     >
-      <div className="max-w-3xl space-y-5">
-        {isDemo ? (
-          <h1 className="text-[clamp(2rem,4.5vw,3rem)] font-medium tracking-[-0.04em] text-text-primary">
-            Welcome to the {MORGAN_HOUSEHOLD.name}.
-          </h1>
-        ) : (
-          <h1 className="text-[clamp(2rem,4.5vw,3rem)] font-medium tracking-[-0.04em] text-text-primary">
-            {getTimeGreeting(firstName)}
-          </h1>
-        )}
+      <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+        <div className="max-w-2xl space-y-4">
+          <div className="flex items-center gap-2.5">
+            <span className="htv-glass-pill px-3 py-1 text-xs font-semibold text-text-secondary flex items-center gap-1.5">
+              <Sparkles size={13} className="text-home-health" />
+              <span>{formatDisplayDate()}</span>
+            </span>
+          </div>
 
-        <p className="text-sm text-text-secondary">
-          {formatDisplayDate()}
-        </p>
-
-        <div className="space-y-3">
-          <p className="text-overline text-text-muted">
-            Home Health Score
-          </p>
-
-          {score !== null ? (
-            <p className="text-[clamp(2.75rem,7vw,4rem)] font-medium tabular-nums leading-none tracking-[-0.05em] text-text-primary">
-              {score}
-              <span className="ml-1 text-[0.35em] font-medium text-text-secondary">
-                %
-              </span>
-            </p>
+          {isDemo ? (
+            <h1 className="text-3xl font-medium tracking-[-0.035em] text-text-primary sm:text-4xl md:text-5xl">
+              Welcome to {MORGAN_HOUSEHOLD.name}
+            </h1>
           ) : (
-            <p className="text-3xl font-medium tracking-[-0.03em] text-text-primary">
-              Getting started
-            </p>
+            <h1 className="text-3xl font-medium tracking-[-0.035em] text-text-primary sm:text-4xl md:text-5xl">
+              {getTimeGreeting(firstName)}
+            </h1>
           )}
+
+          <div className="flex items-center gap-2 pt-1 text-sm font-semibold text-home-health">
+            <ShieldCheck size={18} />
+            <span>Home OS Active · Continuous Pulse Monitoring</span>
+          </div>
+
+          <p className="text-base leading-7 text-text-secondary md:text-lg">
+            {humanizeAdvisorText(summary)}
+          </p>
         </div>
 
-        <p className="max-w-2xl text-base leading-7 text-text-secondary">
-          {humanizeAdvisorText(summary)}
-        </p>
+        {/* Ambient Score Ring */}
+        <div className="flex shrink-0 items-center justify-center pt-2 md:pt-0">
+          {score !== null ? (
+            <div className="flex flex-col items-center">
+              <CircularProgressRing
+                value={score}
+                size={120}
+                strokeWidth={10}
+                progressColor="var(--color-home-health)"
+                ariaLabel={`Home Health Score: ${score}%`}
+              >
+                <div className="text-center">
+                  <span className="text-3xl font-bold tracking-tight text-text-primary">
+                    {score}%
+                  </span>
+                  <span className="block text-[0.6875rem] font-semibold uppercase tracking-wider text-text-muted">
+                    Health
+                  </span>
+                </div>
+              </CircularProgressRing>
+            </div>
+          ) : (
+            <div className="htv-glass-pill px-6 py-4 text-center">
+              <p className="text-sm font-semibold text-text-primary">Getting Started</p>
+              <p className="text-xs text-text-muted mt-0.5">Initializing Vault</p>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );
 }
+
+

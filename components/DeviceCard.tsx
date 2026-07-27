@@ -1,15 +1,16 @@
 import Link from "next/link";
 import {
   ArrowRight,
+  Wifi,
+  MapPin,
+  ShieldCheck,
 } from "lucide-react";
 
 import DeviceImageDisplay from "@/components/devices/DeviceImageDisplay";
 import {
   calculateDeviceHealth,
-  getDeviceHealthLabel,
 } from "@/lib/calculateDeviceHealth";
 
-import { sections } from "@/lib/design-system/tokens";
 import { cn } from "@/lib/design-system/cn";
 
 type DeviceCardProps = {
@@ -32,8 +33,6 @@ type DeviceCardProps = {
     ip_address?: string | null;
   };
 };
-
-const tech = sections.technology;
 
 export default function DeviceCard({
   device,
@@ -58,9 +57,6 @@ export default function DeviceCard({
   const healthScore =
     calculateDeviceHealth(cleanDevice);
 
-  const healthLabel =
-    getDeviceHealthLabel(healthScore);
-
   const isDemo =
     device.id.startsWith("demo");
 
@@ -71,132 +67,105 @@ export default function DeviceCard({
   return (
     <Link
       href={`/devices/${device.id}`}
-      className="htv-focus-ring block rounded-[var(--radius-card)]"
+      className="group block rounded-[24px] focus-visible:outline-none"
       aria-label={`View ${device.device_name}`}
     >
-      <article className="htv-card-interactive overflow-hidden rounded-[var(--radius-card)] border border-border-subtle bg-surface-card shadow-[var(--shadow-sm),var(--shadow-inset)]">
-        <DeviceImageDisplay
-          device={device}
-          variant="card"
-        />
+      <article className="htv-glass-card group-hover:htv-glass-card-elevated overflow-hidden transition-all duration-300 group-hover:-translate-y-1">
+        <div className="relative">
+          <DeviceImageDisplay
+            device={device}
+            variant="card"
+          />
 
-        <div className="p-6">
-          <div className="flex items-start justify-between gap-4">
-            <div className="min-w-0">
-              <p
-                className="text-overline"
-                style={{ color: tech.accent }}
-              >
-                {device.category || "Device"}
-              </p>
-
-              <h2 className="mt-2 truncate text-xl font-medium tracking-[-0.02em] text-text-primary">
-                {device.device_name}
-              </h2>
-
-              <p className="mt-1 truncate text-sm text-text-secondary">
-                {device.brand || "No brand added"}
-              </p>
-            </div>
-
-            <span
-              className="shrink-0 rounded-full px-3 py-1 text-xs font-semibold"
-              style={{
-                background: tech.soft,
-                color: tech.accent,
-              }}
-            >
-              {healthScore}/100
-            </span>
-          </div>
-
+          {/* Floating Online Status Badge */}
           {hasNetworkStatus && (
-            <div className="mt-5 flex flex-wrap items-center gap-3">
+            <div className="absolute top-3 left-3 z-10">
               <span
                 className={cn(
-                  "inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold",
+                  "htv-glass-pill inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold shadow-md backdrop-blur-md",
                   device.online
-                    ? "bg-home-health-soft text-home-health"
-                    : "bg-surface-sunken text-text-secondary"
+                    ? "text-home-health bg-home-health-soft/90 border-home-health/30"
+                    : "text-text-muted bg-surface-card/90"
                 )}
               >
                 <span
                   className={cn(
                     "h-2 w-2 rounded-full",
                     device.online
-                      ? "bg-home-health"
+                      ? "bg-home-health animate-pulse"
                       : "bg-text-tertiary"
                   )}
                 />
-
-                {device.online
-                  ? "Online"
-                  : "Offline"}
-              </span>
-
-              <span className="text-xs text-text-tertiary">
-                {device.online
-                  ? "Seen in latest scan"
-                  : formatLastSeen(
-                      device.last_seen_at
-                    )}
+                {device.online ? "Online" : "Offline"}
               </span>
             </div>
           )}
 
-          <div className="mt-5 rounded-[var(--radius-button)] border border-border-subtle bg-surface-sunken p-4 shadow-[var(--shadow-inset)]">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-sm font-medium text-text-primary">
-                Device Health
+          {/* Health Score Pill */}
+          <div className="absolute top-3 right-3 z-10">
+            <span className="htv-glass-pill px-3 py-1 text-xs font-bold text-text-primary bg-surface-card/90 border-border-subtle shadow-md">
+              {healthScore}%
+            </span>
+          </div>
+        </div>
+
+        <div className="p-5 md:p-6">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-text-muted">
+                {device.category || "Hardware Hub"}
               </p>
 
-              <p className="text-sm text-text-secondary">
-                {healthLabel}
+              <h3 className="mt-1 truncate text-lg font-bold tracking-tight text-text-primary group-hover:text-interaction transition-colors">
+                {device.device_name}
+              </h3>
+
+              <p className="mt-0.5 truncate text-xs font-medium text-text-secondary">
+                {device.brand || "Smart Home Hardware"}
               </p>
             </div>
+          </div>
 
-            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-surface-base shadow-[var(--shadow-inset)]">
+          {/* Location & Network Badges */}
+          <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
+            {device.location ? (
+              <span className="htv-glass-pill inline-flex items-center gap-1.5 px-3 py-1 font-semibold text-text-secondary">
+                <MapPin size={12} className="text-text-muted" />
+                {device.location}
+              </span>
+            ) : null}
+
+            {device.ip_address ? (
+              <span className="htv-glass-pill inline-flex items-center gap-1.5 px-3 py-1 font-semibold text-text-secondary">
+                <Wifi size={12} className="text-text-muted" />
+                {device.ip_address}
+              </span>
+            ) : null}
+          </div>
+
+          {/* Health Bar */}
+          <div className="mt-4 pt-3 border-t border-border-subtle/60">
+            <div className="flex items-center justify-between text-xs mb-1.5">
+              <span className="font-semibold text-text-muted flex items-center gap-1">
+                <ShieldCheck size={13} className="text-home-health" />
+                Health Rating
+              </span>
+              <span className="font-semibold text-text-primary">{healthScore}/100</span>
+            </div>
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-sunken">
               <div
-                className="h-full rounded-full bg-home-health transition-all duration-700 ease-[var(--ease-premium)]"
-                style={{
-                  width: `${healthScore}%`,
-                }}
+                className="h-full rounded-full bg-home-health transition-all duration-700"
+                style={{ width: `${healthScore}%` }}
               />
             </div>
           </div>
 
-          <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
-            <div className="rounded-[var(--radius-button)] border border-border-subtle bg-surface-card p-4 shadow-[var(--shadow-sm)]">
-              <p className="text-xs uppercase tracking-[0.14em] text-text-tertiary">
-                Location
-              </p>
-
-              <p className="mt-2 truncate font-medium text-text-primary">
-                {device.location ||
-                  "Not added"}
-              </p>
-            </div>
-
-            <div className="rounded-[var(--radius-button)] border border-border-subtle bg-surface-card p-4 shadow-[var(--shadow-sm)]">
-              <p className="text-xs uppercase tracking-[0.14em] text-text-tertiary">
-                Network
-              </p>
-
-              <p className="mt-2 truncate font-medium text-text-primary">
-                {device.ip_address ||
-                  "Not connected"}
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-5 flex items-center gap-2 font-medium text-text-primary">
-            {isDemo
-              ? "Demo Preview"
-              : "View Details"}
-
+          {/* Action Link */}
+          <div className="mt-4 flex items-center justify-between text-xs font-semibold text-text-primary pt-2">
+            <span>{isDemo ? "Explore Demo Hub" : "Device Settings & History"}</span>
             <ArrowRight
-              size={16}
-              className="text-text-tertiary transition group-hover:translate-x-0.5 group-hover:text-interaction"
+              size={15}
+              className="text-text-tertiary transition-transform group-hover:translate-x-1 group-hover:text-interaction"
             />
           </div>
         </div>
@@ -205,59 +174,3 @@ export default function DeviceCard({
   );
 }
 
-function formatLastSeen(
-  value?: string | null
-) {
-  if (!value) {
-    return "Never seen";
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "Last seen unknown";
-  }
-
-  const diffMs =
-    Date.now() - date.getTime();
-
-  const diffMinutes =
-    Math.floor(diffMs / 60000);
-
-  const diffHours =
-    Math.floor(diffMinutes / 60);
-
-  const diffDays =
-    Math.floor(diffHours / 24);
-
-  if (diffMinutes < 1) {
-    return "Seen just now";
-  }
-
-  if (diffMinutes < 60) {
-    return `Seen ${diffMinutes} minute${
-      diffMinutes === 1 ? "" : "s"
-    } ago`;
-  }
-
-  if (diffHours < 24) {
-    return `Seen ${diffHours} hour${
-      diffHours === 1 ? "" : "s"
-    } ago`;
-  }
-
-  if (diffDays < 7) {
-    return `Seen ${diffDays} day${
-      diffDays === 1 ? "" : "s"
-    } ago`;
-  }
-
-  return `Last seen ${date.toLocaleDateString(
-    undefined,
-    {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    }
-  )}`;
-}

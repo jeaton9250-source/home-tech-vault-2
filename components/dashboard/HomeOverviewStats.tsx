@@ -7,6 +7,7 @@ import {
   ShieldCheck,
   Users,
   WifiOff,
+  Radio,
 } from "lucide-react";
 
 import type { DashboardOverviewStats } from "@/lib/dashboard/types";
@@ -20,6 +21,7 @@ type StatItem = {
   value: number;
   href: string;
   icon: typeof Wifi;
+  accentClass: string;
 };
 
 export default function HomeOverviewStats({
@@ -30,47 +32,56 @@ export default function HomeOverviewStats({
       label: "Devices",
       value: stats.deviceCount,
       href: "/devices",
-      icon: Wifi,
+      icon: Radio,
+      accentClass: "bg-interaction-soft text-interaction",
     },
     {
       label: "Online",
       value: stats.onlineDeviceCount,
       href: "/devices?status=online",
       icon: Wifi,
+      accentClass: "bg-home-health-soft text-home-health",
     },
     {
       label: "Offline",
       value: stats.offlineDeviceCount,
       href: "/devices?status=offline",
       icon: WifiOff,
+      accentClass: "bg-warning-soft text-warning",
     },
     {
       label: "Documents",
       value: stats.documentCount,
       href: "/documents",
       icon: FileText,
+      accentClass: "bg-premium-soft text-premium",
     },
     {
       label: "Warranties",
       value: stats.activeWarrantyCount,
       href: "/warranties",
       icon: ShieldCheck,
+      accentClass: "bg-home-health-soft text-home-health",
     },
     {
       label: "Family",
       value: stats.familyMemberCount,
       href: "/family",
       icon: Users,
+      accentClass: "bg-interaction-soft text-interaction",
     },
   ];
 
   return (
     <section aria-label="Home overview">
-      <h2 className="text-overline text-text-muted">
-        Home Overview
-      </h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-xs font-semibold uppercase tracking-[0.14em] text-text-muted">
+          Home Technology Overview
+        </h2>
+        <span className="text-xs text-text-tertiary">Real-time status</span>
+      </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+      <div className="mt-4 grid grid-cols-2 gap-3.5 sm:grid-cols-3 lg:grid-cols-6">
         {items.map((item) => {
           const Icon = item.icon;
 
@@ -78,17 +89,20 @@ export default function HomeOverviewStats({
             <Link
               key={item.label}
               href={item.href}
-              className="group rounded-[var(--radius-card)] bg-surface-sunken/50 px-4 py-5 transition hover:bg-surface-sunken"
+              className="htv-glass-card group p-5 transition-all duration-300 hover:scale-[1.03] hover:shadow-lg"
             >
-              <Icon
-                size={16}
-                className="text-text-muted"
-                aria-hidden
-              />
-              <p className="mt-4 text-[clamp(1.5rem,3vw,2rem)] font-medium tabular-nums leading-none tracking-[-0.03em] text-text-primary">
+              <div className="flex items-center justify-between">
+                <div
+                  className={`flex h-9 w-9 items-center justify-center rounded-2xl ${item.accentClass} transition-transform group-hover:scale-110`}
+                >
+                  <Icon size={17} aria-hidden />
+                </div>
+              </div>
+
+              <p className="mt-4 text-3xl font-bold tracking-tight text-text-primary">
                 {item.value}
               </p>
-              <p className="mt-2 text-sm text-text-secondary">
+              <p className="mt-1 text-xs font-semibold text-text-secondary">
                 {item.label}
               </p>
             </Link>
@@ -98,3 +112,4 @@ export default function HomeOverviewStats({
     </section>
   );
 }
+

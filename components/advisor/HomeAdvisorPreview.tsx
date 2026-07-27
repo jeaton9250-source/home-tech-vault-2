@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Sparkles, BrainCircuit } from "lucide-react";
 
 import AdvisorInsightCompact from "@/components/advisor/AdvisorInsightCompact";
 import { DashboardSkeleton } from "@/components/ui/Skeleton";
@@ -28,7 +28,7 @@ export default function HomeAdvisorPreview({
     return (
       <section
         aria-label="Home Advisor"
-        className="rounded-[var(--radius-card)] bg-surface-sunken/40 px-5 py-6 md:px-6"
+        className="htv-glass-card p-6"
       >
         <DashboardSkeleton />
       </section>
@@ -39,11 +39,9 @@ export default function HomeAdvisorPreview({
     return (
       <section
         aria-label="Home Advisor"
-        className="rounded-[var(--radius-card)] bg-danger-soft/20 px-5 py-6 md:px-6"
+        className="htv-glass-card p-6 border-danger/30 bg-danger-soft/20 text-danger"
       >
-        <p className="text-sm text-danger">
-          {error}
-        </p>
+        <p className="text-sm font-semibold">{error}</p>
       </section>
     );
   }
@@ -64,21 +62,33 @@ export default function HomeAdvisorPreview({
 
   return (
     <section
-      aria-label="Home Advisor"
-      className="rounded-[var(--radius-card)] bg-surface-sunken/40 px-5 py-6 md:px-6"
+      aria-label="Home Advisor Intelligence"
+      className="htv-glass-card-elevated relative overflow-hidden p-6 md:p-8 htv-ambient-plum"
       data-tour="home-advisor"
     >
-      <div className="space-y-1">
-        <h2 className="text-[clamp(1.375rem,2.5vw,1.75rem)] font-medium tracking-[-0.03em] text-text-primary">
-          🏡 Home Advisor
-        </h2>
-        <p className="text-sm text-text-secondary">
-          Your AI-powered technology assistant.
-        </p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-premium-soft text-premium shadow-sm">
+            <BrainCircuit size={20} />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-xl font-bold tracking-tight text-text-primary">
+                Home Intelligence Advisor
+              </h2>
+              <span className="htv-glass-pill px-2.5 py-0.5 text-[0.6875rem] font-bold text-premium bg-premium-soft border-premium/20">
+                AI Active
+              </span>
+            </div>
+            <p className="text-xs text-text-secondary">
+              Continuous proactive guidance & smart recommendations
+            </p>
+          </div>
+        </div>
       </div>
 
       {topInsights.length > 0 ? (
-        <div className="mt-6">
+        <div className="mt-6 space-y-3">
           {topInsights.map((insight) => (
             <AdvisorInsightCompact
               key={insight.id}
@@ -87,40 +97,43 @@ export default function HomeAdvisorPreview({
           ))}
         </div>
       ) : (
-        <p className="mt-6 text-sm leading-7 text-text-secondary">
-          {humanizeAdvisorText(
-            advisor.summary ||
-              "Everything looks good right now."
-          )}
-        </p>
+        <div className="mt-6 htv-glass-card p-4 flex items-center gap-3">
+          <Sparkles size={18} className="text-premium shrink-0" />
+          <p className="text-sm font-medium text-text-primary leading-relaxed">
+            {humanizeAdvisorText(
+              advisor.summary ||
+                "Your home OS is fully optimized. No urgent actions needed."
+            )}
+          </p>
+        </div>
       )}
 
       {remainingCount > 0 ? (
-        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-border-subtle/70 pt-4">
-          <p className="text-sm text-text-secondary">
-            +{remainingCount} more recommendation
-            {remainingCount === 1 ? "" : "s"}
+        <div className="mt-6 flex items-center justify-between border-t border-border-subtle/60 pt-4">
+          <p className="text-xs font-semibold text-text-secondary">
+            +{remainingCount} additional smart recommendations
           </p>
 
           <Link
             href="/advisor"
-            className="inline-flex items-center gap-1 text-sm font-medium text-interaction hover:text-interaction-hover"
+            className="htv-glass-pill px-4 py-2 inline-flex items-center gap-1.5 text-xs font-bold text-premium hover:bg-premium-soft transition-colors"
           >
-            View Full Advisor
-            <ArrowRight size={16} aria-hidden />
+            <span>Launch Intelligence Hub</span>
+            <ArrowRight size={14} aria-hidden />
           </Link>
         </div>
       ) : (
-        <div className="mt-5 border-t border-border-subtle/70 pt-4">
+        <div className="mt-6 flex justify-end border-t border-border-subtle/60 pt-4">
           <Link
             href="/advisor"
-            className="inline-flex items-center gap-1 text-sm font-medium text-interaction hover:text-interaction-hover"
+            className="htv-glass-pill px-4 py-2 inline-flex items-center gap-1.5 text-xs font-bold text-premium hover:bg-premium-soft transition-colors"
           >
-            View Full Advisor
-            <ArrowRight size={16} aria-hidden />
+            <span>Launch Intelligence Hub</span>
+            <ArrowRight size={14} aria-hidden />
           </Link>
         </div>
       )}
     </section>
   );
 }
+
