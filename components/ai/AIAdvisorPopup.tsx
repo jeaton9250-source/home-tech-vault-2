@@ -74,7 +74,8 @@ export default function AIAdvisorPopup() {
     canViewFeature,
   } = usePermissions();
 
-  const { isOpen, close } = useAIAdvisor();
+  const { isOpen, close, pendingQuery } =
+    useAIAdvisor();
 
   const messagesEndRef =
     useRef<HTMLDivElement | null>(null);
@@ -1041,7 +1042,7 @@ Try asking:
           >
             <div className="flex items-end gap-2">
               <textarea
-                value={message}
+                value={message || pendingQuery || ""}
                 onChange={(event) =>
                   setMessage(
                     event.target.value

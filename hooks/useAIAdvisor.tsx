@@ -10,9 +10,12 @@ import {
 
 type AIAdvisorContextValue = {
   isOpen: boolean;
-  open: () => void;
+  pendingQuery: string | null;
+  open: (query?: string) => void;
+  openWithQuery: (query: string) => void;
   close: () => void;
   toggle: () => void;
+  consumePendingQuery: () => string | null;
 };
 
 const AIAdvisorContext =
@@ -27,10 +30,22 @@ export function AIAdvisorProvider({
 }) {
   const [isOpen, setIsOpen] =
     useState(false);
+  const [pendingQuery, setPendingQuery] =
+    useState<string | null>(null);
 
-  const open = useCallback(() => {
+  const open = useCallback((query?: string) => {
+    if (query?.trim()) {
+      setPendingQuery(query.trim());
+    }
     setIsOpen(true);
   }, []);
+
+  const openWithQuery = useCallback(
+    (query: string) => {
+      open(query);
+    },
+    [open]
+  );
 
   const close = useCallback(() => {
     setIsOpen(false);
@@ -40,13 +55,23 @@ export function AIAdvisorProvider({
     setIsOpen((current) => !current);
   }, []);
 
+  const consumePendingQuery =
+    useCallback(() => {
+      const query = pendingQuery;
+      setPendingQuery(null);
+      return query;
+    }, [pendingQuery]);
+
   return (
     <AIAdvisorContext.Provider
       value={{
         isOpen,
+        pendingQuery,
         open,
+        openWithQuery,
         close,
         toggle,
+        consumePendingQuery,
       }}
     >
       {children}
