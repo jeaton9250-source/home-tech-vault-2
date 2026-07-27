@@ -403,7 +403,7 @@ export default function NetworkDiscoveryDashboard(props: {
                 <Radar className="mx-auto text-text-secondary" size={28} />
                 <p className="mt-3 text-sm text-text-secondary">
                   {hasCompletedScan
-                    ? "Nothing needs attention in this view."
+                    ? "You're all caught up. No discovered devices need review."
                     : "No network scan has been completed yet."}
                 </p>
               </div>
@@ -675,6 +675,7 @@ function DiscoveryDeviceCard({
           ) : null}
 
           <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-4">
+            <Field label="Hostname" value={device.hostname} />
             <Field label="IP address" value={device.ipAddress} />
             <Field label="MAC address" value={device.macAddress} />
             <Field label="Manufacturer" value={device.manufacturer} />
@@ -885,6 +886,7 @@ function DiscoveryDeviceCard({
                 icon={<XCircle size={16} />}
                 variant="secondary"
                 busy={busy}
+                busyLabel="Ignoring..."
                 onClick={onIgnore}
               />
             </div>
@@ -899,6 +901,7 @@ function ActionButton({
   label,
   icon,
   busy,
+  busyLabel,
   disabled,
   variant = "primary",
   onClick,
@@ -906,6 +909,7 @@ function ActionButton({
   label: string;
   icon?: ReactNode;
   busy?: boolean;
+  busyLabel?: string;
   disabled?: boolean;
   variant?: "primary" | "secondary";
   onClick: () => void;
@@ -926,7 +930,7 @@ function ActionButton({
       ) : (
         icon
       )}
-      {label}
+      {busy ? busyLabel ?? label : label}
     </button>
   );
 }

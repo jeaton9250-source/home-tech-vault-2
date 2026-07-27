@@ -20,6 +20,7 @@ import {
   shouldPersistDiscoveredDevice,
 } from "@/lib/connector/discoveryIdentification";
 import {
+  cleanDiscoveredHostname,
   identificationFromConfirmedVaultDevice,
   identifyDiscoveredDevice,
   type IdentificationResult,
@@ -38,11 +39,13 @@ import {
   mergeDiscoverySources,
   mergeStringArrays,
 } from "@/lib/connector/network";
+import { findExistingDiscoveredDeviceForUpsert } from "@/lib/connector/discoveryLookup";
 import {
   confidenceScoreFromLabel,
   iconKeyForCategory,
   summarizeEvidence,
 } from "@/lib/connector/recognitionSuggestion";
+import { dedupeDiscoveredDevicesForDisplay } from "@/lib/connector/discoveryIdentity";
 
 type SyncDiscoveredDevicesInput = {
   admin: SupabaseClient;
@@ -62,6 +65,9 @@ const VAULT_DEVICE_SELECT_FOUNDATION =
 /** Foundation schema only — safe before 2B.2 discovered_devices match columns. */
 const DISCOVERED_DEVICE_SELECT_FOUNDATION =
   "id, household_id, connector_id, local_fingerprint, hostname, manufacturer, model, serial_number, ip_address, mac_address, device_type, friendly_name, mdns_services, ssdp_device_type, ssdp_description_url, likely_category, likely_brand, identification_confidence, identification_reasons, identification_display_name, online, discovery_sources, first_seen_at, last_seen_at, imported_device_id, match_confirmed_at, ignored_at, recognition_status, recognition_reviewed_at, recognition_reviewed_by, recognition_accepted_name, recognition_accepted_manufacturer, recognition_accepted_model, recognition_accepted_category, recognition_accepted_device_type_key, created_at, updated_at";
+
+const DISCOVERED_DEVICE_PRESERVE_SELECT =
+  "id, connector_id, local_fingerprint, hostname, manufacturer, model, serial_number, mac_address, imported_device_id, ignored_at, first_seen_at, last_seen_at, discovery_sources, mdns_services, match_confirmed_at, friendly_name, device_type, likely_category, identification_display_name, recognition_status, recognition_accepted_name, recognition_accepted_manufacturer, recognition_accepted_model, recognition_accepted_category, recognition_accepted_device_type_key, recognition_reviewed_at";
 
 function resolveRecognitionStatus(
   value: string | null | undefined
@@ -260,6 +266,7 @@ export async function syncDiscoveredDevicesWithMatching(
   let possibleMatches = 0;
   let ignored = 0;
   let newDevices = 0;
+  const observedLinkedVaultDeviceIds = new Set<string>();
 
   for (const device of devices) {
     if (!shouldPersistDiscoveredDevice(device)) {
@@ -267,38 +274,33 @@ export async function syncDiscoveredDevicesWithMatching(
       continue;
     }
 
-    const existingResult = await admin
-      .from("discovered_devices")
-      .select(
-        "id, imported_device_id, ignored_at, first_seen_at, discovery_sources, mdns_services, match_confirmed_at, manufacturer, model, friendly_name, device_type, likely_category, identification_display_name, recognition_status, recognition_accepted_name, recognition_accepted_manufacturer, recognition_accepted_model, recognition_accepted_category, recognition_accepted_device_type_key"
-      )
-      .eq("connector_id", connectorId)
-      .eq(
-        "local_fingerprint",
-        device.localFingerprint
-      )
-      .maybeSingle();
-
-    if (existingResult.error) {
-      throw existingResult.error;
-    }
+    const existingRow = await findExistingDiscoveredDeviceForUpsert({
+      admin,
+      connectorId,
+      householdId,
+      device,
+      selectClause: DISCOVERED_DEVICE_PRESERVE_SELECT,
+    });
 
     const preservedFirstSeenAt =
-      existingResult.data?.first_seen_at ??
+      existingRow?.first_seen_at ??
       device.firstSeenAt;
     const preservedImportedDeviceId =
-      existingResult.data?.imported_device_id ??
+      existingRow?.imported_device_id ??
       null;
     const isIgnored = Boolean(
-      existingResult.data?.ignored_at
+      existingRow?.ignored_at
     );
+    const preservedLocalFingerprint =
+      existingRow?.local_fingerprint ??
+      device.localFingerprint;
     const mergedSources =
       mergeDiscoverySources(
-        existingResult.data?.discovery_sources,
+        existingRow?.discovery_sources,
         device.discoverySources
       );
     const mergedMdnsServices = mergeStringArrays(
-      existingResult.data?.mdns_services,
+      existingRow?.mdns_services,
       device.mdnsServices
     );
 
@@ -331,14 +333,14 @@ export async function syncDiscoveredDevicesWithMatching(
 
     const recognitionStatus =
       resolveRecognitionStatus(
-        existingResult.data
+        existingRow
           ?.recognition_status
       );
 
     const resolvedSuggestion =
       applyAcceptedRecognitionValues({
         status: recognitionStatus,
-        existing: existingResult.data,
+        existing: existingRow,
         computed: {
           manufacturer:
             device.manufacturer,
@@ -361,7 +363,8 @@ export async function syncDiscoveredDevicesWithMatching(
     const upsertPayload: Record<string, unknown> = {
       household_id: householdId,
       connector_id: connectorId,
-      local_fingerprint: device.localFingerprint,
+      local_fingerprint:
+        preservedLocalFingerprint,
       hostname: device.hostname,
       manufacturer:
         resolvedSuggestion.manufacturer,
@@ -464,6 +467,10 @@ export async function syncDiscoveredDevicesWithMatching(
      * Network showed a fresh discovered_devices.last_seen_at.
      */
     if (targetDeviceId) {
+      observedLinkedVaultDeviceIds.add(
+        targetDeviceId
+      );
+
       const vaultDevice = vaultDevices.find(
         (candidate) =>
           candidate.id === targetDeviceId
@@ -613,9 +620,7 @@ export async function syncDiscoveredDevicesWithMatching(
     connectorId,
     householdId,
     scannedAt,
-    scannedFingerprints: new Set(
-      devices.map((device) => device.localFingerprint)
-    ),
+    observedLinkedVaultDeviceIds,
     vaultDeviceRows,
     actorUserId,
   });
@@ -658,7 +663,7 @@ async function markAbsentLinkedDevicesOffline(input: {
   connectorId: string;
   householdId: string;
   scannedAt: string;
-  scannedFingerprints: Set<string>;
+  observedLinkedVaultDeviceIds: Set<string>;
   vaultDeviceRows: Array<Record<string, unknown>>;
   actorUserId: string | null;
 }) {
@@ -667,7 +672,7 @@ async function markAbsentLinkedDevicesOffline(input: {
     connectorId,
     householdId,
     scannedAt,
-    scannedFingerprints,
+    observedLinkedVaultDeviceIds,
     vaultDeviceRows,
     actorUserId,
   } = input;
@@ -687,24 +692,17 @@ async function markAbsentLinkedDevicesOffline(input: {
   }
 
   for (const row of linkedRows ?? []) {
-    const fingerprint =
-      typeof row.local_fingerprint === "string"
-        ? row.local_fingerprint
-        : "";
-
-    if (
-      !fingerprint ||
-      scannedFingerprints.has(fingerprint)
-    ) {
-      continue;
-    }
-
     const vaultDeviceId =
       typeof row.imported_device_id === "string"
         ? row.imported_device_id
         : null;
 
-    if (!vaultDeviceId) {
+    if (
+      !vaultDeviceId ||
+      observedLinkedVaultDeviceIds.has(
+        vaultDeviceId
+      )
+    ) {
       continue;
     }
 
@@ -813,6 +811,9 @@ export function summarizeDiscoveredDevice(
     location?: string | null;
   } | null
 ): DiscoveredDeviceSummary {
+  const cleanedHostname =
+    cleanDiscoveredHostname(row.hostname);
+
   const identification =
     row.imported_device_id && matchedDevice
       ? identificationFromConfirmedVaultDevice({
@@ -854,6 +855,13 @@ export function summarizeDiscoveredDevice(
             stableFingerprint: row.local_fingerprint,
           });
 
+  const sanitizedIdentificationDisplayName =
+    identification.displayName?.trim() ===
+      (row.hostname?.trim() ?? "") &&
+    cleanedHostname
+      ? cleanedHostname
+      : identification.displayName;
+
   const recognitionStatus =
     resolveRecognitionStatus(
       row.recognition_status
@@ -861,7 +869,7 @@ export function summarizeDiscoveredDevice(
 
   const suggestionFriendlyName =
     row.recognition_accepted_name ??
-    identification.displayName;
+    sanitizedIdentificationDisplayName;
   const suggestionManufacturer =
     row.recognition_accepted_manufacturer ??
     identification.likelyBrand ??
@@ -914,7 +922,7 @@ export function summarizeDiscoveredDevice(
         ? identification.identificationReasons
         : row.identification_reasons ?? [],
     identificationDisplayName:
-      identification.displayName ??
+      sanitizedIdentificationDisplayName ??
       row.identification_display_name,
     online: row.online,
     discoverySources: row.discovery_sources,
@@ -975,6 +983,7 @@ export async function loadDiscoveryReviewRows(
       .from("discovered_devices")
       .select(DISCOVERED_DEVICE_SELECT_FOUNDATION)
       .eq("household_id", householdId)
+      .is("ignored_at", null)
       .order("last_seen_at", {
         ascending: false,
       }),
@@ -1007,7 +1016,7 @@ export async function loadDiscoveryReviewRows(
     )
   );
 
-  return (
+  const summarized = (
     (discoveredResult.data ??
       []) as DiscoveredDeviceRow[]
   ).map((row) => {
@@ -1034,6 +1043,10 @@ export async function loadDiscoveryReviewRows(
       matchedDevice
     );
   });
+
+  return dedupeDiscoveredDevicesForDisplay(
+    summarized
+  );
 }
 
 export async function confirmDiscoveredDeviceMatch(input: {
