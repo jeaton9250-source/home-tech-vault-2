@@ -28,6 +28,7 @@ import { usePermissions } from "@/hooks/usePermissions";
 import { PROFILE_MENU_ITEMS } from "@/lib/navigation/config";
 import { NAV_MENU_IDS } from "@/lib/navigation/menuIds";
 import { shouldShowPremiumBadge } from "@/lib/navigation/navVisibility";
+import { cn } from "@/lib/design-system/cn";
 
 import { supabase } from "@/lib/supabase";
 import { MORGAN_HOUSEHOLD } from "@/lib/demo/morganHousehold";
@@ -170,7 +171,12 @@ export default function ProfileMenu({
         <button
           type="button"
           {...triggerProps}
-          className="htv-focus-ring flex items-center gap-2 rounded-[var(--radius-button)] border border-border-subtle bg-surface-card px-2 py-1.5 text-sm hover:bg-surface-sunken"
+          className={cn(
+            "htv-focus-ring flex items-center gap-2 text-sm",
+            compact
+              ? "h-9 w-9 justify-center rounded-full bg-transparent px-0 text-text-primary hover:bg-surface-sunken"
+              : "rounded-[var(--radius-button)] border border-border-subtle bg-surface-card px-2 py-1.5 hover:bg-surface-sunken"
+          )}
           aria-label="Open account menu"
         >
           <span className="flex h-8 w-8 items-center justify-center rounded-full border border-border-subtle bg-surface-sunken text-xs font-semibold text-charcoal shadow-[var(--shadow-inset)]">

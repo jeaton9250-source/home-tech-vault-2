@@ -35,15 +35,15 @@ export default function AppHeader() {
     <>
       <MobileNavSheet />
 
-      <header className="sticky top-0 z-50 hidden border-b border-border-subtle bg-surface-card/90 backdrop-blur-md lg:block">
-        <div className="mx-auto flex h-16 max-w-[1600px] items-center gap-4 px-5 xl:gap-6 xl:px-8">
+      <header className="sticky top-0 z-50 hidden border-b border-border-subtle/70 bg-surface-card/80 shadow-[0_1px_0_rgba(15,23,42,0.04),0_10px_30px_-24px_rgba(15,23,42,0.35)] backdrop-blur-xl lg:block">
+        <div className="mx-auto flex h-14 max-w-[1600px] items-center gap-3 px-4 xl:gap-4 xl:px-6">
           <Link href="/dashboard" className="shrink-0">
-            <Logo />
+            <Logo className="max-w-[10.5rem] [&>p]:text-[0.75rem] [&>p]:tracking-[0.14em]" />
           </Link>
 
           <nav
             aria-label="Primary"
-            className="flex shrink-0 items-center gap-0"
+            className="flex shrink-0 items-center gap-0.5"
           >
             {PRIMARY_NAV_ITEMS.map((item) => {
               const badge = shouldShowPremiumBadge(
@@ -76,15 +76,9 @@ export default function AppHeader() {
             )}
           </div>
 
-          <div className="flex shrink-0 items-center gap-1.5 xl:gap-2">
-            <NotificationBell />
-
-            <div className="hidden 2xl:block">
-              <ProfileMenu />
-            </div>
-            <div className="2xl:hidden">
-              <ProfileMenu compact />
-            </div>
+          <div className="flex shrink-0 items-center rounded-full border border-border-subtle/70 bg-surface-card/80 p-1 shadow-sm">
+            <NotificationBell compact />
+            <ProfileMenu compact />
           </div>
         </div>
       </header>

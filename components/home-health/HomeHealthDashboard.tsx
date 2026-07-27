@@ -2,6 +2,7 @@
 
 import CommandCenterCards from "@/components/dashboard/CommandCenterCards";
 import DashboardHero from "@/components/dashboard/DashboardHero";
+import HomeAdvisor from "@/components/advisor/HomeAdvisor";
 import HomeHealthEmptyState from "@/components/home-health/HomeHealthEmptyState";
 import HomePulseAlerts from "@/components/home-health/HomePulseAlerts";
 import SmartSearch from "@/components/search/SmartSearch";
@@ -17,12 +18,14 @@ export default function HomeHealthDashboard({
   homeHealth,
 }: HomeHealthDashboardProps) {
   return (
-    <div className="space-y-8 md:space-y-10">
+    <div className="space-y-6 md:space-y-8">
       <DashboardHero
         firstName={firstName}
         score={homeHealth.score}
         status={homeHealth.status}
       />
+
+      <HomeAdvisor />
 
       <SmartSearch mode="dashboard" variant="hero" />
 

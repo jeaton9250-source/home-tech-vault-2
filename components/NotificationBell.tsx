@@ -19,8 +19,15 @@ import {
 import { NOTIFICATIONS_LOCAL_STATE_NOTE } from "@/lib/notifications";
 
 import { NAV_MENU_IDS } from "@/lib/navigation/menuIds";
+import { cn } from "@/lib/design-system/cn";
 
-export default function NotificationBell() {
+type NotificationBellProps = {
+  compact?: boolean;
+};
+
+export default function NotificationBell({
+  compact = false,
+}: NotificationBellProps) {
   const router = useRouter();
   const { closeMenu } = useNavMenu();
 
@@ -55,18 +62,26 @@ export default function NotificationBell() {
         <button
           type="button"
           {...triggerProps}
-          className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-button)] border border-border-subtle bg-surface-card text-text-primary transition hover:bg-surface-sunken"
+          className={cn(
+            "relative flex shrink-0 items-center justify-center transition",
+            compact
+              ? "h-9 w-9 rounded-full text-text-secondary hover:bg-surface-sunken hover:text-text-primary"
+              : "h-10 w-10 rounded-[var(--radius-button)] border border-border-subtle bg-surface-card text-text-primary hover:bg-surface-sunken"
+          )}
           aria-label={
             unreadCount > 0
               ? `Notifications, ${displayUnreadCount} unread`
               : "Notifications"
           }
         >
-          <Bell size={20} aria-hidden />
+          <Bell size={compact ? 18 : 20} aria-hidden />
 
           {unreadCount > 0 ? (
             <span
-              className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-home-health px-1 text-[10px] font-bold text-surface-card"
+              className={cn(
+                "absolute flex min-w-5 items-center justify-center rounded-full bg-home-health px-1 text-[10px] font-bold text-surface-card",
+                compact ? "-right-1 -top-1 h-[18px]" : "-right-1 -top-1 h-5"
+              )}
               aria-hidden
             >
               {displayUnreadCount}

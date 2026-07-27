@@ -216,7 +216,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <PageShell className="space-y-8 md:space-y-10">
+    <PageShell className="!pt-4 md:!pt-5 space-y-6 md:space-y-8">
       <HomeHealthDashboard
         firstName={firstName}
         homeHealth={homeHealth}

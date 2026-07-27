@@ -26,7 +26,7 @@ export function NavLink({
       href={href}
       onClick={onClick}
       className={cn(
-        "relative inline-flex items-center gap-1 rounded-[var(--radius-button)] px-2 py-2 text-sm font-medium transition xl:px-2.5",
+        "relative inline-flex items-center gap-1 rounded-[var(--radius-button)] px-2 py-1.5 text-sm font-medium transition xl:px-2 xl:py-1.5",
         isActive
           ? "font-semibold text-text-primary"
           : "text-text-secondary hover:text-text-primary"

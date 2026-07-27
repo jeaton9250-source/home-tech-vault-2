@@ -118,7 +118,7 @@ export default function MobileNavSheet() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-border-subtle bg-surface-card/90 backdrop-blur-md lg:hidden">
+      <header className="sticky top-0 z-40 border-b border-border-subtle/70 bg-surface-card/80 shadow-[0_1px_0_rgba(15,23,42,0.04),0_10px_30px_-24px_rgba(15,23,42,0.35)] backdrop-blur-xl lg:hidden">
         <div className="flex h-14 items-center gap-1.5 px-3 sm:gap-2 sm:px-4">
           <button
             type="button"
@@ -130,7 +130,7 @@ export default function MobileNavSheet() {
           </button>
 
           <Link href="/dashboard" className="min-w-0 flex-1">
-            <Logo collapsed />
+            <Logo collapsed className="max-w-[8.5rem] [&>p]:text-[0.6875rem] [&>p]:tracking-[0.13em]" />
           </Link>
 
           {hideGlobalSearchOnHome ? (
@@ -139,9 +139,10 @@ export default function MobileNavSheet() {
             <SearchField collapsible />
           )}
 
-          <NotificationBell />
-
-          <ProfileMenu compact />
+          <div className="flex items-center rounded-full border border-border-subtle/70 bg-surface-card/80 p-0.5 shadow-sm">
+            <NotificationBell compact />
+            <ProfileMenu compact />
+          </div>
         </div>
       </header>
 
@@ -194,7 +195,7 @@ export default function MobileNavSheet() {
                 </button>
               </div>
 
-              <div className="space-y-4 border-b border-border-subtle p-4">
+              <div className="space-y-4 border-b border-border-subtle/70 p-4">
                 {!hideGlobalSearchOnHome ? (
                   <SearchField compact autoFocus />
                 ) : null}
