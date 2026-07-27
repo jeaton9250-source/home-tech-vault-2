@@ -20,7 +20,6 @@ import Button from "@/components/ui/Button";
 import NotificationBell from "@/components/NotificationBell";
 import { MobileNavLink } from "@/components/navigation/PrimaryNavLink";
 import ProfileMenu from "@/components/navigation/ProfileMenu";
-import QuickAddMenu from "@/components/navigation/QuickAddMenu";
 import SearchField from "@/components/navigation/SearchField";
 
 import { useAIAdvisor } from "@/hooks/useAIAdvisor";
@@ -189,24 +188,20 @@ export default function MobileNavSheet() {
               <div className="space-y-4 border-b border-border-subtle p-4">
                 <SearchField compact autoFocus />
 
-                <div className="flex flex-wrap gap-2">
-                  <QuickAddMenu compact />
-
-                  {canViewFeature("aiAdvisor") ? (
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => {
-                        openAdvisor();
-                        setOpen(false);
-                      }}
-                    >
-                      <Sparkles size={16} />
-                      AI Advisor
-                    </Button>
-                  ) : null}
-                </div>
+                {canViewFeature("aiAdvisor") ? (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      openAdvisor();
+                      setOpen(false);
+                    }}
+                  >
+                    <Sparkles size={16} />
+                    AI Advisor
+                  </Button>
+                ) : null}
               </div>
 
               <nav

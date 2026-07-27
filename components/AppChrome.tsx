@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
 
 import AppHeader from "@/components/navigation/AppHeader";
+import FloatingActionButton from "@/components/navigation/FloatingActionButton";
 import AIAdvisorPopup from "@/components/ai/AIAdvisorPopup";
 import AuthGuard from "@/components/AuthGuard";
 import { DemoExperienceProvider } from "@/components/demo/DemoExperienceProvider";
@@ -78,10 +79,14 @@ export default function AppChrome({
                       <AppHeader />
                     ) : null}
 
-                    <main className="flex-1">
+                    <main className="flex-1 pb-24">
                       {children}
                     </main>
                   </div>
+
+                  {!hideHomeownerHeader ? (
+                    <FloatingActionButton />
+                  ) : null}
 
                   <AIAdvisorPopup />
 

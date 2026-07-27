@@ -125,27 +125,31 @@ type DeviceImage = DeviceImageRow & {
 
 type DeviceDetailTab =
   | "overview"
-  | "network"
   | "documents"
-  | "photos"
   | "maintenance"
-  | "activity";
+  | "warranty"
+  | "network"
+  | "timeline";
 
 const DEVICE_TABS: {
   id: DeviceDetailTab;
   label: string;
 }[] = [
   { id: "overview", label: "Overview" },
-  { id: "network", label: "Network" },
   { id: "documents", label: "Documents" },
-  { id: "photos", label: "Photos" },
   { id: "maintenance", label: "Maintenance" },
-  { id: "activity", label: "Activity" },
+  { id: "warranty", label: "Warranty" },
+  { id: "network", label: "Network" },
+  { id: "timeline", label: "Timeline" },
 ];
 
 function resolveDeviceDetailTab(
   value: string | null
 ): DeviceDetailTab {
+  if (value === "activity" || value === "photos") {
+    return value === "photos" ? "overview" : "timeline";
+  }
+
   const match = DEVICE_TABS.find((tab) => tab.id === value);
 
   return match?.id ?? "overview";
@@ -1343,34 +1347,6 @@ export default function DevicePage() {
               </PageCard>
 
               <PageCard className="p-6 md:p-8">
-                <SectionHeading title="Warranty information" />
-                <div className="mt-5 space-y-4">
-                  <span
-                    className={cn(
-                      "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold",
-                      warranty.className
-                    )}
-                  >
-                    {warranty.label}
-                  </span>
-                  <dl className="grid gap-4 sm:grid-cols-2">
-                    <InfoItem
-                      label="Warranty ends"
-                      value={formatProfileDate(device.warranty_date)}
-                      showEmpty
-                    />
-                    {warranty.daysRemaining != null &&
-                    warranty.daysRemaining >= 0 ? (
-                      <InfoItem
-                        label="Days remaining"
-                        value={String(warranty.daysRemaining)}
-                      />
-                    ) : null}
-                  </dl>
-                </div>
-              </PageCard>
-
-              <PageCard className="p-6 md:p-8">
                 <SectionHeading title="Location" />
                 <p className="mt-5 text-sm leading-6 text-text-primary">
                   {device.location?.trim() || "Not provided"}
@@ -1389,6 +1365,138 @@ export default function DevicePage() {
                   </p>
                 )}
               </PageCard>
+
+              <PageCard className="p-6 md:p-8">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <p className="text-overline text-section-technology">Photos</p>
+                    <h2 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-text-primary">
+                      Device photos
+                    </h2>
+                    <p className="mt-2 text-sm text-text-secondary">
+                      Keep clear images to identify this device later.
+                    </p>
+                  </div>
+
+                  {canUpload ? (
+                    <label className="htv-focus-ring inline-flex cursor-pointer items-center gap-2 rounded-[var(--radius-button)] border border-border-subtle bg-surface-card px-4 py-2.5 text-sm font-semibold text-text-primary shadow-[var(--shadow-sm)] transition hover:bg-surface-hover">
+                      {uploading ? (
+                        <Loader2 size={16} className="animate-spin" />
+                      ) : (
+                        <ImagePlus size={16} />
+                      )}
+                      {uploading ? "Uploading..." : "Upload photos"}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        disabled={uploading}
+                        onChange={handleUpload}
+                        className="hidden"
+                      />
+                    </label>
+                  ) : isGuestDemo ? (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={showReadOnlyModal}
+                    >
+                      <ImagePlus size={16} />
+                      Upload photos
+                    </Button>
+                  ) : null}
+                </div>
+
+                {profilePhotos.length === 0 ? (
+                  <div className="mt-6 rounded-[24px] border border-dashed border-border-subtle bg-surface-sunken/60 p-8 text-center">
+                    <Camera size={28} className="mx-auto text-text-tertiary" />
+                    <p className="mt-4 text-sm font-medium text-text-primary">
+                      No photos have been added yet.
+                    </p>
+                    <p className="mt-2 text-sm text-text-secondary">
+                      Add clear photos to make this device easy to identify later.
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="mt-6 overflow-hidden rounded-[24px] border border-border-subtle bg-surface-sunken">
+                      <div className="relative aspect-[16/10]">
+                        {selectedPhoto ? (
+                          <Image
+                            src={selectedPhoto.src}
+                            alt={`${device.device_name ?? "Device"} preview`}
+                            fill
+                            unoptimized={
+                              selectedPhoto.isDemoAsset ||
+                              selectedPhoto.src.startsWith("http")
+                            }
+                            className="object-cover object-center"
+                          />
+                        ) : null}
+                      </div>
+                    </div>
+
+                    <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                      {profilePhotos.map((photo, index) => {
+                        const active = index === selectedImageIndex;
+
+                        return (
+                          <div
+                            key={photo.id}
+                            className="group relative aspect-[4/3] overflow-hidden rounded-[20px] border border-border-subtle bg-surface-sunken"
+                          >
+                            <button
+                              type="button"
+                              onClick={() => setSelectedImageIndex(index)}
+                              className={cn(
+                                "htv-focus-ring absolute inset-0",
+                                active && "ring-2 ring-charcoal ring-offset-2"
+                              )}
+                              aria-label={`View photo ${index + 1}`}
+                              aria-pressed={active}
+                            >
+                              <Image
+                                src={photo.src}
+                                alt=""
+                                fill
+                                unoptimized={
+                                  photo.isDemoAsset ||
+                                  photo.src.startsWith("http")
+                                }
+                                className="object-cover object-center transition duration-500 group-hover:scale-[1.03]"
+                              />
+                            </button>
+
+                            {canDelete ? (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const image = images.find(
+                                    (item) => item.id === photo.id
+                                  );
+
+                                  if (image) {
+                                    void deleteImage(image);
+                                  }
+                                }}
+                                disabled={deletingImageId === photo.id}
+                                aria-label="Delete photo"
+                                className="absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-full bg-charcoal/70 text-surface-card opacity-100 backdrop-blur transition hover:bg-danger md:opacity-0 md:group-hover:opacity-100"
+                              >
+                                {deletingImageId === photo.id ? (
+                                  <Loader2 size={15} className="animate-spin" />
+                                ) : (
+                                  <Trash2 size={15} />
+                                )}
+                              </button>
+                            ) : null}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+              </PageCard>
             </div>
 
             <div className="space-y-6">
@@ -1397,7 +1505,7 @@ export default function DevicePage() {
                   <SectionHeading title="Recent activity" />
                   <button
                     type="button"
-                    onClick={() => selectTab("activity")}
+                    onClick={() => selectTab("timeline")}
                     className="htv-focus-ring text-sm font-medium text-interaction hover:text-interaction-hover"
                   >
                     View all
@@ -1430,22 +1538,66 @@ export default function DevicePage() {
                   <div className="mt-5">
                     <p className="text-sm leading-6 text-text-secondary">
                       Purchases, uploads, warranty changes, and maintenance
-                      updates appear in the Activity tab.
+                      updates appear in the Timeline tab.
                     </p>
                     <Button
                       type="button"
                       variant="secondary"
                       className="mt-4"
-                      onClick={() => selectTab("activity")}
+                      onClick={() => selectTab("timeline")}
                     >
                       <Activity size={16} />
-                      Open Activity
+                      Open Timeline
                     </Button>
                   </div>
                 )}
               </PageCard>
             </div>
           </div>
+        ) : null}
+
+        {activeTab === "warranty" ? (
+          <PageCard className="p-6 md:p-8">
+            <SectionHeading title="Warranty coverage" />
+            <div className="mt-5 space-y-4">
+              <span
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold",
+                  warranty.className
+                )}
+              >
+                {warranty.label}
+              </span>
+              <dl className="grid gap-4 sm:grid-cols-2">
+                <InfoItem
+                  label="Warranty ends"
+                  value={formatProfileDate(device.warranty_date)}
+                  showEmpty
+                />
+                {warranty.daysRemaining != null &&
+                warranty.daysRemaining >= 0 ? (
+                  <InfoItem
+                    label="Days remaining"
+                    value={String(warranty.daysRemaining)}
+                  />
+                ) : null}
+                <InfoItem
+                  label="Purchase date"
+                  value={formatProfileDate(device.purchase_date)}
+                />
+                <InfoItem
+                  label="Purchase price"
+                  value={formatProfileCurrency(device.purchase_price)}
+                />
+              </dl>
+              <div className="pt-2">
+                <Button href={`/devices/${device.id}/edit`} variant="secondary">
+                  <Pencil size={16} />
+                  Update warranty details
+                </Button>
+              </div>
+            </div>
+          </PageCard>
         ) : null}
 
         {activeTab === "network" ? (
@@ -1599,140 +1751,6 @@ export default function DevicePage() {
           )
         ) : null}
 
-        {activeTab === "photos" ? (
-          <PageCard className="p-6 md:p-8">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <p className="text-overline text-section-technology">Photos</p>
-                <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
-                  Device photos
-                </h2>
-                <p className="mt-2 text-sm text-text-secondary">
-                  Upload clear images up to 6 MB each.
-                </p>
-              </div>
-
-              {canUpload ? (
-                <label className="htv-focus-ring inline-flex cursor-pointer items-center gap-2 rounded-[var(--radius-button)] border border-border-subtle bg-surface-card px-4 py-2.5 text-sm font-semibold text-text-primary shadow-[var(--shadow-sm)] transition hover:bg-surface-hover">
-                  {uploading ? (
-                    <Loader2 size={16} className="animate-spin" />
-                  ) : (
-                    <ImagePlus size={16} />
-                  )}
-                  {uploading ? "Uploading..." : "Upload photos"}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    disabled={uploading}
-                    onChange={handleUpload}
-                    className="hidden"
-                  />
-                </label>
-              ) : isGuestDemo ? (
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={showReadOnlyModal}
-                >
-                  <ImagePlus size={16} />
-                  Upload photos
-                </Button>
-              ) : null}
-            </div>
-
-            {profilePhotos.length === 0 ? (
-              <div className="mt-6 rounded-[24px] border border-dashed border-border-subtle bg-surface-sunken/60 p-8 text-center">
-                <Camera size={28} className="mx-auto text-text-tertiary" />
-                <p className="mt-4 text-sm font-medium text-text-primary">
-                  No photos have been added yet.
-                </p>
-                <p className="mt-2 text-sm text-text-secondary">
-                  Add clear photos to make this device easy to identify later.
-                </p>
-              </div>
-            ) : (
-              <>
-                <div className="mt-6 overflow-hidden rounded-[24px] border border-border-subtle bg-surface-sunken">
-                  <div className="relative aspect-[16/10]">
-                    {selectedPhoto ? (
-                      <Image
-                        src={selectedPhoto.src}
-                        alt={`${device.device_name ?? "Device"} preview`}
-                        fill
-                        unoptimized={
-                          selectedPhoto.isDemoAsset ||
-                          selectedPhoto.src.startsWith("http")
-                        }
-                        className="object-cover object-center"
-                      />
-                    ) : null}
-                  </div>
-                </div>
-
-                <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-                  {profilePhotos.map((photo, index) => {
-                    const active = index === selectedImageIndex;
-
-                    return (
-                      <div
-                        key={photo.id}
-                        className="group relative aspect-[4/3] overflow-hidden rounded-[20px] border border-border-subtle bg-surface-sunken"
-                      >
-                        <button
-                          type="button"
-                          onClick={() => setSelectedImageIndex(index)}
-                          className={cn(
-                            "htv-focus-ring absolute inset-0",
-                            active && "ring-2 ring-charcoal ring-offset-2"
-                          )}
-                          aria-label={`View photo ${index + 1}`}
-                          aria-pressed={active}
-                        >
-                          <Image
-                            src={photo.src}
-                            alt=""
-                            fill
-                            unoptimized={
-                              photo.isDemoAsset ||
-                              photo.src.startsWith("http")
-                            }
-                            className="object-cover object-center transition duration-500 group-hover:scale-[1.03]"
-                          />
-                        </button>
-
-                        {canDelete ? (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const image = images.find(
-                                (item) => item.id === photo.id
-                              );
-
-                              if (image) {
-                                void deleteImage(image);
-                              }
-                            }}
-                            disabled={deletingImageId === photo.id}
-                            aria-label="Delete photo"
-                            className="absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-full bg-charcoal/70 text-surface-card opacity-100 backdrop-blur transition hover:bg-danger md:opacity-0 md:group-hover:opacity-100"
-                          >
-                            {deletingImageId === photo.id ? (
-                              <Loader2 size={15} className="animate-spin" />
-                            ) : (
-                              <Trash2 size={15} />
-                            )}
-                          </button>
-                        ) : null}
-                      </div>
-                    );
-                  })}
-                </div>
-              </>
-            )}
-          </PageCard>
-        ) : null}
-
         {activeTab === "maintenance" ? (
           <DeviceProfileMaintenance
             deviceId={device.id}
@@ -1741,7 +1759,7 @@ export default function DevicePage() {
           />
         ) : null}
 
-        {activeTab === "activity" ? (
+        {activeTab === "timeline" ? (
           isGuestDemo ? (
             <PageCard className="p-6 md:p-8">
               <SectionHeading title="Device history" />

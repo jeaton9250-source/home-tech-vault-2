@@ -1,109 +1,103 @@
 "use client";
 
-import HomeHealth from "@/components/brand/HomeHealth";
-import Button from "@/components/ui/Button";
-import FoundingMemberBadge from "@/components/founding-members/FoundingMemberBadge";
+import {
+  formatDisplayDate,
+  getTimeGreeting,
+} from "@/lib/home-health/greeting";
+import { usePermissions } from "@/hooks/usePermissions";
+import { MORGAN_HOUSEHOLD } from "@/lib/demo/morganHousehold";
+import { getHomeHealthDisplayMessage } from "@/lib/home-health/display";
+import type { HomeHealthStatusLabel } from "@/lib/home-health/types";
 
-import { brand, sections } from "@/lib/design-system/tokens";
-
-import type { VaultScoreResult } from "@/lib/calculateVaultScore";
+import HomeHealthScoreRing from "@/components/home-health/HomeHealthScoreRing";
 
 type DashboardHeroProps = {
   firstName: string;
-  householdName: string;
-  deviceCount: number;
-  documentCount: number;
-  protectedValue: number;
-  vaultScore: VaultScoreResult;
-  isDemo: boolean;
+  score: number | null;
+  status: HomeHealthStatusLabel | null;
 };
 
 export default function DashboardHero({
   firstName,
-  householdName,
-  deviceCount,
-  documentCount,
-  protectedValue,
-  vaultScore,
-  isDemo,
+  score,
+  status,
 }: DashboardHeroProps) {
-  const healthMessage =
-    vaultScore.total >= 90
-      ? "Everything looks great today."
-      : vaultScore.total >= 75
-        ? "Your household records are in good shape with room to refine."
-        : vaultScore.recommendations[0] ||
-          "A few calm improvements could strengthen your vault.";
+  const { isDemo } = usePermissions();
 
-  const summaryParts = [
-    `${deviceCount} device${deviceCount === 1 ? "" : "s"}`,
-    `${documentCount} document${documentCount === 1 ? "" : "s"}`,
-    `${formatCurrency(protectedValue)} protected`,
-  ];
+  const statusMessage = status
+    ? getHomeHealthDisplayMessage(status)
+    : "Add your first device to start building your home technology command center.";
 
   return (
-    <section className="htv-command-hero overflow-hidden p-8 md:p-10 lg:p-12">
-      <div className="flex flex-col gap-10 xl:flex-row xl:items-center xl:justify-between">
-        <div className="max-w-2xl">
-          <p
-            className="text-overline"
-            style={{ color: sections.homeHealth.accent }}
-          >
-            {brand.commandCenter}
+    <header
+      className="rounded-[var(--radius-card)] border border-border-subtle bg-gradient-to-br from-surface-card via-surface-card to-section-home-health-soft/30 p-6 md:p-8"
+      data-tour="home-pulse"
+    >
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+        <div className="space-y-3">
+          <p className="text-overline text-home-health">
+            Home Technology Command Center
           </p>
 
-          <h1 className="text-hero mt-3 text-text-primary">
-            Welcome home, {firstName}.
-          </h1>
-
-          <p className="mt-3 text-lg font-medium text-text-secondary">
-            {householdName}
-          </p>
-
-          {!isDemo ? (
-            <div className="mt-4">
-              <FoundingMemberBadge />
-            </div>
-          ) : null}
-
-          <p className="mt-4 text-sm leading-7 text-text-muted">
-            {summaryParts.join(" · ")}
-          </p>
-
-          <p className="mt-4 max-w-xl text-base leading-7 text-text-secondary">
-            {healthMessage}
-          </p>
-
-          {isDemo && (
-            <div className="mt-6 rounded-[var(--radius-button)] border border-border-subtle bg-surface-card/90 px-4 py-3 shadow-[var(--shadow-sm)]">
-              <p className="text-sm text-text-secondary">
-                You are exploring a sample household.
-                Create an account to organize your own home.
-              </p>
-              <Button href="/signup" size="sm" className="mt-3">
-                Create Your Vault
-              </Button>
-            </div>
+          {isDemo ? (
+            <h1 className="text-[clamp(1.875rem,4vw,2.75rem)] font-medium tracking-[-0.03em] text-text-primary">
+              Welcome to the {MORGAN_HOUSEHOLD.name}.
+            </h1>
+          ) : (
+            <h1 className="text-[clamp(1.875rem,4vw,2.75rem)] font-medium tracking-[-0.03em] text-text-primary">
+              {getTimeGreeting(firstName)}
+            </h1>
           )}
+
+          <p className="text-sm text-text-secondary">
+            {formatDisplayDate()}
+          </p>
+
+          <div className="pt-2">
+            <p className="text-overline text-text-muted">
+              Your Home Health Score
+            </p>
+            {score !== null && status ? (
+              <div className="mt-2 flex flex-wrap items-end gap-x-4 gap-y-2">
+                <p className="text-[clamp(2.5rem,6vw,3.5rem)] font-medium tabular-nums leading-none tracking-[-0.04em] text-text-primary">
+                  {score}
+                  <span className="text-[0.45em] font-medium text-text-secondary">
+                    %
+                  </span>
+                </p>
+                <p className="pb-1 text-base font-medium text-text-primary">
+                  {status}
+                </p>
+              </div>
+            ) : (
+              <p className="mt-2 text-2xl font-medium text-text-primary">
+                Getting started
+              </p>
+            )}
+          </div>
+
+          <div className="max-w-xl pt-1">
+            <p className="text-overline text-text-muted">
+              Home technology status
+            </p>
+            <p className="mt-2 text-[0.9375rem] leading-7 text-text-secondary">
+              {isDemo
+                ? "Everything is running smoothly today."
+                : statusMessage}
+            </p>
+          </div>
         </div>
 
-        <HomeHealth
-          score={vaultScore.total}
-          label={vaultScore.label}
-          protection={vaultScore.protection}
-          organization={vaultScore.organization}
-          documentation={vaultScore.documentation}
-          maintenance={vaultScore.maintenance}
-        />
+        {score !== null && status ? (
+          <div className="hidden lg:block">
+            <HomeHealthScoreRing
+              score={score}
+              status={status}
+              size={160}
+            />
+          </div>
+        ) : null}
       </div>
-    </section>
+    </header>
   );
-}
-
-function formatCurrency(value: number) {
-  return value.toLocaleString(undefined, {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  });
 }

@@ -22,6 +22,8 @@ import { cn } from "@/lib/design-system/cn";
 type SearchFieldProps = {
   className?: string;
   compact?: boolean;
+  /** Always-visible search bar for desktop header */
+  prominent?: boolean;
   /** Icon button that opens an expandable search popover */
   collapsible?: boolean;
   autoFocus?: boolean;
@@ -31,6 +33,7 @@ type SearchFieldProps = {
 export default function SearchField({
   className,
   compact = false,
+  prominent = false,
   collapsible = false,
   autoFocus = false,
   onClose,
@@ -172,6 +175,10 @@ export default function SearchField({
     inputRef.current?.focus();
   }
 
+  const placeholder = prominent
+    ? "Search anything in your home..."
+    : "Search anything in your home...";
+
   const searchForm = (
     <form
       onSubmit={handleSubmit}
@@ -179,7 +186,7 @@ export default function SearchField({
     >
       <div className="relative">
         <Search
-          size={18}
+          size={prominent ? 20 : 18}
           className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-text-tertiary"
         />
 
@@ -188,12 +195,15 @@ export default function SearchField({
           type="search"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
-          placeholder="Ask about your home technology..."
+          placeholder={placeholder}
           className={cn(
-            "htv-focus-ring w-full rounded-[var(--radius-input)] border border-border-subtle bg-surface-sunken py-2.5 pl-10 pr-10 text-sm text-text-primary outline-none focus:border-interaction",
-            compact && "py-2"
+            "htv-focus-ring w-full rounded-[var(--radius-input)] border border-border-subtle bg-surface-sunken text-text-primary outline-none focus:border-interaction",
+            prominent
+              ? "py-3 pl-11 pr-11 text-[0.9375rem] shadow-[var(--shadow-sm)]"
+              : "py-2.5 pl-10 pr-10 text-sm",
+            compact && !prominent && "py-2"
           )}
-          aria-label="Smart search"
+          aria-label="Search your home"
         />
 
         {search ? (
@@ -210,6 +220,10 @@ export default function SearchField({
     </form>
   );
 
+  if (prominent) {
+    return searchForm;
+  }
+
   if (!collapsible) {
     return searchForm;
   }
@@ -224,7 +238,7 @@ export default function SearchField({
           "htv-focus-ring flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-button)] border border-border-subtle bg-surface-card text-text-primary transition hover:bg-surface-sunken",
           className
         )}
-        aria-label="Smart search"
+        aria-label="Search your home"
         aria-expanded={open}
         aria-controls={panelId}
         aria-haspopup="dialog"
@@ -240,7 +254,7 @@ export default function SearchField({
                   ref={panelRef}
                   id={panelId}
                   role="dialog"
-                  aria-label="Smart search"
+                  aria-label="Search your home"
                   initial={{ opacity: 0, y: -6 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -6 }}

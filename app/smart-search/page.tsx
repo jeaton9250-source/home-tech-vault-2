@@ -1,5 +1,4 @@
 import PageShell from "@/components/ui/PageShell";
-import PageTitle from "@/components/ui/PageTitle";
 import SmartSearch from "@/components/search/SmartSearch";
 import { resolveHouseholdAccess } from "@/lib/data/householdScope";
 import { runSmartSearch } from "@/lib/search/deviceSearch";
@@ -53,15 +52,23 @@ export default async function SmartSearchPage({
   }
 
   return (
-    <PageShell className="space-y-6">
-      <PageTitle
-        eyebrow="Home Technology Command Center"
-        title="Smart Search"
-        description="Find what you own, where it is, how it is performing, and what needs attention."
-      />
+    <PageShell className="space-y-6 md:space-y-8">
+      <header className="space-y-2">
+        <p className="text-overline text-text-muted">
+          Home Technology Command Center
+        </p>
+        <h1 className="text-[clamp(1.75rem,3vw,2.25rem)] font-medium tracking-[-0.03em] text-text-primary">
+          Search
+        </h1>
+        <p className="max-w-2xl text-sm leading-6 text-text-secondary">
+          Find anything in your home — devices, documents, warranties,
+          maintenance, and network details.
+        </p>
+      </header>
 
       <SmartSearch
         mode="page"
+        variant="hero"
         initialQuery={initialQuery}
         initialResponse={initialResponse}
       />

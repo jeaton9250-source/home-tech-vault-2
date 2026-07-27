@@ -1,4 +1,5 @@
 import {
+  Bell,
   CreditCard,
   HelpCircle,
   Laptop,
@@ -20,7 +21,7 @@ import type {
   QuickAddItem,
 } from "@/lib/navigation/types";
 
-/** Flat desktop and mobile primary navigation */
+/** Homeowner-first primary navigation */
 export const PRIMARY_NAV_ITEMS: PrimaryNavItem[] = [
   {
     label: "Home",
@@ -35,29 +36,10 @@ export const PRIMARY_NAV_ITEMS: PrimaryNavItem[] = [
     activePrefixes: ["/devices"],
   },
   {
-    label: "Smart Search",
+    label: "Search",
     href: "/smart-search",
     icon: Search,
     activePrefixes: ["/smart-search"],
-  },
-  {
-    label: "Maintenance",
-    href: "/maintenance",
-    icon: Wrench,
-    feature: "maintenance",
-    activePrefixes: ["/maintenance"],
-  },
-  {
-    label: "Documents",
-    href: "/documents",
-    feature: "documents",
-    activePrefixes: ["/documents"],
-  },
-  {
-    label: "Network",
-    href: "/network",
-    feature: "network",
-    activePrefixes: ["/network"],
   },
   {
     label: "Family",
@@ -66,24 +48,45 @@ export const PRIMARY_NAV_ITEMS: PrimaryNavItem[] = [
     feature: "family",
     activePrefixes: ["/family"],
   },
-  {
-    label: "Settings",
-    href: "/settings",
-    icon: Settings,
-    feature: "settings",
-    activePrefixes: ["/settings"],
-  },
 ];
 
-/** Secondary destinations in the avatar menu */
+/** Account and settings destinations in the profile menu */
 export const PROFILE_MENU_ITEMS: ProfileNavItem[] = [
   {
     label: "Control Center",
     href: "/admin",
     icon: LayoutDashboard,
-    description:
-      "Manage the Home Tech Vault platform",
+    description: "Manage the Home Tech Vault platform",
     adminOnly: true,
+  },
+  {
+    label: "Settings",
+    href: "/settings",
+    icon: Settings,
+    feature: "settings",
+  },
+  {
+    label: "Billing",
+    href: "/settings?tab=billing",
+    icon: CreditCard,
+    feature: "settings",
+  },
+  {
+    label: "Notifications",
+    href: "/settings?tab=preferences",
+    icon: Bell,
+    feature: "settings",
+  },
+  {
+    label: "Help",
+    href: "/faq",
+    icon: HelpCircle,
+  },
+  {
+    label: "Account",
+    href: "/settings?tab=profile",
+    icon: User,
+    feature: "account",
   },
   {
     label: "Warranties",
@@ -102,17 +105,6 @@ export const PROFILE_MENU_ITEMS: ProfileNavItem[] = [
     href: "/reports",
     icon: LayoutDashboard,
     feature: "reports",
-  },
-  {
-    label: "Account & Settings",
-    href: "/settings",
-    icon: Settings,
-    feature: "settings",
-  },
-  {
-    label: "Help Center",
-    href: "/faq",
-    icon: HelpCircle,
   },
 ];
 
@@ -143,10 +135,22 @@ export const SECONDARY_ROUTE_ITEMS: ProfileNavItem[] = [
     feature: "network",
   },
   {
-    label: "Profile",
-    href: "/settings",
-    icon: User,
-    feature: "account",
+    label: "Maintenance",
+    href: "/maintenance",
+    icon: Wrench,
+    feature: "maintenance",
+  },
+  {
+    label: "Documents",
+    href: "/documents",
+    icon: Upload,
+    feature: "documents",
+  },
+  {
+    label: "Network",
+    href: "/network",
+    icon: Radar,
+    feature: "network",
   },
 ];
 
@@ -168,12 +172,20 @@ export const QUICK_ADD_ITEMS: QuickAddItem[] = [
     actionFeature: "documents",
   },
   {
-    label: "Add Maintenance Task",
+    label: "Add Maintenance",
     href: "/maintenance/new",
     icon: Wrench,
     description: "Schedule service or upkeep",
     feature: "maintenance",
     actionFeature: "maintenance",
+  },
+  {
+    label: "Add Warranty",
+    href: "/devices/add",
+    icon: ShieldCheck,
+    description: "Record warranty coverage",
+    feature: "warranties",
+    actionFeature: "devices",
   },
   {
     label: "Add Subscription",
@@ -185,40 +197,7 @@ export const QUICK_ADD_ITEMS: QuickAddItem[] = [
   },
 ];
 
-/** Mobile sheet: primary links plus key secondary destinations */
+/** Mobile sheet: primary links only — account items live in the profile menu */
 export const MOBILE_NAV_ITEMS: Array<
   PrimaryNavItem | ProfileNavItem
-> = [
-  ...PRIMARY_NAV_ITEMS,
-  {
-    label: "Services",
-    href: "/subscriptions",
-    icon: CreditCard,
-    feature: "subscriptions",
-  },
-  {
-    label: "Control Center",
-    href: "/admin",
-    icon: LayoutDashboard,
-    description:
-      "Manage the Home Tech Vault platform",
-    adminOnly: true,
-  },
-  {
-    label: "Account & Settings",
-    href: "/settings",
-    icon: Settings,
-    feature: "settings",
-  },
-  {
-    label: "Help Center",
-    href: "/faq",
-    icon: HelpCircle,
-  },
-  {
-    label: "Contact Support",
-    href: "/contact",
-    icon: MessageSquare,
-    feature: "settings",
-  },
-];
+> = [...PRIMARY_NAV_ITEMS];
