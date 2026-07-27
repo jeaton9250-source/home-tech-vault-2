@@ -118,8 +118,8 @@ export default function MobileNavSheet() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-border-subtle/70 bg-surface-card/80 shadow-[0_1px_0_rgba(15,23,42,0.04),0_10px_30px_-24px_rgba(15,23,42,0.35)] backdrop-blur-xl lg:hidden">
-        <div className="flex h-14 items-center gap-1.5 px-3 sm:gap-2 sm:px-4">
+      <header className="sticky top-0 z-40 border-b border-border-subtle/70 bg-surface-card/85 shadow-[0_1px_0_rgba(15,23,42,0.04),0_10px_30px_-24px_rgba(15,23,42,0.35)] backdrop-blur-xl md:hidden">
+        <div className="flex h-[68px] items-center gap-1.5 px-3 sm:gap-2 sm:px-4">
           <button
             type="button"
             onClick={() => setOpen(true)}
@@ -130,7 +130,7 @@ export default function MobileNavSheet() {
           </button>
 
           <Link href="/dashboard" className="min-w-0 flex-1">
-            <Logo collapsed className="max-w-[8.5rem] [&>p]:text-[0.6875rem] [&>p]:tracking-[0.13em]" />
+            <Logo withMark collapsed className="max-w-[8.5rem]" />
           </Link>
 
           {hideGlobalSearchOnHome ? (
@@ -175,7 +175,7 @@ export default function MobileNavSheet() {
                 duration: 0.24,
                 ease: [0.22, 1, 0.36, 1],
               }}
-              className="fixed inset-y-0 right-0 z-[60] flex w-[min(100vw,360px)] flex-col bg-surface-card shadow-lg lg:hidden"
+              className="fixed inset-y-0 right-0 z-[60] flex w-[min(100vw,360px)] flex-col bg-surface-card shadow-lg md:hidden"
               role="dialog"
               aria-modal="true"
               aria-label="Navigation menu"

@@ -172,18 +172,23 @@ export default function ProfileMenu({
           type="button"
           {...triggerProps}
           className={cn(
-            "htv-focus-ring flex items-center gap-2 text-sm",
+            "htv-focus-ring flex items-center gap-2 text-sm transition",
             compact
-              ? "h-9 w-9 justify-center rounded-full bg-transparent px-0 text-text-primary hover:bg-surface-sunken"
+              ? "h-9 rounded-full px-2.5 text-text-primary hover:bg-surface-sunken"
               : "rounded-[var(--radius-button)] border border-border-subtle bg-surface-card px-2 py-1.5 hover:bg-surface-sunken"
           )}
           aria-label="Open account menu"
         >
-          <span className="flex h-8 w-8 items-center justify-center rounded-full border border-border-subtle bg-surface-sunken text-xs font-semibold text-charcoal shadow-[var(--shadow-inset)]">
+          <span className="flex h-7 w-7 items-center justify-center rounded-full border border-border-subtle bg-surface-sunken text-[0.68rem] font-semibold text-charcoal shadow-[var(--shadow-inset)]">
             {initials || "HT"}
           </span>
 
-          {!compact ? (
+          {compact ? (
+            <ChevronDown
+              size={14}
+              className="text-text-tertiary"
+            />
+          ) : (
             <>
               <span className="hidden max-w-[140px] truncate font-medium text-text-primary xl:inline">
                 {displayName}
@@ -194,7 +199,7 @@ export default function ProfileMenu({
                 className="hidden text-text-tertiary xl:block"
               />
             </>
-          ) : null}
+          )}
         </button>
       )}
     >

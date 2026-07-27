@@ -26,10 +26,10 @@ export function NavLink({
       href={href}
       onClick={onClick}
       className={cn(
-        "relative inline-flex items-center gap-1 rounded-[var(--radius-button)] px-2 py-1.5 text-sm font-medium transition xl:px-2 xl:py-1.5",
+        "inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-medium transition",
         isActive
-          ? "font-semibold text-text-primary"
-          : "text-text-secondary hover:text-text-primary"
+          ? "bg-surface-sunken text-text-primary shadow-[var(--shadow-inset)]"
+          : "text-text-secondary hover:bg-surface-sunken/70 hover:text-text-primary"
       )}
       aria-current={isActive ? "page" : undefined}
     >
@@ -39,13 +39,6 @@ export function NavLink({
         <Badge variant="premium" className="ml-0.5">
           {badge}
         </Badge>
-      ) : null}
-
-      {isActive ? (
-        <span
-          className="absolute inset-x-2 -bottom-0.5 h-0.5 rounded-full bg-charcoal"
-          aria-hidden
-        />
       ) : null}
     </Link>
   );
