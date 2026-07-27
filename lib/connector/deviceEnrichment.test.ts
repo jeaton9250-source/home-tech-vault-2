@@ -50,6 +50,17 @@ describe("resolveImportedDeviceName", () => {
     assert.equal(name, "Family Room TV");
   });
 
+  it("removes local-domain suffix from accepted user-edited names", () => {
+    const name = resolveImportedDeviceName({
+      recognitionStatus: "accepted",
+      recognitionAcceptedName: "Family Room TV.LAN",
+      friendlyName: "Living Room TV",
+      hostname: "LivingRoomTV.lan",
+    });
+
+    assert.equal(name, "Family Room TV");
+  });
+
   it("does not overwrite a manually named existing vault device", () => {
     const name = resolveImportedDeviceName({
       recognitionStatus: "accepted",

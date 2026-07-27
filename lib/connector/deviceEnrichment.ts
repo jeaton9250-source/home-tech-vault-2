@@ -3,7 +3,10 @@ import {
   mergeDiscoverySources,
   normalizeMacAddress,
 } from "@/lib/connector/network";
-import { cleanDiscoveredHostname } from "@/lib/connector/deviceIdentification";
+import {
+  cleanDiscoveredHostname,
+  stripLocalNetworkSuffix,
+} from "@/lib/connector/deviceIdentification";
 
 import type {
   DiscoveryNetworkFields,
@@ -257,15 +260,35 @@ export function resolveImportedDeviceName(input: {
     .join(" ")
     .trim();
 
-  return (
+  const resolvedName =
     acceptedName ??
     acceptedFriendlyName ??
     confirmedFriendlyName ??
     displayName ??
     cleanedHostname ??
     (manufacturerCategoryFallback || null) ??
-    "Unknown device"
+    "Unknown device";
+
+  const normalizedResolvedName =
+    resolvedName.trim();
+  const suffixStripped = stripLocalNetworkSuffix(
+    normalizedResolvedName
   );
+
+  if (
+    suffixStripped &&
+    suffixStripped !== normalizedResolvedName
+  ) {
+    return (
+      cleanDiscoveredHostname(
+        normalizedResolvedName
+      ) ??
+      suffixStripped ??
+      "Unknown device"
+    );
+  }
+
+  return normalizedResolvedName || "Unknown device";
 }
 
 export function guessDiscoveryCategory(

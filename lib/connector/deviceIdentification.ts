@@ -50,6 +50,19 @@ type SignatureMatch = {
 const LOCAL_NETWORK_SUFFIX_PATTERN =
   /(?:\.(?:home\.arpa|fritz\.box|local|home|lan))$/i;
 
+export function stripLocalNetworkSuffix(
+  value: string | null | undefined
+): string | null {
+  if (!value?.trim()) {
+    return null;
+  }
+
+  return value
+    .trim()
+    .replace(LOCAL_NETWORK_SUFFIX_PATTERN, "")
+    .trim();
+}
+
 function haystack(input: DiscoveryObservation): string {
   return [
     input.hostname,
@@ -215,14 +228,9 @@ function splitHostnameToken(token: string): string {
 export function cleanDiscoveredHostname(
   hostname: string | null | undefined
 ): string | null {
-  if (!hostname?.trim()) {
-    return null;
-  }
-
-  const withoutSuffix = hostname
-    .trim()
-    .replace(LOCAL_NETWORK_SUFFIX_PATTERN, "")
-    .trim();
+  const withoutSuffix = stripLocalNetworkSuffix(
+    hostname
+  );
 
   if (!withoutSuffix || isGenericHostname(withoutSuffix)) {
     return null;
