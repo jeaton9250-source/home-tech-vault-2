@@ -1,15 +1,19 @@
 import "server-only";
 
-import type { SupabaseClient } from "@supabase/supabase-js";
-
 import { buildAdvisorInsightPayload } from "@/lib/advisor/buildInsights";
 import { loadHomeAdvisorContext } from "@/lib/advisor/loadHomeContext";
+import {
+  logAdvisorStage,
+  toAdvisorDbError,
+} from "@/lib/advisor/logging";
 import { buildDeterministicAdvisorSummary } from "@/lib/advisor/summaryDeterministic";
 import { summarizeAdvisorInsights } from "@/lib/advisor/summarize";
 import type { HomeAdvisorResult } from "@/lib/advisor/types";
 
 export async function buildHomeAdvisorResult(
-  client: SupabaseClient,
+  client: Parameters<
+    typeof loadHomeAdvisorContext
+  >[0],
   userId: string,
   options?: {
     householdId?: string | null;
@@ -19,6 +23,11 @@ export async function buildHomeAdvisorResult(
     skipAiSummary?: boolean;
   }
 ): Promise<HomeAdvisorResult> {
+  logAdvisorStage(
+    "context.load.start",
+    "context"
+  );
+
   const context = await loadHomeAdvisorContext(
     client,
     userId,
@@ -30,24 +39,63 @@ export async function buildHomeAdvisorResult(
     }
   );
 
+  logAdvisorStage("rules.generate.start", "rules");
+
   const { insights, grouped } =
     buildAdvisorInsightPayload(context, {
       dismissedIds: options?.dismissedIds,
     });
 
-  const summaryResult = options?.skipAiSummary
-    ? {
+  logAdvisorStage("rules.generate.success", "rules");
+
+  logAdvisorStage(
+    "summary.generate.start",
+    "summary"
+  );
+
+  let summaryResult: {
+    summary: string;
+    summarySource: "deterministic" | "ai";
+  };
+
+  if (options?.skipAiSummary) {
+    summaryResult = {
+      summary:
+        buildDeterministicAdvisorSummary(
+          insights
+        ),
+      summarySource: "deterministic",
+    };
+  } else {
+    try {
+      summaryResult =
+        await summarizeAdvisorInsights(
+          insights,
+          grouped
+        );
+    } catch (error) {
+      logAdvisorStage(
+        "summary.generate.error",
+        "summary",
+        {
+          error: toAdvisorDbError(error),
+        }
+      );
+
+      summaryResult = {
         summary:
           buildDeterministicAdvisorSummary(
             insights
           ),
-        summarySource:
-          "deterministic" as const,
-      }
-    : await summarizeAdvisorInsights(
-        insights,
-        grouped
-      );
+        summarySource: "deterministic",
+      };
+    }
+  }
+
+  logAdvisorStage(
+    "summary.generate.success",
+    "summary"
+  );
 
   return {
     summary: summaryResult.summary,
