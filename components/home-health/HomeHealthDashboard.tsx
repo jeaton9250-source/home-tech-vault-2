@@ -1,9 +1,7 @@
 "use client";
 
 import DashboardHero from "@/components/dashboard/DashboardHero";
-import DashboardRecentActivity from "@/components/dashboard/DashboardRecentActivity";
 import HomeAdvisorPreview from "@/components/advisor/HomeAdvisorPreview";
-import HomeOverviewStats from "@/components/dashboard/HomeOverviewStats";
 import RecommendedNextStep from "@/components/dashboard/RecommendedNextStep";
 import SmartSearch from "@/components/search/SmartSearch";
 import HomeHealthEmptyState from "@/components/home-health/HomeHealthEmptyState";
@@ -21,7 +19,7 @@ type HomeHealthDashboardProps = {
 export default function HomeHealthDashboard({
   firstName,
   homeHealth,
-  overviewStats,
+  overviewStats: _overviewStats,
 }: HomeHealthDashboardProps) {
   const {
     advisor,
@@ -38,52 +36,35 @@ export default function HomeHealthDashboard({
       : null);
 
   return (
-    <div className="space-y-10 md:space-y-12">
+    <div className="mx-auto max-w-4xl space-y-10 md:space-y-12 py-4">
+      {/* 1. How is my home? */}
       <DashboardHero
         firstName={firstName}
         score={homeHealth.score}
         healthSummary={healthSummary}
       />
 
+      {/* 2. What needs attention? */}
       <HomeAdvisorPreview
         advisor={advisor}
         loading={advisorLoading}
         error={advisorError}
       />
 
+      {/* 3. What should I do next? */}
       {homeHealth.isEmpty ? (
         <>
           <HomeHealthEmptyState
-            recommendation={
-              homeHealth.recommendation
-            }
+            recommendation={homeHealth.recommendation}
           />
-
-          <SmartSearch
-            mode="dashboard"
-            variant="hero"
-          />
+          <SmartSearch mode="dashboard" variant="hero" />
         </>
       ) : (
         <>
           <RecommendedNextStep
-            recommendation={
-              homeHealth.recommendation
-            }
+            recommendation={homeHealth.recommendation}
           />
-
-          <HomeOverviewStats
-            stats={overviewStats}
-          />
-
-          <DashboardRecentActivity
-            limit={5}
-          />
-
-          <SmartSearch
-            mode="dashboard"
-            variant="hero"
-          />
+          <SmartSearch mode="dashboard" variant="hero" />
         </>
       )}
     </div>

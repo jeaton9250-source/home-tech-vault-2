@@ -1,4 +1,7 @@
-import { ArrowRight } from "lucide-react";
+"use client";
+
+import { motion } from "framer-motion";
+import { ArrowRight, Sparkles } from "lucide-react";
 
 import SignInLink from "@/components/auth/SignInLink";
 import LandingTrackedLink from "@/components/landing/public/LandingTrackedLink";
@@ -16,28 +19,41 @@ export default function FinalCta({
 }: FinalCtaProps) {
   const primaryHref = isSignedIn
     ? "/dashboard"
-    : MARKETING_ROUTES.signup;
+    : MARKETING_ROUTES.demo;
   const primaryLabel = isSignedIn
-    ? "Open Your Home"
-    : "Start Free";
+    ? "Open Home OS"
+    : "Try the Interactive Demo";
 
   return (
-    <section className="px-5 py-16 md:px-8 md:py-24 lg:px-10">
+    <section className="px-5 py-20 md:px-8 md:py-28 lg:px-12 bg-surface-base">
       <div className={landingTheme.sectionNarrow}>
-        <div
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           className={cn(
             landingTheme.card,
-            "overflow-hidden bg-[radial-gradient(circle_at_20%_0%,#EAF8F0_0%,#FFFFFF_42%,#EDF3F7_100%)] px-8 py-14 text-center md:px-16 md:py-16"
+            "relative overflow-hidden border border-border-subtle bg-gradient-to-b from-surface-card via-surface-card to-surface-sunken/40 px-8 py-16 text-center md:px-16 md:py-20 shadow-lift rounded-[36px]"
           )}
         >
-          <h2 className="mx-auto max-w-3xl text-3xl font-medium tracking-[-0.03em] text-[#172033] md:text-[2.35rem] md:leading-tight">
-            Give your home a clearer operating system.
+          {/* Subtle top ambient glow */}
+          <div className="pointer-events-none absolute -top-20 left-1/2 -z-10 h-60 w-96 -translate-x-1/2 rounded-full bg-home-health-soft/50 blur-3xl" />
+
+          <div className="inline-flex items-center gap-2 rounded-full border border-border-subtle/80 bg-surface-card px-4 py-2 text-xs font-semibold text-text-primary shadow-sm mb-6">
+            <Sparkles size={14} className="text-home-health" />
+            <span>The Operating System for Your Home</span>
+          </div>
+
+          <h2 className="mx-auto max-w-3xl text-3xl font-medium tracking-[-0.04em] text-text-primary md:text-5xl md:leading-[1.08]">
+            Your home is already connected. <br className="hidden sm:inline" />
+            <span className="bg-gradient-to-r from-text-primary via-home-health to-premium bg-clip-text text-transparent">
+              Now make it understood.
+            </span>
           </h2>
 
-          <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-[#667085]">
-            Start free, explore the demo, and see what it feels
-            like when your home&apos;s technology finally makes
-            sense.
+          <p className="mx-auto mt-6 max-w-xl text-base leading-7 text-text-muted md:text-lg">
+            Experience absolute awareness, proactive warranty protection, and intelligent guidance—all unified in one serene control center.
           </p>
 
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row sm:flex-wrap">
@@ -49,7 +65,7 @@ export default function FinalCta({
               {primaryLabel}
               <ArrowRight
                 size={16}
-                className="ml-2"
+                className="ml-2.5"
                 aria-hidden
               />
             </LandingTrackedLink>
@@ -61,7 +77,7 @@ export default function FinalCta({
               }
               className={landingTheme.btnSecondary}
             >
-              Explore Live Demo
+              Watch the Product Tour
             </LandingTrackedLink>
 
             {!isSignedIn ? (
@@ -70,7 +86,7 @@ export default function FinalCta({
               </SignInLink>
             ) : null}
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

@@ -68,17 +68,34 @@ export default function LandingPage({
       <StructuredData data={createOrganizationJsonLd()} />
       <LandingHeader isSignedIn={isSignedIn} />
       <main id="main-content">
+        {/* Section 1: Hero */}
         <HeroSection isSignedIn={isSignedIn} />
-        <HomeHealthPreviewSection />
+
+        {/* Section 2: The Problem */}
         <ProblemSection />
+
+        {/* Section 3: Meet Home Pulse */}
+        <HomeHealthPreviewSection />
+
+        {/* Section 4: Home Advisor */}
         <HomeAdvisorStorySection />
-        <HomeDiscoverySection />
+
+        {/* Section 5: Search Your Home */}
         <HomeSearchSection />
+
+        {/* Section 6: Discovery */}
+        <HomeDiscoverySection />
+
+        {/* Section 7: Protection */}
         <HomeDocumentsSection />
+
+        {/* Additional Supporting Sections */}
         <HomeFamilySection />
         <SecuritySection />
         <PricingSection isSignedIn={isSignedIn} />
         <LandingFaq />
+
+        {/* Section 8: Final CTA */}
         <FinalCta isSignedIn={isSignedIn} />
       </main>
       <LandingFooter />

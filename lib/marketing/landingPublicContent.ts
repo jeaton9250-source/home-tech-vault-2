@@ -29,61 +29,57 @@ export const LANDING_HERO_REASSURANCE = [
   "Built for real homes",
 ] as const;
 
+export const LANDING_HERO_SUBHEADLINES = [
+  "Understand everything connected to your home.",
+  "Protect what matters.",
+  "Stay ahead of problems.",
+] as const;
+
 export const LANDING_PROBLEM_CARDS = [
   {
-    title: "Is anything offline right now?",
-    text: "Know when a printer, camera, or TV drops off your network — before someone asks why it stopped working.",
+    title: "What is connected right now?",
+    text: "Most homeowners have dozens of devices, hubs, and networks running quietly—without a single view of what is online.",
     icon: "wifi" as const,
   },
   {
-    title: "What needs attention today?",
-    text: "Skip the mental checklist. Get a clear view of what matters most in your home's technology.",
-    icon: "pulse" as const,
-  },
-  {
-    title: "What just joined our Wi-Fi?",
-    text: "See new devices as they appear and decide what belongs in your home — without scanning room by room.",
-    icon: "radar" as const,
-  },
-  {
-    title: "Who can help me figure this out?",
-    text: "Ask questions in plain English and get guidance based on what's actually in your home.",
-    icon: "sparkles" as const,
-  },
-  {
-    title: "Are we covered if something breaks?",
-    text: "When a device fails, know what's protected and what to do next — without digging through email.",
+    title: "What is protected if something breaks?",
+    text: "Warranties, receipts, and receipts live in drawers or buried in email. When something fails, finding proof takes hours.",
     icon: "shield" as const,
   },
   {
-    title: "Can the whole household stay in sync?",
-    text: "Share the same picture of your home so everyone knows what's connected, covered, and due.",
-    icon: "users" as const,
+    title: "What needs attention today?",
+    text: "Skip the mental checklist. Get proactive guidance on updates, filter changes, and security before issues arise.",
+    icon: "pulse" as const,
+  },
+  {
+    title: "What technology do we actually own?",
+    text: "Understand every piece of technology in your home—from smart TVs and mesh routers to HVAC controls and appliances.",
+    icon: "radar" as const,
   },
 ] as const;
 
 export const LANDING_HOME_HEALTH = {
   eyebrow: "Home Health",
-  title: "See how healthy your home's technology is.",
-  text: "One calm score. A short summary. Clear next steps. Open Home Tech Vault and immediately know whether your home is in good shape — and what deserves attention today.",
-  score: 92,
-  status: "Looking good",
+  title: "Meet Home Pulse. A serene view of your home.",
+  text: "Opening Home Tech Vault feels like checking Apple Health for your home. One clear score, instant status, and quiet confidence that everything is operating smoothly.",
+  score: 98,
+  status: "Everything clear",
   summary:
-    "Your home technology is in good shape. Two devices need a little attention.",
+    "Your home's technology is operating at peak health. All 34 connected devices are active and protected.",
   insights: [
     {
-      title: "Epson printer offline",
-      detail: "Offline for 4 days",
+      title: "Living Room OLED TV Warranty",
+      detail: "Protected · Coverage active through Sep 2026",
+      tone: "protected" as const,
+    },
+    {
+      title: "Eero Mesh Network Update",
+      detail: "Recommended · Security patch ready for 3 AM",
       tone: "attention" as const,
     },
     {
-      title: "Living Room TV warranty",
-      detail: "Expires in 46 days",
-      tone: "suggestion" as const,
-    },
-    {
-      title: "3 new devices discovered",
-      detail: "Ready to review",
+      title: "3 New Connected Devices Discovered",
+      detail: "Discovered · Ready to bring into your home profile",
       tone: "suggestion" as const,
     },
   ],
@@ -91,69 +87,75 @@ export const LANDING_HOME_HEALTH = {
 
 export const LANDING_ADVISOR = {
   eyebrow: "Home Advisor",
-  title: "Your home's technology assistant.",
-  text: "Home Advisor watches what is connected, what is due, and what looks off — then recommends the smartest next move in plain language.",
+  title: "Proactive guidance before problems happen.",
+  text: "Home Advisor understands what is connected, what is protected, and what is due — giving you intelligent recommendations in plain language.",
   items: [
     {
-      title: "Printer needs attention",
-      detail: "It has been offline longer than usual.",
-      action: "View device",
+      title: "LG OLED Warranty Auto-Protected",
+      detail: "Receipt & serial number auto-linked to your warranty vault.",
+      action: "Protected",
     },
     {
-      title: "Import discovered devices",
-      detail: "Three Wi-Fi devices are waiting for review.",
-      action: "Review now",
+      title: "Eero Pro 6E Firmware Patch",
+      detail: "Security update available. Can auto-install during off-peak hours.",
+      action: "Ready",
     },
     {
-      title: "Schedule filter reminder",
-      detail: "Your thermostat maintenance is coming up.",
-      action: "Set reminder",
+      title: "HVAC Air Filter Replacement Due",
+      detail: "Quarterly filter maintenance window opens next Tuesday.",
+      action: "Scheduled",
     },
   ],
 } as const;
 
 export const LANDING_DISCOVERY = {
-  eyebrow: "Device Discovery",
-  title: "Find what is already connected.",
-  text: "Connect the desktop app once and Home Tech Vault can discover TVs, computers, printers, cameras, and smart devices on your network — then help you bring them into your home profile.",
+  eyebrow: "Discovery",
+  title: "A home becoming understood.",
+  text: "Home Tech Vault quietly discovers connected technology across your home—smart TVs, mesh hubs, printers, cameras, and audio systems—bringing them into one clear picture.",
   devices: [
-    { name: "Apple TV", room: "Living Room", state: "Ready to import" },
-    { name: "Office printer", room: "Office", state: "Needs review" },
-    { name: "Nest Cam", room: "Entry", state: "Online" },
-    { name: "Guest laptop", room: "Unknown", state: "New device" },
+    { name: "Sonos Arc Soundbar", room: "Living Room", state: "Connected & Protected" },
+    { name: "Apple TV 4K", room: "Family Room", state: "Optimal Signal" },
+    { name: "Eero Pro 6E Gateway", room: "Hallway", state: "34 Hubs Active" },
+    { name: "Lutron Smart Bridge", room: "Utility", state: "Firmware Current" },
   ],
 } as const;
 
 export const LANDING_SEARCH = {
-  eyebrow: "Smart Search",
-  title: "Ask about your home like you would ask a person.",
-  text: "Search for offline devices, expiring coverage, room names, or everyday questions. Smart Search understands your home — not just file names.",
+  eyebrow: "Search Your Home",
+  title: "Ask your home anything in plain English.",
+  text: "Search for expiring coverage, room technology, or network status. Natural language search understands what is in your home without technical jargon.",
   examples: [
+    "What warranty expires next?",
+    "Is my living room TV protected?",
     "Which devices are offline?",
-    "What needs attention this week?",
-    "Show Living Room devices",
-    "Where is my router?",
+    "What is connected to my Wi-Fi?",
   ],
 } as const;
 
 export const LANDING_DOCUMENTS = {
-  eyebrow: "Warranties & documents",
-  title: "Important papers, ready when you need them.",
-  text: "Receipts, warranties, and manuals still matter — they just shouldn't be the headline. Keep them attached to the right devices so they show up exactly when something breaks, expires, or needs replacing.",
+  eyebrow: "Protection",
+  title: "Documents, receipts, warranties, and maintenance. All connected.",
+  text: "Never search through email or drawers again. Every receipt, manual, warranty card, and maintenance schedule is attached directly to the technology it protects.",
   items: [
-    "Warranties tied to the devices they protect",
-    "Receipts ready for claims and returns",
-    "Manuals where you can actually find them",
+    "Warranties auto-tracked and linked to proof of purchase",
+    "Receipts ready for insurance claims and returns",
+    "Manuals and setup guides accessible in one tap",
+    "Maintenance schedules to protect hardware longevity",
   ],
 } as const;
 
 export const LANDING_FAMILY = {
-  eyebrow: "Family",
-  title: "One home. One shared understanding.",
-  text: "Invite the people who live there. Everyone sees the same home health, discoveries, and recommendations — without texting screenshots back and forth.",
+  eyebrow: "Household Sharing",
+  title: "Confidence for the whole home.",
+  text: "Share household awareness with family members so everyone knows what is connected, covered, and how to get help when technology acts up.",
+  items: [
+    "Invite family members with simple, secure access",
+    "Shared peace of mind for parents, partners, and house sitters",
+    "Keep sensitive network details protected with role-based access",
+  ],
   members: [
-    { name: "Alex", role: "Admin" },
-    { name: "Jordan", role: "Member" },
+    { name: "Alex", role: "Owner" },
+    { name: "Jordan", role: "Family Member" },
     { name: "Sam", role: "Viewer" },
   ],
 } as const;
@@ -197,12 +199,12 @@ export const LANDING_FAQ_ITEMS = [
   {
     question: "What does Home Tech Vault actually do?",
     answer:
-      "It helps you understand and manage the technology in your home — from home health and network discovery to recommendations, search, warranties, and shared household access.",
+      "It provides a clear operating system for your home — from home health and device discovery to AI recommendations, natural language search, warranty protection, and shared household access.",
   },
   {
     question: "Is this just another inventory app?",
     answer:
-      "No. Records still matter, but the product leads with awareness: what is healthy, what needs attention, what just joined your network, and what to do next.",
+      "No. Home Tech Vault is built around absolute awareness: what is connected, what is protected, what needs attention, and what to do next.",
   },
   {
     question: "Do I need special hardware?",
@@ -226,42 +228,12 @@ export const LANDING_FAQ_ITEMS = [
 ] as const;
 
 export const LANDING_HERO_DEVICES = [
-  {
-    name: "Living Room TV",
-    room: "Living Room",
-    status: "Online",
-  },
-  {
-    name: "Epson Printer",
-    room: "Office",
-    status: "Needs attention",
-  },
-  {
-    name: "Front Door Camera",
-    room: "Entry",
-    status: "Online",
-  },
-  {
-    name: "Wi-Fi Router",
-    room: "Network",
-    status: "Healthy",
-  },
-  {
-    name: "Nest Thermostat",
-    room: "Hallway",
-    status: "Reminder soon",
-  },
+  { name: "Sonos Arc", status: "Optimal · Living Room" },
+  { name: "LG OLED 4K", status: "Protected · Family Room" },
+  { name: "Eero Pro 6E", status: "34 Devices · Gateway" },
+  { name: "Apple TV 4K", status: "Active · Master Bedroom" },
 ] as const;
 
-export const LANDING_HERO_FLOATING = [
-  { label: "Home Health 92%", position: "top-6 -left-2 md:-left-6" },
-  { label: "3 discoveries", position: "top-16 -right-2 md:-right-8" },
-  { label: "Advisor", position: "bottom-24 -left-4 md:-left-10" },
-  { label: "Offline alert", position: "bottom-10 -right-3 md:-right-6" },
-  { label: "Ask anything", position: "top-1/2 -right-8 hidden md:block" },
-] as const;
-
-/** Legacy exports retained so unused section components still typecheck. */
 export const LANDING_BINDER_CATEGORIES = [
   {
     label: "Devices",
@@ -335,6 +307,12 @@ export const LANDING_ESTIMATOR_QUESTIONS = [
       { label: "6+", value: 7 },
     ],
   },
+] as const;
+
+export const LANDING_ESTIMATOR_PROMPTS = [
+  "How many devices run in your home?",
+  "How many warranties do you currently keep track of?",
+  "How often do you search for home tech documents?",
 ] as const;
 
 export const LANDING_SCENARIOS = [

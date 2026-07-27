@@ -11,6 +11,7 @@ import { landingTheme } from "@/components/landing/public/landingTheme";
 import { LANDING_ANALYTICS_EVENTS } from "@/lib/marketing/landingAnalytics";
 import {
   LANDING_HERO_REASSURANCE,
+  LANDING_HERO_SUBHEADLINES,
   LANDING_PUBLIC_SECTION_IDS,
 } from "@/lib/marketing/landingPublicContent";
 import { MARKETING_ROUTES } from "@/lib/marketing/routes";
@@ -49,7 +50,7 @@ export default function HeroSection({
 
       <div className={landingTheme.sectionNarrow}>
         <div className="grid items-center gap-12 lg:grid-cols-[1fr_1.1fr] lg:gap-16">
-          {/* Left Column — Hero Content & Action CTAs */}
+          {/* Left Column — Hero Narrative & Actions */}
           <motion.div
             initial="hidden"
             animate="visible"
@@ -58,10 +59,10 @@ export default function HeroSection({
             {/* Pill Badge */}
             <motion.div variants={fadeUp} custom={0} className={landingTheme.pill}>
               <Sparkles size={14} className="text-home-health animate-pulse" />
-              <span>Home Tech Vault · Operating System</span>
+              <span>The Operating System for Your Home</span>
             </motion.div>
 
-            {/* Main Headline */}
+            {/* Headline */}
             <motion.h1
               variants={fadeUp}
               custom={1}
@@ -73,45 +74,42 @@ export default function HeroSection({
               </span>
             </motion.h1>
 
-            {/* Subheadline Pillars */}
+            {/* Subheadline (Exact 3 Pillars) */}
             <motion.div
               variants={fadeUp}
               custom={2}
-              className="mt-7 space-y-2.5 text-xl font-medium tracking-tight text-text-secondary sm:text-2xl"
+              className="mt-7 space-y-2.5 text-lg font-medium tracking-tight text-text-secondary sm:text-xl md:text-2xl"
             >
               <div className="flex items-center gap-3">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-interaction-soft text-interaction">
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-interaction-soft text-interaction">
                   <Wifi size={14} strokeWidth={2.5} />
                 </div>
-                <span className="text-text-primary font-semibold">Everything connected.</span>
+                <span className="text-text-primary font-semibold">
+                  {LANDING_HERO_SUBHEADLINES[0]}
+                </span>
               </div>
               <div className="flex items-center gap-3">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-home-health-soft text-home-health">
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-home-health-soft text-home-health">
                   <ShieldCheck size={14} strokeWidth={2.5} />
                 </div>
-                <span className="text-text-primary font-semibold">Everything protected.</span>
+                <span className="text-text-primary font-semibold">
+                  {LANDING_HERO_SUBHEADLINES[1]}
+                </span>
               </div>
               <div className="flex items-center gap-3">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-premium-soft text-premium">
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-premium-soft text-premium">
                   <Sparkles size={14} strokeWidth={2.5} />
                 </div>
-                <span className="text-text-primary font-semibold">Everything understood.</span>
+                <span className="text-text-primary font-semibold">
+                  {LANDING_HERO_SUBHEADLINES[2]}
+                </span>
               </div>
             </motion.div>
-
-            {/* Description Body */}
-            <motion.p
-              variants={fadeUp}
-              custom={3}
-              className="mt-6 max-w-xl text-base leading-7 text-text-muted md:text-lg md:leading-8"
-            >
-              Continuous network awareness, automated warranty protection, and an intelligent Home Advisor — unified in one calm control center for your home.
-            </motion.p>
 
             {/* Primary & Secondary Action CTAs */}
             <motion.div
               variants={fadeUp}
-              custom={4}
+              custom={3}
               className="mt-9 flex flex-col gap-3.5 sm:flex-row sm:flex-wrap sm:items-center"
             >
               <LandingTrackedLink
@@ -129,14 +127,14 @@ export default function HeroSection({
                 className={landingTheme.btnSecondary}
               >
                 <Play size={15} className="mr-2 text-text-muted" aria-hidden />
-                Watch a 60-second Tour
+                Watch the Product Tour
               </LandingScrollLink>
             </motion.div>
 
             {/* Reassurance items */}
             <motion.ul
               variants={fadeUp}
-              custom={5}
+              custom={4}
               className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-x-8"
             >
               {LANDING_HERO_REASSURANCE.map((item) => (
@@ -153,7 +151,7 @@ export default function HeroSection({
             </motion.ul>
           </motion.div>
 
-          {/* Right Column — Interactive Product Preview & Floating Cards */}
+          {/* Right Column — Product Visual Composition */}
           <motion.div
             initial={{ opacity: 0, scale: 0.96, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}

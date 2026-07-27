@@ -1,11 +1,7 @@
-import {
-  Radar,
-  ShieldCheck,
-  Sparkles,
-  Users,
-  Wifi,
-  Activity,
-} from "lucide-react";
+"use client";
+
+import { motion } from "framer-motion";
+import { Radar, ShieldCheck, Sparkles, Wifi } from "lucide-react";
 
 import { landingTheme } from "@/components/landing/public/landingTheme";
 import {
@@ -16,11 +12,9 @@ import { cn } from "@/lib/design-system/cn";
 
 const iconMap = {
   wifi: Wifi,
-  pulse: Activity,
-  radar: Radar,
-  sparkles: Sparkles,
   shield: ShieldCheck,
-  users: Users,
+  pulse: Sparkles,
+  radar: Radar,
 } as const;
 
 export default function ProblemSection() {
@@ -28,47 +22,52 @@ export default function ProblemSection() {
     <section
       id={LANDING_PUBLIC_SECTION_IDS.problems}
       className={cn(
-        "bg-[#EDF3F7]/50 px-5 py-16 md:px-8 md:py-24 lg:px-10",
+        "bg-surface-sunken/40 px-5 py-20 md:px-8 md:py-28 lg:px-12 border-y border-border-subtle/50",
         landingTheme.scrollAnchor
       )}
     >
       <div className={landingTheme.sectionNarrow}>
-        <div className="max-w-2xl">
+        <div className="max-w-3xl">
           <p className={landingTheme.eyebrow}>
-            Everyday home problems
+            The Modern Home Dilemma
           </p>
           <h2 className={cn(landingTheme.headline, "mt-3")}>
-            Built for the moments homeowners actually face.
+            Most homeowners don&apos;t know what is actually happening in their home.
           </h2>
-          <p className={cn(landingTheme.body, "mt-4 max-w-xl")}>
-            Not another place to upload paperwork. A clearer way
-            to understand what is happening with the technology
-            that runs your home.
+          <p className={cn(landingTheme.body, "mt-4 max-w-2xl")}>
+            Technology has filled every room—smart TVs, mesh networks, appliances, and audio systems—yet managing it remains fragmented across drawers, lost emails, and mental checklists.
           </p>
         </div>
 
-        <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {LANDING_PROBLEM_CARDS.map((card) => {
+        {/* 4 Core Problem Pillars */}
+        <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {LANDING_PROBLEM_CARDS.map((card, idx) => {
             const Icon = iconMap[card.icon];
 
             return (
-              <article
+              <motion.article
                 key={card.title}
+                initial={{ opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ duration: 0.45, delay: idx * 0.08, ease: "easeOut" }}
                 className={cn(
                   landingTheme.cardSoft,
-                  "htv-card-interactive p-6 md:p-7"
+                  "htv-card-interactive flex flex-col justify-between p-6 md:p-7 border border-border-subtle/80 bg-surface-card shadow-sm rounded-3xl"
                 )}
               >
-                <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-[#EAF8F0] text-[#3BAF75]">
-                  <Icon size={20} aria-hidden />
-                </span>
-                <h3 className="mt-5 text-lg font-medium text-[#172033]">
-                  {card.title}
-                </h3>
-                <p className="mt-2 text-sm leading-7 text-[#667085]">
-                  {card.text}
-                </p>
-              </article>
+                <div>
+                  <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-surface-sunken text-text-primary shadow-inner">
+                    <Icon size={20} aria-hidden />
+                  </div>
+                  <h3 className="mt-5 text-base font-semibold text-text-primary tracking-tight">
+                    {card.title}
+                  </h3>
+                  <p className="mt-2.5 text-xs leading-6 text-text-muted">
+                    {card.text}
+                  </p>
+                </div>
+              </motion.article>
             );
           })}
         </div>

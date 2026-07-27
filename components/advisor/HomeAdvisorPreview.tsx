@@ -26,10 +26,7 @@ export default function HomeAdvisorPreview({
 }: HomeAdvisorPreviewProps) {
   if (loading) {
     return (
-      <section
-        aria-label="Home Advisor"
-        className="htv-glass-card p-6"
-      >
+      <section aria-label="What needs attention" className="htv-glass-card p-6">
         <DashboardSkeleton />
       </section>
     );
@@ -38,7 +35,7 @@ export default function HomeAdvisorPreview({
   if (error) {
     return (
       <section
-        aria-label="Home Advisor"
+        aria-label="What needs attention"
         className="htv-glass-card p-6 border-danger/30 bg-danger-soft/20 text-danger"
       >
         <p className="text-sm font-semibold">{error}</p>
@@ -55,18 +52,17 @@ export default function HomeAdvisorPreview({
     PREVIEW_LIMIT
   );
   const remainingCount = Math.max(
-    advisor.insights.length -
-      topInsights.length,
+    advisor.insights.length - topInsights.length,
     0
   );
 
   return (
     <section
-      aria-label="Home Advisor Intelligence"
-      className="htv-glass-card-elevated relative overflow-hidden p-6 md:p-8 htv-ambient-plum"
+      aria-label="What needs attention"
+      className="htv-glass-card-elevated relative overflow-hidden p-6 md:p-8 rounded-[32px] border border-border-subtle bg-surface-card shadow-lift"
       data-tour="home-advisor"
     >
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between border-b border-border-subtle/60 pb-4">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-premium-soft text-premium shadow-sm">
             <BrainCircuit size={20} />
@@ -74,14 +70,14 @@ export default function HomeAdvisorPreview({
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-xl font-bold tracking-tight text-text-primary">
-                Home Intelligence Advisor
+                What needs attention?
               </h2>
               <span className="htv-glass-pill px-2.5 py-0.5 text-[0.6875rem] font-bold text-premium bg-premium-soft border-premium/20">
-                AI Active
+                Home Advisor
               </span>
             </div>
-            <p className="text-xs text-text-secondary">
-              Continuous proactive guidance & smart recommendations
+            <p className="text-xs text-text-muted">
+              Proactive recommendations in plain language
             </p>
           </div>
         </div>
@@ -97,12 +93,12 @@ export default function HomeAdvisorPreview({
           ))}
         </div>
       ) : (
-        <div className="mt-6 htv-glass-card p-4 flex items-center gap-3">
+        <div className="mt-6 htv-glass-card p-4 flex items-center gap-3 border border-border-subtle">
           <Sparkles size={18} className="text-premium shrink-0" />
           <p className="text-sm font-medium text-text-primary leading-relaxed">
             {humanizeAdvisorText(
               advisor.summary ||
-                "Your home OS is fully optimized. No urgent actions needed."
+                "Your home technology is fully optimized. Everything is operating smoothly."
             )}
           </p>
         </div>
@@ -111,14 +107,14 @@ export default function HomeAdvisorPreview({
       {remainingCount > 0 ? (
         <div className="mt-6 flex items-center justify-between border-t border-border-subtle/60 pt-4">
           <p className="text-xs font-semibold text-text-secondary">
-            +{remainingCount} additional smart recommendations
+            +{remainingCount} additional recommendations
           </p>
 
           <Link
             href="/advisor"
             className="htv-glass-pill px-4 py-2 inline-flex items-center gap-1.5 text-xs font-bold text-premium hover:bg-premium-soft transition-colors"
           >
-            <span>Launch Intelligence Hub</span>
+            <span>View All Insights</span>
             <ArrowRight size={14} aria-hidden />
           </Link>
         </div>
@@ -128,7 +124,7 @@ export default function HomeAdvisorPreview({
             href="/advisor"
             className="htv-glass-pill px-4 py-2 inline-flex items-center gap-1.5 text-xs font-bold text-premium hover:bg-premium-soft transition-colors"
           >
-            <span>Launch Intelligence Hub</span>
+            <span>View All Insights</span>
             <ArrowRight size={14} aria-hidden />
           </Link>
         </div>
@@ -136,4 +132,3 @@ export default function HomeAdvisorPreview({
     </section>
   );
 }
-
