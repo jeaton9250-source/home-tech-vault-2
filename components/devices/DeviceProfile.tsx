@@ -784,6 +784,7 @@ export default function DeviceProfile({
       {/* Maintenance */}
       <DeviceProfileMaintenance
         deviceId={device.id}
+        device={device}
         onReadOnlyAction={onReadOnlyAction}
       />
 

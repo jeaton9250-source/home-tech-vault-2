@@ -7,6 +7,7 @@ import {
   useState,
 } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, Loader2 } from "lucide-react";
 
 import NetworkDiscoveryDashboard from "@/components/network/NetworkDiscoveryDashboard";
@@ -19,6 +20,7 @@ import { useDemoReadOnlyAction } from "@/components/demo/DemoExperienceProvider"
 import { usePermissions } from "@/hooks/usePermissions";
 import { supabase } from "@/lib/supabase";
 import { applyHouseholdScope } from "@/lib/data/householdScope";
+import { buildDeviceMaintenanceRecommendationsUrl } from "@/lib/devices/maintenanceRecommendations";
 
 import {
   buildDemoDiscoveryReviewConnectors,
@@ -54,6 +56,7 @@ type VaultDeviceOption = {
 };
 
 function DiscoveryReviewContent() {
+  const router = useRouter();
   const {
     user,
     isDemo,
@@ -246,7 +249,10 @@ function DiscoveryReviewContent() {
 
   async function runAction(
     discoveryId: string,
-    action: () => Promise<Response>
+    action: () => Promise<Response>,
+    options?: {
+      onSuccess?: (response: Response) => Promise<void> | void;
+    }
   ) {
     if (isDemo || !canEdit) {
       showReadOnlyModal();
@@ -287,7 +293,11 @@ function DiscoveryReviewContent() {
         );
       }
 
-      await reloadReviewData(false);
+      if (options?.onSuccess) {
+        await options.onSuccess(response);
+      } else {
+        await reloadReviewData(false);
+      }
     } catch (error) {
       setErrorMessage(
         error instanceof Error
@@ -472,8 +482,22 @@ function DiscoveryReviewContent() {
                   force,
                 }),
               }
-            )
-          );
+            ),
+          {
+            onSuccess: async (response) => {
+              const payload = (await response.json()) as {
+                deviceId?: string;
+              };
+
+              if (payload.deviceId) {
+                router.push(
+                  buildDeviceMaintenanceRecommendationsUrl(
+                    payload.deviceId
+                  )
+                );
+              }
+            },
+          });
         }}
         onTreatAsNew={(discovery) => {
           if (!householdId) {

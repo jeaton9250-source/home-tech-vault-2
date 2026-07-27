@@ -19,6 +19,7 @@ import {
 import { usePermissions } from "@/hooks/usePermissions";
 import DemoWriteGate from "@/components/demo/DemoWriteGate";
 import { addDevice } from "@/app/devices/actions";
+import { buildDeviceMaintenanceRecommendationsUrl } from "@/lib/devices/maintenanceRecommendations";
 
 import PageShell from "@/components/ui/PageShell";
 import PageTitle from "@/components/ui/PageTitle";
@@ -208,7 +209,9 @@ export default function AddDevicePage() {
         return;
       }
 
-      router.push("/devices");
+      router.push(
+        buildDeviceMaintenanceRecommendationsUrl(result.deviceId)
+      );
       router.refresh();
     } catch (error) {
       console.error(

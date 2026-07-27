@@ -1,14 +1,26 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import {
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 
 import {
   AlertCircle,
   CalendarDays,
+  Check,
   CheckCircle2,
   Clock,
   Loader2,
   Plus,
+  Sparkles,
   RotateCcw,
   Wrench,
 } from "lucide-react";
@@ -19,8 +31,15 @@ import { demoMaintenance } from "@/lib/demoData";
 import { usePermissions } from "@/hooks/usePermissions";
 import { cn } from "@/lib/design-system/cn";
 import { formatProfileDate } from "@/lib/devices/deviceProfileUtils";
+import {
+  buildDeviceMaintenanceRecommendations,
+  MAINTENANCE_RECOMMENDATIONS_QUERY_PARAM,
+  type DeviceMaintenanceRecommendation,
+  type DeviceMaintenanceSource,
+} from "@/lib/devices/maintenanceRecommendations";
 import Button from "@/components/ui/Button";
 import PageCard from "@/components/ui/PageCard";
+import { createMaintenanceTasksForDevice } from "@/app/maintenance/actions";
 
 type MaintenanceRow = {
   id: string;
@@ -73,15 +92,22 @@ function normalizeDemoTask(
 
 type DeviceProfileMaintenanceProps = {
   deviceId: string;
+  device: DeviceMaintenanceSource;
   onReadOnlyAction?: () => void;
   embedded?: boolean;
 };
 
 export default function DeviceProfileMaintenance({
   deviceId,
+  device,
   onReadOnlyAction,
   embedded = false,
 }: DeviceProfileMaintenanceProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const hasRecommendationQuery =
+    searchParams.get(MAINTENANCE_RECOMMENDATIONS_QUERY_PARAM) === "1";
   const {
     user,
     isDemo,
@@ -94,6 +120,16 @@ export default function DeviceProfileMaintenance({
   const [tasks, setTasks] = useState<MaintenanceRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const [recommendationsOpen, setRecommendationsOpen] = useState(
+    hasRecommendationQuery
+  );
+  const [choosingTasks, setChoosingTasks] = useState(false);
+  const [selectedRecommendationIds, setSelectedRecommendationIds] = useState<Set<string>>(new Set());
+  const [savingRecommendations, setSavingRecommendations] = useState(false);
+  const [recommendationMessage, setRecommendationMessage] = useState("");
+  const [recommendationLaunchReason, setRecommendationLaunchReason] = useState<
+    "new-device" | "manual" | null
+  >(hasRecommendationQuery ? "new-device" : null);
 
   const isGuestDemo = isDemo || !user;
   const isViewer =
@@ -106,6 +142,29 @@ export default function DeviceProfileMaintenance({
     !permissionsLoading && canCreate && !isGuestDemo;
 
   const quickAddHref = `/maintenance/new?deviceId=${encodeURIComponent(deviceId)}&returnTo=${encodeURIComponent(`/devices/${deviceId}?tab=maintenance`)}`;
+
+  const recommendations = useMemo(
+    () => buildDeviceMaintenanceRecommendations(device, tasks),
+    [device, tasks]
+  );
+
+  const recommendationDismissedKey =
+    `device-maintenance-recommendations-dismissed:${deviceId}`;
+
+  useEffect(() => {
+    if (!hasRecommendationQuery) {
+      return;
+    }
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete(MAINTENANCE_RECOMMENDATIONS_QUERY_PARAM);
+
+    const nextUrl = params.toString()
+      ? `${pathname}?${params.toString()}`
+      : pathname;
+
+    router.replace(nextUrl, { scroll: false });
+  }, [hasRecommendationQuery, pathname, router, searchParams]);
 
   const loadTasks = useCallback(async () => {
     if (permissionsLoading) {
@@ -156,6 +215,7 @@ export default function DeviceProfileMaintenance({
   }, [deviceId, householdId, isDemo, permissionsLoading, user]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void loadTasks();
   }, [loadTasks]);
 
@@ -206,6 +266,98 @@ export default function DeviceProfileMaintenance({
     return null;
   }
 
+  function hideRecommendations() {
+    if (typeof window !== "undefined") {
+      window.sessionStorage.setItem(recommendationDismissedKey, "1");
+    }
+
+    setRecommendationsOpen(false);
+    setChoosingTasks(false);
+    setSelectedRecommendationIds(new Set());
+    setRecommendationMessage("");
+    setRecommendationLaunchReason(null);
+  }
+
+  function openRecommendations() {
+    setRecommendationsOpen(true);
+    setRecommendationLaunchReason("manual");
+    setRecommendationMessage("");
+  }
+
+  function showRecommendationChoices() {
+    setRecommendationsOpen(true);
+    setChoosingTasks(true);
+    setSelectedRecommendationIds(
+      new Set(recommendations.map((item) => item.id))
+    );
+    setRecommendationMessage("");
+  }
+
+  async function addRecommendations(
+    selected: DeviceMaintenanceRecommendation[]
+  ) {
+    if (isDemo) {
+      onReadOnlyAction?.();
+      return;
+    }
+
+    if (!canAddMaintenance || !user) {
+      return;
+    }
+
+    if (selected.length === 0) {
+      setRecommendationMessage("Choose at least one task.");
+      return;
+    }
+
+    try {
+      setSavingRecommendations(true);
+      setRecommendationMessage("");
+
+      const result = await createMaintenanceTasksForDevice({
+        deviceId,
+        tasks: selected.map((item) => ({
+          title: item.title,
+          description: item.description,
+          taskType: item.taskType,
+          dueDate: new Date(
+            Date.now() + item.dueInDays * 24 * 60 * 60 * 1000
+          )
+            .toISOString()
+            .slice(0, 10),
+          recurringInterval: item.recurringInterval,
+        })),
+      });
+
+      if (!result.success) {
+        setRecommendationMessage(result.error);
+        return;
+      }
+
+      hideRecommendations();
+      await loadTasks();
+    } catch (error) {
+      console.error("Unable to add recommended maintenance:", error);
+      setRecommendationMessage(
+        "Unable to add the recommended tasks right now. Please try again."
+      );
+    } finally {
+      setSavingRecommendations(false);
+    }
+  }
+
+  async function handleAddAllRecommendations() {
+    await addRecommendations(recommendations);
+  }
+
+  async function handleAddSelectedRecommendations() {
+    await addRecommendations(
+      recommendations.filter((item) =>
+        selectedRecommendationIds.has(item.id)
+      )
+    );
+  }
+
   const content = (
     <>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -218,10 +370,163 @@ export default function DeviceProfileMaintenance({
             Track cleaning, firmware updates, filter changes, inspections, and
             other routine care for this device.
           </p>
+
+          {!recommendationsOpen && recommendations.length > 0 ? (
+            <button
+              type="button"
+              onClick={openRecommendations}
+              className="mt-4 inline-flex items-center gap-2 rounded-full border border-border-subtle bg-surface-sunken/70 px-4 py-2 text-sm font-medium text-text-primary transition hover:border-interaction/40 hover:text-interaction"
+            >
+              <Sparkles size={16} />
+              Show Recommended Maintenance
+            </button>
+          ) : null}
         </div>
 
         {renderAddButton()}
       </div>
+
+      {recommendationsOpen ? (
+        <div className="mt-6 rounded-[24px] border border-amber-200 bg-amber-50/70 p-5 shadow-[var(--shadow-sm)]">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <p className="text-overline text-warning">
+                {recommendationLaunchReason === "new-device"
+                  ? "Recommended maintenance for your new device"
+                  : "Recommended Maintenance"}
+              </p>
+              <h3 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-text-primary">
+                Suggested tasks for {device.device_name?.trim() || "this device"}
+              </h3>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-text-secondary">
+                These suggestions are based on the device category, manufacturer,
+                and model. They will only be created if you choose them.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                onClick={() => void handleAddAllRecommendations()}
+                disabled={savingRecommendations || recommendations.length === 0}
+              >
+                {savingRecommendations ? (
+                  <Loader2 className="animate-spin" size={16} />
+                ) : (
+                  <CheckCircle2 size={16} />
+                )}
+                Add All
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={showRecommendationChoices}
+                disabled={savingRecommendations || recommendations.length === 0}
+              >
+                Choose Tasks
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={hideRecommendations}
+                disabled={savingRecommendations}
+              >
+                Skip
+              </Button>
+            </div>
+          </div>
+
+          {recommendationMessage ? (
+            <p className="mt-4 rounded-2xl border border-red-200 bg-white px-4 py-3 text-sm text-red-700">
+              {recommendationMessage}
+            </p>
+          ) : null}
+
+          {choosingTasks ? (
+            <div className="mt-5 space-y-3">
+              {recommendations.map((recommendation) => {
+                const checked = selectedRecommendationIds.has(
+                  recommendation.id
+                );
+
+                return (
+                  <label
+                    key={recommendation.id}
+                    className="flex cursor-pointer gap-4 rounded-[20px] border border-border-subtle bg-white px-4 py-4 transition hover:border-interaction/30"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={(event) => {
+                        setSelectedRecommendationIds((current) => {
+                          const next = new Set(current);
+
+                          if (event.target.checked) {
+                            next.add(recommendation.id);
+                          } else {
+                            next.delete(recommendation.id);
+                          }
+
+                          return next;
+                        });
+                      }}
+                      className="mt-1 h-4 w-4 rounded border-border-subtle text-interaction focus:ring-interaction"
+                    />
+
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h4 className="font-semibold text-text-primary">
+                          {recommendation.title}
+                        </h4>
+                        <span className="rounded-full bg-surface-sunken px-2.5 py-1 text-xs font-medium text-text-secondary">
+                          {recommendation.taskType}
+                        </span>
+                        <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-900">
+                          {recommendation.reason}
+                        </span>
+                      </div>
+
+                      <p className="mt-2 text-sm leading-6 text-text-secondary">
+                        {recommendation.description}
+                      </p>
+
+                      <p className="mt-2 text-xs text-text-tertiary">
+                        Suggested cadence: {recommendation.recurringInterval || "As needed"}
+                        {recommendation.dueInDays > 0
+                          ? ` · Due in about ${recommendation.dueInDays} days`
+                          : ""}
+                      </p>
+                    </div>
+                  </label>
+                );
+              })}
+
+              <div className="flex flex-wrap gap-3 pt-2">
+                <Button
+                  type="button"
+                  onClick={() => void handleAddSelectedRecommendations()}
+                  disabled={savingRecommendations}
+                >
+                  {savingRecommendations ? (
+                    <Loader2 className="animate-spin" size={16} />
+                  ) : (
+                    <Check size={16} />
+                  )}
+                  Add Selected Tasks
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setChoosingTasks(false)}
+                  disabled={savingRecommendations}
+                >
+                  Back
+                </Button>
+              </div>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
 
       {isViewer ? (
         <p className="mt-4 rounded-[20px] border border-border-subtle bg-surface-sunken/60 px-4 py-3 text-sm text-text-secondary">

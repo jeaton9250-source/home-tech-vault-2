@@ -215,25 +215,17 @@ export default function DevicePage() {
   const [documentCount, setDocumentCount] =
     useState<number | null>(null);
 
-  const [activeTab, setActiveTab] =
-    useState<DeviceDetailTab>(() =>
-      resolveDeviceDetailTab(searchParams.get("tab"))
-    );
+  const activeTab = useMemo(
+    () => resolveDeviceDetailTab(searchParams.get("tab")),
+    [searchParams]
+  );
 
   const [actionsOpen, setActionsOpen] =
     useState(false);
 
   const actionsRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    setActiveTab(
-      resolveDeviceDetailTab(searchParams.get("tab"))
-    );
-  }, [searchParams]);
-
   function selectTab(tab: DeviceDetailTab) {
-    setActiveTab(tab);
-
     const params = new URLSearchParams(
       searchParams.toString()
     );
@@ -1754,6 +1746,7 @@ export default function DevicePage() {
         {activeTab === "maintenance" ? (
           <DeviceProfileMaintenance
             deviceId={device.id}
+            device={device}
             onReadOnlyAction={showReadOnlyModal}
             embedded
           />
