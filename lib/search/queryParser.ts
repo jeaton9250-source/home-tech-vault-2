@@ -8,6 +8,8 @@ const STOP_WORDS = new Set([
   "are",
   "device",
   "devices",
+  "connected",
+  "connect",
   "every",
   "find",
   "for",
@@ -177,6 +179,11 @@ export function parseSearchQuery(query: string): SmartSearchQueryIntent {
 
   const wantsOffline = /\boffline\b/.test(normalized);
   const wantsOnline = /\bonline\b/.test(normalized) && !wantsOffline;
+  const wantsNetwork =
+    /\bnetwork\b/.test(normalized) ||
+    /\bwi[- ]?fi\b/.test(normalized) ||
+    /\brouter\b/.test(normalized) ||
+    /\bconnected\b/.test(normalized);
   const wantsWarrantySoon =
     /warrant/.test(normalized) &&
     /(soon|expire|expiring|this month|next month)/.test(normalized);
@@ -253,6 +260,7 @@ export function parseSearchQuery(query: string): SmartSearchQueryIntent {
     phrases,
     wantsOffline,
     wantsOnline,
+    wantsNetwork,
     wantsWarrantySoon,
     wantsMaintenance,
     wantsDocuments,

@@ -2,22 +2,32 @@
 
 import {
   FormEvent,
+  useCallback,
+  useEffect,
+  useRef,
   useState,
 } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
-import { Loader2, Search, Sparkles } from "lucide-react";
+import { Clock3, Loader2, Search, Sparkles } from "lucide-react";
 
-import { usePermissions } from "@/hooks/usePermissions";
-import { demoDevices, demoDocuments, demoMaintenance } from "@/lib/demoData";
-import { parseSearchQuery } from "@/lib/search/queryParser";
 import SearchResults from "@/components/search/SearchResults";
 import PageCard from "@/components/ui/PageCard";
 import Button from "@/components/ui/Button";
+import { useDemoMode } from "@/hooks/useDemoMode";
+import { useAIAdvisor } from "@/hooks/useAIAdvisor";
+import { usePermissions } from "@/hooks/usePermissions";
+import { buildDemoSmartSearchResponse } from "@/lib/demo/demoSmartSearch";
 import {
-  emptySearchResults,
-  type SmartSearchResponse,
-} from "@/lib/search/searchTypes";
+  loadRecentSearches,
+  saveRecentSearch,
+} from "@/lib/search/recentSearches";
+import { resolveSmartSearchResponse } from "@/lib/search/smartSearchClient";
+import {
+  getSmartSearchQueryFromUrl,
+  shouldAutoRunDemoSearch,
+} from "@/lib/search/smartSearchState";
+import type { SmartSearchResponse } from "@/lib/search/searchTypes";
 
 import { cn } from "@/lib/design-system/cn";
 
@@ -32,167 +42,14 @@ type SmartSearchProps = {
   initialResponse?: SmartSearchResponse | null;
 };
 
-const EXAMPLE_SEARCHES = [
+const SUGGESTED_SEARCHES = [
+  "Which devices are offline?",
+  "What warranties expire soon?",
+  "Where is my router receipt?",
+  "Show devices that need maintenance",
   "Router password",
-  "Samsung TV receipt",
   "Devices in Living Room",
-  "Warranty expiring",
-  "Offline devices",
-  "Where is my Xbox?",
-  "Apple devices",
-  "Find my printer",
 ];
-
-function buildDemoResponse(query: string): SmartSearchResponse {
-  const intent = parseSearchQuery(query);
-  const results = emptySearchResults();
-  const normalized = intent.normalized;
-
-  const includes = (value: string | null | undefined) =>
-    (value ?? "").toLowerCase().includes(normalized);
-
-  if (normalized) {
-    for (const device of demoDevices) {
-      const haystack = [
-        device.device_name,
-        device.brand,
-        device.model_number,
-        device.serial_number,
-        device.category,
-        device.location,
-        device.notes,
-        device.ip_address,
-        device.mac_address,
-        device.manufacturer,
-      ]
-        .join(" ")
-        .toLowerCase();
-
-      if (haystack.includes(normalized)) {
-        results.devices.push({
-          id: `demo-device-${device.id}`,
-          group: "devices",
-          title: device.device_name,
-          subtitle: [device.brand, device.model_number].filter(Boolean).join(" • "),
-          location: device.location,
-          status: device.online ? "Online" : "Offline",
-          href: `/devices/${device.id}`,
-          match: {
-            field: "Device",
-            value: device.device_name,
-          },
-        });
-      }
-
-      if (includes(device.warranty_date)) {
-        results.warranties.push({
-          id: `demo-warranty-${device.id}`,
-          group: "warranties",
-          title: device.device_name,
-          subtitle: device.brand,
-          location: device.location,
-          status: `Protected until ${device.warranty_date}`,
-          href: `/devices/${device.id}?tab=warranty`,
-          match: {
-            field: "Warranty",
-            value: device.warranty_date,
-          },
-        });
-      }
-    }
-
-    for (const task of demoMaintenance) {
-      const haystack = [task.title, task.device_name, task.notes].join(" ").toLowerCase();
-
-      if (haystack.includes(normalized)) {
-        results.maintenance.push({
-          id: `demo-maintenance-${task.id}`,
-          group: "maintenance",
-          title: task.title,
-          subtitle: `Device: ${task.device_name}`,
-          status: task.status,
-          href: "/maintenance",
-          match: {
-            field: "Maintenance",
-            value: task.title,
-          },
-        });
-      }
-    }
-
-    for (const document of demoDocuments) {
-      const haystack = [
-        document.document_name,
-        document.file_name,
-        document.document_type,
-      ]
-        .join(" ")
-        .toLowerCase();
-
-      if (haystack.includes(normalized)) {
-        results.documents.push({
-          id: `demo-document-${document.id}`,
-          group: "documents",
-          title: document.document_name,
-          subtitle: document.file_name,
-          status: document.document_type,
-          href: "/documents",
-          match: {
-            field: "Document",
-            value: document.document_name,
-          },
-        });
-      }
-    }
-
-    for (const networkItem of demoDevices) {
-      const haystack = [
-        networkItem.device_name,
-        networkItem.ip_address,
-        networkItem.mac_address,
-        networkItem.manufacturer,
-      ]
-        .join(" ")
-        .toLowerCase();
-
-      if (haystack.includes(normalized)) {
-        results.network.push({
-          id: `demo-network-${networkItem.id}`,
-          group: "network",
-          title: networkItem.device_name,
-          subtitle: networkItem.manufacturer,
-          status: networkItem.online ? "Online" : "Offline",
-          href: "/network?tab=discovery",
-          match: {
-            field: "Network",
-            value: networkItem.mac_address,
-          },
-        });
-      }
-    }
-  }
-
-  const total =
-    results.devices.length +
-    results.warranties.length +
-    results.maintenance.length +
-    results.documents.length +
-    results.network.length;
-
-  return {
-    success: true,
-    query,
-    intent,
-    results,
-    total,
-    suggestions: [
-      "Which devices are offline?",
-      "What warranties expire soon?",
-      "Where is my router receipt?",
-      "Show devices that need maintenance",
-    ],
-  };
-}
 
 export default function SmartSearch({
   mode = "page",
@@ -205,9 +62,9 @@ export default function SmartSearch({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const { isDemo } = usePermissions();
+  const { isDemo } = useDemoMode();
 
-  const urlQuery = searchParams.get("q")?.trim() || "";
+  const urlQuery = getSmartSearchQueryFromUrl(searchParams, initialQuery);
 
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
@@ -215,13 +72,29 @@ export default function SmartSearch({
   const [response, setResponse] = useState<SmartSearchResponse | null>(
     initialResponse
   );
+  const [recentSearches, setRecentSearches] =
+    useState<string[]>(() =>
+      mode === "page"
+        ? loadRecentSearches()
+        : []
+    );
+
+  const demoBootstrapRef = useRef(false);
 
   const activeQuery =
     mode === "page"
       ? query || urlQuery || initialQuery
       : query;
 
-  async function runSearch(value: string) {
+  const rememberSearch = useCallback((value: string) => {
+    saveRecentSearch(value);
+
+    if (mode === "page") {
+      setRecentSearches(loadRecentSearches());
+    }
+  }, [mode]);
+
+  const runSearch = useCallback(async (value: string) => {
     const trimmed = value.trim();
 
     if (!trimmed) {
@@ -230,37 +103,45 @@ export default function SmartSearch({
       return;
     }
 
-    if (isDemo) {
-      setResponse(buildDemoResponse(trimmed));
-      setError("");
-      return;
-    }
-
     try {
       setLoading(true);
       setError("");
 
-      const routeResponse = await fetch(`/api/search?q=${encodeURIComponent(trimmed)}`, {
-        method: "GET",
-        cache: "no-store",
+      const payload = await resolveSmartSearchResponse({
+        query: trimmed,
+        isDemo,
+        buildDemoResponse: buildDemoSmartSearchResponse,
       });
 
-      const payload = (await routeResponse.json()) as SmartSearchResponse & {
-        error?: string;
-      };
-
-      if (!routeResponse.ok || payload.success === false) {
-        throw new Error(payload.error || "Unable to search your home technology.");
-      }
-
       setResponse(payload);
+      rememberSearch(trimmed);
     } catch (searchError) {
       setResponse(null);
-      setError(searchError instanceof Error ? searchError.message : "Unable to search your home technology.");
+      setError(
+        searchError instanceof Error
+          ? searchError.message
+          : "Unable to search your home technology."
+      );
     } finally {
       setLoading(false);
     }
-  }
+  }, [isDemo, rememberSearch]);
+
+  useEffect(() => {
+    if (
+      !shouldAutoRunDemoSearch({
+        mode,
+        isDemo,
+        activeQuery,
+        initialResponse: response,
+      }) || demoBootstrapRef.current
+    ) {
+      return;
+    }
+
+    demoBootstrapRef.current = true;
+    void runSearch(activeQuery);
+  }, [activeQuery, isDemo, mode, response, runSearch]);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -294,17 +175,22 @@ export default function SmartSearch({
     void runSearch(example);
   }
 
-  const isHero = variant === "hero" || mode === "page";
+  const isHero = variant === "hero" && mode === "dashboard";
+  const isWorkspace = mode === "page";
+  const trimmedQuery = activeQuery.trim();
+  const showWorkspaceEmptyState =
+    isWorkspace && !trimmedQuery && !loading;
 
   return (
     <div className="space-y-4">
       <PageCard
         className={cn(
-          isHero && "border-border-subtle/80 bg-surface-card p-6 md:p-8"
+          isHero && "border-border-subtle/80 bg-surface-card p-6 md:p-8",
+          isWorkspace && "border-border-subtle/80 bg-surface-card p-5 md:p-6"
         )}
       >
-        <div className={cn(isHero ? "space-y-5" : "flex items-start gap-3")}>
-          {!isHero ? (
+        <div className={cn(isHero || isWorkspace ? "space-y-5" : "flex items-start gap-3")}>
+          {!isHero && !isWorkspace ? (
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[var(--radius-button)] border border-border-subtle bg-surface-sunken text-charcoal">
               <Search size={18} />
             </div>
@@ -325,6 +211,15 @@ export default function SmartSearch({
                   </p>
                 </div>
               </div>
+            ) : isWorkspace ? (
+              <div>
+                <h2 className="text-base font-semibold text-text-primary">
+                  {heading || "Search workspace"}
+                </h2>
+                <p className="mt-1 text-sm text-text-secondary">
+                  Search devices, documents, warranties, maintenance, and network records.
+                </p>
+              </div>
             ) : (
               <>
                 <h2 className="text-lg font-semibold text-text-primary">
@@ -340,7 +235,7 @@ export default function SmartSearch({
               onSubmit={handleSubmit}
               className={cn(
                 "flex flex-col gap-3",
-                isHero ? "mt-6" : "mt-4 sm:flex-row sm:gap-2"
+                isHero || isWorkspace ? "mt-6" : "mt-4 sm:flex-row sm:gap-2"
               )}
             >
               <div className="relative min-w-0 flex-1">
@@ -366,7 +261,7 @@ export default function SmartSearch({
               <Button
                 type="submit"
                 disabled={loading}
-                className={cn(isHero && "sm:self-stretch sm:px-6")}
+                className={cn((isHero || isWorkspace) && "sm:self-stretch sm:px-6")}
               >
                 {loading ? (
                   <Loader2 size={16} className="animate-spin" />
@@ -383,7 +278,7 @@ export default function SmartSearch({
                   Try asking
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {EXAMPLE_SEARCHES.map((example) => (
+                  {SUGGESTED_SEARCHES.slice(0, 6).map((example) => (
                     <button
                       key={example}
                       type="button"
@@ -400,14 +295,95 @@ export default function SmartSearch({
         </div>
       </PageCard>
 
+      {showWorkspaceEmptyState ? (
+        <div className="grid gap-4 lg:grid-cols-2">
+          {recentSearches.length > 0 ? (
+            <PageCard className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Clock3 size={16} className="text-text-muted" aria-hidden />
+                <h3 className="text-sm font-semibold text-text-primary">
+                  Recent searches
+                </h3>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {recentSearches.map((entry) => (
+                  <button
+                    key={entry}
+                    type="button"
+                    onClick={() => handleExampleClick(entry)}
+                    className="rounded-full border border-border-subtle bg-surface-sunken px-3.5 py-1.5 text-sm text-text-secondary transition hover:border-border-strong hover:bg-surface-card hover:text-text-primary"
+                  >
+                    {entry}
+                  </button>
+                ))}
+              </div>
+            </PageCard>
+          ) : null}
+
+          <PageCard className="space-y-3">
+            <h3 className="text-sm font-semibold text-text-primary">
+              Suggested searches
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {SUGGESTED_SEARCHES.map((example) => (
+                <button
+                  key={example}
+                  type="button"
+                  onClick={() => handleExampleClick(example)}
+                  className="rounded-full border border-border-subtle bg-surface-sunken px-3.5 py-1.5 text-sm text-text-secondary transition hover:border-border-strong hover:bg-surface-card hover:text-text-primary"
+                >
+                  {example}
+                </button>
+              ))}
+            </div>
+          </PageCard>
+        </div>
+      ) : null}
+
       {mode === "page" ? (
-        <SearchResults
-          response={activeQuery.trim() ? response : null}
-          loading={loading}
-          error={error}
-          query={activeQuery.trim()}
-        />
+        isDemo ? (
+          <SearchResults
+            response={trimmedQuery ? response : null}
+            loading={loading}
+            error={error}
+            query={trimmedQuery}
+            demoMode
+          />
+        ) : (
+          <AuthenticatedSearchResults
+            response={trimmedQuery ? response : null}
+            loading={loading}
+            error={error}
+            query={trimmedQuery}
+          />
+        )
       ) : null}
     </div>
+  );
+}
+
+function AuthenticatedSearchResults({
+  response,
+  loading,
+  error,
+  query,
+}: {
+  response: SmartSearchResponse | null;
+  loading: boolean;
+  error: string;
+  query: string;
+}) {
+  const { open: openAdvisor } = useAIAdvisor();
+  const { canViewFeature } = usePermissions();
+
+  return (
+    <SearchResults
+      response={response}
+      loading={loading}
+      error={error}
+      query={query}
+      showAdvisorCta={canViewFeature("aiAdvisor")}
+      onOpenAdvisor={openAdvisor}
+    />
   );
 }

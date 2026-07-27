@@ -5,8 +5,7 @@ import Link from "next/link";
 import { ArrowRight, Bot, Search, Sparkles } from "lucide-react";
 
 import PageCard from "@/components/ui/PageCard";
-import { useAIAdvisor } from "@/hooks/useAIAdvisor";
-import { usePermissions } from "@/hooks/usePermissions";
+import Button from "@/components/ui/Button";
 import {
   SMART_SEARCH_GROUP_LABELS,
   type SmartSearchGroupedResults,
@@ -19,6 +18,9 @@ type SearchResultsProps = {
   loading: boolean;
   error: string;
   query?: string;
+  demoMode?: boolean;
+  showAdvisorCta?: boolean;
+  onOpenAdvisor?: () => void;
 };
 
 const GROUP_ORDER: SmartSearchGroup[] = [
@@ -60,10 +62,10 @@ export default function SearchResults({
   loading,
   error,
   query = "",
+  demoMode = false,
+  showAdvisorCta = false,
+  onOpenAdvisor,
 }: SearchResultsProps) {
-  const { open: openAdvisor } = useAIAdvisor();
-  const { canViewFeature } = usePermissions();
-
   if (loading) {
     return (
       <PageCard>
@@ -108,12 +110,24 @@ export default function SearchResults({
       <div className="space-y-5">
         <PageCard>
           <h2 className="text-base font-semibold text-text-primary">
-            No matching records
+            {demoMode
+              ? "No demo results matched that search."
+              : "No matching records"}
           </h2>
           <p className="mt-2 text-sm leading-6 text-text-secondary">
-            Try a simpler search, a room name, a brand, or a phrase like
-            &quot;offline&quot; or &quot;warranty expiring&quot;.
+            {demoMode
+              ? "Try a simpler search, a room name, a brand, or one of the demo suggestions below."
+              : "Try a simpler search, a room name, a brand, or a phrase like \"offline\" or \"warranty expiring\"."}
           </p>
+
+          {demoMode ? (
+            <div className="mt-4">
+              <Button href="/signup" variant="secondary" size="sm">
+                Create your vault to search your own home.
+              </Button>
+            </div>
+          ) : null}
+
           <div className="mt-4 flex flex-wrap gap-2">
             {response.suggestions.slice(0, 4).map((suggestion) => (
               <span
@@ -126,13 +140,32 @@ export default function SearchResults({
           </div>
         </PageCard>
 
-        <FutureAiAnswers query={query} onOpenAdvisor={openAdvisor} />
+        {showAdvisorCta && onOpenAdvisor ? (
+          <FutureAiAnswers query={query} onOpenAdvisor={onOpenAdvisor} />
+        ) : null}
       </div>
     );
   }
 
   return (
     <div className="space-y-5">
+      {demoMode ? (
+        <PageCard className="border-home-health/20 bg-surface-card/95">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <p className="text-overline text-home-health">Demo results</p>
+              <p className="mt-1 text-sm leading-6 text-text-secondary">
+                Searching the local demo household only. No account or cloud data was used.
+              </p>
+            </div>
+
+            <Button href="/signup" variant="secondary" size="sm">
+              Create your vault to search your own home.
+            </Button>
+          </div>
+        </PageCard>
+      ) : null}
+
       {GROUP_ORDER.map((group) => {
         const items = response.results[group];
 
@@ -200,8 +233,11 @@ export default function SearchResults({
         );
       })}
 
-      {canViewFeature("aiAdvisor") ? (
-        <FutureAiAnswers query={query || response.query} onOpenAdvisor={openAdvisor} />
+      {showAdvisorCta && onOpenAdvisor ? (
+        <FutureAiAnswers
+          query={query || response.query}
+          onOpenAdvisor={onOpenAdvisor}
+        />
       ) : null}
     </div>
   );

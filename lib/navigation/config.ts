@@ -4,7 +4,6 @@ import {
   HelpCircle,
   Laptop,
   LayoutDashboard,
-  MessageSquare,
   Radar,
   Search,
   Settings,
@@ -40,6 +39,13 @@ export const PRIMARY_NAV_ITEMS: PrimaryNavItem[] = [
     href: "/smart-search",
     icon: Search,
     activePrefixes: ["/smart-search"],
+  },
+  {
+    label: "Network",
+    href: "/network",
+    icon: Radar,
+    feature: "network",
+    activePrefixes: ["/network"],
   },
   {
     label: "Family",

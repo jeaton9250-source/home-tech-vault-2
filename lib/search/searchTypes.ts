@@ -33,6 +33,7 @@ export type SmartSearchQueryIntent = {
   phrases: string[];
   wantsOffline: boolean;
   wantsOnline: boolean;
+  wantsNetwork: boolean;
   wantsWarrantySoon: boolean;
   wantsMaintenance: boolean;
   wantsDocuments: boolean;

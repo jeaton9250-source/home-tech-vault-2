@@ -20,7 +20,6 @@ import Button from "@/components/ui/Button";
 import NotificationBell from "@/components/NotificationBell";
 import { MobileNavLink } from "@/components/navigation/PrimaryNavLink";
 import ProfileMenu from "@/components/navigation/ProfileMenu";
-import SearchField from "@/components/navigation/SearchField";
 
 import { useAIAdvisor } from "@/hooks/useAIAdvisor";
 import { useDemoMode } from "@/hooks/useDemoMode";
@@ -29,7 +28,6 @@ import { usePermissions } from "@/hooks/usePermissions";
 import { isPrimaryNavActive } from "@/lib/navigation/activeGroup";
 import { MOBILE_NAV_ITEMS } from "@/lib/navigation/config";
 import { shouldShowPremiumBadge } from "@/lib/navigation/navVisibility";
-import { normalizePathname } from "@/lib/isChromeFreeRoute";
 
 import { supabase } from "@/lib/supabase";
 
@@ -37,10 +35,6 @@ import { cn } from "@/lib/design-system/cn";
 
 export default function MobileNavSheet() {
   const pathname = usePathname();
-  const normalizedPath = normalizePathname(pathname);
-  const hideGlobalSearchOnHome =
-    normalizedPath === "/home" ||
-    normalizedPath === "/dashboard";
   const router = useRouter();
 
   const [open, setOpen] = useState(false);
@@ -105,17 +99,6 @@ export default function MobileNavSheet() {
     return true;
   });
 
-  function isItemActive(href: string) {
-    if (href === "/dashboard") {
-      return isPrimaryNavActive(pathname, href);
-    }
-
-    return (
-      pathname === href ||
-      pathname.startsWith(`${href}/`)
-    );
-  }
-
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-border-subtle/70 bg-surface-card/85 shadow-[0_1px_0_rgba(15,23,42,0.04),0_10px_30px_-24px_rgba(15,23,42,0.35)] backdrop-blur-xl md:hidden">
@@ -132,12 +115,6 @@ export default function MobileNavSheet() {
           <Link href="/dashboard" className="min-w-0 flex-1">
             <Logo withMark collapsed className="max-w-[8.5rem]" />
           </Link>
-
-          {hideGlobalSearchOnHome ? (
-            <span aria-hidden="true" className="h-10 w-10 shrink-0" />
-          ) : (
-            <SearchField collapsible />
-          )}
 
           <div className="flex items-center rounded-full border border-border-subtle/70 bg-surface-card/80 p-0.5 shadow-sm">
             <NotificationBell compact />
@@ -195,11 +172,7 @@ export default function MobileNavSheet() {
                 </button>
               </div>
 
-              <div className="space-y-4 border-b border-border-subtle/70 p-4">
-                {!hideGlobalSearchOnHome ? (
-                  <SearchField compact autoFocus />
-                ) : null}
-
+              <div className="border-b border-border-subtle/70 p-4">
                 {canViewFeature("aiAdvisor") ? (
                   <Button
                     type="button"
@@ -237,7 +210,10 @@ export default function MobileNavSheet() {
                         <MobileNavLink
                           href={item.href}
                           label={item.label}
-                          isActive={isItemActive(item.href)}
+                          isActive={isPrimaryNavActive(
+                            pathname,
+                            item.href
+                          )}
                           badge={badge}
                           icon={icon}
                           onClick={() => setOpen(false)}

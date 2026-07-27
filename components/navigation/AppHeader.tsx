@@ -8,7 +8,6 @@ import Logo from "@/components/brand/Logo";
 import NotificationBell from "@/components/NotificationBell";
 import { NavLink } from "@/components/navigation/PrimaryNavLink";
 import ProfileMenu from "@/components/navigation/ProfileMenu";
-import SearchField from "@/components/navigation/SearchField";
 import MobileNavSheet from "@/components/navigation/MobileNavSheet";
 
 import { usePermissions } from "@/hooks/usePermissions";
@@ -16,14 +15,9 @@ import { usePermissions } from "@/hooks/usePermissions";
 import { isPrimaryNavActive } from "@/lib/navigation/activeGroup";
 import { PRIMARY_NAV_ITEMS } from "@/lib/navigation/config";
 import { shouldShowPremiumBadge } from "@/lib/navigation/navVisibility";
-import { normalizePathname } from "@/lib/isChromeFreeRoute";
 
 export default function AppHeader() {
   const pathname = usePathname();
-  const normalizedPath = normalizePathname(pathname);
-  const hideGlobalSearchOnHome =
-    normalizedPath === "/home" ||
-    normalizedPath === "/dashboard";
 
   const {
     canViewFeature,
@@ -36,7 +30,7 @@ export default function AppHeader() {
       <MobileNavSheet />
 
       <header className="sticky top-0 z-50 hidden border-b border-border-subtle/70 bg-surface-card/85 shadow-[0_1px_0_rgba(15,23,42,0.04),0_10px_30px_-24px_rgba(15,23,42,0.35)] backdrop-blur-xl md:block">
-        <div className="mx-auto grid h-[68px] max-w-[var(--content-max)] grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto grid h-[68px] max-w-[var(--content-max)] grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 px-4 sm:px-6 lg:px-8">
           <Link
             href="/dashboard"
             className="justify-self-start"
@@ -67,19 +61,14 @@ export default function AppHeader() {
                       item.href
                     )}
                     badge={badge}
+                    compact
                   />
                 );
               })}
             </div>
           </nav>
 
-          <div className="flex min-w-0 items-center justify-self-end gap-2">
-            {hideGlobalSearchOnHome ? (
-              null
-            ) : (
-              <SearchField collapsible />
-            )}
-
+          <div className="flex min-w-0 items-center justify-self-end">
             <div className="flex items-center rounded-full border border-border-subtle/70 bg-surface-card/90 p-1 shadow-sm">
               <NotificationBell compact />
               <ProfileMenu compact />

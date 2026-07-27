@@ -56,6 +56,12 @@ export function useDemoMode() {
     try {
       const demoEnabled = getStoredDemoMode();
 
+      if (demoEnabled) {
+        setUser(null);
+        setIsDemo(true);
+        return;
+      }
+
       /*
         getSession() safely returns session: null
         when the visitor is signed out.
@@ -88,7 +94,9 @@ export function useDemoMode() {
   }, []);
 
   useEffect(() => {
-    loadMode();
+    const timer = window.setTimeout(() => {
+      void loadMode();
+    }, 0);
 
     const {
       data: { subscription },
@@ -126,6 +134,7 @@ export function useDemoMode() {
     );
 
     return () => {
+      window.clearTimeout(timer);
       subscription.unsubscribe();
 
       window.removeEventListener(

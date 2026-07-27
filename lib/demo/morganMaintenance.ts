@@ -3,11 +3,11 @@ import type { DemoMaintenanceItem } from "@/lib/demo/types";
 export const morganMaintenance: DemoMaintenanceItem[] = [
   {
     id: "demo-maint-1",
-    title: "Update UniFi Dream Router firmware",
+    title: "Update Wi-Fi Router firmware",
     device_id: "demo-unifi-router",
-    device_name: "UniFi Dream Router",
-    due_date: "2026-07-25",
-    status: "Due Soon",
+    device_name: "Wi-Fi Router",
+    due_date: "2026-08-02",
+    status: "Upcoming",
     category: "Software Update",
     frequency: "Every 3 months",
     notes:
@@ -17,9 +17,10 @@ export const morganMaintenance: DemoMaintenanceItem[] = [
     id: "demo-maint-2",
     title: "Clean MacBook vents",
     device_id: "demo-macbook",
-    device_name: "MacBook Pro",
+    device_name: "Office MacBook",
     due_date: "2026-08-01",
-    status: "Upcoming",
+    status: "Completed",
+    completed: true,
     category: "Cleaning",
     frequency: "Every 6 months",
     notes:
@@ -27,11 +28,11 @@ export const morganMaintenance: DemoMaintenanceItem[] = [
   },
   {
     id: "demo-maint-3",
-    title: "Replace Canon printer ink",
+    title: "Replace Epson printer ink",
     device_id: "demo-canon-printer",
-    device_name: "Canon Printer",
-    due_date: "2026-07-28",
-    status: "Due Soon",
+    device_name: "Epson Printer",
+    due_date: "2026-07-20",
+    status: "Overdue",
     category: "Maintenance",
     frequency: "As needed",
     notes:

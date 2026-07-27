@@ -5,6 +5,7 @@ import DashboardRecentActivity from "@/components/dashboard/DashboardRecentActiv
 import HomeAdvisorPreview from "@/components/advisor/HomeAdvisorPreview";
 import HomeOverviewStats from "@/components/dashboard/HomeOverviewStats";
 import RecommendedNextStep from "@/components/dashboard/RecommendedNextStep";
+import SmartSearch from "@/components/search/SmartSearch";
 import HomeHealthEmptyState from "@/components/home-health/HomeHealthEmptyState";
 import { useHomeAdvisor } from "@/hooks/useHomeAdvisor";
 import { getHomeHealthDisplayMessage } from "@/lib/home-health/display";
@@ -51,11 +52,18 @@ export default function HomeHealthDashboard({
       />
 
       {homeHealth.isEmpty ? (
-        <HomeHealthEmptyState
-          recommendation={
-            homeHealth.recommendation
-          }
-        />
+        <>
+          <HomeHealthEmptyState
+            recommendation={
+              homeHealth.recommendation
+            }
+          />
+
+          <SmartSearch
+            mode="dashboard"
+            variant="hero"
+          />
+        </>
       ) : (
         <>
           <RecommendedNextStep
@@ -70,6 +78,11 @@ export default function HomeHealthDashboard({
 
           <DashboardRecentActivity
             limit={5}
+          />
+
+          <SmartSearch
+            mode="dashboard"
+            variant="hero"
           />
         </>
       )}

@@ -55,20 +55,20 @@ export default async function SmartSearchPage({
     <PageShell className="space-y-6 md:space-y-8">
       <header className="space-y-2">
         <p className="text-overline text-text-muted">
-          Home Technology Command Center
+          Smart Search
         </p>
         <h1 className="text-[clamp(1.75rem,3vw,2.25rem)] font-medium tracking-[-0.03em] text-text-primary">
-          Search
+          Search your home
         </h1>
         <p className="max-w-2xl text-sm leading-6 text-text-secondary">
-          Find anything in your home — devices, documents, warranties,
-          maintenance, and network details.
+          Your full search workspace for devices, documents,
+          warranties, maintenance, and network details.
         </p>
       </header>
 
       <SmartSearch
         mode="page"
-        variant="hero"
+        variant="default"
         initialQuery={initialQuery}
         initialResponse={initialResponse}
       />

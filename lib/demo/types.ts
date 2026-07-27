@@ -42,6 +42,7 @@ export type DemoMaintenanceItem = {
   device_name: string;
   due_date: string;
   status: string;
+  completed?: boolean;
   category: string;
   frequency: string;
   notes: string;
