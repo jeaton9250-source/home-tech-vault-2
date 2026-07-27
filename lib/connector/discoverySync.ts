@@ -20,6 +20,7 @@ import {
   shouldPersistDiscoveredDevice,
 } from "@/lib/connector/discoveryIdentification";
 import {
+  cleanDiscoveredHostname,
   identificationFromConfirmedVaultDevice,
   identifyDiscoveredDevice,
   type IdentificationResult,
@@ -32,11 +33,19 @@ import type {
   DiscoveredDeviceRow,
   DiscoveredDeviceSummary,
   DiscoverySyncResponse,
+  RecognitionStatus,
 } from "@/lib/connector/discoveryTypes";
 import {
   mergeDiscoverySources,
   mergeStringArrays,
 } from "@/lib/connector/network";
+import { findExistingDiscoveredDeviceForUpsert } from "@/lib/connector/discoveryLookup";
+import {
+  confidenceScoreFromLabel,
+  iconKeyForCategory,
+  summarizeEvidence,
+} from "@/lib/connector/recognitionSuggestion";
+import { dedupeDiscoveredDevicesForDisplay } from "@/lib/connector/discoveryIdentity";
 
 type SyncDiscoveredDevicesInput = {
   admin: SupabaseClient;
@@ -55,7 +64,82 @@ const VAULT_DEVICE_SELECT_FOUNDATION =
 
 /** Foundation schema only — safe before 2B.2 discovered_devices match columns. */
 const DISCOVERED_DEVICE_SELECT_FOUNDATION =
-  "id, household_id, connector_id, local_fingerprint, hostname, manufacturer, model, serial_number, ip_address, mac_address, device_type, friendly_name, mdns_services, ssdp_device_type, ssdp_description_url, likely_category, likely_brand, identification_confidence, identification_reasons, identification_display_name, online, discovery_sources, first_seen_at, last_seen_at, imported_device_id, match_confirmed_at, ignored_at, created_at, updated_at";
+  "id, household_id, connector_id, local_fingerprint, hostname, manufacturer, model, serial_number, ip_address, mac_address, device_type, friendly_name, mdns_services, ssdp_device_type, ssdp_description_url, likely_category, likely_brand, identification_confidence, identification_reasons, identification_display_name, online, discovery_sources, first_seen_at, last_seen_at, imported_device_id, match_confirmed_at, ignored_at, recognition_status, recognition_reviewed_at, recognition_reviewed_by, recognition_accepted_name, recognition_accepted_manufacturer, recognition_accepted_model, recognition_accepted_category, recognition_accepted_device_type_key, created_at, updated_at";
+
+const DISCOVERED_DEVICE_PRESERVE_SELECT =
+  "id, connector_id, local_fingerprint, hostname, manufacturer, model, serial_number, mac_address, imported_device_id, ignored_at, first_seen_at, last_seen_at, discovery_sources, mdns_services, match_confirmed_at, friendly_name, device_type, likely_category, identification_display_name, recognition_status, recognition_accepted_name, recognition_accepted_manufacturer, recognition_accepted_model, recognition_accepted_category, recognition_accepted_device_type_key, recognition_reviewed_at";
+
+function resolveRecognitionStatus(
+  value: string | null | undefined
+): RecognitionStatus {
+  if (value === "accepted" || value === "dismissed") {
+    return value;
+  }
+
+  return "pending";
+}
+
+function applyAcceptedRecognitionValues(input: {
+  status: RecognitionStatus;
+  existing: {
+    manufacturer?: string | null;
+    model?: string | null;
+    friendly_name?: string | null;
+    likely_category?: string | null;
+    device_type?: string | null;
+    identification_display_name?: string | null;
+    recognition_accepted_name?: string | null;
+    recognition_accepted_manufacturer?: string | null;
+    recognition_accepted_model?: string | null;
+    recognition_accepted_category?: string | null;
+    recognition_accepted_device_type_key?: string | null;
+  } | null;
+  computed: {
+    manufacturer: string | null;
+    model: string | null;
+    friendlyName: string | null;
+    likelyCategory: string | null;
+    deviceType: string | null;
+    identificationDisplayName: string;
+  };
+}) {
+  const {
+    status,
+    existing,
+    computed,
+  } = input;
+
+  if (status !== "accepted" || !existing) {
+    return computed;
+  }
+
+  return {
+    manufacturer:
+      existing.recognition_accepted_manufacturer ??
+      existing.manufacturer ??
+      computed.manufacturer,
+    model:
+      existing.recognition_accepted_model ??
+      existing.model ??
+      computed.model,
+    friendlyName:
+      existing.recognition_accepted_name ??
+      existing.friendly_name ??
+      computed.friendlyName,
+    likelyCategory:
+      existing.recognition_accepted_category ??
+      existing.likely_category ??
+      computed.likelyCategory,
+    deviceType:
+      existing.recognition_accepted_device_type_key ??
+      existing.device_type ??
+      computed.deviceType,
+    identificationDisplayName:
+      existing.recognition_accepted_name ??
+      existing.identification_display_name ??
+      computed.identificationDisplayName,
+  };
+}
 
 function toDiscoveryNetworkFields(
   device: ParsedDiscoveryDevice,
@@ -182,6 +266,7 @@ export async function syncDiscoveredDevicesWithMatching(
   let possibleMatches = 0;
   let ignored = 0;
   let newDevices = 0;
+  const observedLinkedVaultDeviceIds = new Set<string>();
 
   for (const device of devices) {
     if (!shouldPersistDiscoveredDevice(device)) {
@@ -189,38 +274,33 @@ export async function syncDiscoveredDevicesWithMatching(
       continue;
     }
 
-    const existingResult = await admin
-      .from("discovered_devices")
-      .select(
-        "id, imported_device_id, ignored_at, first_seen_at, discovery_sources, mdns_services, match_confirmed_at"
-      )
-      .eq("connector_id", connectorId)
-      .eq(
-        "local_fingerprint",
-        device.localFingerprint
-      )
-      .maybeSingle();
-
-    if (existingResult.error) {
-      throw existingResult.error;
-    }
+    const existingRow = await findExistingDiscoveredDeviceForUpsert({
+      admin,
+      connectorId,
+      householdId,
+      device,
+      selectClause: DISCOVERED_DEVICE_PRESERVE_SELECT,
+    });
 
     const preservedFirstSeenAt =
-      existingResult.data?.first_seen_at ??
+      existingRow?.first_seen_at ??
       device.firstSeenAt;
     const preservedImportedDeviceId =
-      existingResult.data?.imported_device_id ??
+      existingRow?.imported_device_id ??
       null;
     const isIgnored = Boolean(
-      existingResult.data?.ignored_at
+      existingRow?.ignored_at
     );
+    const preservedLocalFingerprint =
+      existingRow?.local_fingerprint ??
+      device.localFingerprint;
     const mergedSources =
       mergeDiscoverySources(
-        existingResult.data?.discovery_sources,
+        existingRow?.discovery_sources,
         device.discoverySources
       );
     const mergedMdnsServices = mergeStringArrays(
-      existingResult.data?.mdns_services,
+      existingRow?.mdns_services,
       device.mdnsServices
     );
 
@@ -251,27 +331,60 @@ export async function syncDiscoveredDevicesWithMatching(
             device
           );
 
+    const recognitionStatus =
+      resolveRecognitionStatus(
+        existingRow
+          ?.recognition_status
+      );
+
+    const resolvedSuggestion =
+      applyAcceptedRecognitionValues({
+        status: recognitionStatus,
+        existing: existingRow,
+        computed: {
+          manufacturer:
+            device.manufacturer,
+          model:
+            device.model ??
+            identification.model,
+          friendlyName:
+            device.friendlyName ??
+            identification.friendlyName,
+          likelyCategory:
+            identification.likelyCategory,
+          deviceType:
+            device.deviceType ??
+            identification.likelyCategory,
+          identificationDisplayName:
+            identification.displayName,
+        },
+      });
+
     const upsertPayload: Record<string, unknown> = {
       household_id: householdId,
       connector_id: connectorId,
-      local_fingerprint: device.localFingerprint,
+      local_fingerprint:
+        preservedLocalFingerprint,
       hostname: device.hostname,
-      manufacturer: device.manufacturer,
-      model: device.model ?? identification.model,
+      manufacturer:
+        resolvedSuggestion.manufacturer,
+      model: resolvedSuggestion.model,
       ip_address: device.ipAddress,
       mac_address: device.macAddress,
       device_type:
-        device.deviceType ??
-        identification.likelyCategory,
+        resolvedSuggestion.deviceType,
       friendly_name:
-        device.friendlyName ??
-        identification.friendlyName,
+        resolvedSuggestion.friendlyName,
       mdns_services: mergedMdnsServices,
       ssdp_device_type: device.ssdpDeviceType,
       ssdp_description_url: device.ssdpDescriptionUrl,
       ...identificationFieldsFromResult(
         identification
       ),
+      likely_category:
+        resolvedSuggestion.likelyCategory,
+      identification_display_name:
+        resolvedSuggestion.identificationDisplayName,
       online: device.online,
       discovery_sources: mergedSources,
       first_seen_at: preservedFirstSeenAt,
@@ -314,7 +427,7 @@ export async function syncDiscoveredDevicesWithMatching(
       vaultDevices
     );
 
-    let targetDeviceId =
+    const targetDeviceId =
       discoveredRow.imported_device_id ??
       (match.matchStatus === "matched"
         ? match.matchedDeviceId
@@ -354,6 +467,10 @@ export async function syncDiscoveredDevicesWithMatching(
      * Network showed a fresh discovered_devices.last_seen_at.
      */
     if (targetDeviceId) {
+      observedLinkedVaultDeviceIds.add(
+        targetDeviceId
+      );
+
       const vaultDevice = vaultDevices.find(
         (candidate) =>
           candidate.id === targetDeviceId
@@ -503,9 +620,7 @@ export async function syncDiscoveredDevicesWithMatching(
     connectorId,
     householdId,
     scannedAt,
-    scannedFingerprints: new Set(
-      devices.map((device) => device.localFingerprint)
-    ),
+    observedLinkedVaultDeviceIds,
     vaultDeviceRows,
     actorUserId,
   });
@@ -548,7 +663,7 @@ async function markAbsentLinkedDevicesOffline(input: {
   connectorId: string;
   householdId: string;
   scannedAt: string;
-  scannedFingerprints: Set<string>;
+  observedLinkedVaultDeviceIds: Set<string>;
   vaultDeviceRows: Array<Record<string, unknown>>;
   actorUserId: string | null;
 }) {
@@ -557,7 +672,7 @@ async function markAbsentLinkedDevicesOffline(input: {
     connectorId,
     householdId,
     scannedAt,
-    scannedFingerprints,
+    observedLinkedVaultDeviceIds,
     vaultDeviceRows,
     actorUserId,
   } = input;
@@ -577,24 +692,17 @@ async function markAbsentLinkedDevicesOffline(input: {
   }
 
   for (const row of linkedRows ?? []) {
-    const fingerprint =
-      typeof row.local_fingerprint === "string"
-        ? row.local_fingerprint
-        : "";
-
-    if (
-      !fingerprint ||
-      scannedFingerprints.has(fingerprint)
-    ) {
-      continue;
-    }
-
     const vaultDeviceId =
       typeof row.imported_device_id === "string"
         ? row.imported_device_id
         : null;
 
-    if (!vaultDeviceId) {
+    if (
+      !vaultDeviceId ||
+      observedLinkedVaultDeviceIds.has(
+        vaultDeviceId
+      )
+    ) {
       continue;
     }
 
@@ -703,6 +811,9 @@ export function summarizeDiscoveredDevice(
     location?: string | null;
   } | null
 ): DiscoveredDeviceSummary {
+  const cleanedHostname =
+    cleanDiscoveredHostname(row.hostname);
+
   const identification =
     row.imported_device_id && matchedDevice
       ? identificationFromConfirmedVaultDevice({
@@ -744,6 +855,43 @@ export function summarizeDiscoveredDevice(
             stableFingerprint: row.local_fingerprint,
           });
 
+  const sanitizedIdentificationDisplayName =
+    identification.displayName?.trim() ===
+      (row.hostname?.trim() ?? "") &&
+    cleanedHostname
+      ? cleanedHostname
+      : identification.displayName;
+
+  const recognitionStatus =
+    resolveRecognitionStatus(
+      row.recognition_status
+    );
+
+  const suggestionFriendlyName =
+    row.recognition_accepted_name ??
+    sanitizedIdentificationDisplayName;
+  const suggestionManufacturer =
+    row.recognition_accepted_manufacturer ??
+    identification.likelyBrand ??
+    row.manufacturer;
+  const suggestionModel =
+    row.recognition_accepted_model ??
+    identification.model ??
+    row.model;
+  const suggestionCategory =
+    row.recognition_accepted_category ??
+    identification.likelyCategory ??
+    row.likely_category;
+  const suggestionDeviceTypeKey =
+    row.recognition_accepted_device_type_key ??
+    iconKeyForCategory(
+      suggestionCategory ??
+        row.device_type
+    );
+  const suggestionReason = summarizeEvidence(
+    identification.identificationReasons
+  );
+
   return {
     id: row.id,
     connectorId: row.connector_id,
@@ -774,7 +922,7 @@ export function summarizeDiscoveredDevice(
         ? identification.identificationReasons
         : row.identification_reasons ?? [],
     identificationDisplayName:
-      identification.displayName ??
+      sanitizedIdentificationDisplayName ??
       row.identification_display_name,
     online: row.online,
     discoverySources: row.discovery_sources,
@@ -783,6 +931,24 @@ export function summarizeDiscoveredDevice(
     importedDeviceId: row.imported_device_id,
     matchConfirmedAt: row.match_confirmed_at,
     ignoredAt: row.ignored_at,
+    recognitionStatus,
+    recognitionReviewedAt:
+      row.recognition_reviewed_at,
+    recognitionSuggestion: {
+      friendlyName:
+        suggestionFriendlyName,
+      manufacturer:
+        suggestionManufacturer,
+      model: suggestionModel,
+      category: suggestionCategory,
+      deviceTypeKey:
+        suggestionDeviceTypeKey,
+      confidenceScore:
+        confidenceScoreFromLabel(
+          identification.identificationConfidence
+        ),
+      reason: suggestionReason,
+    },
     matchStatus: match.matchStatus,
     matchConfidence: match.matchConfidence,
     matchReason: match.matchReason,
@@ -817,6 +983,7 @@ export async function loadDiscoveryReviewRows(
       .from("discovered_devices")
       .select(DISCOVERED_DEVICE_SELECT_FOUNDATION)
       .eq("household_id", householdId)
+      .is("ignored_at", null)
       .order("last_seen_at", {
         ascending: false,
       }),
@@ -849,7 +1016,7 @@ export async function loadDiscoveryReviewRows(
     )
   );
 
-  return (
+  const summarized = (
     (discoveredResult.data ??
       []) as DiscoveredDeviceRow[]
   ).map((row) => {
@@ -876,6 +1043,10 @@ export async function loadDiscoveryReviewRows(
       matchedDevice
     );
   });
+
+  return dedupeDiscoveredDevicesForDisplay(
+    summarized
+  );
 }
 
 export async function confirmDiscoveredDeviceMatch(input: {
@@ -1059,6 +1230,135 @@ export async function ignoreDiscoveredDevice(input: {
     })
     .eq("id", input.discoveredDeviceId)
     .eq("household_id", input.householdId);
+
+  if (error) {
+    throw error;
+  }
+}
+
+export async function reviewDiscoveredRecognitionSuggestion(input: {
+  admin: SupabaseClient;
+  householdId: string;
+  discoveredDeviceId: string;
+  userId: string;
+  nowIso: string;
+  action: "accept" | "dismiss";
+  edits?: {
+    friendlyName?: string | null;
+    manufacturer?: string | null;
+    model?: string | null;
+    category?: string | null;
+    deviceTypeKey?: string | null;
+  };
+}) {
+  const {
+    admin,
+    householdId,
+    discoveredDeviceId,
+    userId,
+    nowIso,
+    action,
+    edits,
+  } = input;
+
+  const { data: existing, error: existingError } =
+    await admin
+      .from("discovered_devices")
+      .select(
+        "id, household_id, manufacturer, model, friendly_name, device_type, likely_category, identification_display_name"
+      )
+      .eq("id", discoveredDeviceId)
+      .eq("household_id", householdId)
+      .maybeSingle();
+
+  if (existingError) {
+    throw existingError;
+  }
+
+  if (!existing) {
+    throw new Error(
+      "Discovered device not found."
+    );
+  }
+
+  if (action === "dismiss") {
+    const { error } = await admin
+      .from("discovered_devices")
+      .update({
+        recognition_status: "dismissed",
+        recognition_reviewed_at: nowIso,
+        recognition_reviewed_by: userId,
+        recognition_accepted_name: null,
+        recognition_accepted_manufacturer: null,
+        recognition_accepted_model: null,
+        recognition_accepted_category: null,
+        recognition_accepted_device_type_key: null,
+        updated_at: nowIso,
+      })
+      .eq("id", discoveredDeviceId)
+      .eq("household_id", householdId);
+
+    if (error) {
+      throw error;
+    }
+
+    return;
+  }
+
+  const acceptedName =
+    edits?.friendlyName?.trim() ||
+    existing.identification_display_name ||
+    existing.friendly_name ||
+    "Unknown network device";
+  const acceptedManufacturer =
+    edits?.manufacturer?.trim() ||
+    existing.manufacturer ||
+    null;
+  const acceptedModel =
+    edits?.model?.trim() ||
+    existing.model ||
+    null;
+  const acceptedCategory =
+    edits?.category?.trim() ||
+    existing.likely_category ||
+    null;
+  const acceptedDeviceType =
+    edits?.deviceTypeKey?.trim() ||
+    iconKeyForCategory(
+      acceptedCategory
+    ) ||
+    existing.device_type ||
+    null;
+
+  const { error } = await admin
+    .from("discovered_devices")
+    .update({
+      recognition_status: "accepted",
+      recognition_reviewed_at: nowIso,
+      recognition_reviewed_by: userId,
+      recognition_accepted_name: acceptedName,
+      recognition_accepted_manufacturer:
+        acceptedManufacturer,
+      recognition_accepted_model:
+        acceptedModel,
+      recognition_accepted_category:
+        acceptedCategory,
+      recognition_accepted_device_type_key:
+        acceptedDeviceType,
+      friendly_name: acceptedName,
+      manufacturer:
+        acceptedManufacturer,
+      model: acceptedModel,
+      likely_category:
+        acceptedCategory,
+      device_type:
+        acceptedDeviceType,
+      identification_display_name:
+        acceptedName,
+      updated_at: nowIso,
+    })
+    .eq("id", discoveredDeviceId)
+    .eq("household_id", householdId);
 
   if (error) {
     throw error;

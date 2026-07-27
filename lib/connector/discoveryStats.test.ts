@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import { computeDiscoveryStats } from "./discoveryStats";
-import { deviceNeedsIdentificationReview } from "./identificationReasons";
 
 import type { DiscoveredDeviceSummary } from "./discoveryTypes";
 
@@ -36,6 +35,17 @@ function summary(
     importedDeviceId: null,
     matchConfirmedAt: null,
     ignoredAt: null,
+    recognitionStatus: "pending",
+    recognitionReviewedAt: null,
+    recognitionSuggestion: {
+      friendlyName: "Likely Apple Computer",
+      manufacturer: "Apple",
+      model: null,
+      category: "Computer",
+      deviceTypeKey: "computer",
+      confidenceScore: 92,
+      reason: "Manufacturer is Apple",
+    },
     matchConfidence: null,
     matchReason: null,
     matchedDeviceId: null,

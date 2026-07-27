@@ -9,9 +9,12 @@ import {
   mergeDiscoverySources,
   mergeStringArrays,
 } from "@/lib/connector/network";
+import { iconKeyForCategory } from "@/lib/connector/recognitionSuggestion";
+import { findExistingDiscoveredDeviceForUpsert } from "@/lib/connector/discoveryLookup";
 
 import type {
   DiscoverySyncResponse,
+  RecognitionStatus,
 } from "@/lib/connector/discoveryTypes";
 import type { ParsedDiscoveryDevice } from "@/lib/connector/discoveryValidation";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -23,6 +26,19 @@ type UpsertDiscoveredDevicesInput = {
   scannedAt: string;
   devices: ParsedDiscoveryDevice[];
 };
+
+const DISCOVERED_DEVICE_PRESERVE_SELECT =
+  "id, connector_id, local_fingerprint, first_seen_at, imported_device_id, ignored_at, discovery_sources, mdns_services, manufacturer, model, friendly_name, device_type, likely_category, identification_display_name, recognition_status, recognition_accepted_name, recognition_accepted_manufacturer, recognition_accepted_model, recognition_accepted_category, recognition_accepted_device_type_key";
+
+function resolveRecognitionStatus(
+  value: string | null | undefined
+): RecognitionStatus {
+  if (value === "accepted" || value === "dismissed") {
+    return value;
+  }
+
+  return "pending";
+}
 
 /**
  * Phase 2B.1 — upsert discovered device observations.
@@ -52,39 +68,94 @@ export async function upsertDiscoveredDevices(
       continue;
     }
 
-    const existingResult = await admin
-      .from("discovered_devices")
-      .select(
-        "id, imported_device_id, ignored_at, first_seen_at, discovery_sources, mdns_services"
-      )
-      .eq("connector_id", connectorId)
-      .eq(
-        "local_fingerprint",
-        device.localFingerprint
-      )
-      .maybeSingle();
-
-    if (existingResult.error) {
-      throw existingResult.error;
-    }
+    const existingRow = await findExistingDiscoveredDeviceForUpsert({
+      admin,
+      connectorId,
+      householdId,
+      device,
+      selectClause: DISCOVERED_DEVICE_PRESERVE_SELECT,
+    });
 
     const preservedFirstSeenAt =
-      existingResult.data?.first_seen_at ??
+      existingRow?.first_seen_at ??
       device.firstSeenAt;
     const preservedImportedDeviceId =
-      existingResult.data?.imported_device_id ??
+      existingRow?.imported_device_id ??
       null;
+    const preservedLocalFingerprint =
+      existingRow?.local_fingerprint ??
+      device.localFingerprint;
     const mergedSources =
       mergeDiscoverySources(
-        existingResult.data?.discovery_sources,
+        existingRow?.discovery_sources,
         device.discoverySources
       );
     const mergedMdnsServices = mergeStringArrays(
-      existingResult.data?.mdns_services,
+      existingRow?.mdns_services,
       device.mdnsServices
     );
     const identification =
       buildIdentificationForParsedDevice(device);
+
+    const recognitionStatus =
+      resolveRecognitionStatus(
+        existingRow
+          ?.recognition_status
+      );
+
+    const manufacturer =
+      recognitionStatus === "accepted"
+        ? existingRow
+            ?.recognition_accepted_manufacturer ??
+          existingRow?.manufacturer ??
+          device.manufacturer
+        : device.manufacturer;
+    const model =
+      recognitionStatus === "accepted"
+        ? existingRow
+            ?.recognition_accepted_model ??
+          existingRow?.model ??
+          device.model ??
+          identification.model
+        : device.model ??
+          identification.model;
+    const friendlyName =
+      recognitionStatus === "accepted"
+        ? existingRow
+            ?.recognition_accepted_name ??
+          existingRow?.friendly_name ??
+          device.friendlyName ??
+          identification.friendlyName
+        : device.friendlyName ??
+          identification.friendlyName;
+    const likelyCategory =
+      recognitionStatus === "accepted"
+        ? existingRow
+            ?.recognition_accepted_category ??
+          existingRow
+            ?.likely_category ??
+          identification.likelyCategory
+        : identification.likelyCategory;
+    const deviceType =
+      recognitionStatus === "accepted"
+        ? existingRow
+            ?.recognition_accepted_device_type_key ??
+          iconKeyForCategory(
+            likelyCategory
+          ) ??
+          existingRow?.device_type ??
+          device.deviceType ??
+          likelyCategory
+        : device.deviceType ??
+          likelyCategory;
+    const identificationDisplayName =
+      recognitionStatus === "accepted"
+        ? existingRow
+            ?.recognition_accepted_name ??
+          existingRow
+            ?.identification_display_name ??
+          identification.displayName
+        : identification.displayName;
 
     const { error: upsertError } = await admin
       .from("discovered_devices")
@@ -93,24 +164,23 @@ export async function upsertDiscoveredDevices(
           household_id: householdId,
           connector_id: connectorId,
           local_fingerprint:
-            device.localFingerprint,
+            preservedLocalFingerprint,
           hostname: device.hostname,
-          manufacturer: device.manufacturer,
-          model: device.model ?? identification.model,
+          manufacturer,
+          model,
           ip_address: device.ipAddress,
           mac_address: device.macAddress,
-          device_type:
-            device.deviceType ??
-            identification.likelyCategory,
-          friendly_name:
-            device.friendlyName ??
-            identification.friendlyName,
+          device_type: deviceType,
+          friendly_name: friendlyName,
           mdns_services: mergedMdnsServices,
           ssdp_device_type: device.ssdpDeviceType,
           ssdp_description_url: device.ssdpDescriptionUrl,
           ...identificationFieldsFromResult(
             identification
           ),
+          likely_category: likelyCategory,
+          identification_display_name:
+            identificationDisplayName,
           online: device.online,
           discovery_sources: mergedSources,
           first_seen_at: preservedFirstSeenAt,
@@ -133,7 +203,7 @@ export async function upsertDiscoveredDevices(
 
     if (
       preservedImportedDeviceId &&
-      !existingResult.data?.ignored_at
+      !existingRow?.ignored_at
     ) {
       const { error: vaultUpdateError } = await admin
         .from("devices")

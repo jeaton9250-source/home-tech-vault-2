@@ -77,6 +77,21 @@ export type IdentificationConfidence =
   | "low"
   | "unknown";
 
+export type RecognitionStatus =
+  | "pending"
+  | "accepted"
+  | "dismissed";
+
+export type DiscoveredRecognitionSuggestion = {
+  friendlyName: string;
+  manufacturer: string | null;
+  model: string | null;
+  category: string | null;
+  deviceTypeKey: string | null;
+  confidenceScore: number;
+  reason: string;
+};
+
 export type DiscoveredDeviceRow = {
   id: string;
   household_id: string;
@@ -106,6 +121,14 @@ export type DiscoveredDeviceRow = {
   match_confirmed_at: string | null;
   match_confirmed_by: string | null;
   ignored_at: string | null;
+  recognition_status: RecognitionStatus;
+  recognition_reviewed_at: string | null;
+  recognition_reviewed_by: string | null;
+  recognition_accepted_name: string | null;
+  recognition_accepted_manufacturer: string | null;
+  recognition_accepted_model: string | null;
+  recognition_accepted_category: string | null;
+  recognition_accepted_device_type_key: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -153,6 +176,9 @@ export type DiscoveredDeviceSummary = {
   importedDeviceId: string | null;
   matchConfirmedAt: string | null;
   ignoredAt: string | null;
+  recognitionStatus: RecognitionStatus;
+  recognitionReviewedAt: string | null;
+  recognitionSuggestion: DiscoveredRecognitionSuggestion;
   matchStatus: MatchStatus;
   matchConfidence: MatchConfidence | null;
   matchReason: string | null;

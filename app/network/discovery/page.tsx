@@ -25,6 +25,8 @@ import {
   buildDemoNetworkPagePayload,
   buildDemoVaultDeviceOptions,
 } from "@/lib/demo/demoConnectorExperience";
+import { computeDiscoveryStats } from "@/lib/connector/discoveryStats";
+import { dedupeDiscoveredDevicesForDisplay } from "@/lib/connector/discoveryIdentity";
 
 import type {
   DiscoveredDeviceSummary,
@@ -93,9 +95,16 @@ function DiscoveryReviewContent() {
         setErrorMessage("");
 
         const payload = buildDemoNetworkPagePayload();
+        const dedupedDevices = dedupeDiscoveredDevicesForDisplay(
+          payload.devices
+        );
 
-        setDevices(payload.devices);
-        setStats(payload.stats);
+        setDevices(dedupedDevices);
+        setStats(
+          computeDiscoveryStats({
+            devices: dedupedDevices,
+          })
+        );
         setConnectors(buildDemoDiscoveryReviewConnectors());
         setVaultDevices(buildDemoVaultDeviceOptions());
         setLoading(false);
@@ -174,8 +183,16 @@ function DiscoveryReviewContent() {
             stats?: DiscoveryStatsSummary;
           };
 
-        setDevices(payload.devices ?? []);
-        setStats(payload.stats ?? null);
+        const dedupedDevices = dedupeDiscoveredDevicesForDisplay(
+          payload.devices ?? []
+        );
+
+        setDevices(dedupedDevices);
+        setStats(
+          computeDiscoveryStats({
+            devices: dedupedDevices,
+          })
+        );
         setVaultDevices(
           (vaultResponse.data ??
             []) as VaultDeviceOption[]
@@ -218,7 +235,13 @@ function DiscoveryReviewContent() {
       return;
     }
 
-    void reloadReviewData();
+    const timer = setTimeout(() => {
+      void reloadReviewData();
+    }, 0);
+
+    return () => {
+      clearTimeout(timer);
+    };
   }, [demoReviewData, permissionsLoading, reloadReviewData]);
 
   async function runAction(
@@ -270,6 +293,57 @@ function DiscoveryReviewContent() {
         error instanceof Error
           ? error.message
           : "Unable to complete that action."
+      );
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function runIgnoreAction(
+    discoveryId: string,
+    action: () => Promise<Response>
+  ) {
+    if (isDemo || !canEdit) {
+      showReadOnlyModal();
+      return;
+    }
+
+    const previousDevices = devices;
+    const previousStats = stats;
+    const nextDevices = devices.filter(
+      (device) => device.id !== discoveryId
+    );
+
+    setBusyId(discoveryId);
+    setErrorMessage("");
+    setDevices(nextDevices);
+    setStats(
+      computeDiscoveryStats({
+        devices: nextDevices,
+      })
+    );
+
+    try {
+      const response = await action();
+
+      if (!response.ok) {
+        const payload =
+          (await response.json()) as {
+            error?: string;
+          };
+
+        throw new Error(
+          payload.error ??
+            "Unable to ignore that device."
+        );
+      }
+    } catch (error) {
+      setDevices(previousDevices);
+      setStats(previousStats);
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Unable to ignore that device."
       );
     } finally {
       setBusyId(null);
@@ -367,7 +441,7 @@ function DiscoveryReviewContent() {
             return;
           }
 
-          void runAction(discovery.id, () =>
+          void runIgnoreAction(discovery.id, () =>
             fetch(
               `/api/connector/discovery/${discovery.id}/ignore`,
               {
@@ -439,6 +513,49 @@ function DiscoveryReviewContent() {
                 }
               );
             })
+          );
+        }}
+        onAcceptRecognition={(discovery, edits) => {
+          if (!householdId) {
+            return;
+          }
+
+          void runAction(discovery.id, () =>
+            fetch(
+              `/api/connector/discovery/${discovery.id}/recognition`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  householdId,
+                  action: "accept",
+                  edits,
+                }),
+              }
+            )
+          );
+        }}
+        onDismissRecognition={(discovery) => {
+          if (!householdId) {
+            return;
+          }
+
+          void runAction(discovery.id, () =>
+            fetch(
+              `/api/connector/discovery/${discovery.id}/recognition`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  householdId,
+                  action: "dismiss",
+                }),
+              }
+            )
           );
         }}
       />

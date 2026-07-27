@@ -120,6 +120,19 @@ export default function NetworkDiscoveryDashboard(props: {
   onTreatAsNew: (
     discovery: DiscoveredDeviceSummary
   ) => void;
+  onAcceptRecognition: (
+    discovery: DiscoveredDeviceSummary,
+    edits?: {
+      friendlyName?: string | null;
+      manufacturer?: string | null;
+      model?: string | null;
+      category?: string | null;
+      deviceTypeKey?: string | null;
+    }
+  ) => void;
+  onDismissRecognition: (
+    discovery: DiscoveredDeviceSummary
+  ) => void;
 }) {
   const [pageTab, setPageTab] =
     useState<PageTab>("overview");
@@ -390,7 +403,7 @@ export default function NetworkDiscoveryDashboard(props: {
                 <Radar className="mx-auto text-text-secondary" size={28} />
                 <p className="mt-3 text-sm text-text-secondary">
                   {hasCompletedScan
-                    ? "Nothing needs attention in this view."
+                    ? "You're all caught up. No discovered devices need review."
                     : "No network scan has been completed yet."}
                 </p>
               </div>
@@ -423,6 +436,15 @@ export default function NetworkDiscoveryDashboard(props: {
                   onImport={() => setImportTarget(device)}
                   onTreatAsNew={() =>
                     props.onTreatAsNew(device)
+                  }
+                  onAcceptRecognition={(edits) =>
+                    props.onAcceptRecognition(
+                      device,
+                      edits
+                    )
+                  }
+                  onDismissRecognition={() =>
+                    props.onDismissRecognition(device)
                   }
                 />
               ))
@@ -490,6 +512,8 @@ function DiscoveryDeviceCard({
   onIgnore,
   onImport,
   onTreatAsNew,
+  onAcceptRecognition,
+  onDismissRecognition,
 }: {
   device: DiscoveredDeviceSummary;
   vaultDevices: VaultDeviceOption[];
@@ -501,6 +525,14 @@ function DiscoveryDeviceCard({
   onIgnore: () => void;
   onImport: () => void;
   onTreatAsNew: () => void;
+  onAcceptRecognition: (edits?: {
+    friendlyName?: string | null;
+    manufacturer?: string | null;
+    model?: string | null;
+    category?: string | null;
+    deviceTypeKey?: string | null;
+  }) => void;
+  onDismissRecognition: () => void;
 }) {
   const signals = buildMatchReasonSignals(device);
   const identificationSignals =
@@ -511,6 +543,23 @@ function DiscoveryDeviceCard({
   const matchedVaultDevice = device.matchedDevice;
   const selectedVault = vaultDevices.find(
     (candidate) => candidate.id === selectedVaultDeviceId
+  );
+  const [editingRecognition, setEditingRecognition] =
+    useState(false);
+  const [editFriendlyName, setEditFriendlyName] = useState(
+    device.recognitionSuggestion.friendlyName
+  );
+  const [editManufacturer, setEditManufacturer] = useState(
+    device.recognitionSuggestion.manufacturer ?? ""
+  );
+  const [editModel, setEditModel] = useState(
+    device.recognitionSuggestion.model ?? ""
+  );
+  const [editCategory, setEditCategory] = useState(
+    device.recognitionSuggestion.category ?? ""
+  );
+  const [editTypeKey, setEditTypeKey] = useState(
+    device.recognitionSuggestion.deviceTypeKey ?? ""
   );
 
   return (
@@ -546,6 +595,30 @@ function DiscoveryDeviceCard({
               {device.matchReason}
             </p>
           ) : null}
+
+          <div className="mt-3 rounded-xl bg-sky-50 px-4 py-3 text-sm text-sky-900">
+            <p className="font-medium">
+              Suggested: {device.recognitionSuggestion.friendlyName}
+            </p>
+            <p className="mt-1">
+              {[
+                device.recognitionSuggestion.manufacturer,
+                device.recognitionSuggestion.model,
+                device.recognitionSuggestion.category,
+              ]
+                .filter(Boolean)
+                .join(" · ") || "Details pending"}
+            </p>
+            <p className="mt-1 text-xs text-sky-800">
+              Confidence {device.recognitionSuggestion.confidenceScore}%
+              {device.recognitionSuggestion.deviceTypeKey
+                ? ` · type ${device.recognitionSuggestion.deviceTypeKey}`
+                : ""}
+            </p>
+            <p className="mt-2 text-xs text-sky-800">
+              {device.recognitionSuggestion.reason}
+            </p>
+          </div>
 
           {identificationSignals.length > 0 ? (
             <ul className="mt-4 space-y-2">
@@ -602,6 +675,7 @@ function DiscoveryDeviceCard({
           ) : null}
 
           <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-4">
+            <Field label="Hostname" value={device.hostname} />
             <Field label="IP address" value={device.ipAddress} />
             <Field label="MAC address" value={device.macAddress} />
             <Field label="Manufacturer" value={device.manufacturer} />
@@ -636,6 +710,137 @@ function DiscoveryDeviceCard({
             ) : null}
 
             <div className="flex flex-col gap-2">
+              {device.matchStatus !== "ignored" ? (
+                <>
+                  <ActionButton
+                    label={
+                      device.recognitionStatus ===
+                      "accepted"
+                        ? "Suggestion Accepted"
+                        : "Accept Suggestion"
+                    }
+                    icon={<CheckCircle2 size={16} />}
+                    variant={
+                      device.recognitionStatus ===
+                      "accepted"
+                        ? "secondary"
+                        : "primary"
+                    }
+                    busy={busy}
+                    disabled={
+                      device.recognitionStatus ===
+                      "accepted"
+                    }
+                    onClick={() =>
+                      onAcceptRecognition()
+                    }
+                  />
+                  <ActionButton
+                    label={
+                      editingRecognition
+                        ? "Cancel Edit"
+                        : "Edit and Accept"
+                    }
+                    variant="secondary"
+                    busy={busy}
+                    onClick={() =>
+                      setEditingRecognition(
+                        (current) => !current
+                      )
+                    }
+                  />
+                  <ActionButton
+                    label={
+                      device.recognitionStatus ===
+                      "dismissed"
+                        ? "Suggestion Dismissed"
+                        : "Dismiss Suggestion"
+                    }
+                    icon={<XCircle size={16} />}
+                    variant="secondary"
+                    busy={busy}
+                    disabled={
+                      device.recognitionStatus ===
+                      "dismissed"
+                    }
+                    onClick={onDismissRecognition}
+                  />
+                </>
+              ) : null}
+
+              {editingRecognition ? (
+                <div className="grid gap-2 rounded-xl border border-neutral-200 p-3 text-sm">
+                  <input
+                    className="rounded-lg border border-neutral-200 px-3 py-2"
+                    value={editFriendlyName}
+                    onChange={(event) =>
+                      setEditFriendlyName(
+                        event.target.value
+                      )
+                    }
+                    placeholder="Friendly name"
+                  />
+                  <input
+                    className="rounded-lg border border-neutral-200 px-3 py-2"
+                    value={editManufacturer}
+                    onChange={(event) =>
+                      setEditManufacturer(
+                        event.target.value
+                      )
+                    }
+                    placeholder="Manufacturer"
+                  />
+                  <input
+                    className="rounded-lg border border-neutral-200 px-3 py-2"
+                    value={editModel}
+                    onChange={(event) =>
+                      setEditModel(
+                        event.target.value
+                      )
+                    }
+                    placeholder="Model"
+                  />
+                  <input
+                    className="rounded-lg border border-neutral-200 px-3 py-2"
+                    value={editCategory}
+                    onChange={(event) =>
+                      setEditCategory(
+                        event.target.value
+                      )
+                    }
+                    placeholder="Category"
+                  />
+                  <input
+                    className="rounded-lg border border-neutral-200 px-3 py-2"
+                    value={editTypeKey}
+                    onChange={(event) =>
+                      setEditTypeKey(
+                        event.target.value
+                      )
+                    }
+                    placeholder="Device type key"
+                  />
+                  <ActionButton
+                    label="Save Edited Suggestion"
+                    icon={<CheckCircle2 size={16} />}
+                    busy={busy}
+                    onClick={() => {
+                      onAcceptRecognition({
+                        friendlyName:
+                          editFriendlyName,
+                        manufacturer:
+                          editManufacturer,
+                        model: editModel,
+                        category: editCategory,
+                        deviceTypeKey:
+                          editTypeKey,
+                      });
+                      setEditingRecognition(false);
+                    }}
+                  />
+                </div>
+              ) : null}
+
               {device.matchStatus === "possible_match" ? (
                 <>
                   <ActionButton
@@ -681,6 +886,7 @@ function DiscoveryDeviceCard({
                 icon={<XCircle size={16} />}
                 variant="secondary"
                 busy={busy}
+                busyLabel="Ignoring..."
                 onClick={onIgnore}
               />
             </div>
@@ -695,6 +901,7 @@ function ActionButton({
   label,
   icon,
   busy,
+  busyLabel,
   disabled,
   variant = "primary",
   onClick,
@@ -702,6 +909,7 @@ function ActionButton({
   label: string;
   icon?: ReactNode;
   busy?: boolean;
+  busyLabel?: string;
   disabled?: boolean;
   variant?: "primary" | "secondary";
   onClick: () => void;
@@ -722,7 +930,7 @@ function ActionButton({
       ) : (
         icon
       )}
-      {label}
+      {busy ? busyLabel ?? label : label}
     </button>
   );
 }

@@ -6,6 +6,7 @@ import HomeHealthHeader from "@/components/home-health/HomeHealthHeader";
 import HomeHealthScoreCard from "@/components/home-health/HomeHealthScoreCard";
 import HomePulseAlerts from "@/components/home-health/HomePulseAlerts";
 import NextBestActionCard from "@/components/home-health/NextBestActionCard";
+import SmartSearch from "@/components/search/SmartSearch";
 import { usePermissions } from "@/hooks/usePermissions";
 import type { HomeHealthResult } from "@/lib/home-health/types";
 
@@ -26,6 +27,11 @@ export default function HomeHealthDashboard({
   return (
     <div className="space-y-6 md:space-y-8">
       <HomeHealthHeader firstName={firstName} />
+
+      <SmartSearch
+        mode="dashboard"
+        heading="Ask About Your Home Technology"
+      />
 
       {homeHealth.isEmpty ? (
         <HomeHealthEmptyState

@@ -1,4 +1,5 @@
 import {
+  cleanDiscoveredHostname,
   identifyDiscoveredDevice,
   resolveDiscoveredIdentification,
   type IdentificationResult,
@@ -34,6 +35,10 @@ function mapIntelligenceToIdentification(
   const best = result.bestCandidate;
 
   if (!best) {
+    const cleanedHostname = cleanDiscoveredHostname(
+      device.hostname
+    );
+
     return {
       likelyCategory: null,
       likelyBrand: null,
@@ -46,7 +51,7 @@ function mapIntelligenceToIdentification(
       ],
       displayName:
         device.friendlyName?.trim() ||
-        device.hostname?.trim() ||
+        cleanedHostname ||
         "Unknown network device",
     };
   }

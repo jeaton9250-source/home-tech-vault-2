@@ -148,7 +148,7 @@ export default function SearchField({
     }
 
     router.push(
-      `/devices?search=${encodeURIComponent(query)}`
+      `/smart-search?q=${encodeURIComponent(query)}`
     );
 
     if (collapsible) {
@@ -165,8 +165,8 @@ export default function SearchField({
   function clearSearch() {
     setSearch("");
 
-    if (pathname === "/devices") {
-      router.push("/devices");
+    if (pathname === "/smart-search") {
+      router.push("/smart-search");
     }
 
     inputRef.current?.focus();
@@ -188,12 +188,12 @@ export default function SearchField({
           type="search"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
-          placeholder="Search devices..."
+          placeholder="Ask about your home technology..."
           className={cn(
             "htv-focus-ring w-full rounded-[var(--radius-input)] border border-border-subtle bg-surface-sunken py-2.5 pl-10 pr-10 text-sm text-text-primary outline-none focus:border-interaction",
             compact && "py-2"
           )}
-          aria-label="Search devices"
+          aria-label="Smart search"
         />
 
         {search ? (
@@ -224,7 +224,7 @@ export default function SearchField({
           "htv-focus-ring flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-button)] border border-border-subtle bg-surface-card text-text-primary transition hover:bg-surface-sunken",
           className
         )}
-        aria-label="Search devices"
+        aria-label="Smart search"
         aria-expanded={open}
         aria-controls={panelId}
         aria-haspopup="dialog"
@@ -240,7 +240,7 @@ export default function SearchField({
                   ref={panelRef}
                   id={panelId}
                   role="dialog"
-                  aria-label="Search devices"
+                  aria-label="Smart search"
                   initial={{ opacity: 0, y: -6 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -6 }}

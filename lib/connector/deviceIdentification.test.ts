@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import {
+  cleanDiscoveredHostname,
   classifyMacManufacturer,
   classifyMdnsService,
   classifySsdpDeviceType,
@@ -145,6 +146,56 @@ describe("identifyDiscoveredDevice", () => {
 
     assert.ok(espressif);
     assert.equal(espressif.confidence, "low");
+  });
+
+  it("uses cleaned hostname as the user-facing fallback and evidence summary", () => {
+    const result = identifyDiscoveredDevice({
+      hostname: "LivingRoomTV.lan",
+    });
+
+    assert.equal(result.displayName, "Living Room TV");
+    assert.equal(result.identificationReasons[0], "Hostname is Living Room TV");
+  });
+});
+
+describe("cleanDiscoveredHostname", () => {
+  it("removes the longest matching suffix first", () => {
+    assert.equal(cleanDiscoveredHostname("xbox-series-x.home.arpa"), "Xbox Series X");
+    assert.equal(cleanDiscoveredHostname("router.fritz.box"), "Router");
+  });
+
+  it("removes each supported local suffix", () => {
+    assert.equal(cleanDiscoveredHostname("LivingRoomTV.lan"), "Living Room TV");
+    assert.equal(cleanDiscoveredHostname("Jason-MacBook.local"), "Jason MacBook");
+    assert.equal(cleanDiscoveredHostname("roku-ultra.home"), "Roku Ultra");
+    assert.equal(cleanDiscoveredHostname("xbox-series-x.home.arpa"), "Xbox Series X");
+    assert.equal(cleanDiscoveredHostname("fritz-repeater.fritz.box"), "Fritz Repeater");
+  });
+
+  it("handles uppercase and lowercase suffixes", () => {
+    assert.equal(cleanDiscoveredHostname("HP_OfficeJet.LAN"), "HP OfficeJet");
+    assert.equal(cleanDiscoveredHostname("BRAVIA-7F31.Local"), "BRAVIA 7F31");
+  });
+
+  it("formats camelCase, hyphens, and underscores", () => {
+    assert.equal(cleanDiscoveredHostname("LivingRoomTV"), "Living Room TV");
+    assert.equal(cleanDiscoveredHostname("HP_OfficeJet"), "HP OfficeJet");
+    assert.equal(cleanDiscoveredHostname("xbox-series-x"), "Xbox Series X");
+  });
+
+  it("preserves useful model numbers", () => {
+    assert.equal(cleanDiscoveredHostname("BRAVIA-7F31.lan"), "BRAVIA 7F31");
+    assert.equal(cleanDiscoveredHostname("roku-Ultra-4800X.local"), "Roku Ultra 4800X");
+  });
+
+  it("returns null for empty or null hostnames", () => {
+    assert.equal(cleanDiscoveredHostname(null), null);
+    assert.equal(cleanDiscoveredHostname(""), null);
+    assert.equal(cleanDiscoveredHostname("   "), null);
+  });
+
+  it("keeps already clean names readable", () => {
+    assert.equal(cleanDiscoveredHostname("Roku Ultra"), "Roku Ultra");
   });
 });
 

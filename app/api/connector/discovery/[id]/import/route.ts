@@ -1,7 +1,7 @@
 import {
   buildNewDeviceImportPayload,
   guessDiscoveryCategory,
-  suggestImportedDeviceName,
+  resolveImportedDeviceName,
 } from "@/lib/connector/deviceEnrichment";
 import {
   isDuplicateImportCandidate,
@@ -176,12 +176,29 @@ export async function POST(
         row.local_fingerprint,
     };
 
+    const importedName =
+      resolveImportedDeviceName({
+        recognitionStatus:
+          row.recognition_status,
+        recognitionAcceptedName:
+          row.recognition_accepted_name,
+        friendlyName: row.friendly_name,
+        identificationDisplayName:
+          row.identification_display_name,
+        hostname: row.hostname,
+        manufacturer:
+          row.recognition_accepted_manufacturer ??
+          row.manufacturer,
+        category:
+          row.recognition_accepted_category ??
+          row.likely_category ??
+          row.device_type,
+      });
+
     const insertPayload =
       buildNewDeviceImportPayload({
         discovery: discoveryFields,
-        deviceName: suggestImportedDeviceName(
-          discoveryFields
-        ),
+        deviceName: importedName,
         category: guessDiscoveryCategory(
           row.hostname,
           row.manufacturer,
