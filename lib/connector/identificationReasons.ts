@@ -3,6 +3,7 @@ import type {
   MatchReasonSignal,
 } from "@/lib/connector/discoveryTypes";
 import {
+  cleanDiscoveredHostname,
   formatIdentificationConfidenceLabel,
 } from "@/lib/connector/deviceIdentification";
 
@@ -32,13 +33,28 @@ export function formatIdentificationLabel(
 export function discoveryDeviceTitle(
   device: DiscoveredDeviceSummary
 ): string {
+  const acceptedRecognitionName =
+    device.recognitionStatus === "accepted"
+      ? device.recognitionSuggestion.friendlyName?.trim() || null
+      : null;
+  const cleanedHostname = cleanDiscoveredHostname(
+    device.hostname
+  );
+  const manufacturerCategoryFallback = [
+    device.manufacturer,
+    device.likelyCategory,
+  ]
+    .filter((value) => value?.trim())
+    .join(" ")
+    .trim();
+
   return (
-    device.identificationDisplayName ??
+    acceptedRecognitionName ??
     device.friendlyName ??
-    device.hostname ??
-    device.manufacturer ??
-    device.ipAddress ??
-    "Discovered device"
+    device.identificationDisplayName ??
+    cleanedHostname ??
+    (manufacturerCategoryFallback || null) ??
+    "Unknown device"
   );
 }
 

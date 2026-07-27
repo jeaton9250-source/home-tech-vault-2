@@ -6,7 +6,6 @@ import {
 } from "@/lib/connector/deviceSignatures";
 import {
   isGenericHostname,
-  normalizeHostname,
   normalizeManufacturer,
 } from "@/lib/connector/network";
 
@@ -47,6 +46,9 @@ type SignatureMatch = {
   signature: DeviceSignature;
   reason: string;
 };
+
+const LOCAL_NETWORK_SUFFIX_PATTERN =
+  /(?:\.(?:home\.arpa|fritz\.box|local|home|lan))$/i;
 
 function haystack(input: DiscoveryObservation): string {
   return [
@@ -155,13 +157,17 @@ function pickPrimaryMatch(
 }
 
 function buildDisplayName(
+  cleanedHostname: string | null,
   brand: string | null,
   category: DeviceCategory | null,
-  friendlyName: string | null,
-  hostname: string | null
+  friendlyName: string | null
 ): string {
   if (friendlyName?.trim()) {
     return friendlyName.trim();
+  }
+
+  if (cleanedHostname) {
+    return cleanedHostname;
   }
 
   if (brand && brand !== "Unknown" && category && category !== "Unknown") {
@@ -172,11 +178,76 @@ function buildDisplayName(
     return `Likely ${category}`;
   }
 
-  if (hostname && !isGenericHostname(hostname)) {
-    return hostname;
+  return "Unknown Smart Home Device";
+}
+
+function formatHostnameToken(token: string): string {
+  if (!token) {
+    return "";
   }
 
-  return "Unknown Smart Home Device";
+  if (/^[A-Z0-9]+$/.test(token)) {
+    return token;
+  }
+
+  if (/^[a-z0-9]+$/.test(token)) {
+    return token.charAt(0).toUpperCase() + token.slice(1);
+  }
+
+  return token;
+}
+
+function splitHostnameToken(token: string): string {
+  if (!/[a-z]/.test(token) || !/[A-Z]/.test(token)) {
+    return token;
+  }
+
+  const camelBoundaries =
+    token.match(/[a-z][A-Z]/g)?.length ?? 0;
+
+  if (camelBoundaries <= 1) {
+    return token;
+  }
+
+  return token.replace(/([a-z])([A-Z])/g, "$1 $2");
+}
+
+export function cleanDiscoveredHostname(
+  hostname: string | null | undefined
+): string | null {
+  if (!hostname?.trim()) {
+    return null;
+  }
+
+  const withoutSuffix = hostname
+    .trim()
+    .replace(LOCAL_NETWORK_SUFFIX_PATTERN, "")
+    .trim();
+
+  if (!withoutSuffix || isGenericHostname(withoutSuffix)) {
+    return null;
+  }
+
+  const withSafeCamelSplit = withoutSuffix
+    .replace(/[-_]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!withSafeCamelSplit) {
+    return null;
+  }
+
+  const cleaned = withSafeCamelSplit
+    .split(" ")
+    .flatMap((token) =>
+      splitHostnameToken(token)
+        .split(" ")
+        .map((part) => formatHostnameToken(part))
+    )
+    .join(" ")
+    .trim();
+
+  return cleaned || null;
 }
 
 /**
@@ -186,6 +257,10 @@ function buildDisplayName(
 export function identifyDiscoveredDevice(
   observation: DiscoveryObservation
 ): IdentificationResult {
+  const cleanedHostname = cleanDiscoveredHostname(
+    observation.hostname
+  );
+
   const matches = DEVICE_SIGNATURES.flatMap((signature) => {
     const match = evaluateSignature(
       observation,
@@ -239,18 +314,18 @@ export function identifyDiscoveredDevice(
     (hostnameLabel(observation.hostname) &&
     identificationConfidence !== "unknown"
       ? buildDisplayName(
+          cleanedHostname,
           likelyBrand,
           likelyCategory,
-          null,
-          observation.hostname ?? null
+          null
         )
       : null);
 
   const displayName = buildDisplayName(
+    cleanedHostname,
     likelyBrand,
     likelyCategory,
-    friendlyName,
-    observation.hostname ?? null
+    friendlyName
   );
 
   if (reasons.length === 0) {
@@ -258,9 +333,9 @@ export function identifyDiscoveredDevice(
       reasons.push(
         `Manufacturer is ${observation.manufacturer}`
       );
-    } else if (observation.hostname) {
+    } else if (cleanedHostname) {
       reasons.push(
-        `Hostname is ${observation.hostname}`
+        `Hostname is ${cleanedHostname}`
       );
     } else {
       reasons.push("Insufficient evidence for identification");
