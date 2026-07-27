@@ -3,6 +3,7 @@ import {
   mergeDiscoverySources,
   normalizeMacAddress,
 } from "@/lib/connector/network";
+import { cleanDiscoveredHostname } from "@/lib/connector/deviceIdentification";
 
 import type {
   DiscoveryNetworkFields,
@@ -179,6 +180,14 @@ export function suggestImportedDeviceName(
     "hostname" | "manufacturer" | "ipAddress"
   >
 ): string {
+  const cleanedHostname = cleanDiscoveredHostname(
+    discovery.hostname
+  );
+
+  if (cleanedHostname) {
+    return cleanedHostname;
+  }
+
   const hostname = discovery.hostname?.trim();
 
   if (hostname) {
@@ -194,6 +203,69 @@ export function suggestImportedDeviceName(
   }
 
   return "Network Device";
+}
+
+export function resolveImportedDeviceName(input: {
+  recognitionStatus?: string | null;
+  recognitionAcceptedName?: string | null;
+  friendlyName?: string | null;
+  identificationDisplayName?: string | null;
+  hostname?: string | null;
+  manufacturer?: string | null;
+  category?: string | null;
+  existingDeviceName?: string | null;
+  allowRename?: boolean;
+}): string {
+  const {
+    recognitionStatus,
+    recognitionAcceptedName,
+    friendlyName,
+    identificationDisplayName,
+    hostname,
+    manufacturer,
+    category,
+    existingDeviceName,
+    allowRename,
+  } = input;
+
+  const preservedExistingName =
+    existingDeviceName?.trim() || null;
+
+  if (preservedExistingName && !allowRename) {
+    return preservedExistingName;
+  }
+
+  const acceptedName =
+    recognitionStatus === "accepted"
+      ? recognitionAcceptedName?.trim() || null
+      : null;
+  const acceptedFriendlyName =
+    recognitionStatus === "accepted"
+      ? friendlyName?.trim() || null
+      : null;
+  const confirmedFriendlyName =
+    friendlyName?.trim() || null;
+  const displayName =
+    identificationDisplayName?.trim() || null;
+  const cleanedHostname =
+    cleanDiscoveredHostname(hostname);
+  const manufacturerCategoryFallback = [
+    manufacturer?.trim() || null,
+    category?.trim() || null,
+  ]
+    .filter((value) => Boolean(value))
+    .join(" ")
+    .trim();
+
+  return (
+    acceptedName ??
+    acceptedFriendlyName ??
+    confirmedFriendlyName ??
+    displayName ??
+    cleanedHostname ??
+    (manufacturerCategoryFallback || null) ??
+    "Unknown device"
+  );
 }
 
 export function guessDiscoveryCategory(
