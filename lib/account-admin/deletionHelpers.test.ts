@@ -7,6 +7,8 @@ import {
   buildDeletionStepLogPayload,
   buildFailedDeletionJobMessage,
   formatDeletionStepLabel,
+  HOUSEHOLD_SCOPED_TABLE_ORDER,
+  devicesMustFollowDependents,
   resolveDeletionFailure,
   resolveRetryStartingStep,
   sanitizeDeletionErrorMessage,
@@ -118,5 +120,36 @@ describe("account deletion helpers", () => {
     assert.doesNotMatch(payload.message ?? "", /user@example.com/);
     assert.notEqual(Object.prototype.hasOwnProperty.call(payload, "email"), true);
     assert.notEqual(Object.prototype.hasOwnProperty.call(payload, "targetUserId"), true);
+  });
+
+  it("orders household cleanup before device deletion", () => {
+    const order = [
+      ...HOUSEHOLD_SCOPED_TABLE_ORDER,
+      "devices",
+    ];
+
+    assert.equal(devicesMustFollowDependents(order), true);
+    assert.ok(
+      order.indexOf("device_documents") <
+        order.indexOf("devices")
+    );
+    assert.ok(
+      order.indexOf("device_identity_confirmations") <
+        order.indexOf("devices")
+    );
+  });
+
+  it("maps household cleanup failures to a dedicated error code", () => {
+    const failure = resolveDeletionFailure(
+      new Error(
+        "Household cleanup failed while removing devices."
+      ),
+      "delete_household_data"
+    );
+
+    assert.equal(
+      failure.safeErrorCode,
+      "HOUSEHOLD_DATA_DELETE_FAILED"
+    );
   });
 });

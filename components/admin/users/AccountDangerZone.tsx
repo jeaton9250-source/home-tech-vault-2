@@ -13,6 +13,7 @@ import {
 } from "@/components/admin/AdminPanel";
 import Button from "@/components/ui/Button";
 import { DELETION_REASONS } from "@/lib/account-admin/constants";
+import { formatDeletionStepLabel } from "@/lib/account-admin/deletionHelpers";
 import type { AdminUserDetail } from "@/lib/admin/types";
 
 type DeletionPreview = {
@@ -65,8 +66,6 @@ type DeletionJobView = {
   canceledAt: string | null;
   message: string;
 };
-
-type DeletionJob = DeletionJobView;
 
 type AccountDangerZoneProps = {
   detail: AdminUserDetail;
@@ -170,7 +169,12 @@ export default function AccountDangerZone({
       jobId: detail.deletionJobId,
       status: detail.deletionJobStatus ?? "unknown",
       currentStep: detail.deletionJobStep,
-      failedStepLabel: null,
+      failedStepLabel:
+        detail.deletionJobStatus === "failed"
+          ? formatDeletionStepLabel(
+              detail.deletionJobStep
+            )
+          : null,
       safeErrorCode:
         detail.deletionJobSafeErrorCode,
       safeErrorMessage:
@@ -545,6 +549,11 @@ export default function AccountDangerZone({
 
       if (!response.ok) {
         setLatestJob(payload.jobView ?? null);
+
+        if (payload.jobView?.safeErrorMessage) {
+          return;
+        }
+
         throw new Error(
           payload.error ||
             "Retry failed."
@@ -777,7 +786,8 @@ export default function AccountDangerZone({
         </p>
       ) : null}
 
-      {error ? (
+      {error &&
+      error !== jobView?.safeErrorMessage ? (
         <p className="mt-3 text-sm text-red-700">
           {error}
         </p>

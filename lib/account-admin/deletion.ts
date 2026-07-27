@@ -6,6 +6,7 @@ import { recordPlatformAdminAudit } from "@/lib/account-admin/audit";
 import {
   AUTH_USER_REFERENCE_TARGETS,
   buildDeletionStepLogPayload,
+  HOUSEHOLD_SCOPED_TABLE_ORDER,
   resolveDeletionFailure,
   resolveRetryStartingStep,
 } from "@/lib/account-admin/deletionHelpers";
@@ -435,6 +436,81 @@ async function deleteWhereHouseholdId(
     .eq("household_id", householdId);
 
   if (error && !isIgnorableSchemaError(error)) {
+    const wrapped = new Error(
+      `Household cleanup failed while removing ${table}.`
+    ) as Error & { code?: string };
+
+    wrapped.code = error.code;
+
+    throw wrapped;
+  }
+}
+
+async function listHouseholdDeviceIds(
+  admin: SupabaseClient,
+  householdId: string
+): Promise<string[]> {
+  const { data, error } = await admin
+    .from("devices")
+    .select("id")
+    .eq("household_id", householdId);
+
+  if (error && !isIgnorableSchemaError(error)) {
+    throw error;
+  }
+
+  return (data ?? []).map((row) => row.id as string);
+}
+
+async function deleteDeviceEventsForHousehold(
+  admin: SupabaseClient,
+  householdId: string,
+  deviceIds: string[]
+) {
+  if (deviceIds.length === 0) {
+    return;
+  }
+
+  const { error } = await admin
+    .from("device_events")
+    .delete()
+    .in("device_id", deviceIds);
+
+  if (error && !isIgnorableSchemaError(error)) {
+    const wrapped = new Error(
+      "Household cleanup failed while removing device_events."
+    ) as Error & { code?: string };
+
+    wrapped.code = error.code;
+
+    throw wrapped;
+  }
+}
+
+async function clearHouseholdSupportTickets(
+  admin: SupabaseClient,
+  householdId: string
+) {
+  const { error } = await admin
+    .from("support_tickets")
+    .update({ household_id: null })
+    .eq("household_id", householdId);
+
+  if (error && !isIgnorableSchemaError(error)) {
+    throw error;
+  }
+}
+
+async function clearHouseholdSubscriptionLinks(
+  admin: SupabaseClient,
+  householdId: string
+) {
+  const { error } = await admin
+    .from("user_subscriptions")
+    .update({ household_id: null })
+    .eq("household_id", householdId);
+
+  if (error && !isIgnorableSchemaError(error)) {
     throw error;
   }
 }
@@ -522,23 +598,12 @@ async function deleteHouseholdData(
   admin: SupabaseClient,
   householdId: string
 ) {
-  const tables = [
-    "device_monitor_events",
-    "discovered_devices",
-    "connector_pairing_sessions",
-    "connector_installations",
-    "devices",
-    "documents",
-    "device_documents",
-    "device_images",
-    "maintenance_tasks",
-    "network_info",
-    "subscriptions",
-    "household_members",
-    "household_invitations",
-  ];
+  const deviceIds = await listHouseholdDeviceIds(
+    admin,
+    householdId
+  );
 
-  for (const table of tables) {
+  for (const table of HOUSEHOLD_SCOPED_TABLE_ORDER) {
     await deleteWhereHouseholdId(
       admin,
       table,
@@ -546,13 +611,40 @@ async function deleteHouseholdData(
     );
   }
 
+  await deleteDeviceEventsForHousehold(
+    admin,
+    householdId,
+    deviceIds
+  );
+
+  await deleteWhereHouseholdId(
+    admin,
+    "devices",
+    householdId
+  );
+
+  await clearHouseholdSupportTickets(
+    admin,
+    householdId
+  );
+  await clearHouseholdSubscriptionLinks(
+    admin,
+    householdId
+  );
+
   const { error } = await admin
     .from("households")
     .delete()
     .eq("id", householdId);
 
   if (error) {
-    throw error;
+    const wrapped = new Error(
+      "Household cleanup failed while removing households."
+    ) as Error & { code?: string };
+
+    wrapped.code = error.code;
+
+    throw wrapped;
   }
 }
 

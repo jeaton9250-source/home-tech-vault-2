@@ -198,6 +198,30 @@ export function resolveDeletionFailure(
   const sanitizedMessage =
     sanitizeDeletionErrorMessage(rawMessage);
 
+  if (failedStep === "delete_household_data") {
+    return {
+      safeErrorCode: "HOUSEHOLD_DATA_DELETE_FAILED",
+      safeErrorMessage:
+        "Household data could not be fully removed. You can safely retry this job.",
+      databaseErrorCode,
+      sanitizedMessage,
+    };
+  }
+
+  if (
+    /Household cleanup failed while removing/i.test(
+      rawMessage
+    )
+  ) {
+    return {
+      safeErrorCode: "HOUSEHOLD_DATA_DELETE_FAILED",
+      safeErrorMessage:
+        "Household data could not be fully removed. You can safely retry this job.",
+      databaseErrorCode,
+      sanitizedMessage,
+    };
+  }
+
   if (
     /foreign key|violates|still referenced|database error deleting user/i.test(
       rawMessage
@@ -290,6 +314,51 @@ export function resolveDeletionFailure(
     databaseErrorCode,
     sanitizedMessage,
   };
+}
+
+/** Tables removed by household_id before devices are deleted. */
+export const HOUSEHOLD_SCOPED_TABLE_ORDER = [
+  "device_monitor_events",
+  "discovered_devices",
+  "connector_pairing_sessions",
+  "connector_installations",
+  "device_documents",
+  "device_images",
+  "maintenance_tasks",
+  "device_identity_confirmations",
+  "documents",
+  "network_info",
+  "subscriptions",
+  "household_members",
+  "household_invitations",
+] as const;
+
+export type HouseholdScopedTable =
+  (typeof HOUSEHOLD_SCOPED_TABLE_ORDER)[number];
+
+/**
+ * device_events is scoped through devices.id, not household_id.
+ * devices must be deleted only after device dependents are removed.
+ */
+export const HOUSEHOLD_DEVICE_DEPENDENT_TABLES = [
+  "device_documents",
+  "device_images",
+  "maintenance_tasks",
+  "device_identity_confirmations",
+  "documents",
+] as const;
+
+export function devicesMustFollowDependents(
+  tables: readonly string[]
+): boolean {
+  const devicesIndex = tables.indexOf("devices");
+  if (devicesIndex === -1) {
+    return true;
+  }
+
+  return HOUSEHOLD_DEVICE_DEPENDENT_TABLES.every(
+    (table) => tables.indexOf(table) < devicesIndex
+  );
 }
 
 export function buildFailedDeletionJobMessage(
