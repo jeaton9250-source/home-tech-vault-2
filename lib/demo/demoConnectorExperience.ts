@@ -13,11 +13,15 @@ import {
 } from "@/lib/demo/demoDeviceNetworkProfiles";
 import { morganDevices } from "@/lib/demo/morganDevices";
 import {
-  DEMO_NETWORK_ANCHOR,
   demoTimestampDaysAgo,
   demoTimestampMinutesAgo,
 } from "@/lib/demo/demoNetworkTime";
 import { computeDiscoveryStats } from "@/lib/connector/discoveryStats";
+import {
+  confidenceScoreFromLabel,
+  iconKeyForCategory,
+  summarizeEvidence,
+} from "@/lib/connector/recognitionSuggestion";
 
 export {
   applyDemoDeviceNetworkFields,
@@ -29,6 +33,17 @@ export {
 
 export const DEMO_CONNECTOR_PLATFORM = "macos";
 export const DEMO_CONNECTOR_VERSION = "0.1.0 Demo";
+
+type DemoDiscoveredInput = Omit<
+  DiscoveredDeviceSummary,
+  | "recognitionStatus"
+  | "recognitionReviewedAt"
+  | "recognitionSuggestion"
+> & {
+  recognitionStatus?: DiscoveredDeviceSummary["recognitionStatus"];
+  recognitionReviewedAt?: string | null;
+  recognitionSuggestion?: DiscoveredDeviceSummary["recognitionSuggestion"];
+};
 
 export function buildDemoConnectorInstallation(): ConnectorInstallationSummary {
   return {
@@ -51,7 +66,7 @@ function vaultDeviceById(deviceId: string) {
 }
 
 function enrichDemoIdentification(
-  device: DiscoveredDeviceSummary
+  device: DemoDiscoveredInput
 ): DiscoveredDeviceSummary {
   if (device.matchStatus === "matched" && device.matchedDevice) {
     return {
@@ -71,6 +86,26 @@ function enrichDemoIdentification(
         device.matchedDevice.deviceName ??
         device.hostname ??
         "Confirmed device",
+      recognitionStatus: "accepted",
+      recognitionReviewedAt: demoTimestampDaysAgo(1),
+      recognitionSuggestion: {
+        friendlyName:
+          device.matchedDevice.deviceName ??
+          device.hostname ??
+          "Confirmed device",
+        manufacturer:
+          device.matchedDevice.manufacturer,
+        model:
+          device.matchedDevice.modelNumber,
+        category:
+          device.matchedDevice.category,
+        deviceTypeKey: iconKeyForCategory(
+          device.matchedDevice.category
+        ),
+        confidenceScore: 99,
+        reason:
+          "Previously confirmed by household member.",
+      },
     };
   }
 
@@ -96,6 +131,30 @@ function enrichDemoIdentification(
     identificationConfidence: identification.identificationConfidence,
     identificationReasons: identification.identificationReasons,
     identificationDisplayName: identification.displayName,
+    recognitionStatus: "pending",
+    recognitionReviewedAt: null,
+    recognitionSuggestion: {
+      friendlyName:
+        identification.displayName,
+      manufacturer:
+        identification.likelyBrand ??
+        device.manufacturer,
+      model:
+        identification.model ??
+        device.model,
+      category:
+        identification.likelyCategory,
+      deviceTypeKey: iconKeyForCategory(
+        identification.likelyCategory
+      ),
+      confidenceScore:
+        confidenceScoreFromLabel(
+          identification.identificationConfidence
+        ),
+      reason: summarizeEvidence(
+        identification.identificationReasons
+      ),
+    },
   };
 }
 

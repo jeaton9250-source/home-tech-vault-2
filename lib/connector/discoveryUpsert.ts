@@ -9,9 +9,11 @@ import {
   mergeDiscoverySources,
   mergeStringArrays,
 } from "@/lib/connector/network";
+import { iconKeyForCategory } from "@/lib/connector/recognitionSuggestion";
 
 import type {
   DiscoverySyncResponse,
+  RecognitionStatus,
 } from "@/lib/connector/discoveryTypes";
 import type { ParsedDiscoveryDevice } from "@/lib/connector/discoveryValidation";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -23,6 +25,16 @@ type UpsertDiscoveredDevicesInput = {
   scannedAt: string;
   devices: ParsedDiscoveryDevice[];
 };
+
+function resolveRecognitionStatus(
+  value: string | null | undefined
+): RecognitionStatus {
+  if (value === "accepted" || value === "dismissed") {
+    return value;
+  }
+
+  return "pending";
+}
 
 /**
  * Phase 2B.1 — upsert discovered device observations.
@@ -55,7 +67,7 @@ export async function upsertDiscoveredDevices(
     const existingResult = await admin
       .from("discovered_devices")
       .select(
-        "id, imported_device_id, ignored_at, first_seen_at, discovery_sources, mdns_services"
+        "id, imported_device_id, ignored_at, first_seen_at, discovery_sources, mdns_services, manufacturer, model, friendly_name, device_type, likely_category, identification_display_name, recognition_status, recognition_accepted_name, recognition_accepted_manufacturer, recognition_accepted_model, recognition_accepted_category, recognition_accepted_device_type_key"
       )
       .eq("connector_id", connectorId)
       .eq(
@@ -86,6 +98,66 @@ export async function upsertDiscoveredDevices(
     const identification =
       buildIdentificationForParsedDevice(device);
 
+    const recognitionStatus =
+      resolveRecognitionStatus(
+        existingResult.data
+          ?.recognition_status
+      );
+
+    const manufacturer =
+      recognitionStatus === "accepted"
+        ? existingResult.data
+            ?.recognition_accepted_manufacturer ??
+          existingResult.data?.manufacturer ??
+          device.manufacturer
+        : device.manufacturer;
+    const model =
+      recognitionStatus === "accepted"
+        ? existingResult.data
+            ?.recognition_accepted_model ??
+          existingResult.data?.model ??
+          device.model ??
+          identification.model
+        : device.model ??
+          identification.model;
+    const friendlyName =
+      recognitionStatus === "accepted"
+        ? existingResult.data
+            ?.recognition_accepted_name ??
+          existingResult.data?.friendly_name ??
+          device.friendlyName ??
+          identification.friendlyName
+        : device.friendlyName ??
+          identification.friendlyName;
+    const likelyCategory =
+      recognitionStatus === "accepted"
+        ? existingResult.data
+            ?.recognition_accepted_category ??
+          existingResult.data
+            ?.likely_category ??
+          identification.likelyCategory
+        : identification.likelyCategory;
+    const deviceType =
+      recognitionStatus === "accepted"
+        ? existingResult.data
+            ?.recognition_accepted_device_type_key ??
+          iconKeyForCategory(
+            likelyCategory
+          ) ??
+          existingResult.data?.device_type ??
+          device.deviceType ??
+          likelyCategory
+        : device.deviceType ??
+          likelyCategory;
+    const identificationDisplayName =
+      recognitionStatus === "accepted"
+        ? existingResult.data
+            ?.recognition_accepted_name ??
+          existingResult.data
+            ?.identification_display_name ??
+          identification.displayName
+        : identification.displayName;
+
     const { error: upsertError } = await admin
       .from("discovered_devices")
       .upsert(
@@ -95,22 +167,21 @@ export async function upsertDiscoveredDevices(
           local_fingerprint:
             device.localFingerprint,
           hostname: device.hostname,
-          manufacturer: device.manufacturer,
-          model: device.model ?? identification.model,
+          manufacturer,
+          model,
           ip_address: device.ipAddress,
           mac_address: device.macAddress,
-          device_type:
-            device.deviceType ??
-            identification.likelyCategory,
-          friendly_name:
-            device.friendlyName ??
-            identification.friendlyName,
+          device_type: deviceType,
+          friendly_name: friendlyName,
           mdns_services: mergedMdnsServices,
           ssdp_device_type: device.ssdpDeviceType,
           ssdp_description_url: device.ssdpDescriptionUrl,
           ...identificationFieldsFromResult(
             identification
           ),
+          likely_category: likelyCategory,
+          identification_display_name:
+            identificationDisplayName,
           online: device.online,
           discovery_sources: mergedSources,
           first_seen_at: preservedFirstSeenAt,

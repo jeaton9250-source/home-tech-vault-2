@@ -218,7 +218,13 @@ function DiscoveryReviewContent() {
       return;
     }
 
-    void reloadReviewData();
+    const timer = setTimeout(() => {
+      void reloadReviewData();
+    }, 0);
+
+    return () => {
+      clearTimeout(timer);
+    };
   }, [demoReviewData, permissionsLoading, reloadReviewData]);
 
   async function runAction(
@@ -439,6 +445,49 @@ function DiscoveryReviewContent() {
                 }
               );
             })
+          );
+        }}
+        onAcceptRecognition={(discovery, edits) => {
+          if (!householdId) {
+            return;
+          }
+
+          void runAction(discovery.id, () =>
+            fetch(
+              `/api/connector/discovery/${discovery.id}/recognition`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  householdId,
+                  action: "accept",
+                  edits,
+                }),
+              }
+            )
+          );
+        }}
+        onDismissRecognition={(discovery) => {
+          if (!householdId) {
+            return;
+          }
+
+          void runAction(discovery.id, () =>
+            fetch(
+              `/api/connector/discovery/${discovery.id}/recognition`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  householdId,
+                  action: "dismiss",
+                }),
+              }
+            )
           );
         }}
       />
