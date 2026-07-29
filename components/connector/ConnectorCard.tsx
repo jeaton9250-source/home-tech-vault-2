@@ -136,9 +136,10 @@ export default function ConnectorCard({
         </PageCard>
 
         <InstallationGuideDialog
-          open={guideOpen}
-          onClose={() => setGuideOpen(false)}
-        />
+  open={guideOpen}
+  platform="macos"
+  onClose={() => setGuideOpen(false)}
+/>
         <ReleaseNotesModal
           open={releaseNotesOpen}
           onClose={() => setReleaseNotesOpen(false)}
@@ -264,9 +265,10 @@ export default function ConnectorCard({
       </PageCard>
 
       <InstallationGuideDialog
-        open={guideOpen}
-        onClose={() => setGuideOpen(false)}
-      />
+  open={guideOpen}
+  platform="macos"
+  onClose={() => setGuideOpen(false)}
+/>
       <ReleaseNotesModal
         open={releaseNotesOpen}
         onClose={() => setReleaseNotesOpen(false)}

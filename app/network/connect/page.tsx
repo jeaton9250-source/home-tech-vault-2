@@ -629,13 +629,10 @@ export default function NetworkConnectPage() {
       </PageCard>
 
       <InstallationGuideDialog
-        open={guideOpen}
-        onClose={() => setGuideOpen(false)}
-      />
-      <ReleaseNotesModal
-        open={releaseNotesOpen}
-        onClose={() => setReleaseNotesOpen(false)}
-      />
+  open={guideOpen}
+  platform="macos"
+  onClose={() => setGuideOpen(false)}
+/>
     </PageShell>
   );
 }
