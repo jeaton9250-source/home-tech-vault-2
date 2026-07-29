@@ -55,8 +55,12 @@ function NetworkPageInner() {
     Boolean(user) &&
     role === "viewer";
 
-  const canManageConnector =
-    !permissionsLoading && isAdmin && !isDemo && Boolean(householdId);
+const canManageConnector =
+  !permissionsLoading &&
+  monitoringEnabled &&
+  isAdmin &&
+  !isDemo &&
+  Boolean(householdId);
 
   const canLinkDevices =
     !permissionsLoading && canEdit && !isDemo && Boolean(user);

@@ -89,6 +89,29 @@ export default function NetworkConnectorTab({
     );
   }
 
+if (!data.monitoringEnabled) {
+  return (
+    <PageCard className="p-7 md:p-8">
+      <p className="text-overline text-section-network">
+        Home Tech Vault Connector
+      </p>
+
+      <h2 className="mt-2 text-2xl font-semibold text-text-primary">
+        Upgrade to use the connector
+      </h2>
+
+      <p className="mt-3 max-w-2xl text-sm leading-7 text-text-secondary">
+        Home network discovery, Home Assistant syncing, and automatic
+        monitoring are available with Home Tech Vault Pro or Family.
+      </p>
+
+      <div className="mt-6">
+        <ConnectorUpgradePrompt />
+      </div>
+    </PageCard>
+  );
+}
+
   if (activeConnectors.length === 0) {
     return (
       <>
@@ -112,20 +135,35 @@ export default function NetworkConnectorTab({
             <li>Automatic monitoring with Pro or Family</li>
           </ul>
 
-          <div className="mt-6 flex flex-col gap-3 sm:max-w-sm">
-            <ConnectorDownloadActions layout="stack" />
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => setGuideOpen(true)}
-            >
-              <BookOpen size={16} />
-              Installation Guide
-            </Button>
-            <Button href="/network/connect">
-              Connect Your Home Network
-            </Button>
-          </div>
+         {canManage ? (
+  <div className="mt-6 flex flex-col gap-3 sm:max-w-sm">
+    <ConnectorDownloadActions layout="stack" />
+
+    <Button
+      type="button"
+      variant="secondary"
+      onClick={() => setGuideOpen(true)}
+    >
+      <BookOpen size={16} />
+      Installation Guide
+    </Button>
+
+    <Button href="/network/connect">
+      Connect Your Home Network
+    </Button>
+  </div>
+) : (
+  <div className="mt-6 rounded-[20px] border border-border-subtle bg-surface-sunken p-4">
+    <p className="text-sm font-semibold text-text-primary">
+      Administrator access required
+    </p>
+
+    <p className="mt-1 text-sm leading-6 text-text-secondary">
+      A household owner or administrator must install and pair the connector.
+      Household members can view synced network information after setup.
+    </p>
+  </div>
+)}
 
           {!data.monitoringEnabled ? (
             <div className="mt-6">
@@ -267,31 +305,51 @@ function ConnectorInstallationCard({
         </p>
       ) : null}
 
-      <div className="mt-6 flex flex-wrap gap-3">
-        <ConnectorDownloadActions layout="row" showVersionLabel={false} />
-      </div>
+     {canManage ? (
+  <div className="mt-6 flex flex-wrap gap-3">
+    <ConnectorDownloadActions
+      layout="row"
+      showVersionLabel={false}
+    />
+  </div>
+) : null}
 
-      <div className="mt-4 flex flex-wrap gap-3">
-        <Button type="button" variant="secondary" onClick={onOpenGuide}>
-          <BookOpen size={16} />
-          Installation Guide
-        </Button>
-        <Button type="button" variant="secondary" onClick={onOpenReleaseNotes}>
-          <Sparkles size={16} />
-          Check for Updates
-        </Button>
-        <Button href="/network/connect" variant="secondary">
-          <RefreshCw size={16} />
-          Reconnect
-        </Button>
-        <Link
-          href="/network/diagnostics"
-          className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-text-secondary transition hover:bg-surface-sunken hover:text-text-primary"
-        >
-          <FileText size={16} />
-          Diagnostics
-        </Link>
-      </div>
+   <div className="mt-4 flex flex-wrap gap-3">
+  {canManage ? (
+    <>
+      <Button
+        type="button"
+        variant="secondary"
+        onClick={onOpenGuide}
+      >
+        <BookOpen size={16} />
+        Installation Guide
+      </Button>
+
+      <Button
+        type="button"
+        variant="secondary"
+        onClick={onOpenReleaseNotes}
+      >
+        <Sparkles size={16} />
+        Check for Updates
+      </Button>
+
+      <Button href="/network/connect" variant="secondary">
+        <RefreshCw size={16} />
+        Reconnect
+      </Button>
+    </>
+  ) : null}
+
+  <Link
+    href="/network/diagnostics"
+    className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-text-secondary transition hover:bg-surface-sunken hover:text-text-primary"
+  >
+    <FileText size={16} />
+    Diagnostics
+  </Link>
+</div>
 
       {canManage ? (
         <div className="mt-6 border-t border-border-subtle pt-6">

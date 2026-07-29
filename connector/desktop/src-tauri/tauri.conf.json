@@ -20,7 +20,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; connect-src 'self' ipc: http://ipc.localhost http://localhost:* http://192.168.1.158:8123 https://hometechvault.com https://*.hometechvault.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:"}
+      "csp": "default-src 'self'; connect-src 'self' ipc: http://ipc.localhost http://localhost:* https://hometechvault.com https://*.hometechvault.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:"}
   },
   "bundle": {
     "active": true,
