@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
 
 import { cn } from "@/lib/design-system/cn";
 import {
@@ -14,48 +13,41 @@ type NetworkTabsProps = {
   activeTab: NetworkTabId;
 };
 
-export default function NetworkTabs({ activeTab }: NetworkTabsProps) {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
+export default function NetworkTabs({
+  activeTab,
+}: NetworkTabsProps) {
   return (
-    <div className="border-b border-border-subtle">
-      <div
-        className="-mb-px flex gap-1 overflow-x-auto pb-px"
-        role="tablist"
-        aria-label="Network sections"
-      >
-        {NETWORK_TABS.map((tab) => {
-          const isActive = tab.id === activeTab;
-          const href = networkTabHref(tab.id);
+    <nav
+      className="mt-5 flex gap-2 overflow-x-auto rounded-[18px] border border-border-subtle bg-surface-sunken p-1.5"
+      aria-label="Network sections"
+    >
+      {NETWORK_TABS.map((tab) => {
+        const isActive =
+          tab.id === activeTab;
 
-          return (
-            <Link
-              key={tab.id}
-              href={href}
-              scroll={false}
-              role="tab"
-              aria-selected={isActive}
-              aria-controls={`network-panel-${tab.id}`}
-              className={cn(
-                "shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition",
-                isActive
-                  ? "border-charcoal text-text-primary"
-                  : "border-transparent text-text-secondary hover:border-border-subtle hover:text-text-primary"
-              )}
-            >
-              {tab.label}
-            </Link>
-          );
-        })}
-      </div>
-
-      <span className="sr-only">
-        Viewing {activeTab} on {pathname}
-        {searchParams.toString()
-          ? `?${searchParams.toString()}`
-          : ""}
-      </span>
-    </div>
+        return (
+          <Link
+            key={tab.id}
+            href={networkTabHref(
+              tab.id
+            )}
+            scroll={false}
+            aria-current={
+              isActive
+                ? "page"
+                : undefined
+            }
+            className={cn(
+              "shrink-0 rounded-[14px] px-4 py-2.5 text-sm font-medium transition",
+              isActive
+                ? "bg-surface-card text-text-primary shadow-[var(--shadow-sm)]"
+                : "text-text-secondary hover:bg-surface-card/60 hover:text-text-primary"
+            )}
+          >
+            {tab.label}
+          </Link>
+        );
+      })}
+    </nav>
   );
 }

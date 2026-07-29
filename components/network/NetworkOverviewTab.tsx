@@ -389,221 +389,28 @@ export default function NetworkOverviewTab({
           </section>
 
           <PageCard className="p-5 md:p-6">
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-                <div className="relative flex-1">
-                  <Search
-                    size={18}
-                    className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-text-tertiary"
-                  />
-                  <input
-                    type="search"
-                    value={searchTerm}
-                    onChange={(event) => setSearchTerm(event.target.value)}
-                    placeholder="Search name, hostname, manufacturer, IP, MAC..."
-                    className="htv-focus-ring w-full rounded-2xl border border-border-subtle bg-surface-sunken py-3.5 pl-11 pr-11 text-sm text-text-primary outline-none transition placeholder:text-text-tertiary focus:border-interaction focus:bg-surface-card focus:ring-4 focus:ring-interaction/15"
-                  />
-                  {searchTerm ? (
-                    <button
-                      type="button"
-                      onClick={() => setSearchTerm("")}
-                      aria-label="Clear search"
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-text-tertiary transition hover:text-text-primary"
-                    >
-                      <X size={16} />
-                    </button>
-                  ) : null}
-                </div>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-base font-semibold text-text-primary">
+                  Discovered devices
+                </h2>
 
-                <label className="flex min-w-[10rem] items-center gap-2">
-                  <span className="sr-only">Link status</span>
-                  <Link2
-                    size={16}
-                    className="shrink-0 text-text-tertiary"
-                    aria-hidden
-                  />
-                  <select
-                    value={linkFilter}
-                    onChange={(event) =>
-                      setLinkFilter(event.target.value as NetworkLinkFilter)
-                    }
-                    className="htv-focus-ring w-full rounded-2xl border border-border-subtle bg-surface-card px-4 py-3 text-sm text-text-primary outline-none transition focus:border-interaction"
-                  >
-                    <option value="all">All Devices</option>
-                    <option value="linked">Linked</option>
-                    <option value="unlinked">Unlinked</option>
-                  </select>
-                </label>
-
-                {manufacturerOptions.length > 0 ? (
-                  <label className="flex min-w-[11rem] items-center gap-2">
-                    <span className="sr-only">Manufacturer</span>
-                    <Laptop
-                      size={16}
-                      className="shrink-0 text-text-tertiary"
-                      aria-hidden
-                    />
-                    <select
-                      value={manufacturerFilter}
-                      onChange={(event) =>
-                        setManufacturerFilter(event.target.value)
-                      }
-                      className="htv-focus-ring w-full rounded-2xl border border-border-subtle bg-surface-card px-4 py-3 text-sm text-text-primary outline-none transition focus:border-interaction"
-                    >
-                      <option value="all">All manufacturers</option>
-                      {manufacturerOptions.map((manufacturer) => (
-                        <option key={manufacturer} value={manufacturer}>
-                          {manufacturer}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                ) : null}
-
-                <label className="flex min-w-[12rem] items-center gap-2">
-                  <span className="sr-only">Sort network devices</span>
-                  <SlidersHorizontal
-                    size={16}
-                    className="shrink-0 text-text-tertiary"
-                    aria-hidden
-                  />
-                  <select
-                    value={sortOption}
-                    onChange={(event) =>
-                      setSortOption(event.target.value as NetworkSort)
-                    }
-                    className="htv-focus-ring w-full rounded-2xl border border-border-subtle bg-surface-card px-4 py-3 text-sm text-text-primary outline-none transition focus:border-interaction"
-                  >
-                    <option value="last-seen-newest">
-                      Last Seen Most Recent
-                    </option>
-                    <option value="last-seen-oldest">Last Seen Oldest</option>
-                    <option value="name-asc">Device Name A–Z</option>
-                    <option value="manufacturer-asc">Manufacturer A–Z</option>
-                    <option value="first-seen-newest">
-                      First Seen Most Recent
-                    </option>
-                  </select>
-                </label>
-              </div>
-
-              <div className="flex gap-2 overflow-x-auto pb-1">
-                {(
-                  [
-                    { id: "all", label: "All" },
-                    { id: "online", label: "Online" },
-                    { id: "offline", label: "Offline" },
-                    { id: "new", label: "Newly Discovered" },
-                    { id: "unlinked", label: "Unlinked" },
-                  ] as const
-                ).map((filter) => {
-                  const selected = statusFilter === filter.id;
-
-                  return (
-                    <button
-                      key={filter.id}
-                      type="button"
-                      onClick={() => setStatusFilter(filter.id)}
-                      className={cn(
-                        "htv-focus-ring shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition",
-                        selected
-                          ? "bg-charcoal text-surface-card"
-                          : "border border-border-subtle bg-surface-card text-text-secondary hover:border-border-strong hover:text-text-primary"
-                      )}
-                    >
-                      {filter.label}
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border-subtle pt-4">
-                <p className="text-sm text-text-secondary">
-                  {filteredDevices.length} network device
-                  {filteredDevices.length === 1 ? "" : "s"}
-                  {searchTerm.trim()
-                    ? ` matching “${searchTerm.trim()}”`
-                    : ""}
+                <p className="mt-1 text-sm leading-6 text-text-secondary">
+                  {devices.length} device{devices.length === 1 ? "" : "s"} found.
+                  Review, search, filter, and link them from the Discovery tab.
                 </p>
-
-                <div className="flex items-center gap-3">
-                  {canRefresh && summary.hasConnector ? (
-                    <button
-                      type="button"
-                      onClick={onRefresh}
-                      disabled={refreshing}
-                      className="htv-focus-ring inline-flex items-center gap-2 text-sm font-semibold text-text-primary transition hover:text-interaction disabled:opacity-50"
-                    >
-                      <RefreshCw
-                        size={15}
-                        className={refreshing ? "animate-spin" : undefined}
-                      />
-                      Refresh
-                    </button>
-                  ) : null}
-
-                  {filtersActive ? (
-                    <button
-                      type="button"
-                      onClick={clearFilters}
-                      className="htv-focus-ring inline-flex items-center gap-2 text-sm font-semibold text-text-primary transition hover:text-interaction"
-                    >
-                      <X size={15} />
-                      Clear filters
-                    </button>
-                  ) : null}
-                </div>
               </div>
+
+              <Button
+                href="/network?tab=discovery"
+                variant="secondary"
+              >
+                View All Devices
+                <ChevronRight size={16} />
+              </Button>
             </div>
           </PageCard>
 
-          {devices.length === 0 ? (
-            <EmptyState
-              icon={Radar}
-              title="No network devices have been discovered yet."
-              description={
-                summary.lastScan
-                  ? "Run another scan from the Home Tech Vault Connector to refresh discoveries."
-                  : "No network scan has been completed yet."
-              }
-              section="network"
-            >
-              {canRefresh ? (
-                <Button
-                  type="button"
-                  className="mt-6"
-                  onClick={onRefresh}
-                  disabled={refreshing}
-                >
-                  <RefreshCw size={17} />
-                  Refresh Network
-                </Button>
-              ) : null}
-            </EmptyState>
-          ) : filteredDevices.length === 0 ? (
-            <NetworkEmptyFilterState
-              statusFilter={statusFilter}
-              searchTerm={searchTerm}
-              onClear={clearFilters}
-            />
-          ) : (
-            <section className="space-y-3">
-              {filteredDevices.map((device) => (
-                <NetworkDeviceCard
-                  key={device.id}
-                  device={device}
-                  formatRelative={formatRelative}
-                  canLink={canLink}
-                  isDemo={isDemo}
-                  menuOpen={menuOpenId === device.id}
-                  onMenuOpenChange={(open) =>
-                    setMenuOpenId(open ? device.id : null)
-                  }
-                  onDemoAction={onDemoAction}
-                />
-              ))}
-            </section>
-          )}
         </>
       ) : null}
     </div>

@@ -215,7 +215,7 @@ const canManageConnector =
       <div
         id={`network-panel-${activeTab}`}
         role="tabpanel"
-        className="mt-8"
+        className="mt-5"
       >
         {loading ? (
           <NetworkPageSkeleton />
@@ -256,6 +256,7 @@ const canManageConnector =
                 householdName={householdOwnerName}
                 planLabel={connectorLimitLabel(plan)}
                 canManage={canManageConnector}
+                canControl={canLinkDevices}
                 isDemo={isDemo || !user}
                 householdId={householdId}
                 onRevoke={handleRevoke}

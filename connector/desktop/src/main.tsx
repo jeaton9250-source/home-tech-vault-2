@@ -11,9 +11,13 @@ import { createRoot } from "react-dom/client";
 import { listen } from "@tauri-apps/api/event";
 
 import {
+  claimHomeAssistantCommand,
+  completeHomeAssistantCommand,
   confirmPairing,
+  executeHomeAssistantService,
   sendHeartbeat,
   syncDiscoveryResults,
+  syncHomeAssistantEntities,
 } from "./lib/api";
 
 import {
@@ -45,9 +49,15 @@ import {
 } from "./lib/heartbeatScheduler";
 
 import {
+  startHomeAssistantCommandScheduler,
+  type HomeAssistantCommandTickResult,
+} from "./lib/homeAssistantCommandScheduler";
+
+import {
   getHomeAssistantStates,
   groupHomeAssistantStates,
   mapHomeAssistantDevicesForSync,
+  mapHomeAssistantEntitiesForSync,
   testHomeAssistantConnection,
 } from "./lib/homeAssistant";
 
@@ -564,6 +574,220 @@ function App() {
       ]
     );
 
+  const processHomeAssistantCommand =
+    useCallback(
+      async (): Promise<HomeAssistantCommandTickResult> => {
+        const currentMetadata =
+          metadataRef.current;
+
+        if (
+          screen !== "connected" ||
+          !currentMetadata ||
+          !currentMetadata.homeAssistantConnected ||
+          !currentMetadata.homeAssistantUrl
+        ) {
+          return {
+            ok: true,
+          };
+        }
+
+        const connectorToken =
+          await loadConnectorToken();
+
+        if (!connectorToken) {
+          return {
+            ok: false,
+            retryable: false,
+          };
+        }
+
+        try {
+          const claim =
+            await claimHomeAssistantCommand({
+              token: connectorToken,
+            });
+
+          if (!claim.command) {
+            return {
+              ok: true,
+            };
+          }
+
+          const command =
+            claim.command;
+
+          try {
+            const result =
+              await executeHomeAssistantService({
+                baseUrl:
+                  currentMetadata.homeAssistantUrl,
+                entityId:
+                  command.homeAssistantEntityId,
+                domain:
+                  command.domain,
+                service:
+                  command.service,
+              });
+
+            await completeHomeAssistantCommand({
+              token: connectorToken,
+              commandId: command.id,
+              succeeded: true,
+              result: {
+                entityId:
+                  result.entityId,
+                domain:
+                  result.domain,
+                service:
+                  result.service,
+              },
+            });
+
+            /*
+             * Home Assistant may need a brief moment to publish
+             * the new entity state after the service call.
+             */
+            await new Promise(
+              (resolve) =>
+                window.setTimeout(
+                  resolve,
+                  1_500
+                )
+            );
+
+            const latestMetadata =
+              metadataRef.current;
+
+            const configuredUrl =
+              normalizeHomeAssistantUrl(
+                latestMetadata
+                  ?.homeAssistantUrl ??
+                  homeAssistantUrl
+              );
+
+            if (configuredUrl) {
+              const assistantToken =
+                await resolveHomeAssistantToken();
+
+              const freshStates =
+                await getHomeAssistantStates({
+                  baseUrl:
+                    configuredUrl,
+                  accessToken:
+                    assistantToken,
+                });
+
+              const freshDevices =
+                groupHomeAssistantStates(
+                  freshStates
+                );
+
+              const expectedState =
+                command.service ===
+                "turn_on"
+                  ? "on"
+                  : "off";
+
+              const freshEntities =
+                mapHomeAssistantEntitiesForSync(
+                  freshDevices
+                ).map((entity) =>
+                  entity.entityId ===
+                  command.homeAssistantEntityId
+                    ? {
+                        ...entity,
+                        currentState:
+                          expectedState,
+                        available: true,
+                        lastChangedAt:
+                          new Date().toISOString(),
+                        lastUpdatedAt:
+                          new Date().toISOString(),
+                      }
+                    : entity
+                );
+
+              await syncHomeAssistantEntities({
+                token:
+                  connectorToken,
+                syncedAt:
+                  new Date().toISOString(),
+                entities:
+                  freshEntities,
+              });
+            }
+
+            logConnectorEvent(
+              "home_assistant_command_succeeded",
+              {
+                commandId:
+                  command.id,
+                entityId:
+                  command.homeAssistantEntityId,
+                domain:
+                  command.domain,
+                service:
+                  command.service,
+              }
+            );
+
+            return {
+              ok: true,
+            };
+          } catch (executionError) {
+            const errorMessage =
+              executionError instanceof Error
+                ? executionError.message
+                : "Home Assistant command failed.";
+
+            try {
+              await completeHomeAssistantCommand({
+                token: connectorToken,
+                commandId: command.id,
+                succeeded: false,
+                errorMessage,
+                result: {},
+              });
+            } catch {
+              // Keep the original execution error.
+            }
+
+            logConnectorEvent(
+              "home_assistant_command_failed",
+              {
+                commandId:
+                  command.id,
+                entityId:
+                  command.homeAssistantEntityId,
+                errorMessage,
+              }
+            );
+
+            return {
+              ok: false,
+              retryable: true,
+            };
+          }
+        } catch (error) {
+          if (
+            error instanceof ConnectorApiError &&
+            error.kind === "unauthorized"
+          ) {
+            return {
+              ok: false,
+              retryable: false,
+            };
+          }
+
+          return {
+            ok: false,
+            retryable: true,
+          };
+        }
+      },
+      [screen]
+    );
+
   useEffect(() => {
     logConnectorEvent(
       "app_started"
@@ -675,6 +899,35 @@ function App() {
     screen,
     metadata?.connectorId,
     performHeartbeat,
+  ]);
+
+  useEffect(() => {
+    if (
+      screen !== "connected" ||
+      !metadata?.connectorId ||
+      !metadata.homeAssistantConnected ||
+      !metadata.homeAssistantUrl
+    ) {
+      return;
+    }
+
+    const scheduler =
+      startHomeAssistantCommandScheduler({
+        onTick:
+          processHomeAssistantCommand,
+      });
+
+    scheduler.start();
+
+    return () => {
+      scheduler.stop();
+    };
+  }, [
+    screen,
+    metadata?.connectorId,
+    metadata?.homeAssistantConnected,
+    metadata?.homeAssistantUrl,
+    processHomeAssistantCommand,
   ]);
 
   async function handleConnect() {
@@ -1139,6 +1392,22 @@ function App() {
               true,
           }
         );
+
+      const syncEntities =
+        mapHomeAssistantEntitiesForSync(
+          groupedDevices
+        );
+
+      await syncHomeAssistantEntities({
+        token:
+          connectorToken,
+
+        syncedAt:
+          scannedAt,
+
+        entities:
+          syncEntities,
+      });
 
       await saveHomeAssistantToken(
         assistantToken

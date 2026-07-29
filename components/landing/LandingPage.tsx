@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import FinalCta from "@/components/landing/public/FinalCta";
 import HeroSection from "@/components/landing/public/HeroSection";
 import HomeAdvisorStorySection from "@/components/landing/public/HomeAdvisorStorySection";
+import HomeCoreOverviewSection from "@/components/landing/public/HomeCoreOverviewSection";
 import HomeDiscoverySection from "@/components/landing/public/HomeDiscoverySection";
 import HomeDocumentsSection from "@/components/landing/public/HomeDocumentsSection";
 import HomeFamilySection from "@/components/landing/public/HomeFamilySection";
@@ -15,7 +16,6 @@ import LandingFooter from "@/components/landing/public/LandingFooter";
 import LandingHeader from "@/components/landing/public/LandingHeader";
 import { landingTheme } from "@/components/landing/public/landingTheme";
 import PricingSection from "@/components/landing/public/PricingSection";
-import ProblemSection from "@/components/landing/public/ProblemSection";
 import SecuritySection from "@/components/landing/public/SecuritySection";
 import StructuredData from "@/components/marketing/StructuredData";
 import { useDemoMode } from "@/hooks/useDemoMode";
@@ -71,10 +71,10 @@ export default function LandingPage({
         {/* Section 1: Hero */}
         <HeroSection isSignedIn={isSignedIn} />
 
-        {/* Section 2: The Problem */}
-        <ProblemSection />
+        {/* Section 2: Meet HomeCore */}
+        <HomeCoreOverviewSection />
 
-        {/* Section 3: Meet Home Pulse */}
+        {/* Section 3: See HomeCore in action */}
         <HomeHealthPreviewSection />
 
         {/* Section 4: Home Advisor */}

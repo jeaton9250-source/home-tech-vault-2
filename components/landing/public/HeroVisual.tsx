@@ -79,7 +79,7 @@ export default function HeroVisual() {
               </div>
               <div>
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
-                  Home OS 3.2
+                  HomeCore
                 </p>
                 <p className="text-xs sm:text-sm font-semibold text-text-primary">
                   Highland Park Sanctuary
@@ -337,7 +337,7 @@ export default function HeroVisual() {
             <Lock size={12} className="text-home-health" /> Encrypted Local Vault
           </span>
           <span className="font-semibold text-text-primary">
-            Highland Park OS · All Systems Normal
+            HomeCore · All Systems Normal
           </span>
         </div>
       </div>

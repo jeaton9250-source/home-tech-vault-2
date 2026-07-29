@@ -3,8 +3,6 @@
 import Link from "next/link";
 import {
   Activity,
-  ArrowRight,
-  Radar,
   RefreshCw,
   Router,
   Settings,
@@ -28,29 +26,6 @@ type NetworkHeaderProps = {
   onDemoAction?: () => void;
 };
 
-const QUICK_LINKS = [
-  {
-    label: "Discovery",
-    href: "/network/discovery",
-    icon: Radar,
-  },
-  {
-    label: "Connector Status",
-    href: "/network?tab=connector",
-    icon: Router,
-  },
-  {
-    label: "Diagnostics",
-    href: "/network/diagnostics",
-    icon: Activity,
-  },
-  {
-    label: "Network Details",
-    href: "/network/edit",
-    icon: Settings,
-  },
-] as const;
-
 export default function NetworkHeader({
   summary,
   headerSummary,
@@ -63,213 +38,177 @@ export default function NetworkHeader({
   onRefresh,
   onDemoAction,
 }: NetworkHeaderProps) {
-  const hasConnector = Boolean(summary?.hasConnector);
-  const reviewCount = summary?.reviewCount ?? 0;
+  const hasConnector =
+    Boolean(summary?.hasConnector);
 
-  const primaryLabel = hasConnector
-    ? "Review Discovered Devices"
-    : "Discover Devices";
+  const reviewCount =
+    summary?.reviewCount ?? 0;
 
-  const primaryHref = hasConnector
-    ? "/network/discovery"
-    : "/network/discover";
-
-  const secondaryLabel = hasConnector
-    ? "Run Network Scan"
-    : "Connect Desktop App";
-
-  const secondaryHref = hasConnector
-    ? "/network/discover"
-    : "/network/connect";
-
-  function handlePrimaryClick() {
-    if (isDemo) {
-      onDemoAction?.();
-    }
-  }
-
-  function handleSecondaryClick() {
-    if (isDemo) {
-      onDemoAction?.();
-    }
-  }
-
-  function handleScanClick() {
-    if (isDemo) {
-      onDemoAction?.();
-      return;
-    }
-
-    onRefresh?.();
+  function handleDemoAction() {
+    onDemoAction?.();
   }
 
   return (
-    <div className="space-y-6">
-      <header className="space-y-4">
-        <div className="space-y-3">
+    <div className="space-y-4">
+      <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div className="min-w-0">
           <p className="text-overline text-text-muted">
             Network
           </p>
-          <h1 className="text-[clamp(2rem,4vw,2.75rem)] font-medium tracking-[-0.04em] text-text-primary">
+
+          <h1 className="mt-1 text-3xl font-medium tracking-[-0.035em] text-text-primary md:text-4xl">
             Your Home Network
           </h1>
-          <p className="max-w-2xl text-base leading-7 text-text-secondary">
-            Discover, identify, and monitor the technology
-            connected to your home.
+
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-text-secondary md:text-base">
+            View connected devices, Home Assistant
+            states, monitoring, and connector status.
           </p>
+
+          {!loading && headerSummary ? (
+            <p className="mt-2 text-sm font-medium text-text-secondary">
+              {headerSummary}
+            </p>
+          ) : null}
         </div>
 
         {!loading ? (
-          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-            {isDemo ? (
-              <Button type="button" onClick={handlePrimaryClick}>
-                <Radar size={17} />
-                {primaryLabel}
-              </Button>
-            ) : (
-              <Button href={primaryHref}>
-                <Radar size={17} />
-                {primaryLabel}
-                {reviewCount > 0 ? (
-                  <span className="ml-1 rounded-full bg-white/15 px-2 py-0.5 text-xs font-semibold">
-                    {reviewCount}
-                  </span>
-                ) : null}
-              </Button>
-            )}
+          <div className="flex flex-wrap gap-2">
+            {hasConnector ? (
+              <>
+                {isDemo ? (
+                  <Button
+                    type="button"
+                    onClick={
+                      handleDemoAction
+                    }
+                  >
+                    Review Devices
+                    {reviewCount > 0 ? (
+                      <span className="ml-1 rounded-full bg-white/15 px-2 py-0.5 text-xs font-semibold">
+                        {reviewCount}
+                      </span>
+                    ) : null}
+                  </Button>
+                ) : (
+                  <Button href="/network/discovery">
+                    Review Devices
+                    {reviewCount > 0 ? (
+                      <span className="ml-1 rounded-full bg-white/15 px-2 py-0.5 text-xs font-semibold">
+                        {reviewCount}
+                      </span>
+                    ) : null}
+                  </Button>
+                )}
 
-            {hasConnector && canRefresh ? (
-              isDemo ? (
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={handleScanClick}
-                  disabled={refreshing}
-                >
-                  <RefreshCw size={17} />
-                  {secondaryLabel}
-                </Button>
-              ) : (
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={handleScanClick}
-                  disabled={refreshing || loading}
-                  loading={refreshing}
-                  loadingLabel="Scanning..."
-                >
-                  <RefreshCw size={17} />
-                  {secondaryLabel}
-                </Button>
-              )
+                {canRefresh ? (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => {
+                      if (isDemo) {
+                        handleDemoAction();
+                        return;
+                      }
+
+                      onRefresh?.();
+                    }}
+                    disabled={
+                      refreshing ||
+                      loading
+                    }
+                    loading={refreshing}
+                    loadingLabel="Refreshing..."
+                  >
+                    <RefreshCw size={16} />
+                    Refresh
+                  </Button>
+                ) : null}
+              </>
             ) : isDemo ? (
               <Button
                 type="button"
-                variant="secondary"
-                onClick={handleSecondaryClick}
+                onClick={
+                  handleDemoAction
+                }
               >
-                <Router size={17} />
-                {secondaryLabel}
+                <Router size={16} />
+                Connect Desktop App
               </Button>
             ) : (
-              <Button href={secondaryHref} variant="secondary">
-                <Router size={17} />
-                {secondaryLabel}
+              <Button href="/network/connect">
+                <Router size={16} />
+                Connect Desktop App
               </Button>
             )}
           </div>
         ) : null}
-
-        {isViewer ? (
-          <div className="rounded-[var(--radius-button)] border border-border-subtle bg-surface-card/80 px-4 py-3 text-sm font-medium text-text-secondary shadow-[var(--shadow-sm)]">
-            Viewer Access · Read Only
-          </div>
-        ) : null}
-
-        {!loading && headerSummary ? (
-          <p className="text-sm font-medium text-text-secondary">
-            {headerSummary}
-          </p>
-        ) : null}
       </header>
 
+      {isViewer ? (
+        <div className="rounded-[var(--radius-button)] border border-border-subtle bg-surface-card px-4 py-3 text-sm text-text-secondary">
+          Viewer access · Read only
+        </div>
+      ) : null}
+
       {!loading && !hasConnector ? (
-        <PageCard className="border-border-subtle/80 bg-surface-sunken/40 p-5 md:p-6">
-          <div className="flex items-start gap-4">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[var(--radius-button)] border border-border-subtle bg-surface-card text-charcoal">
-              <Wifi size={18} />
+        <PageCard className="p-4 md:p-5">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-button)] bg-surface-sunken text-text-primary">
+                <Wifi size={17} />
+              </div>
+
+              <div className="min-w-0">
+                <h2 className="text-sm font-semibold text-text-primary">
+                  Automatic device discovery
+                </h2>
+
+                <p className="mt-1 text-sm leading-6 text-text-secondary">
+                  Connect the desktop app to scan
+                  your local network and sync Home
+                  Assistant devices.
+                </p>
+              </div>
             </div>
 
-            <div className="min-w-0 flex-1">
-              <h2 className="text-lg font-medium tracking-[-0.02em] text-text-primary">
-                Discover devices automatically
-              </h2>
-              <p className="mt-2 text-sm leading-7 text-text-secondary">
-                Install the Home Tech Vault desktop connector to
-                securely scan your local network and find TVs,
-                computers, printers, smart-home devices, routers,
-                and more.
-              </p>
-
-              {isDemo ? (
-                <div className="mt-4 space-y-3">
-                  <p className="text-sm font-medium text-text-primary">
-                    Create a free account to connect your home
-                    network.
-                  </p>
-                  <Button
-                    type="button"
-                    onClick={onDemoAction}
-                  >
-                    <Router size={17} />
-                    Connect Desktop App
-                  </Button>
-                </div>
-              ) : canManageConnector ? (
-                <div className="mt-4">
-                  <Button href="/network/connect">
-                    <Router size={17} />
-                    Connect Desktop App
-                  </Button>
-                </div>
-              ) : null}
-            </div>
+            {canManageConnector ? (
+              <Button
+                href="/network/connect"
+                variant="secondary"
+              >
+                Set Up Connector
+              </Button>
+            ) : null}
           </div>
         </PageCard>
       ) : null}
 
-      <section aria-label="Network shortcuts">
-        <p className="text-overline text-text-muted">
-          Explore
-        </p>
-        <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-          {QUICK_LINKS.map((link) => {
-            const Icon = link.icon;
+      <div className="flex flex-wrap gap-x-5 gap-y-2 border-t border-border-subtle pt-3 text-sm">
+        <Link
+          href="/network?tab=connector"
+          className="inline-flex items-center gap-2 font-medium text-text-secondary transition hover:text-text-primary"
+        >
+          <Router size={15} />
+          Connector
+        </Link>
 
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="group flex items-center justify-between rounded-[var(--radius-button)] bg-surface-sunken/50 px-4 py-3.5 transition hover:bg-surface-sunken"
-              >
-                <span className="flex items-center gap-2.5 text-sm font-medium text-text-primary">
-                  <Icon
-                    size={16}
-                    className="text-text-muted"
-                    aria-hidden
-                  />
-                  {link.label}
-                </span>
-                <ArrowRight
-                  size={15}
-                  className="text-text-muted transition group-hover:text-text-secondary"
-                  aria-hidden
-                />
-              </Link>
-            );
-          })}
-        </div>
-      </section>
+        <Link
+          href="/network/diagnostics"
+          className="inline-flex items-center gap-2 font-medium text-text-secondary transition hover:text-text-primary"
+        >
+          <Activity size={15} />
+          Diagnostics
+        </Link>
+
+        <Link
+          href="/network/edit"
+          className="inline-flex items-center gap-2 font-medium text-text-secondary transition hover:text-text-primary"
+        >
+          <Settings size={15} />
+          Network Details
+        </Link>
+      </div>
     </div>
   );
 }
