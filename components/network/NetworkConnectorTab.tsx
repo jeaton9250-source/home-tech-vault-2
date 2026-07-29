@@ -10,6 +10,7 @@ import Link from "next/link";
 import {
   Apple,
   BookOpen,
+  ChevronDown,
   FileText,
   Monitor,
   RefreshCw,
@@ -99,6 +100,11 @@ export default function NetworkConnectorTab({
     confirmRevokeId,
     setConfirmRevokeId,
   ] = useState<string | null>(null);
+
+  const [
+    showSmartHomeDevices,
+    setShowSmartHomeDevices,
+  ] = useState(false);
 
   const showReadOnlyModal =
     useDemoReadOnlyAction();
@@ -290,23 +296,108 @@ export default function NetworkConnectorTab({
   return (
     <>
       <div className="space-y-6">
-        <HomeAssistantLiveStates
-          entities={
-            data.homeAssistantEntities
-          }
-          stats={
-            data.homeAssistantStats
-          }
-          householdId={
-            householdId
-          }
-          canControl={
-            canControl
-          }
-          onRefresh={
-            data.refresh
-          }
-        />
+        <PageCard className="p-6 md:p-7">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <div className="flex flex-wrap items-center gap-3">
+                <p className="text-overline text-section-network">
+                  Smart Home Integration
+                </p>
+
+                <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                  Connected
+                </span>
+              </div>
+
+              <h2 className="mt-2 text-xl font-semibold text-text-primary">
+                Home Assistant
+              </h2>
+
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-text-secondary">
+                Your Home Assistant devices are synced with this household.
+                Open the device list only when you need to review status or
+                control supported devices.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              disabled={
+                data.homeAssistantEntities.length === 0
+              }
+              onClick={() => {
+                setShowSmartHomeDevices(
+                  (current) => !current
+                );
+              }}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-border-subtle bg-surface-primary px-4 py-2.5 text-sm font-semibold text-text-primary transition hover:bg-surface-sunken disabled:cursor-not-allowed disabled:opacity-50"
+              aria-expanded={
+                showSmartHomeDevices
+              }
+            >
+              {showSmartHomeDevices
+                ? "Hide integrated devices"
+                : "View integrated devices"}
+
+              <ChevronDown
+                size={17}
+                className={
+                  showSmartHomeDevices
+                    ? "rotate-180 transition-transform"
+                    : "transition-transform"
+                }
+              />
+            </button>
+          </div>
+
+          <div className="mt-6 grid gap-3 sm:grid-cols-3">
+            <SmartHomeSummaryItem
+              label="Integrated devices"
+              value={String(
+                data.homeAssistantStats
+                  ?.entityCount ??
+                  data.homeAssistantEntities
+                    .length
+              )}
+            />
+
+            <SmartHomeSummaryItem
+              label="Available now"
+              value={String(
+                data.homeAssistantStats
+                  ?.availableCount ?? 0
+              )}
+            />
+
+            <SmartHomeSummaryItem
+              label="Device categories"
+              value={String(
+                data.homeAssistantStats
+                  ?.domainCount ?? 0
+              )}
+            />
+          </div>
+        </PageCard>
+
+        {showSmartHomeDevices ? (
+          <HomeAssistantLiveStates
+            entities={
+              data.homeAssistantEntities
+            }
+            stats={
+              data.homeAssistantStats
+            }
+            householdId={
+              householdId
+            }
+            canControl={
+              canControl
+            }
+            onRefresh={
+              data.refresh
+            }
+          />
+        ) : null}
 
         {activeConnectors.map(
           (connector) => (
@@ -389,6 +480,26 @@ export default function NetworkConnectorTab({
         }
       />
     </>
+  );
+}
+
+function SmartHomeSummaryItem({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-border-subtle bg-surface-sunken px-4 py-4">
+      <p className="text-xs font-medium uppercase tracking-[0.12em] text-text-tertiary">
+        {label}
+      </p>
+
+      <p className="mt-2 text-2xl font-semibold text-text-primary">
+        {value}
+      </p>
+    </div>
   );
 }
 
