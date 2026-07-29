@@ -2,13 +2,26 @@ export type ConnectorMetadata = {
   connectorId: string;
   householdId: string;
   connectorName: string;
+
   lastHeartbeatAt: string | null;
+
   lastScanAt?: string | null;
   lastScanDeviceCount?: number | null;
+
   scanConsentAccepted?: boolean;
   monitoringEnabled?: boolean;
   monitoringPaused?: boolean;
   autostartEnabled?: boolean;
+
+  /*
+   * Home Assistant configuration.
+   * The access token is stored separately
+   * in the operating system credential store.
+   */
+  homeAssistantUrl?: string | null;
+  homeAssistantConnected?: boolean;
+  homeAssistantLastSyncAt?: string | null;
+  homeAssistantDeviceCount?: number | null;
 };
 
 export type ScannedDevice = {

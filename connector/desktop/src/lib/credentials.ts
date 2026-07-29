@@ -21,6 +21,29 @@ export async function deleteConnectorToken() {
   await invoke("delete_connector_token");
 }
 
+export async function saveHomeAssistantToken(
+  token: string
+) {
+  await invoke(
+    "save_home_assistant_token",
+    {
+      token,
+    }
+  );
+}
+
+export async function loadHomeAssistantToken() {
+  return invoke<string | null>(
+    "load_home_assistant_token"
+  );
+}
+
+export async function deleteHomeAssistantToken() {
+  await invoke(
+    "delete_home_assistant_token"
+  );
+}
+
 export async function saveConnectorMetadata(
   metadata: ConnectorMetadata
 ) {
@@ -55,5 +78,6 @@ export async function getDeviceName() {
 
 export async function disconnectLocally() {
   await deleteConnectorToken();
+  await deleteHomeAssistantToken();
   await deleteConnectorMetadata();
 }

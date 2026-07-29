@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+.env.homeassistant.local
+
+scripts/home-assistant/home-assistant-import-preview.json

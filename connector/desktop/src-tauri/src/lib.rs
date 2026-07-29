@@ -18,6 +18,7 @@ use tray::{
 
 const KEYCHAIN_SERVICE: &str = "com.hometechvault.connector";
 const KEYCHAIN_USER: &str = "connector-token";
+const HOME_ASSISTANT_KEYCHAIN_USER: &str = "home-assistant-token";
 const METADATA_FILE: &str = "connector-metadata.json";
 
 fn credential_store_label() -> &'static str {
@@ -75,6 +76,78 @@ fn load_connector_token() -> Result<Option<String>, String> {
 #[tauri::command]
 fn delete_connector_token() -> Result<(), String> {
     match Entry::new(KEYCHAIN_SERVICE, KEYCHAIN_USER) {
+        Ok(entry) => match entry.delete_credential() {
+            Ok(()) => Ok(()),
+            Err(keyring::Error::NoEntry) => Ok(()),
+            Err(error) => Err(error.to_string()),
+        },
+        Err(error) => Err(error.to_string()),
+    }
+}
+
+#[tauri::command]
+fn save_home_assistant_token(
+    token: String,
+) -> Result<(), String> {
+    if token.trim().is_empty() {
+        return Err(
+            "Home Assistant token is empty.".into()
+        );
+    }
+
+    let entry = Entry::new(
+        KEYCHAIN_SERVICE,
+        HOME_ASSISTANT_KEYCHAIN_USER,
+    )
+    .map_err(|error| error.to_string())?;
+
+    entry
+        .set_password(&token)
+        .map_err(|error| error.to_string())?;
+
+    let stored = entry
+        .get_password()
+        .map_err(|error| error.to_string())?;
+
+    if stored != token {
+        return Err(format!(
+            "{} did not persist the Home Assistant token.",
+            credential_store_label()
+        ));
+    }
+
+    Ok(())
+}
+
+#[tauri::command]
+fn load_home_assistant_token(
+) -> Result<Option<String>, String> {
+    match Entry::new(
+        KEYCHAIN_SERVICE,
+        HOME_ASSISTANT_KEYCHAIN_USER,
+    ) {
+        Ok(entry) => match entry.get_password() {
+            Ok(token) if token.trim().is_empty() => {
+                Ok(None)
+            }
+            Ok(token) => Ok(Some(token)),
+            Err(keyring::Error::NoEntry) => Ok(None),
+            Err(error) => Err(format!(
+                "Unable to read Home Assistant token from {}: {error}",
+                credential_store_label()
+            )),
+        },
+        Err(error) => Err(error.to_string()),
+    }
+}
+
+#[tauri::command]
+fn delete_home_assistant_token(
+) -> Result<(), String> {
+    match Entry::new(
+        KEYCHAIN_SERVICE,
+        HOME_ASSISTANT_KEYCHAIN_USER,
+    ) {
         Ok(entry) => match entry.delete_credential() {
             Ok(()) => Ok(()),
             Err(keyring::Error::NoEntry) => Ok(()),
@@ -173,17 +246,52 @@ mod credential_tests {
 
     #[test]
     fn roundtrips_connector_token_in_secure_store() {
-        let entry = Entry::new(KEYCHAIN_SERVICE, "connector-token-test").expect("credential entry");
+        let entry = Entry::new(
+            KEYCHAIN_SERVICE,
+            "connector-token-test",
+        )
+        .expect("credential entry");
+
         let _ = entry.delete_credential();
-        entry.set_password("roundtrip-test-value").expect("write");
+
+        entry
+            .set_password("roundtrip-test-value")
+            .expect("write");
+
         assert_eq!(
             entry.get_password().expect("read"),
             "roundtrip-test-value"
         );
-        entry.delete_credential().expect("cleanup");
+
+        entry
+            .delete_credential()
+            .expect("cleanup");
+    }
+
+    #[test]
+    fn roundtrips_home_assistant_token_in_secure_store() {
+        let entry = Entry::new(
+            KEYCHAIN_SERVICE,
+            "home-assistant-token-test",
+        )
+        .expect("credential entry");
+
+        let _ = entry.delete_credential();
+
+        entry
+            .set_password("home-assistant-test-value")
+            .expect("write");
+
+        assert_eq!(
+            entry.get_password().expect("read"),
+            "home-assistant-test-value"
+        );
+
+        entry
+            .delete_credential()
+            .expect("cleanup");
     }
 }
-
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -195,8 +303,11 @@ pub fn run() {
         ))
         .invoke_handler(tauri::generate_handler![
             save_connector_token,
-            load_connector_token,
-            delete_connector_token,
+	    load_connector_token,
+	    delete_connector_token,
+	    save_home_assistant_token,
+	    load_home_assistant_token,
+	    delete_home_assistant_token,
             save_connector_metadata,
             load_connector_metadata,
             delete_connector_metadata,
