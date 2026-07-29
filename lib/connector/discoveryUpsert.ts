@@ -206,15 +206,14 @@ export async function upsertDiscoveredDevices(
       !existingRow?.ignored_at
     ) {
       const { error: vaultUpdateError } = await admin
-        .from("devices")
-        .update({
-          online: device.online,
-          last_seen_at: device.lastSeenAt,
-          network_updated_at: scannedAt,
-          updated_at: scannedAt,
-        })
-        .eq("id", preservedImportedDeviceId)
-        .eq("household_id", householdId);
+  .from("devices")
+  .update({
+    online: device.online,
+    last_seen_at: device.lastSeenAt,
+    network_updated_at: scannedAt,
+  })
+  .eq("id", preservedImportedDeviceId)
+  .eq("household_id", householdId);
 
       if (vaultUpdateError) {
         throw vaultUpdateError;
