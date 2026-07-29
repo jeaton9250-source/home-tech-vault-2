@@ -19,6 +19,33 @@ import type {
 } from "@/lib/connector/discoveryTypes";
 import type { SubscriptionPlan } from "@/hooks/useSubscription";
 
+export type HomeAssistantEntitySummary = {
+  id: string;
+  connectorId: string;
+  discoveredDeviceId: string | null;
+  deviceId: string | null;
+  localFingerprint: string | null;
+  entityId: string;
+  domain: string;
+  objectId: string;
+  friendlyName: string | null;
+  currentState: string;
+  available: boolean;
+  deviceClass: string | null;
+  unitOfMeasurement: string | null;
+  supportedFeatures: number | null;
+  attributes: Record<string, unknown>;
+  lastChangedAt: string | null;
+  lastUpdatedAt: string | null;
+  lastSyncedAt: string;
+};
+
+export type HomeAssistantEntityStats = {
+  entityCount: number;
+  availableCount: number;
+  domainCount: number;
+};
+
 export type NetworkPageData = {
   loading: boolean;
   error: string | null;
@@ -27,6 +54,8 @@ export type NetworkPageData = {
   devices: DiscoveredDeviceSummary[];
   connectors: ConnectorInstallationSummary[];
   stats: DiscoveryStatsSummary | null;
+  homeAssistantEntities: HomeAssistantEntitySummary[];
+  homeAssistantStats: HomeAssistantEntityStats | null;
   monitoringEnabled: boolean;
   monitoringSummary: ReturnType<typeof buildConnectorMonitoringSummary>;
   activityItems: ReturnType<typeof buildNetworkActivityItems>;
@@ -44,13 +73,21 @@ type UseNetworkPageDataInput = {
 };
 
 async function fetchNetworkPagePayload(householdId: string) {
-  const [statusResponse, discoveryResponse] = await Promise.all([
+  const [
+    statusResponse,
+    discoveryResponse,
+    homeAssistantResponse,
+  ] = await Promise.all([
     fetch(
       `/api/connector/pair/status?householdId=${encodeURIComponent(householdId)}`,
       { cache: "no-store" }
     ),
     fetch(
       `/api/connector/discovery?householdId=${encodeURIComponent(householdId)}`,
+      { cache: "no-store" }
+    ),
+    fetch(
+      `/api/connector/home-assistant/entities?householdId=${encodeURIComponent(householdId)}`,
       { cache: "no-store" }
     ),
   ]);
@@ -66,6 +103,13 @@ async function fetchNetworkPagePayload(householdId: string) {
     error?: string;
   };
 
+  const homeAssistantPayload =
+    (await homeAssistantResponse.json()) as {
+      entities?: HomeAssistantEntitySummary[];
+      stats?: HomeAssistantEntityStats;
+      error?: string;
+    };
+
   if (!statusResponse.ok) {
     throw new Error(
       statusPayload.error ?? "Unable to load connector status."
@@ -79,10 +123,21 @@ async function fetchNetworkPagePayload(householdId: string) {
     );
   }
 
+  if (!homeAssistantResponse.ok) {
+    throw new Error(
+      homeAssistantPayload.error ??
+        "Unable to load Home Assistant entities."
+    );
+  }
+
   return {
     connectors: statusPayload.connectors ?? [],
     devices: discoveryPayload.devices ?? [],
     stats: discoveryPayload.stats ?? null,
+    homeAssistantEntities:
+      homeAssistantPayload.entities ?? [],
+    homeAssistantStats:
+      homeAssistantPayload.stats ?? null,
   };
 }
 
@@ -97,6 +152,16 @@ export function useNetworkPageData(
   >([]);
   const [stats, setStats] =
     useState<DiscoveryStatsSummary | null>(null);
+
+  const [
+    homeAssistantEntities,
+    setHomeAssistantEntities,
+  ] = useState<HomeAssistantEntitySummary[]>([]);
+
+  const [
+    homeAssistantStats,
+    setHomeAssistantStats,
+  ] = useState<HomeAssistantEntityStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -109,6 +174,8 @@ export function useNetworkPageData(
       setConnectors([]);
       setDevices([]);
       setStats(null);
+      setHomeAssistantEntities([]);
+      setHomeAssistantStats(null);
       setLoading(false);
       return;
     }
@@ -121,10 +188,18 @@ export function useNetworkPageData(
       setConnectors(payload.connectors);
       setDevices(payload.devices);
       setStats(payload.stats);
+      setHomeAssistantEntities(
+        payload.homeAssistantEntities
+      );
+      setHomeAssistantStats(
+        payload.homeAssistantStats
+      );
     } catch (loadError: unknown) {
       setConnectors([]);
       setDevices([]);
       setStats(null);
+      setHomeAssistantEntities([]);
+      setHomeAssistantStats(null);
       setError(
         loadError instanceof Error
           ? loadError.message
@@ -170,12 +245,20 @@ export function useNetworkPageData(
           setConnectors(payload.connectors);
           setDevices(payload.devices);
           setStats(payload.stats);
+          setHomeAssistantEntities(
+            payload.homeAssistantEntities
+          );
+          setHomeAssistantStats(
+            payload.homeAssistantStats
+          );
         }
       } catch (loadError: unknown) {
         if (!cancelled) {
           setConnectors([]);
           setDevices([]);
           setStats(null);
+          setHomeAssistantEntities([]);
+          setHomeAssistantStats(null);
           setError(
             loadError instanceof Error
               ? loadError.message
@@ -205,6 +288,12 @@ export function useNetworkPageData(
           setConnectors(payload.connectors);
           setDevices(payload.devices);
           setStats(payload.stats);
+          setHomeAssistantEntities(
+            payload.homeAssistantEntities
+          );
+          setHomeAssistantStats(
+            payload.homeAssistantStats
+          );
           setError(null);
         })
         .catch(() => {
@@ -226,6 +315,14 @@ export function useNetworkPageData(
     demoPayload?.connectors ?? connectors;
   const effectiveDevices = demoPayload?.devices ?? devices;
   const effectiveStats = demoPayload?.stats ?? stats;
+  const effectiveHomeAssistantEntities =
+    input.isDemo
+      ? []
+      : homeAssistantEntities;
+  const effectiveHomeAssistantStats =
+    input.isDemo
+      ? null
+      : homeAssistantStats;
   const effectiveLoading = input.isDemo ? false : loading;
   const effectiveError = input.isDemo ? null : error;
 
@@ -271,6 +368,10 @@ export function useNetworkPageData(
     devices: effectiveDevices,
     connectors: effectiveConnectors,
     stats: effectiveStats,
+    homeAssistantEntities:
+      effectiveHomeAssistantEntities,
+    homeAssistantStats:
+      effectiveHomeAssistantStats,
     monitoringEnabled,
     monitoringSummary,
     activityItems,

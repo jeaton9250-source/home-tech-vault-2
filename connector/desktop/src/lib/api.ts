@@ -6,6 +6,10 @@ import { logConnectorEvent } from "./logger";
 import type {
   DiscoverySyncResponse,
   HeartbeatResponse,
+  HomeAssistantCommandClaimResponse,
+  HomeAssistantCommandCompletionResponse,
+  HomeAssistantEntitySyncResponse,
+  HomeAssistantServiceResponse,
   PairConfirmResponse,
 } from "./types";
 import { ConnectorApiError } from "./types";
@@ -293,3 +297,177 @@ export async function syncDiscoveryResults(options: {
     );
   }
 }
+
+export type HomeAssistantEntitySyncPayload = {
+  localFingerprint: string | null;
+  entityId: string;
+  domain: string;
+  objectId: string;
+  friendlyName: string | null;
+  currentState: string;
+  available: boolean;
+  deviceClass: string | null;
+  unitOfMeasurement: string | null;
+  supportedFeatures: number | null;
+  attributes: Record<string, unknown>;
+  lastChangedAt: string | null;
+  lastUpdatedAt: string | null;
+};
+
+export async function syncHomeAssistantEntities(
+  options: {
+    token: string;
+    syncedAt: string;
+    entities:
+      HomeAssistantEntitySyncPayload[];
+  }
+) {
+  const baseUrl = getApiBaseUrl();
+
+  const apiUrl =
+    `${baseUrl}/api/connector/home-assistant/entities/sync`;
+
+  try {
+    const result =
+      await invoke<HomeAssistantEntitySyncResponse>(
+        "sync_home_assistant_entities",
+        {
+          apiBaseUrl: baseUrl,
+          connectorToken:
+            options.token,
+          syncedAt:
+            options.syncedAt,
+          entities:
+            options.entities,
+        }
+      );
+
+    logConnectorEvent(
+      "home_assistant_entity_sync_succeeded",
+      {
+        received: result.received,
+        upserted: result.upserted,
+      }
+    );
+
+    return result;
+  } catch (error) {
+    const parsed =
+      parseNativeError(error);
+
+    logNativeFailure(
+      "heartbeat",
+      apiUrl,
+      parsed
+    );
+
+    logConnectorEvent(
+      "network_request_failed"
+    );
+
+    throw new ConnectorApiError(
+      parsed.kind,
+      parsed.message,
+      {
+        status: parsed.status,
+        reason: parsed.reason,
+        diagnostics:
+          parsed.diagnostics,
+      }
+    );
+  }
+}
+
+export async function claimHomeAssistantCommand(
+  options: {
+    token: string;
+  }
+) {
+  const baseUrl = getApiBaseUrl();
+
+  try {
+    return await invoke<HomeAssistantCommandClaimResponse>(
+      "claim_home_assistant_command",
+      {
+        apiBaseUrl: baseUrl,
+        connectorToken: options.token,
+      }
+    );
+  } catch (error) {
+    const parsed =
+      parseNativeError(error);
+
+    throw new ConnectorApiError(
+      parsed.kind,
+      parsed.message,
+      {
+        status: parsed.status,
+        reason: parsed.reason,
+        diagnostics:
+          parsed.diagnostics,
+      }
+    );
+  }
+}
+
+export async function completeHomeAssistantCommand(
+  options: {
+    token: string;
+    commandId: string;
+    succeeded: boolean;
+    errorMessage?: string | null;
+    result?: Record<string, unknown>;
+  }
+) {
+  const baseUrl = getApiBaseUrl();
+
+  try {
+    return await invoke<HomeAssistantCommandCompletionResponse>(
+      "complete_home_assistant_command",
+      {
+        apiBaseUrl: baseUrl,
+        connectorToken: options.token,
+        commandId: options.commandId,
+        succeeded: options.succeeded,
+        errorMessage:
+          options.errorMessage ?? null,
+        result:
+          options.result ?? {},
+      }
+    );
+  } catch (error) {
+    const parsed =
+      parseNativeError(error);
+
+    throw new ConnectorApiError(
+      parsed.kind,
+      parsed.message,
+      {
+        status: parsed.status,
+        reason: parsed.reason,
+        diagnostics:
+          parsed.diagnostics,
+      }
+    );
+  }
+}
+
+export async function executeHomeAssistantService(
+  options: {
+    baseUrl: string;
+    entityId: string;
+    domain: "light" | "switch";
+    service: "turn_on" | "turn_off";
+  }
+) {
+  return invoke<HomeAssistantServiceResponse>(
+    "execute_home_assistant_service",
+    {
+      baseUrl: options.baseUrl,
+      entityId: options.entityId,
+      domain: options.domain,
+      service: options.service,
+    }
+  );
+}
+

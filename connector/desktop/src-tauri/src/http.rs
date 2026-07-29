@@ -478,6 +478,258 @@ pub async fn sync_discovery_request(
     ))
 }
 
+#[derive(Debug, Deserialize, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct HomeAssistantEntitySyncSuccess {
+    pub ok: bool,
+    pub connector_id: String,
+    pub household_id: String,
+    pub synced_at: String,
+    pub received: u32,
+    pub upserted: u32,
+}
+
+pub async fn sync_home_assistant_entities_request(
+    api_base_url: String,
+    connector_token: String,
+    synced_at: String,
+    entities: Value,
+) -> Result<HomeAssistantEntitySyncSuccess, ConnectorCommandError> {
+    let base_url = validate_api_base_url(&api_base_url)?;
+    let url = format!("{base_url}/api/connector/home-assistant/entities/sync");
+
+    eprintln!("[htv-connector] Home Assistant entity sync started");
+
+    let (status, payload) = post_json(
+        &url,
+        json!({
+            "syncedAt": synced_at,
+            "entities": entities,
+        }),
+        Some(&connector_token),
+    )
+    .await?;
+
+    if status == 401 {
+        let error_body = serde_json::from_value::<ErrorBody>(payload.clone()).unwrap_or_default();
+
+        log_heartbeat_auth_failure(status, &error_body);
+
+        return Err(ConnectorCommandError {
+            kind: "unauthorized".into(),
+            message: error_body
+                .error
+                .unwrap_or_else(|| "Connector access revoked or invalid.".into()),
+            status: Some(status),
+            reason: error_body.reason,
+            diagnostics: error_body.diagnostics,
+        });
+    }
+
+    if status >= 200 && status < 300 {
+        let parsed =
+            serde_json::from_value::<HomeAssistantEntitySyncSuccess>(payload).map_err(|_| {
+                command_error(
+                    "malformed",
+                    "Home Tech Vault returned an incomplete Home Assistant entity sync response.",
+                    Some(status),
+                )
+            })?;
+
+        if !parsed.ok {
+            return Err(command_error(
+                "malformed",
+                "Home Tech Vault returned an incomplete Home Assistant entity sync response.",
+                Some(status),
+            ));
+        }
+
+        eprintln!("[htv-connector] Home Assistant entity sync succeeded");
+
+        return Ok(parsed);
+    }
+
+    if status >= 500 {
+        return Err(command_error(
+            "server",
+            "Temporary server issue. Try again shortly.",
+            Some(status),
+        ));
+    }
+
+    let error_body = serde_json::from_value::<ErrorBody>(payload).unwrap_or_default();
+
+    Err(command_error(
+        "server",
+        error_body
+            .error
+            .unwrap_or_else(|| "Home Tech Vault rejected the Home Assistant entity sync.".into()),
+        Some(status),
+    ))
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct HomeAssistantCommand {
+    pub id: String,
+
+    #[serde(alias = "home_assistant_entity_id")]
+    pub home_assistant_entity_id: String,
+
+    pub domain: String,
+    pub service: String,
+
+    #[serde(default, alias = "service_data")]
+    pub service_data: Value,
+
+    pub status: String,
+
+    #[serde(alias = "claimed_at")]
+    pub claimed_at: String,
+
+    #[serde(alias = "expires_at")]
+    pub expires_at: String,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct HomeAssistantCommandClaimSuccess {
+    pub ok: bool,
+    pub command: Option<HomeAssistantCommand>,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct HomeAssistantCommandCompletion {
+    pub id: String,
+    pub status: String,
+
+    #[serde(alias = "completed_at")]
+    pub completed_at: String,
+
+    #[serde(default, alias = "error_message")]
+    pub error_message: Option<String>,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct HomeAssistantCommandCompletionSuccess {
+    pub ok: bool,
+    pub command: HomeAssistantCommandCompletion,
+}
+
+pub async fn claim_home_assistant_command_request(
+    api_base_url: String,
+    connector_token: String,
+) -> Result<HomeAssistantCommandClaimSuccess, ConnectorCommandError> {
+    let base_url = validate_api_base_url(&api_base_url)?;
+    let url = format!("{base_url}/api/connector/home-assistant/commands/claim");
+
+    let (status, payload) = post_json(&url, json!({}), Some(&connector_token)).await?;
+
+    if status == 401 {
+        let error_body = serde_json::from_value::<ErrorBody>(payload.clone()).unwrap_or_default();
+
+        return Err(ConnectorCommandError {
+            kind: "unauthorized".into(),
+            message: error_body
+                .error
+                .unwrap_or_else(|| "Connector access revoked or invalid.".into()),
+            status: Some(status),
+            reason: error_body.reason,
+            diagnostics: error_body.diagnostics,
+        });
+    }
+
+    if status >= 200 && status < 300 {
+        return serde_json::from_value::<HomeAssistantCommandClaimSuccess>(payload).map_err(|_| {
+            command_error(
+                "malformed",
+                "Home Tech Vault returned an invalid command response.",
+                Some(status),
+            )
+        });
+    }
+
+    if status >= 500 {
+        return Err(command_error(
+            "server",
+            "Home Tech Vault is temporarily unavailable.",
+            Some(status),
+        ));
+    }
+
+    let error_body = serde_json::from_value::<ErrorBody>(payload).unwrap_or_default();
+
+    Err(command_error(
+        "server",
+        error_body
+            .error
+            .unwrap_or_else(|| "Unable to claim a Home Assistant command.".into()),
+        Some(status),
+    ))
+}
+
+pub async fn complete_home_assistant_command_request(
+    api_base_url: String,
+    connector_token: String,
+    command_id: String,
+    succeeded: bool,
+    error_message: Option<String>,
+    result: Value,
+) -> Result<HomeAssistantCommandCompletionSuccess, ConnectorCommandError> {
+    let base_url = validate_api_base_url(&api_base_url)?;
+    let url = format!("{base_url}/api/connector/home-assistant/commands/complete");
+
+    let (status, payload) = post_json(
+        &url,
+        json!({
+            "commandId": command_id,
+            "succeeded": succeeded,
+            "errorMessage": error_message,
+            "result": result,
+        }),
+        Some(&connector_token),
+    )
+    .await?;
+
+    if status == 401 {
+        let error_body = serde_json::from_value::<ErrorBody>(payload.clone()).unwrap_or_default();
+
+        return Err(ConnectorCommandError {
+            kind: "unauthorized".into(),
+            message: error_body
+                .error
+                .unwrap_or_else(|| "Connector access revoked or invalid.".into()),
+            status: Some(status),
+            reason: error_body.reason,
+            diagnostics: error_body.diagnostics,
+        });
+    }
+
+    if status >= 200 && status < 300 {
+        return serde_json::from_value::<HomeAssistantCommandCompletionSuccess>(payload).map_err(
+            |_| {
+                command_error(
+                    "malformed",
+                    "Home Tech Vault returned an invalid command completion response.",
+                    Some(status),
+                )
+            },
+        );
+    }
+
+    let error_body = serde_json::from_value::<ErrorBody>(payload).unwrap_or_default();
+
+    Err(command_error(
+        if status >= 500 { "server" } else { "malformed" },
+        error_body
+            .error
+            .unwrap_or_else(|| "Unable to complete the Home Assistant command.".into()),
+        Some(status),
+    ))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

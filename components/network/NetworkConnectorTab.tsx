@@ -27,6 +27,7 @@ import InstallationGuideDialog, {
 import ReleaseNotesModal from "@/components/connector/ReleaseNotesModal";
 import ConnectorUpgradePrompt from "@/components/connector/ConnectorUpgradePrompt";
 import DemoSmartConnectorCard from "@/components/demo/DemoSmartConnectorCard";
+import HomeAssistantLiveStates from "@/components/network/HomeAssistantLiveStates";
 import { useDemoReadOnlyAction } from "@/components/demo/DemoExperienceProvider";
 
 import {
@@ -56,6 +57,7 @@ type NetworkConnectorTabProps = {
   householdName: string | null;
   planLabel: string;
   canManage: boolean;
+  canControl: boolean;
   isDemo: boolean;
   householdId: string | null;
   onRevoke: (
@@ -69,6 +71,7 @@ export default function NetworkConnectorTab({
   householdName,
   planLabel,
   canManage,
+  canControl,
   isDemo,
   householdId,
   onRevoke,
@@ -287,6 +290,24 @@ export default function NetworkConnectorTab({
   return (
     <>
       <div className="space-y-6">
+        <HomeAssistantLiveStates
+          entities={
+            data.homeAssistantEntities
+          }
+          stats={
+            data.homeAssistantStats
+          }
+          householdId={
+            householdId
+          }
+          canControl={
+            canControl
+          }
+          onRefresh={
+            data.refresh
+          }
+        />
+
         {activeConnectors.map(
           (connector) => (
             <ConnectorInstallationCard

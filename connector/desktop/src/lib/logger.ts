@@ -8,7 +8,10 @@ type LogEvent =
   | "connector_revoked"
   | "discovery_scan_started"
   | "discovery_scan_completed"
-  | "discovery_sync_succeeded";
+  | "discovery_sync_succeeded"
+  | "home_assistant_entity_sync_succeeded"
+  | "home_assistant_command_succeeded"
+  | "home_assistant_command_failed";
 
 export function logConnectorEvent(
   event: LogEvent,

@@ -23,3 +23,7 @@ export type {
 export type {
   HomeAssistantSyncDevice,
 } from "./mapForSync";
+
+export {
+  mapHomeAssistantEntitiesForSync,
+} from "./mapEntitiesForSync";

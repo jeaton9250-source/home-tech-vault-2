@@ -62,6 +62,49 @@ export type DiscoverySyncResponse = {
   upserted: number;
 };
 
+export type HomeAssistantEntitySyncResponse = {
+  ok: boolean;
+  connectorId: string;
+  householdId: string;
+  syncedAt: string;
+  received: number;
+  upserted: number;
+};
+
+
+export type HomeAssistantCommand = {
+  id: string;
+  homeAssistantEntityId: string;
+  domain: "light" | "switch";
+  service: "turn_on" | "turn_off";
+  serviceData: Record<string, unknown>;
+  status: "claimed";
+  claimedAt: string;
+  expiresAt: string;
+};
+
+export type HomeAssistantCommandClaimResponse = {
+  ok: boolean;
+  command: HomeAssistantCommand | null;
+};
+
+export type HomeAssistantCommandCompletionResponse = {
+  ok: boolean;
+  command: {
+    id: string;
+    status: "succeeded" | "failed";
+    completedAt: string;
+    errorMessage: string | null;
+  };
+};
+
+export type HomeAssistantServiceResponse = {
+  ok: boolean;
+  entityId: string;
+  domain: "light" | "switch";
+  service: "turn_on" | "turn_off";
+};
+
 export type PairConfirmResponse = {
   connectorId: string;
   connectorToken: string;

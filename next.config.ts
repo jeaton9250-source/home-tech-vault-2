@@ -1,5 +1,18 @@
 import type { NextConfig } from "next";
 
+const isDevelopment =
+  process.env.NODE_ENV === "development";
+
+const scriptSrc = [
+  "script-src 'self' 'unsafe-inline'",
+  isDevelopment ? "'unsafe-eval'" : "",
+  "https://www.googletagmanager.com",
+  "https://www.google-analytics.com",
+  "https://va.vercel-scripts.com",
+]
+  .filter(Boolean)
+  .join(" ");
+
 const securityHeaders = [
   {
     key: "X-Frame-Options",
@@ -35,8 +48,8 @@ const securityHeaders = [
       "font-src 'self' data:",
       // Inline styles remain for existing CSS-in-JS / email-safe patterns.
       "style-src 'self' 'unsafe-inline'",
-      // Dropped unsafe-eval. Keep unsafe-inline for GA bootstrap + Next runtime.
-      "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com",
+      // React development tooling requires unsafe-eval locally only.
+      scriptSrc,
       "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://www.googletagmanager.com https://api.stripe.com https://vitals.vercel-insights.com https://va.vercel-scripts.com",
       "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
       "worker-src 'self' blob:",

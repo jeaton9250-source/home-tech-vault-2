@@ -214,10 +214,7 @@ async function enrichVaultDevice(
 
   const { error } = await admin
     .from("devices")
-    .update({
-      ...update,
-      updated_at: new Date().toISOString(),
-    })
+    .update(update)
     .eq("id", deviceId)
     .eq("household_id", householdId);
 

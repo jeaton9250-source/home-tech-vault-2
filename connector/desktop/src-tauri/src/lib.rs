@@ -8,8 +8,11 @@ use std::path::PathBuf;
 use std::time::Duration;
 
 use http::{
+    claim_home_assistant_command_request, complete_home_assistant_command_request,
     connector_platform, pair_connector_request, send_heartbeat_request, sync_discovery_request,
-    ConnectorCommandError, DiscoverySyncSuccess, HeartbeatSuccess, PairConfirmSuccess,
+    sync_home_assistant_entities_request, ConnectorCommandError, DiscoverySyncSuccess,
+    HeartbeatSuccess, HomeAssistantCommandClaimSuccess, HomeAssistantCommandCompletionSuccess,
+    HomeAssistantEntitySyncSuccess, PairConfirmSuccess,
 };
 
 use keyring::Entry;
@@ -243,6 +246,44 @@ async fn sync_discovery_results(
     .await
 }
 
+#[tauri::command]
+async fn sync_home_assistant_entities(
+    api_base_url: String,
+    connector_token: String,
+    synced_at: String,
+    entities: serde_json::Value,
+) -> Result<HomeAssistantEntitySyncSuccess, ConnectorCommandError> {
+    sync_home_assistant_entities_request(api_base_url, connector_token, synced_at, entities).await
+}
+
+#[tauri::command]
+async fn claim_home_assistant_command(
+    api_base_url: String,
+    connector_token: String,
+) -> Result<HomeAssistantCommandClaimSuccess, ConnectorCommandError> {
+    claim_home_assistant_command_request(api_base_url, connector_token).await
+}
+
+#[tauri::command]
+async fn complete_home_assistant_command(
+    api_base_url: String,
+    connector_token: String,
+    command_id: String,
+    succeeded: bool,
+    error_message: Option<String>,
+    result: serde_json::Value,
+) -> Result<HomeAssistantCommandCompletionSuccess, ConnectorCommandError> {
+    complete_home_assistant_command_request(
+        api_base_url,
+        connector_token,
+        command_id,
+        succeeded,
+        error_message,
+        result,
+    )
+    .await
+}
+
 fn normalize_home_assistant_url(base_url: &str) -> Result<Url, String> {
     let normalized = base_url.trim().trim_end_matches('/');
 
@@ -446,6 +487,109 @@ async fn get_home_assistant_states(
     Ok(states)
 }
 
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct HomeAssistantServiceResponse {
+    ok: bool,
+    entity_id: String,
+    domain: String,
+    service: String,
+}
+
+fn validate_home_assistant_service_command(
+    entity_id: &str,
+    domain: &str,
+    service: &str,
+) -> Result<(), String> {
+    if domain != "light" && domain != "switch" {
+        return Err("Only light and switch controls are currently supported.".to_string());
+    }
+
+    if service != "turn_on" && service != "turn_off" {
+        return Err("Only turn_on and turn_off controls are currently supported.".to_string());
+    }
+
+    let expected_prefix = format!("{domain}.");
+
+    if !entity_id.starts_with(&expected_prefix)
+        || entity_id.len() > 255
+        || entity_id.chars().any(|character| {
+            !(character.is_ascii_lowercase()
+                || character.is_ascii_digit()
+                || character == '_'
+                || character == '.')
+        })
+    {
+        return Err("The Home Assistant entity ID is invalid.".to_string());
+    }
+
+    Ok(())
+}
+
+#[tauri::command]
+async fn execute_home_assistant_service(
+    base_url: String,
+    entity_id: String,
+    domain: String,
+    service: String,
+) -> Result<HomeAssistantServiceResponse, String> {
+    validate_home_assistant_service_command(&entity_id, &domain, &service)?;
+
+    let api_path = format!("/api/services/{domain}/{service}");
+
+    let endpoint = home_assistant_endpoint(&base_url, &api_path)?;
+
+    let token = resolve_home_assistant_token(None)?;
+
+    let client = create_home_assistant_client()?;
+
+    let response = client
+        .post(endpoint)
+        .bearer_auth(token)
+        .header(reqwest::header::ACCEPT, "application/json")
+        .header(reqwest::header::CONTENT_TYPE, "application/json")
+        .json(&serde_json::json!({
+            "entity_id": entity_id,
+        }))
+        .send()
+        .await
+        .map_err(|error| {
+            if error.is_timeout() {
+                "Home Assistant did not respond before the command timed out.".to_string()
+            } else if error.is_connect() {
+                "Unable to reach Home Assistant while sending the command.".to_string()
+            } else {
+                format!("Unable to send the Home Assistant command: {error}")
+            }
+        })?;
+
+    if response.status() == StatusCode::UNAUTHORIZED {
+        return Err("Home Assistant rejected the stored access token.".to_string());
+    }
+
+    if response.status() == StatusCode::FORBIDDEN {
+        return Err("Home Assistant denied permission to control this entity.".to_string());
+    }
+
+    if response.status().is_redirection() {
+        return Err("Home Assistant redirected the command request.".to_string());
+    }
+
+    if !response.status().is_success() {
+        return Err(format!(
+            "Home Assistant returned HTTP {} while executing the command.",
+            response.status()
+        ));
+    }
+
+    Ok(HomeAssistantServiceResponse {
+        ok: true,
+        entity_id,
+        domain,
+        service,
+    })
+}
+
 #[cfg(test)]
 mod credential_tests {
     use super::*;
@@ -539,6 +683,10 @@ pub fn run() {
             scan_my_network,
             cancel_network_scan,
             sync_discovery_results,
+            sync_home_assistant_entities,
+            claim_home_assistant_command,
+            complete_home_assistant_command,
+            execute_home_assistant_service,
             test_home_assistant_connection,
             get_home_assistant_states,
             tray::set_connector_runtime_preferences,
