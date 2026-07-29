@@ -219,13 +219,9 @@ mod tests {
             },
         ];
 
-        let devices = merge_scan_observations(arp_entries, vec![], vec![])
-            .expect("merge");
+        let devices = merge_scan_observations(arp_entries, vec![], vec![]).expect("merge");
 
         assert_eq!(devices.len(), 2);
-        assert_ne!(
-            devices[0].local_fingerprint,
-            devices[1].local_fingerprint
-        );
+        assert_ne!(devices[0].local_fingerprint, devices[1].local_fingerprint);
     }
 }

@@ -35,10 +35,7 @@ pub fn discover_ssdp(timeout: Duration) -> Result<Vec<SsdpObservation>, String> 
     );
 
     socket
-        .send_to(
-            msearch.as_bytes(),
-            SSDP_MULTICAST_ADDR,
-        )
+        .send_to(msearch.as_bytes(), SSDP_MULTICAST_ADDR)
         .map_err(|error| format!("Unable to send SSDP M-SEARCH: {error}"))?;
 
     let started = Instant::now();
@@ -65,10 +62,7 @@ pub fn discover_ssdp(timeout: Duration) -> Result<Vec<SsdpObservation>, String> 
                     continue;
                 }
 
-                let device_type = headers
-                    .get("ST")
-                    .or_else(|| headers.get("NT"))
-                    .cloned();
+                let device_type = headers.get("ST").or_else(|| headers.get("NT")).cloned();
                 let description_url = headers
                     .get("LOCATION")
                     .and_then(|value| sanitize_private_description_url(value));
@@ -81,12 +75,10 @@ pub fn discover_ssdp(timeout: Duration) -> Result<Vec<SsdpObservation>, String> 
                             existing.device_type = device_type.clone();
                         }
                         if existing.description_url.is_none() {
-                            existing.description_url =
-                                description_url.clone();
+                            existing.description_url = description_url.clone();
                         }
                         if existing.friendly_name.is_none() {
-                            existing.friendly_name =
-                                friendly_name.clone();
+                            existing.friendly_name = friendly_name.clone();
                         }
                     })
                     .or_insert(SsdpObservation {
@@ -179,18 +171,13 @@ mod tests {
 
     #[test]
     fn rejects_public_description_urls() {
-        assert!(sanitize_private_description_url(
-            "http://8.8.8.8/description.xml"
-        )
-        .is_none());
+        assert!(sanitize_private_description_url("http://8.8.8.8/description.xml").is_none());
     }
 
     #[test]
     fn accepts_private_description_urls() {
         assert_eq!(
-            sanitize_private_description_url(
-                "http://192.168.1.20/description.xml"
-            ),
+            sanitize_private_description_url("http://192.168.1.20/description.xml"),
             Some("http://192.168.1.20/description.xml".into())
         );
     }

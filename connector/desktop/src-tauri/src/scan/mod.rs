@@ -106,11 +106,7 @@ pub fn scan_local_network() -> Result<ScanSummary, String> {
         ssdp::discover_ssdp(Duration::from_secs(2)).unwrap_or_default()
     };
 
-    let devices = merge_scan_observations(
-        arp_devices,
-        mdns_observations,
-        ssdp_observations,
-    )?;
+    let devices = merge_scan_observations(arp_devices, mdns_observations, ssdp_observations)?;
 
     Ok(ScanSummary {
         started_at,

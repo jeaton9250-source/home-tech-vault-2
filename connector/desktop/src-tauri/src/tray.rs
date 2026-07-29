@@ -23,17 +23,39 @@ impl ConnectorRuntimeState {
 }
 
 pub fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
-    let show_item = MenuItem::with_id(app, "tray-show", "Open Home Tech Vault Connector", true, None::<&str>)?;
+    let show_item = MenuItem::with_id(
+        app,
+        "tray-show",
+        "Open Home Tech Vault Connector",
+        true,
+        None::<&str>,
+    )?;
     let scan_item = MenuItem::with_id(app, "tray-scan", "Scan My Network", true, None::<&str>)?;
     let pause_item = MenuItem::with_id(app, "tray-pause", "Pause Monitoring", true, None::<&str>)?;
-    let resume_item = MenuItem::with_id(app, "tray-resume", "Resume Monitoring", true, None::<&str>)?;
-    let updates_item = MenuItem::with_id(app, "tray-updates", "Check for Updates", true, None::<&str>)?;
-    let diagnostics_item = MenuItem::with_id(app, "tray-diagnostics", "View Diagnostics", true, None::<&str>)?;
+    let resume_item =
+        MenuItem::with_id(app, "tray-resume", "Resume Monitoring", true, None::<&str>)?;
+    let updates_item =
+        MenuItem::with_id(app, "tray-updates", "Check for Updates", true, None::<&str>)?;
+    let diagnostics_item = MenuItem::with_id(
+        app,
+        "tray-diagnostics",
+        "View Diagnostics",
+        true,
+        None::<&str>,
+    )?;
     let quit_item = MenuItem::with_id(app, "tray-quit", "Quit", true, None::<&str>)?;
 
     let menu = Menu::with_items(
         app,
-        &[&show_item, &scan_item, &pause_item, &resume_item, &updates_item, &diagnostics_item, &quit_item],
+        &[
+            &show_item,
+            &scan_item,
+            &pause_item,
+            &resume_item,
+            &updates_item,
+            &diagnostics_item,
+            &quit_item,
+        ],
     )?;
 
     let icon = app.default_window_icon().cloned().ok_or_else(|| {
@@ -124,9 +146,7 @@ pub fn attach_window_close_handler(app: &AppHandle) {
 pub fn handle_run_event(app: &AppHandle, event: &RunEvent) {
     if let RunEvent::ExitRequested { api, .. } = event {
         let state = app.state::<ConnectorRuntimeState>();
-        if !state.quitting.load(Ordering::SeqCst)
-            && state.minimize_to_tray.load(Ordering::SeqCst)
-        {
+        if !state.quitting.load(Ordering::SeqCst) && state.minimize_to_tray.load(Ordering::SeqCst) {
             api.prevent_exit();
         }
     }
@@ -138,8 +158,12 @@ pub fn set_connector_runtime_preferences(
     monitoring_paused: bool,
     state: tauri::State<'_, ConnectorRuntimeState>,
 ) {
-    state.minimize_to_tray.store(minimize_to_tray, Ordering::SeqCst);
-    state.monitoring_paused.store(monitoring_paused, Ordering::SeqCst);
+    state
+        .minimize_to_tray
+        .store(minimize_to_tray, Ordering::SeqCst);
+    state
+        .monitoring_paused
+        .store(monitoring_paused, Ordering::SeqCst);
 }
 
 #[tauri::command]

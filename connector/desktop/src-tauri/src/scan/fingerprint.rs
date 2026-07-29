@@ -32,8 +32,7 @@ pub fn stable_fingerprint(
 
     if parts.is_empty() {
         return Err(
-            "Unable to compute a stable fingerprint without MAC or identifying metadata."
-                .into(),
+            "Unable to compute a stable fingerprint without MAC or identifying metadata.".into(),
         );
     }
 
@@ -67,13 +66,7 @@ fn normalize_hostname(value: Option<&str>) -> String {
         .to_lowercase()
         .trim_end_matches(".local")
         .chars()
-        .map(|ch| {
-            if ch.is_ascii_alphanumeric() {
-                ch
-            } else {
-                '-'
-            }
-        })
+        .map(|ch| if ch.is_ascii_alphanumeric() { ch } else { '-' })
         .collect::<String>()
         .trim_matches('-')
         .to_string()

@@ -64,9 +64,7 @@ fn read_arp_via_ip_neighbor_fallback() -> Result<Vec<ArpEntry>, String> {
     }
 
     if entries.is_empty() {
-        return Err(
-            "No private-network neighbors were found on this Windows PC.".into(),
-        );
+        return Err("No private-network neighbors were found on this Windows PC.".into());
     }
 
     Ok(dedupe_arp_entries(entries))
@@ -86,7 +84,10 @@ pub fn parse_arp_output(stdout: &str) -> Result<Vec<ArpEntry>, String> {
             continue;
         }
 
-        let mac_raw = captures.name("mac").map(|value| value.as_str()).unwrap_or("");
+        let mac_raw = captures
+            .name("mac")
+            .map(|value| value.as_str())
+            .unwrap_or("");
         let mac_address = normalize_mac(mac_raw);
 
         if mac_address.is_none() {

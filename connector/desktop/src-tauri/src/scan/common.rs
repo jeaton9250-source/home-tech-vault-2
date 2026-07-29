@@ -65,9 +65,7 @@ pub fn dedupe_arp_entries(entries: Vec<ArpEntry>) -> Vec<ArpEntry> {
                 continue 'outer;
             }
 
-            if let (Some(left), Some(right)) =
-                (&existing.mac_address, &entry.mac_address)
-            {
+            if let (Some(left), Some(right)) = (&existing.mac_address, &entry.mac_address) {
                 if left == right {
                     continue 'outer;
                 }

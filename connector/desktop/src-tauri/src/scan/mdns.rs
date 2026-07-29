@@ -41,10 +41,7 @@ pub fn discover_mdns(timeout: Duration) -> Result<Vec<MdnsObservation>, String> 
 
     for target in browse_targets {
         let query = build_mdns_query(target);
-        let _ = socket.send_to(
-            &query,
-            SocketAddr::from((MDNS_MULTICAST, 5353)),
-        );
+        let _ = socket.send_to(&query, SocketAddr::from((MDNS_MULTICAST, 5353)));
     }
 
     let started = Instant::now();
@@ -73,10 +70,7 @@ pub fn discover_mdns(timeout: Duration) -> Result<Vec<MdnsObservation>, String> 
                     continue;
                 }
 
-                let key = hints
-                    .hostname
-                    .clone()
-                    .unwrap_or_else(|| ip_address.clone());
+                let key = hints.hostname.clone().unwrap_or_else(|| ip_address.clone());
 
                 by_host
                     .entry(key)

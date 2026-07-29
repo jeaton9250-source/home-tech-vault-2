@@ -112,11 +112,7 @@ pub fn validate_api_base_url(base_url: &str) -> Result<String, ConnectorCommandE
     let normalized = normalize_base_url(base_url);
 
     if normalized.is_empty() {
-        return Err(command_error(
-            "network",
-            "API base URL is required.",
-            None,
-        ));
+        return Err(command_error("network", "API base URL is required.", None));
     }
 
     if normalized == PROD_ORIGIN || normalized == LEGACY_PROD_ORIGIN {
@@ -196,11 +192,7 @@ fn map_pair_confirm_error(status: u16, body: &ErrorBody) -> ConnectorCommandErro
 
 fn map_request_error(error: reqwest::Error) -> ConnectorCommandError {
     if error.is_timeout() {
-        return command_error(
-            "timeout",
-            "The request timed out. Try again.",
-            None,
-        );
+        return command_error("timeout", "The request timed out. Try again.", None);
     }
 
     if error.is_connect() {
@@ -214,11 +206,7 @@ fn map_request_error(error: reqwest::Error) -> ConnectorCommandError {
     if error.to_string().to_lowercase().contains("certificate")
         || error.to_string().to_lowercase().contains("tls")
     {
-        return command_error(
-            "tls",
-            "Secure connection to Home Tech Vault failed.",
-            None,
-        );
+        return command_error("tls", "Secure connection to Home Tech Vault failed.", None);
     }
 
     command_error(
@@ -320,8 +308,7 @@ pub async fn pair_connector_request(
         return Ok(parsed);
     }
 
-    let error_body =
-        serde_json::from_value::<ErrorBody>(payload).unwrap_or_default();
+    let error_body = serde_json::from_value::<ErrorBody>(payload).unwrap_or_default();
     Err(map_pair_confirm_error(status, &error_body))
 }
 
@@ -348,16 +335,14 @@ pub async fn send_heartbeat_request(
     .await?;
 
     if status == 401 {
-        let error_body =
-            serde_json::from_value::<ErrorBody>(payload.clone())
-                .unwrap_or_default();
+        let error_body = serde_json::from_value::<ErrorBody>(payload.clone()).unwrap_or_default();
         log_heartbeat_auth_failure(status, &error_body);
 
         return Err(ConnectorCommandError {
             kind: "unauthorized".into(),
-            message: error_body.error.unwrap_or_else(|| {
-                "Connector access revoked or invalid.".into()
-            }),
+            message: error_body
+                .error
+                .unwrap_or_else(|| "Connector access revoked or invalid.".into()),
             status: Some(status),
             reason: error_body.reason,
             diagnostics: error_body.diagnostics,
@@ -393,8 +378,7 @@ pub async fn send_heartbeat_request(
         ));
     }
 
-    let error_body =
-        serde_json::from_value::<ErrorBody>(payload).unwrap_or_default();
+    let error_body = serde_json::from_value::<ErrorBody>(payload).unwrap_or_default();
 
     Err(command_error(
         "server",
@@ -440,15 +424,14 @@ pub async fn sync_discovery_request(
     .await?;
 
     if status == 401 {
-        let error_body =
-            serde_json::from_value::<ErrorBody>(payload.clone()).unwrap_or_default();
+        let error_body = serde_json::from_value::<ErrorBody>(payload.clone()).unwrap_or_default();
         log_heartbeat_auth_failure(status, &error_body);
 
         return Err(ConnectorCommandError {
             kind: "unauthorized".into(),
-            message: error_body.error.unwrap_or_else(|| {
-                "Connector access revoked or invalid.".into()
-            }),
+            message: error_body
+                .error
+                .unwrap_or_else(|| "Connector access revoked or invalid.".into()),
             status: Some(status),
             reason: error_body.reason,
             diagnostics: error_body.diagnostics,
@@ -484,8 +467,7 @@ pub async fn sync_discovery_request(
         ));
     }
 
-    let error_body =
-        serde_json::from_value::<ErrorBody>(payload).unwrap_or_default();
+    let error_body = serde_json::from_value::<ErrorBody>(payload).unwrap_or_default();
 
     Err(command_error(
         "server",

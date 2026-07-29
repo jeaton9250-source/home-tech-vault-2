@@ -1,13 +1,20 @@
+import { invoke } from "@tauri-apps/api/core";
+
 import type {
   HomeAssistantConfig,
   HomeAssistantState,
 } from "./types";
 
+type HomeAssistantConnectionResponse = {
+  connected: boolean;
+};
+
 function normalizeBaseUrl(
   value: string
 ): string {
-  const normalized =
-    value.trim().replace(/\/+$/, "");
+  const normalized = value
+    .trim()
+    .replace(/\/+$/, "");
 
   if (!normalized) {
     throw new Error(
@@ -18,10 +25,10 @@ function normalizeBaseUrl(
   return normalized;
 }
 
-function buildHeaders(
-  accessToken: string
-): HeadersInit {
-  const token = accessToken.trim();
+function normalizeAccessToken(
+  value: string
+): string {
+  const token = value.trim();
 
   if (!token) {
     throw new Error(
@@ -29,86 +36,97 @@ function buildHeaders(
     );
   }
 
-  return {
-    Authorization: `Bearer ${token}`,
-    "Content-Type": "application/json",
-  };
+  return token;
 }
 
-async function requestHomeAssistant<T>(
-  config: HomeAssistantConfig,
-  path: string
-): Promise<T> {
-  const baseUrl = normalizeBaseUrl(
-    config.baseUrl
-  );
-
-  let response: Response;
-
-  try {
-    response = await fetch(
-      `${baseUrl}${path}`,
-      {
-        method: "GET",
-        headers: buildHeaders(
-          config.accessToken
-        ),
-      }
-    );
-  } catch {
-    throw new Error(
-      "Unable to reach Home Assistant. Confirm that Home Assistant is running and the local address is correct."
-    );
+function normalizeTauriError(
+  error: unknown,
+  fallback: string
+): Error {
+  if (error instanceof Error) {
+    return error;
   }
 
-  if (!response.ok) {
-    if (
-      response.status === 401 ||
-      response.status === 403
-    ) {
-      throw new Error(
-        "Home Assistant rejected the access token."
-      );
-    }
-
-    throw new Error(
-      `Home Assistant returned ${response.status} ${response.statusText}.`
-    );
+  if (typeof error === "string") {
+    return new Error(error);
   }
 
-  return response.json() as Promise<T>;
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "message" in error &&
+    typeof error.message === "string"
+  ) {
+    return new Error(error.message);
+  }
+
+  return new Error(fallback);
 }
 
 export async function testHomeAssistantConnection(
   config: HomeAssistantConfig
 ): Promise<boolean> {
-  const result =
-    await requestHomeAssistant<{
-      message?: string;
-    }>(
-      config,
-      "/api/"
+  const baseUrl = normalizeBaseUrl(
+    config.baseUrl
+  );
+
+  const accessToken =
+    normalizeAccessToken(
+      config.accessToken
     );
 
-  return result.message === "API running.";
+  try {
+    const result =
+      await invoke<HomeAssistantConnectionResponse>(
+        "test_home_assistant_connection",
+        {
+          baseUrl,
+          accessToken,
+        }
+      );
+
+    return result.connected;
+  } catch (error) {
+    throw normalizeTauriError(
+      error,
+      "Unable to test the Home Assistant connection."
+    );
+  }
 }
 
 export async function getHomeAssistantStates(
   config: HomeAssistantConfig
 ): Promise<HomeAssistantState[]> {
-  const states =
-    await requestHomeAssistant<
-      HomeAssistantState[]
-    >(
-      config,
-      "/api/states"
+  const baseUrl = normalizeBaseUrl(
+    config.baseUrl
+  );
+
+  const accessToken =
+    normalizeAccessToken(
+      config.accessToken
     );
 
-  if (!Array.isArray(states)) {
-    throw new Error(
-      "Home Assistant returned an invalid states response."
+  try {
+    const states =
+      await invoke<HomeAssistantState[]>(
+        "get_home_assistant_states",
+        {
+          baseUrl,
+          accessToken,
+        }
+      );
+
+    if (!Array.isArray(states)) {
+      throw new Error(
+        "Home Assistant returned an invalid states response."
+      );
+    }
+
+    return states;
+  } catch (error) {
+    throw normalizeTauriError(
+      error,
+      "Unable to load Home Assistant devices."
     );
   }
-
-  return states;
 }

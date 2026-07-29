@@ -90,9 +90,6 @@ mod tests {
 
     #[test]
     fn ignores_private_mac_oui() {
-        assert_eq!(
-            lookup_manufacturer("86:eb:52:28:4c:ee"),
-            None
-        );
+        assert_eq!(lookup_manufacturer("86:eb:52:28:4c:ee"), None);
     }
 }
