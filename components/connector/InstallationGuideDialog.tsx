@@ -1,127 +1,414 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect } from "react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Download,
+  KeyRound,
+  Laptop,
+  Network,
+  Settings,
+  ShieldAlert,
+  X,
+} from "lucide-react";
 
 import Button from "@/components/ui/Button";
-import ConnectorDownloadActions from "@/components/connector/ConnectorDownloadActions";
-import ConnectorModal from "@/components/connector/ConnectorModal";
-import {
-  CONNECTOR_INSTALLATION_COMPLETE_MESSAGE,
-  CONNECTOR_INSTALLATION_STEPS,
-} from "@/lib/connector/installationGuide";
 
 type InstallationGuideDialogProps = {
   open: boolean;
   onClose: () => void;
 };
 
+const MACOS_QUARANTINE_COMMAND = `xattr -dr com.apple.quarantine "/Applications/Home Tech Vault Connector.app"
+open "/Applications/Home Tech Vault Connector.app"`;
+
 export default function InstallationGuideDialog({
   open,
   onClose,
 }: InstallationGuideDialogProps) {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const steps = CONNECTOR_INSTALLATION_STEPS;
-  const activeStep = steps[activeIndex];
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
 
-  const progressLabel = useMemo(() => {
-    return `Step ${activeIndex + 1} of ${steps.length}`;
-  }, [activeIndex, steps.length]);
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    }
 
-  function goNext() {
-    setActiveIndex((current) =>
-      Math.min(current + 1, steps.length - 1)
+    const previousOverflow =
+      document.body.style.overflow;
+
+    document.body.style.overflow =
+      "hidden";
+
+    window.addEventListener(
+      "keydown",
+      handleKeyDown
     );
+
+    return () => {
+      document.body.style.overflow =
+        previousOverflow;
+
+      window.removeEventListener(
+        "keydown",
+        handleKeyDown
+      );
+    };
+  }, [open, onClose]);
+
+  if (!open) {
+    return null;
   }
 
-  function goBack() {
-    setActiveIndex((current) => Math.max(current - 1, 0));
+  async function copyTerminalCommand() {
+    try {
+      await navigator.clipboard.writeText(
+        MACOS_QUARANTINE_COMMAND
+      );
+    } catch {
+      // The command remains visible for manual copying.
+    }
   }
 
   return (
-    <ConnectorModal
-      open={open}
-      title="Installation Guide"
-      description="Follow these steps to download, pair, and scan with the Home Tech Vault Connector."
-      onClose={onClose}
-      maxWidthClassName="max-w-3xl"
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-charcoal/60 p-4 backdrop-blur-sm"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) {
+          onClose();
+        }
+      }}
     >
-      <div className="flex flex-wrap gap-2">
-        {steps.map((step, index) => (
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="connector-installation-guide-title"
+        aria-describedby="connector-installation-guide-description"
+        className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-[28px] border border-border-subtle bg-surface-card shadow-2xl"
+      >
+        <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-border-subtle bg-surface-card/95 px-6 py-5 backdrop-blur md:px-8">
+          <div>
+            <p className="text-overline text-section-network">
+              Home Tech Vault Connector
+            </p>
+
+            <h2
+              id="connector-installation-guide-title"
+              className="mt-1 text-2xl font-semibold text-text-primary"
+            >
+              Installation guide
+            </h2>
+
+            <p
+              id="connector-installation-guide-description"
+              className="mt-2 text-sm leading-6 text-text-secondary"
+            >
+              Follow these steps to download,
+              install, pair, and begin syncing
+              your home network.
+            </p>
+          </div>
+
           <button
-            key={step.id}
             type="button"
-            onClick={() => setActiveIndex(index)}
-            className={
-              "rounded-full px-3 py-1.5 text-xs font-semibold transition " +
-              (index === activeIndex
-                ? "bg-charcoal text-white"
-                : "bg-surface-sunken text-text-secondary hover:text-text-primary")
-            }
+            onClick={onClose}
+            aria-label="Close installation guide"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border-subtle text-text-secondary transition hover:bg-surface-sunken hover:text-text-primary"
           >
-            {index + 1}. {step.title}
+            <X size={18} />
           </button>
-        ))}
+        </div>
+
+        <div className="space-y-7 p-6 md:p-8">
+          <section className="rounded-[22px] border border-amber-300/60 bg-amber-50 p-5">
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
+                <ShieldAlert size={20} />
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-amber-950">
+                  macOS Beta — manual approval
+                  may be required
+                </h3>
+
+                <p className="mt-2 text-sm leading-6 text-amber-900">
+                  This early connector build is
+                  not yet signed and notarized
+                  through Apple. macOS may block
+                  it the first time you try to
+                  open it.
+                </p>
+
+                <p className="mt-2 text-sm leading-6 text-amber-900">
+                  Only continue when you
+                  downloaded the connector
+                  directly from the official Home
+                  Tech Vault website.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <GuideStep
+            number="1"
+            icon={<Download size={19} />}
+            title="Download the connector"
+          >
+            <p>
+              Select the macOS download button
+              from Home Tech Vault. When the
+              download finishes, open the
+              downloaded{" "}
+              <strong>.dmg</strong> file.
+            </p>
+          </GuideStep>
+
+          <GuideStep
+            number="2"
+            icon={<Laptop size={19} />}
+            title="Move the app into Applications"
+          >
+            <p>
+              Drag{" "}
+              <strong>
+                Home Tech Vault Connector
+              </strong>{" "}
+              into the{" "}
+              <strong>Applications</strong>{" "}
+              folder shown in the installer
+              window.
+            </p>
+
+            <p className="mt-2">
+              Eject the installer after the copy
+              finishes.
+            </p>
+          </GuideStep>
+
+          <GuideStep
+            number="3"
+            icon={<Settings size={19} />}
+            title="Try opening the connector"
+          >
+            <p>
+              Open Finder, choose{" "}
+              <strong>Applications</strong>, and
+              double-click{" "}
+              <strong>
+                Home Tech Vault Connector
+              </strong>
+              .
+            </p>
+
+            <p className="mt-2">
+              If macOS opens the app normally,
+              continue to Step 5.
+            </p>
+          </GuideStep>
+
+          <GuideStep
+            number="4"
+            icon={<AlertTriangle size={19} />}
+            title="Approve the app in macOS"
+          >
+            <p>
+              If macOS blocks the app, open:
+            </p>
+
+            <p className="mt-3 rounded-xl border border-border-subtle bg-surface-sunken px-4 py-3 font-medium text-text-primary">
+              System Settings → Privacy &amp;
+              Security
+            </p>
+
+            <p className="mt-3">
+              Scroll to the Security section,
+              find the message about Home Tech
+              Vault Connector, and click{" "}
+              <strong>Open Anyway</strong>. Then
+              confirm by clicking{" "}
+              <strong>Open</strong>.
+            </p>
+          </GuideStep>
+
+          <section className="rounded-[22px] border border-border-subtle bg-surface-sunken p-5">
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-surface-card text-text-primary">
+                <AlertTriangle size={19} />
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <h3 className="font-semibold text-text-primary">
+                  If macOS says the app is
+                  damaged
+                </h3>
+
+                <p className="mt-2 text-sm leading-6 text-text-secondary">
+                  Trusted beta testers can remove
+                  the macOS quarantine flag using
+                  Terminal. Make sure the app has
+                  already been moved into the
+                  Applications folder.
+                </p>
+
+                <pre className="mt-4 overflow-x-auto rounded-xl bg-charcoal p-4 text-xs leading-6 text-white">
+                  <code>
+                    {MACOS_QUARANTINE_COMMAND}
+                  </code>
+                </pre>
+
+                <div className="mt-4">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => {
+                      void copyTerminalCommand();
+                    }}
+                  >
+                    Copy Terminal command
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <GuideStep
+            number="5"
+            icon={<KeyRound size={19} />}
+            title="Generate a pairing code"
+          >
+            <p>
+              On the Home Tech Vault website, go
+              to:
+            </p>
+
+            <p className="mt-3 rounded-xl border border-border-subtle bg-surface-sunken px-4 py-3 font-medium text-text-primary">
+              Network → Connector → Connect Your
+              Home Network
+            </p>
+
+            <p className="mt-3">
+              Generate a new one-time pairing
+              code. Pairing codes expire and can
+              only be used once.
+            </p>
+          </GuideStep>
+
+          <GuideStep
+            number="6"
+            icon={<Network size={19} />}
+            title="Pair the connector"
+          >
+            <p>
+              Enter the new pairing code in the
+              desktop connector, choose a name
+              for the computer, and select{" "}
+              <strong>Connect</strong>.
+            </p>
+
+            <p className="mt-2">
+              After pairing, the connector will
+              securely store its connector token
+              in your Mac Keychain.
+            </p>
+          </GuideStep>
+
+          <GuideStep
+            number="7"
+            icon={<CheckCircle2 size={19} />}
+            title="Connect Home Assistant and sync"
+          >
+            <p>
+              Enter your Home Assistant local
+              URL and long-lived access token.
+              Test the connection, preview the
+              devices, and then sync them to Home
+              Tech Vault.
+            </p>
+
+            <p className="mt-2">
+              Leave the connector running when
+              you want automatic heartbeats and
+              monitoring to continue.
+            </p>
+          </GuideStep>
+
+          <section className="rounded-[22px] border border-emerald-200 bg-emerald-50 p-5">
+            <div className="flex items-start gap-3">
+              <CheckCircle2
+                size={20}
+                className="mt-0.5 shrink-0 text-emerald-700"
+              />
+
+              <div>
+                <h3 className="font-semibold text-emerald-950">
+                  Installation complete
+                </h3>
+
+                <p className="mt-2 text-sm leading-6 text-emerald-900">
+                  Once connected, return to the
+                  Network section in Home Tech
+                  Vault to review connector
+                  status, discoveries, and synced
+                  devices.
+                </p>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div className="sticky bottom-0 flex justify-end border-t border-border-subtle bg-surface-card/95 px-6 py-4 backdrop-blur md:px-8">
+          <Button
+            type="button"
+            onClick={onClose}
+          >
+            Done
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function GuideStep({
+  number,
+  icon,
+  title,
+  children,
+}: {
+  number: string;
+  icon: React.ReactNode;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="flex gap-4">
+      <div className="flex flex-col items-center">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-charcoal text-surface-card">
+          {icon}
+        </div>
+
+        <div className="mt-2 h-full w-px bg-border-subtle" />
       </div>
 
-      <div className="mt-6 rounded-[24px] border border-border-subtle bg-surface-sunken p-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-text-tertiary">
-          {progressLabel}
+      <div className="min-w-0 flex-1 pb-5">
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-text-tertiary">
+          Step {number}
         </p>
-        <h3 className="mt-3 text-xl font-semibold text-text-primary">
-          {activeStep.title}
+
+        <h3 className="mt-1 text-lg font-semibold text-text-primary">
+          {title}
         </h3>
-        <p className="mt-3 text-sm leading-7 text-text-secondary">
-          {activeStep.description}
-        </p>
-        {activeStep.detail ? (
-          <p className="mt-3 text-sm leading-7 text-text-secondary">
-            {activeStep.detail}
-          </p>
-        ) : null}
 
-        {activeStep.id === "download" ? (
-          <div className="mt-5">
-            <ConnectorDownloadActions layout="stack" />
-          </div>
-        ) : null}
-
-        {activeStep.actionHref && activeStep.actionLabel ? (
-          <div className="mt-5">
-            <Button href={activeStep.actionHref}>
-              {activeStep.actionLabel}
-            </Button>
-          </div>
-        ) : null}
-
-        {activeIndex === steps.length - 1 ? (
-          <p className="mt-5 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
-            {CONNECTOR_INSTALLATION_COMPLETE_MESSAGE}
-          </p>
-        ) : null}
+        <div className="mt-2 text-sm leading-7 text-text-secondary">
+          {children}
+        </div>
       </div>
-
-      <div className="mt-6 flex flex-wrap gap-3">
-        <Button
-          type="button"
-          variant="secondary"
-          onClick={goBack}
-          disabled={activeIndex === 0}
-        >
-          Back
-        </Button>
-        <Button
-          type="button"
-          onClick={
-            activeIndex === steps.length - 1
-              ? onClose
-              : goNext
-          }
-        >
-          {activeIndex === steps.length - 1
-            ? "Finish"
-            : "Next step"}
-        </Button>
-      </div>
-    </ConnectorModal>
+    </section>
   );
 }
