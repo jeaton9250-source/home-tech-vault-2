@@ -638,11 +638,26 @@ async function deleteHouseholdData(
     .eq("id", householdId);
 
   if (error) {
+    const databaseMessage = [
+      error.message,
+      error.details,
+      error.hint,
+    ]
+      .filter(Boolean)
+      .join(" ");
+
     const wrapped = new Error(
-      "Household cleanup failed while removing households."
-    ) as Error & { code?: string };
+      databaseMessage ||
+        "Household cleanup failed while removing households."
+    ) as Error & {
+      code?: string;
+      details?: string | null;
+      hint?: string | null;
+    };
 
     wrapped.code = error.code;
+    wrapped.details = error.details;
+    wrapped.hint = error.hint;
 
     throw wrapped;
   }
