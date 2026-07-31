@@ -77,8 +77,8 @@ pub fn merge_scan_observations(
             ip_address: Some(ip_address.clone()),
             mac_address: None,
             hostname,
-            manufacturer,
-            model: None,
+            manufacturer: observation.manufacturer.clone().or(manufacturer),
+            model: observation.model.clone(),
             friendly_name: observation.friendly_name.clone(),
             device_type: None,
             discovery_source: "mDNS".into(),
@@ -109,8 +109,8 @@ pub fn merge_scan_observations(
                     ip_address: Some(observation.ip_address.clone()),
                     mac_address: None,
                     hostname: observation.friendly_name.clone(),
-                    manufacturer: None,
-                    model: None,
+                    manufacturer: observation.manufacturer.clone(),
+                    model: observation.model.clone(),
                     friendly_name: observation.friendly_name.clone(),
                     device_type: None,
                     discovery_source: "SSDP".into(),
@@ -141,6 +141,14 @@ fn enrich_from_mdns(device: &mut ScannedDevice, observation: &MdnsObservation) {
         device.friendly_name = observation.friendly_name.clone();
     }
 
+    if device.manufacturer.is_none() {
+        device.manufacturer = observation.manufacturer.clone();
+    }
+
+    if device.model.is_none() {
+        device.model = observation.model.clone();
+    }
+
     for service in &observation.services {
         if !device.mdns_services.contains(service) {
             device.mdns_services.push(service.clone());
@@ -165,6 +173,14 @@ fn enrich_from_ssdp(device: &mut ScannedDevice, observation: &SsdpObservation) {
 
     if device.friendly_name.is_none() {
         device.friendly_name = observation.friendly_name.clone();
+    }
+
+    if device.manufacturer.is_none() {
+        device.manufacturer = observation.manufacturer.clone();
+    }
+
+    if device.model.is_none() {
+        device.model = observation.model.clone();
     }
 
     if !device.discovery_sources.contains(&"SSDP".to_string()) {

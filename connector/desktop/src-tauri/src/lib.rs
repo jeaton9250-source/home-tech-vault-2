@@ -8,24 +8,13 @@ use std::path::PathBuf;
 use std::time::Duration;
 
 use http::{
-    claim_home_assistant_command_request,
-    complete_home_assistant_command_request,
-    connector_platform,
-    create_apple_home_pairing_session_request,
-    get_apple_home_pairing_status_request,
-    pair_connector_request,
-    send_heartbeat_request,
-    sync_discovery_request,
-    sync_home_assistant_entities_request,
-    AppleHomePairingInitSuccess,
-    AppleHomePairingStatusSuccess,
-    ConnectorCommandError,
-    DiscoverySyncSuccess,
-    HeartbeatSuccess,
-    HomeAssistantCommandClaimSuccess,
-    HomeAssistantCommandCompletionSuccess,
-    HomeAssistantEntitySyncSuccess,
-    PairConfirmSuccess,
+    claim_home_assistant_command_request, complete_home_assistant_command_request,
+    connector_platform, create_apple_home_pairing_session_request,
+    get_apple_home_pairing_status_request, pair_connector_request, send_heartbeat_request,
+    sync_discovery_request, sync_home_assistant_entities_request, AppleHomePairingInitSuccess,
+    AppleHomePairingStatusSuccess, ConnectorCommandError, DiscoverySyncSuccess, HeartbeatSuccess,
+    HomeAssistantCommandClaimSuccess, HomeAssistantCommandCompletionSuccess,
+    HomeAssistantEntitySyncSuccess, PairConfirmSuccess,
 };
 
 use keyring::Entry;
@@ -225,15 +214,8 @@ async fn pair_connector(
 async fn create_apple_home_pairing_session(
     api_base_url: String,
     connector_token: String,
-) -> Result<
-    AppleHomePairingInitSuccess,
-    ConnectorCommandError,
-> {
-    create_apple_home_pairing_session_request(
-        api_base_url,
-        connector_token,
-    )
-    .await
+) -> Result<AppleHomePairingInitSuccess, ConnectorCommandError> {
+    create_apple_home_pairing_session_request(api_base_url, connector_token).await
 }
 
 #[tauri::command]
@@ -241,16 +223,8 @@ async fn get_apple_home_pairing_status(
     api_base_url: String,
     connector_token: String,
     session_id: String,
-) -> Result<
-    AppleHomePairingStatusSuccess,
-    ConnectorCommandError,
-> {
-    get_apple_home_pairing_status_request(
-        api_base_url,
-        connector_token,
-        session_id,
-    )
-    .await
+) -> Result<AppleHomePairingStatusSuccess, ConnectorCommandError> {
+    get_apple_home_pairing_status_request(api_base_url, connector_token, session_id).await
 }
 
 #[tauri::command]
@@ -738,9 +712,9 @@ pub fn run() {
             tray::quit_connector_app,
             tray::hide_connector_window,
             tray::show_connector_window,
-        
             create_apple_home_pairing_session,
-            get_apple_home_pairing_status,])
+            get_apple_home_pairing_status,
+        ])
         .setup(|app| {
             setup_tray(app.handle())?;
 

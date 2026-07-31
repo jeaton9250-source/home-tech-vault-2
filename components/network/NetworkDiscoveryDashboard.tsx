@@ -562,296 +562,150 @@ function DiscoveryDeviceCard({
     device.recognitionSuggestion.deviceTypeKey ?? ""
   );
 
+  const suggestedName =
+    device.recognitionSuggestion.friendlyName ||
+    deviceTitle(device);
+
+  const suggestedDescription = [
+    device.recognitionSuggestion.manufacturer,
+    device.recognitionSuggestion.model,
+    device.recognitionSuggestion.category ??
+      device.likelyCategory,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  const confidenceScore =
+    device.recognitionSuggestion.confidenceScore;
+
+  const confidenceSummary =
+    confidenceScore >= 85
+      ? "High confidence"
+      : confidenceScore >= 60
+        ? "Likely match"
+        : "Needs review";
+
+  const homeownerStatus =
+    device.matchStatus === "matched"
+      ? "Already linked to your vault"
+      : device.matchStatus === "possible_match"
+        ? "May already be in your vault"
+        : device.matchStatus === "ignored"
+          ? "Ignored"
+          : "New device found";
+
   return (
-    <article className="rounded-2xl border border-neutral-200 p-5">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-lg font-semibold text-text-primary">
-              {deviceTitle(device)}
-            </h2>
-            <StatusBadge status={device.matchStatus} />
-            {identificationLabel ? (
-              <span className="rounded-full bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-800">
-                {identificationLabel}
-              </span>
-            ) : null}
-            {confidenceLabel ? (
+    <article className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
+      <div className="p-5 sm:p-6">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="min-w-0 truncate text-lg font-semibold text-text-primary">
+                {suggestedName}
+              </h2>
+
               <span className="rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-medium text-text-secondary">
-                {confidenceLabel}
+                {homeownerStatus}
               </span>
-            ) : null}
-          </div>
 
-          {device.likelyCategory ? (
-            <p className="mt-2 text-sm text-text-secondary">
-              Likely category: {device.likelyCategory}
-              {device.manufacturer ? ` · ${device.manufacturer}` : ""}
-            </p>
-          ) : null}
-
-          {device.matchReason ? (
-            <p className="mt-2 text-sm text-text-secondary">
-              {device.matchReason}
-            </p>
-          ) : null}
-
-          <div className="mt-3 rounded-xl bg-sky-50 px-4 py-3 text-sm text-sky-900">
-            <p className="font-medium">
-              Suggested: {device.recognitionSuggestion.friendlyName}
-            </p>
-            <p className="mt-1">
-              {[
-                device.recognitionSuggestion.manufacturer,
-                device.recognitionSuggestion.model,
-                device.recognitionSuggestion.category,
-              ]
-                .filter(Boolean)
-                .join(" · ") || "Details pending"}
-            </p>
-            <p className="mt-1 text-xs text-sky-800">
-              Confidence {device.recognitionSuggestion.confidenceScore}%
-              {device.recognitionSuggestion.deviceTypeKey
-                ? ` · type ${device.recognitionSuggestion.deviceTypeKey}`
-                : ""}
-            </p>
-            <p className="mt-2 text-xs text-sky-800">
-              {device.recognitionSuggestion.reason}
-            </p>
-          </div>
-
-          {identificationSignals.length > 0 ? (
-            <ul className="mt-4 space-y-2">
-              {identificationSignals.map((signal) => (
-                <li
-                  key={signal.label}
-                  className="flex items-center gap-2 text-sm text-text-secondary"
-                >
-                  {signal.matched ? (
-                    <Check size={16} className="text-sky-600" />
-                  ) : (
-                    <span className="inline-block h-4 w-4 rounded-full border border-neutral-300" />
-                  )}
-                  {signal.label}
-                </li>
-              ))}
-            </ul>
-          ) : null}
-
-          {signals.length > 0 ? (
-            <ul className="mt-4 space-y-2">
-              {signals.map((signal) => (
-                <li
-                  key={`match-${signal.label}`}
-                  className="flex items-center gap-2 text-sm text-text-secondary"
-                >
-                  {signal.matched ? (
-                    <Check size={16} className="text-emerald-600" />
-                  ) : (
-                    <span className="inline-block h-4 w-4 rounded-full border border-neutral-300" />
-                  )}
-                  Match: {signal.label}
-                </li>
-              ))}
-            </ul>
-          ) : null}
-
-          {matchedVaultDevice || selectedVault ? (
-            <div className="mt-4 rounded-xl bg-surface-sunken px-4 py-3 text-sm">
-              <p className="font-medium text-text-primary">
-                Matches:{" "}
-                {matchedVaultDevice?.deviceName ??
-                  selectedVault?.device_name ??
-                  "Vault device"}
-              </p>
-              <p className="mt-1 text-text-secondary">
-                {matchedVaultDevice?.location ??
-                  selectedVault?.location ??
-                  matchedVaultDevice?.category ??
-                  selectedVault?.category ??
-                  "Vault device"}
-              </p>
+              <span className="rounded-full bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-800">
+                {confidenceSummary}
+              </span>
             </div>
-          ) : null}
 
-          <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-4">
-            <Field label="Hostname" value={device.hostname} />
-            <Field label="IP address" value={device.ipAddress} />
-            <Field label="MAC address" value={device.macAddress} />
-            <Field label="Manufacturer" value={device.manufacturer} />
-            <Field label="Last seen" value={formatTimestamp(device.lastSeenAt)} />
-          </dl>
-        </div>
+            <p className="mt-2 text-sm text-text-secondary">
+              {suggestedDescription ||
+                "We found this device on your home network."}
+            </p>
 
-        {canEdit ? (
-          <div className="flex w-full flex-col gap-3 lg:w-72">
-            {(device.matchStatus === "possible_match" ||
-              device.matchStatus === "matched") &&
-            vaultDevices.length > 0 ? (
-              <label className="grid gap-2 text-sm">
-                <span className="font-medium text-text-primary">
-                  Choose vault device
-                </span>
-                <select
-                  className="rounded-xl border border-neutral-200 px-3 py-2"
-                  value={selectedVaultDeviceId}
-                  onChange={(event) =>
-                    onSelectVaultDevice(event.target.value)
-                  }
-                >
-                  <option value="">Select a device</option>
-                  {vaultDevices.map((vaultDevice) => (
-                    <option key={vaultDevice.id} value={vaultDevice.id}>
-                      {vaultDevice.device_name ?? "Unnamed device"}
-                    </option>
-                  ))}
-                </select>
-              </label>
+            {device.matchStatus === "possible_match" ? (
+              <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+                <p className="text-sm font-medium text-amber-950">
+                  Is this a device already saved in your vault?
+                </p>
+                <p className="mt-1 text-sm text-amber-800">
+                  Select the matching device below, or add this as a
+                  separate device.
+                </p>
+              </div>
+            ) : device.matchStatus === "new" ? (
+              <div className="mt-4 rounded-xl bg-sky-50 px-4 py-3">
+                <p className="text-sm font-medium text-sky-950">
+                  A new device was found
+                </p>
+                <p className="mt-1 text-sm text-sky-800">
+                  Add it to your vault to track its details, warranty,
+                  documents, and network status.
+                </p>
+              </div>
             ) : null}
 
-            <div className="flex flex-col gap-2">
-              {device.matchStatus !== "ignored" ? (
-                <>
-                  <ActionButton
-                    label={
-                      device.recognitionStatus ===
-                      "accepted"
-                        ? "Suggestion Accepted"
-                        : "Accept Suggestion"
-                    }
-                    icon={<CheckCircle2 size={16} />}
-                    variant={
-                      device.recognitionStatus ===
-                      "accepted"
-                        ? "secondary"
-                        : "primary"
-                    }
-                    busy={busy}
-                    disabled={
-                      device.recognitionStatus ===
-                      "accepted"
-                    }
-                    onClick={() =>
-                      onAcceptRecognition()
-                    }
-                  />
-                  <ActionButton
-                    label={
-                      editingRecognition
-                        ? "Cancel Edit"
-                        : "Edit and Accept"
-                    }
-                    variant="secondary"
-                    busy={busy}
-                    onClick={() =>
-                      setEditingRecognition(
-                        (current) => !current
-                      )
-                    }
-                  />
-                  <ActionButton
-                    label={
-                      device.recognitionStatus ===
-                      "dismissed"
-                        ? "Suggestion Dismissed"
-                        : "Dismiss Suggestion"
-                    }
-                    icon={<XCircle size={16} />}
-                    variant="secondary"
-                    busy={busy}
-                    disabled={
-                      device.recognitionStatus ===
-                      "dismissed"
-                    }
-                    onClick={onDismissRecognition}
-                  />
-                </>
-              ) : null}
+            {matchedVaultDevice || selectedVault ? (
+              <div className="mt-4 rounded-xl bg-surface-sunken px-4 py-3">
+                <p className="text-sm font-medium text-text-primary">
+                  Linked with{" "}
+                  {matchedVaultDevice?.deviceName ??
+                    selectedVault?.device_name ??
+                    "Vault device"}
+                </p>
+                <p className="mt-1 text-sm text-text-secondary">
+                  {matchedVaultDevice?.location ??
+                    selectedVault?.location ??
+                    matchedVaultDevice?.category ??
+                    selectedVault?.category ??
+                    "Saved device"}
+                </p>
+              </div>
+            ) : null}
+          </div>
 
-              {editingRecognition ? (
-                <div className="grid gap-2 rounded-xl border border-neutral-200 p-3 text-sm">
-                  <input
-                    className="rounded-lg border border-neutral-200 px-3 py-2"
-                    value={editFriendlyName}
+          {canEdit ? (
+            <div className="flex w-full flex-col gap-3 lg:w-72 lg:flex-none">
+              {(device.matchStatus === "possible_match" ||
+                device.matchStatus === "matched") &&
+              vaultDevices.length > 0 ? (
+                <label className="grid gap-2 text-sm">
+                  <span className="font-medium text-text-primary">
+                    Which saved device is this?
+                  </span>
+
+                  <select
+                    className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2.5 text-text-primary"
+                    value={selectedVaultDeviceId}
                     onChange={(event) =>
-                      setEditFriendlyName(
-                        event.target.value
-                      )
+                      onSelectVaultDevice(event.target.value)
                     }
-                    placeholder="Friendly name"
-                  />
-                  <input
-                    className="rounded-lg border border-neutral-200 px-3 py-2"
-                    value={editManufacturer}
-                    onChange={(event) =>
-                      setEditManufacturer(
-                        event.target.value
-                      )
-                    }
-                    placeholder="Manufacturer"
-                  />
-                  <input
-                    className="rounded-lg border border-neutral-200 px-3 py-2"
-                    value={editModel}
-                    onChange={(event) =>
-                      setEditModel(
-                        event.target.value
-                      )
-                    }
-                    placeholder="Model"
-                  />
-                  <input
-                    className="rounded-lg border border-neutral-200 px-3 py-2"
-                    value={editCategory}
-                    onChange={(event) =>
-                      setEditCategory(
-                        event.target.value
-                      )
-                    }
-                    placeholder="Category"
-                  />
-                  <input
-                    className="rounded-lg border border-neutral-200 px-3 py-2"
-                    value={editTypeKey}
-                    onChange={(event) =>
-                      setEditTypeKey(
-                        event.target.value
-                      )
-                    }
-                    placeholder="Device type key"
-                  />
-                  <ActionButton
-                    label="Save Edited Suggestion"
-                    icon={<CheckCircle2 size={16} />}
-                    busy={busy}
-                    onClick={() => {
-                      onAcceptRecognition({
-                        friendlyName:
-                          editFriendlyName,
-                        manufacturer:
-                          editManufacturer,
-                        model: editModel,
-                        category: editCategory,
-                        deviceTypeKey:
-                          editTypeKey,
-                      });
-                      setEditingRecognition(false);
-                    }}
-                  />
-                </div>
+                  >
+                    <option value="">
+                      Choose a saved device
+                    </option>
+
+                    {vaultDevices.map((vaultDevice) => (
+                      <option
+                        key={vaultDevice.id}
+                        value={vaultDevice.id}
+                      >
+                        {vaultDevice.device_name ??
+                          "Unnamed device"}
+                      </option>
+                    ))}
+                  </select>
+                </label>
               ) : null}
 
               {device.matchStatus === "possible_match" ? (
                 <>
                   <ActionButton
-                    label="Confirm Identity"
+                    label="Yes, Link This Device"
                     icon={<CheckCircle2 size={16} />}
                     busy={busy}
                     disabled={!selectedVaultDeviceId}
                     onClick={onConfirmMatch}
                   />
+
                   <ActionButton
-                    label="Treat as New Device"
+                    label="No, Add as a New Device"
+                    icon={<Plus size={16} />}
                     variant="secondary"
                     busy={busy}
                     onClick={onTreatAsNew}
@@ -860,42 +714,334 @@ function DiscoveryDeviceCard({
               ) : null}
 
               {device.matchStatus === "new" ? (
-                <>
-                  <ActionButton
-                    label="Confirm Identity"
-                    icon={<CheckCircle2 size={16} />}
-                    variant="secondary"
-                    busy={busy}
-                    onClick={onImport}
-                  />
-                </>
-              ) : null}
-
-              {device.matchStatus === "new" ||
-              device.matchStatus === "possible_match" ? (
                 <ActionButton
-                  label="Add to Vault"
+                  label="Add to My Vault"
                   icon={<Plus size={16} />}
                   busy={busy}
                   onClick={onImport}
                 />
               ) : null}
 
+              {device.matchStatus === "matched" ? (
+                <div className="rounded-xl bg-emerald-50 px-4 py-3 text-center text-sm font-medium text-emerald-800">
+                  Device linked successfully
+                </div>
+              ) : null}
+
+              {device.matchStatus !== "ignored" ? (
+                <details className="group rounded-xl border border-neutral-200 bg-white">
+                  <summary className="cursor-pointer list-none px-4 py-3 text-center text-sm font-medium text-text-primary">
+                    Review Device Name
+                    <span className="ml-2 text-text-secondary group-open:hidden">
+                      +
+                    </span>
+                    <span className="ml-2 hidden text-text-secondary group-open:inline">
+                      −
+                    </span>
+                  </summary>
+
+                  <div className="grid gap-2 border-t border-neutral-200 p-3">
+                    <div className="rounded-lg bg-sky-50 px-3 py-3 text-sm">
+                      <p className="font-medium text-sky-950">
+                        Suggested name
+                      </p>
+                      <p className="mt-1 text-sky-900">
+                        {device.recognitionSuggestion.friendlyName}
+                      </p>
+                      <p className="mt-1 text-xs text-sky-800">
+                        {confidenceScore}% identification confidence
+                      </p>
+                    </div>
+
+                    <ActionButton
+                      label={
+                        device.recognitionStatus === "accepted"
+                          ? "Name Accepted"
+                          : "Use Suggested Name"
+                      }
+                      icon={<CheckCircle2 size={16} />}
+                      variant={
+                        device.recognitionStatus === "accepted"
+                          ? "secondary"
+                          : "primary"
+                      }
+                      busy={busy}
+                      disabled={
+                        device.recognitionStatus === "accepted"
+                      }
+                      onClick={() => onAcceptRecognition()}
+                    />
+
+                    <ActionButton
+                      label={
+                        editingRecognition
+                          ? "Cancel Changes"
+                          : "Change Device Details"
+                      }
+                      variant="secondary"
+                      busy={busy}
+                      onClick={() =>
+                        setEditingRecognition(
+                          (current) => !current
+                        )
+                      }
+                    />
+
+                    {editingRecognition ? (
+                      <div className="grid gap-2 rounded-xl bg-surface-sunken p-3 text-sm">
+                        <label className="grid gap-1">
+                          <span className="text-xs font-medium text-text-secondary">
+                            Device name
+                          </span>
+                          <input
+                            className="rounded-lg border border-neutral-200 bg-white px-3 py-2"
+                            value={editFriendlyName}
+                            onChange={(event) =>
+                              setEditFriendlyName(
+                                event.target.value
+                              )
+                            }
+                            placeholder="Living Room TV"
+                          />
+                        </label>
+
+                        <label className="grid gap-1">
+                          <span className="text-xs font-medium text-text-secondary">
+                            Brand
+                          </span>
+                          <input
+                            className="rounded-lg border border-neutral-200 bg-white px-3 py-2"
+                            value={editManufacturer}
+                            onChange={(event) =>
+                              setEditManufacturer(
+                                event.target.value
+                              )
+                            }
+                            placeholder="Samsung"
+                          />
+                        </label>
+
+                        <label className="grid gap-1">
+                          <span className="text-xs font-medium text-text-secondary">
+                            Model
+                          </span>
+                          <input
+                            className="rounded-lg border border-neutral-200 bg-white px-3 py-2"
+                            value={editModel}
+                            onChange={(event) =>
+                              setEditModel(
+                                event.target.value
+                              )
+                            }
+                            placeholder="Model name or number"
+                          />
+                        </label>
+
+                        <label className="grid gap-1">
+                          <span className="text-xs font-medium text-text-secondary">
+                            Device type
+                          </span>
+                          <input
+                            className="rounded-lg border border-neutral-200 bg-white px-3 py-2"
+                            value={editCategory}
+                            onChange={(event) =>
+                              setEditCategory(
+                                event.target.value
+                              )
+                            }
+                            placeholder="TV, speaker, printer..."
+                          />
+                        </label>
+
+                        <details className="rounded-lg border border-neutral-200 bg-white">
+                          <summary className="cursor-pointer px-3 py-2 text-xs font-medium text-text-secondary">
+                            Advanced identification
+                          </summary>
+
+                          <div className="border-t border-neutral-200 p-3">
+                            <input
+                              className="w-full rounded-lg border border-neutral-200 px-3 py-2"
+                              value={editTypeKey}
+                              onChange={(event) =>
+                                setEditTypeKey(
+                                  event.target.value
+                                )
+                              }
+                              placeholder="Device type key"
+                            />
+                          </div>
+                        </details>
+
+                        <ActionButton
+                          label="Save Device Details"
+                          icon={<CheckCircle2 size={16} />}
+                          busy={busy}
+                          onClick={() => {
+                            onAcceptRecognition({
+                              friendlyName: editFriendlyName,
+                              manufacturer: editManufacturer,
+                              model: editModel,
+                              category: editCategory,
+                              deviceTypeKey: editTypeKey,
+                            });
+                            setEditingRecognition(false);
+                          }}
+                        />
+                      </div>
+                    ) : null}
+
+                    <ActionButton
+                      label={
+                        device.recognitionStatus === "dismissed"
+                          ? "Suggestion Dismissed"
+                          : "Device Name Is Incorrect"
+                      }
+                      icon={<XCircle size={16} />}
+                      variant="secondary"
+                      busy={busy}
+                      disabled={
+                        device.recognitionStatus === "dismissed"
+                      }
+                      onClick={onDismissRecognition}
+                    />
+                  </div>
+                </details>
+              ) : null}
+
+              {device.matchStatus === "new" ? (
+                <details className="group rounded-xl border border-neutral-200 bg-white">
+                  <summary className="cursor-pointer list-none px-4 py-3 text-center text-sm font-medium text-text-secondary">
+                    More options
+                  </summary>
+
+                  <div className="grid gap-2 border-t border-neutral-200 p-3">
+                    <ActionButton
+                      label="Confirm and Add Device"
+                      icon={<CheckCircle2 size={16} />}
+                      variant="secondary"
+                      busy={busy}
+                      onClick={onImport}
+                    />
+                  </div>
+                </details>
+              ) : null}
+
               <ActionButton
-                label="Ignore"
+                label="Hide This Device"
                 icon={<XCircle size={16} />}
                 variant="secondary"
                 busy={busy}
-                busyLabel="Ignoring..."
+                busyLabel="Hiding..."
                 onClick={onIgnore}
               />
             </div>
+          ) : null}
+        </div>
+
+        <details className="group mt-5 rounded-xl border border-neutral-200 bg-surface-sunken">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-medium text-text-primary">
+            <span>Device and network details</span>
+            <span className="text-xs font-normal text-text-secondary">
+              Optional
+            </span>
+          </summary>
+
+          <div className="border-t border-neutral-200 px-4 py-4">
+            <dl className="grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-5">
+              <Field
+                label="Device address"
+                value={device.ipAddress}
+              />
+              <Field
+                label="Network ID"
+                value={device.macAddress}
+              />
+              <Field
+                label="Network name"
+                value={device.hostname}
+              />
+              <Field
+                label="Brand detected"
+                value={device.manufacturer}
+              />
+              <Field
+                label="Last connected"
+                value={formatTimestamp(device.lastSeenAt)}
+              />
+            </dl>
+
+            {device.matchReason ? (
+              <div className="mt-4 rounded-lg bg-white px-3 py-3 text-sm text-text-secondary">
+                <span className="font-medium text-text-primary">
+                  Why we suggested this:{" "}
+                </span>
+                {device.matchReason}
+              </div>
+            ) : null}
+
+            {identificationSignals.length > 0 ||
+            signals.length > 0 ? (
+              <div className="mt-4 grid gap-4 md:grid-cols-2">
+                {identificationSignals.length > 0 ? (
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-text-secondary">
+                      Identification clues
+                    </p>
+                    <ul className="mt-2 space-y-2">
+                      {identificationSignals.map((signal) => (
+                        <li
+                          key={signal.label}
+                          className="flex items-center gap-2 text-sm text-text-secondary"
+                        >
+                          {signal.matched ? (
+                            <Check
+                              size={16}
+                              className="text-sky-600"
+                            />
+                          ) : (
+                            <span className="inline-block h-4 w-4 rounded-full border border-neutral-300" />
+                          )}
+                          {signal.label}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+
+                {signals.length > 0 ? (
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-text-secondary">
+                      Vault matching clues
+                    </p>
+                    <ul className="mt-2 space-y-2">
+                      {signals.map((signal) => (
+                        <li
+                          key={`match-${signal.label}`}
+                          className="flex items-center gap-2 text-sm text-text-secondary"
+                        >
+                          {signal.matched ? (
+                            <Check
+                              size={16}
+                              className="text-emerald-600"
+                            />
+                          ) : (
+                            <span className="inline-block h-4 w-4 rounded-full border border-neutral-300" />
+                          )}
+                          {signal.label}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
           </div>
-        ) : null}
+        </details>
       </div>
     </article>
   );
 }
+
 
 function ActionButton({
   label,
