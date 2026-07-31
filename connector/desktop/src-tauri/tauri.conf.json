@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Home Tech Vault Connector",
-  "version": "0.1.0",
+  "version": "1.0.2",
   "identifier": "com.hometechvault.connector",
   "build": {
     "beforeDevCommand": "npm run dev",
@@ -20,13 +20,19 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; connect-src 'self' ipc: http://ipc.localhost http://localhost:* https://hometechvault.com https://*.hometechvault.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:"}
+      "csp": "default-src 'self'; connect-src 'self' ipc: http://ipc.localhost http://localhost:* https://hometechvault.com https://*.hometechvault.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
+    }
   },
   "bundle": {
     "active": true,
-    "targets": ["app", "dmg", "nsis", "msi"],
+    "targets": [
+      "app",
+      "dmg",
+      "nsis",
+      "msi"
+    ],
     "publisher": "Home Tech Vault",
-    "copyright": "Copyright © Home Tech Vault",
+    "copyright": "Copyright \u00a9 Home Tech Vault",
     "shortDescription": "Discover and monitor devices on your home network.",
     "longDescription": "The Home Tech Vault Connector discovers devices on your private home network and keeps your vault synchronized.",
     "icon": [
@@ -47,5 +53,5 @@
       }
     }
   },
- "plugins": {}
+  "plugins": {}
 }

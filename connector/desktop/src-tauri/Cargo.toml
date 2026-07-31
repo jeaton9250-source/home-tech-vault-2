@@ -1,6 +1,6 @@
 [package]
 name = "htv-connector"
-version = "0.1.0"
+version = "1.0.2"
 description = "Home Tech Vault Connector"
 authors = ["Home Tech Vault"]
 edition = "2021"
