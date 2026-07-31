@@ -16,6 +16,10 @@ import {
 
 import { createAdminClient } from "@/lib/supabase/admin";
 
+import {
+  buildHomeAssistantRecognitionSuggestions,
+} from "@/lib/connector/homeAssistantRecognition";
+
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
@@ -60,6 +64,21 @@ export async function POST(request: Request) {
           imported_device_id:
             | string
             | null;
+          recognition_status:
+            | string
+            | null;
+          identification_confidence:
+            | string
+            | null;
+          friendly_name:
+            | string
+            | null;
+          likely_category:
+            | string
+            | null;
+          identification_reasons:
+            | string[]
+            | null;
         }
       >();
 
@@ -70,7 +89,16 @@ export async function POST(request: Request) {
       } = await admin
         .from("discovered_devices")
         .select(
-          "id, local_fingerprint, imported_device_id"
+          [
+            "id",
+            "local_fingerprint",
+            "imported_device_id",
+            "recognition_status",
+            "identification_confidence",
+            "friendly_name",
+            "likely_category",
+            "identification_reasons",
+          ].join(", ")
         )
         .eq(
           "connector_id",
@@ -89,9 +117,34 @@ export async function POST(request: Request) {
         throw discoveredError;
       }
 
+      const typedDiscoveredRows =
+        (discoveredRows ??
+          []) as unknown as Array<{
+            id: string;
+            local_fingerprint: string;
+            imported_device_id:
+              | string
+              | null;
+            recognition_status:
+              | string
+              | null;
+            identification_confidence:
+              | string
+              | null;
+            friendly_name:
+              | string
+              | null;
+            likely_category:
+              | string
+              | null;
+            identification_reasons:
+              | string[]
+              | null;
+          }>;
+
       for (
         const row of
-          discoveredRows ?? []
+          typedDiscoveredRows
       ) {
         discoveredByFingerprint.set(
           row.local_fingerprint,
@@ -99,6 +152,16 @@ export async function POST(request: Request) {
             id: row.id,
             imported_device_id:
               row.imported_device_id,
+            recognition_status:
+              row.recognition_status,
+            identification_confidence:
+              row.identification_confidence,
+            friendly_name:
+              row.friendly_name,
+            likely_category:
+              row.likely_category,
+            identification_reasons:
+              row.identification_reasons,
           }
         );
       }
@@ -192,6 +255,152 @@ export async function POST(request: Request) {
       }
     }
 
+    /*
+     * Use sanitized Home Assistant metadata
+     * to strengthen passive network-device
+     * recognition. Accepted household edits
+     * are never overwritten.
+     */
+    const recognitionSuggestions =
+      buildHomeAssistantRecognitionSuggestions(
+        payload.entities.map(
+          (entity) => ({
+            localFingerprint:
+              entity.localFingerprint,
+            entityId:
+              entity.entityId,
+            domain:
+              entity.domain,
+            objectId:
+              entity.objectId,
+            friendlyName:
+              entity.friendlyName,
+            deviceClass:
+              entity.deviceClass,
+            attributes:
+              entity.attributes,
+          })
+        )
+      );
+
+    let recognitionEnriched = 0;
+
+    for (
+      const suggestion of
+      recognitionSuggestions
+    ) {
+      const discovered =
+        discoveredByFingerprint.get(
+          suggestion.localFingerprint
+        );
+
+      if (
+        !discovered ||
+        discovered.recognition_status ===
+          "accepted"
+      ) {
+        continue;
+      }
+
+      const existingReasons =
+        discovered
+          .identification_reasons ??
+        [];
+
+      const mergedReasons = [
+        ...new Set([
+          ...existingReasons,
+          ...suggestion.reasons,
+        ]),
+      ].slice(0, 20);
+
+      const confidenceRank:
+        Record<string, number> = {
+          unknown: 0,
+          low: 1,
+          medium: 2,
+          high: 3,
+          exact: 4,
+        };
+
+      const existingConfidence =
+        discovered
+          .identification_confidence ??
+        "unknown";
+
+      const nextConfidence =
+        (
+          confidenceRank[
+            suggestion.confidence
+          ] ?? 0
+        ) >
+        (
+          confidenceRank[
+            existingConfidence
+          ] ?? 0
+        )
+          ? suggestion.confidence
+          : existingConfidence;
+
+      const update: Record<
+        string,
+        unknown
+      > = {
+        identification_reasons:
+          mergedReasons,
+        identification_confidence:
+          nextConfidence,
+        updated_at: nowIso,
+      };
+
+      if (
+        !discovered
+          .friendly_name?.trim() &&
+        suggestion.friendlyName
+      ) {
+        update.friendly_name =
+          suggestion.friendlyName;
+      }
+
+      if (
+        !discovered
+          .likely_category?.trim() &&
+        suggestion.likelyCategory
+      ) {
+        update.likely_category =
+          suggestion.likelyCategory;
+      }
+
+      const {
+        error: enrichmentError,
+      } = await admin
+        .from("discovered_devices")
+        .update(update)
+        .eq(
+          "id",
+          discovered.id
+        )
+        .eq(
+          "household_id",
+          session.householdId
+        )
+        .neq(
+          "recognition_status",
+          "accepted"
+        );
+
+      if (enrichmentError) {
+        console.error(
+          "Home Assistant recognition enrichment failed:",
+          enrichmentError.message
+        );
+
+        continue;
+      }
+
+      recognitionEnriched += 1;
+    }
+
     return connectorJsonResponse({
       ok: true,
       connectorId:
@@ -204,6 +413,7 @@ export async function POST(request: Request) {
         payload.entities.length,
       upserted:
         rows.length,
+      recognitionEnriched,
     });
   } catch (error) {
     if (
