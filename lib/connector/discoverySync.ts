@@ -1,6 +1,10 @@
 import "server-only";
 
 import {
+  identifyDeviceWithAi,
+  mergeAiDeviceSuggestion,
+} from "@/lib/ai/deviceIdentification";
+import {
   buildDeviceNetworkEnrichmentUpdate,
 } from "@/lib/connector/deviceEnrichment";
 import {
@@ -313,7 +317,7 @@ export async function syncDiscoveredDevicesWithMatching(
           ) ?? null
         : null;
 
-    const identification =
+    const deterministicIdentification =
       preservedImportedDeviceId &&
       confirmedVaultDevice
         ? identificationFromConfirmedVaultDevice({
@@ -337,13 +341,34 @@ export async function syncDiscoveredDevicesWithMatching(
           ?.recognition_status
       );
 
+    const aiIdentification =
+      await identifyDeviceWithAi({
+        admin,
+        householdId,
+        connectorId,
+        actorUserId,
+        device,
+        deterministic:
+          deterministicIdentification,
+        recognitionStatus,
+        importedDeviceId:
+          preservedImportedDeviceId,
+      });
+
+    const identification =
+      mergeAiDeviceSuggestion(
+        deterministicIdentification,
+        aiIdentification
+      );
+
     const resolvedSuggestion =
       applyAcceptedRecognitionValues({
         status: recognitionStatus,
         existing: existingRow,
         computed: {
           manufacturer:
-            device.manufacturer,
+            device.manufacturer ??
+            identification.likelyBrand,
           model:
             device.model ??
             identification.model,
@@ -354,6 +379,9 @@ export async function syncDiscoveredDevicesWithMatching(
             identification.likelyCategory,
           deviceType:
             device.deviceType ??
+            iconKeyForCategory(
+              identification.likelyCategory
+            ) ??
             identification.likelyCategory,
           identificationDisplayName:
             identification.displayName,

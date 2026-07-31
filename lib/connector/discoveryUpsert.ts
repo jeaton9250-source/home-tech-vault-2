@@ -1,6 +1,10 @@
 import "server-only";
 
 import {
+  identifyDeviceWithAi,
+  mergeAiDeviceSuggestion,
+} from "@/lib/ai/deviceIdentification";
+import {
   buildIdentificationForParsedDevice,
   identificationFieldsFromResult,
   shouldPersistDiscoveredDevice,
@@ -57,6 +61,24 @@ export async function upsertDiscoveredDevices(
     devices,
   } = input;
 
+  const {
+    data: connectorRow,
+    error: connectorError,
+  } = await admin
+    .from("connector_installations")
+    .select("created_by_user_id")
+    .eq("id", connectorId)
+    .eq("household_id", householdId)
+    .maybeSingle();
+
+  if (connectorError) {
+    throw connectorError;
+  }
+
+  const actorUserId =
+    connectorRow?.created_by_user_id ??
+    null;
+
   let upserted = 0;
   let enriched = 0;
 
@@ -94,8 +116,10 @@ export async function upsertDiscoveredDevices(
       existingRow?.mdns_services,
       device.mdnsServices
     );
-    const identification =
-      buildIdentificationForParsedDevice(device);
+    const deterministicIdentification =
+      buildIdentificationForParsedDevice(
+        device
+      );
 
     const recognitionStatus =
       resolveRecognitionStatus(
@@ -103,13 +127,36 @@ export async function upsertDiscoveredDevices(
           ?.recognition_status
       );
 
+    const aiIdentification =
+      await identifyDeviceWithAi({
+        admin,
+        householdId,
+        connectorId,
+        actorUserId,
+        device,
+        deterministic:
+          deterministicIdentification,
+        recognitionStatus,
+        importedDeviceId:
+          preservedImportedDeviceId,
+      });
+
+    const identification =
+      mergeAiDeviceSuggestion(
+        deterministicIdentification,
+        aiIdentification
+      );
+
     const manufacturer =
       recognitionStatus === "accepted"
         ? existingRow
             ?.recognition_accepted_manufacturer ??
           existingRow?.manufacturer ??
-          device.manufacturer
-        : device.manufacturer;
+          device.manufacturer ??
+          identification.likelyBrand
+        : device.manufacturer ??
+          identification.likelyBrand;
+
     const model =
       recognitionStatus === "accepted"
         ? existingRow
@@ -119,6 +166,7 @@ export async function upsertDiscoveredDevices(
           identification.model
         : device.model ??
           identification.model;
+
     const friendlyName =
       recognitionStatus === "accepted"
         ? existingRow
@@ -128,6 +176,7 @@ export async function upsertDiscoveredDevices(
           identification.friendlyName
         : device.friendlyName ??
           identification.friendlyName;
+
     const likelyCategory =
       recognitionStatus === "accepted"
         ? existingRow
@@ -136,6 +185,7 @@ export async function upsertDiscoveredDevices(
             ?.likely_category ??
           identification.likelyCategory
         : identification.likelyCategory;
+
     const deviceType =
       recognitionStatus === "accepted"
         ? existingRow
@@ -147,7 +197,11 @@ export async function upsertDiscoveredDevices(
           device.deviceType ??
           likelyCategory
         : device.deviceType ??
+          iconKeyForCategory(
+            likelyCategory
+          ) ??
           likelyCategory;
+
     const identificationDisplayName =
       recognitionStatus === "accepted"
         ? existingRow
