@@ -661,8 +661,7 @@ function DiscoveryDeviceCard({
 
           {canEdit ? (
             <div className="flex w-full flex-col gap-3 lg:w-72 lg:flex-none">
-              {(device.matchStatus === "possible_match" ||
-                device.matchStatus === "matched") &&
+              {device.matchStatus === "possible_match" &&
               vaultDevices.length > 0 ? (
                 <label className="grid gap-2 text-sm">
                   <span className="font-medium text-text-primary">
@@ -949,19 +948,19 @@ function DiscoveryDeviceCard({
           <div className="border-t border-neutral-200 px-4 py-4">
             <dl className="grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-5">
               <Field
-                label="Device address"
+                label="IP address"
                 value={device.ipAddress}
               />
               <Field
-                label="Network ID"
+                label="Device ID"
                 value={device.macAddress}
               />
               <Field
-                label="Network name"
+                label="Network hostname"
                 value={device.hostname}
               />
               <Field
-                label="Brand detected"
+                label="Brand"
                 value={device.manufacturer}
               />
               <Field
