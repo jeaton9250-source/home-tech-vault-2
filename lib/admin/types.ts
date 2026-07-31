@@ -158,6 +158,32 @@ export type AdminSubscriptionRow = {
   householdOwnerId: string | null;
 };
 
+
+export type AdminVercelTrafficRow = {
+  label: string;
+  visitors: number;
+  pageviews: number;
+};
+
+export type AdminVercelDailyTraffic = {
+  date: string;
+  visitors: number;
+  pageviews: number;
+};
+
+export type AdminVercelAnalyticsSnapshot = {
+  configured: boolean;
+  available: boolean;
+  error: string | null;
+  since: string;
+  until: string;
+  visitors: number;
+  pageviews: number;
+  topPages: AdminVercelTrafficRow[];
+  topReferrers: AdminVercelTrafficRow[];
+  dailyTraffic: AdminVercelDailyTraffic[];
+};
+
 export type AdminAnalyticsSnapshot = {
   signupsByDay: Array<{ date: string; count: number }>;
   planDistribution: Array<{ plan: string; count: number }>;
