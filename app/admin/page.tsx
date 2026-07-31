@@ -1,13 +1,18 @@
 import {
+  Eye,
   FileText,
   HardDrive,
   Home,
+  MousePointerClick,
+  Route,
+  Share2,
   Users,
 } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
 import { loadAdminAnalytics } from "@/lib/admin/data/loaders";
 import { loadAdminDashboardMetrics } from "@/lib/admin/data/dashboard";
+import { loadAdminVercelAnalytics } from "@/lib/admin/data/vercelAnalytics";
 import { loadAdminSystemHealth } from "@/lib/admin/data/loaders";
 import { loadFoundingMembersDashboardMetrics } from "@/lib/admin/data/foundingMembers";
 import {
@@ -43,6 +48,7 @@ export default async function AdminDashboardPage() {
     analytics,
     health,
     foundingMetricsResult,
+    traffic,
   ] = await Promise.all([
     loadAdminDashboardMetrics(),
     loadAdminAnalytics(),
@@ -50,6 +56,7 @@ export default async function AdminDashboardPage() {
     loadFoundingMembersDashboardMetrics().catch(
       () => null
     ),
+    loadAdminVercelAnalytics(),
   ]);
 
   const supabase = await createClient();
@@ -187,6 +194,84 @@ export default async function AdminDashboardPage() {
             },
           ]}
         />
+      </FounderSection>
+
+      <FounderSection
+        id="founder-traffic-snapshot-heading"
+        title="Traffic Snapshot"
+        subtitle="Live production website traffic from the last 30 days."
+      >
+        {traffic.available ? (
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <FounderMetricCard
+              label="Visitors"
+              value={traffic.visitors}
+              hint="Unique visitors"
+              href="/admin/analytics"
+              icon={
+                <Eye
+                  aria-hidden="true"
+                  className="h-5 w-5"
+                />
+              }
+            />
+
+            <FounderMetricCard
+              label="Pageviews"
+              value={traffic.pageviews}
+              hint="Total pages viewed"
+              href="/admin/analytics"
+              icon={
+                <MousePointerClick
+                  aria-hidden="true"
+                  className="h-5 w-5"
+                />
+              }
+            />
+
+            <FounderMetricCard
+              label="Top route"
+              value={traffic.topPages[0]?.pageviews ?? 0}
+              hint={
+                traffic.topPages[0]?.label ??
+                "No page traffic recorded"
+              }
+              href="/admin/analytics"
+              icon={
+                <Route
+                  aria-hidden="true"
+                  className="h-5 w-5"
+                />
+              }
+            />
+
+            <FounderMetricCard
+              label="Top referral source"
+              value={traffic.topReferrers[0]?.visitors ?? 0}
+              hint={
+                traffic.topReferrers[0]?.label ??
+                "No referral data recorded"
+              }
+              href="/admin/analytics"
+              icon={
+                <Share2
+                  aria-hidden="true"
+                  className="h-5 w-5"
+                />
+              }
+            />
+          </div>
+        ) : (
+          <div className="rounded-[22px] border border-border-subtle bg-surface-sunken px-5 py-5">
+            <p className="font-semibold text-text-primary">
+              Traffic data is temporarily unavailable
+            </p>
+            <p className="mt-2 text-sm leading-6 text-text-secondary">
+              {traffic.error ??
+                "Vercel Analytics could not be loaded."}
+            </p>
+          </div>
+        )}
       </FounderSection>
 
       <div className="grid gap-6 xl:grid-cols-2">
