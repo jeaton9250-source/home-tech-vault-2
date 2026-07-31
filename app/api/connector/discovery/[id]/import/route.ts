@@ -254,6 +254,41 @@ export async function POST(
       throw linkError;
     }
 
+    /*
+     * Immediately connect any Home Assistant
+     * entities belonging to this discovered
+     * device to the permanent vault record.
+     */
+    const {
+      error: homeAssistantLinkError,
+    } = await admin
+      .from("home_assistant_entities")
+      .update({
+        device_id: insertedDevice.id,
+        updated_at: nowIso,
+      })
+      .eq(
+        "household_id",
+        memberContext.householdId
+      )
+      .eq(
+        "discovered_device_id",
+        id
+      );
+
+    if (homeAssistantLinkError) {
+      /*
+       * The permanent device import succeeded,
+       * so do not delete it because a secondary
+       * smart-home link failed. Log the issue so
+       * a later connector sync can repair it.
+       */
+      console.error(
+        "Unable to link Home Assistant entities to imported device:",
+        homeAssistantLinkError.message
+      );
+    }
+
     return NextResponse.json({
       ok: true,
       deviceId: insertedDevice.id,

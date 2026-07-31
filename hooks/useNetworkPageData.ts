@@ -38,6 +38,18 @@ export type HomeAssistantEntitySummary = {
   lastChangedAt: string | null;
   lastUpdatedAt: string | null;
   lastSyncedAt: string;
+
+  vaultDevice: {
+    id: string;
+    deviceName: string | null;
+    category: string | null;
+    location: string | null;
+    brand: string | null;
+    manufacturer: string | null;
+    modelNumber: string | null;
+    online: boolean | null;
+    lastSeenAt: string | null;
+  } | null;
 };
 
 export type HomeAssistantEntityStats = {

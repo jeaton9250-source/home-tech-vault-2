@@ -4,6 +4,8 @@ import {
   useState,
 } from "react";
 
+import Link from "next/link";
+
 import {
   Activity,
   CheckCircle2,
@@ -702,7 +704,9 @@ export default function HomeAssistantLiveStates({
 
               <div className="relative mt-5">
                 <p className="truncate text-lg font-semibold text-text-primary">
-                  {entity.friendlyName ??
+                  {entity.vaultDevice
+                    ?.deviceName ??
+                    entity.friendlyName ??
                     entity.objectId
                       .replaceAll("_", " ")
                       .replace(
@@ -714,9 +718,11 @@ export default function HomeAssistantLiveStates({
 
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <span className="rounded-full border border-border-subtle bg-surface-sunken px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-text-secondary">
-                    {domainLabel(
-                      entity.domain
-                    )}
+                    {entity.vaultDevice
+                      ?.category ??
+                      domainLabel(
+                        entity.domain
+                      )}
                   </span>
 
                   {entity.deviceClass ? (
@@ -728,6 +734,35 @@ export default function HomeAssistantLiveStates({
                   ) : null}
                 </div>
               </div>
+
+              {entity.vaultDevice ? (
+                <div className="relative mt-4 flex items-center justify-between gap-4 rounded-xl border border-border-subtle bg-surface-sunken px-3 py-2.5">
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-text-tertiary">
+                      Added to Devices
+                    </p>
+
+                    <p className="mt-1 truncate text-xs font-medium text-text-secondary">
+                      {entity.vaultDevice
+                        .location ??
+                        "No room assigned"}
+                    </p>
+                  </div>
+
+                  <Link
+                    href={`/devices/${entity.vaultDevice.id}`}
+                    className="shrink-0 text-xs font-semibold text-indigo-700 transition hover:text-indigo-900"
+                  >
+                    View Device
+                  </Link>
+                </div>
+              ) : (
+                <div className="relative mt-4 rounded-xl border border-dashed border-border-subtle bg-surface-sunken px-3 py-2.5">
+                  <p className="text-xs font-medium text-text-secondary">
+                    Not yet added to your Devices
+                  </p>
+                </div>
+              )}
 
               <div className="relative mt-6 flex items-center justify-between gap-4 rounded-2xl border border-border-subtle bg-surface-sunken p-3">
                 <div>
@@ -750,6 +785,8 @@ export default function HomeAssistantLiveStates({
                     role="switch"
                     aria-checked={isOn}
                     aria-label={`Turn ${
+                      entity.vaultDevice
+                        ?.deviceName ??
                       entity.friendlyName ??
                       entity.objectId
                     } ${

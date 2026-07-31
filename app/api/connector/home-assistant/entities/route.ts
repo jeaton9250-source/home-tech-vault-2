@@ -9,7 +9,9 @@ import {
   requireHouseholdMember,
 } from "@/lib/connector/requireHouseholdAdmin";
 
-import { createAdminClient } from "@/lib/supabase/admin";
+import {
+  createAdminClient,
+} from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -36,8 +38,23 @@ type HomeAssistantEntityRow = {
   last_synced_at: string;
 };
 
+type VaultDeviceRow = {
+  id: string;
+  device_name: string | null;
+  category: string | null;
+  location: string | null;
+  brand: string | null;
+  manufacturer: string | null;
+  model_number: string | null;
+  online: boolean | null;
+  last_seen_at: string | null;
+};
+
 function toSummary(
-  row: HomeAssistantEntityRow
+  row: HomeAssistantEntityRow,
+  vaultDevice:
+    | VaultDeviceRow
+    | null
 ) {
   return {
     id: row.id,
@@ -69,10 +86,34 @@ function toSummary(
       row.home_assistant_last_updated_at,
     lastSyncedAt:
       row.last_synced_at,
+
+    vaultDevice: vaultDevice
+      ? {
+          id: vaultDevice.id,
+          deviceName:
+            vaultDevice.device_name,
+          category:
+            vaultDevice.category,
+          location:
+            vaultDevice.location,
+          brand:
+            vaultDevice.brand,
+          manufacturer:
+            vaultDevice.manufacturer,
+          modelNumber:
+            vaultDevice.model_number,
+          online:
+            vaultDevice.online,
+          lastSeenAt:
+            vaultDevice.last_seen_at,
+        }
+      : null,
   };
 }
 
-export async function GET(request: Request) {
+export async function GET(
+  request: Request
+) {
   try {
     const url = new URL(request.url);
 
@@ -89,59 +130,141 @@ export async function GET(request: Request) {
     const admin =
       createAdminClient();
 
-    const { data, error } =
-      await admin
-        .from(
-          "home_assistant_entities"
-        )
+    const {
+      data,
+      error,
+    } = await admin
+      .from(
+        "home_assistant_entities"
+      )
+      .select(
+        [
+          "id",
+          "household_id",
+          "connector_id",
+          "discovered_device_id",
+          "device_id",
+          "local_fingerprint",
+          "entity_id",
+          "domain",
+          "object_id",
+          "friendly_name",
+          "current_state",
+          "available",
+          "device_class",
+          "unit_of_measurement",
+          "supported_features",
+          "attributes",
+          "home_assistant_last_changed_at",
+          "home_assistant_last_updated_at",
+          "last_synced_at",
+        ].join(", ")
+      )
+      .eq(
+        "household_id",
+        memberContext.householdId
+      )
+      .order(
+        "friendly_name",
+        {
+          ascending: true,
+          nullsFirst: false,
+        }
+      )
+      .order(
+        "entity_id",
+        {
+          ascending: true,
+        }
+      );
+
+    if (error) {
+      throw error;
+    }
+
+    const rows =
+      (data ?? []) as unknown as
+        HomeAssistantEntityRow[];
+
+    const linkedDeviceIds = [
+      ...new Set(
+        rows
+          .map(
+            (row) =>
+              row.device_id
+          )
+          .filter(
+            (
+              value
+            ): value is string =>
+              Boolean(value)
+          )
+      ),
+    ];
+
+    const vaultDeviceById =
+      new Map<
+        string,
+        VaultDeviceRow
+      >();
+
+    if (
+      linkedDeviceIds.length > 0
+    ) {
+      const {
+        data: vaultRows,
+        error: vaultError,
+      } = await admin
+        .from("devices")
         .select(
           [
             "id",
-            "household_id",
-            "connector_id",
-            "discovered_device_id",
-            "device_id",
-            "local_fingerprint",
-            "entity_id",
-            "domain",
-            "object_id",
-            "friendly_name",
-            "current_state",
-            "available",
-            "device_class",
-            "unit_of_measurement",
-            "supported_features",
-            "attributes",
-            "home_assistant_last_changed_at",
-            "home_assistant_last_updated_at",
-            "last_synced_at",
+            "device_name",
+            "category",
+            "location",
+            "brand",
+            "manufacturer",
+            "model_number",
+            "online",
+            "last_seen_at",
           ].join(", ")
         )
         .eq(
           "household_id",
           memberContext.householdId
         )
-        .order(
-          "friendly_name",
-          {
-            ascending: true,
-            nullsFirst: false,
-          }
-        )
-        .order(
-          "entity_id",
-          {
-            ascending: true,
-          }
+        .in(
+          "id",
+          linkedDeviceIds
         );
 
-    if (error) {
-      throw error;
+      if (vaultError) {
+        throw vaultError;
+      }
+
+      for (
+        const vaultDevice of
+        (vaultRows ??
+          []) as unknown as VaultDeviceRow[]
+      ) {
+        vaultDeviceById.set(
+          vaultDevice.id,
+          vaultDevice
+        );
+      }
     }
 
-    const entities = (
-      (data ?? []) as unknown as HomeAssistantEntityRow[]
-    ).map(toSummary);
+    const entities =
+      rows.map((row) =>
+        toSummary(
+          row,
+          row.device_id
+            ? vaultDeviceById.get(
+                row.device_id
+              ) ?? null
+            : null
+        )
+      );
 
     const availableCount =
       entities.filter(
