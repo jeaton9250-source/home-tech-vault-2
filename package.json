@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "npm run test:connector",
+    "test": "npm run test:connector && npm run test:account-deletion",
     "test:connector": "tsx --test lib/connector/heartbeatValidation.test.ts lib/connector/presence.test.ts lib/connector/matching.test.ts lib/connector/tokens.test.ts lib/connector/privateNetwork.test.ts lib/connector/discoveryValidation.test.ts lib/connector/discoveryStats.test.ts lib/connector/deviceIdentification.test.ts lib/connector/ssdpValidation.test.ts lib/connector/access.test.ts lib/connector/updates.test.ts lib/connector/connectorMonitoring.test.ts lib/connector/releaseManifest.test.ts lib/connector/downloadOptions.test.ts lib/connector/release.test.ts lib/network/summary.test.ts lib/devices/devicePresence.test.ts lib/demo/demoConnectorExperience.test.ts lib/demo/demoModeStorage.test.ts lib/device-intelligence/identifyDevice.test.ts lib/ios-api/connectors.test.ts lib/notifications/preferences.test.ts lib/push/tokenHashing.test.ts lib/auth/safeRedirect.test.ts lib/auth/signInDemoGuard.test.ts",
     "test:device-intelligence": "tsx --test lib/device-intelligence/identifyDevice.test.ts",
     "generate:og-image": "tsx scripts/generate-og-image.tsx",
@@ -17,7 +17,8 @@
     "generate:knowledge": "node scripts/generate-knowledge-articles.mjs",
     "generate:knowledge-heroes": "node --import tsx scripts/download-knowledge-heroes.ts",
     "audit:links": "node --import tsx scripts/audit-internal-links.ts",
-    "email:dev": "email dev --dir emails/templates --port 3001"
+    "email:dev": "email dev --dir emails/templates --port 3001",
+    "test:account-deletion": "tsx --test lib/account-admin/deletionHelpers.test.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",

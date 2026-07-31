@@ -122,6 +122,15 @@ describe("account deletion helpers", () => {
     assert.notEqual(Object.prototype.hasOwnProperty.call(payload, "targetUserId"), true);
   });
 
+  it("never manually deletes household membership rows", () => {
+    assert.equal(
+      HOUSEHOLD_SCOPED_TABLE_ORDER.includes(
+        "household_members" as never
+      ),
+      false
+    );
+  });
+
   it("orders household cleanup before device deletion", () => {
     const order = [
       ...HOUSEHOLD_SCOPED_TABLE_ORDER,
