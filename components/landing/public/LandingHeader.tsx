@@ -14,7 +14,7 @@ import { cn } from "@/lib/design-system/cn";
 
 const NAV_LINKS = [
   {
-    label: "HomeCore",
+    label: "Home Tech Vault",
     sectionId: LANDING_PUBLIC_SECTION_IDS.homeHealth,
   },
   {
@@ -56,7 +56,7 @@ export default function LandingHeader({
     ? "/dashboard"
     : MARKETING_ROUTES.signup;
   const startLabel = isSignedIn
-    ? "Open HomeCore"
+    ? "Open Home Tech Vault"
     : "Start Free";
 
   return (

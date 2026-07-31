@@ -66,7 +66,7 @@ export default function ProductTourModal({
       className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm md:p-8"
       role="dialog"
       aria-modal="true"
-      aria-label="HomeCore product tour"
+      aria-label="Home Tech Vault product tour"
       onMouseDown={(event) => {
         if (
           event.target ===
@@ -82,7 +82,7 @@ export default function ProductTourModal({
             <Play size={17} />
 
             <p className="text-sm font-semibold">
-              HomeCore Product Tour
+              Home Tech Vault Product Tour
             </p>
           </div>
 

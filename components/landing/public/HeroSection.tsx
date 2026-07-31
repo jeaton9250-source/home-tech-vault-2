@@ -61,8 +61,8 @@ export default function HeroSection({
     : MARKETING_ROUTES.demo;
 
   const primaryLabel = isSignedIn
-    ? "Open HomeCore"
-    : "Explore HomeCore";
+    ? "Open Home Tech Vault"
+    : "Explore Home Tech Vault";
 
   return (
     <section className="relative overflow-hidden bg-surface-base px-5 py-20 md:px-8 md:py-28 lg:px-12 lg:py-32">
@@ -86,7 +86,7 @@ export default function HeroSection({
               />
 
               <span>
-                Home Tech Vault presents HomeCore
+                Home Tech Vault
               </span>
             </motion.div>
 
@@ -105,7 +105,7 @@ export default function HeroSection({
               className="mt-7 max-w-xl text-lg leading-8 text-text-secondary md:text-xl"
             >
               <strong className="font-semibold text-text-primary">
-                HomeCore
+                Home Tech Vault
               </strong>{" "}
               brings your devices, network,
               warranties, documents, maintenance,

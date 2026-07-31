@@ -21,7 +21,7 @@ export default function FinalCta({
     ? "/dashboard"
     : MARKETING_ROUTES.demo;
   const primaryLabel = isSignedIn
-    ? "Open Home OS"
+    ? "Open Home Tech Vault"
     : "Try the Interactive Demo";
 
   return (

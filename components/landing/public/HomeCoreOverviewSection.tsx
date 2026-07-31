@@ -43,7 +43,7 @@ export default function HomeCoreOverviewSection() {
       <div className={landingTheme.sectionNarrow}>
         <div className="mx-auto max-w-3xl text-center">
           <p className={landingTheme.pill}>
-            Meet HomeCore
+            Meet Home Tech Vault
           </p>
 
           <h2 className="mt-6 text-3xl font-medium tracking-[-0.035em] text-text-primary sm:text-4xl md:text-5xl">
@@ -52,7 +52,7 @@ export default function HomeCoreOverviewSection() {
           </h2>
 
           <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-text-secondary md:text-lg">
-            HomeCore brings your devices, network,
+            Home Tech Vault brings your devices, network,
             documents, warranties, maintenance,
             household access, and smart-home
             controls together in one organized
@@ -91,7 +91,7 @@ export default function HomeCoreOverviewSection() {
           </p>
 
           <p className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
-            HomeCore
+            Home Tech Vault
           </p>
 
           <p className="mt-2 text-sm leading-6 text-text-secondary">

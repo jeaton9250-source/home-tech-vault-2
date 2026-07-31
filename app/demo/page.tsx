@@ -84,7 +84,7 @@ export default function DemoPage() {
       <MarketingContent className="py-10 md:py-14">
         <section className="htv-hero-band overflow-hidden rounded-[36px] px-7 py-12 text-text-primary shadow-xl md:px-12 md:py-16">
           <p className="text-overline text-home-health">
-            Enter the HomeCore Demo
+            Enter the Home Tech Vault Demo
           </p>
 
           <h1 className="mt-5 max-w-3xl text-4xl font-bold leading-tight md:text-6xl">
@@ -92,7 +92,7 @@ export default function DemoPage() {
           </h1>
 
           <p className="mt-6 max-w-2xl text-lg leading-8 text-text-secondary">
-            Step inside the {MORGAN_HOUSEHOLD.name} and see how HomeCore
+            Step inside the {MORGAN_HOUSEHOLD.name} and see how Home Tech Vault
             organizes devices, monitors the network, protects important records,
             and brings smart-home controls into one command center.
           </p>
@@ -102,7 +102,7 @@ export default function DemoPage() {
             onClick={enterDemo}
             className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-charcoal px-6 py-4 font-semibold text-surface-card transition hover:brightness-105"
           >
-            Explore HomeCore
+            Explore Home Tech Vault
             <ArrowRight size={19} />
           </button>
         </section>
