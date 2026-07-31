@@ -155,6 +155,7 @@ export async function loadAdminVercelAnalytics(): Promise<AdminVercelAnalyticsSn
       requestVercel<AggregateResponse>(
         buildUrl("visits/aggregate", {
           ...common,
+          by: "day",
           limit: "31",
         }),
         token
