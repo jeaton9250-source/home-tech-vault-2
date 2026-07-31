@@ -157,3 +157,26 @@ export type AppScreen =
   | "unpaired"
   | "pairing"
   | "connected";
+
+export type AppleHomePairingStatus =
+  | "pending"
+  | "approved"
+  | "expired"
+  | "cancelled";
+
+export type AppleHomePairingInitResponse = {
+  ok: boolean;
+  sessionId: string;
+  code: string;
+  pairingUrl: string;
+  expiresAt: string;
+  status: AppleHomePairingStatus;
+};
+
+export type AppleHomePairingStatusResponse = {
+  ok: boolean;
+  sessionId: string;
+  status: AppleHomePairingStatus;
+  expiresAt: string;
+  approvedAt: string | null;
+};

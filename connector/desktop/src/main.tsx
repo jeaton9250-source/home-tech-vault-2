@@ -14,6 +14,8 @@ import {
   claimHomeAssistantCommand,
   completeHomeAssistantCommand,
   confirmPairing,
+  createAppleHomePairingSession,
+  getAppleHomePairingStatus,
   executeHomeAssistantService,
   sendHeartbeat,
   syncDiscoveryResults,
@@ -91,6 +93,7 @@ import {
 
 import type {
   AppScreen,
+  AppleHomePairingInitResponse,
   ConnectorMetadata,
 } from "./lib/types";
 
@@ -266,6 +269,35 @@ function App() {
     setHomeAssistantError,
   ] =
     useState<string | null>(null);
+
+  const [
+    appleHomeSetupOpen,
+    setAppleHomeSetupOpen,
+  ] = useState(false);
+
+  const [
+    appleHomePairing,
+    setAppleHomePairing,
+  ] =
+    useState<AppleHomePairingInitResponse | null>(
+      null
+    );
+
+  const [
+    appleHomePending,
+    setAppleHomePending,
+  ] = useState(false);
+
+  const [
+    appleHomeError,
+    setAppleHomeError,
+  ] =
+    useState<string | null>(null);
+
+  const [
+    appleHomeNow,
+    setAppleHomeNow,
+  ] = useState(Date.now());
 
   const metadataRef =
     useRef(metadata);
@@ -1832,6 +1864,171 @@ function App() {
     );
   }
 
+  const startAppleHomeSetup =
+    useCallback(async () => {
+      setAppleHomeSetupOpen(true);
+      setAppleHomePending(true);
+      setAppleHomeError(null);
+      setAppleHomePairing(null);
+
+      try {
+        const connectorToken =
+          await loadConnectorToken();
+
+        if (!connectorToken) {
+          throw new Error(
+            "Connector token missing. Pair this Mac again."
+          );
+        }
+
+        const result =
+          await createAppleHomePairingSession({
+            token: connectorToken,
+          });
+
+        setAppleHomePairing(result);
+        setAppleHomeNow(Date.now());
+      } catch (error) {
+        setAppleHomeError(
+          error instanceof Error
+            ? error.message
+            : "Unable to start Apple Home setup."
+        );
+      } finally {
+        setAppleHomePending(false);
+      }
+    }, []);
+
+  const closeAppleHomeSetup =
+    useCallback(() => {
+      setAppleHomeSetupOpen(false);
+      setAppleHomePairing(null);
+      setAppleHomeError(null);
+      setAppleHomePending(false);
+    }, []);
+
+  useEffect(() => {
+    if (
+      !appleHomeSetupOpen ||
+      !appleHomePairing ||
+      appleHomePairing.status !==
+        "pending"
+    ) {
+      return;
+    }
+
+    const timer =
+      window.setInterval(() => {
+        setAppleHomeNow(Date.now());
+      }, 1_000);
+
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, [
+    appleHomePairing,
+    appleHomeSetupOpen,
+  ]);
+
+  useEffect(() => {
+    if (
+      !appleHomeSetupOpen ||
+      !appleHomePairing ||
+      appleHomePairing.status !==
+        "pending"
+    ) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const checkStatus =
+      async () => {
+        try {
+          const connectorToken =
+            await loadConnectorToken();
+
+          if (!connectorToken) {
+            return;
+          }
+
+          const result =
+            await getAppleHomePairingStatus({
+              token: connectorToken,
+              sessionId:
+                appleHomePairing.sessionId,
+            });
+
+          if (cancelled) {
+            return;
+          }
+
+          setAppleHomePairing(
+            (current) =>
+              current
+                ? {
+                    ...current,
+                    status: result.status,
+                    expiresAt:
+                      result.expiresAt,
+                  }
+                : current
+          );
+
+          if (
+            result.status ===
+            "approved"
+          ) {
+            setStatusMessage(
+              "Apple Home pairing approved."
+            );
+          }
+        } catch (error) {
+          if (!cancelled) {
+            setAppleHomeError(
+              error instanceof Error
+                ? error.message
+                : "Unable to check Apple Home pairing status."
+            );
+          }
+        }
+      };
+
+    void checkStatus();
+
+    const interval =
+      window.setInterval(
+        () => {
+          void checkStatus();
+        },
+        3_000
+      );
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, [
+    appleHomePairing?.sessionId,
+    appleHomePairing?.status,
+    appleHomeSetupOpen,
+  ]);
+
+  const appleHomeSecondsRemaining =
+    appleHomePairing
+      ? Math.max(
+          0,
+          Math.ceil(
+            (
+              new Date(
+                appleHomePairing.expiresAt
+              ).getTime() -
+              appleHomeNow
+            ) / 1_000
+          )
+        )
+      : 0;
+
   if (bootstrapping) {
     return (
       <main className="app-shell">
@@ -2186,6 +2383,178 @@ function App() {
                   </button>
                 ) : null}
               </div>
+            </section>
+
+            <section className="scan-panel">
+              <div className="integration-heading">
+                <div>
+                  <h2>
+                    Apple Home
+                  </h2>
+
+                  <span className="integration-badge">
+                    Pro & Family
+                  </span>
+                </div>
+              </div>
+
+              <p className="help">
+                Connect the rooms and accessories
+                already configured in the Apple
+                Home app. Apple requires a
+                one-time approval on an iPhone
+                before HomeCore can sync them.
+              </p>
+
+              {!appleHomeSetupOpen ? (
+                <div className="actions">
+                  <button
+                    className="primary"
+                    type="button"
+                    disabled={
+                      appleHomePending
+                    }
+                    onClick={() =>
+                      void startAppleHomeSetup()
+                    }
+                  >
+                    {appleHomePending
+                      ? "Starting Apple Home Setup…"
+                      : "Start Apple Home Setup"}
+                  </button>
+                </div>
+              ) : (
+                <div className="apple-home-setup">
+                  <div className="apple-home-icon">
+                    <span aria-hidden="true">
+                      ⌂
+                    </span>
+                  </div>
+
+                  <div>
+                    <h3>
+                      Finish setup on your iPhone
+                    </h3>
+
+                    <p>
+                      The Mac connector will start
+                      the connection, and your
+                      iPhone will securely approve
+                      access to Apple Home.
+                    </p>
+                  </div>
+
+                  <ol className="apple-home-steps">
+                    <li>
+                      Open the HomeCore app on
+                      your iPhone.
+                    </li>
+
+                    <li>
+                      Choose Connect Apple Home.
+                    </li>
+
+                    <li>
+                      Scan the pairing code shown
+                      here.
+                    </li>
+
+                    <li>
+                      Approve Apple Home access.
+                    </li>
+                  </ol>
+
+                  {appleHomeError ? (
+                    <p className="status error">
+                      {appleHomeError}
+                    </p>
+                  ) : null}
+
+                  {appleHomePending ? (
+                    <p className="status">
+                      Creating a secure pairing session…
+                    </p>
+                  ) : null}
+
+                  {appleHomePairing ? (
+                    <div className="apple-home-placeholder">
+                      {appleHomePairing.status ===
+                      "approved" ? (
+                        <>
+                          <span>
+                            Apple Home authorization
+                          </span>
+
+                          <strong>
+                            Approved
+                          </strong>
+                        </>
+                      ) : appleHomePairing.status ===
+                        "expired" ||
+                        appleHomeSecondsRemaining ===
+                          0 ? (
+                        <>
+                          <span>
+                            This pairing session has expired
+                          </span>
+
+                          <strong>
+                            Generate a new code
+                          </strong>
+                        </>
+                      ) : (
+                        <>
+                          <span>
+                            Enter this code on your iPhone
+                          </span>
+
+                          <strong className="apple-home-code">
+                            {appleHomePairing.code}
+                          </strong>
+
+                          <span>
+                            Expires in{" "}
+                            {Math.floor(
+                              appleHomeSecondsRemaining /
+                                60
+                            )}
+                            :
+                            {String(
+                              appleHomeSecondsRemaining %
+                                60
+                            ).padStart(
+                              2,
+                              "0"
+                            )}
+                          </span>
+
+                          <a
+                            href={
+                              appleHomePairing.pairingUrl
+                            }
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            Open approval link
+                          </a>
+                        </>
+                      )}
+                    </div>
+                  ) : null}
+
+                  <div className="actions">
+                    <button
+                      className="secondary"
+                      type="button"
+                      onClick={
+                        closeAppleHomeSetup
+                      }
+                    >
+                      Cancel Setup
+                    </button>
+                  </div>
+                </div>
+              )}
             </section>
 
             <section className="scan-panel">

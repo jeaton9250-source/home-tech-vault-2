@@ -1,0 +1,6 @@
+cd /Users/jasoneaton/home-tech-vault/connector/desktop
+
+npm run typecheck
+npm test
+cargo fmt --manifest-path src-tauri/Cargo.toml
+cargo check --manifest-path src-tauri/Cargo.toml

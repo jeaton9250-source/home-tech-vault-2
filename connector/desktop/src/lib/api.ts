@@ -4,6 +4,8 @@ import { getApiBaseUrl } from "./config";
 import { logConnectorEvent } from "./logger";
 
 import type {
+  AppleHomePairingInitResponse,
+  AppleHomePairingStatusResponse,
   DiscoverySyncResponse,
   HeartbeatResponse,
   HomeAssistantCommandClaimResponse,
@@ -471,3 +473,75 @@ export async function executeHomeAssistantService(
   );
 }
 
+
+
+export async function createAppleHomePairingSession(
+  options: {
+    token: string;
+  }
+) {
+  const baseUrl =
+    getApiBaseUrl();
+
+  try {
+    return await invoke<AppleHomePairingInitResponse>(
+      "create_apple_home_pairing_session",
+      {
+        apiBaseUrl: baseUrl,
+        connectorToken:
+          options.token,
+      }
+    );
+  } catch (error) {
+    const parsed =
+      parseNativeError(error);
+
+    throw new ConnectorApiError(
+      parsed.kind,
+      parsed.message,
+      {
+        status: parsed.status,
+        reason: parsed.reason,
+        diagnostics:
+          parsed.diagnostics,
+      }
+    );
+  }
+}
+
+export async function getAppleHomePairingStatus(
+  options: {
+    token: string;
+    sessionId: string;
+  }
+) {
+  const baseUrl =
+    getApiBaseUrl();
+
+  try {
+    return await invoke<AppleHomePairingStatusResponse>(
+      "get_apple_home_pairing_status",
+      {
+        apiBaseUrl: baseUrl,
+        connectorToken:
+          options.token,
+        sessionId:
+          options.sessionId,
+      }
+    );
+  } catch (error) {
+    const parsed =
+      parseNativeError(error);
+
+    throw new ConnectorApiError(
+      parsed.kind,
+      parsed.message,
+      {
+        status: parsed.status,
+        reason: parsed.reason,
+        diagnostics:
+          parsed.diagnostics,
+      }
+    );
+  }
+}

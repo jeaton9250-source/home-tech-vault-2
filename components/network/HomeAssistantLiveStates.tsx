@@ -11,7 +11,10 @@ import {
   Lightbulb,
   Power,
   Radio,
+  RefreshCw,
+  Sparkles,
   Thermometer,
+  Zap,
 } from "lucide-react";
 
 import PageCard from "@/components/ui/PageCard";
@@ -153,6 +156,20 @@ export default function HomeAssistantLiveStates({
   ] = useState<
     Record<string, "on" | "off">
   >({});
+
+  const [
+    refreshing,
+    setRefreshing,
+  ] = useState(false);
+
+  async function refreshDevices() {
+    try {
+      setRefreshing(true);
+      await onRefresh();
+    } finally {
+      setRefreshing(false);
+    }
+  }
 
   async function watchCommand(
     entityRecordId: string,
@@ -455,309 +472,390 @@ export default function HomeAssistantLiveStates({
 
   if (entities.length === 0) {
     return (
-      <PageCard className="p-7 md:p-8">
-        <p className="text-overline text-section-network">
-          Home Assistant
-        </p>
+      <PageCard className="overflow-hidden p-0">
+        <div className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 px-7 py-10 text-white md:px-10">
+          <div className="absolute -right-16 -top-20 h-64 w-64 rounded-full bg-indigo-400/10 blur-3xl" />
 
-        <h2 className="mt-2 text-2xl font-semibold text-text-primary">
-          No live entities synced yet
-        </h2>
+          <div className="relative">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/10 backdrop-blur">
+              <Sparkles size={22} />
+            </div>
 
-        <p className="mt-3 max-w-2xl text-sm leading-7 text-text-secondary">
-          Open the Home Tech Vault Connector,
-          connect Home Assistant, and run a
-          Home Assistant sync to display live
-          device states here.
-        </p>
+            <p className="mt-6 text-xs font-bold uppercase tracking-[0.18em] text-indigo-200">
+              Smart Home
+            </p>
+
+            <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+              Your connected home,
+              beautifully organized
+            </h2>
+
+            <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-300">
+              Connect Home Assistant through
+              the HomeCore Connector to see
+              live device states and control
+              supported lights and switches.
+            </p>
+          </div>
+        </div>
+
+        <div className="p-7 md:p-8">
+          <div className="rounded-2xl border border-dashed border-border-subtle bg-surface-sunken p-6 text-center">
+            <CircleOff
+              size={24}
+              className="mx-auto text-text-tertiary"
+            />
+
+            <p className="mt-3 text-sm font-semibold text-text-primary">
+              No live devices synced yet
+            </p>
+
+            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-text-secondary">
+              Open the HomeCore Connector,
+              connect Home Assistant, and run
+              a sync to display your smart-home
+              devices here.
+            </p>
+          </div>
+        </div>
       </PageCard>
     );
   }
 
+  const availableCount =
+    stats?.availableCount ??
+    entities.filter(
+      (entity) => entity.available
+    ).length;
+
+  const controllableCount =
+    entities.filter(
+      (entity) =>
+        entity.available &&
+        (
+          entity.domain === "light" ||
+          entity.domain === "switch"
+        )
+    ).length;
+
   return (
-    <PageCard className="p-7 md:p-8">
-      <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
-        <div>
-          <p className="text-overline text-section-network">
-            Home Assistant
-          </p>
+    <div className="space-y-6">
+      <PageCard className="overflow-hidden p-0">
+        <div className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 px-7 py-8 text-white md:px-9">
+          <div className="absolute -right-16 -top-24 h-72 w-72 rounded-full bg-indigo-400/15 blur-3xl" />
 
-          <h2 className="mt-2 text-2xl font-semibold text-text-primary">
-            Live device states
-          </h2>
+          <div className="relative flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/10 backdrop-blur">
+                  <Sparkles size={20} />
+                </div>
 
-          <p className="mt-2 max-w-2xl text-sm leading-7 text-text-secondary">
-            Read-only states synchronized from
-            your local Home Assistant server
-            through the Home Tech Vault
-            Connector.
-          </p>
-        </div>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-indigo-200">
+                    Home Assistant
+                  </p>
 
-        <div className="grid grid-cols-3 gap-2 sm:min-w-[320px]">
-          <SummaryStat
-            label="Entities"
-            value={
-              stats?.entityCount ??
-              entities.length
-            }
-          />
-
-          <SummaryStat
-            label="Available"
-            value={
-              stats?.availableCount ??
-              entities.filter(
-                (entity) =>
-                  entity.available
-              ).length
-            }
-          />
-
-          <SummaryStat
-            label="Types"
-            value={
-              stats?.domainCount ??
-              new Set(
-                entities.map(
-                  (entity) =>
-                    entity.domain
-                )
-              ).size
-            }
-          />
-        </div>
-      </div>
-
-      <div className="mt-7 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-        {entities.map((entity) => (
-          <article
-            key={entity.id}
-            className="rounded-[20px] border border-border-subtle bg-surface-sunken p-4"
-          >
-            <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-button)] border border-border-subtle bg-surface-card text-text-primary">
-                <EntityIcon
-                  entity={entity}
-                />
+                  <p className="mt-1 text-sm text-slate-300">
+                    Live through HomeCore Connector
+                  </p>
+                </div>
               </div>
 
-              <div className="min-w-0 flex-1">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <h3 className="truncate text-sm font-semibold text-text-primary">
-                      {entity.friendlyName ??
-                        entity.entityId}
-                    </h3>
+              <h2 className="mt-6 text-3xl font-semibold tracking-tight">
+                Smart Home Control Center
+              </h2>
 
-                    <p className="mt-1 truncate text-xs text-text-tertiary">
-                      {entity.entityId}
-                    </p>
-                  </div>
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-300">
+                Review live device status and
+                control supported lights and
+                switches from one secure place.
+              </p>
+            </div>
 
-                  <AvailabilityBadge
-                    available={
-                      entity.available
-                    }
+            <button
+              type="button"
+              disabled={refreshing}
+              onClick={() => {
+                void refreshDevices();
+              }}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/15 disabled:cursor-wait disabled:opacity-60"
+            >
+              <RefreshCw
+                size={16}
+                className={
+                  refreshing
+                    ? "animate-spin"
+                    : ""
+                }
+              />
+
+              {refreshing
+                ? "Refreshing…"
+                : "Refresh devices"}
+            </button>
+          </div>
+
+          <div className="relative mt-8 grid gap-3 sm:grid-cols-3">
+            <PremiumSummaryStat
+              label="Connected"
+              value={
+                stats?.entityCount ??
+                entities.length
+              }
+            />
+
+            <PremiumSummaryStat
+              label="Available"
+              value={availableCount}
+            />
+
+            <PremiumSummaryStat
+              label="Controllable"
+              value={controllableCount}
+            />
+          </div>
+        </div>
+      </PageCard>
+
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {entities.map((entity) => {
+          const commandState =
+            commandStates[entity.id];
+
+          const displayedState =
+            optimisticStates[entity.id] ??
+            entity.currentState;
+
+          const isOn =
+            displayedState === "on";
+
+          const isControllable =
+            entity.domain === "light" ||
+            entity.domain === "switch";
+
+          const commandPending =
+            commandState?.phase ===
+              "sending" ||
+            commandState?.phase ===
+              "queued";
+
+          const controlDisabled =
+            !canControl ||
+            !entity.available ||
+            !isControllable ||
+            commandPending;
+
+          const nextService =
+            isOn
+              ? "turn_off"
+              : "turn_on";
+
+          return (
+            <article
+              key={entity.id}
+              className={[
+                "group relative overflow-hidden rounded-[24px] border p-5 shadow-sm transition duration-300",
+                entity.available
+                  ? "border-border-subtle bg-surface-primary hover:-translate-y-0.5 hover:shadow-lg"
+                  : "border-border-subtle bg-surface-sunken opacity-80",
+                isOn && entity.available
+                  ? "ring-1 ring-amber-300/50"
+                  : "",
+              ].join(" ")}
+            >
+              {isOn &&
+              entity.available ? (
+                <div className="pointer-events-none absolute -right-10 -top-12 h-36 w-36 rounded-full bg-amber-300/15 blur-3xl" />
+              ) : null}
+
+              <div className="relative flex items-start justify-between gap-4">
+                <div
+                  className={[
+                    "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border transition",
+                    isOn &&
+                    entity.available
+                      ? "border-amber-200 bg-amber-50 text-amber-700"
+                      : "border-border-subtle bg-surface-sunken text-text-secondary",
+                  ].join(" ")}
+                >
+                  <EntityIcon
+                    entity={entity}
                   />
                 </div>
 
-                <div className="mt-4">
-                  <p className="text-xs font-medium uppercase tracking-[0.12em] text-text-tertiary">
-                    Current state
-                  </p>
+                <LiveStateBadge
+                  available={
+                    entity.available
+                  }
+                  isOn={isOn}
+                  stateLabel={formatState({
+                    ...entity,
+                    currentState:
+                      displayedState,
+                  })}
+                  pending={
+                    commandPending
+                  }
+                />
+              </div>
 
-                  <p className="mt-1 text-lg font-semibold text-text-primary">
-                    {optimisticStates[
-                      entity.id
-                    ] === "on"
-                      ? "On"
-                      : optimisticStates[
-                            entity.id
-                          ] === "off"
-                        ? "Off"
-                        : formatState(
-                            entity
-                          )}
-                  </p>
-                </div>
+              <div className="relative mt-5">
+                <p className="truncate text-lg font-semibold text-text-primary">
+                  {entity.friendlyName ??
+                    entity.objectId
+                      .replaceAll("_", " ")
+                      .replace(
+                        /\b\w/g,
+                        (character) =>
+                          character.toUpperCase()
+                      )}
+                </p>
 
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <span className="rounded-full border border-border-subtle bg-surface-card px-2.5 py-1 text-xs font-medium text-text-secondary">
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <span className="rounded-full border border-border-subtle bg-surface-sunken px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-text-secondary">
                     {domainLabel(
                       entity.domain
                     )}
                   </span>
 
                   {entity.deviceClass ? (
-                    <span className="rounded-full border border-border-subtle bg-surface-card px-2.5 py-1 text-xs font-medium text-text-secondary">
+                    <span className="rounded-full border border-border-subtle bg-surface-sunken px-2.5 py-1 text-[11px] font-medium text-text-tertiary">
                       {domainLabel(
                         entity.deviceClass
                       )}
                     </span>
                   ) : null}
                 </div>
-
-                {canControl &&
-                entity.available &&
-                (entity.domain === "light" ||
-                  entity.domain === "switch") ? (
-                  <EntityControls
-                    entity={entity}
-                    commandState={
-                      commandStates[
-                        entity.id
-                      ] ?? {
-                        phase: "idle",
-                        message: null,
-                        commandId: null,
-                        requestedService:
-                          null,
-                      }
-                    }
-                    onCommand={
-                      sendCommand
-                    }
-                  />
-                ) : null}
               </div>
-            </div>
-          </article>
-        ))}
+
+              <div className="relative mt-6 flex items-center justify-between gap-4 rounded-2xl border border-border-subtle bg-surface-sunken p-3">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-text-tertiary">
+                    Current state
+                  </p>
+
+                  <p className="mt-1 text-sm font-semibold text-text-primary">
+                    {formatState({
+                      ...entity,
+                      currentState:
+                        displayedState,
+                    })}
+                  </p>
+                </div>
+
+                {isControllable ? (
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={isOn}
+                    aria-label={`Turn ${
+                      entity.friendlyName ??
+                      entity.objectId
+                    } ${
+                      isOn ? "off" : "on"
+                    }`}
+                    disabled={
+                      controlDisabled
+                    }
+                    onClick={() => {
+                      void sendCommand(
+                        entity,
+                        nextService
+                      );
+                    }}
+                    className={[
+                      "relative inline-flex h-9 w-[66px] shrink-0 items-center rounded-full border p-1 transition-all duration-300",
+                      isOn
+                        ? "border-amber-400 bg-amber-400"
+                        : "border-slate-300 bg-slate-300",
+                      controlDisabled
+                        ? "cursor-not-allowed opacity-50"
+                        : "cursor-pointer shadow-inner hover:scale-[1.03]",
+                    ].join(" ")}
+                  >
+                    <span
+                      className={[
+                        "flex h-7 w-7 items-center justify-center rounded-full bg-white shadow-md transition-transform duration-300",
+                        isOn
+                          ? "translate-x-7 text-amber-600"
+                          : "translate-x-0 text-slate-500",
+                      ].join(" ")}
+                    >
+                      {commandPending ? (
+                        <Activity
+                          size={14}
+                          className="animate-spin"
+                        />
+                      ) : (
+                        <Power size={14} />
+                      )}
+                    </span>
+                  </button>
+                ) : (
+                  <div className="flex h-9 items-center rounded-full border border-border-subtle bg-surface-primary px-3 text-xs font-semibold text-text-secondary">
+                    Live status
+                  </div>
+                )}
+              </div>
+
+              {!canControl &&
+              isControllable ? (
+                <p className="relative mt-3 text-xs leading-5 text-text-tertiary">
+                  Read-only household access
+                </p>
+              ) : null}
+
+              {commandState?.message ? (
+                <div
+                  className={[
+                    "relative mt-3 flex items-start gap-2 rounded-xl px-3 py-2.5 text-xs leading-5",
+                    commandState.phase ===
+                    "error"
+                      ? "bg-red-50 text-red-700"
+                      : commandState.phase ===
+                        "succeeded"
+                        ? "bg-emerald-50 text-emerald-700"
+                        : "bg-indigo-50 text-indigo-700",
+                  ].join(" ")}
+                >
+                  {commandState.phase ===
+                  "succeeded" ? (
+                    <CheckCircle2
+                      size={15}
+                      className="mt-0.5 shrink-0"
+                    />
+                  ) : commandState.phase ===
+                    "error" ? (
+                    <CircleOff
+                      size={15}
+                      className="mt-0.5 shrink-0"
+                    />
+                  ) : (
+                    <Zap
+                      size={15}
+                      className="mt-0.5 shrink-0"
+                    />
+                  )}
+
+                  <span>
+                    {commandState.message}
+                  </span>
+                </div>
+              ) : null}
+
+              <p className="relative mt-4 truncate text-[11px] text-text-tertiary">
+                {entity.entityId}
+              </p>
+            </article>
+          );
+        })}
       </div>
-    </PageCard>
-  );
-}
-
-function EntityControls({
-  entity,
-  commandState,
-  onCommand,
-}: {
-  entity: HomeAssistantEntitySummary;
-  commandState: CommandState;
-  onCommand: (
-    entity: HomeAssistantEntitySummary,
-    service:
-      | "turn_on"
-      | "turn_off"
-  ) => Promise<void>;
-}) {
-  const busy =
-    commandState.phase ===
-      "sending" ||
-    commandState.phase ===
-      "queued";
-
-  const activeService =
-    commandState.requestedService;
-
-  function buttonLabel(
-    service:
-      | "turn_on"
-      | "turn_off"
-  ) {
-    if (
-      busy &&
-      activeService === service
-    ) {
-      if (
-        commandState.phase ===
-        "sending"
-      ) {
-        return "Sending…";
-      }
-
-      if (
-        commandState.phase ===
-        "queued"
-      ) {
-        return service === "turn_on"
-          ? "Turning On…"
-          : "Turning Off…";
-      }
-
-      if (
-        commandState.phase ===
-        "succeeded"
-      ) {
-        return "Done";
-      }
-    }
-
-    return service === "turn_on"
-      ? "Turn On"
-      : "Turn Off";
-  }
-
-  return (
-    <div className="mt-4 border-t border-border-subtle pt-4">
-      <div className="grid grid-cols-2 gap-2">
-        <button
-          type="button"
-          disabled={busy}
-          onClick={() => {
-            void onCommand(
-              entity,
-              "turn_on"
-            );
-          }}
-          className={[
-            "inline-flex min-h-10 items-center justify-center gap-2 rounded-[var(--radius-button)] px-3 py-2 text-sm font-semibold transition",
-            busy
-              ? "cursor-not-allowed bg-surface-card text-text-tertiary"
-              : "bg-charcoal text-surface-card hover:opacity-90",
-          ].join(" ")}
-        >
-          <Power size={16} />
-
-          {buttonLabel(
-            "turn_on"
-          )}
-        </button>
-
-        <button
-          type="button"
-          disabled={busy}
-          onClick={() => {
-            void onCommand(
-              entity,
-              "turn_off"
-            );
-          }}
-          className={[
-            "inline-flex min-h-10 items-center justify-center gap-2 rounded-[var(--radius-button)] border px-3 py-2 text-sm font-semibold transition",
-            busy
-              ? "cursor-not-allowed border-border-subtle bg-surface-card text-text-tertiary"
-              : "border-border-subtle bg-surface-card text-text-primary hover:bg-surface-sunken",
-          ].join(" ")}
-        >
-          <Power size={16} />
-
-          {buttonLabel(
-            "turn_off"
-          )}
-        </button>
-      </div>
-
-      {commandState.message ? (
-        <p
-          className={[
-            "mt-2 text-xs leading-5",
-            commandState.phase ===
-            "error"
-              ? "text-danger"
-              : "text-text-secondary",
-          ].join(" ")}
-        >
-          {commandState.message}
-        </p>
-      ) : null}
     </div>
   );
 }
 
-function SummaryStat({
+function PremiumSummaryStat({
   label,
   value,
 }: {
@@ -765,41 +863,71 @@ function SummaryStat({
   value: number;
 }) {
   return (
-    <div className="rounded-[16px] border border-border-subtle bg-surface-sunken px-3 py-3 text-center">
-      <p className="text-xl font-semibold text-text-primary">
-        {value}
+    <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-4 backdrop-blur">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.13em] text-slate-300">
+        {label}
       </p>
 
-      <p className="mt-1 text-xs text-text-secondary">
-        {label}
+      <p className="mt-2 text-2xl font-semibold text-white">
+        {value}
       </p>
     </div>
   );
 }
 
-function AvailabilityBadge({
+function LiveStateBadge({
   available,
+  isOn,
+  stateLabel,
+  pending,
 }: {
   available: boolean;
+  isOn: boolean;
+  stateLabel: string;
+  pending: boolean;
 }) {
+  if (!available) {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
+        <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
+
+        Unavailable
+      </span>
+    );
+  }
+
+  if (pending) {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700">
+        <Activity
+          size={12}
+          className="animate-spin"
+        />
+
+        Updating
+      </span>
+    );
+  }
+
   return (
     <span
       className={[
-        "inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold",
-        available
-          ? "bg-success-soft text-success"
-          : "bg-surface-card text-text-tertiary",
+        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold",
+        isOn
+          ? "bg-amber-50 text-amber-700"
+          : "bg-slate-100 text-slate-600",
       ].join(" ")}
     >
-      {available ? (
-        <CheckCircle2 size={12} />
-      ) : (
-        <CircleOff size={12} />
-      )}
+      <span
+        className={[
+          "h-1.5 w-1.5 rounded-full",
+          isOn
+            ? "bg-amber-500"
+            : "bg-slate-400",
+        ].join(" ")}
+      />
 
-      {available
-        ? "Available"
-        : "Offline"}
+      {stateLabel}
     </span>
   );
 }

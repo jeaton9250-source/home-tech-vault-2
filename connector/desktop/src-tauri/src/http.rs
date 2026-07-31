@@ -811,3 +811,218 @@ mod tests {
         assert_eq!(err.status, Some(401));
     }
 }
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct AppleHomePairingInitSuccess {
+    pub ok: bool,
+    pub session_id: String,
+    pub code: String,
+    pub pairing_url: String,
+    pub expires_at: String,
+    pub status: String,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct AppleHomePairingStatusSuccess {
+    pub ok: bool,
+    pub session_id: String,
+    pub status: String,
+    pub expires_at: String,
+    pub approved_at: Option<String>,
+}
+
+async fn get_json(
+    url: &str,
+    bearer_token: Option<&str>,
+) -> Result<(u16, Value), ConnectorCommandError> {
+    let client = reqwest::Client::builder()
+        .timeout(REQUEST_TIMEOUT)
+        .build()
+        .map_err(|_| {
+            command_error(
+                "server",
+                "Unable to initialize the connector HTTP client.",
+                None,
+            )
+        })?;
+
+    let mut request = client.get(url);
+
+    if let Some(token) = bearer_token {
+        request =
+            request.header(
+                AUTHORIZATION,
+                format!("Bearer {token}"),
+            );
+    }
+
+    let response =
+        request.send().await.map_err(map_request_error)?;
+
+    let status =
+        response.status().as_u16();
+
+    let body =
+        response.bytes().await.map_err(map_request_error)?;
+
+    let payload =
+        match serde_json::from_slice::<Value>(&body) {
+            Ok(json) => json,
+
+            Err(_) => {
+                let text =
+                    String::from_utf8_lossy(&body)
+                        .trim()
+                        .to_string();
+
+                if text.is_empty() {
+                    json!({})
+                } else {
+                    json!({ "error": text })
+                }
+            }
+        };
+
+    Ok((status, payload))
+}
+
+fn map_apple_home_error(
+    status: u16,
+    payload: Value,
+) -> ConnectorCommandError {
+    let body =
+        serde_json::from_value::<ErrorBody>(payload)
+            .unwrap_or_default();
+
+    let message =
+        body.error.unwrap_or_else(|| {
+            match status {
+                401 =>
+                    "The connector is no longer authorized."
+                        .to_string(),
+
+                403 =>
+                    "Apple Home requires a Pro or Family plan."
+                        .to_string(),
+
+                404 =>
+                    "The Apple Home pairing session was not found."
+                        .to_string(),
+
+                410 =>
+                    "The Apple Home pairing session expired."
+                        .to_string(),
+
+                _ =>
+                    "Unable to complete Apple Home setup."
+                        .to_string(),
+            }
+        });
+
+    let kind =
+        match status {
+            401 => "unauthorized",
+            403 => "unauthorized",
+            404 => "server",
+            410 => "expired_code",
+            _ if status >= 500 => "server",
+            _ => "network",
+        };
+
+    command_error(
+        kind,
+        message,
+        Some(status),
+    )
+}
+
+pub async fn create_apple_home_pairing_session_request(
+    api_base_url: String,
+    connector_token: String,
+) -> Result<
+    AppleHomePairingInitSuccess,
+    ConnectorCommandError,
+> {
+    let base_url =
+        validate_api_base_url(&api_base_url)?;
+
+    let url =
+        format!(
+            "{base_url}/api/connector/apple-home/pair/init"
+        );
+
+    let (status, payload) =
+        post_json(
+            &url,
+            json!({}),
+            Some(&connector_token),
+        )
+        .await?;
+
+    if status >= 200 && status < 300 {
+        return serde_json::from_value::<
+            AppleHomePairingInitSuccess,
+        >(payload)
+        .map_err(|_| {
+            command_error(
+                "malformed",
+                "Home Tech Vault returned an incomplete Apple Home pairing response.",
+                Some(status),
+            )
+        });
+    }
+
+    Err(map_apple_home_error(
+        status,
+        payload,
+    ))
+}
+
+pub async fn get_apple_home_pairing_status_request(
+    api_base_url: String,
+    connector_token: String,
+    session_id: String,
+) -> Result<
+    AppleHomePairingStatusSuccess,
+    ConnectorCommandError,
+> {
+    let base_url =
+        validate_api_base_url(&api_base_url)?;
+
+    let encoded_session_id =
+        urlencoding::encode(
+            session_id.trim()
+        );
+
+    let url =
+        format!(
+            "{base_url}/api/connector/apple-home/pair/status?sessionId={encoded_session_id}"
+        );
+
+    let (status, payload) =
+        get_json(
+            &url,
+            Some(&connector_token),
+        )
+        .await?;
+
+    if status >= 200 && status < 300 {
+        return serde_json::from_value::<
+            AppleHomePairingStatusSuccess,
+        >(payload)
+        .map_err(|_| {
+            command_error(
+                "malformed",
+                "Home Tech Vault returned an incomplete Apple Home status response.",
+                Some(status),
+            )
+        });
+    }
+
+    Err(map_apple_home_error(
+        status,
+        payload,
+    ))
+}
