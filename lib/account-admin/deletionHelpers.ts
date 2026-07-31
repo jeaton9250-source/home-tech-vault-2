@@ -329,7 +329,9 @@ export const HOUSEHOLD_SCOPED_TABLE_ORDER = [
   "documents",
   "network_info",
   "subscriptions",
-  "household_members",
+  // Do not delete household_members directly. The database protects the
+  // final owner membership while its household still exists. Membership
+  // rows are removed through the household foreign-key cascade.
   "household_invitations",
 ] as const;
 
