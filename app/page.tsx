@@ -26,8 +26,8 @@ export const metadata: Metadata = {
     canonical: SOCIAL_SITE_URL,
   },
   keywords: [
-    "home technology operating system",
-    "home health dashboard",
+    "home technology management platform",
+    "home technology dashboard",
     "home network discovery",
     "smart home assistant",
     "device discovery",

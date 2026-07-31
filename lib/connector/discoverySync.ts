@@ -26,6 +26,9 @@ import {
   type IdentificationResult,
 } from "@/lib/connector/deviceIdentification";
 import type { ParsedDiscoveryDevice } from "@/lib/connector/discoveryValidation";
+import {
+  shouldMarkDeviceOffline,
+} from "@/lib/connector/deviceOfflineGrace";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type {
@@ -699,6 +702,28 @@ async function markAbsentLinkedDevicesOffline(input: {
       observedLinkedVaultDeviceIds.has(
         vaultDeviceId
       )
+    ) {
+      continue;
+    }
+
+    /*
+     * One missed scan is not enough to
+     * declare a device offline. Wi-Fi
+     * devices may sleep, ignore discovery
+     * packets, or temporarily roam.
+     */
+    const offlineDecision =
+      shouldMarkDeviceOffline(
+        typeof row.last_seen_at ===
+          "string"
+          ? row.last_seen_at
+          : null,
+        scannedAt
+      );
+
+    if (
+      !offlineDecision
+        .shouldMarkOffline
     ) {
       continue;
     }

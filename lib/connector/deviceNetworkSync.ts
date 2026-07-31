@@ -1,5 +1,8 @@
 import "server-only";
 
+import {
+  formatOfflineDuration,
+} from "@/lib/connector/deviceOfflineGrace";
 import { deriveDeviceNetworkPresence } from "@/lib/devices/devicePresence";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -34,6 +37,37 @@ function presenceState(snapshot: VaultDeviceNetworkSnapshot) {
     firstSeenAt: snapshot.first_seen_at,
     networkUpdatedAt: snapshot.network_updated_at,
   });
+}
+
+function elapsedBetween(
+  startAt:
+    | string
+    | null
+    | undefined,
+  endAt:
+    | string
+    | null
+    | undefined
+): number | null {
+  if (!startAt || !endAt) {
+    return null;
+  }
+
+  const startMs =
+    new Date(startAt).getTime();
+
+  const endMs =
+    new Date(endAt).getTime();
+
+  if (
+    !Number.isFinite(startMs) ||
+    !Number.isFinite(endMs) ||
+    endMs < startMs
+  ) {
+    return null;
+  }
+
+  return endMs - startMs;
 }
 
 async function insertMonitorEvent(
@@ -122,46 +156,138 @@ export async function recordVaultDeviceNetworkSyncEvents(
     });
   }
 
-  if (
+  const deviceReturned =
+    (
+      previousPresence ===
+        "not_recently_detected" ||
+      previousPresence ===
+        "unknown"
+    ) &&
+    (
+      nextPresence === "online" ||
+      nextPresence ===
+        "recently_detected"
+    );
+
+  if (deviceReturned) {
+    const outageDurationMs =
+      elapsedBetween(
+        input.previous
+          .last_seen_at,
+        input.scannedAt
+      );
+
+    const outageDuration =
+      formatOfflineDuration(
+        outageDurationMs
+      );
+
+    events.push({
+      eventType:
+        "device_returned",
+
+      title:
+        "Device returned to the network",
+
+      description:
+        outageDuration
+          ? `The connector observed this device again. It was unavailable for approximately ${outageDuration}.`
+          : "The connector observed this device again.",
+
+      previousState: {
+        presence:
+          previousPresence,
+
+        last_seen_at:
+          input.previous
+            .last_seen_at ??
+          null,
+      },
+
+      newState: {
+        presence:
+          nextPresence,
+
+        returned_at:
+          input.scannedAt,
+
+        outage_duration_ms:
+          outageDurationMs,
+      },
+    });
+  } else if (
     previousPresence !== "online" &&
     nextPresence === "online"
   ) {
     events.push({
-      eventType: "device_online",
-      title: "Device detected online",
-      description: "Seen during the latest connector scan.",
-      previousState: { presence: previousPresence },
-      newState: { presence: nextPresence },
+      eventType:
+        "device_online",
+
+      title:
+        "Device detected online",
+
+      description:
+        "Seen during the latest connector scan.",
+
+      previousState: {
+        presence:
+          previousPresence,
+      },
+
+      newState: {
+        presence:
+          nextPresence,
+      },
     });
   }
 
   if (
-    (previousPresence === "not_recently_detected" ||
-      previousPresence === "unknown") &&
-    (nextPresence === "online" ||
-      nextPresence === "recently_detected")
-  ) {
-    events.push({
-      eventType: "device_returned",
-      title: "Device returned to the network",
-      description: "The connector observed this device again.",
-      previousState: { presence: previousPresence },
-      newState: { presence: nextPresence },
-    });
-  }
-
-  if (
-    previousPresence !== "not_recently_detected" &&
-    nextPresence === "not_recently_detected" &&
+    previousPresence !==
+      "not_recently_detected" &&
+    nextPresence ===
+      "not_recently_detected" &&
     input.previous.last_seen_at
   ) {
+    const missingDurationMs =
+      elapsedBetween(
+        input.previous
+          .last_seen_at,
+        input.scannedAt
+      );
+
+    const missingDuration =
+      formatOfflineDuration(
+        missingDurationMs
+      );
+
     events.push({
-      eventType: "device_not_recently_detected",
-      title: "Device not recently detected",
+      eventType:
+        "device_not_recently_detected",
+
+      title:
+        "Device not recently detected",
+
       description:
-        "The connector has not observed this device recently.",
-      previousState: { presence: previousPresence },
-      newState: { presence: nextPresence },
+        missingDuration
+          ? `The connector has not observed this device for approximately ${missingDuration}.`
+          : "The connector has not observed this device recently.",
+
+      previousState: {
+        presence:
+          previousPresence,
+
+        last_seen_at:
+          input.previous
+            .last_seen_at,
+      },
+
+      newState: {
+        presence:
+          nextPresence,
+
+        missing_duration_ms:
+          missingDurationMs,
+      },
     });
   }
 

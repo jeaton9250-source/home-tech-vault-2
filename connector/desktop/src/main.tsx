@@ -64,7 +64,10 @@ import {
 } from "./lib/homeAssistant";
 
 import { logConnectorEvent } from "./lib/logger";
-import { startMonitoringScheduler } from "./lib/monitoringScheduler";
+import {
+  startMonitoringScheduler,
+  type MonitoringSchedulerStatus,
+} from "./lib/monitoringScheduler";
 
 import {
   credentialStoreLabel,
@@ -81,6 +84,10 @@ import {
   cancelLocalNetworkScan,
   scanAndSyncDiscovery,
 } from "./lib/scan";
+
+import {
+  getPendingDiscoverySyncCount,
+} from "./lib/discoverySyncQueue";
 
 import {
   checkConnectorForUpdates,
@@ -102,6 +109,12 @@ import type {
 } from "./lib/homeAssistant";
 
 import "./styles.css";
+
+type ConnectedTab =
+  | "connector"
+  | "home-assistant"
+  | "apple-home"
+  | "diagnostics";
 
 const RECENT_HEARTBEAT_MS =
   10 * 60 * 1000;
@@ -189,6 +202,14 @@ function App() {
     useState<string | null>(null);
 
   const [
+    activeConnectedTab,
+    setActiveConnectedTab,
+  ] =
+    useState<ConnectedTab>(
+      "connector"
+    );
+
+  const [
     heartbeatPending,
     setHeartbeatPending,
   ] = useState(false);
@@ -220,6 +241,14 @@ function App() {
     setLastScanDeviceCount,
   ] =
     useState<number | null>(null);
+
+  const [
+    monitoringStatus,
+    setMonitoringStatus,
+  ] =
+    useState<MonitoringSchedulerStatus | null>(
+      null
+    );
 
   const [
     autostartEnabled,
@@ -1576,6 +1605,12 @@ function App() {
   async function runNetworkScan(
     silent = false
   ) {
+    const scanStartedAt =
+      new Date().toISOString();
+
+    const scanStartedMs =
+      Date.now();
+
     if (!silent) {
       setErrorMessage(null);
       setStatusMessage(null);
@@ -1596,7 +1631,11 @@ function App() {
         );
       }
 
-      const { scan, sync } =
+      const {
+        scan,
+        sync,
+        pendingQueueCount,
+      } =
         await scanAndSyncDiscovery(
           {
             token,
@@ -1649,8 +1688,37 @@ function App() {
         lastScanAt:
           scannedAt,
 
+        lastScanStartedAt:
+          scanStartedAt,
+
+        lastSuccessfulSyncAt:
+          sync
+            ? scannedAt
+            : currentMetadata
+                .lastSuccessfulSyncAt ??
+              null,
+
+        lastScanDurationMs:
+          Math.max(
+            0,
+            Date.now() -
+              scanStartedMs
+          ),
+
         lastScanDeviceCount:
           deviceCount,
+
+        consecutiveScanFailures:
+          0,
+
+        lastScanFailureAt:
+          null,
+
+        lastScanFailureMessage:
+          null,
+
+        pendingDiscoveryUploads:
+          pendingQueueCount,
 
         scanConsentAccepted:
           true,
@@ -1661,6 +1729,17 @@ function App() {
       );
 
       setMetadata(nextMetadata);
+
+      /*
+       * A successful discovery sync proves
+       * that Home Tech Vault is reachable
+       * and the connector token is valid.
+       */
+      setConnectionProblem(false);
+
+      if (silent) {
+        setErrorMessage(null);
+      }
 
       logConnectorEvent(
         "discovery_scan_completed",
@@ -1688,12 +1767,77 @@ function App() {
             } found and synced to Home Tech Vault.`
       );
     } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Unable to complete the network scan.";
+
+      const currentMetadata =
+        metadataRef.current;
+
+      if (currentMetadata) {
+        const failedMetadata:
+          ConnectorMetadata = {
+          ...currentMetadata,
+
+          lastScanStartedAt:
+            scanStartedAt,
+
+          lastScanDurationMs:
+            Math.max(
+              0,
+              Date.now() -
+                scanStartedMs
+            ),
+
+          consecutiveScanFailures:
+            (
+              currentMetadata
+                .consecutiveScanFailures ??
+              0
+            ) + 1,
+
+          lastScanFailureAt:
+            new Date().toISOString(),
+
+          lastScanFailureMessage:
+            message,
+
+          pendingDiscoveryUploads:
+            getPendingDiscoverySyncCount(),
+        };
+
+        try {
+          await saveConnectorMetadata(
+            failedMetadata
+          );
+
+          setMetadata(
+            failedMetadata
+          );
+        } catch (
+          metadataError
+        ) {
+          console.error(
+            "Unable to save scan failure diagnostics:",
+            metadataError
+          );
+        }
+      }
+
       if (!silent) {
-        setErrorMessage(
-          error instanceof Error
-            ? error.message
-            : "Unable to complete the network scan."
-        );
+        setErrorMessage(message);
+      }
+
+      /*
+       * Background scans must reject so
+       * monitoringScheduler can apply its
+       * exponential retry policy.
+       */
+      if (silent) {
+        throw error instanceof Error
+          ? error
+          : new Error(message);
       }
     } finally {
       if (!silent) {
@@ -1752,6 +1896,9 @@ function App() {
                 .current
                 ?.monitoringPaused
             ),
+
+          onStatusChange:
+            setMonitoringStatus,
 
           onTick: async () => {
             await runNetworkScan(
@@ -2162,19 +2309,189 @@ function App() {
           "connected" &&
         metadata ? (
           <>
-            <h1>
-              Connected to Home Tech
-              Vault
-            </h1>
+            <header className="connector-app-header">
+              <div>
+                <div className="connector-title-row">
+                  <span className="connector-logo-mark">
+                    HTV
+                  </span>
 
-            <p className="lede">
-              This device sends
-              automatic heartbeats
-              every 5 minutes while
-              the connector is running.
-            </p>
+                  <div>
+                    <p className="connector-product-label">
+                      Home Tech Vault Connector
+                    </p>
 
-            <dl className="details">
+                    <h1>
+                      {metadata.connectorName}
+                    </h1>
+                  </div>
+                </div>
+
+                <p className="lede">
+                  Securely monitor your
+                  network and connected
+                  smart-home platforms.
+                </p>
+              </div>
+
+              <div className="connector-header-status">
+                <span
+                  className={`live-status-dot ${
+                    connectionProblem
+                      ? "live-status-warning"
+                      : "live-status-online"
+                  }`}
+                />
+
+                <div>
+                  <strong>
+                    {connectionProblem
+                      ? "Attention needed"
+                      : "Connected"}
+                  </strong>
+
+                  <span>
+                    {connectionLabel}
+                  </span>
+                </div>
+              </div>
+            </header>
+
+            <nav
+              className="connector-tabs"
+              aria-label="Connector sections"
+            >
+              <button
+                type="button"
+                className={
+                  activeConnectedTab ===
+                  "connector"
+                    ? "connector-tab active"
+                    : "connector-tab"
+                }
+                onClick={() =>
+                  setActiveConnectedTab(
+                    "connector"
+                  )
+                }
+              >
+                <span className="tab-icon">
+                  ◈
+                </span>
+
+                <span>
+                  Connector
+                </span>
+              </button>
+
+              <button
+                type="button"
+                className={
+                  activeConnectedTab ===
+                  "home-assistant"
+                    ? "connector-tab active"
+                    : "connector-tab"
+                }
+                onClick={() =>
+                  setActiveConnectedTab(
+                    "home-assistant"
+                  )
+                }
+              >
+                <span className="tab-icon">
+                  HA
+                </span>
+
+                <span>
+                  Home Assistant
+                </span>
+
+                {metadata.homeAssistantConnected ? (
+                  <span className="tab-status-dot" />
+                ) : null}
+              </button>
+
+              <button
+                type="button"
+                className={
+                  activeConnectedTab ===
+                  "apple-home"
+                    ? "connector-tab active"
+                    : "connector-tab"
+                }
+                onClick={() =>
+                  setActiveConnectedTab(
+                    "apple-home"
+                  )
+                }
+              >
+                <span className="tab-icon">
+                  ⌂
+                </span>
+
+                <span>
+                  Apple Home
+                </span>
+
+                <span className="tab-coming-soon">
+                  Coming Soon
+                </span>
+              </button>
+
+              <button
+                type="button"
+                className={
+                  activeConnectedTab ===
+                  "diagnostics"
+                    ? "connector-tab active"
+                    : "connector-tab"
+                }
+                onClick={() =>
+                  setActiveConnectedTab(
+                    "diagnostics"
+                  )
+                }
+              >
+                <span className="tab-icon">
+                  ⌁
+                </span>
+
+                <span>
+                  Diagnostics
+                </span>
+              </button>
+            </nav>
+
+            <section
+              className={`connector-overview ${
+                activeConnectedTab ===
+                "connector"
+                  ? ""
+                  : "tab-hidden"
+              }`}
+            >
+              <div className="section-heading">
+                <div>
+                  <p className="section-kicker">
+                    Standard connector
+                  </p>
+
+                  <h2>
+                    Network monitoring
+                  </h2>
+
+                  <p>
+                    Keep your network inventory
+                    and device status current.
+                  </p>
+                </div>
+
+                <span className="premium-plan-badge">
+                  Pro monitoring
+                </span>
+              </div>
+
+              <dl className="details premium-details">
               <div>
                 <dt>
                   Connector name
@@ -2256,8 +2573,16 @@ function App() {
                 </dd>
               </div>
             </dl>
+            </section>
 
-            <section className="scan-panel">
+            <section
+              className={`scan-panel premium-tab-panel ${
+                activeConnectedTab ===
+                "connector"
+                  ? ""
+                  : "tab-hidden"
+              }`}
+            >
               <h2>
                 Monitoring
               </h2>
@@ -2303,7 +2628,235 @@ function App() {
               ) : null}
             </section>
 
-            <section className="scan-panel">
+            <section
+              className={`scan-panel diagnostics-panel premium-tab-panel ${
+                activeConnectedTab ===
+                "diagnostics"
+                  ? ""
+                  : "tab-hidden"
+              }`}
+            >
+              <div className="diagnostics-heading">
+                <div>
+                  <h2>
+                    Connector Diagnostics
+                  </h2>
+
+                  <p className="help">
+                    Live reliability and
+                    background monitoring
+                    information for this
+                    connector.
+                  </p>
+                </div>
+
+                <span
+                  className={`health-badge ${
+                    connectionProblem ||
+                    (
+                      metadata
+                        .consecutiveScanFailures ??
+                      0
+                    ) > 0
+                      ? "health-warning"
+                      : "health-healthy"
+                  }`}
+                >
+                  {connectionProblem
+                    ? "Connection issue"
+                    : (
+                          metadata
+                            .consecutiveScanFailures ??
+                          0
+                        ) > 0
+                      ? "Recovering"
+                      : "Healthy"}
+                </span>
+              </div>
+
+              <dl className="diagnostics-grid">
+                <div>
+                  <dt>
+                    Background monitoring
+                  </dt>
+
+                  <dd>
+                    {!metadata.monitoringEnabled
+                      ? "Disabled"
+                      : metadata.monitoringPaused
+                        ? "Paused"
+                        : monitoringStatus
+                            ?.running
+                          ? "Active"
+                          : "Starting"}
+                  </dd>
+                </div>
+
+                <div>
+                  <dt>
+                    Current activity
+                  </dt>
+
+                  <dd>
+                    {monitoringStatus
+                      ?.scanning
+                      ? "Scanning network"
+                      : scanPhase ===
+                          "scanning"
+                        ? "Scanning network"
+                        : scanPhase ===
+                            "syncing"
+                          ? "Syncing devices"
+                          : "Ready"}
+                  </dd>
+                </div>
+
+                <div>
+                  <dt>
+                    Last successful sync
+                  </dt>
+
+                  <dd>
+                    {formatTimestamp(
+                      metadata
+                        .lastSuccessfulSyncAt ??
+                        metadata
+                          .lastScanAt ??
+                        null
+                    )}
+                  </dd>
+                </div>
+
+                <div>
+                  <dt>
+                    Last scan duration
+                  </dt>
+
+                  <dd>
+                    {typeof metadata
+                      .lastScanDurationMs ===
+                    "number"
+                      ? `${
+                          Math.round(
+                            metadata
+                              .lastScanDurationMs /
+                              100
+                          ) / 10
+                        } seconds`
+                      : "—"}
+                  </dd>
+                </div>
+
+                <div>
+                  <dt>
+                    Consecutive failures
+                  </dt>
+
+                  <dd>
+                    {metadata
+                      .consecutiveScanFailures ??
+                      monitoringStatus
+                        ?.consecutiveFailures ??
+                      0}
+                  </dd>
+                </div>
+
+                <div>
+                  <dt>
+                    Next scheduled scan
+                  </dt>
+
+                  <dd>
+                    {metadata.monitoringEnabled &&
+                    !metadata.monitoringPaused
+                      ? formatTimestamp(
+                          monitoringStatus
+                            ?.nextScheduledAt ??
+                            null
+                        )
+                      : "—"}
+                  </dd>
+                </div>
+
+                <div>
+                  <dt>
+                    Pending uploads
+                  </dt>
+
+                  <dd>
+                    {metadata
+                      .pendingDiscoveryUploads ??
+                      getPendingDiscoverySyncCount()}
+                  </dd>
+                </div>
+
+                <div>
+                  <dt>
+                    Next retry
+                  </dt>
+
+                  <dd>
+                    {formatTimestamp(
+                      monitoringStatus
+                        ?.nextRetryAt ??
+                        null
+                    )}
+                  </dd>
+                </div>
+
+                <div>
+                  <dt>
+                    Last scan trigger
+                  </dt>
+
+                  <dd>
+                    {monitoringStatus
+                      ?.lastTrigger
+                      ? monitoringStatus
+                          .lastTrigger
+                          .charAt(0)
+                          .toUpperCase() +
+                        monitoringStatus
+                          .lastTrigger
+                          .slice(1)
+                      : "—"}
+                  </dd>
+                </div>
+              </dl>
+
+              {metadata
+                .lastScanFailureMessage ? (
+                <div className="diagnostic-warning">
+                  <strong>
+                    Last scan issue
+                  </strong>
+
+                  <span>
+                    {
+                      metadata
+                        .lastScanFailureMessage
+                    }
+                  </span>
+
+                  <small>
+                    {formatTimestamp(
+                      metadata
+                        .lastScanFailureAt ??
+                        null
+                    )}
+                  </small>
+                </div>
+              ) : null}
+            </section>
+
+            <section
+              className={`scan-panel premium-tab-panel ${
+                activeConnectedTab ===
+                "connector"
+                  ? ""
+                  : "tab-hidden"
+              }`}
+            >
               <h2>
                 Startup
               </h2>
@@ -2332,7 +2885,14 @@ function App() {
               </label>
             </section>
 
-            <section className="scan-panel">
+            <section
+              className={`scan-panel premium-tab-panel ${
+                activeConnectedTab ===
+                "connector"
+                  ? ""
+                  : "tab-hidden"
+              }`}
+            >
               <h2>
                 Network scan
               </h2>
@@ -2385,26 +2945,112 @@ function App() {
               </div>
             </section>
 
-            <section className="scan-panel">
+            <section
+              className={`scan-panel premium-tab-panel apple-home-tab ${
+                activeConnectedTab ===
+                "apple-home"
+                  ? ""
+                  : "tab-hidden"
+              }`}
+            >
               <div className="integration-heading">
                 <div>
                   <h2>
                     Apple Home
                   </h2>
 
-                  <span className="integration-badge">
-                    Pro & Family
+                  <span className="integration-badge coming-soon-badge">
+                    Coming Soon
                   </span>
                 </div>
               </div>
 
               <p className="help">
-                Connect the rooms and accessories
-                already configured in the Apple
-                Home app. Apple requires a
-                one-time approval on an iPhone
-                before HomeCore can sync them.
+                Apple Home support is
+                currently in development.
+                Once released, Home Tech
+                Vault will securely connect
+                with compatible rooms and
+                accessories already configured
+                in the Apple Home app.
               </p>
+
+              <div className="coming-soon-card">
+                <div className="coming-soon-icon">
+                  <span aria-hidden="true">
+                    ⌂
+                  </span>
+                </div>
+
+                <div>
+                  <span className="coming-soon-label">
+                    In development
+                  </span>
+
+                  <h3>
+                    Apple Home is coming soon
+                  </h3>
+
+                  <p>
+                    Connect Apple Home
+                    accessories, view device
+                    availability, and manage
+                    compatible smart-home
+                    technology from one Home
+                    Tech Vault dashboard.
+                  </p>
+                </div>
+              </div>
+
+              <div className="feature-preview-grid">
+                <div>
+                  <span className="feature-preview-icon">
+                    ◫
+                  </span>
+
+                  <strong>
+                    Room synchronization
+                  </strong>
+
+                  <p>
+                    Organize accessories using
+                    your existing Apple Home
+                    rooms.
+                  </p>
+                </div>
+
+                <div>
+                  <span className="feature-preview-icon">
+                    ◉
+                  </span>
+
+                  <strong>
+                    Live device status
+                  </strong>
+
+                  <p>
+                    View compatible accessory
+                    availability in Home Tech
+                    Vault.
+                  </p>
+                </div>
+
+                <div>
+                  <span className="feature-preview-icon">
+                    ◆
+                  </span>
+
+                  <strong>
+                    Secure approval
+                  </strong>
+
+                  <p>
+                    Apple Home access will
+                    require approval from your
+                    iPhone.
+                  </p>
+                </div>
+              </div>
 
               {!appleHomeSetupOpen ? (
                 <div className="actions">
@@ -2446,7 +3092,7 @@ function App() {
 
                   <ol className="apple-home-steps">
                     <li>
-                      Open the HomeCore app on
+                      Open the Home Tech Vault app on
                       your iPhone.
                     </li>
 
@@ -2557,10 +3203,37 @@ function App() {
               )}
             </section>
 
-            <section className="scan-panel">
-              <h2>
-                Home Assistant
-              </h2>
+            <section
+              className={`scan-panel premium-tab-panel home-assistant-tab ${
+                activeConnectedTab ===
+                "home-assistant"
+                  ? ""
+                  : "tab-hidden"
+              }`}
+            >
+              <div className="section-heading">
+                <div>
+                  <p className="section-kicker">
+                    Smart-home integration
+                  </p>
+
+                  <h2>
+                    Home Assistant
+                  </h2>
+                </div>
+
+                <span
+                  className={`integration-status-pill ${
+                    metadata.homeAssistantConnected
+                      ? "integration-connected"
+                      : "integration-not-connected"
+                  }`}
+                >
+                  {metadata.homeAssistantConnected
+                    ? "Connected"
+                    : "Not connected"}
+                </span>
+              </div>
 
               <p className="help">
                 Connect Home Assistant
@@ -2804,7 +3477,14 @@ function App() {
             </section>
 
             {scanConsentOpen ? (
-              <section className="consent-panel">
+              <section
+                className={`consent-panel premium-tab-panel ${
+                  activeConnectedTab ===
+                  "connector"
+                    ? ""
+                    : "tab-hidden"
+                }`}
+              >
                 <h2>
                   Before you scan
                 </h2>

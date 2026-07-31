@@ -8,6 +8,16 @@ export type ConnectorMetadata = {
   lastScanAt?: string | null;
   lastScanDeviceCount?: number | null;
 
+  lastScanStartedAt?: string | null;
+  lastSuccessfulSyncAt?: string | null;
+  lastScanDurationMs?: number | null;
+
+  consecutiveScanFailures?: number;
+  lastScanFailureAt?: string | null;
+  lastScanFailureMessage?: string | null;
+
+  pendingDiscoveryUploads?: number;
+
   scanConsentAccepted?: boolean;
   monitoringEnabled?: boolean;
   monitoringPaused?: boolean;

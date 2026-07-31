@@ -71,10 +71,10 @@ export default function LandingPage({
         {/* Section 1: Hero */}
         <HeroSection isSignedIn={isSignedIn} />
 
-        {/* Section 2: Meet HomeCore */}
+        {/* Section 2: Meet Home Tech Vault */}
         <HomeCoreOverviewSection />
 
-        {/* Section 3: See HomeCore in action */}
+        {/* Section 3: See Home Tech Vault in action */}
         <HomeHealthPreviewSection />
 
         {/* Section 4: Home Advisor */}
