@@ -7,7 +7,30 @@ import {
   AdminSummaryCard,
   AdminSummaryGrid,
 } from "@/components/admin/layout/AdminPageLayout";
-import { ADMIN_PLATFORM_LINKS } from "@/lib/admin/navigation";
+
+
+const PLATFORM_LINKS = [
+  {
+    href: "/admin/system",
+    label: "System Health",
+    description: "Environment and integration checks",
+  },
+  {
+    href: "/admin/support",
+    label: "Support Inbox",
+    description: "Customer support tickets",
+  },
+  {
+    href: "/admin/founding-members",
+    label: "Founding Members",
+    description: "First 50 member program",
+  },
+  {
+    href: "/admin/subscriptions",
+    label: "Subscriptions",
+    description: "Billing overview",
+  },
+] as const;
 
 export const metadata = {
   title: "Platform — Home Tech Vault Admin",
@@ -24,7 +47,7 @@ export default function AdminPlatformPage() {
       <AdminSummaryGrid>
         <AdminSummaryCard
           label="Tools"
-          value={ADMIN_PLATFORM_LINKS.length}
+          value={PLATFORM_LINKS.length}
           hint="Available platform sections"
         />
       </AdminSummaryGrid>
@@ -35,7 +58,7 @@ export default function AdminPlatformPage() {
         subtitle="Secondary admin areas grouped for quick access."
       >
         <ul className="grid gap-4 md:grid-cols-2">
-          {ADMIN_PLATFORM_LINKS.map((link) => (
+          {PLATFORM_LINKS.map((link) => (
             <li key={link.href}>
               <Link
                 href={link.href}

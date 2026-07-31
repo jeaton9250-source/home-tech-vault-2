@@ -39,7 +39,6 @@ type DeviceRow = {
   mac_address: string | null;
   manufacturer: string | null;
   discovery_source: string | null;
-  created_at: string | null;
   households:
     | {
         id: string;
@@ -86,7 +85,6 @@ const DEVICE_SELECT = `
   mac_address,
   manufacturer,
   discovery_source,
-  created_at,
   households (
     id,
     name,
@@ -299,7 +297,7 @@ function applySort<T extends {
 ) {
   switch (sort) {
     case "oldest":
-      return query.order("created_at", {
+      return query.order("first_seen_at", {
         ascending: true,
       });
     case "name":
@@ -324,7 +322,7 @@ function applySort<T extends {
       });
     case "newest":
     default:
-      return query.order("created_at", {
+      return query.order("first_seen_at", {
         ascending: false,
       });
   }
@@ -357,14 +355,14 @@ function buildFilteredQuery(
 
   if (options.createdFrom?.trim()) {
     query = query.gte(
-      "created_at",
+      "first_seen_at",
       `${options.createdFrom.trim()}T00:00:00.000Z`
     );
   }
 
   if (options.createdTo?.trim()) {
     query = query.lte(
-      "created_at",
+      "first_seen_at",
       `${options.createdTo.trim()}T23:59:59.999Z`
     );
   }
@@ -597,7 +595,7 @@ async function mapDeviceRows(
       warrantyStatus,
       documentCount:
         documentCounts.get(row.id) ?? 0,
-      createdAt: row.created_at,
+      createdAt: row.first_seen_at,
     };
   });
 }
@@ -672,14 +670,14 @@ async function loadPresenceRows(
 
   if (options.createdFrom?.trim()) {
     query = query.gte(
-      "created_at",
+      "first_seen_at",
       `${options.createdFrom.trim()}T00:00:00.000Z`
     );
   }
 
   if (options.createdTo?.trim()) {
     query = query.lte(
-      "created_at",
+      "first_seen_at",
       `${options.createdTo.trim()}T23:59:59.999Z`
     );
   }
@@ -753,8 +751,8 @@ function sortDeviceRows(
     switch (sort) {
       case "oldest":
         return (
-          new Date(left.created_at ?? 0).getTime() -
-          new Date(right.created_at ?? 0).getTime()
+          new Date(left.first_seen_at ?? 0).getTime() -
+          new Date(right.first_seen_at ?? 0).getTime()
         );
       case "name":
         return (
@@ -791,8 +789,8 @@ function sortDeviceRows(
       case "newest":
       default:
         return (
-          new Date(right.created_at ?? 0).getTime() -
-          new Date(left.created_at ?? 0).getTime()
+          new Date(right.first_seen_at ?? 0).getTime() -
+          new Date(left.first_seen_at ?? 0).getTime()
         );
     }
   });
