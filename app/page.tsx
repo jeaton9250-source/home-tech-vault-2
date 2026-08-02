@@ -4,39 +4,37 @@ import LandingPage from "@/components/landing/LandingPage";
 import StructuredData from "@/components/marketing/StructuredData";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { loadPublicFoundingProgramSummary } from "@/lib/founding-members/loaders";
+import { createSoftwareApplicationJsonLd } from "@/lib/marketing/metadata";
 import {
-  createSoftwareApplicationJsonLd,
-} from "@/lib/marketing/metadata";
-import {
-  SOCIAL_DEFAULT_DESCRIPTION,
-  SOCIAL_DEFAULT_TITLE,
-  SOCIAL_OG_DESCRIPTION,
   SOCIAL_OG_IMAGE,
-  SOCIAL_OG_TITLE,
   SOCIAL_SITE_URL,
-  SOCIAL_TWITTER_DESCRIPTION,
-  SOCIAL_TWITTER_TITLE,
   socialTwitter,
 } from "@/lib/marketing/socialMetadata";
 
+const title =
+  "Home Tech Vault | Home Inventory & Warranty Tracker That Discovers Your Devices";
+const description =
+  "Automatically discover the technology connected to your home, then keep devices, receipts, manuals, documents, and warranties organized in one secure vault.";
+
 export const metadata: Metadata = {
-  title: SOCIAL_DEFAULT_TITLE,
-  description: SOCIAL_DEFAULT_DESCRIPTION,
+  title,
+  description,
   alternates: {
     canonical: SOCIAL_SITE_URL,
   },
   keywords: [
-    "home technology management platform",
-    "home technology dashboard",
+    "home inventory",
+    "home inventory app",
+    "warranty tracker",
+    "device inventory",
+    "home technology organizer",
     "home network discovery",
-    "smart home assistant",
-    "device discovery",
-    "home advisor",
+    "receipt and manual organizer",
     "home tech vault",
   ],
   openGraph: {
-    title: SOCIAL_OG_TITLE,
-    description: SOCIAL_OG_DESCRIPTION,
+    title,
+    description,
     url: SOCIAL_SITE_URL,
     siteName: "Home Tech Vault",
     locale: "en_US",
@@ -45,8 +43,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     ...socialTwitter,
-    title: SOCIAL_TWITTER_TITLE,
-    description: SOCIAL_TWITTER_DESCRIPTION,
+    title,
+    description,
     images: [SOCIAL_OG_IMAGE.url],
   },
 };
@@ -56,22 +54,15 @@ export default async function HomePage() {
 
   try {
     const admin = createAdminClient();
-    foundingSummary =
-      await loadPublicFoundingProgramSummary(
-        admin
-      );
+    foundingSummary = await loadPublicFoundingProgramSummary(admin);
   } catch {
     foundingSummary = null;
   }
 
   return (
     <>
-      <StructuredData
-        data={createSoftwareApplicationJsonLd()}
-      />
-      <LandingPage
-        foundingSummary={foundingSummary}
-      />
+      <StructuredData data={createSoftwareApplicationJsonLd()} />
+      <LandingPage foundingSummary={foundingSummary} />
     </>
   );
 }

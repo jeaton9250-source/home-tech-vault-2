@@ -1,126 +1,43 @@
-"use client";
-
 import Link from "next/link";
 
-import SignInLink from "@/components/auth/SignInLink";
 import Logo from "@/components/brand/Logo";
-import {
-  FOOTER_COPYRIGHT,
-  FOOTER_GUIDE_LINKS,
-} from "@/lib/marketing/footer";
-import {
-  LANDING_PUBLIC_SECTION_IDS,
-} from "@/lib/marketing/landingPublicContent";
-import { MARKETING_ROUTES } from "@/lib/marketing/routes";
 
 const footerLinks = [
-  {
-    label: "Home Health",
-    href: `#${LANDING_PUBLIC_SECTION_IDS.homeHealth}`,
-  },
-  {
-    label: "Home Advisor",
-    href: `#${LANDING_PUBLIC_SECTION_IDS.advisor}`,
-  },
-  {
-    label: "Pricing",
-    href: `#${LANDING_PUBLIC_SECTION_IDS.pricing}`,
-  },
-  {
-    label: "Interactive Demo",
-    href: MARKETING_ROUTES.demo,
-  },
-  {
-    label: "Knowledge Center",
-    href: "/knowledge",
-  },
-  {
-    label: "Brand Guides",
-    href: "/guides",
-  },
-  {
-    label: "Compare",
-    href: "/compare",
-  },
-  {
-    label: "Create Account",
-    href: MARKETING_ROUTES.signup,
-  },
-  {
-    label: "Privacy",
-    href: MARKETING_ROUTES.privacy,
-  },
-  {
-    label: "Terms",
-    href: MARKETING_ROUTES.terms,
-  },
+  { label: "About", href: "/about" },
+  { label: "Pricing", href: "/pricing" },
+  { label: "Compare", href: "/compare" },
+  { label: "Trust Center", href: "/trust" },
+  { label: "Privacy", href: "/privacy" },
+  { label: "Terms", href: "/terms" },
+  { label: "Contact", href: "/contact" },
 ] as const;
-
-const footerLinkClassName =
-  "text-sm text-[#667085] transition hover:text-[#172033] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#183B56]";
 
 export default function LandingFooter() {
   return (
-    <footer className="border-t border-[#E7E9EC] bg-white">
-      <div className="mx-auto max-w-6xl px-5 py-16 md:px-8 lg:px-10">
-        <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16">
-          <div className="max-w-md">
-            <Logo />
-            <p className="mt-4 text-sm leading-7 text-[#667085]">
-              Organize your home&apos;s devices, receipts,
-              warranties, manuals, maintenance records, and
-              network details in one secure place.
-            </p>
-          </div>
-
-          <div className="grid gap-10 sm:grid-cols-2">
-            <nav aria-label="Footer">
-              <p className="text-xs font-medium uppercase tracking-[0.14em] text-[#98A2B3]">
-                Product
-              </p>
-              <ul className="mt-4 grid gap-3">
-                {footerLinks.map((link) => (
-                  <li key={link.label}>
-                    <Link
-                      href={link.href}
-                      className={footerLinkClassName}
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-                <li>
-                  <SignInLink className={footerLinkClassName}>
-                    Sign In
-                  </SignInLink>
-                </li>
-              </ul>
-            </nav>
-
-            <nav aria-label="Guides">
-              <p className="text-xs font-medium uppercase tracking-[0.14em] text-[#98A2B3]">
-                Guides
-              </p>
-              <ul className="mt-4 grid gap-3">
-                {FOOTER_GUIDE_LINKS.map((link) => (
-                  <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      className={footerLinkClassName}
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          </div>
+    <footer className="border-t border-border-subtle bg-surface-card px-5 py-10 md:px-8 lg:px-12">
+      <div className="mx-auto flex max-w-6xl flex-col gap-8 md:flex-row md:items-center md:justify-between">
+        <div>
+          <Logo collapsed />
+          <p className="mt-3 max-w-md text-sm leading-6 text-text-muted">
+            The home inventory and warranty tracker built for the technology you
+            rely on every day.
+          </p>
         </div>
-
-        <p className="mt-12 border-t border-[#E7E9EC] pt-8 text-xs leading-5 text-[#667085]">
-          {FOOTER_COPYRIGHT}
-        </p>
+        <nav className="flex flex-wrap gap-x-5 gap-y-3" aria-label="Footer">
+          {footerLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="text-sm font-semibold text-text-secondary transition hover:text-text-primary"
+            >
+              {link.label}
+            </Link>
+          ))}
+        </nav>
       </div>
+      <p className="mx-auto mt-8 max-w-6xl border-t border-border-subtle pt-6 text-xs text-text-muted">
+        © {new Date().getFullYear()} Home Tech Vault. All rights reserved.
+      </p>
     </footer>
   );
 }

@@ -34,7 +34,7 @@ export default function HeroVisual() {
         className="absolute -top-5 -left-4 z-20 htv-glass-pill px-4 py-2.5 shadow-lift flex items-center gap-2.5 text-xs font-semibold text-text-primary border border-border-subtle/80 bg-surface-card/95 backdrop-blur-md"
       >
         <span className="flex h-2.5 w-2.5 rounded-full bg-home-health animate-pulse" />
-        <span className="truncate">Living Room Network · Optimal</span>
+        <span className="truncate">Sample network · Online</span>
       </motion.div>
 
       {/* Floating Dashboard Card 2 — Bottom Right */}
@@ -44,7 +44,7 @@ export default function HeroVisual() {
         className="absolute -bottom-6 -right-4 z-20 htv-glass-pill px-4 py-2.5 shadow-lift flex items-center gap-2.5 text-xs font-semibold text-text-primary border border-border-subtle/80 bg-surface-card/95 backdrop-blur-md"
       >
         <Sparkles size={14} className="text-premium shrink-0" />
-        <span className="truncate">Home Advisor: 1 Warranty Auto-Protected</span>
+        <span className="truncate">Sample reminder · Warranty due soon</span>
       </motion.div>
 
       {/* Floating Dashboard Card 3 — Mid Right */}
@@ -58,7 +58,7 @@ export default function HeroVisual() {
         </div>
         <div>
           <p className="text-[11px] font-semibold text-text-primary">System Health</p>
-          <p className="text-[10px] text-home-health">34 Connected Hubs</p>
+          <p className="text-[10px] text-home-health">12 Sample Devices</p>
         </div>
       </motion.div>
 
@@ -82,7 +82,7 @@ export default function HeroVisual() {
                   Home Tech Vault
                 </p>
                 <p className="text-xs sm:text-sm font-semibold text-text-primary">
-                  Highland Park Sanctuary
+                  Sample Home
                 </p>
               </div>
             </div>
@@ -159,7 +159,7 @@ export default function HeroVisual() {
                       {LANDING_HOME_HEALTH.status}
                     </p>
                     <p className="text-[11px] text-text-muted mt-0.5">
-                      34 Connected Hubs · 12 Active Warranties · 0 Issues
+                      12 Sample Devices · 12 Active Warranties · 0 Issues
                     </p>
                   </div>
                 </div>
@@ -168,7 +168,7 @@ export default function HeroVisual() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <p className="text-[11px] font-semibold uppercase tracking-wider text-text-muted">
-                      Live Home System Pulse
+                      What needs your attention right now
                     </p>
                     <span className="text-[11px] font-medium text-interaction flex items-center gap-1">
                       <Activity size={12} className="animate-pulse" /> Real-time active
@@ -301,7 +301,7 @@ export default function HeroVisual() {
               >
                 <div className="flex items-center justify-between">
                   <p className="text-[11px] font-semibold uppercase tracking-wider text-text-muted">
-                    Connected Hardware Nodes (34 Total)
+                    Sample Devices (12 Total)
                   </p>
                   <span className="text-[11px] font-semibold text-home-health">
                     100% Online

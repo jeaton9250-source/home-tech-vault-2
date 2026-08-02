@@ -2,10 +2,10 @@
 
 import { useEffect } from "react";
 
+import CustomerStorySection from "@/components/landing/public/CustomerStorySection";
 import FinalCta from "@/components/landing/public/FinalCta";
 import HeroSection from "@/components/landing/public/HeroSection";
 import HomeAdvisorStorySection from "@/components/landing/public/HomeAdvisorStorySection";
-import HomeCoreOverviewSection from "@/components/landing/public/HomeCoreOverviewSection";
 import HomeDiscoverySection from "@/components/landing/public/HomeDiscoverySection";
 import HomeDocumentsSection from "@/components/landing/public/HomeDocumentsSection";
 import HomeFamilySection from "@/components/landing/public/HomeFamilySection";
@@ -16,7 +16,9 @@ import LandingFooter from "@/components/landing/public/LandingFooter";
 import LandingHeader from "@/components/landing/public/LandingHeader";
 import { landingTheme } from "@/components/landing/public/landingTheme";
 import PricingSection from "@/components/landing/public/PricingSection";
+import ProblemSection from "@/components/landing/public/ProblemSection";
 import SecuritySection from "@/components/landing/public/SecuritySection";
+import SocialProofSection from "@/components/landing/public/SocialProofSection";
 import StructuredData from "@/components/marketing/StructuredData";
 import { useDemoMode } from "@/hooks/useDemoMode";
 import type { LandingPublicSectionId } from "@/lib/marketing/landingPublicContent";
@@ -28,74 +30,50 @@ type LandingPageProps = {
 
 function scrollToSection(sectionId: LandingPublicSectionId) {
   const target = document.getElementById(sectionId);
-
-  if (!target) {
-    return;
-  }
-
-  target.scrollIntoView({
-    behavior: "smooth",
-    block: "start",
-  });
+  if (!target) return;
+  target.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
+const organizationSameAs = [
+  process.env.NEXT_PUBLIC_HOME_TECH_VAULT_LINKEDIN_URL,
+  process.env.NEXT_PUBLIC_HOME_TECH_VAULT_X_URL,
+].filter((value): value is string => Boolean(value));
+
 export default function LandingPage({
-  foundingSummary: _foundingSummary = null,
+  foundingSummary = null,
 }: LandingPageProps) {
   const { user, loading } = useDemoMode();
 
   useEffect(() => {
-    const hash = window.location.hash.replace(
-      "#",
-      ""
-    ) as LandingPublicSectionId;
-
-    if (!hash) {
-      return;
-    }
-
-    window.requestAnimationFrame(() => {
-      scrollToSection(hash);
-    });
+    const hash = window.location.hash.replace("#", "") as LandingPublicSectionId;
+    if (!hash) return;
+    window.requestAnimationFrame(() => scrollToSection(hash));
   }, []);
 
-  // Render marketing content immediately for SEO/CWV.
-  // Auth state only swaps header/CTA labels once known.
   const isSignedIn = !loading && Boolean(user);
+  const organizationJsonLd = {
+    ...createOrganizationJsonLd(),
+    ...(organizationSameAs.length > 0 ? { sameAs: organizationSameAs } : {}),
+  };
 
   return (
     <div className={landingTheme.page}>
-      <StructuredData data={createOrganizationJsonLd()} />
+      <StructuredData data={organizationJsonLd} />
       <LandingHeader isSignedIn={isSignedIn} />
       <main id="main-content">
-        {/* Section 1: Hero */}
         <HeroSection isSignedIn={isSignedIn} />
-
-        {/* Section 2: Meet Home Tech Vault */}
-        <HomeCoreOverviewSection />
-
-        {/* Section 3: See Home Tech Vault in action */}
+        <ProblemSection />
         <HomeHealthPreviewSection />
-
-        {/* Section 4: Home Advisor */}
         <HomeAdvisorStorySection />
-
-        {/* Section 5: Search Your Home */}
         <HomeSearchSection />
-
-        {/* Section 6: Discovery */}
         <HomeDiscoverySection />
-
-        {/* Section 7: Protection */}
         <HomeDocumentsSection />
-
-        {/* Additional Supporting Sections */}
         <HomeFamilySection />
+        <SocialProofSection foundingSummary={foundingSummary} />
+        <CustomerStorySection />
         <SecuritySection />
         <PricingSection isSignedIn={isSignedIn} />
         <LandingFaq />
-
-        {/* Section 8: Final CTA */}
         <FinalCta isSignedIn={isSignedIn} />
       </main>
       <LandingFooter />

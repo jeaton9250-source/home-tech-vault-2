@@ -1,30 +1,26 @@
-import PricingPageContent from "@/components/marketing/PricingPageContent";
-import StructuredData from "@/components/marketing/StructuredData";
-import {
-  createPageMetadata,
-  createSoftwareApplicationJsonLd,
-} from "@/lib/marketing/metadata";
-import { MARKETING_ROUTES } from "@/lib/marketing/routes";
+import type { Metadata } from "next";
 
-export const metadata = createPageMetadata({
-  title: "Pricing — Free, Pro & Family Plans",
+import LandingFaq from "@/components/landing/public/LandingFaq";
+import LandingFooter from "@/components/landing/public/LandingFooter";
+import LandingHeader from "@/components/landing/public/LandingHeader";
+import PricingSection from "@/components/landing/public/PricingSection";
+
+export const metadata: Metadata = {
+  title: "Home Tech Vault Pricing | Free, Pro, and Family Plans",
   description:
-    "Simple pricing for every household. Start free, upgrade to Pro for unlimited inventory, or choose Family for household sharing.",
-  path: MARKETING_ROUTES.pricing,
-  keywords: [
-    "home tech vault pricing",
-    "warranty tracker subscription",
-    "family vault plan",
-  ],
-});
+    "Compare Home Tech Vault Free, Pro, and Family plans. Choose monthly billing or save about 17% with annual billing.",
+  alternates: { canonical: "https://hometechvault.com/pricing" },
+};
 
 export default function PricingPage() {
   return (
-    <>
-      <StructuredData
-        data={createSoftwareApplicationJsonLd()}
-      />
-      <PricingPageContent />
-    </>
+    <div className="min-h-screen bg-surface-base">
+      <LandingHeader />
+      <main>
+        <PricingSection />
+        <LandingFaq />
+      </main>
+      <LandingFooter />
+    </div>
   );
 }

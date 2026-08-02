@@ -51,7 +51,7 @@ export default function HomeHealthPreviewSection() {
                   Daily Home Pulse
                 </p>
                 <h3 className="text-lg font-semibold text-text-primary mt-0.5">
-                  Highland Park Sanctuary
+                  Sample Home
                 </h3>
               </div>
               <span className="inline-flex items-center gap-1.5 rounded-full bg-home-health-soft px-3 py-1 text-xs font-semibold text-home-health border border-home-health/20">

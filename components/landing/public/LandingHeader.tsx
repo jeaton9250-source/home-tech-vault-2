@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Menu, X, Sparkles } from "lucide-react";
+import { Menu, Sparkles, X } from "lucide-react";
 
 import SignInLink from "@/components/auth/SignInLink";
 import Logo from "@/components/brand/Logo";
@@ -12,19 +12,20 @@ import { LANDING_PUBLIC_SECTION_IDS } from "@/lib/marketing/landingPublicContent
 import { MARKETING_ROUTES } from "@/lib/marketing/routes";
 import { cn } from "@/lib/design-system/cn";
 
-const NAV_LINKS = [
+const SECTION_LINKS = [
   {
-    label: "Home Tech Vault",
+    label: "How it works",
     sectionId: LANDING_PUBLIC_SECTION_IDS.homeHealth,
-  },
-  {
-    label: "Advisor",
-    sectionId: LANDING_PUBLIC_SECTION_IDS.advisor,
   },
   {
     label: "Pricing",
     sectionId: LANDING_PUBLIC_SECTION_IDS.pricing,
   },
+] as const;
+
+const ROUTE_LINKS = [
+  { label: "Compare", href: "/compare" },
+  { label: "About", href: "/about" },
 ] as const;
 
 type LandingHeaderProps = {
@@ -38,33 +39,21 @@ export default function LandingHeader({
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => {
-      setScrolled(window.scrollY > 12);
-    };
-
+    const onScroll = () => setScrolled(window.scrollY > 12);
     onScroll();
-    window.addEventListener("scroll", onScroll, {
-      passive: true,
-    });
-
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const startHref = isSignedIn
-    ? "/dashboard"
-    : MARKETING_ROUTES.signup;
-  const startLabel = isSignedIn
-    ? "Open Home Tech Vault"
-    : "Start Free";
+  const startHref = isSignedIn ? "/dashboard" : MARKETING_ROUTES.signup;
+  const startLabel = isSignedIn ? "Open My Vault" : "Start Free";
 
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 transition-all duration-300 px-4 py-3 md:px-8",
+        "sticky top-0 z-50 px-4 py-3 transition-all duration-300 md:px-8",
         scrolled
-          ? "border-b border-border-subtle/70 bg-surface-card/85 backdrop-blur-xl shadow-md"
+          ? "border-b border-border-subtle/70 bg-surface-card/85 shadow-md backdrop-blur-xl"
           : "bg-surface-base/80 backdrop-blur-md"
       )}
     >
@@ -82,14 +71,23 @@ export default function LandingHeader({
           className="hidden items-center gap-1 rounded-full border border-border-subtle/70 bg-surface-card/90 px-3 py-1.5 shadow-sm backdrop-blur-lg lg:flex"
           aria-label="Primary"
         >
-          {NAV_LINKS.map((link) => (
+          {SECTION_LINKS.map((link) => (
             <a
               key={link.sectionId}
               href={`#${link.sectionId}`}
-              className="rounded-full px-4 py-1.5 text-xs font-semibold text-text-secondary transition-all hover:bg-surface-hover hover:text-text-primary focus-visible:outline-none"
+              className="rounded-full px-4 py-1.5 text-xs font-semibold text-text-secondary transition-all hover:bg-surface-hover hover:text-text-primary"
             >
               {link.label}
             </a>
+          ))}
+          {ROUTE_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="rounded-full px-4 py-1.5 text-xs font-semibold text-text-secondary transition-all hover:bg-surface-hover hover:text-text-primary"
+            >
+              {link.label}
+            </Link>
           ))}
         </nav>
 
@@ -98,8 +96,8 @@ export default function LandingHeader({
             href={MARKETING_ROUTES.demo}
             className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-text-secondary transition hover:bg-surface-hover hover:text-text-primary"
           >
-            <Sparkles size={14} className="text-premium" />
-            <span>Live Demo</span>
+            <Sparkles size={14} className="text-premium" aria-hidden />
+            <span>Demo</span>
           </Link>
 
           {!isSignedIn ? (
@@ -108,10 +106,7 @@ export default function LandingHeader({
             </SignInLink>
           ) : null}
 
-          <LandingTrackedLink
-            href={startHref}
-            className={landingTheme.btnPrimary}
-          >
+          <LandingTrackedLink href={startHref} className={landingTheme.btnPrimary}>
             {startLabel}
           </LandingTrackedLink>
         </div>
@@ -119,41 +114,26 @@ export default function LandingHeader({
         <div className="flex items-center gap-2 md:hidden">
           <LandingTrackedLink
             href={startHref}
-            className={cn(
-              landingTheme.btnPrimary,
-              "min-h-9 px-4 py-1.5 text-xs"
-            )}
+            className={cn(landingTheme.btnPrimary, "min-h-9 px-4 py-1.5 text-xs")}
           >
             {startLabel}
           </LandingTrackedLink>
-
           <button
             type="button"
             className="flex h-10 w-10 items-center justify-center rounded-full border border-border-subtle bg-surface-card text-text-primary shadow-sm"
-            aria-label={
-              mobileOpen ? "Close menu" : "Open menu"
-            }
+            aria-label={mobileOpen ? "Close menu" : "Open menu"}
             aria-expanded={mobileOpen}
-            onClick={() =>
-              setMobileOpen((open) => !open)
-            }
+            onClick={() => setMobileOpen((open) => !open)}
           >
-            {mobileOpen ? (
-              <X size={18} />
-            ) : (
-              <Menu size={18} />
-            )}
+            {mobileOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
         </div>
       </div>
 
       {mobileOpen ? (
         <div className="mt-3 rounded-3xl border border-border-subtle bg-surface-card p-5 shadow-xl md:hidden">
-          <nav
-            className="flex flex-col gap-2"
-            aria-label="Primary mobile"
-          >
-            {NAV_LINKS.map((link) => (
+          <nav className="flex flex-col gap-2" aria-label="Primary mobile">
+            {SECTION_LINKS.map((link) => (
               <a
                 key={link.sectionId}
                 href={`#${link.sectionId}`}
@@ -163,7 +143,16 @@ export default function LandingHeader({
                 {link.label}
               </a>
             ))}
-
+            {ROUTE_LINKS.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="rounded-2xl px-4 py-3 text-sm font-semibold text-text-secondary hover:bg-surface-hover hover:text-text-primary"
+                onClick={() => setMobileOpen(false)}
+              >
+                {link.label}
+              </Link>
+            ))}
             <Link
               href={MARKETING_ROUTES.demo}
               className="rounded-2xl px-4 py-3 text-sm font-semibold text-text-secondary hover:bg-surface-hover hover:text-text-primary"
@@ -171,7 +160,6 @@ export default function LandingHeader({
             >
               Explore Demo
             </Link>
-
             {!isSignedIn ? (
               <SignInLink
                 className="rounded-2xl px-4 py-3 text-sm font-semibold text-text-secondary hover:bg-surface-hover"
@@ -186,4 +174,3 @@ export default function LandingHeader({
     </header>
   );
 }
-
