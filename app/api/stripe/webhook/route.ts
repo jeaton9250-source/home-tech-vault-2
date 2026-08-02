@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 
+import { trackHeyCatchStripeEvent } from "@/lib/analytics/heycatchStripe";
 export const runtime = "nodejs";
 
 type SubscriptionPlan = "free" | "pro" | "family";
@@ -62,6 +63,8 @@ export async function POST(request: Request) {
         signature,
         webhookSecret
       );
+
+      await trackHeyCatchStripeEvent(event);
     } catch (error) {
       console.error(
         "Stripe webhook signature error:",

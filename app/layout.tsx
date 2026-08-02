@@ -8,6 +8,7 @@ import ConditionalAppChrome from "@/components/ConditionalAppChrome";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 import { rootSiteMetadata } from "@/lib/marketing/socialMetadata";
 
+import HeyCatchIdentity from "@/components/analytics/HeyCatchIdentity";
 export const metadata: Metadata = rootSiteMetadata;
 
 export default function RootLayout({
@@ -21,6 +22,7 @@ export default function RootLayout({
       className={GeistSans.className}
     >
       <body className="bg-surface-base text-text-primary antialiased">
+        <HeyCatchIdentity />
         <GoogleAnalytics />
         <ConditionalAppChrome>{children}</ConditionalAppChrome>
         <Analytics />
