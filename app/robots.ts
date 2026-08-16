@@ -19,7 +19,7 @@ export default function robots(): MetadataRoute.Robots {
         "/devices",
         "/documents",
         "/network",
-        "/home",
+        "/home/",
         "/family",
         "/settings",
         "/account",
