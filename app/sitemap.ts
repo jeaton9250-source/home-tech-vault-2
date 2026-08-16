@@ -9,16 +9,28 @@ import {
 import { INDEXABLE_MARKETING_PATHS } from "@/lib/marketing/routes";
 import { getSiteUrl } from "@/lib/marketing/site";
 import { comparisonSitemapEntries } from "@/lib/seo/comparisons/pages";
-import { seoFaqSitemapEntries } from "@/lib/seo/faqs/catalog";
-import { programmaticGuideSitemapEntries } from "@/lib/seo/programmatic";
 
 const siteUrl = getSiteUrl();
 
-/** Revalidate hourly so Search Console always sees fresh XML, not a stale HTML error page. */
+/**
+ * Revalidate hourly so Search Console receives fresh XML.
+ */
 export const revalidate = 3600;
 
+/**
+ * Keep the sitemap intentionally focused.
+ *
+ * We want Google prioritizing:
+ * - core marketing pages
+ * - category hubs
+ * - strong editorial knowledge articles
+ * - comparison pages
+ *
+ * Programmatic guides and individual SEO FAQ pages can be added
+ * back gradually once the domain has stronger crawl/index coverage.
+ */
 export default function sitemap(): MetadataRoute.Sitemap {
-  const lastModified = new Date();
+  const now = new Date();
 
   const marketingEntries: MetadataRoute.Sitemap =
     INDEXABLE_MARKETING_PATHS.map((path) => ({
@@ -26,7 +38,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
         path === "/"
           ? `${siteUrl}/`
           : `${siteUrl}${path}`,
-      lastModified,
+
+      lastModified: now,
+
       changeFrequency:
         path === "/"
           ? "weekly"
@@ -37,49 +51,49 @@ export default function sitemap(): MetadataRoute.Sitemap {
               path === "/faq"
             ? "weekly"
             : "monthly",
+
       priority:
         path === "/"
           ? 1
           : path === "/pricing"
             ? 0.9
             : path === "/knowledge" ||
-                path === "/guides" ||
                 path === "/compare"
               ? 0.85
-              : 0.7,
+              : path === "/guides" ||
+                  path === "/faq"
+                ? 0.75
+                : 0.7,
     }));
 
   const categoryEntries: MetadataRoute.Sitemap =
     KNOWLEDGE_CATEGORIES.map((category) => ({
-      url: `${siteUrl}${knowledgeCategoryPath(category.slug)}`,
-      lastModified,
-      changeFrequency: "weekly" as const,
+      url: `${siteUrl}${knowledgeCategoryPath(
+        category.slug
+      )}`,
+      lastModified: now,
+      changeFrequency: "weekly",
       priority: 0.75,
     }));
 
   const articleEntries: MetadataRoute.Sitemap =
     KNOWLEDGE_CATALOG.map((entry) => ({
-      url: `${siteUrl}${knowledgeArticlePath(entry.category, entry.slug)}`,
+      url: `${siteUrl}${knowledgeArticlePath(
+        entry.category,
+        entry.slug
+      )}`,
       lastModified: new Date(entry.publishedAt),
-      changeFrequency: "monthly" as const,
-      priority: 0.65,
+      changeFrequency: "monthly",
+      priority: 0.7,
     }));
-
-  const guideEntries: MetadataRoute.Sitemap =
-    programmaticGuideSitemapEntries(siteUrl);
 
   const compareEntries: MetadataRoute.Sitemap =
     comparisonSitemapEntries(siteUrl);
-
-  const faqEntries: MetadataRoute.Sitemap =
-    seoFaqSitemapEntries(siteUrl);
 
   return [
     ...marketingEntries,
     ...categoryEntries,
     ...articleEntries,
-    ...guideEntries,
     ...compareEntries,
-    ...faqEntries,
   ];
 }
