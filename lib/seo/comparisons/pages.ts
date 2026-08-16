@@ -64,76 +64,111 @@ export const COMPARISON_PAGES: ComparisonPage[] = [
     kind: "versus",
     competitorName: "Sortly",
     title: `${HTV} vs Sortly`,
-    metaTitle: `${HTV} vs Sortly — Home Inventory Software Compared`,
+    metaTitle: "Sortly Alternative for Home Inventory | Home Tech Vault",
     metaDescription:
-      "Compare Home Tech Vault and Sortly for home inventory, device tracking, receipts, warranties, documents, and household organization.",
+      "Looking for a Sortly alternative for home use? Compare Home Tech Vault and Sortly for devices, warranties, receipts, manuals, serial numbers, and household organization.",
     keywords: [
-      "Home Tech Vault vs Sortly",
-      "Sortly home inventory",
       "Sortly alternative",
+      "Sortly alternative for home inventory",
+      "Sortly home inventory alternative",
+      "Home Tech Vault vs Sortly",
+      "Sortly vs Home Tech Vault",
       "home inventory app",
-      "warranty tracker",
+      "home inventory software",
+      "warranty tracker app",
       "device inventory software",
+      "appliance inventory app",
+      "electronics inventory app",
+      "receipt organizer",
     ],
-    heroEyebrow: "Comparison",
-    heroTitle: `${HTV} vs Sortly`,
+    heroEyebrow: "Sortly Alternative",
+    heroTitle: "A Sortly Alternative Built for Home Inventory",
     heroDescription:
-      "Sortly is a flexible inventory platform used across homes and businesses. Home Tech Vault is purpose-built for household technology, warranties, receipts, manuals, and device records.",
+      "Sortly is a flexible inventory platform. Home Tech Vault takes a more focused approach for homeowners — keeping devices, appliances, receipts, warranties, manuals, serial numbers, and purchase information together in one household vault.",
     intro: [
-      "Sortly is a broad inventory platform designed to track physical assets across many use cases, including business equipment, supplies, and household belongings.",
-      "Home Tech Vault takes a narrower approach. It focuses specifically on home technology and appliances, keeping device details, receipts, warranties, manuals, serial numbers, and household records together.",
-      "Both tools can help organize what you own. The better fit depends on whether you want a general-purpose inventory system or a household technology vault with workflows already designed around devices and warranties.",
+      "If you are considering Sortly for your home inventory, the biggest difference is scope. Sortly is a broad inventory platform designed for many kinds of physical assets, while Home Tech Vault is focused specifically on household technology and appliances.",
+      "Home Tech Vault organizes the information homeowners are most likely to need when something breaks, needs service, gets replaced, or requires a warranty claim: the device, model, serial number, purchase information, receipt, warranty, manual, and supporting documents.",
+      "Neither approach is automatically better. Sortly may make more sense when you need a flexible general inventory system. Home Tech Vault may fit better when the primary goal is keeping household devices and their important records organized without building a broader asset-management workflow.",
     ],
     whenAlternativeWins: [
-      "You need a general inventory platform for many types of physical assets.",
-      "You want inventory workflows that can extend into business equipment or supplies.",
-      "Barcode and broader asset-management workflows are more important than household warranty organization.",
+      "You need a general inventory platform that can track many different types of physical assets.",
+      "Your inventory extends beyond household technology into equipment, supplies, tools, or business assets.",
+      "Barcode, quantity, and broader asset-management workflows are more important than household warranty organization.",
+      "You want one flexible inventory system that can serve both personal and professional use cases.",
     ],
     whenHtvWins: [
       "Your main goal is organizing household technology and appliances.",
-      "You want receipts, warranties, manuals, serial numbers, and device details kept together.",
-      "You want a simpler household-focused experience instead of a general inventory platform.",
+      "You want receipts, warranties, manuals, serial numbers, and purchase information connected to the device they belong to.",
+      "You want a simpler household-focused system instead of configuring a general inventory platform.",
+      "You want family members to be able to find important device information without learning an asset-management system.",
     ],
     sections: [
       {
-        id: "purpose",
-        heading: "General inventory vs household technology",
+        id: "sortly-alternative",
+        heading: "Why homeowners look for a Sortly alternative",
         paragraphs: [
-          "Sortly is designed to support many inventory scenarios. That flexibility works well when the same system needs to track equipment, supplies, tools, or other physical assets.",
-          "Home Tech Vault is deliberately narrower. Its structure centers on devices, rooms, warranties, receipts, manuals, maintenance, and household technology records.",
-          "If you need one flexible inventory platform for many asset types, Sortly may be the better fit. If your problem is specifically keeping home technology organized, Home Tech Vault removes much of the setup.",
+          "Sortly is built to handle broad inventory needs. That flexibility is valuable, but some homeowners do not need a full inventory-management platform to remember which television they bought, when the refrigerator warranty expires, or where the router receipt lives.",
+          "A household technology inventory has a narrower job: preserve the information that becomes important during repairs, warranty claims, support calls, replacements, moves, and insurance documentation.",
+          "Home Tech Vault focuses its experience around that narrower problem. Instead of starting with generic inventory items, the system emphasizes devices, rooms, model numbers, serial numbers, warranties, receipts, manuals, maintenance, and household access.",
         ],
       },
       {
-        id: "warranties-documents",
-        heading: "Warranties, receipts, and documents",
+        id: "home-inventory",
+        heading: "General inventory vs home technology inventory",
         paragraphs: [
-          "A home technology inventory becomes most useful when proof of purchase, warranty dates, manuals, and serial numbers remain connected to the item.",
-          "Home Tech Vault emphasizes this relationship by keeping documents and warranty information alongside device records.",
-          "Sortly can track inventory details and attachments, but Home Tech Vault is structured specifically around the moments homeowners encounter: support calls, warranty claims, replacements, and maintenance.",
+          "Sortly can be used for home inventory, but its structure is broad enough to support everything from household belongings to professional equipment.",
+          "Home Tech Vault deliberately gives up some of that breadth in exchange for a more opinionated household technology workflow.",
+          "If your inventory includes every possession, supply, tool, and box in storage, a broader inventory system may be appropriate. If your priority is appliances, electronics, smart-home devices, network equipment, warranties, receipts, and manuals, a specialized vault can reduce setup and maintenance.",
         ],
       },
       {
-        id: "household-use",
-        heading: "Designed for household use",
+        id: "warranties",
+        heading: "Warranty tracking and proof of purchase",
         paragraphs: [
-          "Sortly serves a broad range of inventory needs, including professional and business use cases.",
-          "Home Tech Vault focuses on the household experience, including rooms, family access, home technology records, and information another household member may need to find quickly.",
-          "That narrower scope can make Home Tech Vault easier for households that do not need a full asset-management platform.",
+          "Knowing that you own an item is not enough when a warranty claim starts. You may also need the purchase date, model, serial number, receipt, warranty document, and other proof.",
+          "Home Tech Vault is structured around keeping those records close to the device they belong to rather than treating them as unrelated files.",
+          "That difference matters most when something fails unexpectedly. The goal is to open one record and find the information needed for support instead of searching email, cloud drives, drawers, and old boxes.",
+        ],
+      },
+      {
+        id: "documents",
+        heading: "Receipts, manuals, and device documents",
+        paragraphs: [
+          "Receipts and manuals are easy to save and surprisingly hard to find months or years later.",
+          "A household-focused inventory works best when documents remain attached to the device context: which refrigerator the receipt belongs to, which television the warranty covers, and which router a manual describes.",
+          "Home Tech Vault emphasizes that relationship so the inventory acts as more than a list of things you own.",
+        ],
+      },
+      {
+        id: "household",
+        heading: "Built around a household instead of an asset database",
+        paragraphs: [
+          "Many inventory platforms are designed with businesses, warehouses, equipment, or professional asset tracking in mind.",
+          "Home Tech Vault uses a household mental model instead: devices live in rooms, family members may need access, warranties have expiration dates, and documents exist because someone may need them during a real-world problem.",
+          "That narrower experience can be easier for families that want organization without turning home inventory into another system they need to administer.",
+        ],
+      },
+      {
+        id: "which-is-better",
+        heading: "Which is better: Sortly or Home Tech Vault?",
+        paragraphs: [
+          "Choose Sortly when flexibility and broad inventory management are the priority.",
+          "Choose Home Tech Vault when the inventory is primarily about household technology, appliances, warranties, receipts, manuals, serial numbers, and related records.",
+          "The deciding question is not which product has more inventory features. It is whether you need a general inventory platform or a purpose-built home technology vault.",
         ],
       },
       {
         id: "verdict",
         heading: "Practical verdict",
         paragraphs: [
-          "Choose Sortly when you need a flexible inventory system that extends beyond home technology.",
-          "Choose Home Tech Vault when your main concern is keeping household devices, warranties, receipts, manuals, and serial numbers organized.",
-          "The deciding factor is scope: broad asset inventory versus a purpose-built home technology vault.",
+          "Sortly is a strong fit for users who need broad inventory management across many kinds of assets.",
+          "Home Tech Vault is designed for a narrower customer: homeowners who want important technology information organized before something breaks.",
+          "If your main frustration is finding receipts, warranty information, manuals, serial numbers, and device details, the specialized workflow may be more useful than a general-purpose inventory system.",
         ],
       },
     ],
     table: {
-      caption: "Home Tech Vault vs Sortly at a glance",
+      caption: "Home Tech Vault vs Sortly for home inventory",
       columns: ["Criterion", HTV, "Sortly"],
       rows: [
         {
@@ -144,94 +179,110 @@ export const COMPARISON_PAGES: ComparisonPage[] = [
           ],
         },
         {
+          feature: "Home inventory focus",
+          values: [
+            "Purpose-built around household devices",
+            "One of many possible inventory use cases",
+          ],
+        },
+        {
           feature: "Device records",
           values: [
-            "Purpose-built for household tech",
-            "General inventory items",
+            "Structured around electronics and appliances",
+            "General inventory item records",
           ],
         },
         {
           feature: "Warranty tracking",
           values: [
-            "Focused on coverage dates and proof",
-            "Can be represented through inventory records",
+            "Focused on coverage dates and supporting proof",
+            "Can be represented within general inventory records",
           ],
         },
         {
-          feature: "Receipts & manuals",
-          values: [
-            "Stored alongside device records",
-            "Files and attachments associated with items",
-          ],
+          feature: "Receipts",
+          values: ["Stored in device context", "Can be attached to inventory items"],
         },
         {
-          feature: "Household focus",
-          values: [
-            "Designed around homes and family use",
-            "Supports many personal and business use cases",
-          ],
+          feature: "Manuals",
+          values: ["Kept with the related device", "Can be stored as item attachments"],
         },
         {
-          feature: "Asset-management flexibility",
-          values: [
-            "Focused on home technology",
-            "Broader inventory workflows",
-          ],
+          feature: "Serial numbers",
+          values: ["Core device information", "Available as inventory information"],
+        },
+        {
+          feature: "Household organization",
+          values: ["Rooms, devices, household records", "Flexible inventory organization"],
+        },
+        {
+          feature: "Business inventory",
+          values: ["Not the primary use case", "Broader inventory capabilities"],
         },
         {
           feature: "Best fit",
           values: [
-            "Households organizing devices and warranties",
-            "Users needing broad inventory management",
+            "Homeowners organizing technology and warranties",
+            "Users needing flexible general inventory management",
           ],
         },
       ],
     },
     faq: [
       {
-        question: "Is Home Tech Vault a Sortly alternative?",
+        question: "What is a good Sortly alternative for home inventory?",
         answer:
-          "Yes, if your primary goal is organizing household technology, appliances, warranties, receipts, manuals, and serial numbers. Sortly is broader and may be a better fit for general asset inventory.",
+          "Home Tech Vault is an alternative for homeowners whose main goal is organizing appliances, electronics, warranties, receipts, manuals, serial numbers, and purchase information. Sortly has a broader inventory focus.",
       },
       {
-        question: "Which is better for tracking warranties?",
+        question: "Is Home Tech Vault a Sortly alternative?",
         answer:
-          "Home Tech Vault is designed specifically around household device and warranty records. Sortly can store inventory information and attachments, but its scope is broader than warranty tracking.",
+          "Yes, for household technology inventory. Home Tech Vault focuses specifically on devices, appliances, warranties, receipts, manuals, and household records, while Sortly supports broader inventory use cases.",
       },
       {
         question: "Can Sortly be used for home inventory?",
         answer:
-          "Yes. Sortly can be used for personal and household inventory. Home Tech Vault differs by focusing specifically on technology, appliances, warranties, receipts, manuals, and related household records.",
+          "Yes. Sortly can be used to track household possessions and other physical assets. The main difference is that Home Tech Vault is purpose-built around household technology and related documentation.",
       },
       {
-        question: "Which is easier for a household?",
+        question: "Which is better for tracking appliance warranties?",
         answer:
-          "That depends on what you need. Home Tech Vault provides household-specific structure out of the box, while Sortly offers broader inventory flexibility.",
+          "Home Tech Vault is designed around keeping warranty dates and supporting records with the appliance or device. Sortly can also store inventory information and attachments but serves a broader inventory purpose.",
+      },
+      {
+        question: "Which is better for receipts and manuals?",
+        answer:
+          "Both approaches can retain documents. Home Tech Vault emphasizes keeping receipts, manuals, warranties, and other documents directly connected to household device records.",
+      },
+      {
+        question: "Is Home Tech Vault only for electronics?",
+        answer:
+          "Home Tech Vault is designed primarily around home technology and appliances. That narrower focus is useful for households that do not need a general inventory system for every possession.",
       },
       {
         question: "Does Home Tech Vault replace business inventory software?",
         answer:
-          "No. Home Tech Vault is focused on household technology. Businesses needing broad asset or inventory management may be better served by a general inventory platform.",
+          "No. Home Tech Vault is designed for household technology. Businesses that need quantity tracking, supply management, or broader asset workflows should use inventory software designed for those needs.",
       },
       {
         question: "Can I start Home Tech Vault for free?",
         answer:
-          "Yes. Home Tech Vault offers a free plan so households can begin organizing devices and documents before deciding whether they need a paid plan.",
+          "Yes. Home Tech Vault has a free plan so you can start with a few important devices and build your household inventory over time.",
       },
     ],
     relatedSlugs: [
-      "home-tech-vault-vs-notion",
-      "home-tech-vault-vs-google-sheets",
       "best-home-inventory-software",
       "best-warranty-tracker",
+      "home-tech-vault-vs-notion",
+      "home-tech-vault-vs-google-sheets",
     ],
-    ctaTitle: "Try a vault built for household technology",
+    ctaTitle: "Looking for a simpler Sortly alternative for your home?",
     ctaDescription:
-      "Keep devices, receipts, warranties, manuals, and serial numbers together in one household vault.",
-    primaryCtaLabel: "Start free",
+      "Start with one device. Keep its receipt, warranty, manual, serial number, and purchase information together, then build your Home Tech Vault over time.",
+    primaryCtaLabel: "Create My Free Vault",
     primaryCtaHref: MARKETING_ROUTES.signup,
-    secondaryCtaLabel: "See pricing",
-    secondaryCtaHref: MARKETING_ROUTES.pricing,
+    secondaryCtaLabel: "Explore Home Inventory",
+    secondaryCtaHref: "/home-inventory-software",
   },
   {
     slug: "home-tech-vault-vs-notion",
