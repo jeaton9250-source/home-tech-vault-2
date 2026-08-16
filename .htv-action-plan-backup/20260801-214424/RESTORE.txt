@@ -1,0 +1,6 @@
+To restore the files replaced by the Home Tech Vault action-plan installer:
+
+  cd "/Users/jasoneaton/home-tech-vault"
+  cp -R ".htv-action-plan-backup/20260801-214424"/* .
+
+Review the backup directory before copying because it also contains this RESTORE.txt file.

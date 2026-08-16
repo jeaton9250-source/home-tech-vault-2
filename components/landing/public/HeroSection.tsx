@@ -1,54 +1,37 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
-  Check,
-  FileCheck2,
-  Play,
-  Search,
+  CheckCircle2,
+  FileText,
   ShieldCheck,
-  Sparkles,
-  Wifi,
 } from "lucide-react";
 
 import HeroVisual from "@/components/landing/public/HeroVisual";
-import LandingTrackedLink from "@/components/landing/public/LandingTrackedLink";
 import { landingTheme } from "@/components/landing/public/landingTheme";
-import { LANDING_ANALYTICS_EVENTS } from "@/lib/marketing/landingAnalytics";
-import { LANDING_HERO_REASSURANCE } from "@/lib/marketing/landingPublicContent";
 import { MARKETING_ROUTES } from "@/lib/marketing/routes";
-
-const heroJobs = [
-  {
-    icon: Wifi,
-    text: "Automatically discover devices connected to your home",
-    tone: "bg-interaction-soft text-interaction",
-  },
-  {
-    icon: FileCheck2,
-    text: "Keep receipts, manuals, documents, and warranties together",
-    tone: "bg-home-health-soft text-home-health",
-  },
-  {
-    icon: Search,
-    text: "Find the information you need in seconds",
-    tone: "bg-premium-soft text-premium",
-  },
-] as const;
 
 type HeroSectionProps = {
   isSignedIn?: boolean;
 };
 
+const benefits = [
+  "Keep receipts, warranties, manuals, and serial numbers together",
+  "Find important device details in seconds",
+  "Track purchase and warranty information",
+  "Start with one device and build your vault over time",
+];
+
 const fadeUp = {
-  hidden: { opacity: 0, y: 24 },
+  hidden: { opacity: 0, y: 20 },
   visible: (custom: number) => ({
     opacity: 1,
     y: 0,
     transition: {
       duration: 0.5,
-      delay: custom * 0.1,
+      delay: custom * 0.08,
       ease: [0.22, 1, 0.36, 1] as const,
     },
   }),
@@ -57,133 +40,154 @@ const fadeUp = {
 export default function HeroSection({
   isSignedIn = false,
 }: HeroSectionProps) {
-  const primaryHref = isSignedIn ? "/dashboard" : MARKETING_ROUTES.signup;
-  const primaryLabel = isSignedIn ? "Open My Vault" : "Start Free";
+  const primaryHref = isSignedIn
+    ? "/dashboard"
+    : MARKETING_ROUTES.signup;
+
+  const primaryLabel = isSignedIn
+    ? "Open My Vault"
+    : "Create My Free Vault";
 
   return (
-    <section className="relative overflow-hidden bg-surface-base px-5 py-24 md:px-8 md:py-32 lg:px-12 htv-mesh-hero-bg">
-      <div className="pointer-events-none absolute -top-24 left-1/2 -z-10 h-[500px] w-[800px] -translate-x-1/2 rounded-full bg-gradient-to-b from-home-health-soft/40 via-surface-sunken/60 to-transparent blur-3xl" />
+    <section className="relative overflow-hidden bg-surface-base px-5 py-20 md:px-8 md:py-28 lg:px-12">
+      <div className="pointer-events-none absolute -top-24 left-1/2 -z-10 h-[520px] w-[820px] -translate-x-1/2 rounded-full bg-gradient-to-b from-home-health-soft/45 via-surface-sunken/55 to-transparent blur-3xl" />
 
       <div className={landingTheme.sectionNarrow}>
-        <div className="grid items-center gap-12 lg:grid-cols-[1fr_1.1fr] lg:gap-16">
+        <div className="grid items-center gap-12 lg:grid-cols-[1fr_1.05fr] lg:gap-16">
           <motion.div
             initial="hidden"
             animate="visible"
             className="flex flex-col items-start"
           >
-            <motion.div variants={fadeUp} custom={0} className={landingTheme.pill}>
-              <Sparkles size={14} className="text-home-health" />
-              <span>Home inventory + warranty tracker</span>
+            <motion.div
+              variants={fadeUp}
+              custom={0}
+              className={landingTheme.pill}
+            >
+              <ShieldCheck
+                size={14}
+                className="text-home-health"
+                aria-hidden
+              />
+              <span>Your home's important information, organized</span>
             </motion.div>
 
             <motion.h1
               variants={fadeUp}
               custom={1}
-              className="mt-6 max-w-3xl text-4xl font-medium tracking-[-0.04em] text-text-primary sm:text-5xl md:text-[3.5rem] lg:text-[3.85rem] lg:leading-[1.06]"
+              className="mt-6 max-w-2xl text-4xl font-medium tracking-[-0.045em] text-text-primary sm:text-5xl md:text-[3.5rem] lg:text-[3.85rem] lg:leading-[1.05]"
             >
-              Your home inventory and warranty tracker,
-              <span className="block bg-gradient-to-r from-text-primary via-home-health to-premium bg-clip-text text-transparent">
-                that finds what&apos;s connected for you.
+              Never lose another receipt, warranty, manual,{" "}
+              <span className="bg-gradient-to-r from-text-primary via-home-health to-premium bg-clip-text text-transparent">
+                or serial number.
               </span>
             </motion.h1>
 
             <motion.p
               variants={fadeUp}
               custom={2}
-              className="mt-7 max-w-2xl text-lg leading-8 text-text-secondary sm:text-xl"
+              className="mt-6 max-w-xl text-lg leading-8 text-text-secondary sm:text-xl"
             >
-              Home Tech Vault auto-discovers your devices, then keeps their
-              receipts, manuals, documents, and warranties in one place — so
-              you never lose a warranty again.
+              Home Tech Vault keeps the important details about your
+              appliances and technology in one place, so when something
+              breaks, needs service, or gets replaced, you know exactly
+              where to look.
             </motion.p>
 
             <motion.div
               variants={fadeUp}
               custom={3}
-              className="mt-7 space-y-3"
+              className="mt-6 flex items-start gap-3 rounded-2xl border border-border-subtle bg-surface-raised px-4 py-3.5"
             >
-              {heroJobs.map(({ icon: Icon, text, tone }) => (
-                <div key={text} className="flex items-center gap-3">
-                  <div
-                    className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${tone}`}
-                  >
-                    <Icon size={15} strokeWidth={2.4} aria-hidden />
-                  </div>
-                  <span className="font-semibold text-text-primary">{text}</span>
-                </div>
-              ))}
+              <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-home-health-soft">
+                <FileText
+                  size={16}
+                  className="text-home-health"
+                  aria-hidden
+                />
+              </div>
+
+              <p className="max-w-lg text-sm leading-6 text-text-secondary sm:text-base">
+                Start with one device today. Add your TV, refrigerator,
+                computer, router, or anything else you want to keep track of.
+                You do not need to inventory your entire home at once.
+              </p>
             </motion.div>
 
             <motion.div
               variants={fadeUp}
               custom={4}
-              className="mt-9 flex flex-col gap-3.5 sm:flex-row sm:flex-wrap sm:items-center"
+              className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap"
             >
-              <LandingTrackedLink
+              <Link
                 href={primaryHref}
                 className={landingTheme.btnPrimary}
               >
                 {primaryLabel}
-                <ArrowRight size={16} className="ml-2.5" aria-hidden />
-              </LandingTrackedLink>
 
-              <LandingTrackedLink
+                <ArrowRight
+                  size={16}
+                  className="ml-2.5"
+                  aria-hidden
+                />
+              </Link>
+
+              <Link
                 href={MARKETING_ROUTES.demo}
-                eventName={LANDING_ANALYTICS_EVENTS.heroExploreDemo}
                 className={landingTheme.btnSecondary}
               >
-                <Play size={15} className="mr-2 text-text-muted" aria-hidden />
-                Explore the Demo
-              </LandingTrackedLink>
+                See How It Works
+              </Link>
             </motion.div>
+
+            <motion.p
+              variants={fadeUp}
+              custom={5}
+              className="mt-4 text-sm font-medium text-text-muted"
+            >
+              Free to start · No credit card required
+            </motion.p>
 
             <motion.ul
               variants={fadeUp}
-              custom={5}
-              className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-x-8"
+              custom={6}
+              className="mt-8 grid gap-3 sm:grid-cols-2"
             >
-              {LANDING_HERO_REASSURANCE.map((item) => (
+              {benefits.map((benefit) => (
                 <li
-                  key={item}
-                  className="flex items-center gap-2.5 text-xs font-medium uppercase tracking-wider text-text-muted sm:text-sm sm:normal-case sm:tracking-normal"
+                  key={benefit}
+                  className="flex items-start gap-2.5 text-sm font-medium text-text-secondary"
                 >
-                  <div className="flex h-5 w-5 items-center justify-center rounded-full bg-home-health-soft text-home-health">
-                    <Check size={13} strokeWidth={2.5} aria-hidden />
-                  </div>
-                  {item}
+                  <CheckCircle2
+                    size={17}
+                    className="mt-0.5 shrink-0 text-home-health"
+                    aria-hidden
+                  />
+
+                  <span>{benefit}</span>
                 </li>
               ))}
             </motion.ul>
 
-            <motion.div
+            <motion.p
               variants={fadeUp}
-              custom={6}
-              className="mt-7 rounded-2xl border border-border-subtle bg-surface-card/85 p-4 text-sm leading-6 text-text-secondary shadow-sm"
+              custom={7}
+              className="mt-7 max-w-xl text-xs leading-5 text-text-muted sm:text-sm"
             >
-              <div className="flex items-start gap-3">
-                <ShieldCheck
-                  size={19}
-                  className="mt-0.5 shrink-0 text-home-health"
-                  aria-hidden
-                />
-                <p>
-                  <strong className="text-text-primary">Works in any browser.</strong>{" "}
-                  Automatic device discovery uses a lightweight Mac connector;
-                  Windows support is planned. We never sell your personal data. Read
-                  exactly what we store in our{" "}
-                  <a href="/trust" className="font-semibold text-interaction underline underline-offset-4">
-                    Trust Center
-                  </a>
-                  .
-                </p>
-              </div>
-            </motion.div>
+              Your Home Tech Vault grows with your home. Add things when you
+              buy them, save documents when you receive them, and have the
+              information ready before you need it.
+            </motion.p>
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, scale: 0.96, y: 20 }}
+            initial={{ opacity: 0, scale: 0.97, y: 18 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            transition={{
+              duration: 0.65,
+              delay: 0.18,
+              ease: [0.22, 1, 0.36, 1],
+            }}
           >
             <HeroVisual />
           </motion.div>

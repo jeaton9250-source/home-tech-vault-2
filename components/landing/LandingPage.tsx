@@ -1,81 +1,146 @@
 "use client";
 
-import { useEffect } from "react";
-
-import CustomerStorySection from "@/components/landing/public/CustomerStorySection";
 import FinalCta from "@/components/landing/public/FinalCta";
 import HeroSection from "@/components/landing/public/HeroSection";
-import HomeAdvisorStorySection from "@/components/landing/public/HomeAdvisorStorySection";
-import HomeDiscoverySection from "@/components/landing/public/HomeDiscoverySection";
 import HomeDocumentsSection from "@/components/landing/public/HomeDocumentsSection";
 import HomeFamilySection from "@/components/landing/public/HomeFamilySection";
 import HomeHealthPreviewSection from "@/components/landing/public/HomeHealthPreviewSection";
-import HomeSearchSection from "@/components/landing/public/HomeSearchSection";
+import HowItWorksSection from "@/components/landing/public/HowItWorksSection";
 import LandingFaq from "@/components/landing/public/LandingFaq";
 import LandingFooter from "@/components/landing/public/LandingFooter";
 import LandingHeader from "@/components/landing/public/LandingHeader";
 import { landingTheme } from "@/components/landing/public/landingTheme";
 import PricingSection from "@/components/landing/public/PricingSection";
-import ProblemSection from "@/components/landing/public/ProblemSection";
+import RealLifeUseCasesSection from "@/components/landing/public/RealLifeUseCasesSection";
 import SecuritySection from "@/components/landing/public/SecuritySection";
-import SocialProofSection from "@/components/landing/public/SocialProofSection";
 import StructuredData from "@/components/marketing/StructuredData";
 import { useDemoMode } from "@/hooks/useDemoMode";
-import type { LandingPublicSectionId } from "@/lib/marketing/landingPublicContent";
 import { createOrganizationJsonLd } from "@/lib/marketing/metadata";
 
 type LandingPageProps = {
   foundingSummary?: unknown;
 };
 
-function scrollToSection(sectionId: LandingPublicSectionId) {
-  const target = document.getElementById(sectionId);
-  if (!target) return;
-  target.scrollIntoView({ behavior: "smooth", block: "start" });
-}
-
-const organizationSameAs = [
-  process.env.NEXT_PUBLIC_HOME_TECH_VAULT_LINKEDIN_URL,
-  process.env.NEXT_PUBLIC_HOME_TECH_VAULT_X_URL,
-].filter((value): value is string => Boolean(value));
-
 export default function LandingPage({
-  foundingSummary = null,
+  foundingSummary: _foundingSummary = null,
 }: LandingPageProps) {
   const { user, loading } = useDemoMode();
 
-  useEffect(() => {
-    const hash = window.location.hash.replace("#", "") as LandingPublicSectionId;
-    if (!hash) return;
-    window.requestAnimationFrame(() => scrollToSection(hash));
-  }, []);
-
   const isSignedIn = !loading && Boolean(user);
-  const organizationJsonLd = {
-    ...createOrganizationJsonLd(),
-    ...(organizationSameAs.length > 0 ? { sameAs: organizationSameAs } : {}),
-  };
 
   return (
     <div className={landingTheme.page}>
-      <StructuredData data={organizationJsonLd} />
+      <StructuredData data={createOrganizationJsonLd()} />
+
       <LandingHeader isSignedIn={isSignedIn} />
+
       <main id="main-content">
+        {/* 
+          1. HERO
+          
+          Primary goal:
+          Immediately explain the problem Home Tech Vault solves.
+
+          Recommended headline:
+          "Never Lose Another Receipt, Warranty, Manual, or Serial Number."
+
+          Primary CTA:
+          "Create My Free Vault"
+        */}
         <HeroSection isSignedIn={isSignedIn} />
-        <ProblemSection />
-        <HomeHealthPreviewSection />
-        <HomeAdvisorStorySection />
-        <HomeSearchSection />
-        <HomeDiscoverySection />
+
+        {/*
+          2. REAL-LIFE PROBLEMS
+
+          Show why someone would actually need Home Tech Vault
+          before explaining all of the features.
+
+          Examples:
+          - TV breaks
+          - Appliance needs service
+          - Need a serial number
+          - Can't find receipt
+          - Warranty claim
+        */}
+        <RealLifeUseCasesSection />
+
+        {/*
+          3. HOW EASY IT IS
+
+          Reinforce:
+          Start with ONE device.
+          Don't make users feel like they have to inventory
+          their entire house immediately.
+        */}
+        <HowItWorksSection />
+
+        {/*
+          4. DOCUMENTS + RECEIPTS + WARRANTIES
+
+          This should become one of the strongest sections
+          because this is the clearest everyday value proposition.
+        */}
         <HomeDocumentsSection />
+
+        {/*
+          5. ADVANCED HOME TECH FEATURES
+
+          Home health / network / discovery features should
+          appear after visitors already understand the core product.
+        */}
+        <HomeHealthPreviewSection />
+
+        {/*
+          6. HOUSEHOLD SHARING
+        */}
         <HomeFamilySection />
-        <SocialProofSection foundingSummary={foundingSummary} />
-        <CustomerStorySection />
+
+        {/*
+          7. SECURITY / TRUST
+
+          Important because users may upload receipts,
+          serial numbers and household information.
+        */}
         <SecuritySection />
+
+        {/*
+          8. PRICING
+
+          Free plan should be visually dominant.
+
+          Recommended:
+          FREE
+          $0
+          No credit card required
+
+          8 devices
+          25 documents
+          Warranty tracking
+          Receipt storage
+          Device information
+        */}
         <PricingSection isSignedIn={isSignedIn} />
+
+        {/*
+          9. FAQ
+
+          Handle objections after they already understand
+          the product.
+        */}
         <LandingFaq />
+
+        {/*
+          10. FINAL CTA
+
+          Recommended headline:
+          "Don't Wait Until Something Breaks."
+
+          CTA:
+          "Create Your Free Home Tech Vault"
+        */}
         <FinalCta isSignedIn={isSignedIn} />
       </main>
+
       <LandingFooter />
     </div>
   );

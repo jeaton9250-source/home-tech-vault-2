@@ -269,6 +269,7 @@ export function auditInternalLinks(): {
   // Root / hubs are never orphans
   const hubExempt = new Set([
     "/",
+    "/about",
     "/knowledge",
     "/guides",
     "/compare",

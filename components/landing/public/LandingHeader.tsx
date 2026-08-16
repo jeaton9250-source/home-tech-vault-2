@@ -1,32 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { Menu, Sparkles, X } from "lucide-react";
+import {
+  ArrowRight,
+  Menu,
+  ShieldCheck,
+  X,
+} from "lucide-react";
 
-import SignInLink from "@/components/auth/SignInLink";
-import Logo from "@/components/brand/Logo";
-import LandingTrackedLink from "@/components/landing/public/LandingTrackedLink";
 import { landingTheme } from "@/components/landing/public/landingTheme";
-import { LANDING_PUBLIC_SECTION_IDS } from "@/lib/marketing/landingPublicContent";
 import { MARKETING_ROUTES } from "@/lib/marketing/routes";
-import { cn } from "@/lib/design-system/cn";
-
-const SECTION_LINKS = [
-  {
-    label: "How it works",
-    sectionId: LANDING_PUBLIC_SECTION_IDS.homeHealth,
-  },
-  {
-    label: "Pricing",
-    sectionId: LANDING_PUBLIC_SECTION_IDS.pricing,
-  },
-] as const;
-
-const ROUTE_LINKS = [
-  { label: "Compare", href: "/compare" },
-  { label: "About", href: "/about" },
-] as const;
 
 type LandingHeaderProps = {
   isSignedIn?: boolean;
@@ -35,142 +19,198 @@ type LandingHeaderProps = {
 export default function LandingHeader({
   isSignedIn = false,
 }: LandingHeaderProps) {
-  const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 12);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  const primaryHref = isSignedIn
+    ? "/dashboard"
+    : MARKETING_ROUTES.signup;
 
-  const startHref = isSignedIn ? "/dashboard" : MARKETING_ROUTES.signup;
-  const startLabel = isSignedIn ? "Open My Vault" : "Start Free";
+  const primaryLabel = isSignedIn
+    ? "Open My Vault"
+    : "Create My Free Vault";
 
   return (
-    <header
-      className={cn(
-        "sticky top-0 z-50 px-4 py-3 transition-all duration-300 md:px-8",
-        scrolled
-          ? "border-b border-border-subtle/70 bg-surface-card/85 shadow-md backdrop-blur-xl"
-          : "bg-surface-base/80 backdrop-blur-md"
-      )}
-    >
-      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4">
+    <header className="sticky top-0 z-50 border-b border-border-subtle/70 bg-surface-base/90 backdrop-blur-xl">
+      <div
+        className={`${landingTheme.sectionNarrow} flex h-16 items-center justify-between px-5 md:px-8 lg:px-0`}
+      >
+        {/* Logo */}
         <Link
-          href={MARKETING_ROUTES.home}
-          className="shrink-0 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-charcoal"
+          href="/"
+          className="flex items-center gap-2.5"
           aria-label="Home Tech Vault home"
-          onClick={() => setMobileOpen(false)}
         >
-          <Logo collapsed />
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-home-health-soft text-home-health">
+            <ShieldCheck
+              size={19}
+              aria-hidden
+            />
+          </div>
+
+          <div className="leading-none">
+            <p className="text-sm font-semibold tracking-tight text-text-primary sm:text-base">
+              Home Tech Vault
+            </p>
+
+            <p className="mt-1 hidden text-[9px] font-medium uppercase tracking-[0.14em] text-text-muted sm:block">
+              Your home. Organized.
+            </p>
+          </div>
         </Link>
 
+        {/* Desktop navigation */}
         <nav
-          className="hidden items-center gap-1 rounded-full border border-border-subtle/70 bg-surface-card/90 px-3 py-1.5 shadow-sm backdrop-blur-lg lg:flex"
-          aria-label="Primary"
+          className="hidden items-center gap-7 md:flex"
+          aria-label="Main navigation"
         >
-          {SECTION_LINKS.map((link) => (
-            <a
-              key={link.sectionId}
-              href={`#${link.sectionId}`}
-              className="rounded-full px-4 py-1.5 text-xs font-semibold text-text-secondary transition-all hover:bg-surface-hover hover:text-text-primary"
-            >
-              {link.label}
-            </a>
-          ))}
-          {ROUTE_LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="rounded-full px-4 py-1.5 text-xs font-semibold text-text-secondary transition-all hover:bg-surface-hover hover:text-text-primary"
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
-
-        <div className="hidden items-center gap-3 md:flex">
           <Link
-            href={MARKETING_ROUTES.demo}
-            className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-text-secondary transition hover:bg-surface-hover hover:text-text-primary"
+            href="#how-it-works"
+            className="text-sm font-medium text-text-secondary transition-colors hover:text-text-primary"
           >
-            <Sparkles size={14} className="text-premium" aria-hidden />
-            <span>Demo</span>
+            How It Works
           </Link>
 
-          {!isSignedIn ? (
-            <SignInLink className="rounded-full px-4 py-2 text-xs font-semibold text-text-secondary transition hover:bg-surface-hover hover:text-text-primary">
+          <Link
+            href="#pricing"
+            className="text-sm font-medium text-text-secondary transition-colors hover:text-text-primary"
+          >
+            Pricing
+          </Link>
+
+          <Link
+            href={MARKETING_ROUTES.demo}
+            className="text-sm font-medium text-text-secondary transition-colors hover:text-text-primary"
+          >
+            Demo
+          </Link>
+        </nav>
+
+        {/* Desktop actions */}
+        <div className="hidden items-center gap-3 md:flex">
+          {!isSignedIn && (
+            <Link
+              href="/login"
+              className="px-3 py-2 text-sm font-medium text-text-secondary transition-colors hover:text-text-primary"
+            >
               Sign In
-            </SignInLink>
-          ) : null}
+            </Link>
+          )}
 
-          <LandingTrackedLink href={startHref} className={landingTheme.btnPrimary}>
-            {startLabel}
-          </LandingTrackedLink>
+          <Link
+            href={primaryHref}
+            className={landingTheme.btnPrimary}
+          >
+            {primaryLabel}
+
+            <ArrowRight
+              size={15}
+              className="ml-2"
+              aria-hidden
+            />
+          </Link>
         </div>
 
-        <div className="flex items-center gap-2 md:hidden">
-          <LandingTrackedLink
-            href={startHref}
-            className={cn(landingTheme.btnPrimary, "min-h-9 px-4 py-1.5 text-xs")}
-          >
-            {startLabel}
-          </LandingTrackedLink>
-          <button
-            type="button"
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-border-subtle bg-surface-card text-text-primary shadow-sm"
-            aria-label={mobileOpen ? "Close menu" : "Open menu"}
-            aria-expanded={mobileOpen}
-            onClick={() => setMobileOpen((open) => !open)}
-          >
-            {mobileOpen ? <X size={18} /> : <Menu size={18} />}
-          </button>
-        </div>
+        {/* Mobile menu button */}
+        <button
+          type="button"
+          onClick={() => setMobileOpen((current) => !current)}
+          className="flex h-10 w-10 items-center justify-center rounded-xl border border-border-subtle bg-surface-card text-text-primary md:hidden"
+          aria-label={mobileOpen ? "Close menu" : "Open menu"}
+          aria-expanded={mobileOpen}
+        >
+          {mobileOpen ? (
+            <X
+              size={19}
+              aria-hidden
+            />
+          ) : (
+            <Menu
+              size={19}
+              aria-hidden
+            />
+          )}
+        </button>
       </div>
 
-      {mobileOpen ? (
-        <div className="mt-3 rounded-3xl border border-border-subtle bg-surface-card p-5 shadow-xl md:hidden">
-          <nav className="flex flex-col gap-2" aria-label="Primary mobile">
-            {SECTION_LINKS.map((link) => (
-              <a
-                key={link.sectionId}
-                href={`#${link.sectionId}`}
-                className="rounded-2xl px-4 py-3 text-sm font-semibold text-text-secondary hover:bg-surface-hover hover:text-text-primary"
-                onClick={() => setMobileOpen(false)}
-              >
-                {link.label}
-              </a>
-            ))}
-            {ROUTE_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="rounded-2xl px-4 py-3 text-sm font-semibold text-text-secondary hover:bg-surface-hover hover:text-text-primary"
-                onClick={() => setMobileOpen(false)}
-              >
-                {link.label}
-              </Link>
-            ))}
-            <Link
-              href={MARKETING_ROUTES.demo}
-              className="rounded-2xl px-4 py-3 text-sm font-semibold text-text-secondary hover:bg-surface-hover hover:text-text-primary"
+      {/* Mobile navigation */}
+      {mobileOpen && (
+        <div className="border-t border-border-subtle bg-surface-base px-5 pb-5 pt-4 md:hidden">
+          <nav
+            className="mx-auto flex max-w-xl flex-col gap-1"
+            aria-label="Mobile navigation"
+          >
+            <MobileLink
+              href="#how-it-works"
               onClick={() => setMobileOpen(false)}
             >
-              Explore Demo
-            </Link>
-            {!isSignedIn ? (
-              <SignInLink
-                className="rounded-2xl px-4 py-3 text-sm font-semibold text-text-secondary hover:bg-surface-hover"
+              How It Works
+            </MobileLink>
+
+            <MobileLink
+              href="#pricing"
+              onClick={() => setMobileOpen(false)}
+            >
+              Pricing
+            </MobileLink>
+
+            <MobileLink
+              href={MARKETING_ROUTES.demo}
+              onClick={() => setMobileOpen(false)}
+            >
+              See the Demo
+            </MobileLink>
+
+            {!isSignedIn && (
+              <MobileLink
+                href="/login"
                 onClick={() => setMobileOpen(false)}
               >
                 Sign In
-              </SignInLink>
-            ) : null}
+              </MobileLink>
+            )}
+
+            <Link
+              href={primaryHref}
+              onClick={() => setMobileOpen(false)}
+              className={`${landingTheme.btnPrimary} mt-3 w-full justify-center`}
+            >
+              {primaryLabel}
+
+              <ArrowRight
+                size={15}
+                className="ml-2"
+                aria-hidden
+              />
+            </Link>
+
+            {!isSignedIn && (
+              <p className="mt-3 text-center text-[11px] font-medium text-text-muted">
+                Free to start · No credit card required
+              </p>
+            )}
           </nav>
         </div>
-      ) : null}
+      )}
     </header>
+  );
+}
+
+function MobileLink({
+  href,
+  children,
+  onClick,
+}: {
+  href: string;
+  children: React.ReactNode;
+  onClick: () => void;
+}) {
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      className="rounded-xl px-3 py-3 text-sm font-medium text-text-secondary transition-colors hover:bg-surface-sunken hover:text-text-primary"
+    >
+      {children}
+    </Link>
   );
 }
