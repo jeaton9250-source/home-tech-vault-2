@@ -25,18 +25,23 @@ export default function MarketingLayout({
   return (
     <div
       className={cn(
-        "min-h-screen bg-surface-base text-text-primary",
+        "min-h-screen bg-[#0b1623] text-[#f4f0e8] antialiased selection:bg-[#718d4f]/40",
         className
       )}
     >
       <StructuredData
         data={createOrganizationJsonLd()}
       />
+
       <MarketingNav
         foundingSummary={foundingSummary}
         minimal={minimalNav}
       />
-      <main className={mainClassName}>{children}</main>
+
+      <main className={mainClassName}>
+        {children}
+      </main>
+
       <MarketingFooter />
     </div>
   );
@@ -55,7 +60,7 @@ export function MarketingContent({
     <div
       id={id}
       className={cn(
-        "mx-auto w-full max-w-6xl px-6 py-16 md:px-8 md:py-24",
+        "mx-auto w-full max-w-[1240px] px-5 py-16 md:px-8 md:py-24",
         className
       )}
     >
@@ -76,28 +81,32 @@ export function MarketingPageHero({
   children?: ReactNode;
 }) {
   return (
-    <section className="border-b border-border-subtle/80 px-6 py-20 md:px-8 md:py-28">
+    <section className="border-b border-white/10 px-5 py-20 md:px-8 md:py-28">
       <div className="mx-auto max-w-3xl">
-        {eyebrow && (
-          <p className="text-overline text-text-muted">
-            {eyebrow}
-          </p>
-        )}
+        {eyebrow ? (
+          <div className="flex items-center gap-3">
+            <span className="h-px w-7 bg-[#718d4f]" />
+
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#8ca667]">
+              {eyebrow}
+            </p>
+          </div>
+        ) : null}
 
         <h1
           className={cn(
-            "text-4xl font-medium tracking-[-0.04em] md:text-5xl md:leading-[1.08]",
-            eyebrow && "mt-4"
+            "font-serif text-4xl font-medium leading-[1.04] tracking-[-0.045em] text-[#f4f0e8] md:text-5xl",
+            eyebrow && "mt-5"
           )}
         >
           {title}
         </h1>
 
-        {description && (
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-text-muted">
+        {description ? (
+          <p className="mt-6 max-w-2xl text-lg leading-8 text-[#aeb8c1]">
             {description}
           </p>
-        )}
+        ) : null}
 
         {children}
       </div>
