@@ -124,8 +124,7 @@ export function computePermissions(
 
   const isAdmin =
     hasHouseholdMembership &&
-    (context.role === "admin" ||
-      context.role === "owner");
+    context.role === "admin";
 
   const roleCanMutate =
     isPersonalVault ||
