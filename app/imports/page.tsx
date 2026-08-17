@@ -11,6 +11,7 @@ import {
   Receipt,
   ShieldCheck,
   Sparkles,
+  XCircle,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -89,6 +90,11 @@ export default function ImportsPage() {
   ] = useState<string | null>(null);
 
   const [
+    rejectingId,
+    setRejectingId,
+  ] = useState<string | null>(null);
+
+  const [
     drafts,
     setDrafts,
   ] = useState<
@@ -145,8 +151,7 @@ export default function ImportsPage() {
               item.brand ?? "",
 
             manufacturer:
-              item.manufacturer ??
-              "",
+              item.manufacturer ?? "",
 
             model_number:
               item.model_number ?? "",
@@ -286,11 +291,7 @@ export default function ImportsPage() {
         );
       }
 
-      setImports((current) =>
-        current.filter(
-          (item) => item.id !== id
-        )
-      );
+      removeImportFromPage(id);
     } catch (err) {
       setError(
         err instanceof Error
@@ -300,6 +301,64 @@ export default function ImportsPage() {
     } finally {
       setApprovingId(null);
     }
+  }
+
+  async function rejectImport(
+    id: string
+  ) {
+    setRejectingId(id);
+    setError(null);
+
+    try {
+      const response =
+        await fetch(
+          `/api/imports/${id}/reject`,
+          {
+            method: "POST",
+          }
+        );
+
+      const data =
+        await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error ??
+            "Unable to remove import."
+        );
+      }
+
+      removeImportFromPage(id);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Unable to remove import."
+      );
+    } finally {
+      setRejectingId(null);
+    }
+  }
+
+  function removeImportFromPage(
+    id: string
+  ) {
+    setImports((current) =>
+      current.filter(
+        (item) =>
+          item.id !== id
+      )
+    );
+
+    setDrafts((current) => {
+      const next = {
+        ...current,
+      };
+
+      delete next[id];
+
+      return next;
+    });
   }
 
   return (
@@ -378,10 +437,24 @@ export default function ImportsPage() {
                     key={item.id}
                     item={item}
                     draft={draft}
+
                     approving={
                       approvingId ===
                       item.id
                     }
+
+                    rejecting={
+                      rejectingId ===
+                      item.id
+                    }
+
+                    busy={
+                      approvingId ===
+                        item.id ||
+                      rejectingId ===
+                        item.id
+                    }
+
                     onChange={(
                       field,
                       value
@@ -392,8 +465,15 @@ export default function ImportsPage() {
                         value
                       )
                     }
+
                     onApprove={() =>
                       approveImport(
+                        item.id
+                      )
+                    }
+
+                    onReject={() =>
+                      rejectImport(
                         item.id
                       )
                     }
@@ -412,13 +492,19 @@ function ImportCard({
   item,
   draft,
   approving,
+  rejecting,
+  busy,
   onChange,
   onApprove,
+  onReject,
 }: {
   item: DeviceImport;
+
   draft: EditableImport;
 
   approving: boolean;
+  rejecting: boolean;
+  busy: boolean;
 
   onChange: (
     field: keyof EditableImport,
@@ -426,6 +512,7 @@ function ImportCard({
   ) => void;
 
   onApprove: () => void;
+  onReject: () => void;
 }) {
   const confidence =
     typeof item.confidence ===
@@ -484,7 +571,9 @@ function ImportCard({
         <div className="grid gap-5 sm:grid-cols-2">
           <Field
             label="Device name"
-            value={draft.device_name}
+            value={
+              draft.device_name
+            }
             onChange={(value) =>
               onChange(
                 "device_name",
@@ -633,7 +722,7 @@ function ImportCard({
           </div>
         </div>
 
-        <div className="mt-7 flex flex-col gap-4 border-t border-border-subtle pt-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-7 flex flex-col gap-5 border-t border-border-subtle pt-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-2">
             <MapPin
               size={16}
@@ -649,33 +738,63 @@ function ImportCard({
             </p>
           </div>
 
-          <button
-            type="button"
-            disabled={approving}
-            onClick={onApprove}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-home-health px-5 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {approving ? (
-              <>
-                <Loader2
-                  size={16}
-                  className="animate-spin"
-                  aria-hidden
-                />
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <button
+              type="button"
+              disabled={busy}
+              onClick={onReject}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-border-subtle bg-surface-card px-5 text-sm font-semibold text-text-secondary transition hover:border-red-200 hover:bg-red-50 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {rejecting ? (
+                <>
+                  <Loader2
+                    size={16}
+                    className="animate-spin"
+                    aria-hidden
+                  />
 
-                Adding...
-              </>
-            ) : (
-              <>
-                <CheckCircle2
-                  size={16}
-                  aria-hidden
-                />
+                  Removing...
+                </>
+              ) : (
+                <>
+                  <XCircle
+                    size={16}
+                    aria-hidden
+                  />
 
-                Add to My Vault
-              </>
-            )}
-          </button>
+                  Don&apos;t Add to My Vault
+                </>
+              )}
+            </button>
+
+            <button
+              type="button"
+              disabled={busy}
+              onClick={onApprove}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-home-health px-5 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {approving ? (
+                <>
+                  <Loader2
+                    size={16}
+                    className="animate-spin"
+                    aria-hidden
+                  />
+
+                  Adding...
+                </>
+              ) : (
+                <>
+                  <CheckCircle2
+                    size={16}
+                    aria-hidden
+                  />
+
+                  Add to My Vault
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </article>
@@ -693,6 +812,7 @@ function Field({
   value: string;
   placeholder?: string;
   type?: string;
+
   onChange: (
     value: string
   ) => void;
