@@ -3,6 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import {
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
+
 import Logo from "@/components/brand/Logo";
 
 import NotificationBell from "@/components/NotificationBell";
@@ -16,14 +22,103 @@ import { isPrimaryNavActive } from "@/lib/navigation/activeGroup";
 import { PRIMARY_NAV_ITEMS } from "@/lib/navigation/config";
 import { shouldShowPremiumBadge } from "@/lib/navigation/navVisibility";
 
+type ImportResponse = {
+  imports?: Array<{
+    id: string;
+  }>;
+};
+
 export default function AppHeader() {
   const pathname = usePathname();
+
+  const [
+    pendingImportCount,
+    setPendingImportCount,
+  ] = useState(0);
 
   const {
     canViewFeature,
     inheritsFamilyPlan,
     hasFamilyFeatureAccess,
   } = usePermissions();
+
+  const loadPendingImports =
+    useCallback(async () => {
+      try {
+        const response =
+          await fetch(
+            "/api/imports",
+            {
+              method: "GET",
+              cache: "no-store",
+            }
+          );
+
+        if (!response.ok) {
+          return;
+        }
+
+        const data:
+          ImportResponse =
+          await response.json();
+
+        setPendingImportCount(
+          data.imports?.length ??
+            0
+        );
+      } catch {
+        /*
+          Never let a failed badge
+          request break navigation.
+        */
+      }
+    }, []);
+
+  useEffect(() => {
+    void loadPendingImports();
+
+    const interval =
+      window.setInterval(
+        () => {
+          void loadPendingImports();
+        },
+        30000
+      );
+
+    function handleFocus() {
+      void loadPendingImports();
+    }
+
+    window.addEventListener(
+      "focus",
+      handleFocus
+    );
+
+    return () => {
+      window.clearInterval(
+        interval
+      );
+
+      window.removeEventListener(
+        "focus",
+        handleFocus
+      );
+    };
+  }, [loadPendingImports]);
+
+  /*
+    Refresh after navigating back
+    from Smart Import.
+
+    This helps the badge update after
+    approving or rejecting imports.
+  */
+  useEffect(() => {
+    void loadPendingImports();
+  }, [
+    pathname,
+    loadPendingImports,
+  ]);
 
   return (
     <>
@@ -35,7 +130,10 @@ export default function AppHeader() {
             href="/dashboard"
             className="justify-self-start"
           >
-            <Logo withMark collapsed={false} />
+            <Logo
+              withMark
+              collapsed={false}
+            />
           </Link>
 
           <nav
@@ -43,34 +141,63 @@ export default function AppHeader() {
             className="justify-self-center"
           >
             <div className="flex items-center rounded-full border border-border-subtle/70 bg-surface-card/90 p-1 shadow-sm">
-              {PRIMARY_NAV_ITEMS.map((item) => {
-                const badge = shouldShowPremiumBadge(
-                  item.feature,
-                  canViewFeature,
-                  inheritsFamilyPlan,
-                  hasFamilyFeatureAccess
-                );
+              {PRIMARY_NAV_ITEMS.map(
+                (item) => {
+                  const premiumBadge =
+                    shouldShowPremiumBadge(
+                      item.feature,
+                      canViewFeature,
+                      inheritsFamilyPlan,
+                      hasFamilyFeatureAccess
+                    );
 
-                return (
-                  <NavLink
-                    key={item.href}
-                    href={item.href}
-                    label={item.label}
-                    isActive={isPrimaryNavActive(
-                      pathname,
-                      item.href
-                    )}
-                    badge={badge}
-                    compact
-                  />
-                );
-              })}
+                  /*
+                    Smart Import gets its
+                    pending review count.
+
+                    All other links retain
+                    their existing premium
+                    badge behavior.
+                  */
+                  const badge =
+                    item.href ===
+                      "/imports" &&
+                    pendingImportCount >
+                      0
+                      ? pendingImportCount >
+                        99
+                        ? "99+"
+                        : String(
+                            pendingImportCount
+                          )
+                      : premiumBadge;
+
+                  return (
+                    <NavLink
+                      key={item.href}
+                      href={item.href}
+                      label={
+                        item.label
+                      }
+                      isActive={isPrimaryNavActive(
+                        pathname,
+                        item.href
+                      )}
+                      badge={badge}
+                      compact
+                    />
+                  );
+                }
+              )}
             </div>
           </nav>
 
           <div className="flex min-w-0 items-center justify-self-end">
             <div className="flex items-center rounded-full border border-border-subtle/70 bg-surface-card/90 p-1 shadow-sm">
-              <NotificationBell compact />
+              <NotificationBell
+                compact
+              />
+
               <ProfileMenu compact />
             </div>
           </div>
