@@ -104,33 +104,33 @@ export default function KnowledgeArticleTemplate({
         data={jsonLd}
       />
 
-      <header className="border-b border-border-subtle/80 px-6 py-10 md:px-8 md:py-14">
+      <header className="border-b border-white/10 bg-[#0b1623] px-6 py-12 text-[#f4f0e8] md:px-8 md:py-16">
         <div className="mx-auto max-w-6xl">
           <Breadcrumb items={breadcrumbs} />
 
-          <p className="mt-6 text-overline text-text-muted">
+          <p className="mt-6 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8ca667]">
             {category?.name ?? "Knowledge"}
           </p>
 
-          <h1 className="mt-3 max-w-3xl text-3xl font-medium tracking-[-0.04em] text-text-primary md:text-5xl md:leading-[1.08]">
+          <h1 className="mt-3 max-w-4xl font-serif text-4xl font-medium tracking-[-0.045em] text-[#f4f0e8] md:text-6xl md:leading-[1.04]">
             {article.title}
           </h1>
 
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-text-muted">
+          <p className="mt-5 max-w-3xl text-base leading-8 text-[#b6c0c7] md:text-lg">
             {article.description}
           </p>
 
-          <p className="mt-4 text-sm text-text-tertiary">
+          <p className="mt-5 text-xs font-medium uppercase tracking-[0.12em] text-[#8e9aa3]">
             {article.readingMinutes} min read · Updated{" "}
             {article.updatedAt ?? article.publishedAt}
           </p>
         </div>
       </header>
 
-      <MarketingContent className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_280px] lg:gap-14">
+      <MarketingContent className="grid gap-12 bg-[#eee9df] lg:grid-cols-[minmax(0,1fr)_280px] lg:gap-14">
         <article className="min-w-0">
-          <figure className="overflow-hidden border border-border-subtle bg-surface-card">
-            <div className="relative aspect-[21/9] bg-surface-raised">
+          <figure className="overflow-hidden rounded-[28px] border border-[#182533]/10 bg-[#f8f5ef] shadow-[0_22px_55px_-42px_rgba(15,25,35,0.55)]">
+            <div className="relative aspect-[21/9] bg-[#e4dfd5]">
               <Image
                 src={hero.src}
                 alt={hero.alt}
@@ -140,12 +140,12 @@ export default function KnowledgeArticleTemplate({
                 className="object-cover"
               />
             </div>
-            <figcaption className="border-t border-border-subtle px-4 py-3 text-sm text-text-muted">
+            <figcaption className="border-t border-[#182533]/10 px-5 py-3 text-xs leading-5 text-[#68737b]">
               {hero.caption || article.heroCaption}
             </figcaption>
           </figure>
 
-          <div className="mt-10 space-y-5 text-base leading-8 text-text-secondary">
+          <div className="mt-10 space-y-5 rounded-[26px] border border-[#182533]/10 bg-[#f8f5ef] p-6 text-[1.02rem] leading-8 text-[#46535c] shadow-[0_18px_45px_-38px_rgba(15,25,35,0.35)] md:p-8">
             {article.intro.map((paragraph) => (
               <p key={paragraph.slice(0, 48)}>
                 {paragraph}
@@ -157,17 +157,17 @@ export default function KnowledgeArticleTemplate({
             <TableOfContents items={tocItems} />
           </div>
 
-          <div className="mt-12 space-y-12">
+          <div className="mt-12 space-y-7">
             {article.sections.map((section) => (
               <section
                 key={section.id}
                 id={section.id}
-                className="scroll-mt-28"
+                className="scroll-mt-28 rounded-[26px] border border-[#182533]/10 bg-[#f8f5ef] p-6 shadow-[0_18px_45px_-38px_rgba(15,25,35,0.3)] md:p-8"
               >
-                <h2 className="text-2xl font-medium tracking-[-0.03em] text-text-primary">
+                <h2 className="font-serif text-2xl font-medium tracking-[-0.035em] text-[#17212a] md:text-3xl">
                   {section.heading}
                 </h2>
-                <div className="mt-4 space-y-4 text-base leading-8 text-text-secondary">
+                <div className="mt-5 space-y-5 text-base leading-8 text-[#4f5b63]">
                   {section.paragraphs.map((paragraph) => (
                     <p key={paragraph.slice(0, 48)}>
                       {paragraph}
@@ -208,16 +208,16 @@ export default function KnowledgeArticleTemplate({
         <aside className="hidden lg:block">
           <div className="sticky top-24 space-y-6">
             <TableOfContents items={tocItems} />
-            <div className="border border-border-subtle bg-surface-card p-5">
-              <p className="text-sm font-medium text-text-primary">
+            <div className="rounded-[24px] border border-white/10 bg-[#0b1623] p-5 text-[#f4f0e8] shadow-[0_20px_45px_-35px_rgba(0,0,0,0.7)]">
+              <p className="font-serif text-lg font-medium text-[#f4f0e8]">
                 Ready to organize?
               </p>
-              <p className="mt-2 text-sm leading-6 text-text-muted">
+              <p className="mt-2 text-sm leading-6 text-[#b6c0c7]">
                 Home Tech Vault keeps devices, documents, and warranties in one place.
               </p>
               <Link
                 href={MARKETING_ROUTES.signup}
-                className="htv-focus-ring mt-4 inline-flex items-center gap-2 text-sm font-medium text-text-primary"
+                className="htv-focus-ring mt-5 inline-flex items-center gap-2 rounded-full bg-[#617c43] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#718d4f]"
               >
                 Create free account
                 <ArrowRight size={14} aria-hidden />

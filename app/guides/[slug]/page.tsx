@@ -25,9 +25,13 @@ export async function generateMetadata({ params }: PageProps) {
   }
 
   return createSeoMetadata({
-    title: page.metaTitle.replace(/\s*\|\s*Home Tech Vault$/, ""),
+    title: page.metaTitle.replace(
+      /\s*\|\s*Home Tech Vault$/,
+      ""
+    ),
     description: page.metaDescription,
     path: page.path,
+    type: "article",
     keywords: page.keywords,
   });
 }

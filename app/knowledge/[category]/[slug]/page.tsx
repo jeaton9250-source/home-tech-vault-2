@@ -10,6 +10,7 @@ import {
   getKnowledgeCategory,
   knowledgeArticlePath,
 } from "@/lib/knowledge/categories";
+import { getKnowledgeHeroImage } from "@/lib/knowledge/heroImages";
 import { createSeoMetadata } from "@/lib/seo";
 
 type PageProps = {
@@ -28,13 +29,21 @@ export async function generateMetadata({ params }: PageProps) {
     return {};
   }
 
+  const hero =
+    getKnowledgeHeroImage(article.slug);
+
   return createSeoMetadata({
     title: article.title,
     description: article.description,
-    path: knowledgeArticlePath(article.category, article.slug),
+    path: knowledgeArticlePath(
+      article.category,
+      article.slug
+    ),
     type: "article",
     publishedTime: article.publishedAt,
     keywords: article.keywords,
+    image: hero.src,
+    imageAlt: hero.alt,
   });
 }
 

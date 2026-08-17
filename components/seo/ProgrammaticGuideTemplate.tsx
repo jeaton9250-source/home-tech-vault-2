@@ -72,43 +72,43 @@ export default function ProgrammaticGuideTemplate({
         data={jsonLd}
       />
 
-      <header className="border-b border-border-subtle/80 px-6 py-10 md:px-8 md:py-14">
+      <header className="border-b border-white/10 bg-[#0b1623] px-6 py-12 text-[#f4f0e8] md:px-8 md:py-16">
         <div className="mx-auto max-w-6xl">
           <Breadcrumb items={breadcrumbs} />
 
-          <p className="mt-6 text-overline text-text-muted">
+          <p className="mt-6 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8ca667]">
             {page.heroEyebrow}
           </p>
 
-          <h1 className="mt-3 max-w-3xl text-3xl font-medium tracking-[-0.04em] text-text-primary md:text-5xl md:leading-[1.08]">
+          <h1 className="mt-3 max-w-4xl font-serif text-4xl font-medium tracking-[-0.045em] text-[#f4f0e8] md:text-6xl md:leading-[1.04]">
             {page.heroTitle}
           </h1>
 
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-text-muted">
+          <p className="mt-5 max-w-3xl text-base leading-8 text-[#b6c0c7] md:text-lg">
             {page.heroDescription}
           </p>
         </div>
       </header>
 
-      <MarketingContent className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_260px] lg:gap-14">
+      <MarketingContent className="grid gap-12 bg-[#eee9df] lg:grid-cols-[minmax(0,1fr)_260px] lg:gap-14">
         <article className="min-w-0">
-          <div className="space-y-5 text-base leading-8 text-text-secondary">
+          <div className="space-y-5 rounded-[26px] border border-[#182533]/10 bg-[#f8f5ef] p-6 text-[1.02rem] leading-8 text-[#46535c] shadow-[0_18px_45px_-38px_rgba(15,25,35,0.35)] md:p-8">
             {page.intro.map((paragraph) => (
               <p key={paragraph.slice(0, 40)}>{paragraph}</p>
             ))}
           </div>
 
-          <div className="mt-12 space-y-12">
+          <div className="mt-12 space-y-7">
             {page.sections.map((section) => (
               <section
                 key={section.id}
                 id={section.id}
-                className="scroll-mt-28"
+                className="scroll-mt-28 rounded-[26px] border border-[#182533]/10 bg-[#f8f5ef] p-6 shadow-[0_18px_45px_-38px_rgba(15,25,35,0.3)] md:p-8"
               >
-                <h2 className="text-2xl font-medium tracking-[-0.03em] text-text-primary">
+                <h2 className="font-serif text-2xl font-medium tracking-[-0.035em] text-[#17212a] md:text-3xl">
                   {section.heading}
                 </h2>
-                <div className="mt-4 space-y-4 text-base leading-8 text-text-secondary">
+                <div className="mt-5 space-y-5 text-base leading-8 text-[#4f5b63]">
                   {section.paragraphs.map((paragraph) => (
                     <p
                       key={paragraph.slice(0, 40)}
@@ -157,9 +157,9 @@ export default function ProgrammaticGuideTemplate({
           <div className="sticky top-24 space-y-6">
             <nav
               aria-label="On this page"
-              className="border border-border-subtle bg-surface-card p-5"
+              className="rounded-[24px] border border-[#182533]/10 bg-[#f8f5ef] p-5 shadow-[0_18px_45px_-38px_rgba(15,25,35,0.35)]"
             >
-              <p className="text-overline text-text-muted">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#617c43]">
                 On this page
               </p>
               <ol className="mt-4 space-y-2.5">
@@ -167,9 +167,9 @@ export default function ProgrammaticGuideTemplate({
                   <li key={section.id}>
                     <a
                       href={`#${section.id}`}
-                      className="htv-focus-ring text-sm leading-6 text-text-secondary transition hover:text-text-primary"
+                      className="htv-focus-ring text-sm leading-6 text-[#59656d] transition hover:text-[#17212a]"
                     >
-                      <span className="mr-2 text-text-muted">
+                      <span className="mr-2 font-semibold text-[#617c43]">
                         {index + 1}.
                       </span>
                       {section.heading}
@@ -179,16 +179,16 @@ export default function ProgrammaticGuideTemplate({
               </ol>
             </nav>
 
-            <div className="border border-border-subtle bg-surface-card p-5">
-              <p className="text-sm font-medium text-text-primary">
+            <div className="rounded-[24px] border border-white/10 bg-[#0b1623] p-5 text-[#f4f0e8] shadow-[0_20px_45px_-35px_rgba(0,0,0,0.7)]">
+              <p className="font-serif text-lg font-medium text-[#f4f0e8]">
                 Browse more guides
               </p>
-              <p className="mt-2 text-sm leading-6 text-text-muted">
+              <p className="mt-2 text-sm leading-6 text-[#b6c0c7]">
                 Brand and topic pages for organizing household tech.
               </p>
               <Link
                 href="/guides"
-                className="htv-focus-ring mt-4 inline-flex items-center gap-2 text-sm font-medium text-text-primary"
+                className="htv-focus-ring mt-5 inline-flex items-center gap-2 rounded-full bg-[#617c43] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#718d4f]"
               >
                 All guides
                 <ArrowRight size={14} aria-hidden />
