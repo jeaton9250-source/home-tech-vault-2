@@ -59,10 +59,10 @@ export default function TermsPage() {
       />
 
       <MarketingContent className="pt-0">
-        <div className="mx-auto max-w-3xl space-y-10 text-sm leading-7 text-text-secondary">
+        <div className="mx-auto max-w-3xl space-y-10 rounded-[28px] border border-[#182533]/10 bg-[#f8f5ef] p-6 text-sm leading-7 text-[#4f5b63] shadow-[0_18px_45px_-36px_rgba(15,25,35,0.35)] sm:p-8 md:p-10">
           {sections.map((section) => (
             <section key={section.title}>
-              <h2 className="text-lg font-medium text-text-primary">
+              <h2 className="font-serif text-xl font-medium tracking-[-0.025em] text-[#17212a]">
                 {section.title}
               </h2>
 
@@ -73,7 +73,7 @@ export default function TermsPage() {
                     be sent through our{" "}
                     <Link
                       href={MARKETING_ROUTES.contact}
-                      className="font-medium text-interaction hover:text-interaction-hover"
+                      className="font-semibold text-[#617c43] underline decoration-[#617c43]/30 underline-offset-4 transition hover:text-[#718d4f]"
                     >
                       Contact page
                     </Link>
