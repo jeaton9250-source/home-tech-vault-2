@@ -14,34 +14,39 @@ import {
 
 export default function MarketingFooter() {
   return (
-    <footer className="border-t border-border-subtle/80 bg-surface-card/30">
+    <footer className="border-t border-white/10 bg-[#0b1623] text-[#f4f0e8]">
       <div className="mx-auto max-w-6xl px-8 py-16 md:px-10 md:py-20">
         <div className="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between lg:gap-16">
           <div className="max-w-sm lg:max-w-md">
-            <Logo />
+            <div className="[&_svg]:text-[#8ca667] [&_span]:text-[#f4f0e8] [&_p]:text-[#f4f0e8]">
+              <Logo />
+            </div>
 
-            <p className="mt-4 text-sm leading-6 text-text-muted">
+            <p className="mt-4 text-sm leading-6 text-[#d4d9dd]">
               {brand.tagline}
             </p>
 
-            <p className="mt-3 text-sm leading-6 text-text-tertiary">
+            <p className="mt-3 text-sm leading-6 text-[#9da8b0]">
               {FOOTER_BRAND_DESCRIPTION}
             </p>
           </div>
 
-          <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4 sm:gap-10 lg:gap-12">
+          <div className="grid gap-10 sm:grid-cols-2 sm:gap-10 lg:grid-cols-4 lg:gap-12">
             <FooterColumn
               title="Product"
               links={FOOTER_PRODUCT_LINKS}
             />
+
             <FooterColumn
               title="Guides"
               links={FOOTER_GUIDE_LINKS}
             />
+
             <FooterColumn
               title="Support"
               links={FOOTER_SUPPORT_LINKS}
             />
+
             <FooterColumn
               title="Legal"
               links={FOOTER_LEGAL_LINKS}
@@ -49,7 +54,7 @@ export default function MarketingFooter() {
           </div>
         </div>
 
-        <p className="mt-12 border-t border-border-subtle/80 pt-8 text-xs leading-5 text-text-tertiary">
+        <p className="mt-12 border-t border-white/10 pt-8 text-xs leading-5 text-[#8e99a2]">
           {FOOTER_COPYRIGHT}
         </p>
       </div>
@@ -70,7 +75,7 @@ function FooterColumn({
     <nav aria-labelledby={headingId}>
       <p
         id={headingId}
-        className="text-overline text-text-muted"
+        className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#8ca667]"
       >
         {title}
       </p>
@@ -80,7 +85,7 @@ function FooterColumn({
           <li key={`${link.href}-${link.label}`}>
             <Link
               href={link.href}
-              className="text-sm leading-6 text-text-secondary transition-colors duration-200 hover:text-text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interaction"
+              className="text-sm leading-6 text-[#c7cfd5] transition-colors duration-200 hover:text-[#f4f0e8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8ca667]"
             >
               {link.label}
             </Link>
