@@ -4,7 +4,6 @@ import Link from "next/link";
 
 import {
   ArrowRight,
-  Check,
   FileText,
   Laptop,
   Network,
@@ -19,7 +18,7 @@ type HeroSectionProps = {
   isSignedIn?: boolean;
 };
 
-const quickFeatures = [
+const categories = [
   {
     icon: Laptop,
     label: "Devices",
@@ -33,12 +32,16 @@ const quickFeatures = [
     label: "Warranties",
   },
   {
+    icon: Wrench,
+    label: "Maintenance",
+  },
+  {
     icon: Network,
     label: "Network",
   },
   {
-    icon: Wrench,
-    label: "Maintenance",
+    icon: Sparkles,
+    label: "Smart Import",
   },
 ];
 
@@ -54,241 +57,257 @@ export default function HeroSection({
     : "Create My Free Vault";
 
   return (
-    <section className="relative overflow-hidden bg-surface-base px-5 pb-20 pt-16 md:px-8 md:pb-28 md:pt-24 lg:px-12">
-      <div className="pointer-events-none absolute left-1/2 top-0 -z-10 h-[650px] w-[1000px] -translate-x-1/2 rounded-full bg-home-health-soft/40 blur-3xl" />
+    <>
+      <section className="relative overflow-hidden bg-[#0b1623] text-[#f4f0e8]">
+        {/* BACKGROUND */}
 
-      <div className="mx-auto grid max-w-[var(--content-max)] items-center gap-14 lg:grid-cols-[0.95fr_1.05fr] lg:gap-16">
-        {/* LEFT */}
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -left-48 top-[-260px] h-[700px] w-[700px] rounded-full bg-[#52643f]/10 blur-[120px]" />
 
-        <div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-home-health/15 bg-home-health-soft px-3 py-1.5 text-xs font-semibold text-home-health">
-            <Sparkles size={14} />
+          <div className="absolute right-[-240px] top-[-100px] h-[700px] w-[700px] rounded-full bg-[#5c4058]/10 blur-[120px]" />
 
-            Your home technology, organized
-          </div>
-
-          <h1 className="mt-6 max-w-3xl text-4xl font-semibold tracking-[-0.045em] text-text-primary sm:text-5xl lg:text-[4.15rem] lg:leading-[1.03]">
-            Everything about your home
-            technology.
-            <br />
-            Finally in one place.
-          </h1>
-
-          <p className="mt-6 max-w-2xl text-base leading-7 text-text-secondary sm:text-lg">
-            Keep your devices, receipts,
-            warranties, manuals, maintenance
-            records, subscriptions, and
-            network information organized
-            inside one secure Home Tech Vault.
-          </p>
-
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Link
-              href={primaryHref}
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-home-health px-6 text-sm font-semibold text-white shadow-sm transition hover:opacity-90"
-            >
-              {primaryLabel}
-
-              <ArrowRight size={17} />
-            </Link>
-
-            <a
-              href="#vault-overview"
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-border-subtle bg-surface-card px-6 text-sm font-semibold text-text-primary transition hover:bg-surface-sunken"
-            >
-              Explore the Vault
-            </a>
-          </div>
-
-          <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2">
-            <TrustItem text="No credit card" />
-            <TrustItem text="Start with one device" />
-            <TrustItem text="Built for homeowners" />
-          </div>
-
-          <div className="mt-8 flex flex-wrap gap-2">
-            {quickFeatures.map((feature) => {
-              const Icon = feature.icon;
-
-              return (
-                <div
-                  key={feature.label}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-border-subtle bg-surface-card px-3 py-1.5 text-xs font-medium text-text-secondary"
-                >
-                  <Icon
-                    size={13}
-                    className="text-home-health"
-                  />
-
-                  {feature.label}
-                </div>
-              );
-            })}
-
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-home-health/20 bg-home-health-soft px-3 py-1.5 text-xs font-semibold text-home-health">
-              <Sparkles size={13} />
-              Smart Import™
-            </div>
-          </div>
+          <div
+            className="absolute inset-0 opacity-[0.025]"
+            style={{
+              backgroundImage:
+                "linear-gradient(rgba(255,255,255,.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.5) 1px, transparent 1px)",
+              backgroundSize: "70px 70px",
+            }}
+          />
         </div>
 
-        {/* VAULT VISUAL */}
+        <div className="relative mx-auto grid min-h-[690px] max-w-[1240px] items-center gap-14 px-5 py-20 md:px-8 lg:grid-cols-[1.05fr_0.95fr] lg:gap-20 lg:py-24">
+          {/* LEFT */}
 
-        <div className="relative">
-          <div className="absolute -inset-8 -z-10 rounded-full bg-home-health-soft/45 blur-3xl" />
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/45 bg-white/[0.03] px-4 py-2">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#7d9c54]" />
 
-          <div className="overflow-hidden rounded-[30px] border border-border-subtle bg-surface-card shadow-xl">
-            <div className="border-b border-border-subtle px-5 py-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-text-muted">
-                    Home Tech Vault
-                  </p>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#8ca667]">
+                Home technology, archived
+              </span>
+            </div>
 
-                  <p className="mt-1 font-semibold text-text-primary">
+            <h1 className="mt-8 max-w-[670px] font-serif text-[3.35rem] font-medium leading-[0.98] tracking-[-0.055em] text-[#f4f0e8] sm:text-[4.4rem] lg:text-[5.15rem]">
+              Everything about
+              <br />
+              your home
+              <br />
+              technology.
+              <br />
+
+              <span className="text-[#718d4f]">
+                Finally in one place.
+              </span>
+            </h1>
+
+            <p className="mt-7 max-w-[620px] text-base leading-8 text-[#bdc5cc] sm:text-[1.05rem]">
+              Keep your devices, receipts,
+              warranties, manuals, maintenance
+              records, subscriptions, and
+              network information organized
+              inside one secure Home Tech
+              Vault.
+            </p>
+
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Link
+                href={primaryHref}
+                className="inline-flex min-h-[52px] items-center justify-center gap-2 rounded-xl border border-[#8ba866]/45 bg-[#617c43] px-7 text-sm font-semibold text-white shadow-[0_20px_40px_-20px_rgba(97,124,67,0.8)] transition hover:bg-[#718d4f]"
+              >
+                {primaryLabel}
+
+                <ArrowRight
+                  size={16}
+                  aria-hidden
+                />
+              </Link>
+
+              <Link
+                href={MARKETING_ROUTES.demo}
+                className="inline-flex min-h-[52px] items-center justify-center rounded-xl border border-white/65 bg-white/[0.02] px-7 text-sm font-semibold text-[#f4f0e8] transition hover:bg-white/10"
+              >
+                Watch the Demo
+              </Link>
+            </div>
+
+            <p className="mt-5 text-xs text-white/40">
+              No credit card. Start with one
+              device and build your Vault at
+              your own pace.
+            </p>
+          </div>
+
+          {/* RIGHT EDITORIAL VISUAL */}
+
+          <div className="relative lg:pt-14">
+            <div className="relative overflow-hidden rounded-[26px] border border-white/15 bg-[#182533] shadow-[0_35px_80px_-30px_rgba(0,0,0,0.65)]">
+              {/* FAUX HOME SCENE */}
+
+              <div className="relative h-[410px] overflow-hidden sm:h-[470px]">
+                {/* WALL */}
+
+                <div className="absolute inset-0 bg-[linear-gradient(135deg,#c8b89a_0%,#a99073_43%,#596253_43%,#4a584c_100%)]" />
+
+                {/* WINDOW */}
+
+                <div className="absolute left-[7%] top-[8%] h-[54%] w-[30%] rounded-sm border-[10px] border-[#dfd6c4] bg-[linear-gradient(150deg,#dbe6e7,#9ab0a6)] shadow-xl">
+                  <div className="absolute inset-y-0 left-1/2 w-[4px] bg-[#dfd6c4]" />
+                  <div className="absolute left-0 top-1/2 h-[4px] w-full bg-[#dfd6c4]" />
+                </div>
+
+                {/* DESK */}
+
+                <div className="absolute bottom-[8%] left-[6%] right-[5%] h-[32%] origin-left -skew-y-[2deg] rounded-lg bg-[#725a3d] shadow-2xl">
+                  <div className="absolute inset-x-0 top-0 h-[8px] bg-[#927654]" />
+                </div>
+
+                {/* ROUTER */}
+
+                <div className="absolute bottom-[25%] left-[37%] h-[55px] w-[115px] rounded-lg border border-white/10 bg-[#333936] shadow-xl">
+                  <div className="absolute left-4 top-4 flex gap-1">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#7c9958]" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#7c9958]/70" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-white/20" />
+                  </div>
+                </div>
+
+                {/* LAPTOP / TABLET */}
+
+                <div className="absolute bottom-[17%] right-[11%] h-[95px] w-[130px] rotate-[5deg] rounded-lg border border-white/10 bg-[#1c2630] shadow-xl">
+                  <div className="absolute inset-[7px] rounded bg-[#314153]" />
+                </div>
+
+                {/* PHONE */}
+
+                <div className="absolute bottom-[15%] left-[21%] h-[78px] w-[42px] -rotate-[8deg] rounded-[8px] border border-white/20 bg-[#eee9df] shadow-xl" />
+
+                {/* LAMP */}
+
+                <div className="absolute right-[12%] top-[9%] h-[185px] w-[85px]">
+                  <div className="absolute left-1/2 top-[52px] h-[115px] w-[4px] -translate-x-1/2 bg-[#ae8a4f]" />
+
+                  <div className="absolute left-1/2 top-0 h-[65px] w-[90px] -translate-x-1/2 rounded-t-[50%] rounded-b-lg bg-[#d8c8a9]" />
+
+                  <div className="absolute bottom-0 left-1/2 h-[10px] w-[58px] -translate-x-1/2 rounded-full bg-[#ae8a4f]" />
+                </div>
+
+                {/* DARK GRADIENT */}
+
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0b1623]/65 via-transparent to-transparent" />
+
+                {/* LABEL */}
+
+                <div className="absolute left-5 top-5 rounded-full border border-white/20 bg-[#0b1623]/70 px-3 py-1.5 backdrop-blur-md">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/60">
                     Sample Home
                   </p>
                 </div>
-
-                <span className="rounded-full bg-home-health-soft px-2.5 py-1 text-[10px] font-semibold text-home-health">
-                  DEMO
-                </span>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 p-5 sm:grid-cols-3">
-              <StatCard
-                label="Devices"
-                value="18"
-              />
+            {/* FLOATING VAULT SUMMARY */}
 
-              <StatCard
-                label="Documents"
-                value="34"
-              />
-
-              <StatCard
-                label="Warranties"
-                value="7"
-              />
-
-              <StatCard
-                label="Maintenance"
-                value="4"
-              />
-
-              <StatCard
-                label="Subscriptions"
-                value="6"
-              />
-
-              <StatCard
-                label="Network"
-                value="12"
-              />
-            </div>
-
-            <div className="border-t border-border-subtle p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-text-muted">
-                Recently organized
-              </p>
-
-              <div className="mt-4 space-y-3">
-                <DeviceRow
-                  name='LG 34" UltraWide Monitor'
-                  meta="Office • Warranty tracked"
+            <div className="relative z-10 mx-auto -mt-9 w-[88%] rounded-2xl border border-white/35 bg-[#101d2b]/95 px-5 py-4 shadow-2xl backdrop-blur-xl sm:w-[78%]">
+              <div className="grid grid-cols-4 divide-x divide-white/10">
+                <VaultMetric
+                  value="18"
+                  label="Devices"
                 />
 
-                <DeviceRow
-                  name="Apple TV 4K"
-                  meta="Living Room • Receipt saved"
+                <VaultMetric
+                  value="34"
+                  label="Files"
                 />
 
-                <DeviceRow
-                  name="Eero Pro 6E"
-                  meta="Network • Manual attached"
+                <VaultMetric
+                  value="7"
+                  label="Warranties"
+                />
+
+                <VaultMetric
+                  value="1"
+                  label="Attention"
+                  accent
                 />
               </div>
             </div>
 
-            <div className="border-t border-border-subtle bg-home-health-soft/35 px-5 py-4">
+            {/* SMALL DECORATION */}
+
+            <div className="absolute -bottom-7 -right-5 hidden rounded-2xl border border-white/15 bg-[#152330] p-4 shadow-xl sm:block">
               <div className="flex items-center gap-2">
                 <Sparkles
                   size={15}
-                  className="text-home-health"
+                  className="text-[#88a761]"
                 />
 
-                <p className="text-xs font-semibold text-text-primary">
-                  Smart Import ready for your next purchase
-                </p>
+                <span className="text-[11px] font-semibold text-[#dce2d6]">
+                  Smart Import ready
+                </span>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      {/* CATEGORY STRIP */}
+
+      <section className="border-y border-white/15 bg-[#192b3e]">
+        <div className="mx-auto flex max-w-[1240px] flex-wrap items-center justify-center gap-2 px-5 py-5 md:px-8">
+          {categories.map((category) => {
+            const Icon = category.icon;
+
+            return (
+              <a
+                key={category.label}
+                href={
+                  category.label ===
+                  "Smart Import"
+                    ? "#smart-import-demo"
+                    : "#vault-overview"
+                }
+                className="inline-flex items-center gap-2 rounded-full border border-white/50 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#d0d6db] transition hover:border-[#8ca667] hover:text-white"
+              >
+                <Icon
+                  size={12}
+                  className="text-[#809d5d]"
+                />
+
+                {category.label}
+              </a>
+            );
+          })}
+        </div>
+      </section>
+    </>
   );
 }
 
-function TrustItem({
-  text,
-}: {
-  text: string;
-}) {
-  return (
-    <div className="flex items-center gap-1.5 text-xs font-medium text-text-muted">
-      <Check
-        size={13}
-        className="text-home-health"
-      />
-
-      {text}
-    </div>
-  );
-}
-
-function StatCard({
-  label,
+function VaultMetric({
   value,
+  label,
+  accent = false,
 }: {
-  label: string;
   value: string;
+  label: string;
+  accent?: boolean;
 }) {
   return (
-    <div className="rounded-2xl bg-surface-sunken/60 p-4">
-      <p className="text-2xl font-semibold tracking-tight text-text-primary">
+    <div className="px-2 text-center">
+      <p
+        className={
+          accent
+            ? "font-serif text-xl font-semibold text-[#89a865]"
+            : "font-serif text-xl font-semibold text-[#f4f0e8]"
+        }
+      >
         {value}
       </p>
 
-      <p className="mt-1 text-xs text-text-muted">
+      <p className="mt-1 text-[9px] font-medium uppercase tracking-[0.08em] text-white/40">
         {label}
       </p>
-    </div>
-  );
-}
-
-function DeviceRow({
-  name,
-  meta,
-}: {
-  name: string;
-  meta: string;
-}) {
-  return (
-    <div className="flex items-center gap-3 rounded-xl border border-border-subtle bg-surface-base px-4 py-3">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-home-health-soft text-home-health">
-        <Laptop size={16} />
-      </div>
-
-      <div className="min-w-0">
-        <p className="truncate text-sm font-semibold text-text-primary">
-          {name}
-        </p>
-
-        <p className="mt-0.5 truncate text-xs text-text-muted">
-          {meta}
-        </p>
-      </div>
     </div>
   );
 }

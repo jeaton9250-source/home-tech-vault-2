@@ -9,9 +9,7 @@ import {
   Laptop,
   Network,
   Receipt,
-  Search,
   ShieldCheck,
-  Sparkles,
   Users,
   Wifi,
   Wrench,
@@ -23,83 +21,100 @@ const vaultAreas = [
   {
     icon: Laptop,
     title: "Devices",
+    number: "01",
     text: "Keep one clear record for every piece of technology in your home.",
   },
   {
     icon: FileText,
     title: "Documents",
-    text: "Attach receipts, manuals, invoices and important files where they belong.",
+    number: "02",
+    text: "Attach receipts, manuals, invoices, and important files where they belong.",
   },
   {
     icon: ShieldCheck,
     title: "Warranties",
+    number: "03",
     text: "Know what is covered and keep the information ready when something breaks.",
   },
   {
     icon: Wrench,
     title: "Maintenance",
-    text: "Track service, upkeep and useful maintenance history over time.",
+    number: "04",
+    text: "Track service, upkeep, reminders, and useful maintenance history over time.",
   },
   {
     icon: Wifi,
     title: "Network",
+    number: "05",
     text: "Keep useful context about the technology connected to your home.",
   },
   {
     icon: Users,
     title: "Family",
+    number: "06",
     text: "Make important household technology information accessible to the right people.",
   },
 ];
+
+/* -------------------------------------------------------------------------- */
+/* VAULT OVERVIEW                                                             */
+/* -------------------------------------------------------------------------- */
 
 export function VaultOverviewSection() {
   return (
     <section
       id="vault-overview"
-      className="border-y border-border-subtle bg-surface-card px-5 py-20 md:px-8 md:py-28 lg:px-12"
+      className="relative overflow-hidden bg-[#0e1b29] px-5 py-24 text-[#f4f0e8] md:px-8 md:py-32 lg:px-12"
     >
-      <div className="mx-auto max-w-[var(--content-max)]">
-        <div className="mx-auto max-w-3xl text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-home-health">
-            One home. One Vault.
-          </p>
+      <div className="pointer-events-none absolute -left-40 top-24 h-[500px] w-[500px] rounded-full bg-[#718d4f]/5 blur-[120px]" />
 
-          <h2 className="mt-4 text-3xl font-semibold tracking-[-0.035em] text-text-primary sm:text-4xl lg:text-5xl">
-            Your home has a lot of
-            technology.
-            <br />
-            Your records shouldn&apos;t be
-            scattered everywhere.
-          </h2>
+      <div className="relative mx-auto max-w-[1240px]">
+        <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
+          <div>
+            <Eyebrow>The Vault</Eyebrow>
 
-          <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-text-secondary">
-            Home Tech Vault gives every
-            device, document, warranty,
-            maintenance record and network
-            detail a place to live.
-          </p>
+            <h2 className="mt-5 max-w-xl font-serif text-4xl font-medium leading-[1.03] tracking-[-0.045em] text-[#f4f0e8] sm:text-5xl">
+              One place for the technology that runs your home.
+            </h2>
+          </div>
+
+          <div className="lg:pb-2">
+            <p className="max-w-xl text-base leading-8 text-[#aeb8c1]">
+              Your devices, receipts, warranties, manuals, maintenance records,
+              and network details already exist. Home Tech Vault gives them one
+              organized place to live.
+            </p>
+          </div>
         </div>
 
-        <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-16 grid border-l border-t border-white/10 sm:grid-cols-2 lg:grid-cols-3">
           {vaultAreas.map((area) => {
             const Icon = area.icon;
 
             return (
               <article
                 key={area.title}
-                className="rounded-[24px] border border-border-subtle bg-surface-base p-6"
+                className="group relative min-h-[255px] border-b border-r border-white/10 p-7 transition-colors duration-300 hover:bg-white/[0.025] sm:p-8"
               >
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-home-health-soft text-home-health">
-                  <Icon size={19} />
+                <div className="flex items-start justify-between">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#718d4f]/30 bg-[#718d4f]/10 text-[#8ca667]">
+                    <Icon size={19} strokeWidth={1.7} />
+                  </div>
+
+                  <span className="font-serif text-sm text-white/25">
+                    {area.number}
+                  </span>
                 </div>
 
-                <h3 className="mt-5 text-lg font-semibold text-text-primary">
+                <h3 className="mt-8 font-serif text-2xl font-medium text-[#f4f0e8]">
                   {area.title}
                 </h3>
 
-                <p className="mt-2 text-sm leading-6 text-text-secondary">
+                <p className="mt-3 max-w-xs text-sm leading-6 text-[#929da7]">
                   {area.text}
                 </p>
+
+                <div className="absolute bottom-0 left-0 h-px w-0 bg-[#718d4f] transition-all duration-300 group-hover:w-full" />
               </article>
             );
           })}
@@ -109,91 +124,99 @@ export function VaultOverviewSection() {
   );
 }
 
+/* -------------------------------------------------------------------------- */
+/* DEVICE RECORD                                                              */
+/* -------------------------------------------------------------------------- */
+
 export function DeviceRecordsSection() {
   return (
-    <section className="bg-surface-base px-5 py-20 md:px-8 md:py-28 lg:px-12">
-      <div className="mx-auto grid max-w-[var(--content-max)] gap-12 lg:grid-cols-2 lg:items-center">
+    <section className="relative overflow-hidden bg-[#0b1623] px-5 py-24 text-[#f4f0e8] md:px-8 md:py-32 lg:px-12">
+      <div className="mx-auto grid max-w-[1240px] gap-16 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-home-health">
-            Device records
-          </p>
+          <Eyebrow>Device records</Eyebrow>
 
-          <h2 className="mt-4 text-3xl font-semibold tracking-[-0.035em] text-text-primary sm:text-4xl">
-            One record for every device
-            you own.
+          <h2 className="mt-5 max-w-lg font-serif text-4xl font-medium leading-[1.04] tracking-[-0.045em] text-[#f4f0e8] sm:text-5xl">
+            One record for every device you own.
           </h2>
 
-          <p className="mt-5 max-w-xl text-base leading-7 text-text-secondary">
-            Stop treating the receipt,
-            serial number, manual and
-            warranty as separate pieces of
-            information. Keep everything
+          <p className="mt-6 max-w-lg text-base leading-8 text-[#aeb8c1]">
+            Stop treating the receipt, serial number, warranty, manual, and
+            purchase history as separate pieces of information. Keep everything
             connected to the device itself.
           </p>
 
-          <div className="mt-7 space-y-3">
+          <div className="mt-9 space-y-4">
             <FeatureCheck text="Purchase date and price" />
-            <FeatureCheck text="Brand, model and serial number" />
+            <FeatureCheck text="Brand, model, and serial number" />
             <FeatureCheck text="Receipts and manuals" />
             <FeatureCheck text="Warranty information" />
             <FeatureCheck text="Maintenance history" />
           </div>
         </div>
 
-        <div className="rounded-[28px] border border-border-subtle bg-surface-card p-6 shadow-sm sm:p-8">
-          <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-home-health-soft text-home-health">
-              <Laptop size={22} />
+        <div className="relative">
+          <div className="absolute -inset-8 -z-10 rounded-full bg-[#718d4f]/5 blur-3xl" />
+
+          <div className="overflow-hidden rounded-[28px] border border-white/15 bg-[#132231] shadow-[0_35px_90px_-40px_rgba(0,0,0,0.85)]">
+            <div className="border-b border-white/10 px-6 py-5 sm:px-8">
+              <div className="flex items-center justify-between gap-5">
+                <div className="flex items-center gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[#718d4f]/25 bg-[#718d4f]/10 text-[#8ca667]">
+                    <Laptop size={21} />
+                  </div>
+
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-white/35">
+                      Office
+                    </p>
+
+                    <h3 className="mt-1 font-serif text-xl text-[#f4f0e8]">
+                      LG UltraWide Monitor
+                    </h3>
+                  </div>
+                </div>
+
+                <span className="rounded-full border border-[#718d4f]/30 bg-[#718d4f]/10 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#8ca667]">
+                  Organized
+                </span>
+              </div>
             </div>
 
-            <div>
-              <p className="text-xs text-text-muted">
-                Office
+            <div className="grid gap-px bg-white/10 sm:grid-cols-2">
+              <DarkInfoCard label="Model" value="34WQ500-B" />
+              <DarkInfoCard label="Purchased" value="Aug 12, 2026" />
+              <DarkInfoCard label="Purchase Price" value="$349.99" />
+              <DarkInfoCard label="Warranty" value="Tracked" />
+            </div>
+
+            <div className="border-t border-white/10 p-6 sm:p-8">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-white/35">
+                Attached records
               </p>
 
-              <h3 className="font-semibold text-text-primary">
-                LG UltraWide Monitor
-              </h3>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <AttachmentCard
+                  icon={Receipt}
+                  title="Purchase receipt"
+                  meta="Best Buy · PDF"
+                />
+
+                <AttachmentCard
+                  icon={FileText}
+                  title="Owner manual"
+                  meta="LG · PDF"
+                />
+              </div>
             </div>
           </div>
 
-          <div className="mt-6 grid gap-3 sm:grid-cols-2">
-            <InfoCard
-              label="Model"
-              value="34WQ500-B"
-            />
+          <div className="absolute -bottom-6 -left-5 hidden rounded-2xl border border-white/15 bg-[#192b3e]/95 px-5 py-4 shadow-xl backdrop-blur-xl md:block">
+            <p className="text-[10px] uppercase tracking-[0.14em] text-white/35">
+              Purchase record
+            </p>
 
-            <InfoCard
-              label="Purchased"
-              value="Aug 12, 2026"
-            />
-
-            <InfoCard
-              label="Price"
-              value="$349.99"
-            />
-
-            <InfoCard
-              label="Warranty"
-              value="Tracked"
-            />
-          </div>
-
-          <div className="mt-4 rounded-2xl bg-home-health-soft/35 p-4">
-            <div className="flex items-center gap-2">
-              <Receipt
-                size={16}
-                className="text-home-health"
-              />
-
-              <p className="text-sm font-semibold text-text-primary">
-                Receipt attached
-              </p>
-            </div>
-
-            <p className="mt-1 text-xs text-text-muted">
-              Purchase information stays with
-              the device record.
+            <p className="mt-1 font-serif text-lg text-[#f4f0e8]">
+              Everything connected.
             </p>
           </div>
         </div>
@@ -201,65 +224,74 @@ export function DeviceRecordsSection() {
     </section>
   );
 }
+
+/* -------------------------------------------------------------------------- */
+/* DOCUMENTS + WARRANTIES                                                     */
+/* -------------------------------------------------------------------------- */
 
 export function DocumentsWarrantySection() {
   return (
-    <section className="border-y border-border-subtle bg-surface-card px-5 py-20 md:px-8 md:py-28 lg:px-12">
-      <div className="mx-auto max-w-[var(--content-max)]">
-        <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
-          <div className="rounded-[28px] border border-border-subtle bg-surface-base p-6 sm:p-8">
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-text-muted">
-              Everything attached
-            </p>
+    <section className="bg-[#eee9df] px-5 py-24 text-[#101a22] md:px-8 md:py-32 lg:px-12">
+      <div className="mx-auto grid max-w-[1240px] gap-16 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+        <div className="order-2 lg:order-1">
+          <div className="overflow-hidden rounded-[28px] border border-[#182533]/10 bg-[#f8f5ef] shadow-[0_30px_70px_-45px_rgba(15,25,35,0.45)]">
+            <div className="border-b border-[#182533]/10 p-6 sm:p-8">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#68747d]">
+                LG UltraWide Monitor
+              </p>
 
-            <div className="mt-5 space-y-3">
-              <DocumentRow
+              <h3 className="mt-2 font-serif text-2xl text-[#101a22]">
+                Documents & coverage
+              </h3>
+            </div>
+
+            <div className="space-y-px bg-[#182533]/10">
+              <LightDocumentRow
                 icon={Receipt}
                 title="Best Buy Receipt"
                 meta="Aug 12, 2026"
+                status="Saved"
               />
 
-              <DocumentRow
+              <LightDocumentRow
                 icon={FileText}
                 title="Owner Manual"
-                meta="PDF"
+                meta="LG Electronics"
+                status="PDF"
               />
 
-              <DocumentRow
+              <LightDocumentRow
                 icon={ShieldCheck}
                 title="Manufacturer Warranty"
-                meta="Coverage tracked"
+                meta="Coverage details"
+                status="Tracked"
               />
 
-              <DocumentRow
+              <LightDocumentRow
                 icon={HardDrive}
                 title="Purchase Documentation"
-                meta="Saved"
+                meta="Original record"
+                status="Saved"
               />
             </div>
           </div>
+        </div>
 
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-home-health">
-              Documents + warranties
-            </p>
+        <div className="order-1 lg:order-2">
+          <LightEyebrow>Documents + warranties</LightEyebrow>
 
-            <h2 className="mt-4 text-3xl font-semibold tracking-[-0.035em] text-text-primary sm:text-4xl">
-              Stop searching your inbox
-              when something breaks.
-            </h2>
+          <h2 className="mt-5 max-w-xl font-serif text-4xl font-medium leading-[1.04] tracking-[-0.045em] text-[#101a22] sm:text-5xl">
+            Stop searching your inbox when something breaks.
+          </h2>
 
-            <p className="mt-5 max-w-xl text-base leading-7 text-text-secondary">
-              Keep receipts, manuals,
-              warranty details and other
-              important files attached to
-              the device they belong to.
-            </p>
+          <p className="mt-6 max-w-lg text-base leading-8 text-[#5f6a72]">
+            Keep receipts, manuals, warranty details, and other important files
+            attached to the device they belong to.
+          </p>
 
-            <p className="mt-5 text-sm leading-6 text-text-secondary">
-              When you need information
-              later, you know exactly where
-              to look.
+          <div className="mt-8 border-l-2 border-[#718d4f] pl-5">
+            <p className="font-serif text-xl leading-8 text-[#253039]">
+              When you need something later, you already know where to look.
             </p>
           </div>
         </div>
@@ -268,71 +300,88 @@ export function DocumentsWarrantySection() {
   );
 }
 
+/* -------------------------------------------------------------------------- */
+/* NETWORK                                                                    */
+/* -------------------------------------------------------------------------- */
+
 export function NetworkSection() {
   return (
-    <section className="bg-surface-base px-5 py-20 md:px-8 md:py-28 lg:px-12">
-      <div className="mx-auto grid max-w-[var(--content-max)] gap-12 lg:grid-cols-2 lg:items-center">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-home-health">
-            Network
-          </p>
+    <section
+      id="network"
+      className="relative overflow-hidden bg-[#101d2b] px-5 py-24 text-[#f4f0e8] md:px-8 md:py-32 lg:px-12"
+    >
+      <div className="pointer-events-none absolute right-[-250px] top-1/2 h-[650px] w-[650px] -translate-y-1/2 rounded-full bg-[#58764b]/8 blur-[130px]" />
 
-          <h2 className="mt-4 text-3xl font-semibold tracking-[-0.035em] text-text-primary sm:text-4xl">
-            Know what&apos;s connected to
-            your home.
+      <div className="relative mx-auto grid max-w-[1240px] gap-16 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+        <div>
+          <Eyebrow>Network intelligence</Eyebrow>
+
+          <h2 className="mt-5 max-w-lg font-serif text-4xl font-medium leading-[1.04] tracking-[-0.045em] sm:text-5xl">
+            Know what&apos;s connected to your home.
           </h2>
 
-          <p className="mt-5 max-w-xl text-base leading-7 text-text-secondary">
-            Home Tech Vault can keep network
-            context alongside your device
-            inventory so your home technology
-            makes more sense as one system.
+          <p className="mt-6 max-w-lg text-base leading-8 text-[#aeb8c1]">
+            Keep network context alongside your device inventory so your home
+            technology makes more sense as one connected system.
           </p>
 
-          <div className="mt-7 space-y-3">
-            <FeatureCheck text="Connected device context" />
-            <FeatureCheck text="IP and MAC information where available" />
-            <FeatureCheck text="Known and unidentified devices" />
-            <FeatureCheck text="Network documentation" />
+          <div className="mt-9 grid gap-3 sm:grid-cols-2">
+            <SmallFeature text="Connected device context" />
+            <SmallFeature text="IP information" />
+            <SmallFeature text="MAC information" />
+            <SmallFeature text="Unknown device review" />
+            <SmallFeature text="Network documentation" />
+            <SmallFeature text="Device discovery" />
           </div>
         </div>
 
-        <div className="rounded-[28px] border border-border-subtle bg-surface-card p-6 shadow-sm sm:p-8">
-          <div className="flex items-center justify-between">
+        <div className="overflow-hidden rounded-[28px] border border-white/15 bg-[#0b1623] shadow-[0_35px_90px_-40px_rgba(0,0,0,0.85)]">
+          <div className="flex items-center justify-between border-b border-white/10 px-6 py-5 sm:px-8">
             <div>
-              <p className="text-xs text-text-muted">
-                Home Network
+              <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-white/35">
+                Sample Home
               </p>
 
-              <h3 className="mt-1 font-semibold text-text-primary">
+              <h3 className="mt-1 font-serif text-xl text-[#f4f0e8]">
                 Connected Devices
               </h3>
             </div>
 
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-home-health-soft text-home-health">
-              <Network size={18} />
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#718d4f]/25 bg-[#718d4f]/10 text-[#8ca667]">
+              <Network size={19} />
             </div>
           </div>
 
-          <div className="mt-6 space-y-3">
-            <NetworkRow
+          <div className="grid grid-cols-3 border-b border-white/10">
+            <NetworkMetric value="12" label="Connected" />
+            <NetworkMetric value="11" label="Known" />
+            <NetworkMetric value="1" label="Review" accent />
+          </div>
+
+          <div className="space-y-px bg-white/10">
+            <DarkNetworkRow
               name="Living Room TV"
+              category="Television"
               status="Known"
             />
 
-            <NetworkRow
+            <DarkNetworkRow
               name="Office MacBook"
+              category="Computer"
               status="Known"
             />
 
-            <NetworkRow
+            <DarkNetworkRow
               name="Eero Pro 6E"
+              category="Network"
               status="Known"
             />
 
-            <NetworkRow
+            <DarkNetworkRow
               name="New Device"
+              category="Unidentified"
               status="Review"
+              review
             />
           </div>
         </div>
@@ -341,141 +390,191 @@ export function NetworkSection() {
   );
 }
 
+/* -------------------------------------------------------------------------- */
+/* MAINTENANCE                                                                */
+/* -------------------------------------------------------------------------- */
+
 export function MaintenanceSection() {
   return (
-    <section className="border-y border-border-subtle bg-surface-card px-5 py-20 md:px-8 md:py-28 lg:px-12">
-      <div className="mx-auto grid max-w-[var(--content-max)] gap-12 lg:grid-cols-2 lg:items-center">
-        <div className="rounded-[28px] border border-border-subtle bg-surface-base p-6 sm:p-8">
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-home-health-soft text-home-health">
-              <CalendarClock size={19} />
+    <section
+      id="maintenance"
+      className="bg-[#eee9df] px-5 py-24 text-[#101a22] md:px-8 md:py-32 lg:px-12"
+    >
+      <div className="mx-auto grid max-w-[1240px] gap-16 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+        <div>
+          <div className="overflow-hidden rounded-[28px] border border-[#182533]/10 bg-[#f8f5ef] shadow-[0_30px_70px_-45px_rgba(15,25,35,0.45)]">
+            <div className="flex items-center justify-between border-b border-[#182533]/10 p-6 sm:p-8">
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#718d4f]/10 text-[#617c43]">
+                  <CalendarClock size={19} />
+                </div>
+
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#68747d]">
+                    Upcoming
+                  </p>
+
+                  <p className="mt-1 font-serif text-xl text-[#101a22]">
+                    Maintenance
+                  </p>
+                </div>
+              </div>
+
+              <span className="rounded-full bg-[#718d4f]/10 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#617c43]">
+                3 Items
+              </span>
             </div>
 
-            <div>
-              <p className="text-xs text-text-muted">
-                Upcoming
-              </p>
+            <div className="space-y-px bg-[#182533]/10">
+              <LightMaintenanceRow
+                title="Router firmware review"
+                device="Eero Pro 6E"
+                meta="Due this month"
+              />
 
-              <p className="font-semibold text-text-primary">
-                Home technology maintenance
-              </p>
+              <LightMaintenanceRow
+                title="Clean desktop PC"
+                device="Office PC"
+                meta="Due in 12 days"
+              />
+
+              <LightMaintenanceRow
+                title="Check camera storage"
+                device="Security System"
+                meta="Scheduled"
+              />
             </div>
-          </div>
-
-          <div className="mt-6 space-y-3">
-            <MaintenanceRow
-              title="Router firmware review"
-              meta="Due this month"
-            />
-
-            <MaintenanceRow
-              title="Clean desktop PC"
-              meta="Due in 12 days"
-            />
-
-            <MaintenanceRow
-              title="Check camera storage"
-              meta="Scheduled"
-            />
           </div>
         </div>
 
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-home-health">
-            Ownership over time
-          </p>
+          <LightEyebrow>Ownership over time</LightEyebrow>
 
-          <h2 className="mt-4 text-3xl font-semibold tracking-[-0.035em] text-text-primary sm:text-4xl">
-            Your Vault stays useful long
-            after the purchase.
+          <h2 className="mt-5 max-w-xl font-serif text-4xl font-medium leading-[1.04] tracking-[-0.045em] text-[#101a22] sm:text-5xl">
+            Your Vault stays useful long after the purchase.
           </h2>
 
-          <p className="mt-5 max-w-xl text-base leading-7 text-text-secondary">
-            The purchase is just the start.
-            Keep maintenance, service history
-            and useful reminders connected to
-            the technology you own.
+          <p className="mt-6 max-w-lg text-base leading-8 text-[#5f6a72]">
+            The purchase is just the beginning. Keep service history,
+            maintenance, and useful reminders connected to the technology you
+            own.
           </p>
+
+          <div className="mt-8 grid grid-cols-2 gap-3">
+            <LightStat value="History" label="Keep service records" />
+            <LightStat value="Reminders" label="Stay ahead of upkeep" />
+          </div>
         </div>
       </div>
     </section>
   );
 }
+
+/* -------------------------------------------------------------------------- */
+/* FAMILY                                                                     */
+/* -------------------------------------------------------------------------- */
 
 export function FamilySection() {
   return (
-    <section className="bg-surface-base px-5 py-20 md:px-8 md:py-28 lg:px-12">
-      <div className="mx-auto max-w-4xl text-center">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-home-health-soft text-home-health">
-          <Users size={21} />
+    <section className="relative overflow-hidden bg-[#0b1623] px-5 py-24 text-[#f4f0e8] md:px-8 md:py-32 lg:px-12">
+      <div className="mx-auto max-w-[1050px]">
+        <div className="grid gap-14 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+          <div>
+            <Eyebrow>Built for the household</Eyebrow>
+
+            <h2 className="mt-5 font-serif text-4xl font-medium leading-[1.04] tracking-[-0.045em] sm:text-5xl">
+              Important home information shouldn&apos;t live in one
+              person&apos;s head.
+            </h2>
+
+            <p className="mt-6 max-w-lg text-base leading-8 text-[#aeb8c1]">
+              Home Tech Vault helps households keep useful technology
+              information organized and accessible to the right people.
+            </p>
+          </div>
+
+          <div className="overflow-hidden rounded-[28px] border border-white/15 bg-[#132231] shadow-[0_35px_80px_-45px_rgba(0,0,0,0.9)]">
+            <div className="border-b border-white/10 p-6 sm:p-8">
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#718d4f]/25 bg-[#718d4f]/10 text-[#8ca667]">
+                  <Home size={19} />
+                </div>
+
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.15em] text-white/35">
+                    Household
+                  </p>
+
+                  <p className="mt-1 font-serif text-xl">Sample Home</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-px bg-white/10">
+              <HouseholdRow initials="DU" name="Demo User" role="Admin" />
+              <HouseholdRow initials="HM" name="Household Member" role="Member" />
+              <HouseholdRow initials="HV" name="Household Viewer" role="Viewer" />
+            </div>
+
+            <div className="grid grid-cols-3 border-t border-white/10">
+              <HouseholdBenefit title="Share" text="Useful knowledge" />
+              <HouseholdBenefit title="Control" text="Access levels" />
+              <HouseholdBenefit title="Organize" text="One household" />
+            </div>
+          </div>
         </div>
-
-        <p className="mt-5 text-xs font-semibold uppercase tracking-[0.14em] text-home-health">
-          Built for the household
-        </p>
-
-        <h2 className="mt-4 text-3xl font-semibold tracking-[-0.035em] text-text-primary sm:text-4xl">
-          Important home information
-          shouldn&apos;t live in one
-          person&apos;s head.
-        </h2>
-
-        <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-text-secondary">
-          Home Tech Vault helps households
-          keep useful technology information
-          organized and accessible to the
-          right people.
-        </p>
       </div>
     </section>
   );
 }
+
+/* -------------------------------------------------------------------------- */
+/* WHY HOME TECH VAULT                                                        */
+/* -------------------------------------------------------------------------- */
 
 export function WhyVaultSection() {
   return (
-    <section className="border-y border-border-subtle bg-surface-card px-5 py-20 md:px-8 md:py-28 lg:px-12">
-      <div className="mx-auto max-w-5xl">
+    <section className="bg-[#eee9df] px-5 py-24 text-[#101a22] md:px-8 md:py-32 lg:px-12">
+      <div className="mx-auto max-w-[1050px]">
         <div className="text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-home-health">
-            Why Home Tech Vault
-          </p>
+          <LightEyebrow>Why Home Tech Vault</LightEyebrow>
 
-          <h2 className="mt-4 text-3xl font-semibold tracking-[-0.035em] text-text-primary sm:text-4xl">
-            More useful than a spreadsheet.
-            Easier than building one yourself.
+          <h2 className="mx-auto mt-5 max-w-3xl font-serif text-4xl font-medium leading-[1.04] tracking-[-0.045em] sm:text-5xl">
+            More useful than a spreadsheet. Easier than building one yourself.
           </h2>
         </div>
 
-        <div className="mt-12 grid gap-5 md:grid-cols-2">
-          <ComparisonCard
-            title="Spreadsheet"
-            muted
-            items={[
-              ["Device list", true],
-              ["Attached documents", false],
-              ["Warranty organization", false],
-              ["Maintenance history", false],
-              ["Network context", false],
-              ["Smart Import™", false],
-            ]}
-          />
+        <div className="mt-14 overflow-hidden rounded-[28px] border border-[#182533]/10 bg-[#f8f5ef] shadow-[0_30px_70px_-45px_rgba(15,25,35,0.4)]">
+          <div className="grid grid-cols-[1.4fr_0.8fr_0.8fr] border-b border-[#182533]/10 bg-[#e5dfd4]">
+            <div className="px-5 py-4 text-xs font-semibold uppercase tracking-[0.12em] text-[#68747d]">
+              Feature
+            </div>
 
-          <ComparisonCard
-            title="Home Tech Vault"
-            items={[
-              ["Device records", true],
-              ["Attached documents", true],
-              ["Warranty organization", true],
-              ["Maintenance history", true],
-              ["Network context", true],
-              ["Smart Import™", true],
-            ]}
-          />
+            <div className="border-l border-[#182533]/10 px-4 py-4 text-center text-xs font-semibold uppercase tracking-[0.08em] text-[#68747d]">
+              Spreadsheet
+            </div>
+
+            <div className="border-l border-[#182533]/10 bg-[#718d4f]/10 px-4 py-4 text-center text-xs font-semibold uppercase tracking-[0.08em] text-[#617c43]">
+              The Vault
+            </div>
+          </div>
+
+          <ComparisonRow label="Device inventory" spreadsheet vault />
+          <ComparisonRow label="Receipts attached" vault />
+          <ComparisonRow label="Warranty organization" vault />
+          <ComparisonRow label="Manuals & documents" vault />
+          <ComparisonRow label="Maintenance history" vault />
+          <ComparisonRow label="Network context" vault />
+          <ComparisonRow label="Smart Import™" vault last />
         </div>
       </div>
     </section>
   );
 }
+
+/* -------------------------------------------------------------------------- */
+/* FINAL CTA                                                                  */
+/* -------------------------------------------------------------------------- */
 
 export function WholeVaultFinalSection({
   isSignedIn = false,
@@ -487,36 +586,80 @@ export function WholeVaultFinalSection({
     : MARKETING_ROUTES.signup;
 
   return (
-    <section className="bg-surface-base px-5 py-24 md:px-8 md:py-32 lg:px-12">
-      <div className="mx-auto max-w-4xl text-center">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-home-health-soft text-home-health">
-          <Home size={21} />
+    <section className="relative overflow-hidden bg-[#0b1623] px-5 py-24 text-[#f4f0e8] md:px-8 md:py-36 lg:px-12">
+      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[600px] w-[900px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#718d4f]/7 blur-[130px]" />
+
+      <div className="relative mx-auto max-w-4xl text-center">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-[#718d4f]/30 bg-[#718d4f]/10 text-[#8ca667]">
+          <Home size={22} strokeWidth={1.7} />
         </div>
 
-        <h2 className="mt-6 text-3xl font-semibold tracking-[-0.04em] text-text-primary sm:text-4xl lg:text-5xl">
-          Your home already has the
-          technology.
+        <h2 className="mx-auto mt-7 max-w-3xl font-serif text-4xl font-medium leading-[1.02] tracking-[-0.05em] text-[#f4f0e8] sm:text-5xl lg:text-6xl">
+          Your home already has the technology.
           <br />
-          Give it a Vault.
+
+          <span className="text-[#718d4f]">
+            Give it a Vault.
+          </span>
         </h2>
 
-        <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-text-secondary">
-          Start with one device, one
-          receipt, or one Smart Import.
-          Build your Home Tech Vault at your
-          own pace.
+        <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-[#aeb8c1]">
+          Start with one device, one receipt, or one Smart Import. Build your
+          Home Tech Vault at your own pace.
         </p>
 
         <Link
           href={href}
-          className="mt-8 inline-flex min-h-12 items-center justify-center rounded-xl bg-home-health px-7 text-sm font-semibold text-white"
+          className="mt-9 inline-flex min-h-[52px] items-center justify-center rounded-xl border border-[#8ba866]/45 bg-[#617c43] px-8 text-sm font-semibold text-white shadow-[0_20px_40px_-20px_rgba(97,124,67,0.8)] transition hover:bg-[#718d4f]"
         >
           {isSignedIn
             ? "Open My Vault"
             : "Create My Free Vault"}
         </Link>
+
+        {!isSignedIn ? (
+          <p className="mt-4 text-xs text-white/35">
+            No credit card required.
+          </p>
+        ) : null}
       </div>
     </section>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* HELPERS                                                                    */
+/* -------------------------------------------------------------------------- */
+
+function Eyebrow({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-center gap-3">
+      <span className="h-px w-7 bg-[#718d4f]" />
+
+      <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#7f9d5b]">
+        {children}
+      </p>
+    </div>
+  );
+}
+
+function LightEyebrow({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-center gap-3">
+      <span className="h-px w-7 bg-[#617c43]" />
+
+      <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#617c43]">
+        {children}
+      </p>
+    </div>
   );
 }
 
@@ -527,18 +670,18 @@ function FeatureCheck({
 }) {
   return (
     <div className="flex items-center gap-3">
-      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-home-health-soft text-home-health">
-        <Check size={13} />
+      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[#718d4f]/30 bg-[#718d4f]/10 text-[#8ca667]">
+        <Check size={12} strokeWidth={2.2} />
       </div>
 
-      <span className="text-sm font-medium text-text-primary">
+      <span className="text-sm font-medium text-[#d6dde2]">
         {text}
       </span>
     </div>
   );
 }
 
-function InfoCard({
+function DarkInfoCard({
   label,
   value,
 }: {
@@ -546,19 +689,19 @@ function InfoCard({
   value: string;
 }) {
   return (
-    <div className="rounded-xl bg-surface-sunken/60 px-4 py-3">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-text-muted">
+    <div className="bg-[#101d2b] px-6 py-5">
+      <p className="text-[9px] font-semibold uppercase tracking-[0.13em] text-white/30">
         {label}
       </p>
 
-      <p className="mt-1 text-sm font-semibold text-text-primary">
+      <p className="mt-2 font-serif text-lg text-[#f4f0e8]">
         {value}
       </p>
     </div>
   );
 }
 
-function DocumentRow({
+function AttachmentCard({
   icon: Icon,
   title,
   meta,
@@ -568,17 +711,17 @@ function DocumentRow({
   meta: string;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-border-subtle bg-surface-card px-4 py-3">
-      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-home-health-soft text-home-health">
-        <Icon size={16} />
+    <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-[#101d2b] p-4">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#718d4f]/10 text-[#8ca667]">
+        <Icon size={15} />
       </div>
 
-      <div>
-        <p className="text-sm font-semibold text-text-primary">
+      <div className="min-w-0">
+        <p className="truncate text-xs font-semibold text-[#e5eaed]">
           {title}
         </p>
 
-        <p className="text-xs text-text-muted">
+        <p className="mt-1 truncate text-[10px] text-white/35">
           {meta}
         </p>
       </div>
@@ -586,88 +729,267 @@ function DocumentRow({
   );
 }
 
-function NetworkRow({
-  name,
+function LightDocumentRow({
+  icon: Icon,
+  title,
+  meta,
   status,
 }: {
-  name: string;
+  icon: typeof FileText;
+  title: string;
+  meta: string;
   status: string;
 }) {
   return (
-    <div className="flex items-center justify-between rounded-xl bg-surface-sunken/60 px-4 py-3">
-      <span className="text-sm font-medium text-text-primary">
-        {name}
-      </span>
+    <div className="flex items-center justify-between gap-5 bg-[#f8f5ef] px-6 py-5 sm:px-8">
+      <div className="flex min-w-0 items-center gap-4">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#718d4f]/10 text-[#617c43]">
+          <Icon size={17} />
+        </div>
 
-      <span className="rounded-full bg-home-health-soft px-2 py-1 text-[10px] font-semibold text-home-health">
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold text-[#17212a]">
+            {title}
+          </p>
+
+          <p className="mt-1 truncate text-xs text-[#7b858c]">
+            {meta}
+          </p>
+        </div>
+      </div>
+
+      <span className="shrink-0 rounded-full bg-[#718d4f]/10 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#617c43]">
         {status}
       </span>
     </div>
   );
 }
 
-function MaintenanceRow({
-  title,
-  meta,
+function SmallFeature({
+  text,
 }: {
-  title: string;
-  meta: string;
+  text: string;
 }) {
   return (
-    <div className="rounded-xl border border-border-subtle bg-surface-card px-4 py-3">
-      <p className="text-sm font-semibold text-text-primary">
-        {title}
+    <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.025] px-3.5 py-3">
+      <span className="h-1.5 w-1.5 rounded-full bg-[#718d4f]" />
+
+      <span className="text-xs font-medium text-[#c7cfd5]">
+        {text}
+      </span>
+    </div>
+  );
+}
+
+function NetworkMetric({
+  value,
+  label,
+  accent = false,
+}: {
+  value: string;
+  label: string;
+  accent?: boolean;
+}) {
+  return (
+    <div className="border-r border-white/10 px-3 py-5 text-center last:border-r-0">
+      <p
+        className={
+          accent
+            ? "font-serif text-2xl text-[#8ca667]"
+            : "font-serif text-2xl text-[#f4f0e8]"
+        }
+      >
+        {value}
       </p>
 
-      <p className="mt-1 text-xs text-text-muted">
-        {meta}
+      <p className="mt-1 text-[9px] uppercase tracking-[0.1em] text-white/30">
+        {label}
       </p>
     </div>
   );
 }
 
-function ComparisonCard({
+function DarkNetworkRow({
+  name,
+  category,
+  status,
+  review = false,
+}: {
+  name: string;
+  category: string;
+  status: string;
+  review?: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4 bg-[#101d2b] px-6 py-4 sm:px-8">
+      <div className="flex items-center gap-3">
+        <span
+          className={
+            review
+              ? "h-2 w-2 rounded-full bg-[#b69b58]"
+              : "h-2 w-2 rounded-full bg-[#718d4f]"
+          }
+        />
+
+        <div>
+          <p className="text-sm font-semibold text-[#e7ebed]">
+            {name}
+          </p>
+
+          <p className="mt-1 text-[10px] uppercase tracking-[0.08em] text-white/30">
+            {category}
+          </p>
+        </div>
+      </div>
+
+      <span
+        className={
+          review
+            ? "rounded-full border border-[#b69b58]/25 bg-[#b69b58]/10 px-3 py-1.5 text-[10px] font-semibold text-[#d2b76e]"
+            : "rounded-full border border-[#718d4f]/25 bg-[#718d4f]/10 px-3 py-1.5 text-[10px] font-semibold text-[#8ca667]"
+        }
+      >
+        {status}
+      </span>
+    </div>
+  );
+}
+
+function LightMaintenanceRow({
   title,
-  items,
-  muted = false,
+  device,
+  meta,
 }: {
   title: string;
-  items: [string, boolean][];
-  muted?: boolean;
+  device: string;
+  meta: string;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-5 bg-[#f8f5ef] px-6 py-5 sm:px-8">
+      <div>
+        <p className="text-sm font-semibold text-[#17212a]">
+          {title}
+        </p>
+
+        <p className="mt-1 text-xs text-[#7b858c]">
+          {device}
+        </p>
+      </div>
+
+      <span className="shrink-0 text-xs font-semibold text-[#617c43]">
+        {meta}
+      </span>
+    </div>
+  );
+}
+
+function LightStat({
+  value,
+  label,
+}: {
+  value: string;
+  label: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-[#182533]/10 bg-[#f8f5ef] p-5">
+      <p className="font-serif text-xl text-[#17212a]">
+        {value}
+      </p>
+
+      <p className="mt-2 text-xs leading-5 text-[#7b858c]">
+        {label}
+      </p>
+    </div>
+  );
+}
+
+function HouseholdRow({
+  initials,
+  name,
+  role,
+}: {
+  initials: string;
+  name: string;
+  role: string;
+}) {
+  return (
+    <div className="flex items-center justify-between bg-[#101d2b] px-6 py-5 sm:px-8">
+      <div className="flex items-center gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-xs font-semibold text-[#d9dfe3]">
+          {initials}
+        </div>
+
+        <p className="text-sm font-semibold text-[#e7ebed]">
+          {name}
+        </p>
+      </div>
+
+      <span className="rounded-full border border-[#718d4f]/25 bg-[#718d4f]/10 px-3 py-1.5 text-[10px] font-semibold text-[#8ca667]">
+        {role}
+      </span>
+    </div>
+  );
+}
+
+function HouseholdBenefit({
+  title,
+  text,
+}: {
+  title: string;
+  text: string;
+}) {
+  return (
+    <div className="border-r border-white/10 px-3 py-5 text-center last:border-r-0">
+      <p className="font-serif text-sm text-[#f4f0e8]">
+        {title}
+      </p>
+
+      <p className="mt-1 text-[9px] text-white/30">
+        {text}
+      </p>
+    </div>
+  );
+}
+
+function ComparisonRow({
+  label,
+  spreadsheet = false,
+  vault = false,
+  last = false,
+}: {
+  label: string;
+  spreadsheet?: boolean;
+  vault?: boolean;
+  last?: boolean;
 }) {
   return (
     <div
-      className={
-        muted
-          ? "rounded-[26px] border border-border-subtle bg-surface-base p-6"
-          : "rounded-[26px] border border-home-health/20 bg-home-health-soft/25 p-6"
-      }
+      className={`grid grid-cols-[1.4fr_0.8fr_0.8fr] ${
+        last
+          ? ""
+          : "border-b border-[#182533]/10"
+      }`}
     >
-      <h3 className="text-xl font-semibold text-text-primary">
-        {title}
-      </h3>
+      <div className="px-5 py-4 text-sm text-[#46525b]">
+        {label}
+      </div>
 
-      <div className="mt-6 space-y-3">
-        {items.map(([label, enabled]) => (
-          <div
-            key={label}
-            className="flex items-center justify-between"
-          >
-            <span className="text-sm text-text-secondary">
-              {label}
-            </span>
+      <div className="flex items-center justify-center border-l border-[#182533]/10">
+        {spreadsheet ? (
+          <Check size={16} className="text-[#7e898f]" />
+        ) : (
+          <span className="text-[#aeb4b8]">—</span>
+        )}
+      </div>
 
-            <span
-              className={
-                enabled
-                  ? "text-home-health"
-                  : "text-text-muted"
-              }
-            >
-              {enabled ? "✓" : "—"}
-            </span>
+      <div className="flex items-center justify-center border-l border-[#182533]/10 bg-[#718d4f]/5">
+        {vault ? (
+          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#718d4f]/10 text-[#617c43]">
+            <Check size={13} />
           </div>
-        ))}
+        ) : (
+          <span className="text-[#aeb4b8]">—</span>
+        )}
       </div>
     </div>
   );

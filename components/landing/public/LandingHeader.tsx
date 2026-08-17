@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+
 import {
   ArrowRight,
   Menu,
@@ -9,17 +10,36 @@ import {
   X,
 } from "lucide-react";
 
-import { landingTheme } from "@/components/landing/public/landingTheme";
 import { MARKETING_ROUTES } from "@/lib/marketing/routes";
 
 type LandingHeaderProps = {
   isSignedIn?: boolean;
 };
 
+const navItems = [
+  {
+    label: "The Vault",
+    href: "#vault-overview",
+  },
+  {
+    label: "Smart Import",
+    href: "#smart-import-demo",
+  },
+  {
+    label: "Network",
+    href: "#network",
+  },
+  {
+    label: "Maintenance",
+    href: "#maintenance",
+  },
+];
+
 export default function LandingHeader({
   isSignedIn = false,
 }: LandingHeaderProps) {
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] =
+    useState(false);
 
   const primaryHref = isSignedIn
     ? "/dashboard"
@@ -30,167 +50,164 @@ export default function LandingHeader({
     : "Create My Free Vault";
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border-subtle/70 bg-surface-base/90 backdrop-blur-xl">
-      <div
-        className={`${landingTheme.sectionNarrow} flex h-16 items-center justify-between px-5 md:px-8 lg:px-0`}
-      >
-        {/* Logo */}
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#0b1623]/95 text-[#f4f0e8] backdrop-blur-xl">
+      <div className="mx-auto flex h-[72px] max-w-[1240px] items-center justify-between gap-6 px-5 md:px-8">
+        {/* LOGO */}
+
         <Link
           href="/"
-          className="flex items-center gap-2.5"
           aria-label="Home Tech Vault home"
+          className="flex shrink-0 items-center gap-3"
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-home-health-soft text-home-health">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#718d4f]/40 bg-[#718d4f]/10 text-[#88a761]">
             <ShieldCheck
-              size={19}
+              size={20}
+              strokeWidth={1.7}
               aria-hidden
             />
           </div>
 
           <div className="leading-none">
-            <p className="text-sm font-semibold tracking-tight text-text-primary sm:text-base">
-              Home Tech Vault
+            <p className="font-serif text-[17px] font-semibold tracking-[-0.02em] text-[#f4f0e8]">
+              Home Tech
             </p>
 
-            <p className="mt-1 hidden text-[9px] font-medium uppercase tracking-[0.14em] text-text-muted sm:block">
-              Your home. Organized.
+            <p className="mt-1 font-serif text-[17px] font-semibold tracking-[-0.02em] text-[#f4f0e8]">
+              Vault
             </p>
           </div>
         </Link>
 
-        {/* Desktop navigation */}
-        <nav
-          className="hidden items-center gap-7 md:flex"
-          aria-label="Main navigation"
-        >
-          <Link
-            href="#how-it-works"
-            className="text-sm font-medium text-text-secondary transition-colors hover:text-text-primary"
-          >
-            How It Works
-          </Link>
+        {/* DESKTOP NAV */}
 
-          <Link
-            href="#pricing"
-            className="text-sm font-medium text-text-secondary transition-colors hover:text-text-primary"
-          >
-            Pricing
-          </Link>
+        <nav
+          aria-label="Main navigation"
+          className="hidden items-center gap-7 lg:flex"
+        >
+          {navItems.map((item) => (
+            <Link
+              key={item.label}
+              href={item.href}
+              className="text-sm font-medium text-[#c4c9cf] transition-colors hover:text-white"
+            >
+              {item.label}
+            </Link>
+          ))}
 
           <Link
             href={MARKETING_ROUTES.demo}
-            className="text-sm font-medium text-text-secondary transition-colors hover:text-text-primary"
+            className="text-sm font-medium text-[#c4c9cf] transition-colors hover:text-white"
           >
             Demo
           </Link>
         </nav>
 
-        {/* Desktop actions */}
-        <div className="hidden items-center gap-3 md:flex">
-          {!isSignedIn && (
+        {/* ACTIONS */}
+
+        <div className="hidden items-center gap-2 md:flex">
+          {!isSignedIn ? (
             <Link
               href="/login"
-              className="px-3 py-2 text-sm font-medium text-text-secondary transition-colors hover:text-text-primary"
+              className="inline-flex min-h-11 items-center justify-center rounded-xl border border-white/60 px-5 text-sm font-medium text-[#f4f0e8] transition hover:bg-white/10"
             >
               Sign In
             </Link>
-          )}
+          ) : null}
 
           <Link
             href={primaryHref}
-            className={landingTheme.btnPrimary}
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[#88a761]/50 bg-[#617c43] px-5 text-sm font-semibold text-white shadow-[0_10px_30px_-15px_rgba(97,124,67,0.8)] transition hover:bg-[#718d4f]"
           >
             {primaryLabel}
 
             <ArrowRight
               size={15}
-              className="ml-2"
               aria-hidden
             />
           </Link>
         </div>
 
-        {/* Mobile menu button */}
+        {/* MOBILE */}
+
         <button
           type="button"
-          onClick={() => setMobileOpen((current) => !current)}
-          className="flex h-10 w-10 items-center justify-center rounded-xl border border-border-subtle bg-surface-card text-text-primary md:hidden"
-          aria-label={mobileOpen ? "Close menu" : "Open menu"}
+          onClick={() =>
+            setMobileOpen((value) => !value)
+          }
+          aria-label={
+            mobileOpen
+              ? "Close menu"
+              : "Open menu"
+          }
           aria-expanded={mobileOpen}
+          className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/15 bg-white/5 text-white md:hidden"
         >
           {mobileOpen ? (
-            <X
-              size={19}
-              aria-hidden
-            />
+            <X size={19} />
           ) : (
-            <Menu
-              size={19}
-              aria-hidden
-            />
+            <Menu size={19} />
           )}
         </button>
       </div>
 
-      {/* Mobile navigation */}
-      {mobileOpen && (
-        <div className="border-t border-border-subtle bg-surface-base px-5 pb-5 pt-4 md:hidden">
-          <nav
-            className="mx-auto flex max-w-xl flex-col gap-1"
-            aria-label="Mobile navigation"
-          >
-            <MobileLink
-              href="#how-it-works"
-              onClick={() => setMobileOpen(false)}
-            >
-              How It Works
-            </MobileLink>
+      {/* MOBILE MENU */}
 
-            <MobileLink
-              href="#pricing"
-              onClick={() => setMobileOpen(false)}
-            >
-              Pricing
-            </MobileLink>
+      {mobileOpen ? (
+        <div className="border-t border-white/10 bg-[#0b1623] px-5 pb-6 pt-4 md:hidden">
+          <nav className="mx-auto flex max-w-xl flex-col">
+            {navItems.map((item) => (
+              <MobileLink
+                key={item.label}
+                href={item.href}
+                onClick={() =>
+                  setMobileOpen(false)
+                }
+              >
+                {item.label}
+              </MobileLink>
+            ))}
 
             <MobileLink
               href={MARKETING_ROUTES.demo}
-              onClick={() => setMobileOpen(false)}
+              onClick={() =>
+                setMobileOpen(false)
+              }
             >
-              See the Demo
+              Demo
             </MobileLink>
 
-            {!isSignedIn && (
+            {!isSignedIn ? (
               <MobileLink
                 href="/login"
-                onClick={() => setMobileOpen(false)}
+                onClick={() =>
+                  setMobileOpen(false)
+                }
               >
                 Sign In
               </MobileLink>
-            )}
+            ) : null}
 
             <Link
               href={primaryHref}
-              onClick={() => setMobileOpen(false)}
-              className={`${landingTheme.btnPrimary} mt-3 w-full justify-center`}
+              onClick={() =>
+                setMobileOpen(false)
+              }
+              className="mt-4 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#617c43] px-6 text-sm font-semibold text-white"
             >
               {primaryLabel}
 
-              <ArrowRight
-                size={15}
-                className="ml-2"
-                aria-hidden
-              />
+              <ArrowRight size={15} />
             </Link>
 
-            {!isSignedIn && (
-              <p className="mt-3 text-center text-[11px] font-medium text-text-muted">
-                Free to start · No credit card required
+            {!isSignedIn ? (
+              <p className="mt-3 text-center text-[11px] text-white/45">
+                Free to start · No credit card
+                required
               </p>
-            )}
+            ) : null}
           </nav>
         </div>
-      )}
+      ) : null}
     </header>
   );
 }
@@ -208,7 +225,7 @@ function MobileLink({
     <Link
       href={href}
       onClick={onClick}
-      className="rounded-xl px-3 py-3 text-sm font-medium text-text-secondary transition-colors hover:bg-surface-sunken hover:text-text-primary"
+      className="rounded-xl px-3 py-3.5 text-sm font-medium text-[#c4c9cf] transition hover:bg-white/5 hover:text-white"
     >
       {children}
     </Link>
