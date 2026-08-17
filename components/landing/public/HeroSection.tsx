@@ -1,33 +1,46 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
+
 import {
   ArrowRight,
-  CheckCircle2,
-  Home,
+  Check,
+  FileText,
+  Laptop,
+  Network,
+  ShieldCheck,
+  Sparkles,
+  Wrench,
 } from "lucide-react";
 
-import HeroVisual from "@/components/landing/public/HeroVisual";
-import { landingTheme } from "@/components/landing/public/landingTheme";
 import { MARKETING_ROUTES } from "@/lib/marketing/routes";
 
 type HeroSectionProps = {
   isSignedIn?: boolean;
 };
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 16 },
-  visible: (custom: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.45,
-      delay: custom * 0.07,
-      ease: [0.22, 1, 0.36, 1] as const,
-    },
-  }),
-};
+const quickFeatures = [
+  {
+    icon: Laptop,
+    label: "Devices",
+  },
+  {
+    icon: FileText,
+    label: "Documents",
+  },
+  {
+    icon: ShieldCheck,
+    label: "Warranties",
+  },
+  {
+    icon: Network,
+    label: "Network",
+  },
+  {
+    icon: Wrench,
+    label: "Maintenance",
+  },
+];
 
 export default function HeroSection({
   isSignedIn = false,
@@ -41,144 +54,241 @@ export default function HeroSection({
     : "Create My Free Vault";
 
   return (
-    <section className="relative overflow-hidden bg-surface-base px-5 pb-16 pt-16 md:px-8 md:pb-20 md:pt-20 lg:px-12">
-      <div className="pointer-events-none absolute left-1/2 top-0 -z-10 h-[460px] w-[760px] -translate-x-1/2 rounded-full bg-home-health-soft/30 blur-3xl" />
+    <section className="relative overflow-hidden bg-surface-base px-5 pb-20 pt-16 md:px-8 md:pb-28 md:pt-24 lg:px-12">
+      <div className="pointer-events-none absolute left-1/2 top-0 -z-10 h-[650px] w-[1000px] -translate-x-1/2 rounded-full bg-home-health-soft/40 blur-3xl" />
 
-      <div className={landingTheme.sectionNarrow}>
-        <div className="grid items-center gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:gap-16">
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            className="flex flex-col items-start"
-          >
-            <motion.div
-              variants={fadeUp}
-              custom={0}
-              className="inline-flex items-center gap-2 rounded-full border border-border-subtle bg-surface-card px-3.5 py-2 text-sm font-medium text-text-secondary shadow-sm"
+      <div className="mx-auto grid max-w-[var(--content-max)] items-center gap-14 lg:grid-cols-[0.95fr_1.05fr] lg:gap-16">
+        {/* LEFT */}
+
+        <div>
+          <div className="inline-flex items-center gap-2 rounded-full border border-home-health/15 bg-home-health-soft px-3 py-1.5 text-xs font-semibold text-home-health">
+            <Sparkles size={14} />
+
+            Your home technology, organized
+          </div>
+
+          <h1 className="mt-6 max-w-3xl text-4xl font-semibold tracking-[-0.045em] text-text-primary sm:text-5xl lg:text-[4.15rem] lg:leading-[1.03]">
+            Everything about your home
+            technology.
+            <br />
+            Finally in one place.
+          </h1>
+
+          <p className="mt-6 max-w-2xl text-base leading-7 text-text-secondary sm:text-lg">
+            Keep your devices, receipts,
+            warranties, manuals, maintenance
+            records, subscriptions, and
+            network information organized
+            inside one secure Home Tech Vault.
+          </p>
+
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <Link
+              href={primaryHref}
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-home-health px-6 text-sm font-semibold text-white shadow-sm transition hover:opacity-90"
             >
-              <Home
-                size={14}
-                className="text-home-health"
-                aria-hidden
+              {primaryLabel}
+
+              <ArrowRight size={17} />
+            </Link>
+
+            <a
+              href="#vault-overview"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-border-subtle bg-surface-card px-6 text-sm font-semibold text-text-primary transition hover:bg-surface-sunken"
+            >
+              Explore the Vault
+            </a>
+          </div>
+
+          <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2">
+            <TrustItem text="No credit card" />
+            <TrustItem text="Start with one device" />
+            <TrustItem text="Built for homeowners" />
+          </div>
+
+          <div className="mt-8 flex flex-wrap gap-2">
+            {quickFeatures.map((feature) => {
+              const Icon = feature.icon;
+
+              return (
+                <div
+                  key={feature.label}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-border-subtle bg-surface-card px-3 py-1.5 text-xs font-medium text-text-secondary"
+                >
+                  <Icon
+                    size={13}
+                    className="text-home-health"
+                  />
+
+                  {feature.label}
+                </div>
+              );
+            })}
+
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-home-health/20 bg-home-health-soft px-3 py-1.5 text-xs font-semibold text-home-health">
+              <Sparkles size={13} />
+              Smart Import™
+            </div>
+          </div>
+        </div>
+
+        {/* VAULT VISUAL */}
+
+        <div className="relative">
+          <div className="absolute -inset-8 -z-10 rounded-full bg-home-health-soft/45 blur-3xl" />
+
+          <div className="overflow-hidden rounded-[30px] border border-border-subtle bg-surface-card shadow-xl">
+            <div className="border-b border-border-subtle px-5 py-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-text-muted">
+                    Home Tech Vault
+                  </p>
+
+                  <p className="mt-1 font-semibold text-text-primary">
+                    Sample Home
+                  </p>
+                </div>
+
+                <span className="rounded-full bg-home-health-soft px-2.5 py-1 text-[10px] font-semibold text-home-health">
+                  DEMO
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 p-5 sm:grid-cols-3">
+              <StatCard
+                label="Devices"
+                value="18"
               />
 
-              <span>A simpler way to keep track of your home</span>
-            </motion.div>
+              <StatCard
+                label="Documents"
+                value="34"
+              />
 
-            <motion.h1
-              variants={fadeUp}
-              custom={1}
-              className="mt-6 max-w-2xl text-4xl font-medium tracking-[-0.045em] text-text-primary sm:text-5xl md:text-[3.45rem] lg:text-[3.8rem] lg:leading-[1.04]"
-            >
-              Never lose another receipt, warranty, manual, or serial number.
-            </motion.h1>
+              <StatCard
+                label="Warranties"
+                value="7"
+              />
 
-            <motion.p
-              variants={fadeUp}
-              custom={2}
-              className="mt-6 max-w-xl text-lg leading-8 text-text-secondary sm:text-xl"
-            >
-              Keep the important details about the things in your home
-              together, so when something breaks, needs service, or gets
-              replaced, you know exactly where to look.
-            </motion.p>
+              <StatCard
+                label="Maintenance"
+                value="4"
+              />
 
-            <motion.div
-              variants={fadeUp}
-              custom={3}
-              className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap"
-            >
-              <Link
-                href={primaryHref}
-                className={landingTheme.btnPrimary}
-              >
-                {primaryLabel}
+              <StatCard
+                label="Subscriptions"
+                value="6"
+              />
 
-                <ArrowRight
-                  size={16}
-                  className="ml-2.5"
-                  aria-hidden
-                />
-              </Link>
+              <StatCard
+                label="Network"
+                value="12"
+              />
+            </div>
 
-              <Link
-                href={MARKETING_ROUTES.demo}
-                className={landingTheme.btnSecondary}
-              >
-                See How It Works
-              </Link>
-            </motion.div>
-
-            <motion.div
-              variants={fadeUp}
-              custom={4}
-              className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm text-text-muted"
-            >
-              <span className="inline-flex items-center gap-1.5">
-                <CheckCircle2
-                  size={14}
-                  className="text-home-health"
-                  aria-hidden
-                />
-                Free to start
-              </span>
-
-              <span className="inline-flex items-center gap-1.5">
-                <CheckCircle2
-                  size={14}
-                  className="text-home-health"
-                  aria-hidden
-                />
-                No credit card
-              </span>
-
-              <span className="inline-flex items-center gap-1.5">
-                <CheckCircle2
-                  size={14}
-                  className="text-home-health"
-                  aria-hidden
-                />
-                Start with one device
-              </span>
-            </motion.div>
-
-            <motion.div
-              variants={fadeUp}
-              custom={5}
-              className="mt-9 max-w-xl rounded-2xl border border-border-subtle bg-surface-card/80 p-4 shadow-sm"
-            >
-              <p className="text-sm font-semibold text-text-primary">
-                Start with something you already own.
+            <div className="border-t border-border-subtle p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-text-muted">
+                Recently organized
               </p>
 
-              <p className="mt-1 text-sm leading-6 text-text-secondary">
-                Add your TV, refrigerator, washer, computer, router, or
-                anything else you&apos;d want information about later.
-              </p>
-            </motion.div>
-          </motion.div>
+              <div className="mt-4 space-y-3">
+                <DeviceRow
+                  name='LG 34" UltraWide Monitor'
+                  meta="Office • Warranty tracked"
+                />
 
-          <motion.div
-            initial={{
-              opacity: 0,
-              scale: 0.98,
-              y: 14,
-            }}
-            animate={{
-              opacity: 1,
-              scale: 1,
-              y: 0,
-            }}
-            transition={{
-              duration: 0.6,
-              delay: 0.16,
-              ease: [0.22, 1, 0.36, 1],
-            }}
-          >
-            <HeroVisual />
-          </motion.div>
+                <DeviceRow
+                  name="Apple TV 4K"
+                  meta="Living Room • Receipt saved"
+                />
+
+                <DeviceRow
+                  name="Eero Pro 6E"
+                  meta="Network • Manual attached"
+                />
+              </div>
+            </div>
+
+            <div className="border-t border-border-subtle bg-home-health-soft/35 px-5 py-4">
+              <div className="flex items-center gap-2">
+                <Sparkles
+                  size={15}
+                  className="text-home-health"
+                />
+
+                <p className="text-xs font-semibold text-text-primary">
+                  Smart Import ready for your next purchase
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
+  );
+}
+
+function TrustItem({
+  text,
+}: {
+  text: string;
+}) {
+  return (
+    <div className="flex items-center gap-1.5 text-xs font-medium text-text-muted">
+      <Check
+        size={13}
+        className="text-home-health"
+      />
+
+      {text}
+    </div>
+  );
+}
+
+function StatCard({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-2xl bg-surface-sunken/60 p-4">
+      <p className="text-2xl font-semibold tracking-tight text-text-primary">
+        {value}
+      </p>
+
+      <p className="mt-1 text-xs text-text-muted">
+        {label}
+      </p>
+    </div>
+  );
+}
+
+function DeviceRow({
+  name,
+  meta,
+}: {
+  name: string;
+  meta: string;
+}) {
+  return (
+    <div className="flex items-center gap-3 rounded-xl border border-border-subtle bg-surface-base px-4 py-3">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-home-health-soft text-home-health">
+        <Laptop size={16} />
+      </div>
+
+      <div className="min-w-0">
+        <p className="truncate text-sm font-semibold text-text-primary">
+          {name}
+        </p>
+
+        <p className="mt-0.5 truncate text-xs text-text-muted">
+          {meta}
+        </p>
+      </div>
+    </div>
   );
 }

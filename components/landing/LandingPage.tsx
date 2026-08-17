@@ -1,18 +1,20 @@
 "use client";
 
-import FinalCta from "@/components/landing/public/FinalCta";
 import HeroSection from "@/components/landing/public/HeroSection";
 import LandingFooter from "@/components/landing/public/LandingFooter";
 import LandingHeader from "@/components/landing/public/LandingHeader";
 import SmartImportDemoSection from "@/components/landing/public/SmartImportDemoSection";
 
 import {
-  BeforeAfterSection,
-  SmartImportBenefitsSection,
-  SmartImportProblemSection,
-  StartWithOneReceiptSection,
-  VaultFeaturesSection,
-} from "@/components/landing/public/SmartImportStorySections";
+  DeviceRecordsSection,
+  DocumentsWarrantySection,
+  FamilySection,
+  MaintenanceSection,
+  NetworkSection,
+  VaultOverviewSection,
+  WholeVaultFinalSection,
+  WhyVaultSection,
+} from "@/components/landing/public/VaultStorySections";
 
 import { landingTheme } from "@/components/landing/public/landingTheme";
 
@@ -49,41 +51,47 @@ export default function LandingPage({
       />
 
       <main id="main-content">
-        {/* THE HOOK */}
+        {/* WHOLE PRODUCT */}
 
         <HeroSection
           isSignedIn={isSignedIn}
         />
 
-        {/* THE WOW MOMENT */}
+        {/* WHAT THE VAULT HOLDS */}
+
+        <VaultOverviewSection />
+
+        {/* MAJOR DIFFERENTIATOR */}
 
         <SmartImportDemoSection />
 
-        {/* THE PAIN */}
+        {/* CORE DEVICE INVENTORY */}
 
-        <SmartImportProblemSection />
+        <DeviceRecordsSection />
 
-        {/* WHY SMART IMPORT MATTERS */}
+        {/* DOCUMENTS + WARRANTIES */}
 
-        <SmartImportBenefitsSection />
+        <DocumentsWarrantySection />
 
-        {/* SCATTERED -> ORGANIZED */}
+        {/* NETWORK INTELLIGENCE */}
 
-        <BeforeAfterSection />
+        <NetworkSection />
 
-        {/* EASY FIRST ACTION */}
+        {/* LONG-TERM OWNERSHIP */}
 
-        <StartWithOneReceiptSection
-          isSignedIn={isSignedIn}
-        />
+        <MaintenanceSection />
 
-        {/* BROADER HOME TECH VAULT VALUE */}
+        {/* HOUSEHOLD */}
 
-        <VaultFeaturesSection />
+        <FamilySection />
 
-        {/* CLOSE */}
+        {/* DIFFERENTIATION */}
 
-        <FinalCta
+        <WhyVaultSection />
+
+        {/* FINAL CTA */}
+
+        <WholeVaultFinalSection
           isSignedIn={isSignedIn}
         />
       </main>
