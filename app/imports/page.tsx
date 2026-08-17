@@ -2,10 +2,13 @@
 
 import {
   ArrowRight,
+  Check,
   CheckCircle2,
+  Copy,
   FileText,
   Inbox,
   Loader2,
+  Mail,
   MapPin,
   PackageCheck,
   Receipt,
@@ -13,7 +16,9 @@ import {
   Sparkles,
   XCircle,
 } from "lucide-react";
+
 import Link from "next/link";
+
 import {
   useCallback,
   useEffect,
@@ -68,6 +73,12 @@ type EditableImport = {
   location: string;
 };
 
+type ImportAddressResponse = {
+  emailAddress: string;
+  token?: string;
+  domain?: string;
+};
+
 export default function ImportsPage() {
   const [
     imports,
@@ -100,6 +111,61 @@ export default function ImportsPage() {
   ] = useState<
     Record<string, EditableImport>
   >({});
+
+  const [
+    importEmail,
+    setImportEmail,
+  ] = useState<string | null>(null);
+
+  const [
+    importEmailLoading,
+    setImportEmailLoading,
+  ] = useState(true);
+
+  const [
+    copied,
+    setCopied,
+  ] = useState(false);
+
+  const loadImportAddress =
+    useCallback(async () => {
+      setImportEmailLoading(true);
+
+      try {
+        const response =
+          await fetch(
+            "/api/import-address",
+            {
+              method: "GET",
+              cache: "no-store",
+            }
+          );
+
+        const data:
+          ImportAddressResponse & {
+            error?: string;
+          } =
+          await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            data.error ??
+              "Unable to load your Smart Import email."
+          );
+        }
+
+        setImportEmail(
+          data.emailAddress
+        );
+      } catch (err) {
+        console.error(
+          "Unable to load Smart Import email:",
+          err
+        );
+      } finally {
+        setImportEmailLoading(false);
+      }
+    }, []);
 
   const loadImports =
     useCallback(async () => {
@@ -191,8 +257,36 @@ export default function ImportsPage() {
     }, []);
 
   useEffect(() => {
-    void loadImports();
-  }, [loadImports]);
+    void Promise.all([
+      loadImportAddress(),
+      loadImports(),
+    ]);
+  }, [
+    loadImportAddress,
+    loadImports,
+  ]);
+
+  async function copyImportEmail() {
+    if (!importEmail) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(
+        importEmail
+      );
+
+      setCopied(true);
+
+      window.setTimeout(() => {
+        setCopied(false);
+      }, 2000);
+    } catch {
+      setError(
+        "Unable to copy the email address."
+      );
+    }
+  }
 
   function updateDraft(
     id: string,
@@ -364,6 +458,8 @@ export default function ImportsPage() {
   return (
     <main className="min-h-screen bg-surface-base px-5 py-10 md:px-8 lg:px-12">
       <div className="mx-auto max-w-5xl">
+        {/* HEADER */}
+
         <div className="flex flex-col gap-6 border-b border-border-subtle pb-8 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-home-health/15 bg-home-health-soft px-3 py-1.5 text-xs font-semibold text-home-health">
@@ -376,14 +472,18 @@ export default function ImportsPage() {
             </div>
 
             <h1 className="mt-4 text-3xl font-semibold tracking-[-0.035em] text-text-primary sm:text-4xl">
-              We found a few things
-              for your vault.
+              Forward it. We&apos;ll
+              do the typing.
             </h1>
 
             <p className="mt-3 max-w-2xl text-sm leading-6 text-text-secondary sm:text-base">
-              Review what we found
-              before anything is added
-              to your Home Tech Vault.
+              Send your receipts and
+              order confirmations to
+              your personal Home Tech
+              Vault email. We&apos;ll
+              pull out the important
+              details and prepare them
+              for review.
             </p>
           </div>
 
@@ -400,14 +500,155 @@ export default function ImportsPage() {
           </Link>
         </div>
 
+        {/* PERSONAL IMPORT EMAIL */}
+
+        <section className="mt-8 overflow-hidden rounded-[28px] border border-home-health/20 bg-surface-card shadow-sm">
+          <div className="p-5 sm:p-7">
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex min-w-0 items-start gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-home-health-soft text-home-health">
+                  <Mail
+                    size={22}
+                    aria-hidden
+                  />
+                </div>
+
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-home-health">
+                    Your Smart Import
+                    Email
+                  </p>
+
+                  {importEmailLoading ? (
+                    <div className="mt-2 flex items-center gap-2 text-sm text-text-muted">
+                      <Loader2
+                        size={15}
+                        className="animate-spin"
+                        aria-hidden
+                      />
+
+                      Creating your
+                      personal address...
+                    </div>
+                  ) : importEmail ? (
+                    <p className="mt-1 break-all text-lg font-semibold tracking-tight text-text-primary sm:text-xl">
+                      {importEmail}
+                    </p>
+                  ) : (
+                    <p className="mt-2 text-sm text-text-muted">
+                      Your Smart Import
+                      address is currently
+                      unavailable.
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {importEmail && (
+                <button
+                  type="button"
+                  onClick={
+                    copyImportEmail
+                  }
+                  className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-border-subtle bg-surface-base px-4 text-sm font-semibold text-text-secondary transition hover:border-home-health/30 hover:text-home-health"
+                >
+                  {copied ? (
+                    <>
+                      <Check
+                        size={16}
+                        aria-hidden
+                      />
+
+                      Copied
+                    </>
+                  ) : (
+                    <>
+                      <Copy
+                        size={16}
+                        aria-hidden
+                      />
+
+                      Copy Email
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+
+            <div className="mt-6 grid gap-3 border-t border-border-subtle pt-5 sm:grid-cols-3">
+              <ImportStep
+                number="1"
+                title="Forward"
+                text="Send a receipt or order confirmation."
+              />
+
+              <ImportStep
+                number="2"
+                title="We organize it"
+                text="Home Tech Vault extracts the useful details."
+              />
+
+              <ImportStep
+                number="3"
+                title="You approve"
+                text="Nothing enters your vault until you say so."
+              />
+            </div>
+
+            <div className="mt-5 rounded-2xl bg-home-health-soft/40 px-4 py-3">
+              <p className="text-xs leading-5 text-text-secondary">
+                <span className="font-semibold text-text-primary">
+                  Tip:
+                </span>{" "}
+                Save this address as
+                &quot;Home Tech
+                Vault&quot; in your
+                contacts. Then whenever
+                you buy a new device,
+                simply forward the order
+                confirmation here.
+              </p>
+            </div>
+          </div>
+        </section>
+
         {error && (
           <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {error}
           </div>
         )}
 
+        {/* REVIEW HEADER */}
+
+        {!loading &&
+          imports.length > 0 && (
+            <div className="mt-10">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-home-health">
+                  Ready for review
+                </p>
+
+                <h2 className="mt-1 text-2xl font-semibold tracking-tight text-text-primary">
+                  We found{" "}
+                  {imports.length === 1
+                    ? "something"
+                    : `${imports.length} things`}{" "}
+                  for your vault.
+                </h2>
+
+                <p className="mt-2 text-sm leading-6 text-text-secondary">
+                  Check the details below.
+                  You can edit anything
+                  before adding it.
+                </p>
+              </div>
+            </div>
+          )}
+
+        {/* IMPORTS */}
+
         {loading ? (
-          <div className="flex min-h-[360px] items-center justify-center">
+          <div className="flex min-h-[300px] items-center justify-center">
             <div className="text-center">
               <Loader2
                 size={28}
@@ -415,14 +656,15 @@ export default function ImportsPage() {
               />
 
               <p className="mt-3 text-sm text-text-muted">
-                Checking your imports...
+                Checking your
+                imports...
               </p>
             </div>
           </div>
         ) : imports.length === 0 ? (
           <EmptyState />
         ) : (
-          <div className="mt-8 space-y-6">
+          <div className="mt-6 space-y-6">
             {imports.map(
               (item) => {
                 const draft =
@@ -437,24 +679,20 @@ export default function ImportsPage() {
                     key={item.id}
                     item={item}
                     draft={draft}
-
                     approving={
                       approvingId ===
                       item.id
                     }
-
                     rejecting={
                       rejectingId ===
                       item.id
                     }
-
                     busy={
                       approvingId ===
                         item.id ||
                       rejectingId ===
                         item.id
                     }
-
                     onChange={(
                       field,
                       value
@@ -465,13 +703,11 @@ export default function ImportsPage() {
                         value
                       )
                     }
-
                     onApprove={() =>
                       approveImport(
                         item.id
                       )
                     }
-
                     onReject={() =>
                       rejectImport(
                         item.id
@@ -485,6 +721,34 @@ export default function ImportsPage() {
         )}
       </div>
     </main>
+  );
+}
+
+function ImportStep({
+  number,
+  title,
+  text,
+}: {
+  number: string;
+  title: string;
+  text: string;
+}) {
+  return (
+    <div className="flex items-start gap-3">
+      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-home-health text-xs font-bold text-white">
+        {number}
+      </div>
+
+      <div>
+        <p className="text-xs font-semibold text-text-primary">
+          {title}
+        </p>
+
+        <p className="mt-0.5 text-[11px] leading-5 text-text-muted">
+          {text}
+        </p>
+      </div>
+    </div>
   );
 }
 
@@ -731,10 +995,10 @@ function ImportCard({
             />
 
             <p className="max-w-md text-xs leading-5 text-text-muted">
-              Review anything that looks
-              wrong. Nothing is added to
-              your vault until you approve
-              it.
+              Review anything that
+              looks wrong. Nothing is
+              added to your vault until
+              you approve it.
             </p>
           </div>
 
@@ -762,7 +1026,8 @@ function ImportCard({
                     aria-hidden
                   />
 
-                  Don&apos;t Add to My Vault
+                  Don&apos;t Add to My
+                  Vault
                 </>
               )}
             </button>
@@ -876,7 +1141,7 @@ function MiniBenefit({
 
 function EmptyState() {
   return (
-    <div className="mx-auto flex min-h-[420px] max-w-xl flex-col items-center justify-center text-center">
+    <div className="mx-auto flex min-h-[320px] max-w-xl flex-col items-center justify-center text-center">
       <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-home-health-soft text-home-health">
         <Inbox
           size={25}
@@ -889,11 +1154,11 @@ function EmptyState() {
       </h2>
 
       <p className="mt-2 max-w-md text-sm leading-6 text-text-secondary">
-        When Home Tech Vault finds
-        something from a receipt or order
-        confirmation, it&apos;ll appear
-        here before being added to your
-        vault.
+        Forward your next receipt or
+        order confirmation to your
+        Smart Import email above.
+        We&apos;ll prepare anything we
+        find for your approval.
       </p>
 
       <Link
