@@ -64,7 +64,6 @@ export async function GET() {
       data: {
         user,
       },
-
       error: userError,
     } =
       await supabase.auth.getUser();
@@ -84,9 +83,25 @@ export async function GET() {
       );
     }
 
+    if (!user.email) {
+      return NextResponse.json(
+        {
+          error:
+            "Account email unavailable.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
     /*
-      Find an existing household
-      from one of the user's devices.
+      ------------------------------------------------
+      FIND HOUSEHOLD
+      ------------------------------------------------
+
+      First try to get a household from
+      an existing device.
     */
     const {
       data: existingDevice,
@@ -113,38 +128,150 @@ export async function GET() {
       null;
 
     /*
-      Try common Supabase profile
-      metadata fields.
+      ------------------------------------------------
+      FIND THE USER'S REAL NAME
+      ------------------------------------------------
+
+      Start with Supabase auth metadata.
     */
     const metadata =
       user.user_metadata ??
       {};
 
-    const fullName =
-      metadata.full_name ??
-      metadata.name ??
-      (
-        [
-          metadata.first_name,
-          metadata.last_name,
-        ]
-          .filter(Boolean)
-          .join(" ") ||
-        null
-      );
+    const metadataFirstName =
+      typeof metadata.first_name ===
+      "string"
+        ? metadata.first_name.trim()
+        : "";
 
-    if (!user.email) {
-      return NextResponse.json(
-        {
-          error:
-            "Account email unavailable.",
-        },
-        {
-          status: 400,
+    const metadataLastName =
+      typeof metadata.last_name ===
+      "string"
+        ? metadata.last_name.trim()
+        : "";
+
+    const metadataFullName =
+      typeof metadata.full_name ===
+      "string"
+        ? metadata.full_name.trim()
+        : "";
+
+    const metadataName =
+      typeof metadata.name ===
+      "string"
+        ? metadata.name.trim()
+        : "";
+
+    /*
+      Try a profiles table if your app
+      has one.
+
+      This does NOT break anything if
+      the table doesn't exist or if the
+      user doesn't have a profile row.
+    */
+    let profileFullName:
+      | string
+      | null = null;
+
+    try {
+      const {
+        data: profile,
+      } = await supabase
+        .from("profiles")
+        .select(
+          "first_name, last_name, full_name"
+        )
+        .eq(
+          "id",
+          user.id
+        )
+        .maybeSingle();
+
+      if (profile) {
+        const firstName =
+          typeof profile.first_name ===
+          "string"
+            ? profile.first_name.trim()
+            : "";
+
+        const lastName =
+          typeof profile.last_name ===
+          "string"
+            ? profile.last_name.trim()
+            : "";
+
+        const fullName =
+          typeof profile.full_name ===
+          "string"
+            ? profile.full_name.trim()
+            : "";
+
+        if (fullName) {
+          profileFullName =
+            fullName;
+        } else {
+          const combined =
+            [
+              firstName,
+              lastName,
+            ]
+              .filter(Boolean)
+              .join(" ")
+              .trim();
+
+          if (combined) {
+            profileFullName =
+              combined;
+          }
         }
+      }
+    } catch (profileError) {
+      /*
+        Ignore profile lookup issues.
+
+        We'll simply fall back to
+        auth metadata or account email.
+      */
+      console.log(
+        "Profile name lookup skipped:",
+        profileError
       );
     }
 
+    /*
+      Pick the best available name.
+
+      Priority:
+
+      1. profiles.full_name
+      2. profiles first + last
+      3. auth full_name
+      4. auth first + last
+      5. auth name
+      6. login email fallback
+    */
+    const metadataCombinedName =
+      [
+        metadataFirstName,
+        metadataLastName,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .trim();
+
+    const fullName =
+      profileFullName ||
+      metadataFullName ||
+      metadataCombinedName ||
+      metadataName ||
+      null;
+
+    /*
+      ------------------------------------------------
+      CREATE OR RETURN SMART IMPORT ADDRESS
+      ------------------------------------------------
+    */
     const result =
       await ensureReceiptAddress({
         supabase,
@@ -171,6 +298,11 @@ export async function GET() {
         process.env
           .SMART_IMPORT_DOMAIN ||
         "fuevwun.resend.app",
+
+      generatedFrom:
+        fullName
+          ? "profile-name"
+          : "account-email",
     });
   } catch (error) {
     console.error(
