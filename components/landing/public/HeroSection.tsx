@@ -4,9 +4,11 @@ import Link from "next/link";
 
 import {
   ArrowRight,
+  CheckCircle2,
   FileText,
   Laptop,
   Network,
+  Receipt,
   ShieldCheck,
   Sparkles,
   Wrench,
@@ -64,31 +66,31 @@ export default function HeroSection({
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute -left-48 top-[-260px] h-[700px] w-[700px] rounded-full bg-[#52643f]/10 blur-[120px]" />
 
-          <div className="absolute right-[-240px] top-[-100px] h-[700px] w-[700px] rounded-full bg-[#5c4058]/10 blur-[120px]" />
+          <div className="absolute right-[-220px] top-[30px] h-[620px] w-[620px] rounded-full bg-[#718d4f]/8 blur-[130px]" />
 
           <div
             className="absolute inset-0 opacity-[0.025]"
             style={{
               backgroundImage:
                 "linear-gradient(rgba(255,255,255,.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.5) 1px, transparent 1px)",
-              backgroundSize: "70px 70px",
+              backgroundSize: "72px 72px",
             }}
           />
         </div>
 
-        <div className="relative mx-auto grid min-h-[690px] max-w-[1240px] items-center gap-14 px-5 py-20 md:px-8 lg:grid-cols-[1.05fr_0.95fr] lg:gap-20 lg:py-24">
+        <div className="relative mx-auto grid min-h-[720px] max-w-[1240px] items-center gap-16 px-5 py-20 md:px-8 lg:grid-cols-[0.95fr_1.05fr] lg:gap-20 lg:py-24">
           {/* LEFT */}
 
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/45 bg-white/[0.03] px-4 py-2">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/35 bg-white/[0.025] px-4 py-2">
               <span className="h-1.5 w-1.5 rounded-full bg-[#7d9c54]" />
 
               <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#8ca667]">
-                Home technology, archived
+                Your home technology, organized
               </span>
             </div>
 
-            <h1 className="mt-8 max-w-[670px] font-serif text-[3.35rem] font-medium leading-[0.98] tracking-[-0.055em] text-[#f4f0e8] sm:text-[4.4rem] lg:text-[5.15rem]">
+            <h1 className="mt-8 max-w-[670px] font-serif text-[3.25rem] font-medium leading-[0.99] tracking-[-0.055em] text-[#f4f0e8] sm:text-[4.25rem] lg:text-[5rem]">
               Everything about
               <br />
               your home
@@ -125,7 +127,7 @@ export default function HeroSection({
 
               <Link
                 href={MARKETING_ROUTES.demo}
-                className="inline-flex min-h-[52px] items-center justify-center rounded-xl border border-white/65 bg-white/[0.02] px-7 text-sm font-semibold text-[#f4f0e8] transition hover:bg-white/10"
+                className="inline-flex min-h-[52px] items-center justify-center rounded-xl border border-white/55 bg-white/[0.02] px-7 text-sm font-semibold text-[#f4f0e8] transition hover:bg-white/10"
               >
                 Watch the Demo
               </Link>
@@ -138,113 +140,232 @@ export default function HeroSection({
             </p>
           </div>
 
-          {/* RIGHT EDITORIAL VISUAL */}
+          {/* PRODUCT MOCKUP */}
 
-          <div className="relative lg:pt-14">
-            <div className="relative overflow-hidden rounded-[26px] border border-white/15 bg-[#182533] shadow-[0_35px_80px_-30px_rgba(0,0,0,0.65)]">
-              {/* FAUX HOME SCENE */}
+          <div className="relative lg:pl-4">
+            <div className="absolute -inset-10 -z-10 rounded-full bg-[#718d4f]/8 blur-3xl" />
 
-              <div className="relative h-[410px] overflow-hidden sm:h-[470px]">
-                {/* WALL */}
+            {/* MAIN APP WINDOW */}
 
-                <div className="absolute inset-0 bg-[linear-gradient(135deg,#c8b89a_0%,#a99073_43%,#596253_43%,#4a584c_100%)]" />
+            <div className="relative overflow-hidden rounded-[30px] border border-white/15 bg-[#101d2b] shadow-[0_40px_100px_-35px_rgba(0,0,0,0.85)]">
+              {/* WINDOW TOP */}
 
-                {/* WINDOW */}
+              <div className="flex items-center justify-between border-b border-white/10 bg-[#132536] px-5 py-4 sm:px-6">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#718d4f]/25 bg-[#718d4f]/10 text-[#8ca667]">
+                    <ShieldCheck
+                      size={17}
+                      strokeWidth={1.7}
+                    />
+                  </div>
 
-                <div className="absolute left-[7%] top-[8%] h-[54%] w-[30%] rounded-sm border-[10px] border-[#dfd6c4] bg-[linear-gradient(150deg,#dbe6e7,#9ab0a6)] shadow-xl">
-                  <div className="absolute inset-y-0 left-1/2 w-[4px] bg-[#dfd6c4]" />
-                  <div className="absolute left-0 top-1/2 h-[4px] w-full bg-[#dfd6c4]" />
-                </div>
+                  <div>
+                    <p className="font-serif text-sm text-[#f4f0e8]">
+                      Home Tech Vault
+                    </p>
 
-                {/* DESK */}
-
-                <div className="absolute bottom-[8%] left-[6%] right-[5%] h-[32%] origin-left -skew-y-[2deg] rounded-lg bg-[#725a3d] shadow-2xl">
-                  <div className="absolute inset-x-0 top-0 h-[8px] bg-[#927654]" />
-                </div>
-
-                {/* ROUTER */}
-
-                <div className="absolute bottom-[25%] left-[37%] h-[55px] w-[115px] rounded-lg border border-white/10 bg-[#333936] shadow-xl">
-                  <div className="absolute left-4 top-4 flex gap-1">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#7c9958]" />
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#7c9958]/70" />
-                    <span className="h-1.5 w-1.5 rounded-full bg-white/20" />
+                    <p className="mt-0.5 text-[9px] uppercase tracking-[0.13em] text-white/30">
+                      Sample Home
+                    </p>
                   </div>
                 </div>
 
-                {/* LAPTOP / TABLET */}
+                <span className="rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.09em] text-white/40">
+                  Demo
+                </span>
+              </div>
 
-                <div className="absolute bottom-[17%] right-[11%] h-[95px] w-[130px] rotate-[5deg] rounded-lg border border-white/10 bg-[#1c2630] shadow-xl">
-                  <div className="absolute inset-[7px] rounded bg-[#314153]" />
+              {/* MINI NAV */}
+
+              <div className="flex gap-5 overflow-x-auto border-b border-white/10 px-5 py-3 sm:px-6">
+                <MiniNavItem
+                  label="Overview"
+                  active
+                />
+
+                <MiniNavItem label="Devices" />
+                <MiniNavItem label="Documents" />
+                <MiniNavItem label="Network" />
+              </div>
+
+              {/* DASHBOARD CONTENT */}
+
+              <div className="p-5 sm:p-6">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  <MetricCard
+                    value="18"
+                    label="Devices"
+                  />
+
+                  <MetricCard
+                    value="34"
+                    label="Documents"
+                  />
+
+                  <MetricCard
+                    value="7"
+                    label="Warranties"
+                  />
+
+                  <MetricCard
+                    value="4"
+                    label="Maintenance"
+                  />
                 </div>
 
-                {/* PHONE */}
+                <div className="mt-6 grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+                  {/* RECENT DEVICES */}
 
-                <div className="absolute bottom-[15%] left-[21%] h-[78px] w-[42px] -rotate-[8deg] rounded-[8px] border border-white/20 bg-[#eee9df] shadow-xl" />
+                  <div className="rounded-2xl border border-white/10 bg-[#0d1926]">
+                    <div className="flex items-center justify-between border-b border-white/10 px-4 py-3.5">
+                      <div>
+                        <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-white/30">
+                          Recently organized
+                        </p>
 
-                {/* LAMP */}
+                        <p className="mt-1 text-xs font-semibold text-[#e4e9ec]">
+                          Your latest device records
+                        </p>
+                      </div>
 
-                <div className="absolute right-[12%] top-[9%] h-[185px] w-[85px]">
-                  <div className="absolute left-1/2 top-[52px] h-[115px] w-[4px] -translate-x-1/2 bg-[#ae8a4f]" />
+                      <Laptop
+                        size={16}
+                        className="text-[#789557]"
+                      />
+                    </div>
 
-                  <div className="absolute left-1/2 top-0 h-[65px] w-[90px] -translate-x-1/2 rounded-t-[50%] rounded-b-lg bg-[#d8c8a9]" />
+                    <div className="space-y-px bg-white/10">
+                      <DeviceRow
+                        name='LG 34" UltraWide Monitor'
+                        location="Office"
+                        detail="Warranty tracked"
+                      />
 
-                  <div className="absolute bottom-0 left-1/2 h-[10px] w-[58px] -translate-x-1/2 rounded-full bg-[#ae8a4f]" />
+                      <DeviceRow
+                        name="Apple TV 4K"
+                        location="Living Room"
+                        detail="Receipt saved"
+                      />
+
+                      <DeviceRow
+                        name="Eero Pro 6E"
+                        location="Network"
+                        detail="Manual attached"
+                      />
+                    </div>
+                  </div>
+
+                  {/* VAULT STATUS */}
+
+                  <div className="rounded-2xl border border-white/10 bg-[#0d1926] p-4">
+                    <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-white/30">
+                      Vault status
+                    </p>
+
+                    <div className="mt-4 flex items-end gap-2">
+                      <span className="font-serif text-4xl text-[#f4f0e8]">
+                        92
+                      </span>
+
+                      <span className="pb-1 text-xs text-white/30">
+                        / 100
+                      </span>
+                    </div>
+
+                    <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10">
+                      <div className="h-full w-[92%] rounded-full bg-[#718d4f]" />
+                    </div>
+
+                    <div className="mt-5 space-y-3">
+                      <StatusLine
+                        text="Receipts organized"
+                        complete
+                      />
+
+                      <StatusLine
+                        text="Warranties tracked"
+                        complete
+                      />
+
+                      <StatusLine
+                        text="1 item needs attention"
+                      />
+                    </div>
+                  </div>
                 </div>
 
-                {/* DARK GRADIENT */}
+                {/* SMART IMPORT STRIP */}
 
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0b1623]/65 via-transparent to-transparent" />
+                <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-[#718d4f]/20 bg-[#718d4f]/8 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#718d4f]/25 bg-[#718d4f]/10 text-[#8ca667]">
+                      <Sparkles size={16} />
+                    </div>
 
-                {/* LABEL */}
+                    <div>
+                      <p className="text-xs font-semibold text-[#e4e9ec]">
+                        Smart Import™ ready
+                      </p>
 
-                <div className="absolute left-5 top-5 rounded-full border border-white/20 bg-[#0b1623]/70 px-3 py-1.5 backdrop-blur-md">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/60">
-                    Sample Home
+                      <p className="mt-1 text-[10px] text-white/35">
+                        Forward a receipt. We&apos;ll prepare the record.
+                      </p>
+                    </div>
+                  </div>
+
+                  <span className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#8ca667]">
+                    Ready to use
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* FLOATING WARRANTY CARD */}
+
+            <div className="absolute -right-3 top-[23%] hidden w-[180px] rounded-2xl border border-white/15 bg-[#172838]/95 p-4 shadow-2xl backdrop-blur-xl xl:block">
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#718d4f]/10 text-[#8ca667]">
+                  <ShieldCheck size={15} />
+                </div>
+
+                <div>
+                  <p className="text-[9px] uppercase tracking-[0.1em] text-white/30">
+                    Warranty
+                  </p>
+
+                  <p className="mt-0.5 text-xs font-semibold text-white">
+                    Coverage tracked
                   </p>
                 </div>
               </div>
+
+              <p className="mt-3 text-[10px] leading-5 text-white/40">
+                LG UltraWide Monitor
+              </p>
             </div>
 
-            {/* FLOATING VAULT SUMMARY */}
+            {/* FLOATING RECEIPT CARD */}
 
-            <div className="relative z-10 mx-auto -mt-9 w-[88%] rounded-2xl border border-white/35 bg-[#101d2b]/95 px-5 py-4 shadow-2xl backdrop-blur-xl sm:w-[78%]">
-              <div className="grid grid-cols-4 divide-x divide-white/10">
-                <VaultMetric
-                  value="18"
-                  label="Devices"
-                />
-
-                <VaultMetric
-                  value="34"
-                  label="Files"
-                />
-
-                <VaultMetric
-                  value="7"
-                  label="Warranties"
-                />
-
-                <VaultMetric
-                  value="1"
-                  label="Attention"
-                  accent
-                />
-              </div>
-            </div>
-
-            {/* SMALL DECORATION */}
-
-            <div className="absolute -bottom-7 -right-5 hidden rounded-2xl border border-white/15 bg-[#152330] p-4 shadow-xl sm:block">
+            <div className="absolute -bottom-7 -left-4 hidden w-[205px] rounded-2xl border border-white/15 bg-[#172838]/95 p-4 shadow-2xl backdrop-blur-xl md:block">
               <div className="flex items-center gap-2">
-                <Sparkles
+                <Receipt
                   size={15}
-                  className="text-[#88a761]"
+                  className="text-[#8ca667]"
                 />
 
-                <span className="text-[11px] font-semibold text-[#dce2d6]">
-                  Smart Import ready
-                </span>
+                <p className="text-[9px] font-semibold uppercase tracking-[0.1em] text-white/35">
+                  Purchase record
+                </p>
+              </div>
+
+              <p className="mt-3 font-serif text-base text-[#f4f0e8]">
+                Best Buy Receipt
+              </p>
+
+              <div className="mt-2 flex items-center gap-1.5 text-[10px] text-[#8ca667]">
+                <CheckCircle2 size={12} />
+
+                Saved to device
               </div>
             </div>
           </div>
@@ -265,9 +386,15 @@ export default function HeroSection({
                   category.label ===
                   "Smart Import"
                     ? "#smart-import-demo"
-                    : "#vault-overview"
+                    : category.label ===
+                        "Network"
+                      ? "#network"
+                      : category.label ===
+                          "Maintenance"
+                        ? "#maintenance"
+                        : "#vault-overview"
                 }
-                className="inline-flex items-center gap-2 rounded-full border border-white/50 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#d0d6db] transition hover:border-[#8ca667] hover:text-white"
+                className="inline-flex items-center gap-2 rounded-full border border-white/40 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#d0d6db] transition hover:border-[#8ca667] hover:text-white"
               >
                 <Icon
                   size={12}
@@ -284,30 +411,94 @@ export default function HeroSection({
   );
 }
 
-function VaultMetric({
+function MiniNavItem({
+  label,
+  active = false,
+}: {
+  label: string;
+  active?: boolean;
+}) {
+  return (
+    <span
+      className={
+        active
+          ? "border-b border-[#718d4f] pb-1 text-[10px] font-semibold text-[#e7ecef]"
+          : "pb-1 text-[10px] font-medium text-white/30"
+      }
+    >
+      {label}
+    </span>
+  );
+}
+
+function MetricCard({
   value,
   label,
-  accent = false,
 }: {
   value: string;
   label: string;
-  accent?: boolean;
 }) {
   return (
-    <div className="px-2 text-center">
-      <p
-        className={
-          accent
-            ? "font-serif text-xl font-semibold text-[#89a865]"
-            : "font-serif text-xl font-semibold text-[#f4f0e8]"
-        }
-      >
+    <div className="rounded-xl border border-white/10 bg-[#0d1926] px-3 py-3.5">
+      <p className="font-serif text-xl text-[#f4f0e8]">
         {value}
       </p>
 
-      <p className="mt-1 text-[9px] font-medium uppercase tracking-[0.08em] text-white/40">
+      <p className="mt-1 text-[9px] uppercase tracking-[0.08em] text-white/30">
         {label}
       </p>
+    </div>
+  );
+}
+
+function DeviceRow({
+  name,
+  location,
+  detail,
+}: {
+  name: string;
+  location: string;
+  detail: string;
+}) {
+  return (
+    <div className="flex items-center gap-3 bg-[#101d2b] px-4 py-3.5">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#718d4f]/10 text-[#8ca667]">
+        <Laptop size={14} />
+      </div>
+
+      <div className="min-w-0">
+        <p className="truncate text-[11px] font-semibold text-[#e6ebee]">
+          {name}
+        </p>
+
+        <p className="mt-0.5 truncate text-[9px] text-white/30">
+          {location} · {detail}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function StatusLine({
+  text,
+  complete = false,
+}: {
+  text: string;
+  complete?: boolean;
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      <span
+        className={
+          complete
+            ? "h-1.5 w-1.5 rounded-full bg-[#718d4f]"
+            : "h-1.5 w-1.5 rounded-full bg-[#b49b5c]"
+        }
+      />
+
+      <span className="text-[10px] text-white/45">
+        {text}
+      </span>
     </div>
   );
 }
