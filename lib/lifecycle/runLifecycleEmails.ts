@@ -1,3 +1,4 @@
+
 import "server-only";
 
 import type {
@@ -24,8 +25,19 @@ const HOUR_MS =
 const MAX_USERS =
   5000;
 
+const LIFECYCLE_COOLDOWN_HOURS =
+  72;
+
 type RunOptions = {
   dryRun?: boolean;
+};
+
+type DeviceRow = {
+  id: string;
+  model_number: string | null;
+  serial_number: string | null;
+  warranty_date: string | null;
+  created_at: string | null;
 };
 
 type Candidate = {
@@ -33,7 +45,10 @@ type Candidate = {
   email: string;
   emailType: LifecycleEmailType;
   deviceCount: number;
+  documentCount: number;
   accountAgeHours: number;
+  firstDeviceAgeHours:
+    number | null;
 };
 
 function getAppUrl() {
@@ -46,12 +61,12 @@ function getAppUrl() {
   ).replace(/\/+$/, "");
 }
 
-function accountAgeHours(
-  createdAt: string
+function ageHours(
+  date: string
 ) {
   return (
     Date.now() -
-    new Date(createdAt).getTime()
+    new Date(date).getTime()
   ) / HOUR_MS;
 }
 
@@ -59,33 +74,95 @@ function chooseNoDeviceEmail(input: {
   ageHours: number;
   sent: Set<string>;
 }): LifecycleEmailType | null {
-  const { ageHours, sent } = input;
-
-  // Use time windows instead of playing catch-up.
-  // A 20-day-old account should receive the 7-day
-  // message, not all three messages back-to-back.
+  const {
+    ageHours: hours,
+    sent,
+  } = input;
 
   if (
-    ageHours >= 168 &&
+    hours >= 168 &&
     !sent.has("no_device_7d")
   ) {
     return "no_device_7d";
   }
 
   if (
-    ageHours >= 72 &&
-    ageHours < 168 &&
+    hours >= 72 &&
+    hours < 168 &&
     !sent.has("no_device_3d")
   ) {
     return "no_device_3d";
   }
 
   if (
-    ageHours >= 24 &&
-    ageHours < 72 &&
+    hours >= 24 &&
+    hours < 72 &&
     !sent.has("no_device_24h")
   ) {
     return "no_device_24h";
+  }
+
+  return null;
+}
+
+function chooseActivatedEmail(input: {
+  devices: DeviceRow[];
+  documentCount: number;
+  firstDeviceAgeHours: number;
+  sent: Set<string>;
+}): LifecycleEmailType | null {
+  const {
+    devices,
+    documentCount,
+    firstDeviceAgeHours,
+    sent,
+  } = input;
+
+  const hasIncompleteDetails =
+    devices.some(
+      (device) =>
+        !device.model_number?.trim() ||
+        !device.serial_number?.trim()
+    );
+
+  const hasWarranty =
+    devices.some(
+      (device) =>
+        Boolean(
+          device.warranty_date
+        )
+    );
+
+  // Priority 1:
+  // Help make the actual device record useful.
+  if (
+    firstDeviceAgeHours >= 48 &&
+    hasIncompleteDetails &&
+    !sent.has(
+      "device_details_missing"
+    )
+  ) {
+    return "device_details_missing";
+  }
+
+  // Priority 2:
+  // Get at least one document stored.
+  if (
+    firstDeviceAgeHours >= 72 &&
+    documentCount === 0 &&
+    !sent.has("no_documents")
+  ) {
+    return "no_documents";
+  }
+
+  // Priority 3:
+  // Encourage warranty tracking.
+  if (
+    firstDeviceAgeHours >= 120 &&
+    !hasWarranty &&
+    !sent.has("warranty_missing")
+  ) {
+    return "warranty_missing";
   }
 
   return null;
@@ -106,10 +183,11 @@ async function loadAuthUsers() {
     const {
       data,
       error,
-    } = await admin.auth.admin.listUsers({
-      page,
-      perPage,
-    });
+    } =
+      await admin.auth.admin.listUsers({
+        page,
+        perPage,
+      });
 
     if (error) {
       throw error;
@@ -118,18 +196,54 @@ async function loadAuthUsers() {
     users.push(...data.users);
 
     if (
-      data.users.length < perPage
+      data.users.length <
+      perPage
     ) {
       break;
     }
   }
 
-  return users.slice(0, MAX_USERS);
+  return users.slice(
+    0,
+    MAX_USERS
+  );
 }
 
-async function getDeviceCount(
+async function getDevices(
   userId: string
+): Promise<DeviceRow[]> {
+  const admin =
+    createAdminClient();
+
+  const {
+    data,
+    error,
+  } = await admin
+    .from("devices")
+    .select(
+      "id, model_number, serial_number, warranty_date, created_at"
+    )
+    .eq("user_id", userId)
+    .order("created_at", {
+      ascending: true,
+    });
+
+  if (error) {
+    throw error;
+  }
+
+  return (data ?? []) as DeviceRow[];
+}
+
+async function getDocumentCount(
+  deviceIds: string[]
 ) {
+  if (
+    deviceIds.length === 0
+  ) {
+    return 0;
+  }
+
   const admin =
     createAdminClient();
 
@@ -137,7 +251,7 @@ async function getDeviceCount(
     count,
     error,
   } = await admin
-    .from("devices")
+    .from("documents")
     .select(
       "id",
       {
@@ -145,7 +259,10 @@ async function getDeviceCount(
         head: true,
       }
     )
-    .eq("user_id", userId);
+    .in(
+      "device_id",
+      deviceIds
+    );
 
   if (error) {
     throw error;
@@ -154,7 +271,7 @@ async function getDeviceCount(
   return count ?? 0;
 }
 
-async function getSentTypes(
+async function getSentHistory(
   userId: string
 ) {
   const admin =
@@ -165,18 +282,45 @@ async function getSentTypes(
     error,
   } = await admin
     .from("lifecycle_email_log")
-    .select("email_type")
+    .select(
+      "email_type, sent_at"
+    )
     .eq("user_id", userId)
-    .eq("status", "sent");
+    .eq("status", "sent")
+    .order("sent_at", {
+      ascending: false,
+    });
 
   if (error) {
     throw error;
   }
 
-  return new Set(
-    (data ?? []).map(
-      (row) => row.email_type as string
-    )
+  const rows =
+    data ?? [];
+
+  return {
+    sentTypes: new Set(
+      rows.map(
+        (row) =>
+          row.email_type as string
+      )
+    ),
+    lastSentAt:
+      rows[0]?.sent_at ??
+      null,
+  };
+}
+
+function isInCooldown(
+  lastSentAt: string | null
+) {
+  if (!lastSentAt) {
+    return false;
+  }
+
+  return (
+    ageHours(lastSentAt) <
+    LIFECYCLE_COOLDOWN_HOURS
   );
 }
 
@@ -190,22 +334,51 @@ async function isOnboardingEnabled(
     data,
     error,
   } = await admin
-    .from("lifecycle_email_preferences")
+    .from(
+      "lifecycle_email_preferences"
+    )
     .select(
       "onboarding_enabled"
     )
-    .eq("user_id", userId)
+    .eq(
+      "user_id",
+      userId
+    )
     .maybeSingle();
 
   if (error) {
     throw error;
   }
 
-  // No row means default onboarding behavior:
-  // enabled.
   return (
     data?.onboarding_enabled ??
     true
+  );
+}
+
+function firstDeviceAge(
+  devices: DeviceRow[]
+) {
+  const firstCreated =
+    devices
+      .map(
+        (device) =>
+          device.created_at
+      )
+      .filter(
+        (
+          value
+        ): value is string =>
+          Boolean(value)
+      )
+      .sort()[0];
+
+  if (!firstCreated) {
+    return null;
+  }
+
+  return ageHours(
+    firstCreated
   );
 }
 
@@ -228,35 +401,97 @@ async function createCandidate(
     return null;
   }
 
-  const deviceCount =
-    await getDeviceCount(
-      user.id
-    );
-
-  // Adding the first device automatically
-  // exits the no-device onboarding sequence.
-  if (deviceCount > 0) {
-    return null;
-  }
-
-  const ageHours =
-    accountAgeHours(
+  const accountAge =
+    ageHours(
       user.created_at
     );
 
-  if (ageHours < 24) {
+  if (
+    accountAge < 24
+  ) {
     return null;
   }
 
-  const sent =
-    await getSentTypes(
+  const history =
+    await getSentHistory(
       user.id
     );
 
+  // One lifecycle email at most
+  // every 72 hours.
+  if (
+    isInCooldown(
+      history.lastSentAt
+    )
+  ) {
+    return null;
+  }
+
+  const devices =
+    await getDevices(
+      user.id
+    );
+
+  if (
+    devices.length === 0
+  ) {
+    const emailType =
+      chooseNoDeviceEmail({
+        ageHours:
+          accountAge,
+        sent:
+          history.sentTypes,
+      });
+
+    if (!emailType) {
+      return null;
+    }
+
+    return {
+      userId:
+        user.id,
+      email:
+        user.email,
+      emailType,
+      deviceCount: 0,
+      documentCount: 0,
+      accountAgeHours:
+        Math.floor(
+          accountAge
+        ),
+      firstDeviceAgeHours:
+        null,
+    };
+  }
+
+  const deviceAge =
+    firstDeviceAge(
+      devices
+    );
+
+  if (
+    deviceAge === null ||
+    deviceAge < 48
+  ) {
+    return null;
+  }
+
+  const documentCount =
+    await getDocumentCount(
+      devices.map(
+        (device) =>
+          device.id
+      )
+    );
+
   const emailType =
-    chooseNoDeviceEmail({
-      ageHours,
-      sent,
+    chooseActivatedEmail({
+      devices,
+      documentCount,
+      firstDeviceAgeHours:
+        deviceAge,
+      sent:
+        history.sentTypes,
     });
 
   if (!emailType) {
@@ -264,12 +499,22 @@ async function createCandidate(
   }
 
   return {
-    userId: user.id,
-    email: user.email,
+    userId:
+      user.id,
+    email:
+      user.email,
     emailType,
-    deviceCount,
+    deviceCount:
+      devices.length,
+    documentCount,
     accountAgeHours:
-      Math.floor(ageHours),
+      Math.floor(
+        accountAge
+      ),
+    firstDeviceAgeHours:
+      Math.floor(
+        deviceAge
+      ),
   };
 }
 
@@ -277,9 +522,11 @@ function getFirstName(
   user: User
 ) {
   const value =
-    user.user_metadata?.full_name;
+    user.user_metadata
+      ?.full_name;
 
-  return typeof value === "string"
+  return typeof value ===
+    "string"
     ? value
     : null;
 }
@@ -297,7 +544,9 @@ async function recordPending(
     data,
     error,
   } = await admin
-    .from("lifecycle_email_log")
+    .from(
+      "lifecycle_email_log"
+    )
     .upsert(
       {
         user_id:
@@ -306,7 +555,8 @@ async function recordPending(
           candidate.email,
         email_type:
           candidate.emailType,
-        status: "pending",
+        status:
+          "pending",
         idempotency_key:
           idempotencyKey,
         attempted_at:
@@ -340,18 +590,25 @@ async function markSent(
   const {
     error,
   } = await admin
-    .from("lifecycle_email_log")
+    .from(
+      "lifecycle_email_log"
+    )
     .update({
-      status: "sent",
+      status:
+        "sent",
       provider_message_id:
         providerMessageId,
       sent_at:
         new Date().toISOString(),
       updated_at:
         new Date().toISOString(),
-      error_message: null,
+      error_message:
+        null,
     })
-    .eq("id", logId);
+    .eq(
+      "id",
+      logId
+    );
 
   if (error) {
     throw error;
@@ -368,15 +625,24 @@ async function markFailed(
   const {
     error,
   } = await admin
-    .from("lifecycle_email_log")
+    .from(
+      "lifecycle_email_log"
+    )
     .update({
-      status: "failed",
+      status:
+        "failed",
       error_message:
-        message.slice(0, 1000),
+        message.slice(
+          0,
+          1000
+        ),
       updated_at:
         new Date().toISOString(),
     })
-    .eq("id", logId);
+    .eq(
+      "id",
+      logId
+    );
 
   if (error) {
     console.error(
@@ -384,6 +650,71 @@ async function markFailed(
       error
     );
   }
+}
+
+async function candidateStillValid(
+  candidate: Candidate
+) {
+  const devices =
+    await getDevices(
+      candidate.userId
+    );
+
+  if (
+    candidate.emailType.startsWith(
+      "no_device_"
+    )
+  ) {
+    return (
+      devices.length === 0
+    );
+  }
+
+  if (
+    devices.length === 0
+  ) {
+    return false;
+  }
+
+  if (
+    candidate.emailType ===
+    "device_details_missing"
+  ) {
+    return devices.some(
+      (device) =>
+        !device.model_number?.trim() ||
+        !device.serial_number?.trim()
+    );
+  }
+
+  if (
+    candidate.emailType ===
+    "warranty_missing"
+  ) {
+    return !devices.some(
+      (device) =>
+        Boolean(
+          device.warranty_date
+        )
+    );
+  }
+
+  if (
+    candidate.emailType ===
+    "no_documents"
+  ) {
+    const count =
+      await getDocumentCount(
+        devices.map(
+          (device) =>
+            device.id
+        )
+      );
+
+    return count === 0;
+  }
+
+  return false;
 }
 
 export async function runLifecycleEmails(
@@ -398,30 +729,51 @@ export async function runLifecycleEmails(
   const users =
     await loadAuthUsers();
 
-  const candidates: Candidate[] = [];
+  const candidates:
+    Candidate[] = [];
+
   const failures: Array<{
     userId: string;
     error: string;
   }> = [];
 
-  // Sequential processing is intentional.
-  // It avoids hammering Supabase with hundreds
-  // of simultaneous requests.
-  for (const user of users) {
+  for (
+    const user
+    of users
+  ) {
     try {
       const candidate =
-        await createCandidate(user);
+        await createCandidate(
+          user
+        );
 
       if (candidate) {
-        candidates.push(candidate);
+        candidates.push(
+          candidate
+        );
       }
     } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : typeof error === "object" &&
+              error !== null &&
+              "message" in error
+            ? String(
+                (
+                  error as {
+                    message?: unknown;
+                  }
+                ).message
+              )
+            : JSON.stringify(error);
+
       failures.push({
-        userId: user.id,
+        userId:
+          user.id,
         error:
-          error instanceof Error
-            ? error.message
-            : "Unknown candidate error",
+          errorMessage ||
+          "Unknown candidate error",
       });
     }
   }
@@ -438,112 +790,131 @@ export async function runLifecycleEmails(
     };
   }
 
-  const sent: Candidate[] = [];
-  const sendFailures: Array<{
-    userId: string;
-    emailType: LifecycleEmailType;
-    error: string;
-  }> = [];
+  const sent:
+    Candidate[] = [];
+
+  const sendFailures:
+    Array<{
+      userId: string;
+      emailType:
+        LifecycleEmailType;
+      error: string;
+    }> = [];
 
   for (
     const candidate
     of candidates
   ) {
-    // Re-check immediately before sending.
-    // If the user added a device while this
-    // run was processing, stop the message.
-    const latestDeviceCount =
-      await getDeviceCount(
-        candidate.userId
-      );
-
-    if (
-      latestDeviceCount > 0
-    ) {
-      continue;
-    }
-
-    const user =
-      users.find(
-        (item) =>
-          item.id ===
-          candidate.userId
-      );
-
-    if (!user) {
-      continue;
-    }
-
-    const unsubscribeUrl =
-      createUnsubscribeUrl({
-        appUrl,
-        userId:
-          candidate.userId,
-        email:
-          candidate.email,
-      });
-
-    const template =
-      createLifecycleEmail({
-        type:
-          candidate.emailType,
-        firstName:
-          getFirstName(user),
-        appUrl,
-        unsubscribeUrl,
-      });
-
-    let logId: string | null =
-      null;
-
     try {
-      logId =
-        await recordPending(
+      const valid =
+        await candidateStillValid(
           candidate
         );
 
-      const result =
-        await sendEmail({
-          to: candidate.email,
-          subject:
-            template.subject,
-          html:
-            template.html,
-          text:
-            template.text,
+      if (!valid) {
+        continue;
+      }
+
+      const user =
+        users.find(
+          (item) =>
+            item.id ===
+            candidate.userId
+        );
+
+      if (!user) {
+        continue;
+      }
+
+      const unsubscribeUrl =
+        createUnsubscribeUrl({
+          appUrl,
+          userId:
+            candidate.userId,
+          email:
+            candidate.email,
         });
 
-      if (!result.ok) {
-        throw new Error(
-          `${result.code}: ${result.message}`
-        );
-      }
+      const template =
+        createLifecycleEmail({
+          type:
+            candidate.emailType,
+          firstName:
+            getFirstName(
+              user
+            ),
+          appUrl,
+          unsubscribeUrl,
+        });
 
-      await markSent(
-        logId,
-        result.id
-      );
+      let logId:
+        string | null =
+        null;
 
-      sent.push(candidate);
-    } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Unknown send error";
+      try {
+        logId =
+          await recordPending(
+            candidate
+          );
 
-      if (logId) {
-        await markFailed(
+        const result =
+          await sendEmail({
+            to:
+              candidate.email,
+            subject:
+              template.subject,
+            html:
+              template.html,
+            text:
+              template.text,
+          });
+
+        if (!result.ok) {
+          throw new Error(
+            `${result.code}: ${result.message}`
+          );
+        }
+
+        await markSent(
           logId,
-          message
+          result.id
         );
-      }
 
+        sent.push(
+          candidate
+        );
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Unknown send error";
+
+        if (logId) {
+          await markFailed(
+            logId,
+            message
+          );
+        }
+
+        sendFailures.push({
+          userId:
+            candidate.userId,
+          emailType:
+            candidate.emailType,
+          error:
+            message,
+        });
+      }
+    } catch (error) {
       sendFailures.push({
         userId:
           candidate.userId,
         emailType:
           candidate.emailType,
-        error: message,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Unable to re-check lifecycle state",
       });
     }
   }
