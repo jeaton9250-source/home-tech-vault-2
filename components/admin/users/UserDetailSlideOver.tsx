@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 import Link from "next/link";
 
 import PlanAccessAdminSection from "@/components/admin/users/PlanAccessAdminSection";
@@ -60,6 +62,80 @@ export default function UserDetailSlideOver({
   onDetailUpdated,
   onUserDeleted,
 }: UserDetailSlideOverProps) {
+  const [impersonating, setImpersonating] =
+    useState(false);
+
+  const [impersonationError, setImpersonationError] =
+    useState("");
+
+  async function impersonateUser() {
+    if (!detail) {
+      return;
+    }
+
+    const targetUserId = (
+      detail as AdminUserDetail & {
+        id?: string;
+      }
+    ).id;
+
+    if (!targetUserId) {
+      setImpersonationError(
+        "Unable to determine the selected user's ID."
+      );
+      return;
+    }
+
+    if (detail.isPlatformAdmin) {
+      setImpersonationError(
+        "Platform administrators cannot be impersonated."
+      );
+      return;
+    }
+
+    setImpersonating(true);
+    setImpersonationError("");
+
+    try {
+      const response = await fetch(
+        `/api/admin/users/${encodeURIComponent(
+          targetUserId
+        )}/impersonate`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const payload = (await response.json()) as {
+        ok?: boolean;
+        error?: string;
+        redirectTo?: string;
+      };
+
+      if (!response.ok || !payload.ok) {
+        throw new Error(
+          payload.error ||
+            "Unable to impersonate this user."
+        );
+      }
+
+      window.location.assign(
+        payload.redirectTo || "/dashboard"
+      );
+    } catch (cause) {
+      setImpersonationError(
+        cause instanceof Error
+          ? cause.message
+          : "Unable to impersonate this user."
+      );
+
+      setImpersonating(false);
+    }
+  }
+
   const title = invitation
     ? invitation.email
     : detail
@@ -340,11 +416,20 @@ export default function UserDetailSlideOver({
                 </Button>
               ) : null}
               <Button
+                type="button"
                 variant="secondary"
                 size="sm"
-                disabled
+                onClick={() => {
+                  void impersonateUser();
+                }}
+                disabled={
+                  impersonating ||
+                  detail.isPlatformAdmin
+                }
               >
-                Impersonate User
+                {impersonating
+                  ? "Opening user vault…"
+                  : "Impersonate User"}
               </Button>
               <Button
                 variant="secondary"
@@ -354,6 +439,12 @@ export default function UserDetailSlideOver({
                 Reset Password Email
               </Button>
             </div>
+
+            {impersonationError ? (
+              <p className="mt-3 text-sm text-red-600">
+                {impersonationError}
+              </p>
+            ) : null}
           </div>
 
           <PlanAccessAdminSection

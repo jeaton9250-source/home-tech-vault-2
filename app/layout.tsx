@@ -5,6 +5,7 @@ import { GeistSans } from "geist/font/sans";
 import "./globals.css";
 
 import ConditionalAppChrome from "@/components/ConditionalAppChrome";
+import ImpersonationBanner from "@/components/admin/ImpersonationBanner";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 import { rootSiteMetadata } from "@/lib/marketing/socialMetadata";
 
@@ -24,6 +25,7 @@ export default function RootLayout({
       <body className="bg-surface-base text-text-primary antialiased">
         <HeyCatchIdentity />
         <GoogleAnalytics />
+        <ImpersonationBanner />
         <ConditionalAppChrome>{children}</ConditionalAppChrome>
         <Analytics />
       </body>

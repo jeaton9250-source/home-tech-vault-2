@@ -78,4 +78,6 @@ export type AdminAuditEventType =
   | "founding_member_enrolled"
   | "founding_member_removed"
   | "founding_member_grant_revoked"
-  | "founding_program_full";
+  | "founding_program_full"
+  | "impersonation_started"
+  | "impersonation_ended";
