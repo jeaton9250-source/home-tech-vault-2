@@ -52,10 +52,10 @@ export const KNOWLEDGE_HERO_SOURCES: Record<string, KnowledgeHeroSource> = {
       "Personal devices move between bags and rooms — ownership notes keep the household sane.",
   },
   "appliance-records-beyond-the-kitchen": {
-    unsplashId: "1556912172-45b7abe8b7e1",
-    alt: "Home kitchen with modern appliances",
+    pexelsId: 28479466,
+    alt: "Modern laundry room with washer, dryer, and household utility equipment",
     caption:
-      "Washers and HVAC need model numbers too — not just the gadgets on the counter.",
+      "Laundry, HVAC, and utility equipment deserve the same model and warranty records as everyday electronics.",
   },
   "what-to-record-when-you-unbox-a-device": {
     unsplashId: "1607082348824-0a96f2a4b9da",
@@ -130,10 +130,10 @@ export const KNOWLEDGE_HERO_SOURCES: Record<string, KnowledgeHeroSource> = {
       "Room names and account ownership keep speakers replaceable.",
   },
   "sensors-cameras-and-automation-gear": {
-    pexelsId: 356056,
-    alt: "Home desk with phones, tablet, laptop, and connected accessories",
+    pexelsId: 27662879,
+    alt: "Smart home security camera and sensors arranged together",
     caption:
-      "Battery sensors and cameras fail quietly — inventory them before they do.",
+      "Sensors, cameras, and automation gear are easier to maintain when every device has a clear record.",
   },
   "smart-thermostats-and-climate-devices": {
     unsplashId: "1545259741-2ea3ebf61fa3",
@@ -142,10 +142,10 @@ export const KNOWLEDGE_HERO_SOURCES: Record<string, KnowledgeHeroSource> = {
       "Model numbers and installer notes matter on the first cold night.",
   },
   "when-smart-devices-need-manual-backups": {
-    unsplashId: "1517694712202-14dd9538aa97",
-    alt: "Person saving device settings on a laptop",
+    pexelsId: 27691024,
+    alt: "Home technology workspace with laptop and external backup drives",
     caption:
-      "A short offline note beats rebuilding automations from memory.",
+      "A small offline backup of important settings can save hours when a smart device needs to be rebuilt.",
   },
   "private-records-for-home-technology": {
     unsplashId: "1614064641938-3bbee52942c7",
@@ -178,10 +178,10 @@ export const KNOWLEDGE_HERO_SOURCES: Record<string, KnowledgeHeroSource> = {
       "Roles and viewers keep helpers useful without handing over everything.",
   },
   "documenting-security-cameras-and-alarms": {
-    pexelsId: 279810,
-    alt: "Residential door with a multi-bolt security lock and key",
+    pexelsId: 16423102,
+    alt: "Modern home security cameras and connected security devices",
     caption:
-      "Locations, accounts, and reset notes — kept where the household can find them.",
+      "Document camera locations, accounts, and reset details before something needs troubleshooting.",
   },
   "preparing-tech-records-for-emergencies": {
     unsplashId: "1504384308090-c894fdcc538d",
@@ -202,10 +202,10 @@ export const KNOWLEDGE_HERO_SOURCES: Record<string, KnowledgeHeroSource> = {
       "Save proof where claims and returns can find it — not only in email.",
   },
   "extended-warranties-worth-documenting": {
-    pexelsId: 4482900,
-    alt: "Hand holding a credit card over a laptop while reviewing a purchase",
+    pexelsId: 30559957,
+    alt: "Electronic remote resting on a printed warranty document",
     caption:
-      "Plan numbers and end dates belong next to the device, not in a forgotten PDF.",
+      "Keep warranty terms and coverage dates beside the device record so the protection is actually usable.",
   },
   "manufacturer-vs-retailer-coverage": {
     pexelsId: 4792282,
@@ -232,16 +232,16 @@ export const KNOWLEDGE_HERO_SOURCES: Record<string, KnowledgeHeroSource> = {
       "Gifts and hand-me-downs still need serials and whatever proof you can gather.",
   },
   "seasonal-home-tech-maintenance": {
-    unsplashId: "1503387762-592deb58ef4e",
-    alt: "Bright home interior during seasonal upkeep",
+    pexelsId: 4008556,
+    alt: "Person carefully cleaning and maintaining a laptop",
     caption:
-      "Spring and fall checkups catch filters, outdoor gear, and forgotten updates.",
+      "Seasonal maintenance is a good time to clean, inspect, update, and document the technology around your home.",
   },
   "firmware-update-habits-for-households": {
-    unsplashId: "1518770660439-4636190af475",
-    alt: "Circuit board and technology components",
+    pexelsId: 34353879,
+    alt: "Smartphone displaying a software and firmware update screen",
     caption:
-      "A sane cadence beats updating everything on a random Tuesday night.",
+      "Keep updates deliberate and documented instead of discovering outdated firmware during a problem.",
   },
   "battery-replacement-schedules": {
     unsplashId: "1609599006353-e629aaabfeae",
@@ -298,10 +298,10 @@ export const KNOWLEDGE_HERO_SOURCES: Record<string, KnowledgeHeroSource> = {
       "Gift receipts and return windows stay calm when they are already filed.",
   },
   "choosing-devices-that-fit-your-network": {
-    unsplashId: "1606904825846-647eb07f5be2",
-    alt: "Home Wi-Fi hardware near everyday devices",
+    pexelsId: 28348054,
+    alt: "Modern wireless router representing a home Wi-Fi network",
     caption:
-      "Buy for the network you have — mesh quirks, wired needs, and guest isolation.",
+      "Choose devices for the network you actually have, including Wi-Fi coverage, wired needs, and compatibility.",
   },
   "used-and-refurbished-buying-checklist": {
     unsplashId: "1556740758-90de374c12ad",
