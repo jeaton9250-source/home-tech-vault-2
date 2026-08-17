@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { createClient } from "@supabase/supabase-js";
 
+import { parseOrderConfirmation } from "@/lib/import/parseOrder";
+
 const resend = new Resend(
   process.env.RESEND_API_KEY!
 );
@@ -28,9 +30,8 @@ export async function POST(
 ) {
   try {
     /*
-      IMPORTANT:
-      Verify the raw webhook body before
-      processing anything.
+      Resend webhook verification must use
+      the original raw request body.
     */
     const rawBody =
       await request.text();
@@ -100,6 +101,9 @@ export async function POST(
       );
     }
 
+    /*
+      We only care about incoming email.
+    */
     if (
       event.type !==
       "email.received"
@@ -109,6 +113,10 @@ export async function POST(
       });
     }
 
+    /*
+      Find which forwarding address
+      received this email.
+    */
     const recipient =
       event.data.to?.[0];
 
@@ -126,9 +134,11 @@ export async function POST(
 
     /*
       Example:
+
       jason-test-01@fuevwun.resend.app
 
-      Extract:
+      becomes:
+
       jason-test-01
     */
     const token =
@@ -150,12 +160,12 @@ export async function POST(
     }
 
     /*
-      Find who owns this forwarding address.
+      Find the Home Tech Vault user
+      associated with this forwarding address.
     */
     const {
       data: importAddress,
-      error:
-        importAddressError,
+      error: importAddressError,
     } = await supabaseAdmin
       .from("import_addresses")
       .select(
@@ -169,27 +179,30 @@ export async function POST(
       !importAddress
     ) {
       console.error(
-        "Unknown import address:",
+        "Unknown Smart Import address:",
         token,
         importAddressError
       );
 
       /*
-        Return 200 so Resend doesn't
-        retry an email for an address
-        we intentionally don't recognize.
+        Return 200 so Resend does not
+        continually retry an address
+        that Home Tech Vault doesn't know.
       */
       return NextResponse.json({
         received: true,
         ignored: true,
+        reason:
+          "Unknown import address.",
       });
     }
 
     /*
-      Fetch full email content.
+      The webhook only gives us email
+      metadata.
 
-      Resend's webhook does NOT contain
-      the actual email body.
+      Fetch the actual received email
+      from Resend.
     */
     const {
       data: receivedEmail,
@@ -219,6 +232,12 @@ export async function POST(
       );
     }
 
+    /*
+      Prefer plain text.
+
+      If the email only contains HTML,
+      convert it into readable text.
+    */
     const rawText =
       receivedEmail.text ||
       stripHtml(
@@ -226,6 +245,11 @@ export async function POST(
       );
 
     if (!rawText.trim()) {
+      console.error(
+        "Received email contained no readable content:",
+        event.data.email_id
+      );
+
       return NextResponse.json(
         {
           error:
@@ -237,11 +261,71 @@ export async function POST(
       );
     }
 
+    /*
+      NEW FREE SMART IMPORT PARSER
+
+      This now sends the email through:
+
+      Amazon parser
+      Best Buy parser
+      Home Depot parser
+      Lowe's parser
+
+      or the generic fallback.
+    */
     const parsed =
       parseOrderConfirmation(
         rawText
       );
 
+    console.log(
+      "Smart Import parsed order:",
+      {
+        retailer:
+          parsed.retailer,
+
+        deviceName:
+          parsed.deviceName,
+
+        brand:
+          parsed.brand,
+
+        modelNumber:
+          parsed.modelNumber,
+
+        category:
+          parsed.category,
+
+        confidence:
+          parsed.confidence,
+      }
+    );
+
+    /*
+      If we can't identify anything that
+      resembles a device, don't create a
+      useless blank review card.
+    */
+    if (!parsed.deviceName) {
+      console.log(
+        "Smart Import skipped email because no device was detected:",
+        event.data.email_id
+      );
+
+      return NextResponse.json({
+        received: true,
+        ignored: true,
+        reason:
+          "No device could be identified.",
+      });
+    }
+
+    /*
+      Create the pending Smart Import.
+
+      The user will review this at /imports
+      before anything enters their real vault.
+    */
     const {
       data: createdImport,
       error: insertError,
@@ -299,15 +383,33 @@ export async function POST(
           parsed.confidence,
 
         extraction_notes:
-          "Imported from a forwarded email received through Resend.",
+          parsed.retailer
+            ? `Parsed using the Home Tech Vault ${parsed.retailer} Smart Import parser.`
+            : "Parsed using the Home Tech Vault generic Smart Import parser.",
 
-        raw_text: rawText,
+        raw_text:
+          rawText,
 
         raw_data: {
           resend_email_id:
             event.data.email_id,
 
+          resend_message_id:
+            event.data.message_id ??
+            null,
+
           recipient,
+
+          sender:
+            event.data.from,
+
+          subject:
+            event.data.subject,
+
+          parser:
+            parsed.retailer ??
+            "generic",
+
           parsed,
         },
 
@@ -321,13 +423,19 @@ export async function POST(
 
     if (insertError) {
       /*
-        Duplicate protection:
-        source_message_id already exists.
+        Your unique source_message_id
+        protection prevents the same
+        inbound email being imported twice.
       */
       if (
         insertError.code ===
         "23505"
       ) {
+        console.log(
+          "Duplicate inbound email ignored:",
+          event.data.email_id
+        );
+
         return NextResponse.json({
           received: true,
           duplicate: true,
@@ -335,7 +443,7 @@ export async function POST(
       }
 
       console.error(
-        "Unable to create import:",
+        "Unable to create Smart Import:",
         insertError
       );
 
@@ -350,10 +458,33 @@ export async function POST(
       );
     }
 
+    console.log(
+      "Smart Import created:",
+      {
+        id: createdImport.id,
+        device:
+          createdImport.device_name,
+        retailer:
+          createdImport.retailer,
+      }
+    );
+
     return NextResponse.json({
       received: true,
+
+      importCreated: true,
+
       importId:
         createdImport.id,
+
+      deviceName:
+        createdImport.device_name,
+
+      retailer:
+        createdImport.retailer,
+
+      confidence:
+        createdImport.confidence,
     });
   } catch (error) {
     console.error(
@@ -373,96 +504,13 @@ export async function POST(
   }
 }
 
-type ParsedImport = {
-  retailer: string | null;
-  orderNumber: string | null;
-  deviceName: string | null;
-  category: string | null;
-  brand: string | null;
-  manufacturer: string | null;
-  modelNumber: string | null;
-  serialNumber: string | null;
-  purchaseDate: string | null;
-  purchasePrice: number | null;
-  confidence: number;
-};
+/*
+  Basic HTML → text conversion.
 
-function parseOrderConfirmation(
-  rawText: string
-): ParsedImport {
-  const normalized =
-    normalizeText(rawText);
-
-  const retailer =
-    detectRetailer(normalized);
-
-  const orderNumber =
-    detectOrderNumber(normalized);
-
-  const purchaseDate =
-    detectPurchaseDate(normalized);
-
-  const purchasePrice =
-    detectPurchasePrice(normalized);
-
-  const modelNumber =
-    detectModelNumber(normalized);
-
-  const serialNumber =
-    detectSerialNumber(normalized);
-
-  const brand =
-    detectBrand(normalized);
-
-  const deviceName =
-    detectDeviceName(
-      normalized,
-      brand,
-      modelNumber
-    );
-
-  const category =
-    detectCategory(
-      normalized,
-      deviceName
-    );
-
-  const confidence =
-    calculateConfidence({
-      retailer,
-      purchaseDate,
-      purchasePrice,
-      modelNumber,
-      brand,
-      deviceName,
-    });
-
-  return {
-    retailer,
-    orderNumber,
-    deviceName,
-    category,
-    brand,
-    manufacturer: brand,
-    modelNumber,
-    serialNumber,
-    purchaseDate,
-    purchasePrice,
-    confidence,
-  };
-}
-
-function normalizeText(
-  value: string
-) {
-  return value
-    .replace(/\r/g, "")
-    .replace(/\t/g, " ")
-    .replace(/[ ]{2,}/g, " ")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
-}
-
+  Most forwarded receipts include a
+  plain-text version, but this gives us
+  a fallback for HTML-only emails.
+*/
 function stripHtml(
   value: string
 ) {
@@ -471,421 +519,91 @@ function stripHtml(
       /<style[\s\S]*?<\/style>/gi,
       " "
     )
+
     .replace(
       /<script[\s\S]*?<\/script>/gi,
       " "
     )
+
     .replace(
       /<br\s*\/?>/gi,
       "\n"
     )
+
     .replace(
       /<\/p>/gi,
       "\n"
     )
+
+    .replace(
+      /<\/div>/gi,
+      "\n"
+    )
+
+    .replace(
+      /<\/tr>/gi,
+      "\n"
+    )
+
+    .replace(
+      /<\/li>/gi,
+      "\n"
+    )
+
     .replace(
       /<[^>]+>/g,
       " "
     )
+
     .replace(
       /&nbsp;/gi,
       " "
     )
+
     .replace(
       /&amp;/gi,
       "&"
     )
+
     .replace(
-      /\s+\n/g,
+      /&quot;/gi,
+      '"'
+    )
+
+    .replace(
+      /&#39;/gi,
+      "'"
+    )
+
+    .replace(
+      /&lt;/gi,
+      "<"
+    )
+
+    .replace(
+      /&gt;/gi,
+      ">"
+    )
+
+    .replace(
+      /[ \t]{2,}/g,
+      " "
+    )
+
+    .replace(
+      /[ \t]+\n/g,
       "\n"
     )
+
     .replace(
-      /\n\s+/g,
+      /\n[ \t]+/g,
       "\n"
     )
+
+    .replace(
+      /\n{3,}/g,
+      "\n\n"
+    )
+
     .trim();
-}
-
-function detectRetailer(
-  text: string
-): string | null {
-  const retailers = [
-    {
-      pattern: /\bbest\s*buy\b/i,
-      name: "Best Buy",
-    },
-    {
-      pattern: /\bamazon\b/i,
-      name: "Amazon",
-    },
-    {
-      pattern: /\bhome\s*depot\b/i,
-      name: "Home Depot",
-    },
-    {
-      pattern: /\blowe'?s\b/i,
-      name: "Lowe's",
-    },
-    {
-      pattern: /\bwalmart\b/i,
-      name: "Walmart",
-    },
-    {
-      pattern: /\bcostco\b/i,
-      name: "Costco",
-    },
-    {
-      pattern: /\btarget\b/i,
-      name: "Target",
-    },
-    {
-      pattern: /\bapple\b/i,
-      name: "Apple",
-    },
-  ];
-
-  for (const retailer of retailers) {
-    if (
-      retailer.pattern.test(text)
-    ) {
-      return retailer.name;
-    }
-  }
-
-  return null;
-}
-
-function detectOrderNumber(
-  text: string
-): string | null {
-  const patterns = [
-    /order\s*(?:number|#|no\.?)\s*[:#]?\s*([A-Z0-9-]{5,})/i,
-    /order\s+([A-Z0-9-]{8,})/i,
-  ];
-
-  for (const pattern of patterns) {
-    const match =
-      text.match(pattern);
-
-    if (match?.[1]) {
-      return cleanValue(
-        match[1]
-      );
-    }
-  }
-
-  return null;
-}
-
-function detectPurchaseDate(
-  text: string
-): string | null {
-  const patterns = [
-    /(?:order date|purchase date|purchased|ordered)\s*:?\s*([A-Za-z]{3,9}\s+\d{1,2},\s+\d{4})/i,
-    /(?:order date|purchase date|purchased|ordered)\s*:?\s*(\d{1,2}\/\d{1,2}\/\d{2,4})/i,
-    /(?:order date|purchase date|purchased|ordered)\s*:?\s*(\d{4}-\d{2}-\d{2})/i,
-  ];
-
-  for (const pattern of patterns) {
-    const match =
-      text.match(pattern);
-
-    if (match?.[1]) {
-      return normalizeDate(
-        match[1]
-      );
-    }
-  }
-
-  return null;
-}
-
-function normalizeDate(
-  value: string
-) {
-  const date = new Date(value);
-
-  if (
-    Number.isNaN(
-      date.getTime()
-    )
-  ) {
-    return value.trim();
-  }
-
-  return date
-    .toISOString()
-    .slice(0, 10);
-}
-
-function detectPurchasePrice(
-  text: string
-): number | null {
-  const patterns = [
-    /(?:item total|order total|total|price|subtotal)\s*:?\s*\$?\s*([\d,]+\.\d{2})/i,
-    /\$\s*([\d,]+\.\d{2})/,
-  ];
-
-  for (const pattern of patterns) {
-    const match =
-      text.match(pattern);
-
-    if (match?.[1]) {
-      const amount =
-        Number(
-          match[1].replace(
-            /,/g,
-            ""
-          )
-        );
-
-      if (
-        Number.isFinite(amount) &&
-        amount > 0
-      ) {
-        return amount;
-      }
-    }
-  }
-
-  return null;
-}
-
-function detectModelNumber(
-  text: string
-): string | null {
-  const match =
-    text.match(
-      /model(?:\s+number|\s+#|\s+no\.?)?\s*:?\s*([A-Z0-9][A-Z0-9._/-]{3,})/i
-    );
-
-  return match?.[1]
-    ? cleanValue(match[1])
-    : null;
-}
-
-function detectSerialNumber(
-  text: string
-): string | null {
-  const match =
-    text.match(
-      /serial(?:\s+number|\s+#|\s+no\.?)?\s*:?\s*([A-Z0-9][A-Z0-9._/-]{4,})/i
-    );
-
-  return match?.[1]
-    ? cleanValue(match[1])
-    : null;
-}
-
-function detectBrand(
-  text: string
-): string | null {
-  const brands = [
-    "Samsung",
-    "LG",
-    "Sony",
-    "Apple",
-    "Dell",
-    "HP",
-    "Lenovo",
-    "Asus",
-    "Acer",
-    "Microsoft",
-    "Google",
-    "Ring",
-    "Arlo",
-    "Nest",
-    "Netgear",
-    "TP-Link",
-    "Eero",
-    "Linksys",
-    "Whirlpool",
-    "Maytag",
-    "GE",
-    "Bosch",
-    "Frigidaire",
-    "KitchenAid",
-    "Electrolux",
-    "Dyson",
-    "Shark",
-    "Roku",
-    "TCL",
-    "Hisense",
-    "Vizio",
-  ];
-
-  for (const brand of brands) {
-    const pattern =
-      new RegExp(
-        `\\b${brand.replace(
-          /[.*+?^${}()|[\]\\]/g,
-          "\\$&"
-        )}\\b`,
-        "i"
-      );
-
-    if (pattern.test(text)) {
-      return brand;
-    }
-  }
-
-  return null;
-}
-
-function detectDeviceName(
-  text: string,
-  brand: string | null,
-  modelNumber: string | null
-): string | null {
-  const lines = text
-    .split("\n")
-    .map((line) =>
-      line.trim()
-    )
-    .filter(Boolean);
-
-  const words = [
-    "tv",
-    "oled",
-    "qled",
-    "refrigerator",
-    "fridge",
-    "washer",
-    "dryer",
-    "dishwasher",
-    "laptop",
-    "computer",
-    "router",
-    "camera",
-    "doorbell",
-    "thermostat",
-    "soundbar",
-    "vacuum",
-  ];
-
-  const match =
-    lines.find((line) => {
-      const lower =
-        line.toLowerCase();
-
-      return (
-        line.length >= 8 &&
-        line.length <= 160 &&
-        words.some((word) =>
-          lower.includes(word)
-        )
-      );
-    });
-
-  if (match) {
-    return match;
-  }
-
-  if (
-    brand &&
-    modelNumber
-  ) {
-    return `${brand} ${modelNumber}`;
-  }
-
-  return brand
-    ? `${brand} Device`
-    : null;
-}
-
-function detectCategory(
-  text: string,
-  deviceName: string | null
-): string {
-  const value =
-    `${deviceName ?? ""} ${text}`
-      .toLowerCase();
-
-  if (
-    value.includes(
-      "refrigerator"
-    ) ||
-    value.includes("fridge")
-  ) {
-    return "Refrigerator";
-  }
-
-  if (
-    value.includes("oled") ||
-    value.includes("qled") ||
-    value.includes(
-      "television"
-    ) ||
-    value.includes(" tv ")
-  ) {
-    return "TV";
-  }
-
-  if (value.includes("washer")) {
-    return "Washer";
-  }
-
-  if (value.includes("dryer")) {
-    return "Dryer";
-  }
-
-  if (
-    value.includes("dishwasher")
-  ) {
-    return "Dishwasher";
-  }
-
-  if (
-    value.includes("laptop") ||
-    value.includes("macbook")
-  ) {
-    return "Laptop";
-  }
-
-  if (value.includes("router")) {
-    return "Router";
-  }
-
-  return "Other";
-}
-
-function calculateConfidence({
-  retailer,
-  purchaseDate,
-  purchasePrice,
-  modelNumber,
-  brand,
-  deviceName,
-}: {
-  retailer: string | null;
-  purchaseDate: string | null;
-  purchasePrice: number | null;
-  modelNumber: string | null;
-  brand: string | null;
-  deviceName: string | null;
-}) {
-  let score = 0;
-
-  if (retailer) score += 0.12;
-  if (purchaseDate) score += 0.15;
-  if (purchasePrice) score += 0.15;
-  if (modelNumber) score += 0.2;
-  if (brand) score += 0.18;
-  if (deviceName) score += 0.2;
-
-  return Math.min(
-    1,
-    Number(score.toFixed(4))
-  );
-}
-
-function cleanValue(
-  value: string
-) {
-  return value
-    .trim()
-    .replace(
-      /[.,;:]+$/,
-      ""
-    );
 }
