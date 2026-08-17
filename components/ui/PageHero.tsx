@@ -2,10 +2,7 @@ import type { ReactNode } from "react";
 
 import { cn } from "@/lib/design-system/cn";
 
-import {
-  colors,
-  sections,
-} from "@/lib/design-system/tokens";
+import { sections } from "@/lib/design-system/tokens";
 
 export type PageHeroSection =
   | keyof typeof sections
@@ -20,61 +17,49 @@ type PageHeroProps = {
   className?: string;
 };
 
-function sectionTint(
-  section: PageHeroSection
-) {
-  if (section === "neutral") {
-    return {
-      accent: colors.charcoalSoft,
-      soft: colors.surfaceSunken,
-    };
-  }
-
-  return sections[section];
-}
-
 export default function PageHero({
-  section = "neutral",
+  section: _section = "neutral",
   eyebrow,
   title,
   description,
   children,
   className,
 }: PageHeroProps) {
-  const tint = sectionTint(section);
-
   return (
     <section
       className={cn(
-        "overflow-hidden rounded-[var(--radius-card)] border border-border-subtle bg-surface-card p-8 shadow-[var(--shadow-sm)] md:p-10",
+        "relative overflow-hidden rounded-[28px] border border-[#182533]/10 bg-[#f8f5ef] p-7 shadow-[0_24px_65px_-45px_rgba(15,25,35,0.4)] md:p-10",
         className
       )}
     >
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+      <div className="pointer-events-none absolute -right-24 -top-24 h-56 w-56 rounded-full bg-[#718d4f]/7 blur-3xl" />
+
+      <div className="relative flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
         <div className="max-w-3xl">
           {eyebrow ? (
-            <p
-              className="text-overline"
-              style={{ color: tint.accent }}
-            >
-              {eyebrow}
-            </p>
+            <div className="flex items-center gap-3">
+              <span className="h-px w-7 bg-[#617c43]" />
+
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#617c43]">
+                {eyebrow}
+              </p>
+            </div>
           ) : null}
 
           <h1
             className={cn(
-              "text-page-title text-text-primary",
-              eyebrow && "mt-3"
+              "font-serif text-3xl font-medium leading-[1.05] tracking-[-0.04em] text-[#101a22] md:text-4xl lg:text-[2.75rem]",
+              eyebrow && "mt-4"
             )}
           >
             {title}
           </h1>
 
-          {description && (
-            <p className="mt-4 max-w-2xl text-base leading-7 text-text-muted">
+          {description ? (
+            <p className="mt-4 max-w-2xl text-base leading-7 text-[#67727a]">
               {description}
             </p>
-          )}
+          ) : null}
         </div>
 
         {children ? (

@@ -160,16 +160,16 @@ const canManageConnector =
       ) : null}
 
       {(isDemo || !user) && !loading ? (
-        <PageCard className="border-warning/30 bg-warning-soft/60 p-4 md:p-5">
+        <PageCard className="border-[#b58a42]/20 bg-[#b58a42]/10 p-4 md:p-5">
           <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-button)] border border-charcoal/15 bg-charcoal text-surface-card">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#617c43]/20 bg-[#617c43] text-white">
               <Wifi size={18} />
             </div>
             <div>
-              <p className="text-sm font-semibold text-text-primary">
+              <p className="text-sm font-semibold text-[#17212a]">
                 Demo Mode
               </p>
-              <p className="mt-1 text-sm leading-6 text-text-secondary">
+              <p className="mt-1 text-sm leading-6 text-[#68737b]">
                 You are exploring simulated connector and discovery data. No
                 real network is being scanned.
               </p>
@@ -179,17 +179,17 @@ const canManageConnector =
       ) : null}
 
       {data.error ? (
-        <PageCard className="border-danger/30 bg-danger-soft/70 p-5 md:p-6">
+        <PageCard className="border-[#a6584e]/20 bg-[#a6584e]/10 p-5 md:p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-button)] bg-danger-soft text-danger">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#a6584e]/10 text-[#984e46]">
                 <CircleAlert size={18} />
               </div>
               <div>
-                <p className="font-semibold text-text-primary">
+                <p className="font-semibold text-[#17212a]">
                   Unable to load network
                 </p>
-                <p className="mt-1 text-sm leading-6 text-text-secondary">
+                <p className="mt-1 text-sm leading-6 text-[#68737b]">
                   Network information is temporarily unavailable. Please try
                   again.
                 </p>

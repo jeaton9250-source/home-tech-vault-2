@@ -953,7 +953,7 @@ export default function DevicesPage() {
             Create Your Vault
           </Button>
         ) : showViewerAccess ? (
-          <div className="rounded-[var(--radius-button)] border border-border-subtle bg-surface-card/80 px-4 py-3 text-sm font-medium text-text-secondary shadow-[var(--shadow-sm)]">
+          <div className="rounded-xl border border-[#182533]/10 bg-[#f8f5ef] px-4 py-3 text-sm font-medium text-[#68737b] shadow-sm">
             Viewer Access · Read Only
           </div>
         ) : null}
@@ -1000,13 +1000,13 @@ export default function DevicesPage() {
 
       {!loading &&
         devices.length > 0 && (
-          <PageCard className="p-5 md:p-6">
+          <PageCard className="border-[#182533]/10 bg-[#f8f5ef] p-5 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] md:p-6">
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-3 md:flex-row md:items-center">
                 <div className="relative flex-1">
                   <Search
                     size={19}
-                    className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-text-tertiary"
+                    className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#8a949b]"
                   />
 
                   <input
@@ -1018,7 +1018,7 @@ export default function DevicesPage() {
                       )
                     }
                     placeholder="Search your devices..."
-                    className="w-full rounded-2xl border border-border-subtle bg-surface-sunken py-3.5 pl-11 pr-11 text-sm text-text-primary outline-none transition placeholder:text-text-tertiary htv-focus-ring focus:border-interaction focus:bg-surface-card focus:ring-4 focus:ring-interaction/15"
+                    className="w-full rounded-xl border border-[#182533]/10 bg-[#eee9df]/60 py-3.5 pl-11 pr-11 text-sm text-[#17212a] outline-none transition placeholder:text-[#8a949b] focus:border-[#617c43]/40 focus:bg-[#f8f5ef] focus:ring-4 focus:ring-[#617c43]/10"
                   />
 
                   {searchTerm && (
@@ -1028,7 +1028,7 @@ export default function DevicesPage() {
                         setSearchTerm("")
                       }
                       aria-label="Clear search"
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-text-tertiary transition hover:text-text-primary"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8a949b] transition hover:text-[#17212a]"
                     >
                       <X size={18} />
                     </button>
@@ -1043,7 +1043,7 @@ export default function DevicesPage() {
                         !current
                     )
                   }
-                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-border-subtle bg-white px-5 text-sm font-semibold text-text-primary transition hover:border-border-strong"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-[#182533]/10 bg-[#f8f5ef] px-5 text-sm font-semibold text-[#17212a] transition hover:border-[#617c43]/25 hover:bg-[#f2eee6]"
                 >
                   <SlidersHorizontal
                     size={17}
@@ -1052,7 +1052,7 @@ export default function DevicesPage() {
                   Filters
 
                   {filtersActive && (
-                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-charcoal px-1.5 text-[10px] text-white">
+                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#617c43] px-1.5 text-[10px] text-white">
                       {
                         [
                           selectedCategory !==
@@ -1098,8 +1098,8 @@ export default function DevicesPage() {
                         className={
                           "shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition " +
                           (active
-                            ? "bg-charcoal text-surface-card"
-                            : "border border-border-subtle bg-white text-text-secondary hover:border-interaction hover:text-text-primary")
+                            ? "bg-[#617c43] text-white shadow-sm"
+                            : "border border-[#182533]/10 bg-[#f8f5ef] text-[#68737b] hover:border-[#617c43]/30 hover:text-[#17212a]")
                         }
                       >
                         {category}
@@ -1110,9 +1110,9 @@ export default function DevicesPage() {
               </div>
 
               {showFilters && (
-                <div className="grid gap-3 border-t border-border-subtle pt-5 sm:grid-cols-2">
+                <div className="grid gap-3 border-t border-[#182533]/10 pt-5 sm:grid-cols-2">
                   <label className="block">
-                    <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-text-secondary">
+                    <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.16em] text-[#617c43]">
                       Location
                     </span>
 
@@ -1125,7 +1125,7 @@ export default function DevicesPage() {
                           event.target.value
                         )
                       }
-                      className="w-full rounded-2xl border border-border-subtle bg-white px-4 py-3 text-sm outline-none transition focus:border-interaction"
+                      className="w-full rounded-xl border border-[#182533]/10 bg-[#f8f5ef] px-4 py-3 text-sm text-[#17212a] outline-none transition focus:border-[#617c43]/40"
                     >
                       {locations.map(
                         (location) => (
@@ -1144,7 +1144,7 @@ export default function DevicesPage() {
                   </label>
 
                   <label className="block">
-                    <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-text-secondary">
+                    <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.16em] text-[#617c43]">
                       Sort By
                     </span>
 
@@ -1156,7 +1156,7 @@ export default function DevicesPage() {
                             .value as SortOption
                         )
                       }
-                      className="w-full rounded-2xl border border-border-subtle bg-white px-4 py-3 text-sm outline-none transition focus:border-interaction"
+                      className="w-full rounded-xl border border-[#182533]/10 bg-[#f8f5ef] px-4 py-3 text-sm text-[#17212a] outline-none transition focus:border-[#617c43]/40"
                     >
                       <option value="name">
                         Device Name
@@ -1178,8 +1178,8 @@ export default function DevicesPage() {
                 </div>
               )}
 
-              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border-subtle pt-4">
-                <p className="text-sm text-text-secondary">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#182533]/10 pt-4">
+                <p className="text-sm text-[#68737b]">
                   {filteredDevices.length}{" "}
                   {filteredDevices.length ===
                   1
@@ -1191,7 +1191,7 @@ export default function DevicesPage() {
                   <button
                     type="button"
                     onClick={clearFilters}
-                    className="inline-flex items-center gap-2 text-sm font-semibold text-text-primary transition hover:text-achievement"
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-[#617c43] transition hover:text-[#718d4f]"
                   >
                     <X size={15} />
                     Clear filters
@@ -1204,7 +1204,7 @@ export default function DevicesPage() {
 
       {loading ? (
         <PageCard className="flex min-h-72 items-center justify-center">
-          <div className="flex items-center gap-3 text-text-secondary">
+          <div className="flex items-center gap-3 text-[#68737b]">
             <Loader2
               className="animate-spin"
               size={22}
@@ -1281,7 +1281,7 @@ export default function DevicesPage() {
               Create your vault
             </Button>
           ) : showViewerAccess ? (
-            <div className="mx-auto mt-6 max-w-md rounded-[var(--radius-button)] bg-surface-sunken px-5 py-4 text-sm text-text-secondary">
+            <div className="mx-auto mt-6 max-w-md rounded-xl border border-[#182533]/10 bg-[#eee9df]/60 px-5 py-4 text-sm text-[#68737b]">
               You have viewer access. You can view
               shared devices, but you cannot add or
               change them.
@@ -1294,20 +1294,20 @@ export default function DevicesPage() {
         !loading &&
         canCreate &&
         quota.limits.maxDevices !== null && (
-          <PageCard className="p-5 md:p-6">
+          <PageCard className="border-[#182533]/10 bg-[#f8f5ef] p-5 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] md:p-6">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-overline text-section-technology">
+                <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-[#617c43]">
                   Household Allowance
                 </p>
 
-                <p className="mt-2 text-lg font-semibold text-text-primary">
+                <p className="mt-2 font-serif text-xl font-medium text-[#17212a]">
                   {deviceCount} of{" "}
                   {quota.limits.maxDevices} devices
                   used
                 </p>
 
-                <p className="mt-1 text-sm text-text-secondary">
+                <p className="mt-1 text-sm text-[#68737b]">
                   {quota.canUseProFeatures
                     ? "This household is on a Pro plan."
                     : "Upgrade the household for unlimited device tracking."}
@@ -1326,9 +1326,9 @@ export default function DevicesPage() {
                 )}
             </div>
 
-            <div className="mt-5 h-2 overflow-hidden rounded-full bg-border-subtle">
+            <div className="mt-5 h-2 overflow-hidden rounded-full bg-[#182533]/8">
               <div
-                className="h-full rounded-full bg-home-health transition-all"
+                className="h-full rounded-full bg-[#617c43] transition-all"
                 style={{
                   width:
                     String(
@@ -1366,7 +1366,7 @@ function ModernDeviceCard({
         "/devices/" +
         device.id
       }
-      className="group overflow-hidden rounded-[var(--radius-card)] border border-border-subtle bg-surface-card shadow-[var(--shadow-sm)] transition duration-300 hover:-translate-y-1 hover:border-warning/40 hover:shadow-[var(--shadow-md)]"
+      className="group overflow-hidden rounded-[26px] border border-[#182533]/10 bg-[#f8f5ef] shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] transition duration-300 hover:-translate-y-1 hover:border-[#617c43]/25 hover:shadow-[0_26px_60px_-38px_rgba(15,25,35,0.55)]"
     >
       <div className="relative">
         <DeviceImageDisplay
@@ -1376,7 +1376,7 @@ function ModernDeviceCard({
         />
 
         {device.category && (
-          <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1.5 text-xs font-semibold text-text-primary shadow-sm backdrop-blur">
+          <span className="absolute left-4 top-4 rounded-full border border-white/20 bg-[#0b1623]/85 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#f4f0e8] shadow-sm backdrop-blur">
             {device.category}
           </span>
         )}
@@ -1385,12 +1385,12 @@ function ModernDeviceCard({
       <div className="p-5">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <h2 className="truncate text-xl font-semibold tracking-[-0.03em] text-text-primary">
+            <h2 className="truncate font-serif text-xl font-medium tracking-[-0.03em] text-[#17212a]">
               {device.device_name ||
                 "Unnamed Device"}
             </h2>
 
-            <p className="mt-1 truncate text-sm text-text-secondary">
+            <p className="mt-1 truncate text-sm text-[#68737b]">
               {[
                 device.brand,
                 device.model_number,
@@ -1400,7 +1400,7 @@ function ModernDeviceCard({
                 "Device details"}
             </p>
 
-            <p className="mt-2 text-sm text-text-secondary">
+            <p className="mt-2 text-sm text-[#68737b]">
               {isDemo
                 ? formatDemoDevicePresenceListLine({
                     online: device.online,
@@ -1417,14 +1417,14 @@ function ModernDeviceCard({
             </p>
           </div>
 
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border-subtle bg-surface-sunken text-text-tertiary shadow-[var(--shadow-inset)] transition group-hover:bg-charcoal group-hover:text-surface-card">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#182533]/10 bg-[#eee9df]/65 text-[#7b858c] transition group-hover:border-[#617c43]/20 group-hover:bg-[#617c43] group-hover:text-white">
             <ArrowRight size={17} />
           </div>
         </div>
 
         <div className="mt-5 flex flex-wrap gap-2">
           {device.location && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-sunken px-3 py-1.5 text-xs font-medium text-text-secondary">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#182533]/8 bg-[#eee9df]/65 px-3 py-1.5 text-xs font-medium text-[#68737b]">
               <MapPin size={13} />
               {device.location}
             </span>
@@ -1441,13 +1441,13 @@ function ModernDeviceCard({
           </span>
         </div>
 
-        <div className="mt-5 flex items-end justify-between border-t border-[#EEE9DF] pt-4">
+        <div className="mt-5 flex items-end justify-between border-t border-[#182533]/8 pt-4">
           <div>
-            <p className="text-xs text-text-tertiary">
+            <p className="text-[10px] uppercase tracking-[0.08em] text-[#8a949b]">
               Purchase Value
             </p>
 
-            <p className="mt-1 font-semibold text-text-primary">
+            <p className="mt-1 font-serif font-medium text-[#17212a]">
               {device.purchase_price
                 ? formatCurrency(
                     Number(
@@ -1458,7 +1458,7 @@ function ModernDeviceCard({
             </p>
           </div>
 
-          <span className="text-sm font-semibold text-achievement">
+          <span className="text-sm font-semibold text-[#617c43]">
             View device
           </span>
         </div>
@@ -1477,19 +1477,19 @@ function SummaryCard({
   icon: typeof Laptop;
 }) {
   return (
-    <PageCard className="p-5 md:p-6">
+    <PageCard className="border-[#182533]/10 bg-[#f8f5ef] p-5 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] md:p-6">
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-sm text-text-secondary">
+          <p className="text-sm text-[#68737b]">
             {label}
           </p>
 
-          <p className="mt-2 truncate text-2xl font-semibold tracking-[-0.03em] text-text-primary md:text-3xl">
+          <p className="mt-2 truncate font-serif text-2xl font-medium tracking-[-0.03em] text-[#17212a] md:text-3xl">
             {value}
           </p>
         </div>
 
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#617c43]/15 bg-[#617c43]/10 text-[#617c43]">
           <Icon size={20} />
         </div>
       </div>
@@ -1530,7 +1530,7 @@ function getWarrantyStatus(
     return {
       label: "No warranty",
       className:
-        "bg-surface-sunken text-text-secondary",
+        "border border-[#182533]/8 bg-[#182533]/5 text-[#68737b]",
     };
   }
 
@@ -1546,7 +1546,7 @@ function getWarrantyStatus(
     return {
       label: "Warranty unknown",
       className:
-        "bg-surface-sunken text-text-secondary",
+        "border border-[#182533]/8 bg-[#182533]/5 text-[#68737b]",
     };
   }
 
@@ -1560,7 +1560,7 @@ function getWarrantyStatus(
     return {
       label: "Warranty expired",
       className:
-        "bg-danger-soft text-danger",
+        "border border-[#a6584e]/15 bg-[#a6584e]/10 text-[#984e46]",
     };
   }
 
@@ -1570,14 +1570,14 @@ function getWarrantyStatus(
         String(daysRemaining) +
         " days left",
       className:
-        "bg-warning-soft text-warning",
+        "border border-[#b58a42]/15 bg-[#b58a42]/10 text-[#916c31]",
     };
   }
 
   return {
     label: "Warranty active",
     className:
-      "bg-home-health-soft text-home-health",
+      "border border-[#617c43]/15 bg-[#617c43]/10 text-[#526b39]",
   };
 }
 

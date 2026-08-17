@@ -456,13 +456,13 @@ export default function ImportsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-surface-base px-5 py-10 md:px-8 lg:px-12">
-      <div className="mx-auto max-w-5xl">
+    <main className="min-h-screen bg-[#eee9df] px-5 py-8 text-[#17212a] md:px-8 md:py-10 lg:px-12">
+      <div className="mx-auto max-w-[1180px]">
         {/* HEADER */}
 
-        <div className="flex flex-col gap-6 border-b border-border-subtle pb-8 sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex flex-col gap-6 border-b border-[#182533]/10 pb-8 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-home-health/15 bg-home-health-soft px-3 py-1.5 text-xs font-semibold text-home-health">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#617c43]/20 bg-[#617c43]/10 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#617c43]">
               <Sparkles
                 size={14}
                 aria-hidden
@@ -471,12 +471,12 @@ export default function ImportsPage() {
               Smart Import
             </div>
 
-            <h1 className="mt-4 text-3xl font-semibold tracking-[-0.035em] text-text-primary sm:text-4xl">
+            <h1 className="mt-4 max-w-2xl font-serif text-4xl font-medium leading-[1.03] tracking-[-0.045em] text-[#101a22] sm:text-5xl">
               Forward it. We&apos;ll
               do the typing.
             </h1>
 
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-text-secondary sm:text-base">
+            <p className="mt-4 max-w-2xl text-sm leading-7 text-[#68737b] sm:text-base">
               Send your receipts and
               order confirmations to
               your personal Home Tech
@@ -489,7 +489,7 @@ export default function ImportsPage() {
 
           <Link
             href="/devices"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-text-secondary transition hover:text-text-primary"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-[#617c43] transition hover:text-[#718d4f]"
           >
             My devices
 
@@ -502,11 +502,11 @@ export default function ImportsPage() {
 
         {/* PERSONAL IMPORT EMAIL */}
 
-        <section className="mt-8 overflow-hidden rounded-[28px] border border-home-health/20 bg-surface-card shadow-sm">
+        <section className="relative mt-8 overflow-hidden rounded-[30px] border border-white/10 bg-[#0b1623] text-[#f4f0e8] shadow-[0_30px_70px_-44px_rgba(0,0,0,0.7)]">
           <div className="p-5 sm:p-7">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex min-w-0 items-start gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-home-health-soft text-home-health">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-[#617c43]/15 bg-[#617c43]/10 text-[#617c43]">
                   <Mail
                     size={22}
                     aria-hidden
@@ -514,13 +514,13 @@ export default function ImportsPage() {
                 </div>
 
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-home-health">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#617c43]">
                     Your Smart Import
                     Email
                   </p>
 
                   {importEmailLoading ? (
-                    <div className="mt-2 flex items-center gap-2 text-sm text-text-muted">
+                    <div className="mt-2 flex items-center gap-2 text-sm text-white/45">
                       <Loader2
                         size={15}
                         className="animate-spin"
@@ -531,11 +531,11 @@ export default function ImportsPage() {
                       personal address...
                     </div>
                   ) : importEmail ? (
-                    <p className="mt-1 break-all text-lg font-semibold tracking-tight text-text-primary sm:text-xl">
+                    <p className="mt-2 break-all font-serif text-lg font-medium tracking-[-0.02em] text-[#f4f0e8] sm:text-xl">
                       {importEmail}
                     </p>
                   ) : (
-                    <p className="mt-2 text-sm text-text-muted">
+                    <p className="mt-2 text-sm text-white/45">
                       Your Smart Import
                       address is currently
                       unavailable.
@@ -550,7 +550,7 @@ export default function ImportsPage() {
                   onClick={
                     copyImportEmail
                   }
-                  className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-border-subtle bg-surface-base px-4 text-sm font-semibold text-text-secondary transition hover:border-home-health/30 hover:text-home-health"
+                  className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.05] px-4 text-sm font-semibold text-[#dce2e5] transition hover:border-[#718d4f]/30 hover:bg-white/[0.08] hover:text-white"
                 >
                   {copied ? (
                     <>
@@ -575,7 +575,7 @@ export default function ImportsPage() {
               )}
             </div>
 
-            <div className="mt-6 grid gap-3 border-t border-border-subtle pt-5 sm:grid-cols-3">
+            <div className="mt-6 grid gap-4 border-t border-white/10 pt-5 sm:grid-cols-3">
               <ImportStep
                 number="1"
                 title="Forward"
@@ -595,9 +595,9 @@ export default function ImportsPage() {
               />
             </div>
 
-            <div className="mt-5 rounded-2xl bg-home-health-soft/40 px-4 py-3">
-              <p className="text-xs leading-5 text-text-secondary">
-                <span className="font-semibold text-text-primary">
+            <div className="mt-5 rounded-2xl border border-[#718d4f]/15 bg-[#718d4f]/8 px-4 py-3">
+              <p className="text-xs leading-5 text-[#aeb8c1]">
+                <span className="font-semibold text-[#f4f0e8]">
                   Tip:
                 </span>{" "}
                 Save this address as
@@ -613,7 +613,7 @@ export default function ImportsPage() {
         </section>
 
         {error && (
-          <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <div className="mt-6 rounded-2xl border border-[#a6584e]/20 bg-[#a6584e]/10 px-4 py-3 text-sm text-[#984e46]">
             {error}
           </div>
         )}
@@ -624,11 +624,11 @@ export default function ImportsPage() {
           imports.length > 0 && (
             <div className="mt-10">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-home-health">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#617c43]">
                   Ready for review
                 </p>
 
-                <h2 className="mt-1 text-2xl font-semibold tracking-tight text-text-primary">
+                <h2 className="mt-2 font-serif text-3xl font-medium tracking-[-0.035em] text-[#17212a]">
                   We found{" "}
                   {imports.length === 1
                     ? "something"
@@ -636,7 +636,7 @@ export default function ImportsPage() {
                   for your vault.
                 </h2>
 
-                <p className="mt-2 text-sm leading-6 text-text-secondary">
+                <p className="mt-2 text-sm leading-6 text-[#68737b]">
                   Check the details below.
                   You can edit anything
                   before adding it.
@@ -652,10 +652,10 @@ export default function ImportsPage() {
             <div className="text-center">
               <Loader2
                 size={28}
-                className="mx-auto animate-spin text-home-health"
+                className="mx-auto animate-spin text-[#617c43]"
               />
 
-              <p className="mt-3 text-sm text-text-muted">
+              <p className="mt-3 text-sm text-[#7c878e]">
                 Checking your
                 imports...
               </p>
@@ -735,16 +735,16 @@ function ImportStep({
 }) {
   return (
     <div className="flex items-start gap-3">
-      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-home-health text-xs font-bold text-white">
+      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#617c43] text-xs font-bold text-white">
         {number}
       </div>
 
       <div>
-        <p className="text-xs font-semibold text-text-primary">
+        <p className="text-xs font-semibold text-[#f4f0e8]">
           {title}
         </p>
 
-        <p className="mt-0.5 text-[11px] leading-5 text-text-muted">
+        <p className="mt-0.5 text-[11px] leading-5 text-white/40">
           {text}
         </p>
       </div>
@@ -787,10 +787,10 @@ function ImportCard({
       : null;
 
   return (
-    <article className="overflow-hidden rounded-[28px] border border-border-subtle bg-surface-card shadow-sm">
-      <div className="flex flex-col gap-5 border-b border-border-subtle bg-home-health-soft/15 p-5 sm:flex-row sm:items-start sm:justify-between sm:p-7">
+    <article className="overflow-hidden rounded-[28px] border border-[#182533]/10 bg-[#f8f5ef] shadow-[0_24px_55px_-42px_rgba(15,25,35,0.5)]">
+      <div className="flex flex-col gap-5 border-b border-[#182533]/8 bg-[#eee9df]/55 p-5 sm:flex-row sm:items-start sm:justify-between sm:p-7">
         <div className="flex gap-4">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-home-health-soft text-home-health">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-[#617c43]/15 bg-[#617c43]/10 text-[#617c43]">
             <PackageCheck
               size={22}
               aria-hidden
@@ -798,16 +798,16 @@ function ImportCard({
           </div>
 
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-home-health">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#617c43]">
               We found something
             </p>
 
-            <h2 className="mt-1 text-xl font-semibold tracking-tight text-text-primary">
+            <h2 className="mt-2 font-serif text-2xl font-medium tracking-[-0.03em] text-[#17212a]">
               {draft.device_name ||
                 "Unnamed device"}
             </h2>
 
-            <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-text-muted">
+            <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-[#7a858d]">
               {item.retailer && (
                 <span>
                   {item.retailer}
@@ -825,7 +825,7 @@ function ImportCard({
         </div>
 
         {confidence !== null && (
-          <div className="rounded-full border border-border-subtle bg-surface-card px-3 py-1.5 text-xs font-semibold text-text-muted">
+          <div className="rounded-full border border-[#617c43]/15 bg-[#617c43]/10 px-3 py-1.5 text-xs font-semibold text-[#617c43]">
             {confidence}% match
           </div>
         )}
@@ -964,7 +964,7 @@ function ImportCard({
           />
         </div>
 
-        <div className="mt-7 rounded-2xl border border-border-subtle bg-surface-sunken/40 p-4">
+        <div className="mt-7 rounded-2xl border border-[#182533]/8 bg-[#eee9df]/55 p-4">
           <div className="grid gap-4 sm:grid-cols-3">
             <MiniBenefit
               icon={Receipt}
@@ -986,15 +986,15 @@ function ImportCard({
           </div>
         </div>
 
-        <div className="mt-7 flex flex-col gap-5 border-t border-border-subtle pt-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-7 flex flex-col gap-5 border-t border-[#182533]/8 pt-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-2">
             <MapPin
               size={16}
-              className="mt-0.5 shrink-0 text-text-muted"
+              className="mt-0.5 shrink-0 text-[#7a858d]"
               aria-hidden
             />
 
-            <p className="max-w-md text-xs leading-5 text-text-muted">
+            <p className="max-w-md text-xs leading-5 text-[#7a858d]">
               Review anything that
               looks wrong. Nothing is
               added to your vault until
@@ -1007,7 +1007,7 @@ function ImportCard({
               type="button"
               disabled={busy}
               onClick={onReject}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-border-subtle bg-surface-card px-5 text-sm font-semibold text-text-secondary transition hover:border-red-200 hover:bg-red-50 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[#182533]/10 bg-transparent px-5 text-sm font-semibold text-[#68737b] transition hover:border-[#a6584e]/20 hover:bg-[#a6584e]/8 hover:text-[#984e46] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {rejecting ? (
                 <>
@@ -1036,7 +1036,7 @@ function ImportCard({
               type="button"
               disabled={busy}
               onClick={onApprove}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-home-health px-5 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[#718d4f]/30 bg-[#617c43] px-5 text-sm font-semibold text-white shadow-[0_12px_28px_-18px_rgba(97,124,67,0.85)] transition hover:bg-[#718d4f] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {approving ? (
                 <>
@@ -1084,7 +1084,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-xs font-semibold text-text-secondary">
+      <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.08em] text-[#66727a]">
         {label}
       </span>
 
@@ -1102,7 +1102,7 @@ function Field({
             event.target.value
           )
         }
-        className="h-11 w-full rounded-xl border border-border-subtle bg-surface-base px-3.5 text-sm text-text-primary outline-none transition placeholder:text-text-muted focus:border-home-health/50 focus:ring-2 focus:ring-home-health/10"
+        className="h-11 w-full rounded-xl border border-[#182533]/10 bg-[#eee9df]/45 px-3.5 text-sm text-[#17212a] outline-none transition placeholder:text-[#929ba1] focus:border-[#617c43]/40 focus:bg-[#f8f5ef] focus:ring-4 focus:ring-[#617c43]/10"
       />
     </label>
   );
@@ -1119,7 +1119,7 @@ function MiniBenefit({
 }) {
   return (
     <div className="flex items-start gap-3">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-home-health-soft text-home-health">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#617c43]/10 text-[#617c43]">
         <Icon
           size={15}
           aria-hidden
@@ -1127,11 +1127,11 @@ function MiniBenefit({
       </div>
 
       <div>
-        <p className="text-xs font-semibold text-text-primary">
+        <p className="text-xs font-semibold text-[#f4f0e8]">
           {title}
         </p>
 
-        <p className="mt-0.5 text-[11px] text-text-muted">
+        <p className="mt-0.5 text-[11px] text-[#7a858d]">
           {text}
         </p>
       </div>
@@ -1142,18 +1142,18 @@ function MiniBenefit({
 function EmptyState() {
   return (
     <div className="mx-auto flex min-h-[320px] max-w-xl flex-col items-center justify-center text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-home-health-soft text-home-health">
+      <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-[#617c43]/15 bg-[#617c43]/10 text-[#617c43]">
         <Inbox
           size={25}
           aria-hidden
         />
       </div>
 
-      <h2 className="mt-5 text-xl font-semibold tracking-tight text-text-primary">
+      <h2 className="mt-5 font-serif text-2xl font-medium tracking-[-0.03em] text-[#17212a]">
         Nothing to review right now.
       </h2>
 
-      <p className="mt-2 max-w-md text-sm leading-6 text-text-secondary">
+      <p className="mt-2 max-w-md text-sm leading-6 text-[#68737b]">
         Forward your next receipt or
         order confirmation to your
         Smart Import email above.
@@ -1163,7 +1163,7 @@ function EmptyState() {
 
       <Link
         href="/devices"
-        className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-home-health"
+        className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#617c43] transition hover:text-[#718d4f]"
       >
         Go to my devices
 

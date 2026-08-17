@@ -133,13 +133,13 @@ export default function NetworkConnectorTab({
 
   if (!householdId) {
     return (
-      <PageCard className="p-7 md:p-8">
-        <h2 className="text-xl font-semibold text-text-primary">
+      <PageCard className="border-[#182533]/10 bg-[#f8f5ef] p-7 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] md:p-8">
+        <h2 className="text-xl font-semibold text-[#17212a]">
           Join a household to pair a
           connector
         </h2>
 
-        <p className="mt-3 text-sm leading-7 text-text-secondary">
+        <p className="mt-3 text-sm leading-7 text-[#68737b]">
           Connectors are linked to a
           household vault. Create or join a
           household from Family before
@@ -157,16 +157,16 @@ export default function NetworkConnectorTab({
 
   if (!data.monitoringEnabled) {
     return (
-      <PageCard className="p-7 md:p-8">
-        <p className="text-overline text-section-network">
+      <PageCard className="border-[#182533]/10 bg-[#f8f5ef] p-7 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] md:p-8">
+        <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-[#617c43]">
           Home Tech Vault Connector
         </p>
 
-        <h2 className="mt-2 text-2xl font-semibold text-text-primary">
+        <h2 className="mt-2 text-2xl font-semibold text-[#17212a]">
           Upgrade to use the connector
         </h2>
 
-        <p className="mt-3 max-w-2xl text-sm leading-7 text-text-secondary">
+        <p className="mt-3 max-w-2xl text-sm leading-7 text-[#68737b]">
           Home network discovery, Home
           Assistant syncing, and automatic
           monitoring are available with Home
@@ -185,16 +185,16 @@ export default function NetworkConnectorTab({
   ) {
     return (
       <>
-        <PageCard className="p-7 md:p-8">
-          <p className="text-overline text-section-network">
+        <PageCard className="border-[#182533]/10 bg-[#f8f5ef] p-7 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] md:p-8">
+          <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-[#617c43]">
             Home Tech Vault Connector
           </p>
 
-          <h2 className="mt-2 text-2xl font-semibold text-text-primary">
+          <h2 className="mt-2 text-2xl font-semibold text-[#17212a]">
             Connect your home network
           </h2>
 
-          <p className="mt-3 max-w-2xl text-sm leading-7 text-text-secondary">
+          <p className="mt-3 max-w-2xl text-sm leading-7 text-[#68737b]">
             Install the connector on a
             computer that stays on your home
             network to discover devices,
@@ -203,7 +203,7 @@ export default function NetworkConnectorTab({
             date.
           </p>
 
-          <ul className="mt-5 space-y-2 text-sm text-text-secondary">
+          <ul className="mt-5 space-y-2 text-sm text-[#68737b]">
             <li>
               Manual network scanning
             </li>
@@ -264,13 +264,13 @@ export default function NetworkConnectorTab({
               </div>
             </div>
           ) : (
-            <div className="mt-6 rounded-[20px] border border-border-subtle bg-surface-sunken p-4">
-              <p className="text-sm font-semibold text-text-primary">
+            <div className="mt-6 rounded-[20px] border border-[#182533]/8 bg-[#eee9df]/55 p-4">
+              <p className="text-sm font-semibold text-[#17212a]">
                 Administrator access
                 required
               </p>
 
-              <p className="mt-1 text-sm leading-6 text-text-secondary">
+              <p className="mt-1 text-sm leading-6 text-[#68737b]">
                 A household owner or
                 administrator must install
                 and pair the connector.
@@ -296,24 +296,24 @@ export default function NetworkConnectorTab({
   return (
     <>
       <div className="space-y-6">
-        <PageCard className="p-6 md:p-7">
+        <PageCard className="border-[#182533]/10 bg-[#f8f5ef] p-6 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] md:p-7">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <div className="flex flex-wrap items-center gap-3">
-                <p className="text-overline text-section-network">
+                <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-[#617c43]">
                   Smart Home Integration
                 </p>
 
-                <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                <span className="rounded-full border border-[#617c43]/15 bg-[#617c43]/10 px-3 py-1 text-xs font-semibold text-[#526b39]">
                   Connected
                 </span>
               </div>
 
-              <h2 className="mt-2 text-xl font-semibold text-text-primary">
+              <h2 className="mt-2 text-xl font-semibold text-[#17212a]">
                 Home Assistant
               </h2>
 
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-text-secondary">
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-[#68737b]">
                 Your Home Assistant devices are synced with this household.
                 Open the device list only when you need to review status or
                 control supported devices.
@@ -330,7 +330,7 @@ export default function NetworkConnectorTab({
                   (current) => !current
                 );
               }}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-border-subtle bg-surface-primary px-4 py-2.5 text-sm font-semibold text-text-primary transition hover:bg-surface-sunken disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-border-subtle bg-surface-primary px-4 py-2.5 text-sm font-semibold text-[#17212a] transition hover:bg-surface-sunken disabled:cursor-not-allowed disabled:opacity-50"
               aria-expanded={
                 showSmartHomeDevices
               }
@@ -491,12 +491,12 @@ function SmartHomeSummaryItem({
   value: string;
 }) {
   return (
-    <div className="rounded-2xl border border-border-subtle bg-surface-sunken px-4 py-4">
-      <p className="text-xs font-medium uppercase tracking-[0.12em] text-text-tertiary">
+    <div className="rounded-2xl border border-[#182533]/8 bg-[#eee9df]/55 px-4 py-4">
+      <p className="text-xs font-medium uppercase tracking-[0.12em] text-[#8a949b]">
         {label}
       </p>
 
-      <p className="mt-2 text-2xl font-semibold text-text-primary">
+      <p className="mt-2 text-2xl font-semibold text-[#17212a]">
         {value}
       </p>
     </div>
@@ -535,9 +535,9 @@ function ConnectorInstallationCard({
   onOpenReleaseNotes: () => void;
 }) {
   return (
-    <PageCard className="p-7 md:p-8">
+    <PageCard className="border-[#182533]/10 bg-[#f8f5ef] p-7 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] md:p-8">
       <div className="flex flex-wrap items-center gap-3">
-        <p className="text-overline text-section-network">
+        <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-[#617c43]">
           Connector
         </p>
 
@@ -546,11 +546,11 @@ function ConnectorInstallationCard({
         />
       </div>
 
-      <h2 className="mt-2 text-2xl font-semibold text-text-primary">
+      <h2 className="mt-2 text-2xl font-semibold text-[#17212a]">
         {connector.name}
       </h2>
 
-      <p className="mt-1 text-sm text-text-secondary">
+      <p className="mt-1 text-sm text-[#68737b]">
         {formatPlatformLabel(
           connector.platform
         )}{" "}
@@ -614,7 +614,7 @@ function ConnectorInstallationCard({
       </div>
 
       {updateMessage ? (
-        <p className="mt-4 rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        <p className="mt-4 rounded-2xl border border-[#b58a42]/20 bg-[#b58a42]/10 px-4 py-3 text-sm text-[#916c31]">
           {updateMessage}
         </p>
       ) : null}
@@ -670,7 +670,7 @@ function ConnectorInstallationCard({
 
             <Link
               href="/network/diagnostics"
-              className="inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-text-secondary transition hover:bg-surface-sunken hover:text-text-primary"
+              className="inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-[#68737b] transition hover:bg-surface-sunken hover:text-[#17212a]"
             >
               <FileText size={16} />
               Diagnostics
@@ -681,7 +681,7 @@ function ConnectorInstallationCard({
         <div className="mt-6">
           <Link
             href="/network/diagnostics"
-            className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-text-secondary transition hover:bg-surface-sunken hover:text-text-primary"
+            className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-[#68737b] transition hover:bg-surface-sunken hover:text-[#17212a]"
           >
             <FileText size={16} />
             Diagnostics
@@ -690,10 +690,10 @@ function ConnectorInstallationCard({
       )}
 
       {canManage ? (
-        <div className="mt-6 border-t border-border-subtle pt-6">
+        <div className="mt-6 border-t border-[#182533]/10 pt-6">
           {confirmRevoke ? (
-            <div className="rounded-[20px] border border-red-200 bg-red-50 p-4">
-              <p className="text-sm font-medium text-red-800">
+            <div className="rounded-[20px] border border-[#a6584e]/20 bg-[#a6584e]/10 p-4">
+              <p className="text-sm font-medium text-[#984e46]">
                 Remove this connector from
                 your household?
               </p>
@@ -751,17 +751,17 @@ function InfoRow({
   detail?: string;
 }) {
   return (
-    <div className="rounded-[20px] border border-border-subtle bg-surface-sunken p-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-text-tertiary">
+    <div className="rounded-[20px] border border-[#182533]/8 bg-[#eee9df]/55 p-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#8a949b]">
         {label}
       </p>
 
-      <p className="mt-2 font-semibold text-text-primary">
+      <p className="mt-2 font-semibold text-[#17212a]">
         {value}
       </p>
 
       {detail ? (
-        <p className="mt-1 text-xs text-text-secondary">
+        <p className="mt-1 text-xs text-[#68737b]">
           {detail}
         </p>
       ) : null}

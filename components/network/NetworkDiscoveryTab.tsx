@@ -108,13 +108,13 @@ export default function NetworkDiscoveryTab({
 
   return (
     <div className="space-y-6">
-      <PageCard className="p-5 md:p-6">
+      <PageCard className="border-[#182533]/10 bg-[#f8f5ef] p-5 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] md:p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h2 className="text-xl font-semibold tracking-[-0.03em] text-text-primary">
+            <h2 className="font-serif text-2xl font-medium tracking-[-0.035em] text-[#17212a]">
               Discovery review
             </h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-text-secondary">
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-[#68737b]">
               Review new devices, confirm matches, and import discoveries into
               your vault.
             </p>
@@ -138,8 +138,8 @@ export default function NetworkDiscoveryTab({
                 className={cn(
                   "htv-focus-ring shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition",
                   active
-                    ? "bg-charcoal text-surface-card"
-                    : "border border-border-subtle bg-surface-card text-text-secondary hover:border-border-strong hover:text-text-primary"
+                    ? "bg-[#617c43] text-white shadow-sm"
+                    : "border border-[#182533]/10 bg-[#f8f5ef] text-[#68737b] hover:border-[#617c43]/25 hover:text-[#17212a]"
                 )}
               >
                 {filter.label} ({count})
@@ -188,23 +188,23 @@ export default function NetworkDiscoveryTab({
             return (
               <article
                 key={device.id}
-                className="rounded-[var(--radius-card)] border border-border-subtle bg-surface-card p-4 shadow-[var(--shadow-sm)] transition hover:border-border-strong md:p-5"
+                className="rounded-[22px] border border-[#182533]/10 bg-[#f8f5ef] p-4 shadow-[0_16px_40px_-34px_rgba(15,25,35,0.45)] transition hover:-translate-y-0.5 hover:border-[#617c43]/20 md:p-5"
               >
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-lg font-semibold tracking-[-0.03em] text-text-primary">
+                      <p className="font-serif text-lg font-medium tracking-[-0.03em] text-[#17212a]">
                         {discoveryDeviceTitle(device)}
                       </p>
-                      <span className="rounded-full bg-surface-sunken px-2.5 py-1 text-xs font-semibold text-text-secondary">
+                      <span className="rounded-full border border-[#182533]/8 bg-[#182533]/5 px-2.5 py-1 text-xs font-semibold text-[#68737b]">
                         {statusLabel(device)}
                       </span>
                       <span
                         className={cn(
                           "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold",
                           presence.tone === "online"
-                            ? "bg-home-health-soft text-home-health"
-                            : "bg-surface-sunken text-text-secondary"
+                            ? "bg-[#617c43]/10 text-[#617c43]"
+                            : "bg-[#182533]/5 text-[#68737b]"
                         )}
                       >
                         <PresenceIcon size={13} />
@@ -212,26 +212,26 @@ export default function NetworkDiscoveryTab({
                       </span>
                     </div>
 
-                    <p className="mt-1 text-sm text-text-secondary">
+                    <p className="mt-1 text-sm text-[#68737b]">
                       {[device.manufacturer, device.ipAddress]
                         .filter(Boolean)
                         .join(" · ") || "Details pending"}
                     </p>
 
-                    <p className="mt-2 text-xs text-text-tertiary">
+                    <p className="mt-2 text-xs text-[#8a949b]">
                       Last detected {formatLastDetected(device.lastSeenAt)}
                     </p>
 
                     {device.importedDeviceId ? (
                       <Link
                         href={"/devices/" + device.importedDeviceId}
-                        className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-interaction hover:text-interaction-hover"
+                        className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-[#617c43] hover:text-[#718d4f]"
                       >
                         <Laptop size={14} />
                         {device.matchedDevice?.deviceName || "View linked device"}
                       </Link>
                     ) : (
-                      <p className="mt-3 inline-flex items-center gap-1.5 text-sm text-text-secondary">
+                      <p className="mt-3 inline-flex items-center gap-1.5 text-sm text-[#68737b]">
                         <Unlink size={14} />
                         Unlinked
                       </p>

@@ -290,7 +290,7 @@ export default function NetworkOverviewTab({
       value: onlineDevices.length,
       description: "Currently detected",
       icon: Wifi,
-      iconClassName: "bg-home-health-soft text-home-health",
+      iconClassName: "bg-[#617c43]/10 text-[#617c43]",
     },
     {
       id: "offline",
@@ -298,7 +298,7 @@ export default function NetworkOverviewTab({
       value: offlineDevices.length,
       description: "Not recently detected",
       icon: WifiOff,
-      iconClassName: "bg-surface-sunken text-text-secondary",
+      iconClassName: "bg-[#182533]/5 text-[#68737b]",
     },
     {
       id: "new",
@@ -306,7 +306,7 @@ export default function NetworkOverviewTab({
       value: newDevices.length,
       description: "First seen recently",
       icon: Radar,
-      iconClassName: "bg-warning-soft text-warning",
+      iconClassName: "bg-[#b58a42]/10 text-[#916c31]",
     },
     {
       id: "unlinked",
@@ -314,7 +314,7 @@ export default function NetworkOverviewTab({
       value: unlinkedDevices.length,
       description: "Needs a vault match",
       icon: Unlink,
-      iconClassName: "bg-surface-sunken text-charcoal",
+      iconClassName: "bg-[#182533]/5 text-[#17212a]",
     },
   ];
 
@@ -356,21 +356,21 @@ export default function NetworkOverviewTab({
                   }
                   aria-pressed={selected}
                   className={cn(
-                    "htv-focus-ring rounded-[var(--radius-card)] border p-4 text-left shadow-[var(--shadow-sm)] transition md:p-5",
+                    "htv-focus-ring rounded-[22px] border p-4 text-left shadow-[0_16px_40px_-34px_rgba(15,25,35,0.45)] transition md:p-5",
                     selected
-                      ? "border-charcoal bg-surface-card ring-2 ring-charcoal/15"
-                      : "border-border-subtle bg-surface-card hover:border-border-strong hover:bg-surface-hover"
+                      ? "border-[#617c43]/35 bg-[#f8f5ef] ring-2 ring-[#617c43]/10"
+                      : "border-[#182533]/10 bg-[#f8f5ef] hover:border-[#617c43]/20 hover:bg-[#f5f1e9]"
                   )}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-text-tertiary">
+                      <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-[#7a858d]">
                         {card.title}
                       </p>
-                      <p className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
+                      <p className="mt-2 font-serif text-2xl font-medium tracking-[-0.035em] text-[#17212a]">
                         {card.value}
                       </p>
-                      <p className="mt-1 text-xs leading-5 text-text-secondary">
+                      <p className="mt-1 text-xs leading-5 text-[#68737b]">
                         {card.description}
                       </p>
                     </div>
@@ -388,7 +388,7 @@ export default function NetworkOverviewTab({
             })}
           </section>
 
-          <PageCard className="p-5 md:p-6">
+          <PageCard className="border-[#182533]/10 bg-[#f8f5ef] p-5 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] md:p-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h2 className="text-base font-semibold text-text-primary">
@@ -434,20 +434,20 @@ function ConnectorStatusPanel({
 }) {
   if (!summary.hasConnector || !summary.primaryConnector) {
     return (
-      <PageCard className="p-5 md:p-6">
+      <PageCard className="border-[#182533]/10 bg-[#f8f5ef] p-5 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] md:p-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-start gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[var(--radius-button)] border border-border-subtle bg-surface-sunken text-text-secondary">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[var(--radius-button)] border border-border-subtle bg-[#182533]/5 text-[#68737b]">
               <Router size={22} />
             </div>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-text-tertiary">
+              <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-[#7a858d]">
                 Connector
               </p>
-              <h2 className="mt-1 text-xl font-semibold tracking-[-0.03em] text-text-primary">
+              <h2 className="mt-1 font-serif text-xl font-medium tracking-[-0.03em] text-[#17212a]">
                 No Home Tech Vault connector is paired.
               </h2>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-text-secondary">
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-[#68737b]">
                 Pair a household connector to detect devices on your local
                 network.
               </p>
@@ -480,14 +480,14 @@ function ConnectorStatusPanel({
 
   const presenceTone =
     connectorPresence === "online"
-      ? "bg-home-health-soft text-home-health"
+      ? "bg-[#617c43]/10 text-[#617c43]"
       : connectorPresence === "recently_seen" ||
           connectorPresence === "pending"
-        ? "bg-warning-soft text-warning"
-        : "bg-danger-soft text-danger";
+        ? "bg-[#b58a42]/10 text-[#916c31]"
+        : "bg-[#a6584e]/10 text-[#984e46]";
 
   return (
-    <PageCard className="p-5 md:p-6">
+    <PageCard className="border-[#182533]/10 bg-[#f8f5ef] p-5 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] md:p-6">
       <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
         <div className="flex items-start gap-4">
           <div
@@ -499,17 +499,17 @@ function ConnectorStatusPanel({
             <Router size={22} />
           </div>
           <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-text-tertiary">
+            <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-[#7a858d]">
               Connector status
             </p>
-            <h2 className="mt-1 truncate text-xl font-semibold tracking-[-0.03em] text-text-primary">
+            <h2 className="mt-1 truncate font-serif text-xl font-medium tracking-[-0.03em] text-[#17212a]">
               {connector.name}
             </h2>
-            <p className="mt-1 text-sm font-medium text-text-primary">
+            <p className="mt-1 text-sm font-medium text-[#17212a]">
               {presenceLabel}
             </p>
             {connectorPresence ? (
-              <p className="mt-1 text-sm text-text-secondary">
+              <p className="mt-1 text-sm text-[#68737b]">
                 {connectorPresenceDescription(connectorPresence)}
               </p>
             ) : null}
@@ -580,13 +580,13 @@ function ConnectorMeta({
   detail?: string;
 }) {
   return (
-    <div className="rounded-2xl border border-border-subtle bg-surface-sunken px-4 py-3">
-      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-text-tertiary">
+    <div className="rounded-xl border border-[#182533]/8 bg-[#eee9df]/55 px-4 py-3">
+      <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-[#7a858d]">
         {label}
       </p>
-      <p className="mt-1 text-sm font-semibold text-text-primary">{value}</p>
+      <p className="mt-1 text-sm font-semibold text-[#17212a]">{value}</p>
       {detail ? (
-        <p className="mt-1 text-xs text-text-tertiary">{detail}</p>
+        <p className="mt-1 text-xs text-[#8a949b]">{detail}</p>
       ) : null}
     </div>
   );
@@ -609,14 +609,14 @@ function ScanMetadataCard({
 }) {
   if (!summary.lastScan) {
     return (
-      <PageCard className="p-5 md:p-6">
+      <PageCard className="border-[#182533]/10 bg-[#f8f5ef] p-5 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] md:p-6">
         <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-button)] bg-surface-sunken text-text-secondary">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-button)] bg-[#182533]/5 text-[#68737b]">
             <Clock3 size={18} />
           </div>
           <div>
             <p className="font-semibold text-text-primary">Scan activity</p>
-            <p className="mt-1 text-sm text-text-secondary">
+            <p className="mt-1 text-sm text-[#68737b]">
               No network scan has been completed yet.
             </p>
           </div>
@@ -626,16 +626,16 @@ function ScanMetadataCard({
   }
 
   return (
-    <PageCard className="p-5 md:p-6">
+    <PageCard className="border-[#182533]/10 bg-[#f8f5ef] p-5 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] md:p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-text-tertiary">
+          <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-[#7a858d]">
             Last scan
           </p>
           <p className="mt-1 text-lg font-semibold text-text-primary">
             Completed {formatRelative(summary.lastScan)}
           </p>
-          <p className="mt-1 text-sm text-text-secondary">
+          <p className="mt-1 text-sm text-[#68737b]">
             {formatConnectorTimestamp(summary.lastScan)}
           </p>
         </div>
@@ -791,12 +791,12 @@ function NetworkDeviceCard({
 
   const statusTone =
     presence.tone === "online"
-      ? "bg-home-health-soft text-home-health"
+      ? "bg-[#617c43]/10 text-[#617c43]"
       : presence.tone === "recent"
-        ? "bg-warning-soft text-warning"
+        ? "bg-[#b58a42]/10 text-[#916c31]"
         : presence.tone === "stale"
-          ? "bg-surface-sunken text-text-secondary"
-          : "bg-surface-sunken text-text-tertiary";
+          ? "bg-[#182533]/5 text-[#68737b]"
+          : "bg-[#182533]/5 text-[#8a949b]";
 
   const StatusIcon =
     presence.tone === "online"
@@ -806,11 +806,11 @@ function NetworkDeviceCard({
         : WifiOff;
 
   return (
-    <article className="rounded-[var(--radius-card)] border border-border-subtle bg-surface-card p-4 shadow-[var(--shadow-sm)] transition hover:border-border-strong md:p-5">
+    <article className="rounded-[22px] border border-[#182533]/10 bg-[#f8f5ef] p-4 shadow-[0_16px_40px_-34px_rgba(15,25,35,0.45)] transition hover:-translate-y-0.5 hover:border-[#617c43]/20 md:p-5">
       <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(0,1.5fr)_10rem_9rem_minmax(0,1fr)_8rem_auto] lg:items-center lg:gap-4">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-lg font-semibold tracking-[-0.03em] text-text-primary">
+            <h3 className="font-serif text-lg font-medium tracking-[-0.03em] text-[#17212a]">
               {title}
             </h3>
             {isNew ? (
@@ -829,14 +829,14 @@ function NetworkDeviceCard({
             </span>
           </div>
 
-          <p className="mt-1 text-sm text-text-secondary">
+          <p className="mt-1 text-sm text-[#68737b]">
             {[device.manufacturer, device.model, device.deviceType]
               .filter(Boolean)
               .join(" · ") || "Manufacturer unavailable"}
           </p>
 
           {isNew ? (
-            <p className="mt-2 text-xs text-text-tertiary">
+            <p className="mt-2 text-xs text-[#8a949b]">
               First detected {formatRelative(device.firstSeenAt)}
             </p>
           ) : null}
@@ -858,7 +858,7 @@ function NetworkDeviceCard({
           <p className="font-medium text-text-primary">
             {formatRelative(device.lastSeenAt)}
           </p>
-          <p className="mt-1 text-xs text-text-tertiary">
+          <p className="mt-1 text-xs text-[#8a949b]">
             First seen {formatRelative(device.firstSeenAt)}
           </p>
         </div>

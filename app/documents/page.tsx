@@ -412,7 +412,7 @@ export default function DocumentsPage() {
     return (
       <PageShell>
         <PageCard className="flex min-h-72 items-center justify-center">
-          <div className="flex items-center gap-3 text-text-secondary">
+          <div className="flex items-center gap-3 text-[#68737b]">
             <Loader2
               size={22}
               className="animate-spin"
@@ -428,7 +428,7 @@ export default function DocumentsPage() {
   if (errorMessage) {
     return (
       <PageShell>
-        <PageCard className="border-red-200 bg-red-50 p-6 text-red-700">
+        <PageCard className="border-[#a6584e]/20 bg-[#a6584e]/10 p-6 text-[#984e46]">
           <h1 className="text-xl font-semibold">
             Unable to load documents
           </h1>
@@ -494,12 +494,12 @@ export default function DocumentsPage() {
       )}
 
       {documents.length > 0 && (
-        <PageCard className="p-5 md:p-6">
+        <PageCard className="border-[#182533]/10 bg-[#f8f5ef] p-5 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] md:p-6">
           <div className="flex flex-col gap-5">
             <div className="relative">
               <Search
                 size={18}
-                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-text-tertiary"
+                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#8a949b]"
               />
 
               <input
@@ -511,7 +511,7 @@ export default function DocumentsPage() {
                   )
                 }
                 placeholder="Search documents or devices..."
-                className="w-full rounded-2xl border border-border-subtle bg-surface-sunken py-3.5 pl-11 pr-11 text-sm text-text-primary outline-none transition placeholder:text-text-tertiary htv-focus-ring focus:border-interaction focus:bg-surface-card focus:ring-4 focus:ring-interaction/15"
+                className="w-full rounded-xl border border-[#182533]/10 bg-[#eee9df]/60 py-3.5 pl-11 pr-11 text-sm text-[#17212a] outline-none transition placeholder:text-[#8a949b] focus:border-[#617c43]/40 focus:bg-[#f8f5ef] focus:ring-4 focus:ring-[#617c43]/10"
               />
 
               {searchTerm && (
@@ -521,7 +521,7 @@ export default function DocumentsPage() {
                     setSearchTerm("")
                   }
                   aria-label="Clear search"
-                  className="absolute right-4 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-text-tertiary transition hover:bg-white hover:text-text-primary"
+                  className="absolute right-4 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-[#8a949b] transition hover:bg-[#182533]/5 hover:text-[#17212a]"
                 >
                   <X size={15} />
                 </button>
@@ -547,8 +547,8 @@ export default function DocumentsPage() {
                       className={
                         "shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition " +
                         (active
-                          ? "bg-charcoal text-surface-card"
-                          : "border border-border-subtle bg-white text-text-secondary hover:border-interaction hover:text-text-primary")
+                          ? "bg-[#617c43] text-white shadow-sm"
+                          : "border border-[#182533]/10 bg-[#f8f5ef] text-[#68737b] hover:border-[#617c43]/25 hover:text-[#17212a]")
                       }
                     >
                       {type === "All"
@@ -560,8 +560,8 @@ export default function DocumentsPage() {
               )}
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border-subtle pt-4">
-              <p className="text-sm text-text-secondary">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#182533]/10 pt-4">
+              <p className="text-sm text-[#68737b]">
                 {filteredDocuments.length}{" "}
                 {filteredDocuments.length ===
                 1
@@ -573,7 +573,7 @@ export default function DocumentsPage() {
                 <button
                   type="button"
                   onClick={clearFilters}
-                  className="inline-flex items-center gap-2 text-sm font-semibold text-text-primary transition hover:text-achievement"
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-[#617c43] transition hover:text-[#718d4f]"
                 >
                   <X size={15} />
                   Clear filters
@@ -691,8 +691,8 @@ function DocumentCard({
       : "/devices";
 
   return (
-    <article className="group overflow-hidden rounded-[var(--radius-card)] border border-border-subtle bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-warning/40 hover:shadow-lg">
-      <div className="relative aspect-[4/3] overflow-hidden bg-surface-sunken">
+    <article className="group overflow-hidden rounded-[26px] border border-[#182533]/10 bg-[#f8f5ef] shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] transition duration-300 hover:-translate-y-1 hover:border-[#617c43]/25 hover:shadow-[0_26px_60px_-38px_rgba(15,25,35,0.55)]">
+      <div className="relative aspect-[4/3] overflow-hidden bg-[#eee9df]">
         {isImage &&
         document.file_url &&
         !isDemo ? (
@@ -705,42 +705,42 @@ function DocumentCard({
           <div className="flex h-full flex-col items-center justify-center px-6 text-center">
             <div
               className={
-                "flex h-20 w-20 items-center justify-center rounded-[var(--radius-card)] bg-white shadow-sm " +
+                "flex h-20 w-20 items-center justify-center rounded-[22px] border border-[#182533]/8 bg-[#f8f5ef] shadow-sm " +
                 visual.iconClassName
               }
             >
               <VisualIcon size={32} />
             </div>
 
-            <p className="mt-4 text-xs font-semibold uppercase tracking-[0.16em] text-text-tertiary">
+            <p className="mt-4 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#7b858c]">
               {visual.label}
             </p>
           </div>
         )}
 
-        <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1.5 text-xs font-semibold text-text-primary shadow-sm backdrop-blur">
+        <span className="absolute left-4 top-4 rounded-full border border-white/15 bg-[#0b1623]/85 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#f4f0e8] shadow-sm backdrop-blur">
           {document.file_type ||
             "Document"}
         </span>
 
         {isDemo && (
-          <span className="absolute right-4 top-4 rounded-full bg-charcoal/90 px-3 py-1.5 text-xs font-semibold text-charcoal shadow-sm backdrop-blur">
+          <span className="absolute right-4 top-4 rounded-full border border-[#718d4f]/25 bg-[#617c43] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-white shadow-sm backdrop-blur">
             Demo
           </span>
         )}
       </div>
 
       <div className="p-5">
-        <h2 className="line-clamp-2 text-xl font-semibold tracking-[-0.03em] text-text-primary">
+        <h2 className="line-clamp-2 font-serif text-xl font-medium tracking-[-0.03em] text-[#17212a]">
           {title}
         </h2>
 
-        <p className="mt-2 truncate text-sm text-text-tertiary">
+        <p className="mt-2 truncate text-sm text-[#7a858d]">
           {document.file_name}
         </p>
 
-        <div className="mt-5 rounded-[20px] bg-surface-sunken p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-text-tertiary">
+        <div className="mt-5 rounded-[20px] border border-[#182533]/8 bg-[#eee9df]/60 p-4">
+          <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[#7a858d]">
             Connected Device
           </p>
 
@@ -751,7 +751,7 @@ function DocumentCard({
                   ? "/devices"
                   : deviceHref
               }
-              className="mt-2 inline-flex max-w-full items-center gap-2 font-semibold text-text-primary transition hover:text-achievement"
+              className="mt-2 inline-flex max-w-full items-center gap-2 font-semibold text-[#17212a] transition hover:text-[#617c43]"
             >
               <span className="truncate">
                 {deviceName}
@@ -763,14 +763,14 @@ function DocumentCard({
               />
             </Link>
           ) : (
-            <p className="mt-2 font-semibold text-text-secondary">
+            <p className="mt-2 font-semibold text-[#68737b]">
               Unassigned
             </p>
           )}
         </div>
 
         {document.created_at && (
-          <p className="mt-4 text-xs text-text-tertiary">
+          <p className="mt-4 text-xs text-[#8a949b]">
             Added{" "}
             {formatDate(
               document.created_at
@@ -778,12 +778,12 @@ function DocumentCard({
           </p>
         )}
 
-        <div className="mt-5 flex items-center gap-3 border-t border-border-subtle pt-5">
+        <div className="mt-5 flex items-center gap-3 border-t border-[#182533]/8 pt-5">
           {isDemo ? (
             <button
               type="button"
               onClick={onDemoPreview}
-              className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-2xl bg-charcoal px-4 text-sm font-semibold text-surface-card transition hover:bg-charcoal-hover"
+              className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-[#617c43] px-4 text-sm font-semibold text-white transition hover:bg-[#718d4f]"
             >
               <ExternalLink
                 size={16}
@@ -799,7 +799,7 @@ function DocumentCard({
                   }
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-2xl bg-charcoal px-4 text-sm font-semibold text-surface-card transition hover:bg-charcoal-hover"
+                  className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-[#617c43] px-4 text-sm font-semibold text-white transition hover:bg-[#718d4f]"
                 >
                   <ExternalLink
                     size={16}
@@ -863,8 +863,8 @@ function DemoPreviewModal({
         }
       }}
     >
-      <div className="w-full max-w-lg overflow-hidden rounded-[30px] bg-white shadow-2xl">
-        <div className="flex items-center justify-between border-b border-border-subtle px-5 py-4">
+      <div className="w-full max-w-lg overflow-hidden rounded-[30px] border border-[#182533]/10 bg-[#f8f5ef] shadow-2xl">
+        <div className="flex items-center justify-between border-b border-[#182533]/10 px-5 py-4">
           <div>
             <p className="text-overline text-section-vault">
               Sample Preview
@@ -881,17 +881,17 @@ function DemoPreviewModal({
             type="button"
             onClick={onClose}
             aria-label="Close preview"
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-sunken text-text-secondary transition hover:text-text-primary"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-[#eee9df] text-[#68737b] transition hover:text-[#17212a]"
           >
             <X size={18} />
           </button>
         </div>
 
         <div className="p-6">
-          <div className="flex min-h-52 flex-col items-center justify-center rounded-[24px] bg-surface-sunken p-6 text-center">
+          <div className="flex min-h-52 flex-col items-center justify-center rounded-[24px] border border-[#182533]/8 bg-[#eee9df]/60 p-6 text-center">
             <div
               className={
-                "flex h-20 w-20 items-center justify-center rounded-[var(--radius-card)] bg-white shadow-sm " +
+                "flex h-20 w-20 items-center justify-center rounded-[22px] border border-[#182533]/8 bg-[#f8f5ef] shadow-sm " +
                 visual.iconClassName
               }
             >
@@ -947,8 +947,8 @@ function PreviewDetail({
   value: string;
 }) {
   return (
-    <div className="rounded-2xl bg-surface-sunken p-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-text-tertiary">
+    <div className="rounded-2xl border border-[#182533]/8 bg-[#eee9df]/60 p-4">
+      <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[#7a858d]">
         {label}
       </p>
 
@@ -969,19 +969,19 @@ function SummaryCard({
   value: string;
 }) {
   return (
-    <PageCard className="p-5 md:p-6">
+    <PageCard className="border-[#182533]/10 bg-[#f8f5ef] p-5 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] md:p-6">
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-sm text-text-secondary">
+          <p className="text-sm text-[#68737b]">
             {label}
           </p>
 
-          <p className="mt-2 truncate text-2xl font-semibold tracking-[-0.03em] text-text-primary md:text-3xl">
+          <p className="mt-2 truncate font-serif text-2xl font-medium tracking-[-0.03em] text-[#17212a] md:text-3xl">
             {value}
           </p>
         </div>
 
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#617c43]/15 bg-[#617c43]/10 text-[#617c43]">
           <Icon size={20} />
         </div>
       </div>

@@ -39,117 +39,122 @@ export default function HomeHealthDashboard({
   const healthSummary =
     advisor?.summary ||
     (homeHealth.status
-      ? getHomeHealthDisplayMessage(homeHealth.status)
+      ? getHomeHealthDisplayMessage(
+          homeHealth.status
+        )
       : null);
 
   return (
-    <div className="mx-auto w-full max-w-6xl pb-12">
-      {/* Premium top section */}
-      <section className="relative overflow-hidden rounded-[32px] border border-border-subtle/70 bg-surface-card px-5 py-6 shadow-lift sm:px-7 sm:py-8 lg:px-10 lg:py-10">
-        {/* Ambient background */}
-        <div className="pointer-events-none absolute -right-24 -top-24 h-[320px] w-[320px] rounded-full bg-home-health-soft/40 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-32 left-1/3 h-[280px] w-[420px] rounded-full bg-premium-soft/25 blur-3xl" />
+    <div className="mx-auto w-full max-w-[1240px] pb-14">
+      {/* PAGE INTRO */}
 
-        <div className="relative">
-          {/* Home identity */}
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-            <div className="max-w-2xl">
-              <div className="inline-flex items-center gap-2 rounded-full border border-border-subtle bg-surface-sunken/50 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-text-muted">
-                <House
-                  size={13}
-                  className="text-home-health"
-                  aria-hidden
-                />
-                Home Overview
-              </div>
+      <section className="mb-5 flex flex-col gap-4 px-1 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <div className="flex items-center gap-3">
+            <span className="h-px w-7 bg-[#617c43]" />
 
-              <h1 className="mt-5 text-3xl font-medium tracking-[-0.045em] text-text-primary sm:text-4xl lg:text-5xl">
-                Welcome home, {firstName}.
-              </h1>
-
-              <p className="mt-3 max-w-xl text-sm leading-6 text-text-secondary sm:text-base">
-                Your home technology, documents, warranties, and important
-                details — organized in one place.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-3 rounded-2xl border border-home-health/15 bg-home-health-soft/30 px-4 py-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-home-health text-white">
-                <ShieldCheck
-                  size={19}
-                  aria-hidden
-                />
-              </div>
-
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-text-muted">
-                  Home Pulse
-                </p>
-
-                <p className="mt-0.5 text-sm font-semibold text-text-primary">
-                  {homeHealth.score}% ready
-                </p>
-              </div>
-            </div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#617c43]">
+              Home Overview
+            </p>
           </div>
 
-          {/* Existing hero, now nested into premium frame */}
-          <div className="mt-8">
-            <DashboardHero
-              firstName={firstName}
-              score={homeHealth.score}
-              healthSummary={healthSummary}
+          <h1 className="mt-3 font-serif text-3xl font-medium tracking-[-0.04em] text-[#101a22] sm:text-4xl">
+            Welcome home, {firstName}.
+          </h1>
+
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-[#68737b] sm:text-base">
+            Your devices, records, warranties,
+            network details, and household
+            information — organized in one place.
+          </p>
+        </div>
+
+        <div className="inline-flex w-fit items-center gap-3 rounded-2xl border border-[#617c43]/20 bg-[#617c43]/8 px-4 py-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#617c43] text-white">
+            <ShieldCheck
+              size={17}
+              aria-hidden
             />
           </div>
 
-          {/* Premium stats strip */}
-          <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-            <StatCard
-              icon={Wifi}
-              label="Devices"
-              value={overviewStats.deviceCount}
-              detail={`${overviewStats.onlineDeviceCount} online`}
-            />
+          <div>
+            <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-[#78836f]">
+              Vault Readiness
+            </p>
 
-            <StatCard
-              icon={ShieldCheck}
-              label="Active Warranties"
-              value={overviewStats.activeWarrantyCount}
-              detail="Coverage tracked"
-            />
-
-            <StatCard
-              icon={FileText}
-              label="Documents"
-              value={overviewStats.documentCount}
-              detail="Stored in your vault"
-            />
-
-            <StatCard
-              icon={UsersRound}
-              label="Household"
-              value={overviewStats.familyMemberCount}
-              detail="Members"
-            />
-
-            <StatCard
-              icon={House}
-              label="Offline Devices"
-              value={overviewStats.offlineDeviceCount}
-              detail={
-                overviewStats.offlineDeviceCount === 0
-                  ? "Everything looks connected"
-                  : "Worth reviewing"
-              }
-              attention={overviewStats.offlineDeviceCount > 0}
-            />
+            <p className="mt-0.5 text-sm font-semibold text-[#17212a]">
+              {homeHealth.score}% ready
+            </p>
           </div>
         </div>
       </section>
 
-      {/* Main content */}
-      <div className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-        {/* Left column */}
+      {/* HERO */}
+
+      <DashboardHero
+        firstName={firstName}
+        score={homeHealth.score}
+        healthSummary={healthSummary}
+      />
+
+      {/* OVERVIEW METRICS */}
+
+      <section className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <StatCard
+          icon={Wifi}
+          label="Devices"
+          value={overviewStats.deviceCount}
+          detail={`${overviewStats.onlineDeviceCount} online`}
+        />
+
+        <StatCard
+          icon={ShieldCheck}
+          label="Active Warranties"
+          value={
+            overviewStats.activeWarrantyCount
+          }
+          detail="Coverage tracked"
+        />
+
+        <StatCard
+          icon={FileText}
+          label="Documents"
+          value={overviewStats.documentCount}
+          detail="Stored in your Vault"
+        />
+
+        <StatCard
+          icon={UsersRound}
+          label="Household"
+          value={
+            overviewStats.familyMemberCount
+          }
+          detail="Members"
+        />
+
+        <StatCard
+          icon={House}
+          label="Offline Devices"
+          value={
+            overviewStats.offlineDeviceCount
+          }
+          detail={
+            overviewStats.offlineDeviceCount ===
+            0
+              ? "Everything looks connected"
+              : "Worth reviewing"
+          }
+          attention={
+            overviewStats.offlineDeviceCount > 0
+          }
+        />
+      </section>
+
+      {/* MAIN DASHBOARD */}
+
+      <div className="mt-6 grid gap-6 lg:grid-cols-[1.08fr_0.92fr]">
+        {/* LEFT */}
+
         <div className="space-y-6">
           <SectionShell
             eyebrow="Home Advisor"
@@ -164,64 +169,91 @@ export default function HomeHealthDashboard({
 
           <SectionShell
             eyebrow="Next Step"
-            title="Keep your home moving forward"
+            title="Keep your Vault moving forward"
           >
             {homeHealth.isEmpty ? (
               <HomeHealthEmptyState
-                recommendation={homeHealth.recommendation}
+                recommendation={
+                  homeHealth.recommendation
+                }
               />
             ) : (
               <RecommendedNextStep
-                recommendation={homeHealth.recommendation}
+                recommendation={
+                  homeHealth.recommendation
+                }
               />
             )}
           </SectionShell>
         </div>
 
-        {/* Right column */}
+        {/* RIGHT */}
+
         <div className="space-y-6">
-          <section className="overflow-hidden rounded-[26px] border border-border-subtle bg-surface-card p-5 shadow-sm sm:p-6">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-home-health">
-              Ask Your Vault
-            </p>
+          {/* SEARCH */}
 
-            <h2 className="mt-2 text-xl font-semibold tracking-tight text-text-primary">
-              Find anything in your home.
-            </h2>
+          <section className="relative overflow-hidden rounded-[26px] border border-[#182533]/10 bg-[#101d2b] p-6 text-[#f4f0e8] shadow-[0_24px_55px_-40px_rgba(0,0,0,0.7)]">
+            <div className="pointer-events-none absolute -right-20 -top-20 h-52 w-52 rounded-full bg-[#718d4f]/10 blur-3xl" />
 
-            <p className="mt-2 text-sm leading-6 text-text-secondary">
-              Search your devices, warranties, documents, and household
-              information from one place.
-            </p>
+            <div className="relative">
+              <div className="flex items-center gap-3">
+                <span className="h-px w-6 bg-[#718d4f]" />
 
-            <div className="mt-5">
-              <SmartSearch
-                mode="dashboard"
-                variant="hero"
-              />
+                <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-[#8ca667]">
+                  Ask Your Vault
+                </p>
+              </div>
+
+              <h2 className="mt-3 font-serif text-2xl font-medium tracking-[-0.03em] text-[#f4f0e8]">
+                Find anything in your home.
+              </h2>
+
+              <p className="mt-3 text-sm leading-6 text-[#aab4bc]">
+                Search your devices, warranties,
+                documents, and household information
+                from one place.
+              </p>
+
+              <div className="mt-5">
+                <SmartSearch
+                  mode="dashboard"
+                  variant="hero"
+                />
+              </div>
             </div>
           </section>
 
-          <section className="rounded-[26px] border border-border-subtle bg-surface-sunken/40 p-5 sm:p-6">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-text-muted">
-              Your Home Tech Vault
-            </p>
+          {/* VAULT GROWTH */}
 
-            <h2 className="mt-2 text-lg font-semibold tracking-tight text-text-primary">
-              Everything gets more useful as your vault grows.
+          <section className="rounded-[26px] border border-[#182533]/10 bg-[#f8f5ef] p-6 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)]">
+            <div className="flex items-center gap-3">
+              <span className="h-px w-6 bg-[#617c43]" />
+
+              <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-[#617c43]">
+                Your Home Tech Vault
+              </p>
+            </div>
+
+            <h2 className="mt-3 max-w-md font-serif text-2xl font-medium leading-tight tracking-[-0.03em] text-[#17212a]">
+              Your Vault becomes more useful as
+              it grows.
             </h2>
 
-            <p className="mt-3 text-sm leading-6 text-text-secondary">
-              Add devices, receipts, warranties, manuals, and maintenance
-              information over time. The more complete your vault becomes, the
-              easier it is to understand what you own and what may need
-              attention.
+            <p className="mt-3 text-sm leading-6 text-[#68737b]">
+              Add devices, receipts, warranties,
+              manuals, and maintenance information
+              over time. The more complete your Vault
+              becomes, the easier it is to understand
+              what you own and what may need attention.
             </p>
 
-            <div className="mt-5 space-y-3">
+            <div className="mt-5 space-y-2.5">
               <InsightRow text="Keep important devices documented" />
+
               <InsightRow text="Attach receipts and manuals" />
+
               <InsightRow text="Track warranty coverage" />
+
               <InsightRow text="Share useful information with your household" />
             </div>
           </section>
@@ -251,13 +283,13 @@ function StatCard({
   attention = false,
 }: StatCardProps) {
   return (
-    <div className="rounded-[20px] border border-border-subtle/80 bg-surface-card/80 p-4 backdrop-blur-sm">
+    <div className="group rounded-[22px] border border-[#182533]/10 bg-[#f8f5ef] p-4 shadow-[0_16px_40px_-34px_rgba(15,25,35,0.45)] transition hover:-translate-y-0.5 hover:border-[#617c43]/20">
       <div className="flex items-center justify-between gap-3">
         <div
           className={`flex h-9 w-9 items-center justify-center rounded-xl ${
             attention
-              ? "bg-warning-soft text-warning"
-              : "bg-home-health-soft text-home-health"
+              ? "bg-[#b58a42]/10 text-[#9a7336]"
+              : "bg-[#617c43]/10 text-[#617c43]"
           }`}
         >
           <Icon
@@ -267,21 +299,21 @@ function StatCard({
         </div>
 
         <span
-          className={`text-2xl font-semibold tracking-[-0.04em] ${
+          className={`font-serif text-2xl font-medium tracking-[-0.04em] ${
             attention
-              ? "text-warning"
-              : "text-text-primary"
+              ? "text-[#9a7336]"
+              : "text-[#17212a]"
           }`}
         >
           {value}
         </span>
       </div>
 
-      <p className="mt-4 text-xs font-semibold text-text-primary">
+      <p className="mt-4 text-xs font-semibold text-[#17212a]">
         {label}
       </p>
 
-      <p className="mt-1 text-[10px] leading-4 text-text-muted">
+      <p className="mt-1 text-[10px] leading-4 text-[#7a858d]">
         {detail}
       </p>
     </div>
@@ -298,13 +330,17 @@ function SectionShell({
   children: React.ReactNode;
 }) {
   return (
-    <section className="overflow-hidden rounded-[26px] border border-border-subtle bg-surface-card p-5 shadow-sm sm:p-6">
+    <section className="overflow-hidden rounded-[26px] border border-[#182533]/10 bg-[#f8f5ef] p-5 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] sm:p-6">
       <div className="mb-5">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-home-health">
-          {eyebrow}
-        </p>
+        <div className="flex items-center gap-3">
+          <span className="h-px w-6 bg-[#617c43]" />
 
-        <h2 className="mt-2 text-xl font-semibold tracking-tight text-text-primary sm:text-2xl">
+          <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-[#617c43]">
+            {eyebrow}
+          </p>
+        </div>
+
+        <h2 className="mt-3 font-serif text-xl font-medium tracking-[-0.03em] text-[#17212a] sm:text-2xl">
           {title}
         </h2>
       </div>
@@ -320,10 +356,12 @@ function InsightRow({
   text: string;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-border-subtle bg-surface-card px-3.5 py-3">
-      <div className="h-2 w-2 shrink-0 rounded-full bg-home-health" />
+    <div className="flex items-center gap-3 rounded-xl border border-[#182533]/8 bg-[#eee9df]/55 px-3.5 py-3">
+      <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#617c43]/10">
+        <div className="h-1.5 w-1.5 rounded-full bg-[#617c43]" />
+      </div>
 
-      <span className="text-xs font-medium text-text-secondary">
+      <span className="text-xs font-medium text-[#56616a]">
         {text}
       </span>
     </div>

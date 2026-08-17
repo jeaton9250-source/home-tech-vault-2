@@ -279,7 +279,7 @@ export default function NetworkDiscoveryDashboard(props: {
         />
       </section>
 
-      <PageCard className="mt-6">
+      <PageCard className="mt-6 border-[#182533]/10 bg-[#f8f5ef] shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)]">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex flex-wrap gap-2">
             {PAGE_TABS.map((tab) => (
@@ -289,8 +289,8 @@ export default function NetworkDiscoveryDashboard(props: {
                 onClick={() => setPageTab(tab.key)}
                 className={`rounded-full px-4 py-2 text-sm font-medium transition ${
                   pageTab === tab.key
-                    ? "bg-neutral-900 text-white"
-                    : "bg-neutral-100 text-text-secondary hover:bg-neutral-200"
+                    ? "bg-[#617c43] text-white shadow-sm"
+                    : "border border-[#182533]/8 bg-[#eee9df]/60 text-[#68737b] hover:border-[#617c43]/20 hover:bg-[#f4f0e8]"
                 }`}
               >
                 {tab.label}
@@ -322,16 +322,16 @@ export default function NetworkDiscoveryDashboard(props: {
       </PageCard>
 
       {pageTab === "overview" ? (
-        <PageCard className="mt-6">
+        <PageCard className="mt-6 border-[#182533]/10 bg-[#f8f5ef] shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)]">
           <h2 className="text-lg font-semibold text-text-primary">
             Network discovery overview
           </h2>
-          <p className="mt-2 text-sm text-text-secondary">
+          <p className="mt-2 text-sm leading-6 text-[#68737b]">
             Your connector identifies devices on your home network, matches them to your vault, and flags anything that needs review.
           </p>
 
           {!hasCompletedScan ? (
-            <div className="mt-6 rounded-2xl border border-dashed border-neutral-200 px-6 py-10 text-center">
+            <div className="mt-6 rounded-2xl border border-dashed border-[#617c43]/20 bg-[#617c43]/[0.03] px-6 py-10 text-center">
               <Radar className="mx-auto text-text-secondary" size={28} />
               <p className="mt-3 text-sm text-text-secondary">
                 No network scan has been completed yet.
@@ -357,7 +357,7 @@ export default function NetworkDiscoveryDashboard(props: {
       ) : null}
 
       {pageTab === "activity" ? (
-        <PageCard className="mt-6">
+        <PageCard className="mt-6 border-[#182533]/10 bg-[#f8f5ef] shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)]">
           <h2 className="text-lg font-semibold text-text-primary">
             Network activity
           </h2>
@@ -368,7 +368,7 @@ export default function NetworkDiscoveryDashboard(props: {
       ) : null}
 
       {pageTab === "discovered" || pageTab === "review" ? (
-        <PageCard className="mt-6">
+        <PageCard className="mt-6 border-[#182533]/10 bg-[#f8f5ef] shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)]">
           {pageTab === "discovered" ? (
             <div className="flex flex-wrap gap-2">
               {REVIEW_FILTERS.map((tab) => (
@@ -378,8 +378,8 @@ export default function NetworkDiscoveryDashboard(props: {
                   onClick={() => setReviewFilter(tab.key)}
                   className={`rounded-full px-4 py-2 text-sm font-medium transition ${
                     reviewFilter === tab.key
-                      ? "bg-neutral-900 text-white"
-                      : "bg-neutral-100 text-text-secondary hover:bg-neutral-200"
+                      ? "bg-[#617c43] text-white shadow-sm"
+                      : "border border-[#182533]/8 bg-[#eee9df]/60 text-[#68737b] hover:border-[#617c43]/20 hover:bg-[#f4f0e8]"
                   }`}
                 >
                   {tab.label}
@@ -391,7 +391,7 @@ export default function NetworkDiscoveryDashboard(props: {
               <h2 className="text-lg font-semibold text-text-primary">
                 Review queue
               </h2>
-              <p className="mt-1 text-sm text-text-secondary">
+              <p className="mt-1 text-sm text-[#68737b]">
                 Confirm likely matches or import new devices without creating duplicates.
               </p>
             </div>
@@ -399,7 +399,7 @@ export default function NetworkDiscoveryDashboard(props: {
 
           <div className="mt-6 space-y-4">
             {reviewDevices.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-neutral-200 px-6 py-10 text-center">
+              <div className="rounded-2xl border border-dashed border-[#617c43]/20 bg-[#617c43]/[0.03] px-6 py-10 text-center">
                 <Radar className="mx-auto text-text-secondary" size={28} />
                 <p className="mt-3 text-sm text-text-secondary">
                   {hasCompletedScan
@@ -479,9 +479,9 @@ function MetricCard({
 }) {
   return (
     <PageCard>
-      <p className="text-overline text-section-network">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-text-primary">{value}</p>
-      <p className="mt-1 text-sm text-text-secondary">{detail}</p>
+      <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-[#617c43]">{label}</p>
+      <p className="mt-2 font-serif text-2xl font-medium tracking-[-0.035em] text-[#17212a]">{value}</p>
+      <p className="mt-1 text-sm text-[#68737b]">{detail}</p>
     </PageCard>
   );
 }
@@ -494,7 +494,7 @@ function OverviewStat({
   value: number;
 }) {
   return (
-    <div className="rounded-2xl bg-surface-sunken px-5 py-4">
+    <div className="rounded-2xl border border-[#182533]/8 bg-[#eee9df]/55 px-5 py-4">
       <p className="text-sm text-text-secondary">{label}</p>
       <p className="mt-1 text-2xl font-semibold text-text-primary">{value}</p>
     </div>
@@ -595,45 +595,45 @@ function DiscoveryDeviceCard({
           : "New device found";
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
+    <article className="overflow-hidden rounded-[24px] border border-[#182533]/10 bg-[#f8f5ef] shadow-[0_18px_45px_-36px_rgba(15,25,35,0.5)]">
       <div className="p-5 sm:p-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <h2 className="min-w-0 truncate text-lg font-semibold text-text-primary">
+              <h2 className="min-w-0 truncate font-serif text-xl font-medium tracking-[-0.03em] text-[#17212a]">
                 {suggestedName}
               </h2>
 
-              <span className="rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-medium text-text-secondary">
+              <span className="rounded-full border border-[#182533]/8 bg-[#182533]/5 px-2.5 py-1 text-xs font-medium text-[#68737b]">
                 {homeownerStatus}
               </span>
 
-              <span className="rounded-full bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-800">
+              <span className="rounded-full border border-[#617c43]/15 bg-[#617c43]/10 px-2.5 py-1 text-xs font-medium text-[#526b39]">
                 {confidenceSummary}
               </span>
             </div>
 
-            <p className="mt-2 text-sm text-text-secondary">
+            <p className="mt-2 text-sm leading-6 text-[#68737b]">
               {suggestedDescription ||
                 "We found this device on your home network."}
             </p>
 
             {device.matchStatus === "possible_match" ? (
-              <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
-                <p className="text-sm font-medium text-amber-950">
+              <div className="mt-4 rounded-xl border border-[#b58a42]/20 bg-[#b58a42]/10 px-4 py-3">
+                <p className="text-sm font-medium text-[#72552a]">
                   Is this a device already saved in your vault?
                 </p>
-                <p className="mt-1 text-sm text-amber-800">
+                <p className="mt-1 text-sm text-[#916c31]">
                   Select the matching device below, or add this as a
                   separate device.
                 </p>
               </div>
             ) : device.matchStatus === "new" ? (
-              <div className="mt-4 rounded-xl bg-sky-50 px-4 py-3">
-                <p className="text-sm font-medium text-sky-950">
+              <div className="mt-4 rounded-xl border border-[#617c43]/15 bg-[#617c43]/10 px-4 py-3">
+                <p className="text-sm font-medium text-[#40552e]">
                   A new device was found
                 </p>
-                <p className="mt-1 text-sm text-sky-800">
+                <p className="mt-1 text-sm text-[#617c43]">
                   Add it to your vault to track its details, warranty,
                   documents, and network status.
                 </p>
@@ -641,14 +641,14 @@ function DiscoveryDeviceCard({
             ) : null}
 
             {matchedVaultDevice || selectedVault ? (
-              <div className="mt-4 rounded-xl bg-surface-sunken px-4 py-3">
+              <div className="mt-4 rounded-xl border border-[#182533]/8 bg-[#eee9df]/55 px-4 py-3">
                 <p className="text-sm font-medium text-text-primary">
                   Linked with{" "}
                   {matchedVaultDevice?.deviceName ??
                     selectedVault?.device_name ??
                     "Vault device"}
                 </p>
-                <p className="mt-1 text-sm text-text-secondary">
+                <p className="mt-1 text-sm text-[#68737b]">
                   {matchedVaultDevice?.location ??
                     selectedVault?.location ??
                     matchedVaultDevice?.category ??
@@ -669,7 +669,7 @@ function DiscoveryDeviceCard({
                   </span>
 
                   <select
-                    className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2.5 text-text-primary"
+                    className="w-full rounded-xl border border-[#182533]/10 bg-[#f8f5ef] px-3 py-2.5 text-[#17212a] outline-none focus:border-[#617c43]/40 focus:ring-4 focus:ring-[#617c43]/10"
                     value={selectedVaultDeviceId}
                     onChange={(event) =>
                       onSelectVaultDevice(event.target.value)
@@ -722,13 +722,13 @@ function DiscoveryDeviceCard({
               ) : null}
 
               {device.matchStatus === "matched" ? (
-                <div className="rounded-xl bg-emerald-50 px-4 py-3 text-center text-sm font-medium text-emerald-800">
+                <div className="rounded-xl border border-[#617c43]/15 bg-[#617c43]/10 px-4 py-3 text-center text-sm font-medium text-[#526b39]">
                   Device linked successfully
                 </div>
               ) : null}
 
               {device.matchStatus !== "ignored" ? (
-                <details className="group rounded-xl border border-neutral-200 bg-white">
+                <details className="group rounded-xl border border-[#182533]/10 bg-[#f8f5ef]">
                   <summary className="cursor-pointer list-none px-4 py-3 text-center text-sm font-medium text-text-primary">
                     Review Device Name
                     <span className="ml-2 text-text-secondary group-open:hidden">
@@ -739,15 +739,15 @@ function DiscoveryDeviceCard({
                     </span>
                   </summary>
 
-                  <div className="grid gap-2 border-t border-neutral-200 p-3">
-                    <div className="rounded-lg bg-sky-50 px-3 py-3 text-sm">
-                      <p className="font-medium text-sky-950">
+                  <div className="grid gap-2 border-t border-[#182533]/8 p-3">
+                    <div className="rounded-lg border border-[#617c43]/15 bg-[#617c43]/10 px-3 py-3 text-sm">
+                      <p className="font-medium text-[#40552e]">
                         Suggested name
                       </p>
-                      <p className="mt-1 text-sky-900">
+                      <p className="mt-1 text-[#526b39]">
                         {device.recognitionSuggestion.friendlyName}
                       </p>
-                      <p className="mt-1 text-xs text-sky-800">
+                      <p className="mt-1 text-xs text-[#617c43]">
                         {confidenceScore}% identification confidence
                       </p>
                     </div>
@@ -787,13 +787,13 @@ function DiscoveryDeviceCard({
                     />
 
                     {editingRecognition ? (
-                      <div className="grid gap-2 rounded-xl bg-surface-sunken p-3 text-sm">
+                      <div className="grid gap-2 rounded-xl border border-[#182533]/8 bg-[#eee9df]/55 p-3 text-sm">
                         <label className="grid gap-1">
                           <span className="text-xs font-medium text-text-secondary">
                             Device name
                           </span>
                           <input
-                            className="rounded-lg border border-neutral-200 bg-white px-3 py-2"
+                            className="rounded-lg border border-[#182533]/10 bg-[#f8f5ef] px-3 py-2 outline-none focus:border-[#617c43]/40"
                             value={editFriendlyName}
                             onChange={(event) =>
                               setEditFriendlyName(
@@ -809,7 +809,7 @@ function DiscoveryDeviceCard({
                             Brand
                           </span>
                           <input
-                            className="rounded-lg border border-neutral-200 bg-white px-3 py-2"
+                            className="rounded-lg border border-[#182533]/10 bg-[#f8f5ef] px-3 py-2 outline-none focus:border-[#617c43]/40"
                             value={editManufacturer}
                             onChange={(event) =>
                               setEditManufacturer(
@@ -825,7 +825,7 @@ function DiscoveryDeviceCard({
                             Model
                           </span>
                           <input
-                            className="rounded-lg border border-neutral-200 bg-white px-3 py-2"
+                            className="rounded-lg border border-[#182533]/10 bg-[#f8f5ef] px-3 py-2 outline-none focus:border-[#617c43]/40"
                             value={editModel}
                             onChange={(event) =>
                               setEditModel(
@@ -841,7 +841,7 @@ function DiscoveryDeviceCard({
                             Device type
                           </span>
                           <input
-                            className="rounded-lg border border-neutral-200 bg-white px-3 py-2"
+                            className="rounded-lg border border-[#182533]/10 bg-[#f8f5ef] px-3 py-2 outline-none focus:border-[#617c43]/40"
                             value={editCategory}
                             onChange={(event) =>
                               setEditCategory(
@@ -859,7 +859,7 @@ function DiscoveryDeviceCard({
 
                           <div className="border-t border-neutral-200 p-3">
                             <input
-                              className="w-full rounded-lg border border-neutral-200 px-3 py-2"
+                              className="w-full rounded-lg border border-[#182533]/10 bg-[#f8f5ef] px-3 py-2 outline-none focus:border-[#617c43]/40"
                               value={editTypeKey}
                               onChange={(event) =>
                                 setEditTypeKey(
@@ -908,12 +908,12 @@ function DiscoveryDeviceCard({
               ) : null}
 
               {device.matchStatus === "new" ? (
-                <details className="group rounded-xl border border-neutral-200 bg-white">
+                <details className="group rounded-xl border border-[#182533]/10 bg-[#f8f5ef]">
                   <summary className="cursor-pointer list-none px-4 py-3 text-center text-sm font-medium text-text-secondary">
                     More options
                   </summary>
 
-                  <div className="grid gap-2 border-t border-neutral-200 p-3">
+                  <div className="grid gap-2 border-t border-[#182533]/8 p-3">
                     <ActionButton
                       label="Confirm and Add Device"
                       icon={<CheckCircle2 size={16} />}
@@ -937,7 +937,7 @@ function DiscoveryDeviceCard({
           ) : null}
         </div>
 
-        <details className="group mt-5 rounded-xl border border-neutral-200 bg-surface-sunken">
+        <details className="group mt-5 rounded-xl border border-[#182533]/8 bg-[#eee9df]/55">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-medium text-text-primary">
             <span>Device and network details</span>
             <span className="text-xs font-normal text-text-secondary">
@@ -945,7 +945,7 @@ function DiscoveryDeviceCard({
             </span>
           </summary>
 
-          <div className="border-t border-neutral-200 px-4 py-4">
+          <div className="border-t border-[#182533]/8 px-4 py-4">
             <dl className="grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-5">
               <Field
                 label="IP address"
@@ -970,7 +970,7 @@ function DiscoveryDeviceCard({
             </dl>
 
             {device.matchReason ? (
-              <div className="mt-4 rounded-lg bg-white px-3 py-3 text-sm text-text-secondary">
+              <div className="mt-4 rounded-lg border border-[#182533]/8 bg-[#f8f5ef] px-3 py-3 text-sm text-[#68737b]">
                 <span className="font-medium text-text-primary">
                   Why we suggested this:{" "}
                 </span>
@@ -1066,8 +1066,8 @@ function ActionButton({
       onClick={onClick}
       className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-60 ${
         variant === "primary"
-          ? "bg-neutral-900 text-white hover:bg-neutral-800"
-          : "border border-neutral-200 bg-white text-text-primary hover:border-neutral-300"
+          ? "bg-[#617c43] text-white hover:bg-[#718d4f] shadow-sm"
+          : "border border-[#182533]/10 bg-[#f8f5ef] text-[#17212a] hover:border-[#617c43]/25 hover:bg-[#f2eee6]"
       }`}
     >
       {busy ? (
@@ -1092,12 +1092,12 @@ function ImportConfirmModal({
   onConfirm: () => void;
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/40 p-4">
-      <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-xl">
-        <h2 className="text-xl font-semibold text-text-primary">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#07101a]/60 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-lg rounded-[28px] border border-[#182533]/10 bg-[#f8f5ef] p-6 shadow-2xl">
+        <h2 className="font-serif text-2xl font-medium tracking-[-0.03em] text-[#17212a]">
           Add device to vault
         </h2>
-        <p className="mt-2 text-sm text-text-secondary">
+        <p className="mt-2 text-sm leading-6 text-[#68737b]">
           Review the prefilled details below. Nothing is imported until you confirm.
         </p>
 
@@ -1111,7 +1111,7 @@ function ImportConfirmModal({
         </dl>
 
         {device.matchStatus === "possible_match" ? (
-          <p className="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <p className="mt-4 rounded-xl border border-[#b58a42]/20 bg-[#b58a42]/10 px-4 py-3 text-sm text-[#916c31]">
             This looks like a device already in your vault. Confirm only if you are sure it is new.
           </p>
         ) : null}
@@ -1169,12 +1169,12 @@ function StatusBadge({
 
   const className =
     status === "matched"
-      ? "bg-emerald-100 text-emerald-800"
+      ? "border border-[#617c43]/15 bg-[#617c43]/10 text-[#526b39]"
       : status === "possible_match"
-        ? "bg-amber-100 text-amber-800"
+        ? "border border-[#b58a42]/15 bg-[#b58a42]/10 text-[#916c31]"
         : status === "new"
-          ? "bg-sky-100 text-sky-800"
-          : "bg-neutral-100 text-text-secondary";
+          ? "border border-[#718d4f]/15 bg-[#718d4f]/10 text-[#617c43]"
+          : "border border-[#182533]/8 bg-[#182533]/5 text-[#68737b]";
 
   return (
     <span

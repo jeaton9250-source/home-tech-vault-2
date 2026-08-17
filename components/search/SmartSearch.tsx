@@ -619,7 +619,7 @@ function DashboardSearch({
   return (
     <div>
       <div className="flex items-start gap-3">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-home-health-soft text-home-health">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#eef3e8] text-[#617c43]">
           <Sparkles
             size={18}
             aria-hidden
@@ -627,12 +627,12 @@ function DashboardSearch({
         </div>
 
         <div>
-          <h2 className="text-lg font-semibold tracking-tight text-text-primary md:text-xl">
+          <h2 className="text-lg font-semibold tracking-tight text-[#f4f0e8] md:text-xl">
             {heading ||
               "Ask your home"}
           </h2>
 
-          <p className="mt-1 text-sm leading-6 text-text-secondary">
+          <p className="mt-1 text-sm leading-6 text-[#b6c0c7]">
             Search naturally across your
             devices, documents, warranties,
             and home records.
@@ -644,10 +644,10 @@ function DashboardSearch({
         onSubmit={onSubmit}
         className="mt-5"
       >
-        <div className="relative rounded-[18px] border border-border-subtle bg-surface-sunken/40 p-1.5 transition focus-within:border-home-health/35 focus-within:bg-surface-card">
+        <div className="relative rounded-[18px] border border-white/15 bg-white/[0.08] p-1.5 transition focus-within:border-[#8ca667]/60 focus-within:bg-white/[0.11]">
           <Search
             size={18}
-            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-text-tertiary"
+            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#aeb8c1]"
             aria-hidden
           />
 
@@ -660,14 +660,14 @@ function DashboardSearch({
               )
             }
             placeholder="Ask something about your home..."
-            className="htv-focus-ring w-full rounded-[14px] border-0 bg-transparent py-3 pl-10 pr-12 text-sm text-text-primary outline-none placeholder:text-text-tertiary"
+            className="htv-focus-ring w-full rounded-[14px] border-0 bg-transparent py-3 pl-10 pr-12 text-sm text-[#f4f0e8] outline-none placeholder:text-[#9da9b1]"
             aria-label="Search your home"
           />
 
           <button
             type="submit"
             disabled={loading}
-            className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-xl bg-home-health text-white transition hover:opacity-90 disabled:opacity-60"
+            className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-xl bg-[#617c43] text-white transition hover:bg-[#718d4f] disabled:opacity-60"
           >
             {loading ? (
               <Loader2
@@ -697,7 +697,7 @@ function DashboardSearch({
                 item.query
               )
             }
-            className="rounded-full border border-border-subtle bg-surface-sunken/35 px-3 py-1.5 text-[11px] font-medium text-text-secondary transition hover:border-home-health/30 hover:text-text-primary"
+            className="rounded-full border border-white/15 bg-white/[0.08] px-3 py-1.5 text-[11px] font-medium text-[#d8ded8] transition hover:border-[#8ca667]/45 hover:bg-white/[0.12] hover:text-white"
           >
             {item.label}
           </button>

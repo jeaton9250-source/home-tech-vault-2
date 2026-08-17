@@ -723,7 +723,8 @@ function usePermissionsState() {
 
   const effectiveRole = useMemo(() => {
     if (
-      isDevelopmentAccessOverrideActive
+      isDevelopmentAccessOverrideActive &&
+      developmentPlanInput.rawHouseholdRole
     ) {
       return normalizeHouseholdRole(
         developmentPlanInput.rawHouseholdRole
@@ -738,7 +739,8 @@ function usePermissionsState() {
   ]);
 
   const effectiveRawHouseholdRole =
-    isDevelopmentAccessOverrideActive
+    isDevelopmentAccessOverrideActive &&
+    developmentPlanInput.rawHouseholdRole
       ? developmentPlanInput.rawHouseholdRole
       : rawHouseholdRole;
 

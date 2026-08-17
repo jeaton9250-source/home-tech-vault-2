@@ -18,7 +18,7 @@ export default function NetworkTabs({
 }: NetworkTabsProps) {
   return (
     <nav
-      className="mt-5 flex gap-2 overflow-x-auto rounded-[18px] border border-border-subtle bg-surface-sunken p-1.5"
+      className="mt-6 flex gap-2 overflow-x-auto rounded-[18px] border border-[#182533]/10 bg-[#e5dfd4] p-1.5"
       aria-label="Network sections"
     >
       {NETWORK_TABS.map((tab) => {
@@ -40,8 +40,8 @@ export default function NetworkTabs({
             className={cn(
               "shrink-0 rounded-[14px] px-4 py-2.5 text-sm font-medium transition",
               isActive
-                ? "bg-surface-card text-text-primary shadow-[var(--shadow-sm)]"
-                : "text-text-secondary hover:bg-surface-card/60 hover:text-text-primary"
+                ? "bg-surface-card text-[#17212a] shadow-[var(--shadow-sm)]"
+                : "text-[#68737b] hover:bg-surface-card/60 hover:text-[#17212a]"
             )}
           >
             {tab.label}

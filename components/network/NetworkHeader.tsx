@@ -52,21 +52,21 @@ export default function NetworkHeader({
     <div className="space-y-4">
       <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0">
-          <p className="text-overline text-text-muted">
+          <p className="text-overline text-[#8a949b]">
             Network
           </p>
 
-          <h1 className="mt-1 text-3xl font-medium tracking-[-0.035em] text-text-primary md:text-4xl">
+          <h1 className="mt-1 text-3xl font-medium tracking-[-0.035em] text-[#17212a] md:text-4xl">
             Your Home Network
           </h1>
 
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-text-secondary md:text-base">
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-[#68737b] md:text-base">
             View connected devices, Home Assistant
             states, monitoring, and connector status.
           </p>
 
           {!loading && headerSummary ? (
-            <p className="mt-2 text-sm font-medium text-text-secondary">
+            <p className="mt-2 text-sm font-medium text-[#68737b]">
               {headerSummary}
             </p>
           ) : null}
@@ -146,25 +146,25 @@ export default function NetworkHeader({
       </header>
 
       {isViewer ? (
-        <div className="rounded-[var(--radius-button)] border border-border-subtle bg-surface-card px-4 py-3 text-sm text-text-secondary">
+        <div className="rounded-[var(--radius-button)] border border-border-subtle bg-surface-card px-4 py-3 text-sm text-[#68737b]">
           Viewer access · Read only
         </div>
       ) : null}
 
       {!loading && !hasConnector ? (
-        <PageCard className="p-4 md:p-5">
+        <PageCard className="border-[#182533]/10 bg-[#f8f5ef] p-4 shadow-[0_16px_40px_-34px_rgba(15,25,35,0.4)] md:p-5">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex min-w-0 items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-button)] bg-surface-sunken text-text-primary">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-button)] bg-surface-sunken text-[#17212a]">
                 <Wifi size={17} />
               </div>
 
               <div className="min-w-0">
-                <h2 className="text-sm font-semibold text-text-primary">
+                <h2 className="text-sm font-semibold text-[#17212a]">
                   Automatic device discovery
                 </h2>
 
-                <p className="mt-1 text-sm leading-6 text-text-secondary">
+                <p className="mt-1 text-sm leading-6 text-[#68737b]">
                   Connect the desktop app to scan
                   your local network and sync Home
                   Assistant devices.
@@ -184,10 +184,10 @@ export default function NetworkHeader({
         </PageCard>
       ) : null}
 
-      <div className="flex flex-wrap gap-x-5 gap-y-2 border-t border-border-subtle pt-3 text-sm">
+      <div className="flex flex-wrap gap-x-5 gap-y-2 border-t border-[#182533]/10 pt-4 text-sm">
         <Link
           href="/network?tab=connector"
-          className="inline-flex items-center gap-2 font-medium text-text-secondary transition hover:text-text-primary"
+          className="inline-flex items-center gap-2 font-medium text-[#68737b] transition hover:text-[#17212a]"
         >
           <Router size={15} />
           Connector
@@ -195,7 +195,7 @@ export default function NetworkHeader({
 
         <Link
           href="/network/diagnostics"
-          className="inline-flex items-center gap-2 font-medium text-text-secondary transition hover:text-text-primary"
+          className="inline-flex items-center gap-2 font-medium text-[#68737b] transition hover:text-[#17212a]"
         >
           <Activity size={15} />
           Diagnostics
@@ -203,7 +203,7 @@ export default function NetworkHeader({
 
         <Link
           href="/network/edit"
-          className="inline-flex items-center gap-2 font-medium text-text-secondary transition hover:text-text-primary"
+          className="inline-flex items-center gap-2 font-medium text-[#68737b] transition hover:text-[#17212a]"
         >
           <Settings size={15} />
           Network Details

@@ -651,7 +651,7 @@ export default function MaintenancePage() {
       value: overdueTasks.length,
       description: "Needs attention",
       icon: CircleAlert,
-      iconClassName: "bg-danger-soft text-danger",
+      iconClassName: "border border-[#a6584e]/15 bg-[#a6584e]/10 text-[#984e46]",
     },
     {
       id: "due-soon",
@@ -659,7 +659,7 @@ export default function MaintenancePage() {
       value: dueSoonTasks.length,
       description: "Due within 7 days",
       icon: Clock3,
-      iconClassName: "bg-warning-soft text-warning",
+      iconClassName: "border border-[#b58a42]/15 bg-[#b58a42]/10 text-[#916c31]",
     },
     {
       id: "upcoming",
@@ -667,7 +667,7 @@ export default function MaintenancePage() {
       value: upcomingTasks.length,
       description: "Planned maintenance",
       icon: CalendarDays,
-      iconClassName: "bg-surface-sunken text-charcoal",
+      iconClassName: "border border-[#182533]/8 bg-[#182533]/5 text-[#17212a]",
     },
     {
       id: "completed",
@@ -675,7 +675,7 @@ export default function MaintenancePage() {
       value: completedTasks.length,
       description: "Finished tasks",
       icon: CheckCircle2,
-      iconClassName: "bg-home-health-soft text-home-health",
+      iconClassName: "border border-[#617c43]/15 bg-[#617c43]/10 text-[#526b39]",
     },
   ];
 
@@ -751,7 +751,7 @@ export default function MaintenancePage() {
               icon={Plus}
             />
           ) : showViewerAccess ? (
-            <div className="rounded-[var(--radius-button)] border border-border-subtle bg-surface-card/80 px-4 py-3 text-sm font-medium text-text-secondary shadow-[var(--shadow-sm)]">
+            <div className="rounded-xl border border-[#182533]/10 bg-[#f8f5ef] px-4 py-3 text-sm font-medium text-[#68737b] shadow-sm">
               Viewer Access · Read Only
             </div>
           ) : null}
@@ -763,16 +763,16 @@ export default function MaintenancePage() {
       ) : null}
 
       {(isDemo || !user) && !pageLoading ? (
-        <PageCard className="border-warning/30 bg-warning-soft/60 p-4 md:p-5">
+        <PageCard className="border-[#b58a42]/20 bg-[#b58a42]/10 p-4 md:p-5">
           <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-button)] border border-charcoal/15 bg-charcoal text-surface-card">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#617c43]/20 bg-[#617c43] text-white">
               <Wrench size={18} />
             </div>
             <div>
-              <p className="text-sm font-semibold text-text-primary">
+              <p className="text-sm font-semibold text-[#17212a]">
                 Demo Mode
               </p>
-              <p className="mt-1 text-sm leading-6 text-text-secondary">
+              <p className="mt-1 text-sm leading-6 text-[#68737b]">
                 You are viewing sample maintenance tasks. Creating or updating
                 tasks requires your own Home Tech Vault.
               </p>
@@ -782,17 +782,17 @@ export default function MaintenancePage() {
       ) : null}
 
       {errorMessage ? (
-        <PageCard className="border-danger/30 bg-danger-soft/70 p-5 md:p-6">
+        <PageCard className="border-[#a6584e]/20 bg-[#a6584e]/10 p-5 md:p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-button)] bg-danger-soft text-danger">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#a6584e]/10 text-[#984e46]">
                 <CircleAlert size={18} />
               </div>
               <div>
-                <p className="font-semibold text-text-primary">
+                <p className="font-semibold text-[#17212a]">
                   Unable to load maintenance
                 </p>
-                <p className="mt-1 text-sm leading-6 text-text-secondary">
+                <p className="mt-1 text-sm leading-6 text-[#68737b]">
                   {errorMessage}
                 </p>
               </div>
@@ -830,21 +830,21 @@ export default function MaintenancePage() {
                   }
                   aria-pressed={selected}
                   className={cn(
-                    "htv-focus-ring rounded-[var(--radius-card)] border p-4 text-left shadow-[var(--shadow-sm)] transition md:p-5",
+                    "htv-focus-ring rounded-[22px] border p-4 text-left shadow-[0_16px_40px_-34px_rgba(15,25,35,0.45)] transition md:p-5",
                     selected
-                      ? "border-charcoal bg-surface-card ring-2 ring-charcoal/15"
-                      : "border-border-subtle bg-surface-card hover:border-border-strong hover:bg-surface-hover"
+                      ? "border-[#617c43]/35 bg-[#f8f5ef] ring-2 ring-[#617c43]/10"
+                      : "border-[#182533]/10 bg-[#f8f5ef] hover:border-[#617c43]/20 hover:bg-[#f5f1e9]"
                   )}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-text-tertiary">
+                      <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-[#7a858d]">
                         {card.title}
                       </p>
-                      <p className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
+                      <p className="mt-2 font-serif text-2xl font-medium tracking-[-0.035em] text-[#17212a]">
                         {card.value}
                       </p>
-                      <p className="mt-1 text-xs leading-5 text-text-secondary">
+                      <p className="mt-1 text-xs leading-5 text-[#68737b]">
                         {card.description}
                       </p>
                     </div>
@@ -863,13 +863,13 @@ export default function MaintenancePage() {
             })}
           </section>
 
-          <PageCard className="p-5 md:p-6">
+          <PageCard className="border-[#182533]/10 bg-[#f8f5ef] p-5 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] md:p-6">
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
                 <div className="relative flex-1">
                   <Search
                     size={18}
-                    className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-text-tertiary"
+                    className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#8a949b]"
                   />
                   <input
                     type="search"
@@ -878,14 +878,14 @@ export default function MaintenancePage() {
                       setSearchTerm(event.target.value)
                     }
                     placeholder="Search tasks, devices, notes, or categories..."
-                    className="htv-focus-ring w-full rounded-2xl border border-border-subtle bg-surface-sunken py-3.5 pl-11 pr-11 text-sm text-text-primary outline-none transition placeholder:text-text-tertiary focus:border-interaction focus:bg-surface-card focus:ring-4 focus:ring-interaction/15"
+                    className="htv-focus-ring w-full rounded-xl border border-[#182533]/10 bg-[#eee9df]/60 py-3.5 pl-11 pr-11 text-sm text-[#17212a] outline-none transition placeholder:text-[#8a949b] focus:border-[#617c43]/40 focus:bg-[#f8f5ef] focus:ring-4 focus:ring-[#617c43]/10"
                   />
                   {searchTerm ? (
                     <button
                       type="button"
                       onClick={() => setSearchTerm("")}
                       aria-label="Clear search"
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-text-tertiary transition hover:text-text-primary"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8a949b] transition hover:text-[#17212a]"
                     >
                       <X size={16} />
                     </button>
@@ -896,7 +896,7 @@ export default function MaintenancePage() {
                   <span className="sr-only">Filter by device</span>
                   <Laptop
                     size={16}
-                    className="shrink-0 text-text-tertiary"
+                    className="shrink-0 text-[#8a949b]"
                     aria-hidden
                   />
                   <select
@@ -904,7 +904,7 @@ export default function MaintenancePage() {
                     onChange={(event) =>
                       setSelectedDeviceId(event.target.value)
                     }
-                    className="htv-focus-ring w-full rounded-2xl border border-border-subtle bg-surface-card px-4 py-3 text-sm text-text-primary outline-none transition focus:border-interaction"
+                    className="htv-focus-ring w-full rounded-xl border border-[#182533]/10 bg-[#f8f5ef] px-4 py-3 text-sm text-[#17212a] outline-none transition focus:border-[#617c43]/40"
                   >
                     <option value="all">All devices</option>
                     <option value="none">No device assigned</option>
@@ -920,7 +920,7 @@ export default function MaintenancePage() {
                   <span className="sr-only">Sort maintenance tasks</span>
                   <SlidersHorizontal
                     size={16}
-                    className="shrink-0 text-text-tertiary"
+                    className="shrink-0 text-[#8a949b]"
                     aria-hidden
                   />
                   <select
@@ -930,7 +930,7 @@ export default function MaintenancePage() {
                         event.target.value as MaintenanceSort
                       )
                     }
-                    className="htv-focus-ring w-full rounded-2xl border border-border-subtle bg-surface-card px-4 py-3 text-sm text-text-primary outline-none transition focus:border-interaction"
+                    className="htv-focus-ring w-full rounded-xl border border-[#182533]/10 bg-[#f8f5ef] px-4 py-3 text-sm text-[#17212a] outline-none transition focus:border-[#617c43]/40"
                   >
                     <option value="due-soonest">Due Date Soonest</option>
                     <option value="due-latest">Due Date Latest</option>
@@ -964,8 +964,8 @@ export default function MaintenancePage() {
                         className={cn(
                           "htv-focus-ring shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition",
                           selected
-                            ? "bg-charcoal text-surface-card"
-                            : "border border-border-subtle bg-surface-card text-text-secondary hover:border-border-strong hover:text-text-primary"
+                            ? "bg-[#617c43] text-white shadow-sm"
+                            : "border border-[#182533]/10 bg-[#f8f5ef] text-[#68737b] hover:border-[#617c43]/25 hover:text-[#17212a]"
                         )}
                       >
                         {filter.label}
@@ -981,8 +981,8 @@ export default function MaintenancePage() {
                     className={cn(
                       "htv-focus-ring rounded-full px-3 py-1.5 text-xs font-semibold transition",
                       viewMode === "all"
-                        ? "bg-charcoal text-surface-card"
-                        : "border border-border-subtle text-text-secondary hover:text-text-primary"
+                        ? "bg-[#617c43] text-white shadow-sm"
+                        : "border border-[#182533]/10 text-[#68737b] hover:border-[#617c43]/25 hover:text-[#17212a]"
                     )}
                   >
                     All Tasks
@@ -993,8 +993,8 @@ export default function MaintenancePage() {
                     className={cn(
                       "htv-focus-ring rounded-full px-3 py-1.5 text-xs font-semibold transition",
                       viewMode === "grouped"
-                        ? "bg-charcoal text-surface-card"
-                        : "border border-border-subtle text-text-secondary hover:text-text-primary"
+                        ? "bg-[#617c43] text-white shadow-sm"
+                        : "border border-[#182533]/10 text-[#68737b] hover:border-[#617c43]/25 hover:text-[#17212a]"
                     )}
                   >
                     Group by Device
@@ -1002,8 +1002,8 @@ export default function MaintenancePage() {
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border-subtle pt-4">
-                <p className="text-sm text-text-secondary">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#182533]/10 pt-4">
+                <p className="text-sm text-[#68737b]">
                   {resultsHeader}
                 </p>
 
@@ -1011,7 +1011,7 @@ export default function MaintenancePage() {
                   <button
                     type="button"
                     onClick={clearFilters}
-                    className="htv-focus-ring inline-flex items-center gap-2 text-sm font-semibold text-text-primary transition hover:text-interaction"
+                    className="htv-focus-ring inline-flex items-center gap-2 text-sm font-semibold text-[#617c43] transition hover:text-[#718d4f]"
                   >
                     <X size={15} />
                     Clear filters
@@ -1052,7 +1052,7 @@ export default function MaintenancePage() {
                 <section key={group.key} className="space-y-3">
                   <div className="flex items-center justify-between gap-3 px-1">
                     <div className="min-w-0">
-                      <h2 className="truncate text-lg font-semibold tracking-[-0.03em] text-text-primary">
+                      <h2 className="truncate font-serif text-xl font-medium tracking-[-0.03em] text-[#17212a]">
                         {group.label}
                       </h2>
                       <p className="mt-1 text-sm text-text-secondary">
@@ -1254,7 +1254,7 @@ function TaskCard({
   }
 
   return (
-    <article className="rounded-[var(--radius-card)] border border-border-subtle bg-surface-card p-4 shadow-[var(--shadow-sm)] transition hover:border-border-strong md:p-5">
+    <article className="rounded-[22px] border border-[#182533]/10 bg-[#f8f5ef] p-4 shadow-[0_16px_40px_-34px_rgba(15,25,35,0.45)] transition hover:-translate-y-0.5 hover:border-[#617c43]/25 hover:shadow-[0_24px_50px_-36px_rgba(15,25,35,0.55)] md:p-5">
       <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[auto_minmax(0,1.4fr)_9rem_8rem_9rem_auto] lg:items-center lg:gap-4">
         <div className="flex items-start justify-between gap-3 lg:contents">
           {canEdit || isDemo ? (
@@ -1268,10 +1268,10 @@ function TaskCard({
                   : "Mark task complete"
               }
               className={cn(
-                "htv-focus-ring flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border-subtle bg-surface-sunken transition disabled:opacity-50",
+                "htv-focus-ring flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#182533]/10 bg-[#eee9df]/60 transition disabled:opacity-50",
                 task.completed
-                  ? "text-home-health"
-                  : "text-text-secondary hover:text-text-primary"
+                  ? "text-[#617c43]"
+                  : "text-[#7a858d] hover:text-[#617c43]"
               )}
             >
               {updating ? (
@@ -1285,10 +1285,10 @@ function TaskCard({
           ) : (
             <div
               className={cn(
-                "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border-subtle bg-surface-sunken",
+                "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#182533]/10 bg-[#eee9df]/60",
                 task.completed
-                  ? "text-home-health"
-                  : "text-text-tertiary"
+                  ? "text-[#617c43]"
+                  : "text-[#8a949b]"
               )}
             >
               {task.completed ? (
@@ -1313,20 +1313,20 @@ function TaskCard({
         <div className="min-w-0">
           <h2
             className={cn(
-              "text-lg font-semibold tracking-[-0.03em]",
+              "font-serif text-lg font-medium tracking-[-0.03em]",
               task.completed
-                ? "text-text-tertiary line-through"
-                : "text-text-primary"
+                ? "text-[#929ba1] line-through"
+                : "text-[#17212a]"
             )}
           >
             {task.title}
           </h2>
 
-          <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-text-secondary">
+          <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-[#68737b]">
             {task.device_id ? (
               <Link
                 href={"/devices/" + task.device_id}
-                className="htv-focus-ring inline-flex items-center gap-1.5 rounded-md font-medium text-interaction hover:text-interaction-hover"
+                className="htv-focus-ring inline-flex items-center gap-1.5 rounded-md font-medium text-[#617c43] hover:text-[#718d4f]"
               >
                 <Laptop size={14} aria-hidden />
                 {task.devices?.device_name || "Unnamed Device"}
@@ -1336,35 +1336,35 @@ function TaskCard({
             )}
 
             {task.task_type ? (
-              <span className="rounded-full bg-surface-sunken px-2 py-0.5 text-xs font-medium text-text-secondary">
+              <span className="rounded-full border border-[#182533]/8 bg-[#182533]/5 px-2 py-0.5 text-xs font-medium text-[#68737b]">
                 {task.task_type}
               </span>
             ) : null}
           </div>
 
           {task.description ? (
-            <p className="mt-2 line-clamp-2 text-sm leading-6 text-text-secondary">
+            <p className="mt-2 line-clamp-2 text-sm leading-6 text-[#68737b]">
               {task.description}
             </p>
           ) : null}
         </div>
 
         <div className="text-sm">
-          <p className="font-medium text-text-primary">
+          <p className="font-medium text-[#17212a]">
             {status.dueMessage}
           </p>
           {task.completed && task.completed_at ? (
-            <p className="mt-1 text-xs text-text-tertiary">
+            <p className="mt-1 text-xs text-[#8a949b]">
               Completed {formatDate(task.completed_at.slice(0, 10))}
             </p>
           ) : task.due_date ? (
-            <p className="mt-1 text-xs text-text-tertiary">
+            <p className="mt-1 text-xs text-[#8a949b]">
               {formatDate(task.due_date)}
             </p>
           ) : null}
         </div>
 
-        <div className="text-sm text-text-secondary">
+        <div className="text-sm text-[#68737b]">
           {task.recurring_interval ? (
             <span className="inline-flex items-center gap-1.5">
               <Repeat2 size={14} aria-hidden />
@@ -1416,13 +1416,13 @@ function TaskCard({
               {menuOpen ? (
                 <div
                   role="menu"
-                  className="absolute right-0 top-full z-20 mt-2 w-48 overflow-hidden rounded-[var(--radius-dialog)] border border-border-subtle bg-surface-card shadow-lg"
+                  className="absolute right-0 top-full z-20 mt-2 w-48 overflow-hidden rounded-[18px] border border-[#182533]/10 bg-[#f8f5ef] shadow-xl"
                 >
                   {(canEdit || isDemo) && (
                     <button
                       type="button"
                       role="menuitem"
-                      className="htv-focus-ring flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-medium text-text-primary transition hover:bg-surface-sunken"
+                      className="htv-focus-ring flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-medium text-[#17212a] transition hover:bg-[#eee9df]"
                       onClick={() => {
                         setMenuOpen(false);
                         handleToggleClick();
@@ -1446,7 +1446,7 @@ function TaskCard({
                     <Link
                       href={"/devices/" + task.device_id}
                       role="menuitem"
-                      className="htv-focus-ring flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-medium text-text-primary transition hover:bg-surface-sunken"
+                      className="htv-focus-ring flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-medium text-[#17212a] transition hover:bg-[#eee9df]"
                       onClick={() => setMenuOpen(false)}
                     >
                       <Laptop size={15} />
@@ -1459,7 +1459,7 @@ function TaskCard({
                       type="button"
                       role="menuitem"
                       disabled={deleting}
-                      className="htv-focus-ring flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-medium text-danger transition hover:bg-danger-soft"
+                      className="htv-focus-ring flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-medium text-[#984e46] transition hover:bg-[#a6584e]/10"
                       onClick={() => {
                         setMenuOpen(false);
 
@@ -1496,18 +1496,18 @@ function MaintenanceSkeleton() {
         {[1, 2, 3, 4].map((item) => (
           <div
             key={item}
-            className="h-28 animate-pulse rounded-[var(--radius-card)] border border-border-subtle bg-surface-card"
+            className="h-28 animate-pulse rounded-[22px] border border-[#182533]/10 bg-[#f8f5ef]"
           />
         ))}
       </section>
 
-      <div className="h-44 animate-pulse rounded-[var(--radius-card)] border border-border-subtle bg-surface-card" />
+      <div className="h-44 animate-pulse rounded-[22px] border border-[#182533]/10 bg-[#f8f5ef]" />
 
       <section className="space-y-3">
         {[1, 2, 3, 4].map((item) => (
           <div
             key={item}
-            className="h-28 animate-pulse rounded-[var(--radius-card)] border border-border-subtle bg-surface-card"
+            className="h-28 animate-pulse rounded-[22px] border border-[#182533]/10 bg-[#f8f5ef]"
           />
         ))}
       </section>
@@ -1586,7 +1586,7 @@ function getTaskStatus(
     return {
       label: "Completed",
       group: "completed",
-      badgeClass: "bg-home-health-soft text-home-health",
+      badgeClass: "border border-[#617c43]/15 bg-[#617c43]/10 text-[#526b39]",
       Icon: CheckCircle2,
       dueMessage: task.completed_at
         ? "Completed " + formatDate(task.completed_at.slice(0, 10))
@@ -1598,7 +1598,7 @@ function getTaskStatus(
     return {
       label: "No Due Date",
       group: "unscheduled",
-      badgeClass: "bg-surface-sunken text-text-secondary",
+      badgeClass: "border border-[#182533]/8 bg-[#182533]/5 text-[#68737b]",
       Icon: CalendarDays,
       dueMessage: "No due date",
     };
@@ -1610,7 +1610,7 @@ function getTaskStatus(
     return {
       label: "No Due Date",
       group: "unscheduled",
-      badgeClass: "bg-surface-sunken text-text-secondary",
+      badgeClass: "border border-[#182533]/8 bg-[#182533]/5 text-[#68737b]",
       Icon: CalendarDays,
       dueMessage: "No due date",
     };
@@ -1627,7 +1627,7 @@ function getTaskStatus(
     return {
       label: "Overdue",
       group: "overdue",
-      badgeClass: "bg-danger-soft text-danger",
+      badgeClass: "border border-[#a6584e]/15 bg-[#a6584e]/10 text-[#984e46]",
       Icon: CircleAlert,
       dueMessage:
         days === 1
@@ -1640,7 +1640,7 @@ function getTaskStatus(
     return {
       label: "Due Soon",
       group: "due-soon",
-      badgeClass: "bg-warning-soft text-warning",
+      badgeClass: "border border-[#b58a42]/15 bg-[#b58a42]/10 text-[#916c31]",
       Icon: Clock3,
       dueMessage: "Due today",
     };
@@ -1650,7 +1650,7 @@ function getTaskStatus(
     return {
       label: "Due Soon",
       group: "due-soon",
-      badgeClass: "bg-warning-soft text-warning",
+      badgeClass: "border border-[#b58a42]/15 bg-[#b58a42]/10 text-[#916c31]",
       Icon: Clock3,
       dueMessage: "Due tomorrow",
     };
@@ -1660,7 +1660,7 @@ function getTaskStatus(
     return {
       label: "Due Soon",
       group: "due-soon",
-      badgeClass: "bg-warning-soft text-warning",
+      badgeClass: "border border-[#b58a42]/15 bg-[#b58a42]/10 text-[#916c31]",
       Icon: Clock3,
       dueMessage: "Due in " + String(difference) + " days",
     };
@@ -1669,7 +1669,7 @@ function getTaskStatus(
   return {
     label: "Upcoming",
     group: "upcoming",
-    badgeClass: "bg-surface-sunken text-text-secondary",
+    badgeClass: "border border-[#182533]/8 bg-[#182533]/5 text-[#68737b]",
     Icon: CalendarDays,
     dueMessage: "Due " + formatDate(task.due_date),
   };

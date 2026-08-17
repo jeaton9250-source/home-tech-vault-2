@@ -358,9 +358,9 @@ function getStatusStyles(
   if (status === "active") {
     return {
       badge:
-        "border-home-health/25 bg-home-health-soft text-home-health",
+        "border-[#617c43]/20 bg-[#617c43]/10 text-[#526b39]",
       icon:
-        "bg-home-health-soft text-home-health",
+        "bg-[#617c43]/10 text-[#617c43]",
       Icon: ShieldCheck,
     };
   }
@@ -368,9 +368,9 @@ function getStatusStyles(
   if (status === "expiring") {
     return {
       badge:
-        "border-warning/30 bg-warning-soft text-warning",
+        "border-[#b58a42]/20 bg-[#b58a42]/10 text-[#916c31]",
       icon:
-        "bg-warning-soft text-warning",
+        "bg-[#b58a42]/10 text-[#916c31]",
       Icon: Clock3,
     };
   }
@@ -378,18 +378,18 @@ function getStatusStyles(
   if (status === "expired") {
     return {
       badge:
-        "border-danger/25 bg-danger-soft text-danger",
+        "border-[#a6584e]/20 bg-[#a6584e]/10 text-[#984e46]",
       icon:
-        "bg-danger-soft text-danger",
+        "bg-[#a6584e]/10 text-[#984e46]",
       Icon: CircleAlert,
     };
   }
 
   return {
     badge:
-      "border-border-subtle bg-surface-sunken text-text-secondary",
+      "border-[#182533]/10 bg-[#182533]/5 text-[#68737b]",
     icon:
-      "bg-surface-sunken text-text-secondary",
+      "bg-[#182533]/5 text-[#68737b]",
     Icon: CalendarX,
   };
 }
@@ -816,7 +816,7 @@ export default function WarrantiesPage() {
       description: "Coverage currently valid",
       icon: ShieldCheck,
       iconClassName:
-        "bg-home-health-soft text-home-health",
+        "bg-[#617c43]/10 text-[#617c43]",
     },
     {
       id: "expiring",
@@ -825,7 +825,7 @@ export default function WarrantiesPage() {
       description: "Expires within 90 days",
       icon: Clock3,
       iconClassName:
-        "bg-warning-soft text-warning",
+        "bg-[#b58a42]/10 text-[#916c31]",
     },
     {
       id: "expired",
@@ -834,7 +834,7 @@ export default function WarrantiesPage() {
       description: "Coverage has ended",
       icon: CircleAlert,
       iconClassName:
-        "bg-danger-soft text-danger",
+        "bg-[#a6584e]/10 text-[#984e46]",
     },
     {
       id: "missing",
@@ -843,7 +843,7 @@ export default function WarrantiesPage() {
       description: "No expiration date saved",
       icon: CalendarX,
       iconClassName:
-        "bg-surface-sunken text-text-secondary",
+        "bg-[#182533]/5 text-[#68737b]",
     },
   ];
 
@@ -1065,9 +1065,9 @@ export default function WarrantiesPage() {
       ) : null}
 
       {(isDemo || !user) && !pageLoading ? (
-        <PageCard className="border-warning/30 bg-warning-soft/60 p-4 md:p-5">
+        <PageCard className="border-[#b58a42]/20 bg-[#b58a42]/10 p-4 md:p-5">
           <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-button)] border border-charcoal/15 bg-charcoal text-surface-card">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#617c43]/20 bg-[#617c43] text-white">
               <ShieldCheck size={18} />
             </div>
             <div>
@@ -1084,7 +1084,7 @@ export default function WarrantiesPage() {
       ) : null}
 
       {error ? (
-        <PageCard className="border-danger/30 bg-danger-soft/70 p-5 md:p-6">
+        <PageCard className="border-[#a6584e]/20 bg-[#a6584e]/10 p-5 md:p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex items-start gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-button)] bg-danger-soft text-danger">
@@ -1137,21 +1137,21 @@ export default function WarrantiesPage() {
                   }
                   aria-pressed={selected}
                   className={cn(
-                    "htv-focus-ring rounded-[var(--radius-card)] border p-4 text-left shadow-[var(--shadow-sm)] transition md:p-5",
+                    "htv-focus-ring rounded-[22px] border p-4 text-left shadow-[0_16px_40px_-34px_rgba(15,25,35,0.45)] transition md:p-5",
                     selected
-                      ? "border-charcoal bg-surface-card ring-2 ring-charcoal/15"
-                      : "border-border-subtle bg-surface-card hover:border-border-strong hover:bg-surface-hover"
+                      ? "border-[#617c43]/35 bg-[#f8f5ef] ring-2 ring-[#617c43]/10"
+                      : "border-[#182533]/10 bg-[#f8f5ef] hover:border-[#617c43]/20 hover:bg-[#f5f1e9]"
                   )}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-text-tertiary">
+                      <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[#7a858d]">
                         {card.title}
                       </p>
-                      <p className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
+                      <p className="mt-2 font-serif text-2xl font-medium tracking-[-0.03em] text-[#17212a]">
                         {card.value}
                       </p>
-                      <p className="mt-1 text-xs leading-5 text-text-secondary">
+                      <p className="mt-1 text-xs leading-5 text-[#68737b]">
                         {card.description}
                       </p>
                     </div>
@@ -1171,38 +1171,38 @@ export default function WarrantiesPage() {
           </section>
 
           <section className="grid gap-3 lg:grid-cols-2">
-            <PageCard className="p-4 md:p-5">
+            <PageCard className="border-[#182533]/10 bg-[#f8f5ef] p-4 shadow-[0_16px_40px_-34px_rgba(15,25,35,0.45)] md:p-5">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-text-tertiary">
+                  <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[#7a858d]">
                     Protected Value
                   </p>
-                  <p className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
+                  <p className="mt-2 font-serif text-2xl font-medium tracking-[-0.03em] text-[#17212a]">
                     {formatCurrency(protectedValue)}
                   </p>
                   <p className="mt-1 text-xs text-text-secondary">
                     Covered by active warranties
                   </p>
                 </div>
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-surface-sunken text-charcoal">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#617c43]/10 text-[#617c43]">
                   <ShieldCheck size={16} />
                 </div>
               </div>
             </PageCard>
 
-            <PageCard className="p-4 md:p-5">
+            <PageCard className="border-[#182533]/10 bg-[#f8f5ef] p-4 shadow-[0_16px_40px_-34px_rgba(15,25,35,0.45)] md:p-5">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-text-tertiary">
+                  <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[#7a858d]">
                     Next Expiring
                   </p>
                   {nextExpiringDevice ? (
                     <>
-                      <p className="mt-2 truncate text-lg font-semibold text-text-primary">
+                      <p className="mt-2 truncate font-serif text-lg font-medium text-[#17212a]">
                         {nextExpiringDevice.device_name ??
                           "Unnamed Device"}
                       </p>
-                      <p className="mt-1 text-xs font-medium text-warning">
+                      <p className="mt-1 text-xs font-medium text-[#916c31]">
                         {getStatusDescription(
                           nextExpiringDevice.warranty_date
                         )}
@@ -1225,20 +1225,20 @@ export default function WarrantiesPage() {
                     </>
                   )}
                 </div>
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-warning-soft text-warning">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#b58a42]/10 text-[#916c31]">
                   <Clock3 size={16} />
                 </div>
               </div>
             </PageCard>
           </section>
 
-          <PageCard className="p-5 md:p-6">
+          <PageCard className="border-[#182533]/10 bg-[#f8f5ef] p-5 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] md:p-6">
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
                 <div className="relative flex-1">
                   <Search
                     size={18}
-                    className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-text-tertiary"
+                    className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#8a949b]"
                   />
                   <input
                     type="search"
@@ -1249,7 +1249,7 @@ export default function WarrantiesPage() {
                       )
                     }
                     placeholder="Search devices, brands, models, or locations..."
-                    className="htv-focus-ring w-full rounded-2xl border border-border-subtle bg-surface-sunken py-3.5 pl-11 pr-11 text-sm text-text-primary outline-none transition placeholder:text-text-tertiary focus:border-interaction focus:bg-surface-card focus:ring-4 focus:ring-interaction/15"
+                    className="htv-focus-ring w-full rounded-xl border border-[#182533]/10 bg-[#eee9df]/60 py-3.5 pl-11 pr-11 text-sm text-[#17212a] outline-none transition placeholder:text-[#8a949b] focus:border-[#617c43]/40 focus:bg-[#f8f5ef] focus:ring-4 focus:ring-[#617c43]/10"
                   />
                   {searchQuery ? (
                     <button
@@ -1258,7 +1258,7 @@ export default function WarrantiesPage() {
                         setSearchQuery("")
                       }
                       aria-label="Clear search"
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-text-tertiary transition hover:text-text-primary"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8a949b] transition hover:text-[#17212a]"
                     >
                       <X size={16} />
                     </button>
@@ -1271,7 +1271,7 @@ export default function WarrantiesPage() {
                   </span>
                   <SlidersHorizontal
                     size={16}
-                    className="shrink-0 text-text-tertiary"
+                    className="shrink-0 text-[#8a949b]"
                     aria-hidden
                   />
                   <select
@@ -1282,7 +1282,7 @@ export default function WarrantiesPage() {
                           .value as WarrantySort
                       )
                     }
-                    className="htv-focus-ring w-full rounded-2xl border border-border-subtle bg-surface-card px-4 py-3 text-sm text-text-primary outline-none transition focus:border-interaction"
+                    className="htv-focus-ring w-full rounded-xl border border-[#182533]/10 bg-[#f8f5ef] px-4 py-3 text-sm text-[#17212a] outline-none transition focus:border-[#617c43]/40"
                   >
                     <option value="expiration-soonest">
                       Expiration Soonest
@@ -1315,8 +1315,8 @@ export default function WarrantiesPage() {
                       className={cn(
                         "htv-focus-ring shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition",
                         selected
-                          ? "bg-charcoal text-surface-card"
-                          : "border border-border-subtle bg-surface-card text-text-secondary hover:border-border-strong hover:text-text-primary"
+                          ? "bg-[#617c43] text-white shadow-sm"
+                          : "border border-[#182533]/10 bg-[#f8f5ef] text-[#68737b] hover:border-[#617c43]/25 hover:text-[#17212a]"
                       )}
                     >
                       {filter.label}
@@ -1325,7 +1325,7 @@ export default function WarrantiesPage() {
                 })}
               </div>
 
-              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border-subtle pt-4">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#182533]/10 pt-4">
                 <p className="text-sm text-text-secondary">
                   {resultsHeader}
                   {activeFilter !== "all" ? (
@@ -1341,7 +1341,7 @@ export default function WarrantiesPage() {
                   <button
                     type="button"
                     onClick={clearFilters}
-                    className="htv-focus-ring inline-flex items-center gap-2 text-sm font-semibold text-text-primary transition hover:text-interaction"
+                    className="htv-focus-ring inline-flex items-center gap-2 text-sm font-semibold text-[#617c43] transition hover:text-[#718d4f]"
                   >
                     <X size={15} />
                     Clear filters
@@ -1367,7 +1367,7 @@ export default function WarrantiesPage() {
               />
             ) : (
               <>
-                <div className="hidden px-2 text-xs font-semibold uppercase tracking-[0.12em] text-text-tertiary lg:grid lg:grid-cols-[minmax(0,1.5fr)_7rem_9rem_10rem_9rem_1.5rem] lg:gap-4">
+                <div className="hidden px-2 text-[9px] font-semibold uppercase tracking-[0.14em] text-[#7a858d] lg:grid lg:grid-cols-[minmax(0,1.5fr)_7rem_9rem_10rem_9rem_1.5rem] lg:gap-4">
                   <span>Device</span>
                   <span>Location</span>
                   <span>Purchase</span>
@@ -1417,15 +1417,15 @@ function WarrantyRecord({
     <button
       type="button"
       onClick={onOpen}
-      className="htv-focus-ring group w-full rounded-[var(--radius-card)] border border-border-subtle bg-surface-card p-4 text-left shadow-[var(--shadow-sm)] transition hover:-translate-y-0.5 hover:border-border-strong hover:shadow-[var(--shadow-md)] md:p-5"
+      className="htv-focus-ring group w-full rounded-[22px] border border-[#182533]/10 bg-[#f8f5ef] p-4 text-left shadow-[0_16px_40px_-34px_rgba(15,25,35,0.45)] transition hover:-translate-y-0.5 hover:border-[#617c43]/25 hover:shadow-[0_24px_50px_-34px_rgba(15,25,35,0.55)] md:p-5"
     >
       <div className="flex flex-col gap-4 lg:hidden">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h3 className="text-lg font-semibold tracking-[-0.03em] text-text-primary">
+            <h3 className="font-serif text-lg font-medium tracking-[-0.03em] text-[#17212a]">
               {device.device_name ?? "Unnamed Device"}
             </h3>
-            <p className="mt-1 text-sm text-text-secondary">
+            <p className="mt-1 text-sm text-[#68737b]">
               {brandModel}
             </p>
           </div>
@@ -1441,7 +1441,7 @@ function WarrantyRecord({
           </span>
         </div>
 
-        <div className="space-y-2 text-sm">
+        <div className="space-y-2 text-sm text-[#68737b]">
           <p className="font-medium text-text-primary">
             {status === "missing"
               ? "Warranty date missing"
@@ -1480,7 +1480,7 @@ function WarrantyRecord({
           )}
         </div>
 
-        <div className="flex items-center justify-between border-t border-border-subtle pt-3 text-sm font-semibold text-interaction">
+        <div className="flex items-center justify-between border-t border-[#182533]/8 pt-3 text-sm font-semibold text-[#617c43]">
           View Device
           <ChevronRight
             size={16}
@@ -1501,7 +1501,7 @@ function WarrantyRecord({
               <Laptop size={18} aria-hidden />
             </div>
             <div className="min-w-0">
-              <h3 className="truncate text-base font-semibold text-text-primary">
+              <h3 className="truncate font-serif text-base font-medium text-[#17212a]">
                 {device.device_name ?? "Unnamed Device"}
               </h3>
               <p className="mt-1 truncate text-sm text-text-secondary">
@@ -1564,7 +1564,7 @@ function WarrantyRecord({
 
         <ChevronRight
           size={18}
-          className="justify-self-end text-text-tertiary transition group-hover:translate-x-0.5 group-hover:text-text-primary"
+          className="justify-self-end text-[#8a949b] transition group-hover:translate-x-0.5 group-hover:text-[#617c43]"
         />
       </div>
     </button>
@@ -1665,23 +1665,23 @@ function WarrantiesSkeleton() {
         {[1, 2, 3, 4].map((item) => (
           <div
             key={item}
-            className="h-28 animate-pulse rounded-[var(--radius-card)] border border-border-subtle bg-surface-card"
+            className="h-28 animate-pulse rounded-[22px] border border-[#182533]/10 bg-[#f8f5ef]"
           />
         ))}
       </section>
 
       <section className="grid gap-3 lg:grid-cols-2">
-        <div className="h-24 animate-pulse rounded-[var(--radius-card)] border border-border-subtle bg-surface-card" />
-        <div className="h-24 animate-pulse rounded-[var(--radius-card)] border border-border-subtle bg-surface-card" />
+        <div className="h-24 animate-pulse rounded-[22px] border border-[#182533]/10 bg-[#f8f5ef]" />
+        <div className="h-24 animate-pulse rounded-[22px] border border-[#182533]/10 bg-[#f8f5ef]" />
       </section>
 
-      <div className="h-40 animate-pulse rounded-[var(--radius-card)] border border-border-subtle bg-surface-card" />
+      <div className="h-40 animate-pulse rounded-[22px] border border-[#182533]/10 bg-[#f8f5ef]" />
 
       <section className="space-y-3">
         {[1, 2, 3, 4].map((item) => (
           <div
             key={item}
-            className="h-28 animate-pulse rounded-[var(--radius-card)] border border-border-subtle bg-surface-card"
+            className="h-28 animate-pulse rounded-[22px] border border-[#182533]/10 bg-[#f8f5ef]"
           />
         ))}
       </section>

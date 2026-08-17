@@ -1,25 +1,29 @@
-import { ReactNode } from "react";
-
-import PageLayout from "@/components/ui/PageLayout";
-import { cn } from "@/lib/design-system/cn";
+import type { ReactNode } from "react";
 
 type PageShellProps = {
   children: ReactNode;
   className?: string;
 };
 
-export default function PageShell({
+export function PageShell({
   children,
   className = "",
 }: PageShellProps) {
   return (
-    <PageLayout
-      className={cn(
-        "min-h-[calc(100vh-var(--topbar-height))] bg-surface-base text-text-primary",
-        className
-      )}
-    >
-      {children}
-    </PageLayout>
+    <div className="min-h-[calc(100vh-var(--topbar-height))] w-full bg-[#eee9df]">
+      <div
+        className={[
+          "mx-auto min-h-[calc(100vh-var(--topbar-height))]",
+          "w-full max-w-[var(--content-max)]",
+          "bg-[#eee9df]",
+          "px-4 py-6 sm:px-6 lg:px-8 lg:py-8",
+          className,
+        ].join(" ")}
+      >
+        {children}
+      </div>
+    </div>
   );
 }
+
+export default PageShell;
