@@ -3,16 +3,11 @@
 import FinalCta from "@/components/landing/public/FinalCta";
 import HeroSection from "@/components/landing/public/HeroSection";
 import HomeDocumentsSection from "@/components/landing/public/HomeDocumentsSection";
-import HomeFamilySection from "@/components/landing/public/HomeFamilySection";
-import HomeHealthPreviewSection from "@/components/landing/public/HomeHealthPreviewSection";
 import HowItWorksSection from "@/components/landing/public/HowItWorksSection";
-import LandingFaq from "@/components/landing/public/LandingFaq";
 import LandingFooter from "@/components/landing/public/LandingFooter";
 import LandingHeader from "@/components/landing/public/LandingHeader";
-import { landingTheme } from "@/components/landing/public/landingTheme";
-import PricingSection from "@/components/landing/public/PricingSection";
 import RealLifeUseCasesSection from "@/components/landing/public/RealLifeUseCasesSection";
-import SecuritySection from "@/components/landing/public/SecuritySection";
+import { landingTheme } from "@/components/landing/public/landingTheme";
 import StructuredData from "@/components/marketing/StructuredData";
 import { useDemoMode } from "@/hooks/useDemoMode";
 import { createOrganizationJsonLd } from "@/lib/marketing/metadata";
@@ -35,108 +30,82 @@ export default function LandingPage({
       <LandingHeader isSignedIn={isSignedIn} />
 
       <main id="main-content">
-        {/* 
+        {/*
           1. HERO
-          
-          Primary goal:
-          Immediately explain the problem Home Tech Vault solves.
 
-          Recommended headline:
-          "Never Lose Another Receipt, Warranty, Manual, or Serial Number."
+          Make the product instantly understandable.
 
-          Primary CTA:
-          "Create My Free Vault"
+          Message:
+          "Never lose another receipt, warranty,
+          manual, or serial number."
+
+          Keep this personal and household-focused.
+          Do not introduce dashboards, AI, reports,
+          network intelligence, or advanced features here.
         */}
         <HeroSection isSignedIn={isSignedIn} />
 
         {/*
-          2. REAL-LIFE PROBLEMS
+          2. THE REAL-LIFE PROBLEM
 
-          Show why someone would actually need Home Tech Vault
-          before explaining all of the features.
+          Help visitors picture an ordinary moment:
 
-          Examples:
-          - TV breaks
-          - Appliance needs service
-          - Need a serial number
-          - Can't find receipt
-          - Warranty claim
+          "Your refrigerator stops working tomorrow."
+
+          Can you find:
+          - the receipt?
+          - warranty?
+          - model number?
+          - serial number?
+          - manual?
+
+          This section should make the visitor feel
+          the problem before we explain the product.
         */}
         <RealLifeUseCasesSection />
 
         {/*
-          3. HOW EASY IT IS
+          3. WHAT HOME TECH VAULT ACTUALLY DOES
 
-          Reinforce:
-          Start with ONE device.
-          Don't make users feel like they have to inventory
-          their entire house immediately.
-        */}
-        <HowItWorksSection />
+          Keep this centered on the clearest value:
 
-        {/*
-          4. DOCUMENTS + RECEIPTS + WARRANTIES
+          Devices
+          Receipts
+          Warranties
+          Manuals
+          Serial numbers
+          Purchase information
 
-          This should become one of the strongest sections
-          because this is the clearest everyday value proposition.
+          Think "digital home filing cabinet",
+          not "SaaS document management".
         */}
         <HomeDocumentsSection />
 
         {/*
-          5. ADVANCED HOME TECH FEATURES
+          4. HOW EASY IT IS
 
-          Home health / network / discovery features should
-          appear after visitors already understand the core product.
+          Three steps only:
+
+          1. Add one device
+          2. Save the important stuff
+          3. Find it when you need it
+
+          Reinforce that visitors do NOT need to
+          inventory their entire house today.
         */}
-        <HomeHealthPreviewSection />
+        <HowItWorksSection />
 
         {/*
-          6. HOUSEHOLD SHARING
-        */}
-        <HomeFamilySection />
+          5. FINAL CTA
 
-        {/*
-          7. SECURITY / TRUST
+          End before the homepage becomes a product tour.
 
-          Important because users may upload receipts,
-          serial numbers and household information.
-        */}
-        <SecuritySection />
+          Message:
+          "Start with the device you'd hate
+          to replace tomorrow."
 
-        {/*
-          8. PRICING
-
-          Free plan should be visually dominant.
-
-          Recommended:
-          FREE
-          $0
-          No credit card required
-
-          8 devices
-          25 documents
-          Warranty tracking
-          Receipt storage
-          Device information
-        */}
-        <PricingSection isSignedIn={isSignedIn} />
-
-        {/*
-          9. FAQ
-
-          Handle objections after they already understand
-          the product.
-        */}
-        <LandingFaq />
-
-        {/*
-          10. FINAL CTA
-
-          Recommended headline:
-          "Don't Wait Until Something Breaks."
-
-          CTA:
-          "Create Your Free Home Tech Vault"
+          Free to start.
+          No credit card.
         */}
         <FinalCta isSignedIn={isSignedIn} />
       </main>
