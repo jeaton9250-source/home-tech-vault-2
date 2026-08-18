@@ -41,7 +41,7 @@ export function FounderRecentSignups({
     >
       <div className="overflow-hidden rounded-[20px] border border-border-subtle">
         {signups.length === 0 ? (
-          <p className="px-4 py-8 text-center text-sm text-text-secondary">
+          <p className="px-4 py-8 text-center text-sm text-[#5f5b55]">
             No recent signups.
           </p>
         ) : (
@@ -53,15 +53,15 @@ export function FounderRecentSignups({
                   className="flex flex-col gap-2 bg-surface-sunken px-4 py-4 transition hover:bg-surface-card sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div>
-                    <p className="font-medium text-text-primary">
+                    <p className="font-semibold text-[#18202b]">
                       {signup.fullName ||
                         "Unnamed user"}
                     </p>
-                    <p className="mt-1 text-sm text-text-secondary">
+                    <p className="mt-1 text-sm text-[#5f5b55]">
                       {signup.email ?? "No email"}
                     </p>
                   </div>
-                  <p className="text-xs text-text-tertiary">
+                  <p className="text-xs text-[#777169]">
                     {formatAdminDate(
                       signup.createdAt
                     )}
@@ -89,7 +89,7 @@ export function FounderActivityTimeline({
     >
       <ol className="space-y-0">
         {events.length === 0 ? (
-          <li className="rounded-[20px] border border-border-subtle bg-surface-sunken px-5 py-8 text-center text-sm text-text-secondary">
+          <li className="rounded-[20px] border border-border-subtle bg-surface-sunken px-5 py-8 text-center text-sm text-[#5f5b55]">
             No recent platform activity.
           </li>
         ) : (
@@ -108,7 +108,7 @@ export function FounderActivityTimeline({
                   </span>
                   <time
                     dateTime={event.timestamp}
-                    className="text-xs text-text-tertiary"
+                    className="text-xs text-[#777169]"
                   >
                     {formatAdminDate(
                       event.timestamp
@@ -205,13 +205,13 @@ export function FounderQuickActions() {
               <p className="text-base font-semibold text-text-primary">
                 {action.label}
               </p>
-              <p className="mt-2 text-sm leading-6 text-text-secondary">
+              <p className="mt-2 text-sm leading-6 text-[#5f5b55]">
                 {action.description}
               </p>
             </div>
             <ArrowUpRight
               aria-hidden="true"
-              className="mt-4 h-4 w-4 text-text-tertiary transition group-hover:text-charcoal"
+              className="mt-4 h-4 w-4 text-[#777169] transition group-hover:text-charcoal"
             />
           </Link>
         ))}

@@ -1,48 +1,235 @@
 import {
+  Activity,
+  ArrowRight,
+  BarChart3,
+  CheckCircle2,
   ClipboardCheck,
+  CreditCard,
   Eye,
   FileText,
   HardDrive,
   Home,
+  LifeBuoy,
   MousePointerClick,
-  Route,
   Share2,
+  UserPlus,
   Users,
 } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
-import { loadAdminAnalytics } from "@/lib/admin/data/loaders";
-import { loadAdminDashboardMetrics } from "@/lib/admin/data/dashboard";
-import { loadAdminHealthCheckMetrics } from "@/lib/admin/data/healthCheck";
-import { loadAdminVercelAnalytics } from "@/lib/admin/data/vercelAnalytics";
-import { loadAdminSystemHealth } from "@/lib/admin/data/loaders";
-import { loadFoundingMembersDashboardMetrics } from "@/lib/admin/data/foundingMembers";
+
+import {
+  loadAdminAnalytics,
+  loadAdminSystemHealth,
+} from "@/lib/admin/data/loaders";
+
+import {
+  loadAdminDashboardMetrics,
+} from "@/lib/admin/data/dashboard";
+
+import {
+  loadAdminVercelAnalytics,
+} from "@/lib/admin/data/vercelAnalytics";
+
+import {
+  loadFoundingMembersDashboardMetrics,
+} from "@/lib/admin/data/foundingMembers";
+
+import {
+  loadAdminHealthCheckMetrics,
+} from "@/lib/admin/data/healthCheck";
+
 import {
   buildNeedsAttention,
   buildPlatformActivity,
-  buildTodaysPriorities,
   getFounderFirstName,
 } from "@/lib/admin/founderControlCenter";
+
 import FounderHeader, {
+  FounderLinkAction,
   FounderSection,
 } from "@/components/admin/founder-control-center/FounderHeader";
-import FounderPriorities, {
-  FounderAttentionList,
-  FounderFeedbackEmptyState,
-} from "@/components/admin/founder-control-center/FounderPriorities";
-import {
-  FounderGrowthGrid,
-  FounderMetricCard,
-} from "@/components/admin/founder-control-center/FounderMetricCards";
+
 import {
   FounderActivityTimeline,
-  FounderQuickActions,
   FounderRecentSignups,
 } from "@/components/admin/founder-control-center/FounderLists";
 
+import {
+  FounderAttentionList,
+} from "@/components/admin/founder-control-center/FounderPriorities";
+
 export const metadata = {
-  title: "Founder Control Center — Home Tech Vault Admin",
+  title:
+    "Founder Control Center — Home Tech Vault Admin",
 };
+
+function percentage(
+  value: number,
+  total: number
+) {
+  if (total <= 0) {
+    return 0;
+  }
+
+  return Math.min(
+    100,
+    Math.round(
+      (value / total) * 100
+    )
+  );
+}
+
+function startOfToday() {
+  const now = new Date();
+
+  return new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate()
+  ).getTime();
+}
+
+function OperationalMetric({
+  label,
+  value,
+  hint,
+  icon,
+  tone = "default",
+}: {
+  label: string;
+  value: number | string;
+  hint: string;
+  icon: React.ReactNode;
+  tone?: "default" | "positive" | "warning";
+}) {
+  const iconClass =
+    tone === "positive"
+      ? "border-[#718d4f]/20 bg-[#718d4f]/10 text-[#617c43]"
+      : tone === "warning"
+        ? "border-[#c89b48]/20 bg-[#c89b48]/10 text-[#9a7027]"
+        : "border-[#e3ddd3] bg-[#f5f1e9] text-[#66717a]";
+
+  return (
+    <div className="rounded-[18px] border border-[#e1dbd1] bg-[#fffdf9] px-5 py-4 shadow-[0_7px_24px_-22px_rgba(23,32,42,0.35)]">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#6f6a62]">
+            {label}
+          </p>
+
+          <p className="mt-2.5 text-[34px] font-semibold leading-none tracking-[-0.045em] text-[#18202b]">
+            {typeof value === "number"
+              ? value.toLocaleString()
+              : value}
+          </p>
+
+          <p className="mt-2 text-sm text-[#5f5b55]">
+            {hint}
+          </p>
+        </div>
+
+        <div
+          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border ${iconClass}`}
+        >
+          {icon}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FunnelStage({
+  label,
+  value,
+  detail,
+  icon,
+}: {
+  label: string;
+  value: number;
+  detail: string;
+  icon: React.ReactNode;
+}) {
+  return (
+    <div className="min-w-0 flex-1">
+      <div className="flex items-center gap-2 text-[#c0cbb8]">
+        {icon}
+
+        <p className="text-xs font-semibold uppercase tracking-[0.12em]">
+          {label}
+        </p>
+      </div>
+
+      <p className="mt-3 text-[36px] font-semibold leading-none tracking-[-0.05em] text-[#f8f5ef]">
+        {value.toLocaleString()}
+      </p>
+
+      <p className="mt-1 text-sm leading-5 text-white/60">
+        {detail}
+      </p>
+    </div>
+  );
+}
+
+function FunnelArrow({
+  rate,
+}: {
+  rate: number | null;
+}) {
+  return (
+    <div className="hidden shrink-0 items-center gap-2 px-2 xl:flex">
+      {rate !== null ? (
+        <span className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-1 text-xs font-semibold text-white/70">
+          {rate}%
+        </span>
+      ) : null}
+
+      <ArrowRight
+        size={17}
+        className="text-white/20"
+        aria-hidden="true"
+      />
+    </div>
+  );
+}
+
+function AcquisitionCard({
+  label,
+  value,
+  hint,
+  icon,
+}: {
+  label: string;
+  value: number | string;
+  hint: string;
+  icon: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-[18px] border border-[#e1dbd1] bg-[#fffdf9] px-5 py-4">
+      <div className="flex items-center gap-3">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#e4ded4] bg-[#f6f2ea] text-[#66717a]">
+          {icon}
+        </div>
+
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#6f6a62]">
+            {label}
+          </p>
+
+          <p className="mt-1 text-2xl font-semibold tracking-[-0.035em] text-[#18202b]">
+            {typeof value === "number"
+              ? value.toLocaleString()
+              : value}
+          </p>
+        </div>
+      </div>
+
+      <p className="mt-3 truncate text-sm text-[#5f5b55]">
+        {hint}
+      </p>
+    </div>
+  );
+}
 
 export default async function AdminDashboardPage() {
   const [
@@ -56,305 +243,526 @@ export default async function AdminDashboardPage() {
     loadAdminDashboardMetrics(),
     loadAdminAnalytics(),
     loadAdminSystemHealth(),
+
     loadFoundingMembersDashboardMetrics().catch(
       () => null
     ),
+
     loadAdminVercelAnalytics(),
+
     loadAdminHealthCheckMetrics(),
   ]);
 
-  const supabase = await createClient();
+  const supabase =
+    await createClient();
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  let adminFullName: string | null = null;
+  let adminFullName:
+    | string
+    | null = null;
 
   if (user) {
-    const { data: profile } = await supabase
+    const {
+      data: profile,
+    } = await supabase
       .from("profiles")
       .select("full_name")
       .eq("id", user.id)
       .maybeSingle();
 
-    adminFullName = profile?.full_name ?? null;
+    adminFullName =
+      profile?.full_name ?? null;
   }
 
-  const firstName = getFounderFirstName(
-    adminFullName,
-    user?.email ?? null
-  );
+  const firstName =
+    getFounderFirstName(
+      adminFullName,
+      user?.email ?? null
+    );
 
-  const priorities = buildTodaysPriorities(
-    metrics,
-    health,
-    foundingMetricsResult
-  );
+  const priorityIds =
+    new Set<string>();
 
-  const priorityIds = new Set(
-    priorities.map((item) => item.id)
-  );
+  const attentionItems =
+    buildNeedsAttention(
+      metrics,
+      health,
+      foundingMetricsResult,
+      priorityIds
+    );
 
-  const attentionItems = buildNeedsAttention(
-    metrics,
-    health,
-    foundingMetricsResult,
-    priorityIds
-  );
-
-  const activity = buildPlatformActivity(
-    metrics.recentSignups,
-    metrics.recentUpgrades,
-    metrics.recentSupportActivity
-  );
+  const activity =
+    buildPlatformActivity(
+      metrics.recentSignups,
+      metrics.recentUpgrades,
+      metrics.recentSupportActivity
+    );
 
   const paidMembers =
-    metrics.proUsers + metrics.familyUsers;
+    metrics.proUsers +
+    metrics.familyUsers;
+
+  const todayStart =
+    startOfToday();
+
+  const upgradesToday =
+    metrics.recentUpgrades.filter(
+      (upgrade) => {
+        if (!upgrade.updatedAt) {
+          return false;
+        }
+
+        return (
+          new Date(
+            upgrade.updatedAt
+          ).getTime() >= todayStart
+        );
+      }
+    ).length;
+
+  const visitors =
+    traffic.available
+      ? traffic.visitors
+      : 0;
+
+  const pageviews =
+    traffic.available
+      ? traffic.pageviews
+      : 0;
+
+  const totalChecks =
+    healthCheckMetrics.totalCompleted;
+
+  /*
+   * Funnel percentages are intentionally
+   * presented as directional snapshot ratios.
+   *
+   * Traffic is a rolling 30-day metric while
+   * Health Check/user totals can have different
+   * collection windows. We do not call these
+   * strict conversion rates yet.
+   */
+  const visitorToCheck =
+    visitors > 0
+      ? percentage(
+          totalChecks,
+          visitors
+        )
+      : null;
+
+  const totalUsers =
+    analytics.totalUsers;
+
+  const checksToUsers =
+    totalChecks > 0
+      ? percentage(
+          Math.min(
+            totalUsers,
+            totalChecks
+          ),
+          totalChecks
+        )
+      : null;
+
+  const usersToPaid =
+    totalUsers > 0
+      ? percentage(
+          paidMembers,
+          totalUsers
+        )
+      : null;
 
   return (
     <>
-      <FounderHeader firstName={firstName} />
+      <FounderHeader
+        firstName={firstName}
+      />
 
-      <FounderPriorities items={priorities} />
-
+      {/* TODAY */}
       <FounderSection
-        id="founder-platform-snapshot-heading"
-        title="Platform Snapshot"
-        subtitle="Core inventory across the platform."
+        id="founder-today-heading"
+        title="Today"
+        subtitle="The numbers worth checking first."
       >
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <FounderMetricCard
-            label="Users"
-            value={analytics.totalUsers}
-            hint={`${metrics.newUsersThisWeek} added this week`}
-            href="/admin/users"
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <OperationalMetric
+            label="New Users"
+            value={metrics.newUsersToday}
+            hint="Joined today"
+            tone="positive"
             icon={
-              <Users
+              <UserPlus
+                size={17}
                 aria-hidden="true"
-                className="h-5 w-5"
               />
             }
           />
-          <FounderMetricCard
-            label="Households"
-            value={analytics.totalHouseholds}
-            href="/admin/households"
-            icon={
-              <Home
-                aria-hidden="true"
-                className="h-5 w-5"
-              />
-            }
-          />
-          <FounderMetricCard
-            label="Devices"
-            value={analytics.totalDevices}
-            href="/admin/analytics"
-            icon={
-              <HardDrive
-                aria-hidden="true"
-                className="h-5 w-5"
-              />
-            }
-          />
-          <FounderMetricCard
-            label="Documents"
-            value={analytics.totalDocuments}
-            href="/admin/analytics"
-            icon={
-              <FileText
-                aria-hidden="true"
-                className="h-5 w-5"
-              />
-            }
-          />
-        </div>
-      </FounderSection>
 
-      <FounderSection
-        id="founder-growth-snapshot-heading"
-        title="Growth Snapshot"
-        subtitle="Signup and subscription activity currently tracked."
-      >
-        <FounderGrowthGrid
-          metrics={[
-            {
-              label: "New users today",
-              value: metrics.newUsersToday,
-            },
-            {
-              label: "New users this week",
-              value: metrics.newUsersThisWeek,
-            },
-            {
-              label: "Active subscriptions",
-              value: metrics.activeSubscriptions,
-              hint: "Active or trialing plans",
-            },
-            {
-              label: "Paid members",
-              value: paidMembers,
-              hint: `${metrics.proUsers} Pro · ${metrics.familyUsers} Family`,
-            },
-          ]}
-        />
-      </FounderSection>
-
-      <FounderSection
-        id="founder-health-check-heading"
-        title="Health Check Funnel"
-        subtitle="Anonymous completion activity from the free Home Tech Health Check."
-      >
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <FounderMetricCard
+          <OperationalMetric
             label="Health Checks"
-            value={healthCheckMetrics.totalCompleted}
-            hint="Total completed"
-            href="/health-check"
+            value={
+              healthCheckMetrics.completedToday
+            }
+            hint="Completed today"
+            tone="positive"
             icon={
               <ClipboardCheck
+                size={17}
                 aria-hidden="true"
-                className="h-5 w-5"
               />
             }
           />
 
-          <FounderMetricCard
-            label="Completed Today"
-            value={healthCheckMetrics.completedToday}
-            hint="Since 12:00 AM UTC"
-            href="/health-check"
+          <OperationalMetric
+            label="New Paid"
+            value={upgradesToday}
+            hint="Recent upgrades today"
             icon={
-              <ClipboardCheck
+              <CreditCard
+                size={17}
                 aria-hidden="true"
-                className="h-5 w-5"
               />
             }
           />
 
-          <FounderMetricCard
-            label="Average Score"
-            value={healthCheckMetrics.averageScore}
-            hint="Average out of 100"
-            href="/health-check"
-            icon={
-              <ClipboardCheck
-                aria-hidden="true"
-                className="h-5 w-5"
-              />
+          <OperationalMetric
+            label="Open Support"
+            value={
+              metrics.openSupportTickets
             }
-          />
-
-          <FounderMetricCard
-            label="Reddit Completions"
-            value={healthCheckMetrics.redditCompleted}
-            hint="utm_source=reddit"
-            href="/health-check"
+            hint="Tickets requiring attention"
+            tone={
+              metrics.openSupportTickets >
+              0
+                ? "warning"
+                : "default"
+            }
             icon={
-              <ClipboardCheck
+              <LifeBuoy
+                size={17}
                 aria-hidden="true"
-                className="h-5 w-5"
               />
             }
           />
         </div>
       </FounderSection>
 
+      {/* FUNNEL */}
       <FounderSection
-        id="founder-traffic-snapshot-heading"
-        title="Traffic Snapshot"
-        subtitle="Live production website traffic from the last 30 days."
+        id="founder-funnel-heading"
+        title="Growth Funnel"
+        subtitle="A directional view of acquisition through paid membership."
+        action={
+          <FounderLinkAction
+            href="/admin/analytics"
+            label="Open analytics"
+          />
+        }
       >
-        {traffic.available ? (
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <FounderMetricCard
+        <div className="overflow-hidden rounded-[22px] border border-[#152638] bg-[#0b1623] shadow-[0_18px_50px_-32px_rgba(11,22,35,0.75)]">
+          <div className="border-b border-white/8 px-5 py-4 md:px-6">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold text-[#f4f0e8]">
+                  Acquisition snapshot
+                </p>
+
+                <p className="mt-1 text-sm text-white/55">
+                  Traffic uses the last 30 days.
+                  Other stages use currently
+                  available platform totals.
+                </p>
+              </div>
+
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-[#718d4f]/25 bg-[#718d4f]/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.13em] text-[#a9bc90]">
+                <CheckCircle2
+                  size={12}
+                />
+                Live Data
+              </span>
+            </div>
+          </div>
+
+          <div className="grid gap-5 p-5 sm:grid-cols-2 md:p-6 xl:flex xl:items-center">
+            <FunnelStage
               label="Visitors"
-              value={traffic.visitors}
-              hint="Unique visitors"
-              href="/admin/analytics"
+              value={visitors}
+              detail="Production visitors · 30 days"
               icon={
-                <Eye
-                  aria-hidden="true"
-                  className="h-5 w-5"
+                <Eye size={15} />
+              }
+            />
+
+            <FunnelArrow
+              rate={visitorToCheck}
+            />
+
+            <FunnelStage
+              label="Health Checks"
+              value={totalChecks}
+              detail={`${healthCheckMetrics.completedToday} completed today`}
+              icon={
+                <ClipboardCheck
+                  size={15}
                 />
               }
             />
 
-            <FounderMetricCard
+            <FunnelArrow
+              rate={checksToUsers}
+            />
+
+            <FunnelStage
+              label="Users"
+              value={totalUsers}
+              detail={`${metrics.newUsersThisWeek} joined this week`}
+              icon={
+                <Users size={15} />
+              }
+            />
+
+            <FunnelArrow
+              rate={usersToPaid}
+            />
+
+            <FunnelStage
+              label="Paid"
+              value={paidMembers}
+              detail={`${metrics.proUsers} Pro · ${metrics.familyUsers} Family`}
+              icon={
+                <CreditCard
+                  size={15}
+                />
+              }
+            />
+          </div>
+        </div>
+      </FounderSection>
+
+      {/* ACQUISITION + HEALTH CHECK */}
+      <div className="grid gap-7 xl:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)]">
+        <FounderSection
+          id="founder-acquisition-heading"
+          title="Acquisition"
+          subtitle="Where attention and Health Check activity are coming from."
+        >
+          <div className="grid gap-3 sm:grid-cols-2">
+            <AcquisitionCard
+              label="Visitors"
+              value={visitors}
+              hint="Unique visitors · last 30 days"
+              icon={
+                <Eye size={16} />
+              }
+            />
+
+            <AcquisitionCard
               label="Pageviews"
-              value={traffic.pageviews}
-              hint="Total pages viewed"
-              href="/admin/analytics"
+              value={pageviews}
+              hint="Production pageviews · last 30 days"
               icon={
                 <MousePointerClick
-                  aria-hidden="true"
-                  className="h-5 w-5"
+                  size={16}
                 />
               }
             />
 
-            <FounderMetricCard
-              label="Top route"
-              value={traffic.topPages[0]?.pageviews ?? 0}
-              hint={
-                traffic.topPages[0]?.label ??
-                "No page traffic recorded"
+            <AcquisitionCard
+              label="Top Referral"
+              value={
+                traffic.available
+                  ? traffic.topReferrers[0]
+                      ?.visitors ?? 0
+                  : 0
               }
-              href="/admin/analytics"
+              hint={
+                traffic.available
+                  ? traffic.topReferrers[0]
+                      ?.label ??
+                    "No referral data"
+                  : "Traffic unavailable"
+              }
               icon={
-                <Route
-                  aria-hidden="true"
-                  className="h-5 w-5"
-                />
+                <Share2 size={16} />
               }
             />
 
-            <FounderMetricCard
-              label="Top referral source"
-              value={traffic.topReferrers[0]?.visitors ?? 0}
-              hint={
-                traffic.topReferrers[0]?.label ??
-                "No referral data recorded"
+            <AcquisitionCard
+              label="Reddit Checks"
+              value={
+                healthCheckMetrics.redditCompleted
               }
-              href="/admin/analytics"
+              hint="Health Checks with utm_source=reddit"
               icon={
-                <Share2
-                  aria-hidden="true"
-                  className="h-5 w-5"
+                <BarChart3
+                  size={16}
                 />
               }
             />
           </div>
-        ) : (
-          <div className="rounded-[22px] border border-border-subtle bg-surface-sunken px-5 py-5">
-            <p className="font-semibold text-text-primary">
-              Traffic data is temporarily unavailable
-            </p>
-            <p className="mt-2 text-sm leading-6 text-text-secondary">
-              {traffic.error ??
-                "Vercel Analytics could not be loaded."}
-            </p>
-          </div>
-        )}
-      </FounderSection>
+        </FounderSection>
 
-      <div className="grid gap-6 xl:grid-cols-2">
-        <FounderAttentionList
-          items={attentionItems}
-        />
-        <FounderRecentSignups
-          signups={metrics.recentSignups}
-        />
+        <FounderSection
+          id="founder-healthcheck-heading"
+          title="Health Check"
+          subtitle="Performance of the public diagnostic."
+          action={
+            <FounderLinkAction
+              href="/health-check"
+              label="Open tool"
+            />
+          }
+        >
+          <div className="rounded-[22px] border border-[#dcd6cc] bg-[#fffdf9] p-5">
+            <div className="grid grid-cols-2 gap-5">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#6f6a62]">
+                  Completed
+                </p>
+
+                <p className="mt-2 text-3xl font-semibold tracking-[-0.05em] text-[#18202b]">
+                  {healthCheckMetrics.totalCompleted}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#6f6a62]">
+                  Average Score
+                </p>
+
+                <p className="mt-2 text-3xl font-semibold tracking-[-0.05em] text-[#18202b]">
+                  {healthCheckMetrics.averageScore}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 h-px bg-[#e5dfd5]" />
+
+            <div className="mt-5 flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-medium text-[#18202b]">
+                  Reddit attribution
+                </p>
+
+                <p className="mt-1 text-sm text-[#5f5b55]">
+                  Completions carrying the
+                  Reddit UTM source.
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-[#718d4f]/20 bg-[#718d4f]/8 px-3 py-2 text-lg font-semibold text-[#617c43]">
+                {
+                  healthCheckMetrics.redditCompleted
+                }
+              </div>
+            </div>
+          </div>
+        </FounderSection>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+      {/* PLATFORM */}
+      <FounderSection
+        id="founder-platform-heading"
+        title="Platform"
+        subtitle="Core inventory currently stored across Home Tech Vault."
+      >
+        <div className="grid overflow-hidden rounded-[20px] border border-[#e1dbd1] bg-[#fffdf9] sm:grid-cols-2 xl:grid-cols-4">
+          {[
+            {
+              label: "Users",
+              value:
+                analytics.totalUsers,
+              icon: Users,
+            },
+            {
+              label: "Households",
+              value:
+                analytics.totalHouseholds,
+              icon: Home,
+            },
+            {
+              label: "Devices",
+              value:
+                analytics.totalDevices,
+              icon: HardDrive,
+            },
+            {
+              label: "Documents",
+              value:
+                analytics.totalDocuments,
+              icon: FileText,
+            },
+          ].map(
+            ({
+              label,
+              value,
+              icon: Icon,
+            }, index) => (
+              <div
+                key={label}
+                className={[
+                  "px-5 py-5",
+                  index > 0
+                    ? "border-t border-[#e6e0d6] sm:border-t-0"
+                    : "",
+                  index % 2 !== 0
+                    ? "sm:border-l sm:border-[#e6e0d6]"
+                    : "",
+                  index >= 2
+                    ? "xl:border-l xl:border-[#e6e0d6]"
+                    : "",
+                ].join(" ")}
+              >
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#6f6a62]">
+                      {label}
+                    </p>
+
+                    <p className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-[#18202b]">
+                      {value.toLocaleString()}
+                    </p>
+                  </div>
+
+                  <Icon
+                    size={17}
+                    className="text-[#8d958f]"
+                  />
+                </div>
+              </div>
+            )
+          )}
+        </div>
+      </FounderSection>
+
+      {/* OPERATIONS */}
+      <div className="grid gap-7 xl:grid-cols-2">
         <FounderActivityTimeline
           events={activity}
         />
-        <FounderFeedbackEmptyState />
+
+        <FounderAttentionList
+          items={attentionItems}
+        />
       </div>
 
-      <FounderQuickActions />
+      {/* RECENT CUSTOMERS */}
+      <FounderRecentSignups
+        signups={metrics.recentSignups}
+      />
+
+      <div className="flex items-center gap-2 border-t border-[#ded8ce] pt-5 text-xs text-[#8a867f]">
+        <Activity
+          size={14}
+          aria-hidden="true"
+        />
+
+        Founder Control Center uses live
+        production data where available.
+      </div>
     </>
   );
 }

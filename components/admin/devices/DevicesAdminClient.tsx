@@ -139,6 +139,16 @@ export default function DevicesAdminClient({
   const sort = searchParams.get("sort") ?? "newest";
   const page = Number(searchParams.get("page") ?? "1");
 
+  const requestedLimit = Number(
+    searchParams.get("limit") ?? "5"
+  );
+
+  const limit = [5, 10, 25].includes(
+    requestedLimit
+  )
+    ? requestedLimit
+    : 5;
+
   const filtersActive = useMemo(
     () =>
       Boolean(
@@ -200,7 +210,7 @@ export default function DevicesAdminClient({
 
       const params = new URLSearchParams({
         page: String(page > 0 ? page : 1),
-        limit: "25",
+        limit: String(limit),
         sort,
       });
 
@@ -265,6 +275,7 @@ export default function DevicesAdminClient({
     }
   }, [
     page,
+    limit,
     search,
     online,
     category,
@@ -540,6 +551,55 @@ export default function DevicesAdminClient({
         title="Device directory"
         subtitle="Read-only inventory across all customer households."
       >
+        <div className="mb-4 flex flex-col gap-3 rounded-[18px] border border-[#e1dbd1] bg-[#faf7f1] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold text-[#18202b]">
+              {pagination
+                ? `${pagination.total.toLocaleString()} device${
+                    pagination.total === 1
+                      ? ""
+                      : "s"
+                  }`
+                : `${summary.totalDevices.toLocaleString()} devices`}
+            </p>
+
+            <p className="mt-0.5 text-xs text-[#6f6a62]">
+              Showing a smaller set at a time
+              for easier review.
+            </p>
+          </div>
+
+          <label className="flex items-center gap-2 text-sm text-[#5f5b55]">
+            <span className="font-medium">
+              Rows
+            </span>
+
+            <select
+              value={limit}
+              onChange={(event) => {
+                updateParams({
+                  limit:
+                    Number(
+                      event.target.value
+                    ),
+                  page: 1,
+                });
+              }}
+              className="h-9 rounded-xl border border-[#dcd6cc] bg-[#fffdf9] px-3 text-sm font-medium text-[#18202b] outline-none transition focus:border-[#718d4f]/50 focus:ring-2 focus:ring-[#718d4f]/10"
+            >
+              <option value="5">
+                5
+              </option>
+              <option value="10">
+                10
+              </option>
+              <option value="25">
+                25
+              </option>
+            </select>
+          </label>
+        </div>
+
         {loading ? (
           <AdminLoadingState label="Loading devices…" />
         ) : error ? (
@@ -573,38 +633,26 @@ export default function DevicesAdminClient({
             <div className="hidden overflow-x-auto lg:block">
               <table className="min-w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-border-subtle text-xs uppercase tracking-[0.12em] text-text-tertiary">
-                    <th className="px-4 py-3 font-medium">
+                  <tr className="border-b border-[#e3ddd3] bg-[#faf7f1] text-[11px] font-semibold uppercase tracking-[0.12em] text-[#6f6a62]">
+                    <th className="px-4 py-3.5">
                       Device
                     </th>
-                    <th className="px-4 py-3 font-medium">
-                      Brand and model
-                    </th>
-                    <th className="px-4 py-3 font-medium">
-                      Category
-                    </th>
-                    <th className="px-4 py-3 font-medium">
+                    <th className="px-4 py-3.5">
                       Household
                     </th>
-                    <th className="px-4 py-3 font-medium">
-                      Household owner
+                    <th className="px-4 py-3.5">
+                      Category
                     </th>
-                    <th className="px-4 py-3 font-medium">
-                      Online status
+                    <th className="px-4 py-3.5">
+                      Status
                     </th>
-                    <th className="px-4 py-3 font-medium">
-                      Last seen
+                    <th className="px-4 py-3.5">
+                      Warranty
                     </th>
-                    <th className="px-4 py-3 font-medium">
-                      Warranty status
+                    <th className="px-4 py-3.5 text-center">
+                      Docs
                     </th>
-                    <th className="px-4 py-3 font-medium">
-                      Documents
-                    </th>
-                    <th className="px-4 py-3 font-medium">
-                      Created date
-                    </th>
-                    <th className="px-4 py-3 font-medium">
+                    <th className="px-4 py-3.5 text-right">
                       Actions
                     </th>
                   </tr>
@@ -698,14 +746,19 @@ function DeviceTableRow({
   onCopyDeviceId: () => void;
 }) {
   return (
-    <tr className="border-b border-border-subtle last:border-b-0">
-      <td className="px-4 py-4 align-top">
-        <div className="flex min-w-[220px] items-start gap-3">
-          <div className="h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-border-subtle bg-surface-sunken">
+    <tr className="group border-b border-[#e7e1d7] transition-colors last:border-b-0 hover:bg-[#faf7f1]">
+      <td className="px-4 py-4 align-middle">
+        <button
+          type="button"
+          onClick={onOpenDrawer}
+          className="flex min-w-[240px] items-center gap-3 text-left"
+        >
+          <div className="h-11 w-11 shrink-0 overflow-hidden rounded-xl border border-[#e1dbd1] bg-[#f5f1e9]">
             <DeviceImageDisplay
               device={{
                 id: device.id,
-                device_name: device.deviceName,
+                device_name:
+                  device.deviceName,
                 brand: device.brand,
                 category: device.category,
                 photo_url: device.photoUrl,
@@ -714,49 +767,60 @@ function DeviceTableRow({
               className="h-full w-full"
             />
           </div>
+
           <div className="min-w-0">
-            <p className="font-medium text-text-primary">
-              {device.deviceName || "Unnamed device"}
+            <p className="truncate text-sm font-semibold text-[#18202b] group-hover:text-[#617c43]">
+              {device.deviceName ||
+                "Unnamed device"}
             </p>
+
+            <p className="mt-0.5 truncate text-xs text-[#68635d]">
+              {buildBrandModel(device) ||
+                "Brand/model not available"}
+            </p>
+
             {device.serialNumber ? (
-              <p className="mt-1 text-xs text-text-secondary">
+              <p className="mt-0.5 truncate text-[11px] text-[#8c867e]">
                 SN {device.serialNumber}
               </p>
             ) : null}
           </div>
-        </div>
+        </button>
       </td>
-      <td className="px-4 py-4 align-top text-text-secondary">
-        {buildBrandModel(device) || "—"}
-      </td>
-      <td className="px-4 py-4 align-top text-text-secondary">
-        {device.category || "—"}
-      </td>
-      <td className="px-4 py-4 align-top">
+
+      <td className="px-4 py-4 align-middle">
         {device.householdId ? (
-          <Link
-            href={`/admin/households?${new URLSearchParams({ q: device.householdId }).toString()}`}
-            className="text-text-primary underline-offset-4 hover:underline"
-          >
-            {device.householdName || "Unknown household"}
-          </Link>
+          <div className="min-w-[150px]">
+            <Link
+              href={`/admin/households?${new URLSearchParams({
+                q: device.householdId,
+              }).toString()}`}
+              className="text-sm font-medium text-[#18202b] underline-offset-4 hover:text-[#617c43] hover:underline"
+            >
+              {device.householdName ||
+                "Unknown household"}
+            </Link>
+
+            {device.householdOwnerName ||
+            device.householdOwnerEmail ? (
+              <p className="mt-1 max-w-[190px] truncate text-xs text-[#777169]">
+                {device.householdOwnerName ||
+                  device.householdOwnerEmail}
+              </p>
+            ) : null}
+          </div>
         ) : (
-          <span className="text-text-secondary">
-            Not available
+          <span className="text-sm text-[#777169]">
+            Not assigned
           </span>
         )}
       </td>
-      <td className="px-4 py-4 align-top text-text-secondary">
-        <div>
-          <p>{device.householdOwnerName || "—"}</p>
-          {device.householdOwnerEmail ? (
-            <p className="mt-1 text-xs">
-              {device.householdOwnerEmail}
-            </p>
-          ) : null}
-        </div>
+
+      <td className="px-4 py-4 align-middle text-sm text-[#5f5b55]">
+        {device.category || "—"}
       </td>
-      <td className="px-4 py-4 align-top">
+
+      <td className="px-4 py-4 align-middle">
         <AdminStatusBadge
           tone={getAdminOnlineBadgeTone(
             device.onlineStatus
@@ -766,11 +830,15 @@ function DeviceTableRow({
             device.onlineStatus
           )}
         </AdminStatusBadge>
+
+        <p className="mt-1.5 text-xs text-[#777169]">
+          {formatLastSeen(
+            device.lastSeenAt
+          ) || "No recent activity"}
+        </p>
       </td>
-      <td className="px-4 py-4 align-top text-text-secondary">
-        {formatLastSeen(device.lastSeenAt) || "—"}
-      </td>
-      <td className="px-4 py-4 align-top">
+
+      <td className="px-4 py-4 align-middle">
         <AdminStatusBadge
           tone={getAdminWarrantyBadgeTone(
             device.warrantyStatus
@@ -781,17 +849,18 @@ function DeviceTableRow({
           )}
         </AdminStatusBadge>
       </td>
-      <td className="px-4 py-4 align-top text-text-secondary">
+
+      <td className="px-4 py-4 text-center align-middle text-sm font-semibold text-[#18202b]">
         {device.documentCount}
       </td>
-      <td className="px-4 py-4 align-top text-text-secondary">
-        {formatAdminDate(device.createdAt)}
-      </td>
-      <td className="px-4 py-4 align-top">
+
+      <td className="px-4 py-4 text-right align-middle">
         <DeviceActionsMenu
           device={device}
           onOpenDrawer={onOpenDrawer}
-          onCopyDeviceId={onCopyDeviceId}
+          onCopyDeviceId={
+            onCopyDeviceId
+          }
         />
       </td>
     </tr>

@@ -146,29 +146,43 @@ export async function restartOnboardingProfile(
 }
 
 export async function saveHomeName(
-  supabase: SupabaseClient,
-  userId: string,
+  _supabase: SupabaseClient,
+  _userId: string,
   householdName: string
 ) {
-  const { error } = await supabase
-    .from("profiles")
-    .upsert(
+  const name =
+    householdName.trim();
+
+  if (!name) {
+    throw new Error(
+      "Enter a household name."
+    );
+  }
+
+  const response =
+    await fetch(
+      "/api/household/ensure",
       {
-        id: userId,
-        household_name:
-          householdName.trim(),
-      },
-      {
-        onConflict: "id",
+        method: "POST",
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
+        body: JSON.stringify({
+          householdName: name,
+        }),
       }
     );
 
-  if (error) {
+  const payload =
+    (await response.json()) as {
+      error?: string;
+    };
+
+  if (!response.ok) {
     throw new Error(
-      getErrorMessage(
-        error,
+      payload.error ||
         "Unable to save your home name."
-      )
     );
   }
 }

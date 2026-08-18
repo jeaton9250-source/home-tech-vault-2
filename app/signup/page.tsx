@@ -168,6 +168,41 @@ export default function SignupPage() {
           );
         }
 
+        /*
+         * A signup with an immediate authenticated session can
+         * create its canonical household now. If email confirmation
+         * is required and session is null, normal onboarding will
+         * call the same endpoint through saveHomeName().
+         */
+        const householdResponse =
+          await fetch(
+            "/api/household/ensure",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+              body: JSON.stringify({
+                householdName:
+                  normalizedHousehold,
+              }),
+            }
+          );
+
+        if (!householdResponse.ok) {
+          const householdPayload =
+            (await householdResponse.json()) as {
+              error?: string;
+            };
+
+          console.error(
+            "Unable to create canonical household:",
+            householdPayload.error ||
+              householdResponse.statusText
+          );
+        }
+
         const destination =
           await resolvePostAuthRedirect(
             supabase,

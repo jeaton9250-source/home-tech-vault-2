@@ -52,7 +52,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
   {
     id: "overview",
     label: "Overview",
-    description: "Founder dashboard and recent platform activity",
+    description: "Founder command center",
     items: [
       {
         id: "control-center",
@@ -61,19 +61,35 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
         icon: Home,
         description: "Founder overview",
       },
+    ],
+  },
+
+  {
+    id: "growth",
+    label: "Growth",
+    description: "Acquisition and reporting",
+    items: [
       {
-        id: "activity",
-        href: "/admin/activity",
-        label: "Activity",
-        icon: Activity,
-        description: "Platform timeline",
+        id: "analytics",
+        href: "/admin/analytics",
+        label: "Analytics",
+        icon: BarChart3,
+        description: "Traffic and product metrics",
+      },
+      {
+        id: "founding-members",
+        href: "/admin/founding-members",
+        label: "Founding Members",
+        icon: Sparkles,
+        description: "Founding member program",
       },
     ],
   },
+
   {
     id: "customers",
     label: "Customers",
-    description: "Accounts, households, plans, and support",
+    description: "Accounts and customer operations",
     items: [
       {
         id: "users",
@@ -94,7 +110,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
         href: "/admin/subscriptions",
         label: "Subscriptions",
         icon: CreditCard,
-        description: "Plans and billing access",
+        description: "Plans and billing",
       },
       {
         id: "support",
@@ -103,19 +119,13 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
         icon: LifeBuoy,
         description: "Customer support inbox",
       },
-      {
-        id: "founding-members",
-        href: "/admin/founding-members",
-        label: "Founding Members",
-        icon: Sparkles,
-        description: "Founding member program",
-      },
     ],
   },
+
   {
-    id: "operations",
-    label: "Operations",
-    description: "Devices, connectors, and communications",
+    id: "product",
+    label: "Product",
+    description: "Platform inventory and integrations",
     items: [
       {
         id: "devices",
@@ -131,6 +141,21 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
         icon: Plug,
         description: "Installs and heartbeat health",
       },
+    ],
+  },
+
+  {
+    id: "operations",
+    label: "Operations",
+    description: "Platform administration",
+    items: [
+      {
+        id: "activity",
+        href: "/admin/activity",
+        label: "Activity",
+        icon: Activity,
+        description: "Platform timeline",
+      },
       {
         id: "email",
         href: "/admin/emails",
@@ -138,27 +163,13 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
         icon: Mail,
         description: "Templates and delivery",
       },
-    ],
-  },
-  {
-    id: "growth",
-    label: "Growth",
-    description: "Traffic, conversion, and product reporting",
-    items: [
       {
-        id: "analytics",
-        href: "/admin/analytics",
-        label: "Analytics",
-        icon: BarChart3,
-        description: "Traffic and product metrics",
+        id: "system-health",
+        href: "/admin/system",
+        label: "System Health",
+        icon: HeartPulse,
+        description: "Environment and integrations",
       },
-    ],
-  },
-  {
-    id: "platform",
-    label: "Platform",
-    description: "System health and administration",
-    items: [
       {
         id: "platform-tools",
         href: "/admin/platform",
@@ -166,21 +177,17 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
         icon: Server,
         description: "Programs and system tools",
       },
-      {
-        id: "system-health",
-        href: "/admin/system",
-        label: "System Health",
-        icon: HeartPulse,
-        description: "Environment and integration checks",
-      },
     ],
   },
 ];
 
 export const ADMIN_NAV_ITEMS =
-  ADMIN_NAV_GROUPS.flatMap((group) => group.items);
+  ADMIN_NAV_GROUPS.flatMap(
+    (group) => group.items
+  );
 
-export const ADMIN_APP_HOME_HREF = "/dashboard";
+export const ADMIN_APP_HOME_HREF =
+  "/dashboard";
 
 export function isAdminNavGroupActive(
   pathname: string,
@@ -205,21 +212,25 @@ export const ADMIN_PLATFORM_LINKS = [
   {
     href: "/admin/system",
     label: "System Health",
-    description: "Environment and integration checks",
+    description:
+      "Environment and integration checks",
   },
   {
     href: "/admin/support",
     label: "Support Inbox",
-    description: "Customer support tickets",
+    description:
+      "Customer support tickets",
   },
   {
     href: "/admin/founding-members",
     label: "Founding Members",
-    description: "First 50 member program",
+    description:
+      "First 50 member program",
   },
   {
     href: "/admin/subscriptions",
     label: "Subscriptions",
-    description: "Billing overview",
+    description:
+      "Billing overview",
   },
 ] as const;

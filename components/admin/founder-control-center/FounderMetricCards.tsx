@@ -19,23 +19,26 @@ export function FounderMetricCard({
   return (
     <Link
       href={href}
-      className="group block rounded-[24px] border border-border-subtle bg-surface-card p-6 shadow-[var(--shadow-sm)] transition hover:border-charcoal/10"
+      className="group block rounded-[20px] border border-[#e1dbd1] bg-[#fffdf9] p-5 shadow-[0_8px_28px_-22px_rgba(23,32,42,0.28)] transition duration-200 hover:-translate-y-0.5 hover:border-[#cfc8bd] hover:shadow-[0_14px_32px_-22px_rgba(23,32,42,0.32)]"
     >
       <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-xs font-medium uppercase tracking-[0.14em] text-text-tertiary">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#6f6a62]">
             {label}
           </p>
-          <p className="mt-4 text-4xl font-semibold tracking-[-0.04em] text-text-primary">
+
+          <p className="mt-3 text-[34px] font-semibold leading-none tracking-[-0.05em] text-[#18202b]">
             {value.toLocaleString()}
           </p>
+
           {hint ? (
-            <p className="mt-2 text-sm leading-6 text-text-secondary">
+            <p className="mt-2 truncate text-sm leading-6 text-[#5f5b55]">
               {hint}
             </p>
           ) : null}
         </div>
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal transition group-hover:border-charcoal/10">
+
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#e5dfd5] bg-[#f6f2ea] text-[#53606b] transition group-hover:border-[#718d4f]/30 group-hover:bg-[#718d4f]/8 group-hover:text-[#617c43]">
           {icon}
         </div>
       </div>
@@ -55,25 +58,40 @@ export function FounderGrowthGrid({
   metrics: FounderGrowthMetric[];
 }) {
   return (
-    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-      {metrics.map((metric) => (
-        <div
-          key={metric.label}
-          className="rounded-[20px] border border-border-subtle bg-surface-sunken px-4 py-4"
-        >
-          <p className="text-xs font-medium uppercase tracking-[0.14em] text-text-tertiary">
-            {metric.label}
-          </p>
-          <p className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
-            {metric.value}
-          </p>
-          {metric.hint ? (
-            <p className="mt-1 text-sm text-text-secondary">
-              {metric.hint}
+    <div className="grid overflow-hidden rounded-[20px] border border-[#e1dbd1] bg-[#fffdf9] sm:grid-cols-2 xl:grid-cols-4">
+      {metrics.map(
+        (metric, index) => (
+          <div
+            key={metric.label}
+            className={[
+              "px-5 py-5",
+              index > 0
+                ? "border-t border-[#e6e0d6] sm:border-t-0"
+                : "",
+              index % 2 !== 0
+                ? "sm:border-l sm:border-[#e6e0d6]"
+                : "",
+              index >= 2
+                ? "xl:border-l xl:border-[#e6e0d6]"
+                : "",
+            ].join(" ")}
+          >
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#6f6a62]">
+              {metric.label}
             </p>
-          ) : null}
-        </div>
-      ))}
+
+            <p className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-[#18202b]">
+              {metric.value}
+            </p>
+
+            {metric.hint ? (
+              <p className="mt-1.5 text-sm leading-6 text-[#5f5b55]">
+                {metric.hint}
+              </p>
+            ) : null}
+          </div>
+        )
+      )}
     </div>
   );
 }

@@ -10,7 +10,7 @@ export const metadata = {
 
 export default async function AdminDevicesPage() {
   const initial = await loadAdminDevices({
-    pagination: { page: 1, limit: 25 },
+    pagination: { page: 1, limit: 5 },
   });
 
   return (

@@ -68,7 +68,7 @@ export default function AdminMobileNav() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 border-b border-border-subtle bg-surface-card/95 backdrop-blur-sm lg:hidden">
+      <header className="sticky top-0 z-50 border-b border-white/8 bg-[#0b1623]/95 text-white backdrop-blur-xl lg:hidden">
         <div className="flex h-16 items-center gap-3 px-4 sm:px-6">
           <Link
             href="/admin"
@@ -76,7 +76,7 @@ export default function AdminMobileNav() {
           >
             <Logo />
             <span className="h-4 w-px shrink-0 bg-border-subtle" />
-            <span className="truncate text-xs font-medium uppercase tracking-[0.14em] text-text-tertiary">
+            <span className="truncate text-xs font-medium uppercase tracking-[0.14em] text-white/45">
               Control Center
             </span>
           </Link>
@@ -84,7 +84,7 @@ export default function AdminMobileNav() {
           <button
             type="button"
             onClick={() => setOpen(true)}
-            className="htv-focus-ring inline-flex h-10 w-10 items-center justify-center rounded-[var(--radius-button)] border border-border-subtle bg-surface-card text-text-secondary"
+            className="htv-focus-ring inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.05] text-white/75"
             aria-expanded={open}
             aria-controls="admin-mobile-nav-panel"
             aria-label="Open admin navigation menu"
@@ -112,7 +112,7 @@ export default function AdminMobileNav() {
             <motion.nav
               id="admin-mobile-nav-panel"
               aria-label="Admin"
-              className="fixed inset-y-0 right-0 z-[70] flex w-[min(100vw-2rem,360px)] flex-col border-l border-border-subtle bg-surface-card shadow-[var(--shadow-md)] lg:hidden"
+              className="fixed inset-y-0 right-0 z-[70] flex w-[min(100vw-2rem,360px)] flex-col border-l border-white/10 bg-[#0b1623] text-white shadow-2xl lg:hidden"
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}

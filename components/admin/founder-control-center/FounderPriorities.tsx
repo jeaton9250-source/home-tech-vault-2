@@ -39,7 +39,7 @@ const toneStyles: Record<
   neutral: {
     icon: CircleDot,
     className:
-      "border-border-subtle bg-surface-sunken text-text-secondary",
+      "border-border-subtle bg-surface-sunken text-[#5f5b55]",
   },
 };
 
@@ -95,17 +95,17 @@ export default function FounderPriorities({
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center gap-2">
-                      <span className="font-medium text-text-primary">
+                      <span className="font-semibold text-[#18202b]">
                         {item.title}
                       </span>
                       {typeof item.count ===
                       "number" ? (
-                        <span className="rounded-full border border-border-subtle px-2 py-0.5 text-xs font-medium text-text-secondary">
+                        <span className="rounded-full border border-border-subtle px-2 py-0.5 text-xs font-medium text-[#5f5b55]">
                           {item.count}
                         </span>
                       ) : null}
                     </span>
-                    <span className="mt-1 block text-sm leading-6 text-text-secondary">
+                    <span className="mt-1 block text-sm leading-6 text-[#5f5b55]">
                       {item.description}
                     </span>
                   </span>
@@ -137,10 +137,10 @@ export function FounderAttentionList({
     >
       {items.length === 0 ? (
         <div className="rounded-[20px] border border-border-subtle bg-surface-sunken px-5 py-8 text-center">
-          <p className="font-medium text-text-primary">
+          <p className="font-semibold text-[#18202b]">
             Nothing pending
           </p>
-          <p className="mt-2 text-sm leading-6 text-text-secondary">
+          <p className="mt-2 text-sm leading-6 text-[#5f5b55]">
             No additional configuration or
             operational items need review.
           </p>
@@ -153,10 +153,10 @@ export function FounderAttentionList({
                 href={item.href}
                 className="block rounded-[20px] border border-border-subtle bg-surface-sunken px-4 py-4 transition hover:bg-surface-card"
               >
-                <p className="font-medium text-text-primary">
+                <p className="font-semibold text-[#18202b]">
                   {item.title}
                 </p>
-                <p className="mt-1 text-sm leading-6 text-text-secondary">
+                <p className="mt-1 text-sm leading-6 text-[#5f5b55]">
                   {item.description}
                 </p>
               </Link>
@@ -176,10 +176,10 @@ export function FounderFeedbackEmptyState() {
       subtitle="Customer sentiment and product feedback."
     >
       <div className="rounded-[20px] border border-border-subtle bg-surface-sunken px-5 py-8 text-center">
-        <p className="font-medium text-text-primary">
+        <p className="font-semibold text-[#18202b]">
           No feedback system is connected yet.
         </p>
-        <p className="mt-2 text-sm leading-6 text-text-secondary">
+        <p className="mt-2 text-sm leading-6 text-[#5f5b55]">
           Support tickets remain the primary
           channel for customer input.
         </p>

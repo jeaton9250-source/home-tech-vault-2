@@ -695,15 +695,31 @@ export default function FamilyPage() {
       setSuccessMessage("");
       setErrorMessage("");
 
-      const { error } = await supabase
-        .from("households")
-        .insert({
-          owner_id: user.id,
-          name,
-        });
+      const response = await fetch(
+        "/api/household/ensure",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            householdName: name,
+          }),
+        }
+      );
 
-      if (error) {
-        throw error;
+      const payload =
+        (await response.json()) as {
+          error?: string;
+          householdId?: string;
+        };
+
+      if (!response.ok) {
+        throw new Error(
+          payload.error ||
+            "Unable to create your household."
+        );
       }
 
       setHouseholdName("");

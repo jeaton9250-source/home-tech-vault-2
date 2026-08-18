@@ -1,154 +1,377 @@
 "use client";
 
 import Link from "next/link";
+
 import {
   Activity,
+  ArrowUpRight,
   BarChart3,
+  ClipboardCheck,
+  CreditCard,
   ExternalLink,
   Eye,
   FileText,
   HardDrive,
+  Home,
   MousePointerClick,
+  Share2,
   Users,
 } from "lucide-react";
 
 import {
-  AdminContentSection,
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+
+import {
   AdminEmptyState,
   AdminErrorState,
-  AdminPageHero,
   AdminStatusBadge,
-  AdminSummaryCard,
-  AdminSummaryGrid,
 } from "@/components/admin/layout/AdminPageLayout";
+
 import type {
   AdminAnalyticsSnapshot,
   AdminVercelAnalyticsSnapshot,
 } from "@/lib/admin/types";
 
+import type {
+  AdminHealthCheckMetrics,
+} from "@/lib/admin/data/healthCheck";
+
+
 const EXTERNAL_LINKS = [
   {
-    label: "Vercel Analytics",
+    label: "Vercel",
+    description:
+      "Traffic and production analytics",
     href: "https://vercel.com/dashboard",
   },
   {
+    label: "Supabase",
+    description:
+      "Database and authentication",
+    href: "https://supabase.com/dashboard",
+  },
+  {
+    label: "Stripe",
+    description:
+      "Subscriptions and payments",
+    href: "https://dashboard.stripe.com/",
+  },
+  {
     label: "Google Analytics",
+    description:
+      "Website reporting",
     href: "https://analytics.google.com/",
   },
   {
     label: "Search Console",
+    description:
+      "Organic search visibility",
     href: "https://search.google.com/search-console",
   },
   {
-    label: "Stripe",
-    href: "https://dashboard.stripe.com/",
-  },
-  {
     label: "Resend",
+    description:
+      "Transactional email delivery",
     href: "https://resend.com/emails",
   },
-  {
-    label: "Supabase",
-    href: "https://supabase.com/dashboard",
-  },
-];
+] as const;
+
 
 function formatDateRange(
   since: string,
   until: string
 ) {
-  const formatter = new Intl.DateTimeFormat(
+  const formatter =
+    new Intl.DateTimeFormat(
+      "en-US",
+      {
+        month: "short",
+        day: "numeric",
+      }
+    );
+
+  return `${formatter.format(
+    new Date(since)
+  )} – ${formatter.format(
+    new Date(until)
+  )}`;
+}
+
+
+function formatShortDate(
+  date: string
+) {
+  return new Date(
+    `${date}T12:00:00Z`
+  ).toLocaleDateString(
     "en-US",
     {
       month: "short",
       day: "numeric",
-      year: "numeric",
     }
   );
-
-  return `${formatter.format(
-    new Date(since)
-  )} – ${formatter.format(new Date(until))}`;
 }
 
-function TrafficList({
+
+function AnalyticsSection({
+  title,
+  description,
+  action,
+  children,
+}: {
+  title: string;
+  description?: string;
+  action?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <section>
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 className="text-xl font-semibold tracking-[-0.03em] text-[#18202b]">
+            {title}
+          </h2>
+
+          {description ? (
+            <p className="mt-1 text-sm leading-6 text-[#5f5b55]">
+              {description}
+            </p>
+          ) : null}
+        </div>
+
+        {action}
+      </div>
+
+      {children}
+    </section>
+  );
+}
+
+
+function MetricCard({
+  label,
+  value,
+  hint,
+  icon,
+}: {
+  label: string;
+  value: string | number;
+  hint: string;
+  icon: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-[20px] border border-[#e1dbd1] bg-[#fffdf9] p-5 shadow-[0_8px_28px_-23px_rgba(23,32,42,0.32)]">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#6f6a62]">
+            {label}
+          </p>
+
+          <p className="mt-3 text-[34px] font-semibold leading-none tracking-[-0.05em] text-[#18202b]">
+            {typeof value === "number"
+              ? value.toLocaleString()
+              : value}
+          </p>
+
+          <p className="mt-2 text-sm text-[#5f5b55]">
+            {hint}
+          </p>
+        </div>
+
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#e4ded4] bg-[#f5f1e9] text-[#65717a]">
+          {icon}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+function RankingList({
   rows,
-  emptyTitle,
-  emptyDescription,
+  valueLabel,
 }: {
   rows: Array<{
     label: string;
     visitors: number;
     pageviews: number;
   }>;
-  emptyTitle: string;
-  emptyDescription: string;
+  valueLabel: "visitors" | "pageviews";
 }) {
   if (rows.length === 0) {
     return (
-      <AdminEmptyState
-        title={emptyTitle}
-        description={emptyDescription}
-      />
+      <div className="rounded-[20px] border border-[#e1dbd1] bg-[#fffdf9] p-5 text-sm text-[#5f5b55]">
+        No data has been recorded yet.
+      </div>
     );
   }
 
-  const maximumPageviews = Math.max(
-    ...rows.map((row) => row.pageviews),
+  const maximum = Math.max(
+    ...rows.map((row) =>
+      valueLabel === "visitors"
+        ? row.visitors
+        : row.pageviews
+    ),
     1
   );
 
   return (
-    <ul className="space-y-3">
-      {rows.map((row) => {
-        const width = Math.max(
-          (row.pageviews / maximumPageviews) * 100,
-          3
-        );
+    <div className="overflow-hidden rounded-[20px] border border-[#e1dbd1] bg-[#fffdf9]">
+      {rows.slice(0, 6).map(
+        (row, index) => {
+          const value =
+            valueLabel === "visitors"
+              ? row.visitors
+              : row.pageviews;
 
-        return (
-          <li
-            key={row.label}
-            className="rounded-[18px] border border-border-subtle bg-surface-sunken px-4 py-3"
-          >
-            <div className="flex items-start justify-between gap-4">
-              <span className="min-w-0 truncate text-sm font-medium text-text-primary">
-                {row.label}
-              </span>
+          const width = Math.max(
+            (value / maximum) * 100,
+            3
+          );
 
-              <span className="shrink-0 text-xs text-text-secondary">
-                {row.visitors.toLocaleString()} visitors
-              </span>
+          return (
+            <div
+              key={`${row.label}-${index}`}
+              className="border-b border-[#e7e1d7] px-5 py-4 last:border-b-0"
+            >
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex min-w-0 items-center gap-3">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#f2eee6] text-xs font-semibold text-[#777169]">
+                    {index + 1}
+                  </span>
+
+                  <span className="truncate text-sm font-medium text-[#18202b]">
+                    {row.label}
+                  </span>
+                </div>
+
+                <span className="shrink-0 text-sm font-semibold text-[#18202b]">
+                  {value.toLocaleString()}
+                </span>
+              </div>
+
+              <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[#eee8df]">
+                <div
+                  className="h-full rounded-full bg-[#718d4f]"
+                  style={{
+                    width: `${width}%`,
+                  }}
+                />
+              </div>
+
+              <p className="mt-2 text-xs text-[#777169]">
+                {row.visitors.toLocaleString()} visitors ·{" "}
+                {row.pageviews.toLocaleString()} pageviews
+              </p>
             </div>
-
-            <div className="mt-3 h-2 overflow-hidden rounded-full bg-surface-card">
-              <div
-                className="h-full rounded-full bg-charcoal"
-                style={{ width: `${width}%` }}
-              />
-            </div>
-
-            <p className="mt-2 text-xs text-text-tertiary">
-              {row.pageviews.toLocaleString()} page views
-            </p>
-          </li>
-        );
-      })}
-    </ul>
+          );
+        }
+      )}
+    </div>
   );
 }
+
+
+function ProductMetric({
+  label,
+  value,
+  icon,
+}: {
+  label: string;
+  value: number;
+  icon: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4 border-b border-[#e6e0d6] px-5 py-4 last:border-b-0">
+      <div className="flex items-center gap-3">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#f2eee6] text-[#66717a]">
+          {icon}
+        </div>
+
+        <p className="text-sm font-medium text-[#42474b]">
+          {label}
+        </p>
+      </div>
+
+      <p className="text-xl font-semibold tracking-[-0.03em] text-[#18202b]">
+        {value.toLocaleString()}
+      </p>
+    </div>
+  );
+}
+
+
+function CustomTooltip({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: Array<{
+    name?: string;
+    value?: number;
+  }>;
+  label?: string;
+}) {
+  if (
+    !active ||
+    !payload ||
+    payload.length === 0
+  ) {
+    return null;
+  }
+
+  return (
+    <div className="rounded-xl border border-[#dcd6cc] bg-[#fffdf9] px-3 py-2.5 shadow-lg">
+      <p className="text-xs font-semibold text-[#18202b]">
+        {label}
+      </p>
+
+      <div className="mt-1.5 space-y-1">
+        {payload.map((entry) => (
+          <p
+            key={entry.name}
+            className="text-xs text-[#5f5b55]"
+          >
+            {entry.name}:{" "}
+            <span className="font-semibold text-[#18202b]">
+              {Number(
+                entry.value ?? 0
+              ).toLocaleString()}
+            </span>
+          </p>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 
 export default function AnalyticsAdminClient({
   analytics,
   vercelAnalytics,
+  healthCheckMetrics,
 }: {
   analytics: AdminAnalyticsSnapshot;
-  vercelAnalytics: AdminVercelAnalyticsSnapshot;
+  vercelAnalytics:
+    AdminVercelAnalyticsSnapshot;
+  healthCheckMetrics:
+    AdminHealthCheckMetrics;
 }) {
-  const dateRange = formatDateRange(
-    vercelAnalytics.since,
-    vercelAnalytics.until
-  );
+  const dateRange =
+    formatDateRange(
+      vercelAnalytics.since,
+      vercelAnalytics.until
+    );
 
   const averageViewsPerVisitor =
     vercelAnalytics.visitors > 0
@@ -158,328 +381,712 @@ export default function AnalyticsAdminClient({
         ).toFixed(1)
       : "0";
 
-  const maximumDailyViews = Math.max(
-    ...vercelAnalytics.dailyTraffic.map(
-      (entry) => entry.pageviews
-    ),
-    1
-  );
+  const totalSignups30Days =
+    analytics.signupsByDay.reduce(
+      (sum, entry) =>
+        sum + entry.count,
+      0
+    );
+
+  const trafficData =
+    vercelAnalytics.dailyTraffic.map(
+      (entry) => ({
+        date: formatShortDate(
+          entry.date
+        ),
+        visitors:
+          entry.visitors,
+        pageviews:
+          entry.pageviews,
+      })
+    );
+
+  const signupData =
+    analytics.signupsByDay.map(
+      (entry) => ({
+        date: formatShortDate(
+          entry.date
+        ),
+        signups: entry.count,
+      })
+    );
+
+  const totalPlans =
+    analytics.planDistribution.reduce(
+      (sum, item) =>
+        sum + item.count,
+      0
+    );
 
   return (
-    <>
-      <AdminPageHero
-        title="Analytics"
-        description="Live website traffic from Vercel Analytics alongside account, device, subscription, and support activity from Home Tech Vault."
-        primaryAction={{
-          label: "Open Vercel",
-          href: "https://vercel.com/dashboard",
-        }}
-        badge={
-          <AdminStatusBadge
-            tone={
-              vercelAnalytics.available
-                ? "success"
+    <div className="space-y-8">
+      {/* HEADER */}
+      <header className="flex flex-col gap-5 border-b border-[#ded8ce] pb-7 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <div className="flex flex-wrap items-center gap-3">
+            <p className="text-sm font-semibold text-[#617c43]">
+              Growth Intelligence
+            </p>
+
+            <AdminStatusBadge
+              tone={
+                vercelAnalytics.available
+                  ? "success"
+                  : vercelAnalytics.configured
+                    ? "warning"
+                    : "neutral"
+              }
+            >
+              {vercelAnalytics.available
+                ? "Live production data"
                 : vercelAnalytics.configured
-                  ? "warning"
-                  : "neutral"
-            }
+                  ? "Traffic unavailable"
+                  : "Vercel not connected"}
+            </AdminStatusBadge>
+          </div>
+
+          <h1 className="mt-3 text-3xl font-semibold tracking-[-0.045em] text-[#17202a] md:text-[40px] md:leading-none">
+            Analytics
+          </h1>
+
+          <p className="mt-3 max-w-2xl text-[15px] leading-7 text-[#5d5a54]">
+            Understand how people find Home Tech Vault,
+            what they use, and where growth is happening.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <div className="rounded-xl border border-[#ded8ce] bg-[#fffdf9] px-4 py-2.5">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#777169]">
+              Reporting period
+            </p>
+
+            <p className="mt-0.5 text-sm font-medium text-[#18202b]">
+              {dateRange}
+            </p>
+          </div>
+
+          <Link
+            href="https://vercel.com/dashboard"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex h-11 items-center gap-2 rounded-xl bg-[#172635] px-4 text-sm font-semibold text-white transition hover:bg-[#213449]"
           >
-            {vercelAnalytics.available
-              ? `Live traffic · ${dateRange}`
-              : vercelAnalytics.configured
-                ? "Vercel temporarily unavailable"
-                : "Vercel not connected"}
-          </AdminStatusBadge>
-        }
-      />
-
-      {vercelAnalytics.available ? (
-        <>
-          <AdminSummaryGrid>
-            <AdminSummaryCard
-              label="Visitors"
-              value={vercelAnalytics.visitors}
-              hint="Unique visitors in the last 30 days"
-              icon={
-                <Users
-                  aria-hidden="true"
-                  className="h-5 w-5"
-                />
-              }
+            Open Vercel
+            <ExternalLink
+              size={15}
             />
+          </Link>
+        </div>
+      </header>
 
-            <AdminSummaryCard
-              label="Page Views"
-              value={vercelAnalytics.pageviews}
-              hint="Total production page views"
-              icon={
-                <Eye
-                  aria-hidden="true"
-                  className="h-5 w-5"
-                />
-              }
+
+      {/* TOP KPIS */}
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <MetricCard
+          label="Visitors"
+          value={
+            vercelAnalytics.visitors
+          }
+          hint="Unique visitors · 30 days"
+          icon={
+            <Users size={18} />
+          }
+        />
+
+        <MetricCard
+          label="Pageviews"
+          value={
+            vercelAnalytics.pageviews
+          }
+          hint="Production pageviews"
+          icon={
+            <Eye size={18} />
+          }
+        />
+
+        <MetricCard
+          label="Views / Visitor"
+          value={
+            averageViewsPerVisitor
+          }
+          hint="Average browsing depth"
+          icon={
+            <MousePointerClick
+              size={18}
             />
+          }
+        />
 
-            <AdminSummaryCard
-              label="Views per Visitor"
-              value={averageViewsPerVisitor}
-              hint="Average browsing depth"
-              icon={
-                <MousePointerClick
-                  aria-hidden="true"
-                  className="h-5 w-5"
-                />
-              }
-            />
+        <MetricCard
+          label="New Users"
+          value={totalSignups30Days}
+          hint="Profiles created · 30 days"
+          icon={
+            <Activity size={18} />
+          }
+        />
+      </div>
 
-            <AdminSummaryCard
-              label="Tracked Pages"
-              value={vercelAnalytics.topPages.length}
-              hint="Top routes in this report"
-              icon={
-                <BarChart3
-                  aria-hidden="true"
-                  className="h-5 w-5"
-                />
-              }
-            />
-          </AdminSummaryGrid>
 
-          <AdminContentSection
-            id="traffic-trend-heading"
-            title="Traffic trend"
-            subtitle={`Daily production traffic · ${dateRange}`}
-          >
-            {vercelAnalytics.dailyTraffic.length ===
-            0 ? (
-              <AdminEmptyState
-                title="No traffic data"
-                description="Vercel has not returned daily traffic for this reporting period."
-              />
-            ) : (
-              <div className="overflow-x-auto">
-                <div className="flex min-w-[720px] items-end gap-2">
-                  {vercelAnalytics.dailyTraffic.map(
-                    (entry) => {
-                      const height = Math.max(
-                        (entry.pageviews /
-                          maximumDailyViews) *
-                          180,
-                        entry.pageviews > 0 ? 8 : 2
-                      );
+      {/* TRAFFIC CHART */}
+      <AnalyticsSection
+        title="Traffic"
+        description={`Visitors and pageviews across production · ${dateRange}`}
+      >
+        {vercelAnalytics.available ? (
+          vercelAnalytics.dailyTraffic
+            .length > 0 ? (
+            <div className="rounded-[22px] border border-[#dcd6cc] bg-[#fffdf9] p-5 md:p-6">
+              <div className="mb-6 flex flex-wrap items-center gap-5 text-sm">
+                <div className="flex items-center gap-2 text-[#5f5b55]">
+                  <span className="h-2.5 w-2.5 rounded-full bg-[#718d4f]" />
+                  Visitors
+                </div>
 
-                      return (
-                        <div
-                          key={entry.date}
-                          className="flex min-w-0 flex-1 flex-col items-center"
-                        >
-                          <div className="flex h-48 w-full items-end justify-center rounded-t-xl bg-surface-sunken px-1">
-                            <div
-                              className="w-full max-w-8 rounded-t-lg bg-charcoal transition"
-                              style={{
-                                height: `${height}px`,
-                              }}
-                              title={`${entry.date}: ${entry.pageviews} page views, ${entry.visitors} visitors`}
-                            />
-                          </div>
-
-                          <p className="mt-2 text-[10px] text-text-tertiary">
-                            {new Date(
-                              `${entry.date}T12:00:00Z`
-                            ).toLocaleDateString(
-                              "en-US",
-                              {
-                                month: "numeric",
-                                day: "numeric",
-                              }
-                            )}
-                          </p>
-                        </div>
-                      );
-                    }
-                  )}
+                <div className="flex items-center gap-2 text-[#5f5b55]">
+                  <span className="h-2.5 w-2.5 rounded-full bg-[#172635]" />
+                  Pageviews
                 </div>
               </div>
-            )}
-          </AdminContentSection>
 
-          <div className="grid gap-6 xl:grid-cols-2">
-            <AdminContentSection
-              id="top-pages-heading"
-              title="Top pages"
-              subtitle="Routes with the most page views."
-            >
-              <TrafficList
-                rows={vercelAnalytics.topPages}
-                emptyTitle="No page data"
-                emptyDescription="No page routes were recorded during this period."
-              />
-            </AdminContentSection>
+              <div className="h-[320px] w-full">
+                <ResponsiveContainer
+                  width="100%"
+                  height="100%"
+                >
+                  <AreaChart
+                    data={trafficData}
+                    margin={{
+                      top: 10,
+                      right: 10,
+                      left: -10,
+                      bottom: 0,
+                    }}
+                  >
+                    <CartesianGrid
+                      vertical={false}
+                      stroke="#e8e2d9"
+                    />
 
-            <AdminContentSection
-              id="traffic-sources-heading"
-              title="Traffic sources"
-              subtitle="Where visitors arrived from."
-            >
-              <TrafficList
-                rows={vercelAnalytics.topReferrers}
-                emptyTitle="No referral data"
-                emptyDescription="No referral sources were recorded during this period."
-              />
-            </AdminContentSection>
-          </div>
-        </>
-      ) : (
-        <AdminContentSection
-          id="vercel-status-heading"
-          title="Vercel Analytics"
-          subtitle="Live production traffic"
-        >
+                    <XAxis
+                      dataKey="date"
+                      tick={{
+                        fill: "#777169",
+                        fontSize: 11,
+                      }}
+                      axisLine={false}
+                      tickLine={false}
+                      minTickGap={24}
+                    />
+
+                    <YAxis
+                      tick={{
+                        fill: "#777169",
+                        fontSize: 11,
+                      }}
+                      axisLine={false}
+                      tickLine={false}
+                      allowDecimals={false}
+                    />
+
+                    <Tooltip
+                      content={
+                        <CustomTooltip />
+                      }
+                    />
+
+                    <Area
+                      type="monotone"
+                      dataKey="pageviews"
+                      name="Pageviews"
+                      stroke="#172635"
+                      fill="#172635"
+                      fillOpacity={0.08}
+                      strokeWidth={2}
+                    />
+
+                    <Area
+                      type="monotone"
+                      dataKey="visitors"
+                      name="Visitors"
+                      stroke="#718d4f"
+                      fill="#718d4f"
+                      fillOpacity={0.12}
+                      strokeWidth={2}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          ) : (
+            <AdminEmptyState
+              title="No traffic data"
+              description="No daily Vercel traffic was returned for this reporting period."
+            />
+          )
+        ) : (
           <AdminErrorState
             message={
               vercelAnalytics.error ??
               "Vercel Analytics is unavailable."
             }
           />
-        </AdminContentSection>
-      )}
+        )}
+      </AnalyticsSection>
 
-      <AdminContentSection
-        id="product-metrics-heading"
-        title="Product activity"
-        subtitle="Current Home Tech Vault data from Supabase."
-      >
-        <AdminSummaryGrid>
-          <AdminSummaryCard
-            label="Users"
-            value={analytics.totalUsers}
-            icon={
-              <Users
-                aria-hidden="true"
-                className="h-5 w-5"
-              />
-            }
-          />
 
-          <AdminSummaryCard
-            label="Devices"
-            value={analytics.totalDevices}
-            icon={
-              <HardDrive
-                aria-hidden="true"
-                className="h-5 w-5"
-              />
-            }
-          />
-
-          <AdminSummaryCard
-            label="Documents"
-            value={analytics.totalDocuments}
-            icon={
-              <FileText
-                aria-hidden="true"
-                className="h-5 w-5"
-              />
-            }
-          />
-
-          <AdminSummaryCard
-            label="Open Support"
-            value={analytics.openSupportTickets}
-            icon={
-              <Activity
-                aria-hidden="true"
-                className="h-5 w-5"
-              />
-            }
-          />
-        </AdminSummaryGrid>
-      </AdminContentSection>
-
-      <div className="grid gap-6 xl:grid-cols-2">
-        <AdminContentSection
-          id="reports-signups-heading"
-          title="Signups by day"
-          subtitle="Profile creations over the last 30 days."
+      {/* ACQUISITION */}
+      <div className="grid gap-7 xl:grid-cols-2">
+        <AnalyticsSection
+          title="Traffic Sources"
+          description="Where visitors are discovering Home Tech Vault."
         >
-          {analytics.signupsByDay.length === 0 ? (
-            <AdminEmptyState
-              title="No signup data"
-              description="No profiles were created during this period."
-            />
-          ) : (
-            <ul className="space-y-2">
-              {analytics.signupsByDay.map(
-                (entry) => (
-                  <li
-                    key={entry.date}
-                    className="flex items-center justify-between rounded-[18px] border border-border-subtle bg-surface-sunken px-4 py-3 text-sm"
-                  >
-                    <span className="text-text-secondary">
-                      {entry.date}
-                    </span>
-                    <span className="font-semibold text-text-primary">
-                      {entry.count}
-                    </span>
-                  </li>
-                )
-              )}
-            </ul>
-          )}
-        </AdminContentSection>
+          <RankingList
+            rows={
+              vercelAnalytics.topReferrers
+            }
+            valueLabel="visitors"
+          />
+        </AnalyticsSection>
 
-        <AdminContentSection
-          id="reports-plans-heading"
-          title="Plan distribution"
-          subtitle="Current subscription plan counts."
+        <AnalyticsSection
+          title="Top Pages"
+          description="The routes receiving the most attention."
         >
-          <ul className="space-y-2">
-            {analytics.planDistribution.map(
-              (entry) => (
-                <li
-                  key={entry.plan}
-                  className="flex items-center justify-between rounded-[18px] border border-border-subtle bg-surface-sunken px-4 py-3 text-sm"
-                >
-                  <span className="capitalize text-text-primary">
-                    {entry.plan}
-                  </span>
-                  <span className="font-semibold text-text-primary">
-                    {entry.count}
-                  </span>
-                </li>
-              )
-            )}
-          </ul>
-        </AdminContentSection>
+          <RankingList
+            rows={
+              vercelAnalytics.topPages
+            }
+            valueLabel="pageviews"
+          />
+        </AnalyticsSection>
       </div>
 
-      <AdminContentSection
-        id="reports-external-heading"
-        title="External dashboards"
-        subtitle="Open connected services in a new tab."
+
+      {/* HEALTH CHECK */}
+      <AnalyticsSection
+        title="Health Check Performance"
+        description="How the free Home Tech Health Check is performing as an acquisition tool."
+        action={
+          <Link
+            href="/health-check"
+            target="_blank"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#617c43] hover:text-[#4e6636]"
+          >
+            Open Health Check
+            <ArrowUpRight
+              size={15}
+            />
+          </Link>
+        }
       >
-        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {EXTERNAL_LINKS.map((link) => (
-            <li key={link.label}>
+        <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+          <div className="overflow-hidden rounded-[22px] border border-[#152638] bg-[#0b1623]">
+            <div className="grid sm:grid-cols-2 xl:grid-cols-4">
+              {[
+                {
+                  label:
+                    "Total Completed",
+                  value:
+                    healthCheckMetrics.totalCompleted,
+                },
+                {
+                  label:
+                    "Completed Today",
+                  value:
+                    healthCheckMetrics.completedToday,
+                },
+                {
+                  label:
+                    "Average Score",
+                  value:
+                    healthCheckMetrics.averageScore,
+                },
+                {
+                  label:
+                    "From Reddit",
+                  value:
+                    healthCheckMetrics.redditCompleted,
+                },
+              ].map(
+                (
+                  metric,
+                  index
+                ) => (
+                  <div
+                    key={
+                      metric.label
+                    }
+                    className={[
+                      "p-5",
+                      index > 0
+                        ? "border-t border-white/10 sm:border-t-0 sm:border-l"
+                        : "",
+                    ].join(" ")}
+                  >
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.13em] text-white/55">
+                      {metric.label}
+                    </p>
+
+                    <p className="mt-3 text-3xl font-semibold tracking-[-0.05em] text-[#f4f0e8]">
+                      {
+                        metric.value
+                      }
+                    </p>
+                  </div>
+                )
+              )}
+            </div>
+          </div>
+
+          <div className="rounded-[22px] border border-[#dcd6cc] bg-[#fffdf9] p-5">
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#718d4f]/10 text-[#617c43]">
+                <ClipboardCheck
+                  size={18}
+                />
+              </div>
+
+              <div>
+                <p className="font-semibold text-[#18202b]">
+                  Acquisition signal
+                </p>
+
+                <p className="mt-1 text-sm leading-6 text-[#5f5b55]">
+                  Reddit completions are
+                  counted when the Health
+                  Check is completed with
+                  <span className="font-medium">
+                    {" "}
+                    utm_source=reddit
+                  </span>.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 border-t border-[#e5dfd5] pt-5">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-[#5f5b55]">
+                  Reddit share
+                </span>
+
+                <span className="font-semibold text-[#18202b]">
+                  {healthCheckMetrics.totalCompleted >
+                  0
+                    ? Math.round(
+                        (healthCheckMetrics.redditCompleted /
+                          healthCheckMetrics.totalCompleted) *
+                          100
+                      )
+                    : 0}
+                  %
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </AnalyticsSection>
+
+
+      {/* GROWTH + PLAN MIX */}
+      <div className="grid gap-7 xl:grid-cols-[1.25fr_0.75fr]">
+        <AnalyticsSection
+          title="Signups Over Time"
+          description="New profiles created during the last 30 days."
+        >
+          <div className="rounded-[22px] border border-[#dcd6cc] bg-[#fffdf9] p-5">
+            {signupData.length > 0 ? (
+              <div className="h-[270px]">
+                <ResponsiveContainer
+                  width="100%"
+                  height="100%"
+                >
+                  <BarChart
+                    data={signupData}
+                    margin={{
+                      top: 10,
+                      right: 5,
+                      left: -20,
+                      bottom: 0,
+                    }}
+                  >
+                    <CartesianGrid
+                      vertical={false}
+                      stroke="#e8e2d9"
+                    />
+
+                    <XAxis
+                      dataKey="date"
+                      tick={{
+                        fill: "#777169",
+                        fontSize: 11,
+                      }}
+                      axisLine={false}
+                      tickLine={false}
+                      minTickGap={20}
+                    />
+
+                    <YAxis
+                      allowDecimals={false}
+                      tick={{
+                        fill: "#777169",
+                        fontSize: 11,
+                      }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+
+                    <Tooltip
+                      content={
+                        <CustomTooltip />
+                      }
+                    />
+
+                    <Bar
+                      dataKey="signups"
+                      name="Signups"
+                      fill="#718d4f"
+                      radius={[
+                        6,
+                        6,
+                        0,
+                        0,
+                      ]}
+                      maxBarSize={36}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <AdminEmptyState
+                title="No signup data"
+                description="No new profiles were recorded during this period."
+              />
+            )}
+          </div>
+        </AnalyticsSection>
+
+        <AnalyticsSection
+          title="Plan Mix"
+          description="Current subscription plan distribution."
+        >
+          <div className="overflow-hidden rounded-[22px] border border-[#dcd6cc] bg-[#fffdf9]">
+            {analytics.planDistribution
+              .length > 0 ? (
+              analytics.planDistribution.map(
+                (entry) => {
+                  const percentage =
+                    totalPlans > 0
+                      ? Math.round(
+                          (entry.count /
+                            totalPlans) *
+                            100
+                        )
+                      : 0;
+
+                  return (
+                    <div
+                      key={
+                        entry.plan
+                      }
+                      className="border-b border-[#e6e0d6] px-5 py-4 last:border-b-0"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="capitalize text-sm font-semibold text-[#18202b]">
+                            {
+                              entry.plan
+                            }
+                          </p>
+
+                          <p className="mt-1 text-xs text-[#777169]">
+                            {
+                              percentage
+                            }
+                            % of tracked plans
+                          </p>
+                        </div>
+
+                        <p className="text-xl font-semibold text-[#18202b]">
+                          {
+                            entry.count
+                          }
+                        </p>
+                      </div>
+
+                      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[#eee8df]">
+                        <div
+                          className="h-full rounded-full bg-[#718d4f]"
+                          style={{
+                            width: `${percentage}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  );
+                }
+              )
+            ) : (
+              <div className="p-5 text-sm text-[#5f5b55]">
+                No subscription data
+                available yet.
+              </div>
+            )}
+          </div>
+        </AnalyticsSection>
+      </div>
+
+
+      {/* PRODUCT ADOPTION */}
+      <AnalyticsSection
+        title="Product Adoption"
+        description="Current inventory across the Home Tech Vault platform."
+      >
+        <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
+          <div className="overflow-hidden rounded-[22px] border border-[#dcd6cc] bg-[#fffdf9]">
+            <ProductMetric
+              label="Users"
+              value={
+                analytics.totalUsers
+              }
+              icon={
+                <Users size={17} />
+              }
+            />
+
+            <ProductMetric
+              label="Households"
+              value={
+                analytics.totalHouseholds
+              }
+              icon={
+                <Home size={17} />
+              }
+            />
+
+            <ProductMetric
+              label="Devices"
+              value={
+                analytics.totalDevices
+              }
+              icon={
+                <HardDrive
+                  size={17}
+                />
+              }
+            />
+
+            <ProductMetric
+              label="Documents"
+              value={
+                analytics.totalDocuments
+              }
+              icon={
+                <FileText
+                  size={17}
+                />
+              }
+            />
+          </div>
+
+          <div className="overflow-hidden rounded-[22px] border border-[#dcd6cc] bg-[#fffdf9]">
+            <ProductMetric
+              label="Support Tickets"
+              value={
+                analytics.totalSupportTickets
+              }
+              icon={
+                <Activity
+                  size={17}
+                />
+              }
+            />
+
+            <ProductMetric
+              label="Open Support"
+              value={
+                analytics.openSupportTickets
+              }
+              icon={
+                <Activity
+                  size={17}
+                />
+              }
+            />
+
+            <ProductMetric
+              label="Family Invitations"
+              value={
+                analytics.familyInvitationsTotal
+              }
+              icon={
+                <Share2 size={17} />
+              }
+            />
+
+            <ProductMetric
+              label="Health Checks"
+              value={
+                healthCheckMetrics.totalCompleted
+              }
+              icon={
+                <ClipboardCheck
+                  size={17}
+                />
+              }
+            />
+          </div>
+        </div>
+      </AnalyticsSection>
+
+
+      {/* EXTERNAL TOOLS */}
+      <AnalyticsSection
+        title="External Tools"
+        description="Jump directly into the services behind Home Tech Vault."
+      >
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {EXTERNAL_LINKS.map(
+            (link) => (
               <Link
+                key={link.label}
                 href={link.href}
                 target="_blank"
                 rel="noreferrer"
-                className="group flex items-center justify-between rounded-[20px] border border-border-subtle bg-surface-sunken px-4 py-4 transition hover:bg-surface-card"
+                className="group flex items-center justify-between rounded-[18px] border border-[#e1dbd1] bg-[#fffdf9] px-5 py-4 transition hover:-translate-y-0.5 hover:border-[#cfc8bd] hover:shadow-sm"
               >
-                <span className="font-medium text-text-primary">
-                  {link.label}
-                </span>
+                <div>
+                  <p className="text-sm font-semibold text-[#18202b]">
+                    {link.label}
+                  </p>
+
+                  <p className="mt-1 text-xs text-[#777169]">
+                    {
+                      link.description
+                    }
+                  </p>
+                </div>
 
                 <ExternalLink
-                  aria-hidden="true"
-                  className="h-4 w-4 text-text-tertiary transition group-hover:text-charcoal"
+                  size={16}
+                  className="text-[#99948c] transition group-hover:text-[#617c43]"
                 />
               </Link>
-            </li>
-          ))}
-        </ul>
-      </AdminContentSection>
-    </>
+            )
+          )}
+        </div>
+      </AnalyticsSection>
+
+
+      <div className="flex items-center gap-2 border-t border-[#ded8ce] pt-5 text-xs text-[#777169]">
+        <BarChart3 size={14} />
+
+        Traffic reporting covers the
+        rolling 30-day Vercel Analytics
+        window. Product totals reflect
+        current production records.
+      </div>
+    </div>
   );
 }
