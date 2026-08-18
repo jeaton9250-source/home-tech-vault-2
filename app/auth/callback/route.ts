@@ -10,21 +10,62 @@ export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  const origin = getSiteUrl();
-  const code = url.searchParams.get("code");
+
+  /*
+   * OAuth must finish on the same origin that started it.
+   *
+   * Local development:
+   *   http://localhost:3000
+   *
+   * Production:
+   *   https://www.hometechvault.com
+   *
+   * Using the production URL during a localhost OAuth
+   * callback causes the new session cookie to be left
+   * behind on localhost.
+   */
+  const isLocalRequest =
+    url.hostname === "localhost" ||
+    url.hostname === "127.0.0.1";
+
+  const origin = isLocalRequest
+    ? url.origin
+    : getSiteUrl();
+
+  const code =
+    url.searchParams.get("code");
+
   const requestedNext =
     url.searchParams.get("next");
+
   const authError =
     url.searchParams.get("error");
+
   const authErrorDescription =
-    url.searchParams.get("error_description");
+    url.searchParams.get(
+      "error_description"
+    );
+
+  console.info(
+    "[auth-callback] OAuth callback",
+    {
+      requestOrigin: url.origin,
+      redirectOrigin: origin,
+      isLocalRequest,
+      requestedNext,
+      hasCode: Boolean(code),
+      hasProviderError:
+        Boolean(authError),
+    }
+  );
 
   if (authError) {
     console.error(
       "[auth-callback] Provider returned an error:",
       {
         error: authError,
-        description: authErrorDescription,
+        description:
+          authErrorDescription,
       }
     );
 
@@ -53,10 +94,16 @@ export async function GET(request: Request) {
     );
   }
 
-  const supabase = await createClient();
+  const supabase =
+    await createClient();
 
-  const { data, error } =
-    await supabase.auth.exchangeCodeForSession(code);
+  const {
+    data,
+    error,
+  } =
+    await supabase.auth.exchangeCodeForSession(
+      code
+    );
 
   if (error) {
     console.error(
@@ -78,14 +125,34 @@ export async function GET(request: Request) {
     );
   }
 
-  const destination = resolveInviteNextPathFromUser(
-    requestedNext,
-    data.session?.user ?? null
-  );
+  if (!data.session?.user) {
+    console.error(
+      "[auth-callback] OAuth completed without a user session."
+    );
 
-  console.info("[auth-callback] PKCE success", {
-    destination,
-  });
+    return NextResponse.redirect(
+      new URL(
+        authConfirmErrorPath(
+          "Your Google account could not be signed in."
+        ),
+        origin
+      )
+    );
+  }
+
+  const destination =
+    resolveInviteNextPathFromUser(
+      requestedNext,
+      data.session.user
+    );
+
+  console.info(
+    "[auth-callback] PKCE success",
+    {
+      destination,
+      redirectOrigin: origin,
+    }
+  );
 
   return NextResponse.redirect(
     new URL(destination, origin)

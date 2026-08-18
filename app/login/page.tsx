@@ -11,6 +11,7 @@ import { Loader2 } from "lucide-react";
 
 import AuthCard from "@/components/auth/AuthCard";
 import AuthLayout from "@/components/auth/AuthLayout";
+import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
 import PasswordInput from "@/components/auth/PasswordInput";
 import Alert from "@/components/ui/Alert";
 import Button from "@/components/ui/Button";
@@ -471,6 +472,27 @@ export default function LoginPage() {
             <Alert variant="error">{errorMessage}</Alert>
           ) : null}
         </div>
+
+        {!setupComplete &&
+        !isFamilyInvitation &&
+        !isCreateAccountInvitation ? (
+          <>
+            <GoogleAuthButton
+              nextPath="/dashboard"
+              label="Continue with Google"
+            />
+
+            <div className="my-6 flex items-center gap-4">
+              <div className="h-px flex-1 bg-border-subtle" />
+
+              <span className="text-xs font-medium text-text-muted">
+                or continue with email
+              </span>
+
+              <div className="h-px flex-1 bg-border-subtle" />
+            </div>
+          </>
+        ) : null}
 
         <form
           onSubmit={handleSignIn}

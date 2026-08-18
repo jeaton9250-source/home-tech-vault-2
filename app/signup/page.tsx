@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 
 import AuthCard from "@/components/auth/AuthCard";
 import AuthLayout from "@/components/auth/AuthLayout";
+import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
 import PasswordInput from "@/components/auth/PasswordInput";
 import Alert from "@/components/ui/Alert";
 import Button from "@/components/ui/Button";
@@ -246,6 +247,39 @@ export default function SignupPage() {
         title="Create your Home Tech Vault"
         description="Set up one secure place for your household devices, warranties, documents, subscriptions, and maintenance records."
       >
+        <GoogleAuthButton
+          nextPath="/onboarding"
+          label="Continue with Google"
+        />
+
+        <p className="mt-3 text-center text-xs leading-5 text-text-muted">
+          By continuing with Google, you agree to our{" "}
+          <Link
+            href="/terms"
+            className="font-medium text-interaction hover:underline"
+          >
+            Terms
+          </Link>{" "}
+          and{" "}
+          <Link
+            href="/privacy"
+            className="font-medium text-interaction hover:underline"
+          >
+            Privacy Policy
+          </Link>
+          .
+        </p>
+
+        <div className="my-6 flex items-center gap-4">
+          <div className="h-px flex-1 bg-border-subtle" />
+
+          <span className="text-xs font-medium text-text-muted">
+            or continue with email
+          </span>
+
+          <div className="h-px flex-1 bg-border-subtle" />
+        </div>
+
         <div
           aria-live="polite"
           aria-atomic="true"

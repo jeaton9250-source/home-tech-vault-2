@@ -7,9 +7,12 @@ import {
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
+  ChevronDown,
+  ChevronUp,
   Laptop,
   Loader2,
   Save,
+  Sparkles,
 } from "lucide-react";
 
 import {
@@ -35,14 +38,13 @@ export default function AddDevicePage() {
     canCreate,
     isPersonalVault,
     isViewer,
+    loading: permissionsLoading,
   } = usePermissions();
 
   const quota = useHouseholdLimits();
 
   const householdId = quota.householdId;
-
-  const loading = quota.loading;
-
+  const quotaLoading = quota.loading;
   const deviceLimitReached =
     quota.deviceLimitReached;
 
@@ -62,6 +64,11 @@ export default function AddDevicePage() {
 
   const [saving, setSaving] =
     useState(false);
+
+  const [
+    showMoreDetails,
+    setShowMoreDetails,
+  ] = useState(false);
 
   const [errorMessage, setErrorMessage] =
     useState("");
@@ -113,10 +120,6 @@ export default function AddDevicePage() {
       return;
     }
 
-    if (loading) {
-      return;
-    }
-
     if (!canCreate || isViewer) {
       setErrorMessage(
         "Viewer access is read-only. You cannot add devices."
@@ -124,7 +127,17 @@ export default function AddDevicePage() {
       return;
     }
 
-    if (deviceLimitReached) {
+    /*
+     * Do not block the user while the quota
+     * request is still loading.
+     *
+     * The server action performs the final
+     * quota validation before inserting.
+     */
+    if (
+      !quotaLoading &&
+      deviceLimitReached
+    ) {
       if (
         quota.canUseProFeatures ||
         quota.billingManagedByHousehold
@@ -136,12 +149,13 @@ export default function AddDevicePage() {
       router.push(
         "/upgrade?reason=device-limit"
       );
+
       return;
     }
 
     if (!deviceName.trim()) {
       setErrorMessage(
-        "Enter a device name."
+        "Give this device a name."
       );
       return;
     }
@@ -163,12 +177,18 @@ export default function AddDevicePage() {
       });
 
       if (!result.success) {
-        if (result.code === "UNAUTHENTICATED") {
+        if (
+          result.code ===
+          "UNAUTHENTICATED"
+        ) {
           router.push("/login");
           return;
         }
 
-        if (result.code === "VIEWER_READ_ONLY") {
+        if (
+          result.code ===
+          "VIEWER_READ_ONLY"
+        ) {
           setErrorMessage(
             "Viewer access is read-only. You cannot add devices."
           );
@@ -195,9 +215,12 @@ export default function AddDevicePage() {
           return;
         }
 
-        if (result.code === "VALIDATION_ERROR") {
+        if (
+          result.code ===
+          "VALIDATION_ERROR"
+        ) {
           setErrorMessage(
-            "Enter a device name."
+            "Give this device a name."
           );
           return;
         }
@@ -210,8 +233,11 @@ export default function AddDevicePage() {
       }
 
       router.push(
-        buildDeviceMaintenanceRecommendationsUrl(result.deviceId)
+        buildDeviceMaintenanceRecommendationsUrl(
+          result.deviceId
+        )
       );
+
       router.refresh();
     } catch (error) {
       console.error(
@@ -229,17 +255,17 @@ export default function AddDevicePage() {
     }
   }
 
-  if (loading) {
+  if (permissionsLoading) {
     return (
       <PageShell>
-        <PageCard className="flex min-h-64 items-center justify-center">
+        <PageCard className="flex min-h-56 items-center justify-center">
           <div className="flex items-center gap-3 text-text-secondary">
             <Loader2
-              size={22}
+              size={20}
               className="animate-spin"
             />
 
-            Checking your device allowance...
+            Opening Quick Add...
           </div>
         </PageCard>
       </PageShell>
@@ -264,7 +290,8 @@ export default function AddDevicePage() {
           </h1>
 
           <p className="mt-3 text-text-secondary">
-            Your device inventory is connected to your account.
+            Your device inventory is connected
+            to your account.
           </p>
 
           <Button
@@ -278,7 +305,7 @@ export default function AddDevicePage() {
     );
   }
 
-  if (!loading && !canCreate) {
+  if (!canCreate || isViewer) {
     return (
       <PageShell>
         <PageTitle
@@ -287,23 +314,23 @@ export default function AddDevicePage() {
           description={
             isPersonalVault
               ? "Your account does not currently have permission to add devices."
-              : "Viewers can review shared devices, warranties, documents, and other household information, but cannot add or change records."
+              : "Viewers can review shared devices but cannot add or change records."
           }
         />
 
         <PageCard className="text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal">
             <Laptop size={30} />
           </div>
 
           <h2 className="mt-5 text-2xl font-semibold text-text-primary">
-            You cannot add devices
+            Read-only access
           </h2>
 
           <p className="mx-auto mt-3 max-w-lg text-text-secondary">
-            Your household role is Viewer. Contact the household
-            owner or an administrator if you need permission to add
-            or edit information.
+            Contact the household owner or an
+            administrator if you need permission
+            to add devices.
           </p>
 
           <Button
@@ -317,17 +344,22 @@ export default function AddDevicePage() {
     );
   }
 
-  if (!loading && deviceLimitReached) {
+  if (
+    !quotaLoading &&
+    deviceLimitReached
+  ) {
     return (
       <PageShell>
         <PageTitle
           eyebrow="Device Limit Reached"
           title={limitMessage.title}
-          description={limitMessage.description}
+          description={
+            limitMessage.description
+          }
         />
 
         <PageCard className="text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal">
             <Laptop size={30} />
           </div>
 
@@ -342,10 +374,14 @@ export default function AddDevicePage() {
           {limitMessage.actionHref &&
             limitMessage.actionLabel && (
               <Button
-                href={limitMessage.actionHref}
+                href={
+                  limitMessage.actionHref
+                }
                 className="mt-6"
               >
-                {limitMessage.actionLabel}
+                {
+                  limitMessage.actionLabel
+                }
               </Button>
             )}
         </PageCard>
@@ -367,37 +403,44 @@ export default function AddDevicePage() {
       </button>
 
       <PageTitle
-        eyebrow="Device Inventory"
-        title="Add New Device"
-        description={
-          householdId
-            ? "Add a device to your shared household vault."
-            : "Save purchase details, warranty information, serial numbers, and notes in your vault."
-        }
+        eyebrow="Quick Add"
+        title="Add a device"
+        description="Start with the basics. You can add receipts, warranties, purchase details, and everything else later."
       />
 
-      {quota.limits.maxDevices !== null && (
-          <PageCard className="border-warning/40 bg-warning-soft">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-achievement">
-              Household Device Allowance
-            </p>
+      <PageCard className="overflow-hidden border-home-health/20 bg-home-health-soft/20">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-home-health text-white">
+              <Sparkles size={21} />
+            </div>
 
-            <h2 className="mt-2 text-xl font-bold text-text-primary">
-              {quota.usage.devices} of{" "}
-              {quota.limits.maxDevices} devices used
-            </h2>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-home-health">
+                Faster option
+              </p>
 
-            <p className="mt-2 text-sm text-text-secondary">
-              You have{" "}
-              {quota.remaining.devices ?? 0}{" "}
-              device slot
-              {quota.remaining.devices === 1
-                ? ""
-                : "s"}{" "}
-              remaining in this household.
-            </p>
-          </PageCard>
-        )}
+              <h2 className="mt-1 text-lg font-semibold text-text-primary">
+                Already have the purchase email?
+              </h2>
+
+              <p className="mt-1 max-w-xl text-sm leading-6 text-text-secondary">
+                Smart Import can pull device and
+                purchase information from your
+                order confirmation so you do less
+                typing.
+              </p>
+            </div>
+          </div>
+
+          <Button
+            href="/imports"
+            variant="secondary"
+          >
+            Use Smart Import
+          </Button>
+        </div>
+      </PageCard>
 
       {errorMessage && (
         <PageCard className="border-red-200 bg-red-50 text-red-700">
@@ -408,60 +451,37 @@ export default function AddDevicePage() {
       <PageCard>
         <form
           onSubmit={saveDevice}
-          className="space-y-6"
+          className="space-y-7"
         >
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-home-health">
+              Quick Add
+            </p>
+
+            <h2 className="mt-2 text-xl font-semibold text-text-primary">
+              Just the basics.
+            </h2>
+
+            <p className="mt-1 text-sm leading-6 text-text-secondary">
+              Only the device name is required.
+              Everything else can be added later.
+            </p>
+          </div>
+
           <div className="grid gap-5 md:grid-cols-2">
             <FormField
               label="Device Name"
               required
             >
               <input
+                autoFocus
                 value={deviceName}
                 onChange={(event) =>
                   setDeviceName(
                     event.target.value
                   )
                 }
-                placeholder="MacBook Pro"
-                className={inputClassName}
-              />
-            </FormField>
-
-            <FormField label="Category">
-              <input
-                value={category}
-                onChange={(event) =>
-                  setCategory(
-                    event.target.value
-                  )
-                }
-                placeholder="Computer"
-                className={inputClassName}
-              />
-            </FormField>
-
-            <FormField label="Brand">
-              <input
-                value={brand}
-                onChange={(event) =>
-                  setBrand(
-                    event.target.value
-                  )
-                }
-                placeholder="Apple"
-                className={inputClassName}
-              />
-            </FormField>
-
-            <FormField label="Model Number">
-              <input
-                value={modelNumber}
-                onChange={(event) =>
-                  setModelNumber(
-                    event.target.value
-                  )
-                }
-                placeholder="14-inch M3 Pro"
+                placeholder="Living Room TV"
                 className={inputClassName}
               />
             </FormField>
@@ -474,7 +494,7 @@ export default function AddDevicePage() {
                     event.target.value
                   )
                 }
-                placeholder="Enter the serial number"
+                placeholder="Optional"
                 className={inputClassName}
               />
             </FormField>
@@ -487,96 +507,225 @@ export default function AddDevicePage() {
                     event.target.value
                   )
                 }
-                placeholder="Home Office"
-                className={inputClassName}
-              />
-            </FormField>
-
-            <FormField label="Purchase Date">
-              <input
-                type="date"
-                value={purchaseDate}
-                onChange={(event) =>
-                  setPurchaseDate(
-                    event.target.value
-                  )
-                }
-                className={inputClassName}
-              />
-            </FormField>
-
-            <FormField label="Warranty Expiration">
-              <input
-                type="date"
-                value={warrantyDate}
-                onChange={(event) =>
-                  setWarrantyDate(
-                    event.target.value
-                  )
-                }
-                className={inputClassName}
-              />
-            </FormField>
-
-            <FormField label="Purchase Price">
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                value={purchasePrice}
-                onChange={(event) =>
-                  setPurchasePrice(
-                    event.target.value
-                  )
-                }
-                placeholder="0.00"
+                placeholder="Living Room"
                 className={inputClassName}
               />
             </FormField>
           </div>
 
-          <FormField label="Notes">
-            <textarea
-              value={notes}
-              onChange={(event) =>
-                setNotes(
-                  event.target.value
+          <div className="rounded-2xl border border-border-subtle bg-surface-sunken/45">
+            <button
+              type="button"
+              onClick={() =>
+                setShowMoreDetails(
+                  (current) => !current
                 )
               }
-              placeholder="Add warranty, maintenance, setup, or device notes..."
-              rows={5}
-              className={`${inputClassName} resize-y`}
-            />
-          </FormField>
-
-          <div className="flex flex-col-reverse gap-3 border-t border-border-subtle pt-6 sm:flex-row sm:justify-end">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() =>
-                router.push("/devices")
+              aria-expanded={
+                showMoreDetails
               }
+              className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
             >
-              Cancel
-            </Button>
+              <div>
+                <p className="text-sm font-semibold text-text-primary">
+                  Add more details
+                </p>
 
-            <Button
-              type="submit"
-              disabled={saving}
-            >
-              {saving ? (
-                <Loader2
-                  size={18}
-                  className="animate-spin"
+                <p className="mt-1 text-xs text-text-secondary">
+                  Brand, model, purchase,
+                  warranty and notes
+                </p>
+              </div>
+
+              {showMoreDetails ? (
+                <ChevronUp
+                  size={19}
+                  className="text-text-secondary"
                 />
               ) : (
-                <Save size={18} />
+                <ChevronDown
+                  size={19}
+                  className="text-text-secondary"
+                />
               )}
+            </button>
 
-              {saving
-                ? "Saving Device..."
-                : "Save Device"}
-            </Button>
+            {showMoreDetails && (
+              <div className="border-t border-border-subtle px-5 py-5">
+                <div className="grid gap-5 md:grid-cols-2">
+                  <FormField label="Brand">
+                    <input
+                      value={brand}
+                      onChange={(event) =>
+                        setBrand(
+                          event.target.value
+                        )
+                      }
+                      placeholder="Samsung"
+                      className={
+                        inputClassName
+                      }
+                    />
+                  </FormField>
+
+                  <FormField label="Model">
+                    <input
+                      value={modelNumber}
+                      onChange={(event) =>
+                        setModelNumber(
+                          event.target.value
+                        )
+                      }
+                      placeholder="Model number"
+                      className={
+                        inputClassName
+                      }
+                    />
+                  </FormField>
+
+                  <FormField label="Category">
+                    <input
+                      value={category}
+                      onChange={(event) =>
+                        setCategory(
+                          event.target.value
+                        )
+                      }
+                      placeholder="TV"
+                      className={
+                        inputClassName
+                      }
+                    />
+                  </FormField>
+
+                  <FormField label="Purchase Date">
+                    <input
+                      type="date"
+                      value={purchaseDate}
+                      onChange={(event) =>
+                        setPurchaseDate(
+                          event.target.value
+                        )
+                      }
+                      className={
+                        inputClassName
+                      }
+                    />
+                  </FormField>
+
+                  <FormField label="Purchase Price">
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={purchasePrice}
+                      onChange={(event) =>
+                        setPurchasePrice(
+                          event.target.value
+                        )
+                      }
+                      placeholder="0.00"
+                      className={
+                        inputClassName
+                      }
+                    />
+                  </FormField>
+
+                  <FormField label="Warranty Expiration">
+                    <input
+                      type="date"
+                      value={warrantyDate}
+                      onChange={(event) =>
+                        setWarrantyDate(
+                          event.target.value
+                        )
+                      }
+                      className={
+                        inputClassName
+                      }
+                    />
+                  </FormField>
+                </div>
+
+                <div className="mt-5">
+                  <FormField label="Notes">
+                    <textarea
+                      value={notes}
+                      onChange={(event) =>
+                        setNotes(
+                          event.target.value
+                        )
+                      }
+                      placeholder="Anything useful to remember about this device..."
+                      rows={4}
+                      className={`${inputClassName} resize-y`}
+                    />
+                  </FormField>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {!quotaLoading &&
+            quota.limits.maxDevices !==
+              null && (
+              <div className="flex items-center justify-between gap-4 rounded-2xl border border-border-subtle bg-surface-sunken/40 px-4 py-3">
+                <p className="text-xs text-text-secondary">
+                  {quota.usage.devices} of{" "}
+                  {
+                    quota.limits
+                      .maxDevices
+                  }{" "}
+                  device slots used
+                </p>
+
+                <p className="text-xs font-semibold text-home-health">
+                  {
+                    quota.remaining
+                      .devices
+                  }{" "}
+                  remaining
+                </p>
+              </div>
+            )}
+
+          <div className="flex flex-col-reverse gap-3 border-t border-border-subtle pt-6 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs text-text-secondary">
+              You can finish the device
+              profile anytime.
+            </p>
+
+            <div className="flex flex-col-reverse gap-3 sm:flex-row">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() =>
+                  router.push(
+                    "/devices"
+                  )
+                }
+              >
+                Cancel
+              </Button>
+
+              <Button
+                type="submit"
+                disabled={saving}
+              >
+                {saving ? (
+                  <Loader2
+                    size={18}
+                    className="animate-spin"
+                  />
+                ) : (
+                  <Save size={18} />
+                )}
+
+                {saving
+                  ? "Adding..."
+                  : "Add Device"}
+              </Button>
+            </div>
           </div>
         </form>
       </PageCard>
