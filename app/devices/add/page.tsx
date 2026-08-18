@@ -22,6 +22,7 @@ import {
 import { usePermissions } from "@/hooks/usePermissions";
 import DemoWriteGate from "@/components/demo/DemoWriteGate";
 import { addDevice } from "@/app/devices/actions";
+import SmartDeviceSearch, { type DeviceLookupResult } from "@/components/devices/SmartDeviceSearch";
 import { buildDeviceMaintenanceRecommendationsUrl } from "@/lib/devices/maintenanceRecommendations";
 
 import PageShell from "@/components/ui/PageShell";
@@ -82,6 +83,9 @@ export default function AddDevicePage() {
   const [brand, setBrand] =
     useState("");
 
+  const [manufacturer, setManufacturer] =
+    useState("");
+
   const [modelNumber, setModelNumber] =
     useState("");
 
@@ -102,6 +106,30 @@ export default function AddDevicePage() {
 
   const [notes, setNotes] =
     useState("");
+
+  function handleDeviceMatch(
+    device: DeviceLookupResult
+  ) {
+    setDeviceName(
+      device.deviceName
+    );
+
+    setBrand(
+      device.brand
+    );
+
+    setManufacturer(
+      device.manufacturer
+    );
+
+    setModelNumber(
+      device.modelNumber
+    );
+
+    setCategory(
+      device.category
+    );
+  }
 
   async function saveDevice(
     event: FormEvent<HTMLFormElement>
@@ -167,6 +195,7 @@ export default function AddDevicePage() {
         deviceName,
         category,
         brand,
+        manufacturer,
         modelNumber,
         serialNumber,
         purchaseDate,
@@ -463,9 +492,24 @@ export default function AddDevicePage() {
             </h2>
 
             <p className="mt-1 text-sm leading-6 text-text-secondary">
-              Only the device name is required.
-              Everything else can be added later.
+              Search for your device first.
+              Home Tech Vault can fill the basics
+              so you do less typing.
             </p>
+          </div>
+
+          <SmartDeviceSearch
+            onSelect={handleDeviceMatch}
+          />
+
+          <div className="flex items-center gap-4">
+            <div className="h-px flex-1 bg-border-subtle" />
+
+            <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-text-muted">
+              Device details
+            </span>
+
+            <div className="h-px flex-1 bg-border-subtle" />
           </div>
 
           <div className="grid gap-5 md:grid-cols-2">

@@ -20,6 +20,7 @@ export type AddDeviceInput = {
   deviceName: string;
   category: string;
   brand: string;
+  manufacturer: string;
   modelNumber: string;
   serialNumber: string;
   purchaseDate: string;
@@ -176,6 +177,8 @@ export async function addDevice(
         input.category.trim() || null,
       brand:
         input.brand.trim() || null,
+      manufacturer:
+        input.manufacturer.trim() || null,
       model_number:
         input.modelNumber.trim() || null,
       serial_number:
