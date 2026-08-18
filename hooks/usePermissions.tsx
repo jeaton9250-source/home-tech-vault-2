@@ -474,14 +474,30 @@ function usePermissionsState() {
           "membership" in accessData &&
           accessData.membership === null
         ) {
+          /*
+           * No household membership does NOT mean
+           * the user is Free.
+           *
+           * A personal-vault user may still have:
+           * - a paid Pro subscription
+           * - a complimentary Pro admin grant
+           * - a complimentary Family admin grant
+           *
+           * Leave the API entitlement snapshot
+           * unset here so resolveEffectivePlan()
+           * remains authoritative for personal
+           * subscription + admin-grant access.
+           */
           clearHouseholdState(
             householdSetters
           );
+
           setApiEntitlementSnapshot({
             ownerPlanSource: null,
-            effectivePlan: "free",
-            canUseProFeatures: false,
+            effectivePlan: null,
+            canUseProFeatures: null,
           });
+
           setHouseholdContextLoaded(true);
 
           return;
