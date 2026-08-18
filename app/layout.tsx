@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Analytics } from "@vercel/analytics/next";
 import { GeistSans } from "geist/font/sans";
 
 import "./globals.css";
@@ -7,6 +6,7 @@ import "./globals.css";
 import ConditionalAppChrome from "@/components/ConditionalAppChrome";
 import ImpersonationBanner from "@/components/admin/ImpersonationBanner";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
+import InternalAwareVercelAnalytics from "@/components/analytics/InternalAwareVercelAnalytics";
 import { rootSiteMetadata } from "@/lib/marketing/socialMetadata";
 
 import HeyCatchIdentity from "@/components/analytics/HeyCatchIdentity";
@@ -27,7 +27,7 @@ export default function RootLayout({
         <GoogleAnalytics />
         <ImpersonationBanner />
         <ConditionalAppChrome>{children}</ConditionalAppChrome>
-        <Analytics />
+        <InternalAwareVercelAnalytics />
       </body>
     </html>
   );

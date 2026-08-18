@@ -4,8 +4,11 @@ import {
   Suspense,
   useEffect,
   useRef,
+  useState,
 } from "react";
+
 import Script from "next/script";
+
 import {
   usePathname,
   useSearchParams,
@@ -17,35 +20,106 @@ import {
   trackPageView,
 } from "@/lib/analytics/gtag";
 
-function GoogleAnalyticsPageViews() {
+
+const INTERNAL_ANALYTICS_KEY =
+  "htv_internal_analytics";
+
+
+function useInternalAnalyticsStatus() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const lastTrackedUrl =
-    useRef<string | null>(null);
+
+  const [
+    internal,
+    setInternal,
+  ] = useState(true);
 
   useEffect(() => {
-    if (!isGaEnabled()) {
+    /*
+     * Never count Control Center traffic.
+     */
+    if (
+      pathname === "/admin" ||
+      pathname.startsWith("/admin/")
+    ) {
+      setInternal(true);
       return;
     }
 
-    const query = searchParams.toString();
-    const url = query
-      ? `${pathname}?${query}`
-      : pathname;
+    try {
+      setInternal(
+        window.localStorage.getItem(
+          INTERNAL_ANALYTICS_KEY
+        ) === "1"
+      );
+    } catch {
+      setInternal(false);
+    }
+  }, [pathname]);
 
-    if (lastTrackedUrl.current === url) {
+  return internal;
+}
+
+
+function GoogleAnalyticsPageViews() {
+  const pathname =
+    usePathname();
+
+  const searchParams =
+    useSearchParams();
+
+  const internal =
+    useInternalAnalyticsStatus();
+
+  const lastTrackedUrl =
+    useRef<string | null>(
+      null
+    );
+
+  useEffect(() => {
+    if (
+      !isGaEnabled() ||
+      internal
+    ) {
       return;
     }
 
-    lastTrackedUrl.current = url;
+    const query =
+      searchParams.toString();
+
+    const url =
+      query
+        ? `${pathname}?${query}`
+        : pathname;
+
+    if (
+      lastTrackedUrl.current ===
+      url
+    ) {
+      return;
+    }
+
+    lastTrackedUrl.current =
+      url;
+
     trackPageView(url);
-  }, [pathname, searchParams]);
+  }, [
+    pathname,
+    searchParams,
+    internal,
+  ]);
 
   return null;
 }
 
-export default function GoogleAnalytics() {
-  if (!isGaEnabled()) {
+
+function GoogleAnalyticsScripts() {
+  const internal =
+    useInternalAnalyticsStatus();
+
+  if (
+    !isGaEnabled() ||
+    internal
+  ) {
     return null;
   }
 
@@ -66,16 +140,42 @@ export default function GoogleAnalytics() {
           } else {
             window.__HTV_GA_INITIALIZED__ = true;
             window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
+
+            function gtag(){
+              dataLayer.push(arguments);
+            }
+
             window.gtag = gtag;
-            gtag('js', new Date());
-            gtag('config', '${GA_MEASUREMENT_ID}', {
-              send_page_view: false,
-              anonymize_ip: true,
-            });
+
+            gtag(
+              'js',
+              new Date()
+            );
+
+            gtag(
+              'config',
+              '${GA_MEASUREMENT_ID}',
+              {
+                send_page_view: false,
+                anonymize_ip: true,
+              }
+            );
           }
         `}
       </Script>
+    </>
+  );
+}
+
+
+export default function GoogleAnalytics() {
+  if (!isGaEnabled()) {
+    return null;
+  }
+
+  return (
+    <>
+      <GoogleAnalyticsScripts />
 
       <Suspense fallback={null}>
         <GoogleAnalyticsPageViews />
