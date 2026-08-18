@@ -45,6 +45,10 @@ import type {
   AdminHealthCheckMetrics,
 } from "@/lib/admin/data/healthCheck";
 
+import type {
+  AdminActivationMetrics,
+} from "@/lib/admin/data/activation";
+
 
 const EXTERNAL_LINKS = [
   {
@@ -360,12 +364,15 @@ export default function AnalyticsAdminClient({
   analytics,
   vercelAnalytics,
   healthCheckMetrics,
+  activationMetrics,
 }: {
   analytics: AdminAnalyticsSnapshot;
   vercelAnalytics:
     AdminVercelAnalyticsSnapshot;
   healthCheckMetrics:
     AdminHealthCheckMetrics;
+  activationMetrics:
+    AdminActivationMetrics;
 }) {
   const dateRange =
     formatDateRange(
@@ -417,6 +424,119 @@ export default function AnalyticsAdminClient({
         sum + item.count,
       0
     );
+
+  const visitors =
+    vercelAnalytics.visitors;
+
+  const signups =
+    activationMetrics.signups;
+
+  const oneDevice =
+    activationMetrics.addedOneDevice;
+
+  const threeDevices =
+    activationMetrics.addedThreeDevices;
+
+  const visitorToSignupRate =
+    visitors > 0
+      ? (signups / visitors) * 100
+      : 0;
+
+  const signupToDeviceRate =
+    signups > 0
+      ? (oneDevice / signups) * 100
+      : 0;
+
+  const deviceToThreeRate =
+    oneDevice > 0
+      ? (threeDevices / oneDevice) * 100
+      : 0;
+
+  const funnelStages = [
+    {
+      label: "Visitors",
+      description:
+        "Unique production visitors",
+      value: visitors,
+      percent:
+        visitors > 0 ? 100 : 0,
+    },
+    {
+      label: "Signups",
+      description:
+        "Accounts created in the last 30 days",
+      value: signups,
+      percent:
+        visitors > 0
+          ? visitorToSignupRate
+          : 0,
+    },
+    {
+      label: "Added 1+ Device",
+      description:
+        "New users who reached first-device activation",
+      value: oneDevice,
+      percent:
+        signups > 0
+          ? signupToDeviceRate
+          : 0,
+    },
+    {
+      label: "Added 3+ Devices",
+      description:
+        "Activated users building a meaningful vault",
+      value: threeDevices,
+      percent:
+        oneDevice > 0
+          ? deviceToThreeRate
+          : 0,
+    },
+  ];
+
+  const dropoffs = [
+    {
+      id: "visitor-signup",
+      title: "Visitors → Signup",
+      lost: Math.max(
+        visitors - signups,
+        0
+      ),
+      rate: visitorToSignupRate,
+      description:
+        "visitors did not create an account",
+    },
+    {
+      id: "signup-device",
+      title: "Signup → First Device",
+      lost:
+        activationMetrics.zeroDeviceUsers,
+      rate: signupToDeviceRate,
+      description:
+        "new users have not added a device",
+    },
+    {
+      id: "device-three",
+      title: "First Device → 3 Devices",
+      lost:
+        activationMetrics.oneOrTwoDeviceUsers,
+      rate: deviceToThreeRate,
+      description:
+        "users currently have only 1–2 devices",
+    },
+  ];
+
+  const biggestDropoff =
+    [...dropoffs].sort(
+      (a, b) => {
+        const aDrop =
+          100 - a.rate;
+
+        const bDrop =
+          100 - b.rate;
+
+        return bDrop - aDrop;
+      }
+    )[0];
 
   return (
     <div className="space-y-8">
@@ -527,6 +647,190 @@ export default function AnalyticsAdminClient({
           }
         />
       </div>
+
+
+
+      {/* ACTIVATION FUNNEL */}
+      <AnalyticsSection
+        title="Activation Funnel"
+        description="Where new users move from discovery to building a useful Home Tech Vault · rolling 30-day signup cohort."
+      >
+        <div className="grid gap-4 xl:grid-cols-[1.35fr_0.65fr]">
+          <div className="overflow-hidden rounded-[22px] border border-[#152638] bg-[#0b1623]">
+            <div className="border-b border-white/10 px-5 py-4 md:px-6">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-[#f4f0e8]">
+                    Visitor → Activated User
+                  </p>
+
+                  <p className="mt-1 text-xs text-white/50">
+                    Acquisition uses Vercel traffic. Activation uses users who signed up during the last 30 days.
+                  </p>
+                </div>
+
+                <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-xs font-medium text-white/65">
+                  30-day cohort
+                </span>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-4">
+              {funnelStages.map(
+                (stage, index) => (
+                  <div
+                    key={stage.label}
+                    className={[
+                      "relative px-5 py-6",
+                      index > 0
+                        ? "border-t border-white/10 md:border-l md:border-t-0"
+                        : "",
+                    ].join(" ")}
+                  >
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.13em] text-white/45">
+                      {stage.label}
+                    </p>
+
+                    <div className="mt-4 flex items-end gap-2">
+                      <p className="text-4xl font-semibold tracking-[-0.055em] text-[#f4f0e8]">
+                        {stage.value.toLocaleString()}
+                      </p>
+
+                      <p className="pb-1 text-sm font-semibold text-[#9eb77d]">
+                        {stage.percent.toFixed(1)}%
+                      </p>
+                    </div>
+
+                    <p className="mt-2 min-h-[40px] text-xs leading-5 text-white/50">
+                      {stage.description}
+                    </p>
+
+                    {index <
+                    funnelStages.length - 1 ? (
+                      <div className="mt-5">
+                        <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
+                          <div
+                            className="h-full rounded-full bg-[#8ca667]"
+                            style={{
+                              width: `${
+                                Math.max(
+                                  Math.min(
+                                    funnelStages[
+                                      index + 1
+                                    ].percent,
+                                    100
+                                  ),
+                                  funnelStages[
+                                    index + 1
+                                  ].value > 0
+                                    ? 4
+                                    : 0
+                                )
+                              }%`,
+                            }}
+                          />
+                        </div>
+
+                        <p className="mt-2 text-[11px] text-white/40">
+                          Next-stage conversion{" "}
+                          <span className="font-semibold text-white/65">
+                            {funnelStages[
+                              index + 1
+                            ].percent.toFixed(
+                              1
+                            )}
+                            %
+                          </span>
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="mt-5">
+                        <div className="h-1.5 rounded-full bg-[#8ca667]" />
+
+                        <p className="mt-2 text-[11px] font-medium text-[#9eb77d]">
+                          Activation milestone
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )
+              )}
+            </div>
+          </div>
+
+          <div className="rounded-[22px] border border-[#dcd6cc] bg-[#fffdf9] p-5 md:p-6">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.13em] text-[#777169]">
+              Biggest Drop-Off
+            </p>
+
+            {biggestDropoff ? (
+              <>
+                <p className="mt-3 text-xl font-semibold tracking-[-0.035em] text-[#18202b]">
+                  {biggestDropoff.title}
+                </p>
+
+                <p className="mt-2 text-sm leading-6 text-[#5f5b55]">
+                  <span className="font-semibold text-[#18202b]">
+                    {biggestDropoff.lost.toLocaleString()}
+                  </span>{" "}
+                  {biggestDropoff.description}.
+                </p>
+
+                <div className="mt-5 rounded-[16px] bg-[#f3efe7] p-4">
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="text-sm text-[#5f5b55]">
+                      Stage conversion
+                    </span>
+
+                    <span className="text-lg font-semibold text-[#18202b]">
+                      {biggestDropoff.rate.toFixed(
+                        1
+                      )}
+                      %
+                    </span>
+                  </div>
+
+                  <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#ddd6ca]">
+                    <div
+                      className="h-full rounded-full bg-[#718d4f]"
+                      style={{
+                        width: `${Math.min(
+                          biggestDropoff.rate,
+                          100
+                        )}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+              </>
+            ) : null}
+
+            <div className="mt-5 space-y-3 border-t border-[#e4ded4] pt-5">
+              {dropoffs.map((dropoff) => (
+                <div
+                  key={dropoff.id}
+                  className="flex items-center justify-between gap-4"
+                >
+                  <div>
+                    <p className="text-sm font-medium text-[#343b40]">
+                      {dropoff.title}
+                    </p>
+
+                    <p className="mt-0.5 text-xs text-[#777169]">
+                      {dropoff.lost.toLocaleString()} lost
+                    </p>
+                  </div>
+
+                  <span className="text-sm font-semibold text-[#617c43]">
+                    {dropoff.rate.toFixed(1)}
+                    %
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </AnalyticsSection>
 
 
       {/* TRAFFIC CHART */}

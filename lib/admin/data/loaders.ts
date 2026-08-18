@@ -1709,7 +1709,6 @@ export async function loadAdminAnalytics(): Promise<AdminAnalyticsSnapshot> {
   const deferredMetrics = [
     "Demo starts — no persistent tracking table",
     "Account conversions — requires funnel events",
-    "First device added — requires per-user milestone table",
     "First document uploaded — requires per-user milestone table",
     "Upgrade conversions — requires event history",
     "Top public pages — requires GA server integration",
