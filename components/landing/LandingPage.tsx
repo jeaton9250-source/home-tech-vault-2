@@ -1,6 +1,7 @@
 "use client";
 
 import HeroSection from "@/components/landing/public/HeroSection";
+import HomeTechHealthCheckSection from "@/components/landing/public/HomeTechHealthCheckSection";
 import LandingFooter from "@/components/landing/public/LandingFooter";
 import LandingHeader from "@/components/landing/public/LandingHeader";
 import SmartImportDemoSection from "@/components/landing/public/SmartImportDemoSection";
@@ -56,6 +57,10 @@ export default function LandingPage({
         <HeroSection
           isSignedIn={isSignedIn}
         />
+
+        {/* FREE ACQUISITION TOOL */}
+
+        <HomeTechHealthCheckSection />
 
         {/* WHAT THE VAULT HOLDS */}
 
