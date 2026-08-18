@@ -45,6 +45,7 @@ export type AdminUserSummary = {
   createdAt: string | null;
   lastSignInAt: string | null;
   personalPlan: string;
+  effectivePlan: string;
   subscriptionStatus: string;
   isPlatformAdmin: boolean;
   accountStatus: "active" | "deactivated";

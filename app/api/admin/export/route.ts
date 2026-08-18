@@ -47,7 +47,7 @@ export async function GET(request: Request) {
           }),
           user.email,
           user.accountStatus,
-          user.personalPlan,
+          user.effectivePlan,
           user.householdName,
           user.householdRole,
           user.deviceCount,

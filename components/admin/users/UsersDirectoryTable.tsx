@@ -155,7 +155,7 @@ export default function UsersDirectoryTable({
                     </AdminStatusChip>
                   </td>
                   <td className="px-4 py-3 capitalize">
-                    {user.personalPlan}
+                    {user.effectivePlan}
                   </td>
                   <td className="px-4 py-3">
                     {formatAdminHouseholdLabel({
@@ -230,7 +230,7 @@ export default function UsersDirectoryTable({
                   {USER_STATUS_LABELS[status]}
                 </AdminStatusChip>
                 <AdminStatusChip tone="neutral" dot={false}>
-                  {user.personalPlan}
+                  {user.effectivePlan}
                 </AdminStatusChip>
               </div>
             </AdminMobileCard>

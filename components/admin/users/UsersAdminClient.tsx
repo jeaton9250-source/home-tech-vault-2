@@ -330,8 +330,8 @@ export default function UsersAdminClient({
           );
         case "plan":
           return (
-            left.personalPlan.localeCompare(
-              right.personalPlan
+            left.effectivePlan.localeCompare(
+              right.effectivePlan
             ) * direction
           );
         case "devices":

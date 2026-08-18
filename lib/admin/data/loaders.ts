@@ -435,6 +435,48 @@ export async function loadAdminUsers(options: {
   const documentMap = new Map(documentCounts);
   const ticketMap = new Map(ticketCounts);
 
+  /*
+   * The admin directory should display the user's actual
+   * entitlement, not only their Stripe/personal subscription.
+   *
+   * This includes:
+   * - complimentary Pro / Family grants
+   * - inherited household plans
+   * - personal paid subscriptions
+   */
+  const effectivePlanEntries = await Promise.all(
+    userIds.map(async (userId) => {
+      try {
+        const planAccess =
+          await buildServerPlanAccessContext(
+            admin,
+            userId
+          );
+
+        return [
+          userId,
+          planAccess.result.effectivePlan,
+        ] as const;
+      } catch (error) {
+        console.error(
+          `Unable to resolve effective plan for admin user ${userId}:`,
+          error
+        );
+
+        return [
+          userId,
+          normalizePlan(
+            subscriptionMap.get(userId)?.plan
+          ),
+        ] as const;
+      }
+    })
+  );
+
+  const effectivePlanMap = new Map(
+    effectivePlanEntries
+  );
+
   let users: AdminUserSummary[] = authUsers.map(
     (authUser) => {
       const profile = profileMap.get(authUser.id);
@@ -473,6 +515,9 @@ export async function loadAdminUsers(options: {
         personalPlan: normalizePlan(
           subscription?.plan
         ),
+        effectivePlan:
+          effectivePlanMap.get(authUser.id) ??
+          normalizePlan(subscription?.plan),
         subscriptionStatus:
           subscription?.status?.trim().toLowerCase() ||
           "inactive",
@@ -521,7 +566,7 @@ export async function loadAdminUsers(options: {
   if (options.plan) {
     users = users.filter(
       (user) =>
-        user.personalPlan === options.plan
+        user.effectivePlan === options.plan
     );
   }
 
