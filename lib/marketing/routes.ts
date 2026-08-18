@@ -82,6 +82,7 @@ export const PUBLIC_MARKETING_PATHS = [
   "/home-inventory-software",
   "/digital-home-vault",
   "/home-tech-checklist",
+  "/health-check",
   "/knowledge",
   "/guides",
   "/compare",
