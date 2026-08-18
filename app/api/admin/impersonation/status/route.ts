@@ -1,10 +1,17 @@
 import { NextResponse } from "next/server";
 
 import {
-  clearImpersonationRecovery,
-  getImpersonationRecovery,
+  clearImpersonationCookie,
+  getServerImpersonationSession,
 } from "@/lib/admin/impersonation";
-import { createClient } from "@/lib/supabase/server";
+
+import {
+  createAdminClient,
+} from "@/lib/supabase/admin";
+
+import {
+  createClient,
+} from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,7 +19,7 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   try {
     const recovery =
-      await getImpersonationRecovery();
+      await getServerImpersonationSession();
 
     if (!recovery) {
       return NextResponse.json({
@@ -25,27 +32,76 @@ export async function GET() {
 
     const {
       data: { user },
-    } = await supabase.auth.getUser();
+    } =
+      await supabase.auth.getUser();
 
-    /*
-     * A recovery cookie should only be
-     * considered active while the browser
-     * is authenticated as its target.
-     */
     if (
       !user ||
       user.id !==
         recovery.targetUserId
     ) {
-      await clearImpersonationRecovery();
+      const admin =
+        createAdminClient();
+
+      await admin
+        .from(
+          "admin_impersonation_sessions"
+        )
+        .update({
+          status: "revoked",
+          failure_reason:
+            "Authenticated session no longer matched impersonation target.",
+          ended_at:
+            new Date().toISOString(),
+        })
+        .eq(
+          "id",
+          recovery.id
+        )
+        .in("status", [
+          "pending",
+          "active",
+        ]);
+
+      await clearImpersonationCookie();
 
       return NextResponse.json({
         active: false,
       });
     }
 
+    /*
+     * Recover from an unlikely crash after
+     * Supabase auth switched but before the
+     * start route promoted pending -> active.
+     */
+    if (
+      recovery.status ===
+      "pending"
+    ) {
+      const admin =
+        createAdminClient();
+
+      await admin
+        .from(
+          "admin_impersonation_sessions"
+        )
+        .update({
+          status: "active",
+        })
+        .eq(
+          "id",
+          recovery.id
+        )
+        .eq(
+          "status",
+          "pending"
+        );
+    }
+
     return NextResponse.json({
       active: true,
+
       target: {
         userId:
           recovery.targetUserId,
@@ -54,8 +110,11 @@ export async function GET() {
         name:
           recovery.targetName,
       },
+
       expiresAt:
-        recovery.expiresAt,
+        new Date(
+          recovery.expiresAt
+        ).getTime(),
     });
   } catch (error) {
     console.error(

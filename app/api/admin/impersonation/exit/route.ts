@@ -2,12 +2,21 @@ import { NextResponse } from "next/server";
 
 import {
   assertSameOrigin,
-  clearImpersonationRecovery,
-  getImpersonationRecovery,
+  clearImpersonationCookie,
+  getServerImpersonationSession,
 } from "@/lib/admin/impersonation";
-import { createAdminClient } from "@/lib/supabase/admin";
-import { createClient } from "@/lib/supabase/server";
-import { recordPlatformAdminAudit } from "@/lib/account-admin/audit";
+
+import {
+  createAdminClient,
+} from "@/lib/supabase/admin";
+
+import {
+  createClient,
+} from "@/lib/supabase/server";
+
+import {
+  recordPlatformAdminAudit,
+} from "@/lib/account-admin/audit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -19,7 +28,7 @@ export async function POST(
     assertSameOrigin(request);
 
     const recovery =
-      await getImpersonationRecovery();
+      await getServerImpersonationSession();
 
     if (!recovery) {
       return NextResponse.json(
@@ -36,14 +45,15 @@ export async function POST(
 
     const {
       data: { user: currentUser },
-    } = await supabase.auth.getUser();
+    } =
+      await supabase.auth.getUser();
 
     if (
       !currentUser ||
       currentUser.id !==
         recovery.targetUserId
     ) {
-      await clearImpersonationRecovery();
+      await clearImpersonationCookie();
 
       return NextResponse.json(
         {
@@ -54,13 +64,15 @@ export async function POST(
       );
     }
 
-    /*
-     * Reconfirm that the ORIGINAL account
-     * is still a platform administrator
-     * before restoring its credentials.
-     */
-    const admin = createAdminClient();
+    const admin =
+      createAdminClient();
 
+    /*
+     * Never restore credentials for an
+     * account that has lost platform-admin
+     * authorization since impersonation
+     * began.
+     */
     const {
       data: adminProfile,
       error: adminProfileError,
@@ -77,7 +89,23 @@ export async function POST(
       adminProfileError ||
       adminProfile?.is_admin !== true
     ) {
-      await clearImpersonationRecovery();
+      await admin
+        .from(
+          "admin_impersonation_sessions"
+        )
+        .update({
+          status: "revoked",
+          failure_reason:
+            "Original administrator no longer had platform-admin access.",
+          ended_at:
+            new Date().toISOString(),
+        })
+        .eq(
+          "id",
+          recovery.id
+        );
+
+      await clearImpersonationCookie();
 
       return NextResponse.json(
         {
@@ -88,20 +116,17 @@ export async function POST(
       );
     }
 
-    /*
-     * setSession will restore the original
-     * admin session and refresh it if
-     * necessary.
-     */
     const {
       data: restored,
       error: restoreError,
-    } = await supabase.auth.setSession({
-      access_token:
-        recovery.adminAccessToken,
-      refresh_token:
-        recovery.adminRefreshToken,
-    });
+    } =
+      await supabase.auth.setSession({
+        access_token:
+          recovery.adminAccessToken,
+
+        refresh_token:
+          recovery.adminRefreshToken,
+      });
 
     if (
       restoreError ||
@@ -109,19 +134,51 @@ export async function POST(
       restored.user.id !==
         recovery.adminUserId
     ) {
-      await clearImpersonationRecovery();
-
       console.error(
         "Unable to restore admin session:",
         restoreError
       );
 
+      /*
+       * Keep the server-side recovery row +
+       * cookie intact until expiration so
+       * another exit attempt may succeed.
+       */
       return NextResponse.json(
         {
           error:
-            "The administrator session expired. Please sign in again.",
+            "The administrator session could not be restored. You may retry, or sign out and sign back in.",
         },
         { status: 401 }
+      );
+    }
+
+    const endedAt =
+      new Date().toISOString();
+
+    const {
+      error: endStateError,
+    } = await admin
+      .from(
+        "admin_impersonation_sessions"
+      )
+      .update({
+        status: "ended",
+        ended_at: endedAt,
+      })
+      .eq(
+        "id",
+        recovery.id
+      )
+      .in("status", [
+        "pending",
+        "active",
+      ]);
+
+    if (endStateError) {
+      console.error(
+        "Unable to mark impersonation session ended:",
+        endStateError
       );
     }
 
@@ -130,30 +187,38 @@ export async function POST(
       {
         eventType:
           "impersonation_ended",
+
         actorId:
           recovery.adminUserId,
+
         targetUserId:
           recovery.targetUserId,
+
         targetEmailSnapshot:
           recovery.targetEmail,
+
         notes:
           "Platform administrator ended a user impersonation session.",
+
         metadata: {
+          impersonation_session_id:
+            recovery.id,
+
           started_at:
-            new Date(
-              recovery.issuedAt
-            ).toISOString(),
+            recovery.startedAt,
+
           ended_at:
-            new Date().toISOString(),
+            endedAt,
         },
       }
     );
 
-    await clearImpersonationRecovery();
+    await clearImpersonationCookie();
 
     return NextResponse.json({
       ok: true,
-      redirectTo: "/admin/users",
+      redirectTo:
+        "/admin/users",
     });
   } catch (error) {
     if (
@@ -162,7 +227,10 @@ export async function POST(
         "INVALID_ORIGIN"
     ) {
       return NextResponse.json(
-        { error: "Invalid request origin." },
+        {
+          error:
+            "Invalid request origin.",
+        },
         { status: 403 }
       );
     }
