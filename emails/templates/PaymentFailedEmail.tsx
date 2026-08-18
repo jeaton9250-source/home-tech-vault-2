@@ -40,5 +40,5 @@ export default function PaymentFailedEmail({
 
 PaymentFailedEmail.PreviewProps = {
   billingUrl:
-    "https://hometechvault.com/settings/billing",
+    "https://www.hometechvault.com/settings/billing",
 } satisfies PaymentFailedEmailProps;

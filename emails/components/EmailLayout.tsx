@@ -3,7 +3,6 @@ import {
   Container,
   Head,
   Html,
-  Preview,
 } from "@react-email/components";
 import type { ReactNode } from "react";
 
@@ -25,7 +24,21 @@ export function EmailLayout({
   return (
     <Html lang="en">
       <Head />
-      <Preview>{preview}</Preview>
+      <span
+        aria-hidden="true"
+        style={{
+          display: "none",
+          maxHeight: "0",
+          maxWidth: "0",
+          overflow: "hidden",
+          opacity: 0,
+          color: "transparent",
+          fontSize: "1px",
+          lineHeight: "1px",
+        }}
+      >
+        {preview}
+      </span>
       <Body
         style={{
           margin: 0,

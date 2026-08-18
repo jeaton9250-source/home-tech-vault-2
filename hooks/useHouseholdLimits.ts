@@ -15,6 +15,7 @@ import {
   loadHouseholdUsageCounts,
   resolveHouseholdQuotaLimits,
   type HouseholdQuotaState,
+  type HouseholdUsageCounts,
 } from "@/lib/permissions/householdQuota";
 
 export type {
@@ -26,6 +27,194 @@ export type {
 export {
   getHouseholdLimitMessage,
 } from "@/lib/permissions/householdQuota";
+
+const USAGE_CACHE_TTL_MS =
+  60_000;
+
+const USAGE_CACHE_PREFIX =
+  "htv:usage:v1:";
+
+type CachedUsage = {
+  cachedAt: number;
+  usage: HouseholdUsageCounts;
+};
+
+const usageMemoryCache =
+  new Map<string, CachedUsage>();
+
+const usageInFlight =
+  new Map<
+    string,
+    Promise<HouseholdUsageCounts>
+  >();
+
+function getUsageCacheKey(
+  userId: string,
+  householdId:
+    | string
+    | null
+    | undefined
+) {
+  return [
+    userId,
+    householdId ??
+      "personal",
+  ].join(":");
+}
+
+function readUsageSessionCache(
+  key: string
+): CachedUsage | null {
+  if (
+    typeof window === "undefined"
+  ) {
+    return null;
+  }
+
+  try {
+    const raw =
+      window.sessionStorage.getItem(
+        USAGE_CACHE_PREFIX +
+          key
+      );
+
+    if (!raw) {
+      return null;
+    }
+
+    const cached =
+      JSON.parse(
+        raw
+      ) as CachedUsage;
+
+    if (
+      !cached?.cachedAt ||
+      Date.now() -
+        cached.cachedAt >
+        USAGE_CACHE_TTL_MS
+    ) {
+      window.sessionStorage.removeItem(
+        USAGE_CACHE_PREFIX +
+          key
+      );
+
+      return null;
+    }
+
+    return cached;
+  } catch {
+    return null;
+  }
+}
+
+function writeUsageCache(
+  key: string,
+  cached: CachedUsage
+) {
+  usageMemoryCache.set(
+    key,
+    cached
+  );
+
+  if (
+    typeof window === "undefined"
+  ) {
+    return;
+  }
+
+  try {
+    window.sessionStorage.setItem(
+      USAGE_CACHE_PREFIX +
+        key,
+      JSON.stringify(cached)
+    );
+  } catch {
+    // Usage caching is optional.
+  }
+}
+
+async function loadUsageWithCache(
+  userId: string,
+  householdId:
+    | string
+    | null
+    | undefined,
+  forceRefresh = false
+): Promise<HouseholdUsageCounts> {
+  const key =
+    getUsageCacheKey(
+      userId,
+      householdId
+    );
+
+  if (!forceRefresh) {
+    const memory =
+      usageMemoryCache.get(
+        key
+      );
+
+    if (
+      memory &&
+      Date.now() -
+        memory.cachedAt <=
+        USAGE_CACHE_TTL_MS
+    ) {
+      return memory.usage;
+    }
+
+    const stored =
+      readUsageSessionCache(
+        key
+      );
+
+    if (stored) {
+      usageMemoryCache.set(
+        key,
+        stored
+      );
+
+      return stored.usage;
+    }
+  }
+
+  const existingRequest =
+    usageInFlight.get(key);
+
+  if (existingRequest) {
+    return existingRequest;
+  }
+
+  const request =
+    loadHouseholdUsageCounts(
+      supabase,
+      householdId,
+      userId
+    )
+      .then((usage) => {
+        writeUsageCache(
+          key,
+          {
+            cachedAt:
+              Date.now(),
+            usage,
+          }
+        );
+
+        return usage;
+      })
+      .finally(() => {
+        usageInFlight.delete(
+          key
+        );
+      });
+
+  usageInFlight.set(
+    key,
+    request
+  );
+
+  return request;
+}
 
 export function useHouseholdLimits(): HouseholdQuotaState & {
   refreshUsage: () => Promise<void>;
@@ -117,64 +306,104 @@ export function useHouseholdLimits(): HouseholdQuotaState & {
     ]
   );
 
-  const refreshUsage =
-    useCallback(async () => {
-      if (
-        permissions.loading ||
-        permissions.isDemo ||
-        !permissions.user
-      ) {
-        setUsage(EMPTY_USAGE);
-        setUsageLoading(false);
-        return;
-      }
-
-      try {
-        setUsageLoading(true);
-        setUsageError(null);
-
-        const counts =
-          await loadHouseholdUsageCounts(
-            supabase,
-            permissions.householdId,
-            permissions.user.id
+  const loadUsage =
+    useCallback(
+      async (
+        forceRefresh:
+          boolean
+      ) => {
+        if (
+          permissions.loading ||
+          permissions.isDemo ||
+          !permissions.user
+        ) {
+          setUsage(
+            EMPTY_USAGE
           );
 
-        setUsage(counts);
-      } catch (error) {
-        console.error(
-          "Unable to load household usage:",
-          error
-        );
+          setUsageLoading(
+            false
+          );
 
-        setUsageError(
-          error instanceof Error
-            ? error.message
-            : "Unable to load household usage."
-        );
-      } finally {
-        setUsageLoading(false);
-      }
-    }, [
-      permissions.loading,
-      permissions.isDemo,
-      permissions.user,
-      permissions.householdId,
-    ]);
+          return;
+        }
+
+        try {
+          setUsageLoading(
+            true
+          );
+
+          setUsageError(
+            null
+          );
+
+          const counts =
+            await loadUsageWithCache(
+              permissions.user.id,
+              permissions.householdId,
+              forceRefresh
+            );
+
+          setUsage(counts);
+        } catch (error) {
+          console.error(
+            "Unable to load household usage:",
+            error
+          );
+
+          setUsageError(
+            error instanceof Error
+              ? error.message
+              : "Unable to load household usage."
+          );
+        } finally {
+          setUsageLoading(
+            false
+          );
+        }
+      },
+      [
+        permissions.loading,
+        permissions.isDemo,
+        permissions.user,
+        permissions.householdId,
+      ]
+    );
+
+  const refreshUsage =
+    useCallback(async () => {
+      /*
+       * Explicit refreshes bypass the 60-second
+       * cache. This keeps counts accurate after
+       * a create/upload/delete action.
+       */
+      await loadUsage(true);
+    }, [loadUsage]);
 
   useEffect(() => {
-    void refreshUsage();
-  }, [refreshUsage]);
+    /*
+     * Normal navigation can reuse recent counts.
+     * All hook instances share the same in-flight
+     * request, preventing five-count-query bursts
+     * from being duplicated.
+     */
+    void loadUsage(false);
+  }, [loadUsage]);
 
   const quota = useMemo(
     () =>
       evaluateHouseholdQuota({
+        /*
+         * Usage is refreshed in the background.
+         *
+         * Server actions remain authoritative for mutations, so
+         * a usage-count request does not need to freeze the UI.
+         */
         loading:
-          permissions.loading ||
-          usageLoading,
+          permissions.loading,
         entitlementLoading:
           permissions.loading,
-        usageLoading,
+        usageLoading: false,
         isDemo: permissions.isDemo,
         canCreate: permissions.canCreate,
         canUpload: permissions.canUpload,
@@ -205,6 +434,19 @@ export function useHouseholdLimits(): HouseholdQuotaState & {
 
   return {
     ...quota,
+
+    /*
+     * Expose the real background usage state for diagnostics
+     * without making quota.loading block the page.
+     */
+    loading:
+      permissions.loading,
+
+    entitlementLoading:
+      permissions.loading,
+
+    usageLoading,
+
     refreshUsage,
     personalPlan:
       permissions.personalPlan,

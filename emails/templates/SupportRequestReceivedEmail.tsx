@@ -87,7 +87,7 @@ SupportRequestReceivedEmail.PreviewProps = {
   ticketNumber: "HTV-2026-000123",
   subject: "Need help syncing my devices",
   category: "Devices",
-  contactUrl: "https://hometechvault.com/contact",
+  contactUrl: "https://www.hometechvault.com/contact",
 } satisfies SupportRequestReceivedEmailProps;
 
 export function renderSupportRequestReceivedPlainText(

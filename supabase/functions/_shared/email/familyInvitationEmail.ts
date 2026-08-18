@@ -22,9 +22,9 @@ export const emailTheme = {
     name: "Home Tech Vault",
     overline: "HOME TECH VAULT",
     tagline: "Organize. Protect. Simplify.",
-    siteUrl: "https://hometechvault.com",
+    siteUrl: "https://www.hometechvault.com",
     logoUrl:
-      "https://hometechvault.com/brand/logo.svg",
+      "https://www.hometechvault.com/brand/logo.svg",
     supportEmail: "support@hometechvault.com",
   },
 } as const;

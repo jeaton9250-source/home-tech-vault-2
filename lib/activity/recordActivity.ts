@@ -10,7 +10,6 @@ import { getActivityTypeLabel } from "@/lib/activity/icons";
 const DEVICE_EVENT_TYPES = new Set<VaultActivityType>([
   "device.added",
   "device.edited",
-  "device.deleted",
   "document.uploaded",
   "receipt.uploaded",
   "warranty.added",

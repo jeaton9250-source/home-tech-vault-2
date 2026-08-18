@@ -109,6 +109,14 @@ type Device = {
   network_fingerprint?: string | null;
   first_seen_at?: string | null;
   network_updated_at?: string | null;
+
+  manual_status?:
+    | "pending"
+    | "found"
+    | "not_found"
+    | null;
+
+  manual_checked_at?: string | null;
 };
 
 type DeviceImageRow = {
@@ -922,20 +930,11 @@ export default function DevicePage() {
         );
       }
 
-      await recordActivity({
-        activityType: "device.deleted",
-        title: getDefaultActivityTitle(
-          "device.deleted",
-          device.device_name ||
-            "Device"
-        ),
-        description:
-          "Device removed from the vault.",
-        userId: user.id,
-        householdId,
-        deviceId: device.id,
-      });
-
+      /*
+       * The device and its timeline rows are already gone.
+       * Do not attempt to attach a new device_event to a
+       * device ID that no longer exists.
+       */
       router.push("/devices");
       router.refresh();
     } catch (error: unknown) {
@@ -1737,9 +1736,236 @@ export default function DevicePage() {
               )}
             </PageCard>
           ) : (
-            <PageCard className="p-6 md:p-8">
-              <DeviceDocuments deviceId={device.id} embedded />
-            </PageCard>
+            <div className="space-y-5">
+              <PageCard className="overflow-hidden p-0">
+                <div className="flex flex-col gap-5 p-6 md:flex-row md:items-center md:justify-between md:p-7">
+                  <div className="flex min-w-0 items-start gap-4">
+                    <div
+                      className={cn(
+                        "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border",
+                        device.manual_status ===
+                          "found"
+                          ? "border-home-health/20 bg-home-health-soft text-home-health"
+                          : device.manual_status ===
+                              "pending"
+                            ? "border-border-subtle bg-surface-sunken text-text-secondary"
+                            : "border-border-subtle bg-surface-sunken text-charcoal"
+                      )}
+                    >
+                      {device.manual_status ===
+                      "found" ? (
+                        <ShieldCheck
+                          size={22}
+                          aria-hidden
+                        />
+                      ) : (
+                        <FileText
+                          size={22}
+                          aria-hidden
+                        />
+                      )}
+                    </div>
+
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h2 className="text-lg font-semibold tracking-[-0.02em] text-text-primary">
+                          {device.manual_status ===
+                          "found"
+                            ? "Manual ready"
+                            : device.manual_status ===
+                                "pending"
+                              ? "Manual search pending"
+                              : device.manual_status ===
+                                  "not_found"
+                                ? "No manual found automatically"
+                                : "Product manual"}
+                        </h2>
+
+                        {device.manual_status ? (
+                          <span
+                            className={cn(
+                              "rounded-full px-2.5 py-1 text-[11px] font-semibold",
+                              device.manual_status ===
+                                "found"
+                                ? "bg-home-health-soft text-home-health"
+                                : device.manual_status ===
+                                    "pending"
+                                  ? "bg-surface-sunken text-text-secondary"
+                                  : "bg-surface-sunken text-text-secondary"
+                            )}
+                          >
+                            {device.manual_status ===
+                            "found"
+                              ? "Saved"
+                              : device.manual_status ===
+                                  "pending"
+                                ? "Pending"
+                                : "Not found"}
+                          </span>
+                        ) : null}
+                      </div>
+
+                      <p className="mt-2 max-w-2xl text-sm leading-6 text-text-secondary">
+                        {device.manual_status ===
+                        "found"
+                          ? "An official product manual is saved with this device."
+                          : device.manual_status ===
+                              "pending"
+                            ? "Home Tech Vault has not completed this device's automatic manual lookup yet."
+                            : device.manual_status ===
+                                "not_found"
+                              ? "We checked the connected product source but could not find a verified manual for this exact model."
+                              : "No automatic manual lookup was recorded for this device. You can still upload the correct manual yourself."}
+                      </p>
+
+                      {device.manual_checked_at ? (
+                        <p className="mt-2 text-xs text-text-tertiary">
+                          Last checked{" "}
+                          {formatProfileDate(
+                            device.manual_checked_at.slice(
+                              0,
+                              10
+                            )
+                          )}
+                        </p>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (
+                        device.manual_status ===
+                        "found"
+                      ) {
+                        const manualLink =
+                          document.querySelector<HTMLAnchorElement>(
+                            '[data-device-manual-preview="true"]'
+                          );
+
+                        if (
+                          manualLink?.href
+                        ) {
+                          window.open(
+                            manualLink.href,
+                            "_blank",
+                            "noopener,noreferrer"
+                          );
+
+                          return;
+                        }
+
+                        document
+                          .getElementById(
+                            "device-manual-upload"
+                          )
+                          ?.scrollIntoView({
+                            behavior:
+                              "smooth",
+                            block:
+                              "center",
+                          });
+
+                        return;
+                      }
+
+                      const typeSelect =
+                        document.getElementById(
+                          "device-document-type-select"
+                        ) as
+                          | HTMLSelectElement
+                          | null;
+
+                      if (
+                        typeSelect &&
+                        typeSelect.value !==
+                          "Manual"
+                      ) {
+                        typeSelect.value =
+                          "Manual";
+
+                        typeSelect.dispatchEvent(
+                          new Event(
+                            "change",
+                            {
+                              bubbles:
+                                true,
+                            }
+                          )
+                        );
+                      }
+
+                      const fileInput =
+                        document.getElementById(
+                          "device-manual-file-input"
+                        ) as
+                          | HTMLInputElement
+                          | null;
+
+                      fileInput?.click();
+                    }}
+                    disabled={
+                      device.manual_status !==
+                        "found" &&
+                      !canUpload
+                    }
+                    className={cn(
+                      "inline-flex shrink-0 items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold transition",
+                      device.manual_status ===
+                        "found"
+                        ? "border border-border-subtle bg-surface-card text-text-primary shadow-[var(--shadow-sm)] hover:bg-surface-hover"
+                        : canUpload
+                          ? "bg-charcoal text-surface-card hover:bg-charcoal-hover"
+                          : "cursor-not-allowed border border-border-subtle bg-surface-sunken text-text-muted"
+                    )}
+                  >
+                    {device.manual_status ===
+                    "found"
+                      ? "View manual"
+                      : canUpload
+                        ? "Upload manual"
+                        : "Read only"}
+                  </button>
+                </div>
+              </PageCard>
+
+              <PageCard className="p-6 md:p-8">
+                <DeviceDocuments
+                  deviceId={device.id}
+                  embedded
+                  onManualStatusChange={(
+                    status
+                  ) => {
+                    setDevice(
+                      (
+                        current
+                      ) => {
+                        if (
+                          !current
+                        ) {
+                          return current;
+                        }
+
+                        return {
+                          ...current,
+
+                          manual_status:
+                            status,
+
+                          manual_checked_at:
+                            status ===
+                            "found"
+                              ? new Date()
+                                  .toISOString()
+                              : null,
+                        };
+                      }
+                    );
+                  }}
+                />
+              </PageCard>
+            </div>
           )
         ) : null}
 

@@ -51,6 +51,6 @@ export default function SubscriptionCanceledEmail({
 SubscriptionCanceledEmail.PreviewProps = {
   planName: "Family",
   billingUrl:
-    "https://hometechvault.com/settings/billing",
+    "https://www.hometechvault.com/settings/billing",
   accessEndsLabel: "August 20, 2026",
 } satisfies SubscriptionCanceledEmailProps;

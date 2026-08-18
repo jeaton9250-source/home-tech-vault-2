@@ -90,7 +90,7 @@ export default function ComplimentaryAccessRevokedEmail({
 ComplimentaryAccessRevokedEmail.PreviewProps = {
   firstName: "Alex",
   planLabel: "Pro",
-  accountUrl: "https://hometechvault.com/account",
+  accountUrl: "https://www.hometechvault.com/account",
   effectiveEndLabel: "July 21, 2026",
   retainsPremiumAccess: false,
 } satisfies ComplimentaryAccessRevokedEmailProps;

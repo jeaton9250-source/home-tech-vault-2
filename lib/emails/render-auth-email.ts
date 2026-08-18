@@ -77,7 +77,7 @@ export function renderAuthEmailText(
     "Home Tech Vault",
     "Organize. Protect. Simplify.",
     "support@hometechvault.com",
-    "https://hometechvault.com"
+    "https://www.hometechvault.com"
   );
 
   return lines.join("\n");

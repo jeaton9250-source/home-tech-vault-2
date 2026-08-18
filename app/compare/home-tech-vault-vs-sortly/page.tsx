@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description:
     "Compare Home Tech Vault and Sortly for device inventory, warranties, documents, network discovery, and general inventory management.",
   alternates: {
-    canonical: "https://hometechvault.com/compare/home-tech-vault-vs-sortly",
+    canonical: "https://www.hometechvault.com/compare/home-tech-vault-vs-sortly",
   },
 };
 

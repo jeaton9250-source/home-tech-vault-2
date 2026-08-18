@@ -101,6 +101,86 @@ type HouseholdAccessPayload =
       canUseProFeatures?: boolean;
     };
 
+const PERMISSIONS_CACHE_TTL_MS =
+  60_000;
+
+const PERMISSIONS_CACHE_PREFIX =
+  "htv:permissions:v1:";
+
+type CachedPermissionPayload = {
+  cachedAt: number;
+  accessData: HouseholdAccessPayload;
+  grant: SafePlanGrantSummary | null;
+};
+
+function readPermissionCache(
+  userId: string
+): CachedPermissionPayload | null {
+  if (
+    typeof window === "undefined"
+  ) {
+    return null;
+  }
+
+  try {
+    const key =
+      PERMISSIONS_CACHE_PREFIX +
+      userId;
+
+    const raw =
+      window.sessionStorage.getItem(
+        key
+      );
+
+    if (!raw) {
+      return null;
+    }
+
+    const cached =
+      JSON.parse(
+        raw
+      ) as CachedPermissionPayload;
+
+    if (
+      !cached?.cachedAt ||
+      Date.now() -
+        cached.cachedAt >
+        PERMISSIONS_CACHE_TTL_MS
+    ) {
+      window.sessionStorage.removeItem(
+        key
+      );
+
+      return null;
+    }
+
+    return cached;
+  } catch {
+    return null;
+  }
+}
+
+function writePermissionCache(
+  userId: string,
+  value: CachedPermissionPayload
+) {
+  if (
+    typeof window === "undefined"
+  ) {
+    return;
+  }
+
+  try {
+    window.sessionStorage.setItem(
+      PERMISSIONS_CACHE_PREFIX +
+        userId,
+      JSON.stringify(value)
+    );
+  } catch {
+    // Cache failure must never affect access.
+  }
+}
+
 type PermissionsContextValue = ReturnType<
   typeof usePermissionsState
 >;
@@ -363,6 +443,19 @@ function usePermissionsState() {
     setHouseholdContextLoaded,
   ] = useState(false);
 
+  /*
+   * Once permissions have been resolved for the current user,
+   * later verification requests should happen in the background.
+   *
+   * This prevents tab focus, realtime membership events, and
+   * manual permission refreshes from blanking the entire app.
+   */
+  const householdContextLoadedRef =
+    useRef(false);
+
+  const loadedPermissionUserRef =
+    useRef<string | null>(null);
+
   const [
     apiEntitlementSnapshot,
     setApiEntitlementSnapshot,
@@ -397,9 +490,26 @@ function usePermissionsState() {
         return;
       }
 
+      const currentUserId =
+        user?.id ?? null;
+
+      const isBackgroundRefresh =
+        householdContextLoadedRef.current &&
+        loadedPermissionUserRef.current ===
+          currentUserId;
+
       try {
-        setRoleLoading(true);
-        setHouseholdContextLoaded(false);
+        /*
+         * Only the first permission resolution for a user should
+         * block page rendering.
+         *
+         * Subsequent checks quietly refresh the existing state.
+         */
+        if (!isBackgroundRefresh) {
+          setRoleLoading(true);
+          setHouseholdContextLoaded(false);
+        }
+
         setRoleError(null);
 
         if (isDemo || !user) {
@@ -414,6 +524,82 @@ function usePermissionsState() {
           });
           setHouseholdContextLoaded(true);
           return;
+        }
+
+        const cachedPermissions =
+          readPermissionCache(
+            user.id
+          );
+
+        if (
+          cachedPermissions &&
+          !isBackgroundRefresh
+        ) {
+          const cachedAccess =
+            cachedPermissions.accessData;
+
+          setAdminGrant(
+            cachedPermissions.grant
+          );
+
+          if (
+            "membership" in
+              cachedAccess &&
+            cachedAccess.membership ===
+              null
+          ) {
+            clearHouseholdState(
+              householdSetters
+            );
+
+            setApiEntitlementSnapshot({
+              ownerPlanSource: null,
+              effectivePlan: null,
+              canUseProFeatures: null,
+            });
+          } else if (
+            "householdId" in
+            cachedAccess
+          ) {
+            applyHouseholdAccess(
+              cachedAccess,
+              householdSetters
+            );
+
+            setApiEntitlementSnapshot({
+              ownerPlanSource:
+                cachedAccess
+                  .ownerPlanSource ??
+                null,
+
+              effectivePlan:
+                cachedAccess
+                  .effectivePlan ??
+                null,
+
+              canUseProFeatures:
+                cachedAccess
+                  .canUseProFeatures ??
+                null,
+            });
+          }
+
+          householdContextLoadedRef.current =
+            true;
+
+          loadedPermissionUserRef.current =
+            user.id;
+
+          setHouseholdContextLoaded(
+            true
+          );
+
+          /*
+           * Let the UI paint from the recent
+           * snapshot while the network verifies
+           * it below.
+           */
+          setRoleLoading(false);
         }
 
         const [
@@ -456,12 +642,19 @@ function usePermissionsState() {
           return;
         }
 
+        let resolvedGrant:
+          | SafePlanGrantSummary
+          | null = null;
+
         if (grantResponse.ok) {
           const grantData =
             (await grantResponse.json()) as PlanGrantPayload;
 
+          resolvedGrant =
+            grantData.grant ?? null;
+
           setAdminGrant(
-            grantData.grant ?? null
+            resolvedGrant
           );
         } else {
           setAdminGrant(null);
@@ -469,6 +662,27 @@ function usePermissionsState() {
 
         const accessData =
           (await accessResponse.json()) as HouseholdAccessPayload;
+
+        /*
+         * Only cache a fully successful access
+         * verification. A temporary grant API
+         * failure should not overwrite a good
+         * permission snapshot.
+         */
+        if (grantResponse.ok) {
+          writePermissionCache(
+            user.id,
+            {
+              cachedAt:
+                Date.now(),
+
+              accessData,
+
+              grant:
+                resolvedGrant,
+            }
+          );
+        }
 
         if (
           "membership" in accessData &&
@@ -550,7 +764,17 @@ function usePermissionsState() {
         });
         setHouseholdContextLoaded(true);
       } finally {
-        setRoleLoading(false);
+        householdContextLoadedRef.current =
+          true;
+
+        loadedPermissionUserRef.current =
+          currentUserId;
+
+        setHouseholdContextLoaded(true);
+
+        if (!isBackgroundRefresh) {
+          setRoleLoading(false);
+        }
       }
     }, [
       demoLoading,
@@ -613,7 +837,7 @@ function usePermissionsState() {
 
       if (
         now - lastFocusRefreshRef.current <
-        5000
+        60000
       ) {
         return;
       }

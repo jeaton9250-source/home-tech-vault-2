@@ -134,7 +134,7 @@ export default function ComplimentaryAccessGrantedEmail({
 ComplimentaryAccessGrantedEmail.PreviewProps = {
   firstName: "Alex",
   planLabel: "Pro",
-  dashboardUrl: "https://hometechvault.com/dashboard",
+  dashboardUrl: "https://www.hometechvault.com/dashboard",
   startsAtLabel: "July 21, 2026",
   expiresAtLabel: "August 20, 2026",
   publicReason: "Beta Tester",

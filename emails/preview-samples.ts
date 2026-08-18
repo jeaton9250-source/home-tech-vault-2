@@ -7,7 +7,7 @@ export const familyInvitationPreviewSamples = {
     householdName: "The Morgan Household",
     roleLabel: "Admin",
     acceptanceUrl:
-      "https://hometechvault.com/family/accept/sample-admin-token",
+      "https://www.hometechvault.com/family/accept/sample-admin-token",
     expirationLabel: "August 20, 2026",
   },
   member: {
@@ -15,7 +15,7 @@ export const familyInvitationPreviewSamples = {
     householdName: "The Morgan Household",
     roleLabel: "Member",
     acceptanceUrl:
-      "https://hometechvault.com/family/accept/sample-member-token",
+      "https://www.hometechvault.com/family/accept/sample-member-token",
     expirationLabel: "August 20, 2026",
   },
   viewer: {
@@ -23,7 +23,7 @@ export const familyInvitationPreviewSamples = {
     householdName: "The Morgan Household",
     roleLabel: "Viewer",
     acceptanceUrl:
-      "https://hometechvault.com/family/accept/sample-viewer-token",
+      "https://www.hometechvault.com/family/accept/sample-viewer-token",
     expirationLabel: "August 20, 2026",
   },
 } satisfies Record<string, FamilyInvitationEmailProps>;
@@ -33,7 +33,7 @@ export const warrantyReminderPreviewSample = {
   expirationLabel: "August 20, 2026",
   daysRemaining: 30,
   deviceUrl:
-    "https://hometechvault.com/devices/sample-device",
+    "https://www.hometechvault.com/devices/sample-device",
 };
 
 export const maintenanceReminderPreviewSample = {
@@ -41,7 +41,7 @@ export const maintenanceReminderPreviewSample = {
   deviceName: "Mesh Wi-Fi Router",
   dueLabel: "Overdue by 5 days",
   maintenanceUrl:
-    "https://hometechvault.com/maintenance",
+    "https://www.hometechvault.com/maintenance",
 };
 
 export const monthlyVaultReportPreviewSample = {
@@ -50,5 +50,5 @@ export const monthlyVaultReportPreviewSample = {
   deviceCount: 24,
   protectedValue: "$18,400",
   expiringWarranties: 2,
-  reportUrl: "https://hometechvault.com/reports",
+  reportUrl: "https://www.hometechvault.com/reports",
 };

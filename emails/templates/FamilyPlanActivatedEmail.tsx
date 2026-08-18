@@ -40,5 +40,5 @@ export default function FamilyPlanActivatedEmail({
 
 FamilyPlanActivatedEmail.PreviewProps = {
   billingUrl:
-    "https://hometechvault.com/settings/billing",
+    "https://www.hometechvault.com/settings/billing",
 } satisfies FamilyPlanActivatedEmailProps;

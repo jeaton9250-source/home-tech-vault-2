@@ -59,5 +59,5 @@ export default function FamilyInvitationAcceptedEmail({
 FamilyInvitationAcceptedEmail.PreviewProps = {
   memberName: "Jordan Morgan",
   householdName: "The Morgan Household",
-  familyUrl: "https://hometechvault.com/family",
+  familyUrl: "https://www.hometechvault.com/family",
 } satisfies FamilyInvitationAcceptedEmailProps;

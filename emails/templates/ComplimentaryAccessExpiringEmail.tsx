@@ -78,5 +78,5 @@ ComplimentaryAccessExpiringEmail.PreviewProps = {
   firstName: "Alex",
   planLabel: "Family",
   expiresAtLabel: "August 20, 2026",
-  accountUrl: "https://hometechvault.com/account",
+  accountUrl: "https://www.hometechvault.com/account",
 } satisfies ComplimentaryAccessExpiringEmailProps;

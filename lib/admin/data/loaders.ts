@@ -1994,7 +1994,7 @@ export async function loadAdminSystemHealth(): Promise<AdminSystemHealth> {
       process.env.NODE_ENV ?? "development",
     publicUrl:
       process.env.NEXT_PUBLIC_SITE_URL ||
-      "https://hometechvault.com",
+      "https://www.hometechvault.com",
     appVersion:
       process.env.npm_package_version ||
       "0.1.0",

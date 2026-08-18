@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description:
     "Compare Home Tech Vault and HomeZada for home inventory, technology warranties, documents, maintenance, projects, finances, and device discovery.",
   alternates: {
-    canonical: "https://hometechvault.com/compare/home-tech-vault-vs-homezada",
+    canonical: "https://www.hometechvault.com/compare/home-tech-vault-vs-homezada",
   },
 };
 

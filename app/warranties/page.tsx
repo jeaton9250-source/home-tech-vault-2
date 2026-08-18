@@ -506,78 +506,8 @@ export default function WarrantiesPage() {
   );
 
   useEffect(() => {
-    let mounted = true;
-
-    async function runLoad() {
-      if (permissionsLoading) {
-        return;
-      }
-
-      try {
-        setLoading(true);
-        setError(null);
-
-        if (isDemo || !user) {
-          const demoWarrantyDevices =
-            (demoDevices as unknown[]).map(
-              normalizeDevice
-            );
-
-          if (!mounted) {
-            return;
-          }
-
-          setDevices(
-            demoWarrantyDevices
-          );
-
-          return;
-        }
-
-        const realDevices =
-          (
-            await getWarrantyDevices(
-              user,
-              householdId
-            )
-          ).map(normalizeDevice);
-
-        if (!mounted) {
-          return;
-        }
-
-        setDevices(realDevices);
-      } catch (loadError: unknown) {
-        console.error(
-          "Unable to load warranties:",
-          loadError
-        );
-
-        if (!mounted) {
-          return;
-        }
-
-        setError(
-          "Unable to load warranty information."
-        );
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
-      }
-    }
-
-    void runLoad();
-
-    return () => {
-      mounted = false;
-    };
-  }, [
-    user,
-    isDemo,
-    householdId,
-    permissionsLoading,
-  ]);
+    void loadWarranties();
+  }, [loadWarranties]);
 
   const summary =
     useMemo<WarrantySummary>(() => {

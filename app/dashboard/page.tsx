@@ -1,291 +1,92 @@
-"use client";
-
+import DashboardPageClient from "@/components/dashboard/DashboardPageClient";
 import {
-  useEffect,
-  useState,
-} from "react";
-import { useRouter } from "next/navigation";
-
-import { loadDashboardMetrics } from "@/lib/data/dashboardData";
-import { buildDemoHomeHealth } from "@/lib/home-health/demo";
-import { usePermissions } from "@/hooks/usePermissions";
+  loadDashboardMetrics,
+} from "@/lib/data/dashboardData";
 import {
-  resolveCreateAccountInvitePath,
-  userHasHouseholdMembership,
-} from "@/lib/auth/inviteOnboarding";
-
-import PageShell from "@/components/ui/PageShell";
-import PageCard from "@/components/ui/PageCard";
-import { DashboardSkeleton } from "@/components/ui/Skeleton";
-import HomeHealthDashboard from "@/components/home-health/HomeHealthDashboard";
-import VaultSetupProgress from "@/components/dashboard/VaultSetupProgress";
-
-import type { DashboardOverviewStats } from "@/lib/dashboard/types";
-import type { HomeHealthResult } from "@/lib/home-health/types";
+  fetchHouseholdIdForUser,
+} from "@/lib/data/householdScope";
 import {
-  demoDashboard,
-  demoDevices,
-} from "@/lib/demoData";
-import { getWarrantyStatus } from "@/lib/home-health/warranty";
+  createClient,
+} from "@/lib/supabase/server";
 
-function buildDemoOverviewStats(): DashboardOverviewStats {
-  const onlineDeviceCount = demoDevices.filter(
-    (device) => device.online
-  ).length;
-  const offlineDeviceCount = demoDevices.filter(
-    (device) => !device.online
-  ).length;
-  const activeWarrantyCount = demoDevices.filter(
-    (device) => {
-      const status = getWarrantyStatus(
-        device.warranty_date || null
-      );
+export const dynamic =
+  "force-dynamic";
 
-      return (
-        status === "active" ||
-        status === "expiring"
-      );
-    }
-  ).length;
+export default async function DashboardPage() {
+  try {
+    const supabase =
+      await createClient();
 
-  return {
-    deviceCount: demoDashboard.deviceCount,
-    onlineDeviceCount,
-    offlineDeviceCount,
-    documentCount: demoDashboard.documentCount,
-    activeWarrantyCount,
-    familyMemberCount: 4,
-  };
-}
+    const {
+      data: { user },
+      error: userError,
+    } =
+      await supabase.auth.getUser();
 
-export default function DashboardPage() {
-  const router = useRouter();
-  const {
-    user,
-    isDemo,
-    householdId,
-    loading: permissionsLoading,
-    permissionsReady,
-    isVerifiedPlatformAdmin,
-    canCreate,
-  } = usePermissions();
-
-  const [firstName, setFirstName] =
-    useState("Homeowner");
-
-  const [homeHealth, setHomeHealth] =
-    useState<HomeHealthResult | null>(null);
-
-  const [overviewStats, setOverviewStats] =
-    useState<DashboardOverviewStats | null>(
-      null
-    );
-
-  const [
-    loadingDashboard,
-    setLoadingDashboard,
-  ] = useState(true);
-
-  const [errorMessage, setErrorMessage] =
-    useState("");
-
-  useEffect(() => {
+    /*
+     * No server session can also mean Demo Mode,
+     * because Demo state lives in the browser.
+     * Let the client component resolve that case.
+     */
     if (
-      !permissionsReady ||
-      isDemo ||
-      !user ||
-      isVerifiedPlatformAdmin
+      userError ||
+      !user
     ) {
-      return;
-    }
-
-    let cancelled = false;
-
-    async function redirectIncompleteInvitee() {
-      const activeUser = user;
-
-      if (!activeUser) {
-        return;
-      }
-
-      const hasHousehold = householdId
-        ? true
-        : await userHasHouseholdMembership(
-            activeUser.id
-          );
-
-      if (cancelled) {
-        return;
-      }
-
-      const invitePath = resolveCreateAccountInvitePath({
-        user: activeUser,
-        hasHousehold,
-        isPlatformAdmin: false,
-      });
-
-      if (!invitePath) {
-        return;
-      }
-
-      console.info("Invite onboarding route", {
-        userId: activeUser.id,
-        invitationType:
-          activeUser.user_metadata?.invitation_type ??
-          null,
-        onboardingMode:
-          activeUser.user_metadata?.onboarding_mode ??
-          null,
-        hasHousehold,
-        destination: invitePath,
-      });
-
-      router.replace(invitePath);
-    }
-
-    void redirectIncompleteInvitee();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [
-    user,
-    isDemo,
-    householdId,
-    permissionsReady,
-    isVerifiedPlatformAdmin,
-    router,
-  ]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadDashboard() {
-      if (!permissionsReady) {
-        return;
-      }
-
-      if (isDemo || !user) {
-        if (!cancelled) {
-          setFirstName(demoDashboard.firstName);
-          setHomeHealth(buildDemoHomeHealth());
-          setOverviewStats(
-            buildDemoOverviewStats()
-          );
-          setErrorMessage("");
-          setLoadingDashboard(false);
-        }
-        return;
-      }
-
-      try {
-        if (!cancelled) {
-          setLoadingDashboard(true);
-          setErrorMessage("");
-        }
-
-        const metrics =
-          await loadDashboardMetrics(
-            user,
-            householdId
-          );
-
-        if (cancelled) {
-          return;
-        }
-
-        setFirstName(metrics.firstName);
-        setHomeHealth(metrics.homeHealth);
-        setOverviewStats(
-          metrics.overviewStats
-        );
-      } catch (error: unknown) {
-        console.error(
-          "Unable to load dashboard:",
-          error
-        );
-
-        if (!cancelled) {
-          setHomeHealth(null);
-          setOverviewStats(null);
-          setErrorMessage(
-            error instanceof Error
-              ? error.message
-              : "Unable to load your Home Pulse dashboard."
-          );
-        }
-      } finally {
-        if (!cancelled) {
-          setLoadingDashboard(false);
-        }
-      }
-    }
-
-    void loadDashboard();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [
-    user,
-    isDemo,
-    householdId,
-    permissionsReady,
-  ]);
-
-  if (permissionsLoading || loadingDashboard) {
-    return (
-      <PageShell>
-        <DashboardSkeleton />
-      </PageShell>
-    );
-  }
-
-  if (errorMessage) {
-    return (
-      <PageShell>
-        <PageCard className="border-danger/30 bg-danger-soft text-danger">
-          <h1 className="text-section-title">
-            Unable to load Home Pulse
-          </h1>
-          <p className="mt-2 text-sm">
-            {errorMessage}
-          </p>
-        </PageCard>
-      </PageShell>
-    );
-  }
-
-  if (!homeHealth || !overviewStats) {
-    return (
-      <PageShell>
-        <DashboardSkeleton />
-      </PageShell>
-    );
-  }
-
-  return (
-    <PageShell className="!pt-4 md:!pt-5">
-      {!isDemo ? (
-        <VaultSetupProgress
-          deviceCount={
-            overviewStats.deviceCount
-          }
-          documentCount={
-            overviewStats.documentCount
-          }
-          hasHousehold={
-            Boolean(householdId)
-          }
-          canCreate={canCreate}
+      return (
+        <DashboardPageClient
+          initialMetrics={null}
+          initialMetricsUserId={null}
+          initialHouseholdId={null}
         />
-      ) : null}
+      );
+    }
 
-      <HomeHealthDashboard
-        firstName={firstName}
-        homeHealth={homeHealth}
-        overviewStats={overviewStats}
+    const householdId =
+      await fetchHouseholdIdForUser(
+        user.id,
+        supabase
+      );
+
+    const initialMetrics =
+      await loadDashboardMetrics(
+        user,
+        householdId,
+        supabase
+      );
+
+    return (
+      <DashboardPageClient
+        initialMetrics={
+          initialMetrics
+        }
+        initialMetricsUserId={
+          user.id
+        }
+        initialHouseholdId={
+          householdId
+        }
       />
-    </PageShell>
-  );
+    );
+  } catch (error) {
+    /*
+     * Server-first loading is an optimization,
+     * not a single point of failure.
+     *
+     * If this request fails, the existing client
+     * loader gets another chance once permissions
+     * are available.
+     */
+    console.error(
+      "Server dashboard preload failed:",
+      error
+    );
+
+    return (
+      <DashboardPageClient
+        initialMetrics={null}
+        initialMetricsUserId={null}
+        initialHouseholdId={null}
+      />
+    );
+  }
 }

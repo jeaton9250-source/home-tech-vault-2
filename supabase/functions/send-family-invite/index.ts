@@ -76,7 +76,7 @@ function normalizeOrigin(url: string) {
 function allowedCorsOrigins() {
   const origins = new Set<string>([
     "https://www.hometechvault.com",
-    "https://hometechvault.com",
+    "https://www.hometechvault.com",
   ]);
 
   const appUrl = Deno.env.get("APP_URL")?.trim();

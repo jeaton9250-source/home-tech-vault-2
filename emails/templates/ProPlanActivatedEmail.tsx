@@ -41,5 +41,5 @@ export default function ProPlanActivatedEmail({
 
 ProPlanActivatedEmail.PreviewProps = {
   billingUrl:
-    "https://hometechvault.com/settings/billing",
+    "https://www.hometechvault.com/settings/billing",
 } satisfies ProPlanActivatedEmailProps;

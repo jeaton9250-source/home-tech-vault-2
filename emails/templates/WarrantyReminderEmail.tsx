@@ -77,5 +77,5 @@ WarrantyReminderEmail.PreviewProps = {
   expirationLabel: "August 20, 2026",
   daysRemaining: 30,
   deviceUrl:
-    "https://hometechvault.com/devices/sample-device",
+    "https://www.hometechvault.com/devices/sample-device",
 } satisfies WarrantyReminderEmailProps;

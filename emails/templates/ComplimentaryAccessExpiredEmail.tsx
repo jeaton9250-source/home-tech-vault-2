@@ -86,7 +86,7 @@ export default function ComplimentaryAccessExpiredEmail({
 ComplimentaryAccessExpiredEmail.PreviewProps = {
   firstName: "Alex",
   planLabel: "Family",
-  accountUrl: "https://hometechvault.com/account",
+  accountUrl: "https://www.hometechvault.com/account",
   expiredAtLabel: "July 21, 2026",
   retainsPremiumAccess: false,
 } satisfies ComplimentaryAccessExpiredEmailProps;

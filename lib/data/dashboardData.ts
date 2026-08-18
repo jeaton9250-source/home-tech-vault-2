@@ -1,4 +1,4 @@
-import type { User } from "@supabase/supabase-js";
+import type { SupabaseClient, User } from "@supabase/supabase-js";
 
 import type { DashboardOverviewStats } from "@/lib/dashboard/types";
 import { applyHouseholdScope } from "@/lib/data/householdScope";
@@ -14,7 +14,6 @@ import {
   type VaultDevice,
   type VaultScoreResult,
 } from "@/lib/calculateVaultScore";
-import { supabase } from "@/lib/supabase";
 
 type DeviceRow = {
   id: string;
@@ -62,18 +61,38 @@ function getRecentActivityCutoff() {
 
 export async function loadDashboardMetrics(
   user: User,
-  householdId: string | null | undefined
+  householdId: string | null | undefined,
+  client: SupabaseClient
 ): Promise<DashboardMetrics> {
-  const [profileResult, devicesResult] =
-    await Promise.all([
-      supabase
-        .from("profiles")
-        .select("full_name, household_name")
-        .eq("id", user.id)
-        .maybeSingle(),
+  const recentActivityCutoff =
+    getRecentActivityCutoff();
 
-      applyHouseholdScope(
-        supabase.from("devices").select(
+  /*
+   * Wave 1:
+   * Start every query that does NOT depend on
+   * the device IDs at the same time.
+   */
+  const [
+    profileResult,
+    devicesResult,
+    documentsCountResult,
+    maintenanceResult,
+    membersResult,
+    networkCountResult,
+    subscriptionsCountResult,
+  ] = await Promise.all([
+    client
+      .from("profiles")
+      .select(
+        "full_name, household_name"
+      )
+      .eq("id", user.id)
+      .maybeSingle(),
+
+    applyHouseholdScope(
+      client
+        .from("devices")
+        .select(
           `
           id,
           device_name,
@@ -88,16 +107,78 @@ export async function loadDashboardMetrics(
           notes
         `
         ),
-        householdId,
-        user.id
-      ),
-    ]);
+      householdId,
+      user.id
+    ),
+
+    applyHouseholdScope(
+      client
+        .from("documents")
+        .select("id", {
+          count: "exact",
+          head: true,
+        }),
+      householdId,
+      user.id
+    ),
+
+    applyHouseholdScope(
+      client
+        .from("maintenance_tasks")
+        .select(
+          "id, device_id, title, due_date, completed"
+        ),
+      householdId,
+      user.id
+    ),
+
+    householdId
+      ? client
+          .from(
+            "household_members"
+          )
+          .select("id", {
+            count: "exact",
+            head: true,
+          })
+          .eq(
+            "household_id",
+            householdId
+          )
+      : Promise.resolve({
+          count: 1,
+          error: null,
+        }),
+
+    applyHouseholdScope(
+      client
+        .from("network_info")
+        .select("id", {
+          count: "exact",
+          head: true,
+        }),
+      householdId,
+      user.id
+    ),
+
+    applyHouseholdScope(
+      client
+        .from("subscriptions")
+        .select("id", {
+          count: "exact",
+          head: true,
+        }),
+      householdId,
+      user.id
+    ),
+  ]);
 
   if (devicesResult.error) {
     throw devicesResult.error;
   }
 
-  const profile = profileResult.data;
+  const profile =
+    profileResult.data;
 
   const displayName =
     profile?.full_name?.trim() ||
@@ -112,109 +193,66 @@ export async function loadDashboardMetrics(
     `${firstName}'s Home Tech Vault`;
 
   const deviceRows =
-    (devicesResult.data ?? []) as DeviceRow[];
+    (devicesResult.data ??
+      []) as DeviceRow[];
 
-  const deviceIds = deviceRows.map(
-    (device) => device.id
-  );
+  const deviceIds =
+    deviceRows.map(
+      (device) => device.id
+    );
 
+  /*
+   * Wave 2:
+   * Only these queries actually require the
+   * device IDs returned above.
+   */
   const [
-    documentsCountResult,
     deviceDocumentsResult,
-    maintenanceResult,
     imagesResult,
-    membersResult,
-    networkCountResult,
-    subscriptionsCountResult,
     recentActivityResult,
   ] = await Promise.all([
-    applyHouseholdScope(
-      supabase
-        .from("documents")
-        .select("id", {
-          count: "exact",
-          head: true,
-        }),
-      householdId,
-      user.id
-    ),
-
     deviceIds.length > 0
-      ? supabase
-          .from("device_documents")
+      ? client
+          .from(
+            "device_documents"
+          )
           .select("device_id")
-          .in("device_id", deviceIds)
+          .in(
+            "device_id",
+            deviceIds
+          )
       : Promise.resolve({
           data: [],
           error: null,
         }),
 
-    applyHouseholdScope(
-      supabase
-        .from("maintenance_tasks")
-        .select(
-          "id, device_id, title, due_date, completed"
-        ),
-      householdId,
-      user.id
-    ),
-
     deviceIds.length > 0
-      ? supabase
+      ? client
           .from("device_images")
           .select("device_id")
-          .in("device_id", deviceIds)
+          .in(
+            "device_id",
+            deviceIds
+          )
       : Promise.resolve({
           data: [],
           error: null,
         }),
 
-    householdId
-      ? supabase
-          .from("household_members")
-          .select("id", {
-            count: "exact",
-            head: true,
-          })
-          .eq("household_id", householdId)
-      : Promise.resolve({
-          count: 1,
-          error: null,
-        }),
-
-    applyHouseholdScope(
-      supabase
-        .from("network_info")
-        .select("id", {
-          count: "exact",
-          head: true,
-        }),
-      householdId,
-      user.id
-    ),
-
-    applyHouseholdScope(
-      supabase
-        .from("subscriptions")
-        .select("id", {
-          count: "exact",
-          head: true,
-        }),
-      householdId,
-      user.id
-    ),
-
     deviceIds.length > 0
-      ? supabase
+      ? client
           .from("device_events")
           .select("id", {
             count: "exact",
             head: true,
           })
-          .in("device_id", deviceIds)
+          .in(
+            "device_id",
+            deviceIds
+          )
           .gte(
             "event_date",
-            getRecentActivityCutoff()
+            recentActivityCutoff
           )
       : Promise.resolve({
           count: 0,
@@ -222,78 +260,126 @@ export async function loadDashboardMetrics(
         }),
   ]);
 
-  const rooms = new Set(
-    deviceRows
-      .map((device) =>
-        device.location?.trim()
+  const rooms =
+    new Set(
+      deviceRows
+        .map((device) =>
+          device.location?.trim()
+        )
+        .filter(Boolean)
+    );
+
+  const vaultDevices:
+    VaultDevice[] =
+      deviceRows.map(
+        (device) => ({
+          id: device.id,
+
+          device_name:
+            device.device_name ||
+            "",
+
+          brand:
+            device.brand || "",
+
+          category:
+            device.category || "",
+
+          serial_number:
+            device.serial_number ||
+            "",
+
+          purchase_date:
+            device.purchase_date ||
+            "",
+
+          warranty_date:
+            device.warranty_date ||
+            "",
+
+          purchase_price:
+            device.purchase_price ||
+            0,
+
+          location:
+            device.location || "",
+
+          notes:
+            device.notes || "",
+        })
+      );
+
+  const deviceIdsWithPhotos =
+    new Set(
+      (
+        (imagesResult.data ??
+          []) as {
+          device_id: string;
+        }[]
+      ).map(
+        (image) =>
+          image.device_id
       )
-      .filter(Boolean)
-  );
+    );
 
-  const vaultDevices: VaultDevice[] =
-    deviceRows.map((device) => ({
-      id: device.id,
-      device_name: device.device_name || "",
-      brand: device.brand || "",
-      category: device.category || "",
-      serial_number:
-        device.serial_number || "",
-      purchase_date:
-        device.purchase_date || "",
-      warranty_date:
-        device.warranty_date || "",
-      purchase_price:
-        device.purchase_price || 0,
-      location: device.location || "",
-      notes: device.notes || "",
-    }));
-
-  const deviceIdsWithPhotos = new Set(
-    (
-      (imagesResult.data ?? []) as {
-        device_id: string;
-      }[]
-    ).map((image) => image.device_id)
-  );
-
-  const deviceIdsWithDocuments = new Set(
-    (
-      (deviceDocumentsResult.data ??
-        []) as { device_id: string }[]
-    ).map((document) => document.device_id)
-  );
+  const deviceIdsWithDocuments =
+    new Set(
+      (
+        (deviceDocumentsResult.data ??
+          []) as {
+          device_id: string;
+        }[]
+      ).map(
+        (document) =>
+          document.device_id
+      )
+    );
 
   const maintenanceTasks =
     (maintenanceResult.data ??
       []) as HomeHealthMaintenanceTask[];
 
-  const deviceIdsWithMaintenance = new Set(
-    maintenanceTasks
-      .map((task) => task.device_id)
-      .filter(
-        (deviceId): deviceId is string =>
-          Boolean(deviceId)
-      )
-  );
+  const deviceIdsWithMaintenance =
+    new Set(
+      maintenanceTasks
+        .map(
+          (task) =>
+            task.device_id
+        )
+        .filter(
+          (
+            deviceId
+          ): deviceId is string =>
+            Boolean(deviceId)
+        )
+    );
 
   const documentCount =
     documentsCountResult.error
       ? 0
-      : documentsCountResult.count || 0;
+      : documentsCountResult.count ||
+        0;
 
   const networkConfigured =
     networkCountResult.error
       ? false
-      : (networkCountResult.count ?? 0) > 0;
+      : (
+          networkCountResult.count ??
+          0
+        ) > 0;
 
   const subscriptionCount =
     subscriptionsCountResult.error
       ? 0
-      : subscriptionsCountResult.count || 0;
+      : subscriptionsCountResult.count ||
+        0;
 
   const hasRecentActivity =
     !recentActivityResult.error &&
-    (recentActivityResult.count ?? 0) > 0;
+    (
+      recentActivityResult.count ??
+      0
+    ) > 0;
 
   const familyMemberCount =
     membersResult.error
@@ -302,87 +388,149 @@ export async function loadDashboardMetrics(
 
   const onlineDeviceCount =
     deviceRows.filter(
-      (device) => device.online === true
+      (device) =>
+        device.online === true
     ).length;
 
   const offlineDeviceCount =
     deviceRows.filter(
-      (device) => device.online === false
+      (device) =>
+        device.online === false
     ).length;
 
   const activeWarrantyCount =
-    deviceRows.filter((device) => {
-      const status = getWarrantyStatus(
-        device.warranty_date
-      );
+    deviceRows.filter(
+      (device) => {
+        const status =
+          getWarrantyStatus(
+            device.warranty_date
+          );
 
-      return (
-        status === "active" ||
-        status === "expiring"
-      );
-    }).length;
+        return (
+          status === "active" ||
+          status === "expiring"
+        );
+      }
+    ).length;
 
-  const overviewStats: DashboardOverviewStats =
-    {
-      deviceCount: deviceRows.length,
+  const overviewStats:
+    DashboardOverviewStats = {
+      deviceCount:
+        deviceRows.length,
+
       onlineDeviceCount,
+
       offlineDeviceCount,
+
       documentCount,
+
       activeWarrantyCount,
+
       familyMemberCount,
     };
 
-  const homeHealthInput: HomeHealthInput = {
-    devices: deviceRows.map((device) => ({
-      id: device.id,
-      device_name:
-        device.device_name?.trim() ||
-        "Unnamed Device",
-      warranty_date: device.warranty_date,
-      serial_number: device.serial_number,
-      purchase_date: device.purchase_date,
-    })),
-    documentCount,
-    subscriptionCount,
-    networkConfigured,
-    deviceIdsWithDocuments,
-    deviceIdsWithPhotos,
-    deviceIdsWithMaintenance,
-    maintenanceTasks,
-    hasRecentActivity,
-    householdName,
-    familyMemberCount,
-    profileHouseholdName:
-      profile?.household_name ?? null,
-  };
+  const homeHealthInput:
+    HomeHealthInput = {
+      devices:
+        deviceRows.map(
+          (device) => ({
+            id: device.id,
+
+            device_name:
+              device.device_name
+                ?.trim() ||
+              "Unnamed Device",
+
+            warranty_date:
+              device.warranty_date,
+
+            serial_number:
+              device.serial_number,
+
+            purchase_date:
+              device.purchase_date,
+          })
+        ),
+
+      documentCount,
+
+      subscriptionCount,
+
+      networkConfigured,
+
+      deviceIdsWithDocuments,
+
+      deviceIdsWithPhotos,
+
+      deviceIdsWithMaintenance,
+
+      maintenanceTasks,
+
+      hasRecentActivity,
+
+      householdName,
+
+      familyMemberCount,
+
+      profileHouseholdName:
+        profile
+          ?.household_name ??
+        null,
+    };
 
   const vaultScore =
     deviceRows.length === 0
       ? defaultVaultScore
       : calculateVaultScore({
-          devices: vaultDevices,
+          devices:
+            vaultDevices,
+
           deviceIdsWithPhotos,
+
           deviceIdsWithDocuments,
+
           deviceIdsWithMaintenance,
         });
 
   return {
     firstName,
+
     householdName,
-    deviceCount: deviceRows.length,
+
+    deviceCount:
+      deviceRows.length,
+
     documentCount,
-    roomCount: rooms.size,
+
+    roomCount:
+      rooms.size,
+
     familyMemberCount,
-    protectedValue: deviceRows.reduce(
-      (total, device) =>
-        total +
-        Number(device.purchase_price || 0),
-      0
-    ),
+
+    protectedValue:
+      deviceRows.reduce(
+        (
+          total,
+          device
+        ) =>
+          total +
+          Number(
+            device.purchase_price ||
+              0
+          ),
+        0
+      ),
+
     networkConfigured,
+
     vaultScore,
+
     homeHealth:
-      calculateHomeHealth(homeHealthInput),
+      calculateHomeHealth(
+        homeHealthInput
+      ),
+
     overviewStats,
   };
 }
+

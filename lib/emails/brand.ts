@@ -2,10 +2,10 @@ export const emailBrand = {
   name: "Home Tech Vault",
   tagline: "Organize. Protect. Simplify.",
   overline: "HOME TECH VAULT",
-  siteUrl: "https://hometechvault.com",
+  siteUrl: "https://www.hometechvault.com",
   supportEmail: "support@hometechvault.com",
   logoUrl:
-    "https://hometechvault.com/brand/logo.svg",
+    "https://www.hometechvault.com/brand/logo.svg",
   colors: {
     background: "#FAF9F7",
     card: "#FDFCFA",

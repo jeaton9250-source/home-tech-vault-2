@@ -49,7 +49,7 @@ export async function POST(request: Request) {
 
     const result = await sendReactEmail({
       to: session.email,
-      subject: `[Admin Test] ${welcomeSubject}`,
+      subject: welcomeSubject,
       template: WelcomeEmail({
         firstName: "Admin",
         dashboardUrl,

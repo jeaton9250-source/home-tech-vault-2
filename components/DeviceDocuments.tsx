@@ -37,6 +37,9 @@ type DeviceDocument = DeviceDocumentRow & {
 type DeviceDocumentsProps = {
   deviceId: string;
   embedded?: boolean;
+  onManualStatusChange?: (
+    status: "found" | null
+  ) => void;
 };
 
 const documentTypes = [
@@ -50,6 +53,7 @@ const documentTypes = [
 export default function DeviceDocuments({
   deviceId,
   embedded = false,
+  onManualStatusChange,
 }: DeviceDocumentsProps) {
   const [documents, setDocuments] = useState<DeviceDocument[]>([]);
   const [selectedType, setSelectedType] = useState("Manual");
@@ -217,8 +221,47 @@ export default function DeviceDocuments({
         });
       }
 
+      if (
+        selectedType === "Manual"
+      ) {
+        const {
+          error:
+            manualStatusError,
+        } = await supabase
+          .from("devices")
+          .update({
+            manual_status:
+              "found",
+
+            manual_checked_at:
+              new Date()
+                .toISOString(),
+          })
+          .eq(
+            "id",
+            deviceId
+          );
+
+        if (
+          manualStatusError
+        ) {
+          console.warn(
+            "Unable to update manual status after upload:",
+            manualStatusError
+          );
+        }
+      }
+
       event.target.value = "";
       await loadDocuments();
+
+      if (
+        selectedType === "Manual"
+      ) {
+        onManualStatusChange?.(
+          "found"
+        );
+      }
     } catch (error) {
       console.error("Document upload error:", error);
 
@@ -264,6 +307,80 @@ export default function DeviceDocuments({
       setDocuments((current) =>
         current.filter((item) => item.id !== document.id)
       );
+
+      if (
+        document.document_type ===
+        "Manual"
+      ) {
+        const {
+          count:
+            remainingManualCount,
+          error:
+            remainingManualError,
+        } = await supabase
+          .from(
+            "device_documents"
+          )
+          .select(
+            "id",
+            {
+              count: "exact",
+              head: true,
+            }
+          )
+          .eq(
+            "device_id",
+            deviceId
+          )
+          .eq(
+            "document_type",
+            "Manual"
+          );
+
+        if (
+          remainingManualError
+        ) {
+          console.warn(
+            "Unable to check remaining manuals:",
+            remainingManualError
+          );
+        } else if (
+          (
+            remainingManualCount ??
+            0
+          ) === 0
+        ) {
+          const {
+            error:
+              clearStatusError,
+          } = await supabase
+            .from("devices")
+            .update({
+              manual_status:
+                null,
+
+              manual_checked_at:
+                null,
+            })
+            .eq(
+              "id",
+              deviceId
+            );
+
+          if (
+            clearStatusError
+          ) {
+            console.warn(
+              "Unable to clear manual status:",
+              clearStatusError
+            );
+          } else {
+            onManualStatusChange?.(
+              null
+            );
+          }
+        }
+      }
     } catch (error) {
       console.error("Document deletion error:", error);
 
@@ -359,7 +476,10 @@ export default function DeviceDocuments({
           </div>
         </div>
       ) : (
-        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div
+          id="device-manual-upload"
+          className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"
+        >
           <div>
             <p className="text-overline text-section-technology">Documents</p>
             <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
@@ -369,6 +489,7 @@ export default function DeviceDocuments({
 
           <div className="flex flex-col gap-3 sm:flex-row">
             <select
+              id="device-document-type-select"
               value={selectedType}
               onChange={(event) =>
                 setSelectedType(event.target.value)
@@ -392,6 +513,7 @@ export default function DeviceDocuments({
               {uploading ? "Uploading..." : "Add Document"}
 
               <input
+                id="device-manual-file-input"
                 type="file"
                 multiple
                 disabled={uploading}
@@ -494,6 +616,11 @@ export default function DeviceDocuments({
                 >
                   <a
                     href={document.signedUrl}
+                    data-device-manual-preview={
+                      document.document_type === "Manual"
+                        ? "true"
+                        : undefined
+                    }
                     target="_blank"
                     rel="noreferrer"
                     className={

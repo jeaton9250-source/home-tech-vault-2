@@ -232,35 +232,102 @@ export default function DocumentsPage() {
           (documentResult.data ??
             []) as DocumentRecord[];
 
+        const storagePaths =
+          Array.from(
+            new Set(
+              rows
+                .map((document) =>
+                  extractDocumentsStoragePath(
+                    document.file_url
+                  )
+                )
+                .filter(
+                  (
+                    value
+                  ): value is string =>
+                    Boolean(value)
+                )
+            )
+          );
+
+        const signedUrlByPath =
+          new Map<
+            string,
+            string
+          >();
+
+        if (
+          storagePaths.length > 0
+        ) {
+          const {
+            data:
+              signedDocuments,
+            error:
+              signedDocumentsError,
+          } =
+            await supabase.storage
+              .from("documents")
+              .createSignedUrls(
+                storagePaths,
+                3600
+              );
+
+          if (
+            signedDocumentsError
+          ) {
+            console.error(
+              "Unable to create document URLs:",
+              signedDocumentsError
+            );
+          } else {
+            for (
+              const signed of
+              signedDocuments ?? []
+            ) {
+              if (
+                signed.path &&
+                signed.signedUrl
+              ) {
+                signedUrlByPath.set(
+                  signed.path,
+                  signed.signedUrl
+                );
+              }
+            }
+          }
+        }
+
         const documentsWithUrls =
-          await Promise.all(
-            rows.map(async (document) => {
+          rows.map(
+            (document) => {
               const storagePath =
                 extractDocumentsStoragePath(
                   document.file_url
                 );
 
-              if (!storagePath) {
+              if (
+                !storagePath
+              ) {
                 return document;
               }
 
-              const { data, error } =
-                await supabase.storage
-                  .from("documents")
-                  .createSignedUrl(
-                    storagePath,
-                    3600
-                  );
+              const signedUrl =
+                signedUrlByPath.get(
+                  storagePath
+                );
 
-              if (error || !data?.signedUrl) {
+              if (
+                !signedUrl
+              ) {
                 return document;
               }
 
               return {
                 ...document,
-                file_url: data.signedUrl,
+                file_url:
+                  signedUrl,
               };
-            })
+            }
           );
 
         setDocuments(documentsWithUrls);

@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   title: "About Home Tech Vault | Built by Jason Eaton",
   description:
     "Meet Jason Eaton and learn why Home Tech Vault was built to make home technology, warranties, documents, and device information easier to manage.",
-  alternates: { canonical: "https://hometechvault.com/about" },
+  alternates: { canonical: "https://www.hometechvault.com/about" },
 };
 
 export default function AboutPage() {

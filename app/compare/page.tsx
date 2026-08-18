@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   title: "Compare Home Tech Vault | Sortly, HomeZada, and Home Assistant",
   description:
     "Compare Home Tech Vault with Sortly, HomeZada, and Home Assistant based on home technology inventory, warranties, documents, discovery, and automation.",
-  alternates: { canonical: "https://hometechvault.com/compare" },
+  alternates: { canonical: "https://www.hometechvault.com/compare" },
 };
 
 const comparisons = [

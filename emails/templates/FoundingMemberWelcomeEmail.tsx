@@ -123,7 +123,7 @@ export default function FoundingMemberWelcomeEmail({
 FoundingMemberWelcomeEmail.PreviewProps = {
   firstName: "Alex",
   memberNumber: 12,
-  dashboardUrl: "https://hometechvault.com/dashboard",
-  contactUrl: "https://hometechvault.com/contact",
+  dashboardUrl: "https://www.hometechvault.com/dashboard",
+  contactUrl: "https://www.hometechvault.com/contact",
   includesComplimentaryPro: true,
 } satisfies FoundingMemberWelcomeEmailProps;

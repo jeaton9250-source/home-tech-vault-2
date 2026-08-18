@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     "Take the free 60-second Home Tech Health Check and get a personalized score for your devices, warranties, documents, network security, backups, and technology readiness.",
   alternates: {
     canonical:
-      "https://hometechvault.com/health-check",
+      "https://www.hometechvault.com/health-check",
   },
   openGraph: {
     title:
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     description:
       "See how organized and prepared your home technology is with a free 60-second health check.",
     url:
-      "https://hometechvault.com/health-check",
+      "https://www.hometechvault.com/health-check",
     siteName: "Home Tech Vault",
     type: "website",
   },

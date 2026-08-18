@@ -7,6 +7,7 @@ import {
 } from "@/lib/data/householdScope";
 import {
   assertCanAddDevice,
+  assertCanAddDocument,
   HouseholdQuotaError,
 } from "@/lib/permissions/serverQuota";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -28,6 +29,12 @@ export type AddDeviceInput = {
   purchasePrice: string;
   location: string;
   notes: string;
+
+  /*
+   * Optional product identifier from Smart Device Search.
+   * Used only to retrieve a generic product image.
+   */
+  productUpc?: string;
 };
 
 export type AddDeviceResult =
@@ -47,6 +54,1116 @@ export type AddDeviceResult =
         | "VALIDATION_ERROR"
         | "UNKNOWN";
     };
+
+
+const PRODUCT_IMAGE_MAX_BYTES =
+  6 * 1024 * 1024;
+
+const UPCITEMDB_LOOKUP_URL =
+  "https://api.upcitemdb.com/prod/trial/lookup";
+
+type ProductImageDownload = {
+  bytes: Uint8Array;
+  contentType: string;
+  extension: string;
+};
+
+type UpcItemDbLookupResponse = {
+  items?: Array<{
+    images?: string[];
+  }>;
+};
+
+type ServerSupabaseClient =
+  Awaited<
+    ReturnType<
+      typeof createClient
+    >
+  >;
+
+function normalizeProductBarcode(
+  value: string | null | undefined
+) {
+  if (!value) {
+    return null;
+  }
+
+  const barcode =
+    value.replace(/\D/g, "");
+
+  if (
+    ![
+      8,
+      12,
+      13,
+      14,
+    ].includes(barcode.length)
+  ) {
+    return null;
+  }
+
+  return barcode;
+}
+
+function getProductImageExtension(
+  contentType: string
+) {
+  switch (contentType) {
+    case "image/jpeg":
+      return "jpg";
+
+    case "image/png":
+      return "png";
+
+    case "image/webp":
+      return "webp";
+
+    case "image/gif":
+      return "gif";
+
+    case "image/avif":
+      return "avif";
+
+    default:
+      return null;
+  }
+}
+
+function isSafeProductImageUrl(
+  value: string
+) {
+  try {
+    const url =
+      new URL(value);
+
+    if (
+      url.protocol !==
+      "https:"
+    ) {
+      return false;
+    }
+
+    const hostname =
+      url.hostname
+        .trim()
+        .toLowerCase();
+
+    /*
+     * Product images must be remote HTTPS resources.
+     * Never allow obvious local/internal destinations.
+     */
+    if (
+      hostname ===
+        "localhost" ||
+      hostname.endsWith(
+        ".localhost"
+      ) ||
+      hostname.endsWith(
+        ".local"
+      ) ||
+      hostname ===
+        "127.0.0.1" ||
+      hostname === "::1"
+    ) {
+      return false;
+    }
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function downloadMatchedProductImage(
+  productUpc: string
+): Promise<ProductImageDownload | null> {
+  const barcode =
+    normalizeProductBarcode(
+      productUpc
+    );
+
+  if (!barcode) {
+    return null;
+  }
+
+  /*
+   * Re-resolve the UPC server-side.
+   *
+   * We intentionally do not trust an arbitrary
+   * image URL submitted from the browser.
+   */
+  const lookupUrl =
+    new URL(
+      UPCITEMDB_LOOKUP_URL
+    );
+
+  lookupUrl.searchParams.set(
+    "upc",
+    barcode
+  );
+
+  const lookupResponse =
+    await fetch(
+      lookupUrl,
+      {
+        method: "GET",
+
+        headers: {
+          Accept:
+            "application/json",
+        },
+
+        cache:
+          "no-store",
+
+        signal:
+          AbortSignal.timeout(
+            5_000
+          ),
+      }
+    );
+
+  if (
+    !lookupResponse.ok
+  ) {
+    console.warn(
+      "Product image UPC lookup failed:",
+      lookupResponse.status
+    );
+
+    return null;
+  }
+
+  const lookupData =
+    (await lookupResponse.json()) as
+      UpcItemDbLookupResponse;
+
+  const imageUrl =
+    lookupData.items?.[0]?.images?.find(
+      (candidate) =>
+        typeof candidate ===
+          "string" &&
+        isSafeProductImageUrl(
+          candidate
+        )
+    );
+
+  if (!imageUrl) {
+    return null;
+  }
+
+  /*
+   * Do not follow redirects automatically.
+   * This keeps the server from unexpectedly
+   * fetching a different destination.
+   */
+  const imageResponse =
+    await fetch(
+      imageUrl,
+      {
+        method: "GET",
+
+        headers: {
+          Accept:
+            "image/avif,image/webp,image/png,image/jpeg,image/gif,image/*",
+
+          "User-Agent":
+            "HomeTechVault/1.0",
+        },
+
+        redirect:
+          "error",
+
+        cache:
+          "no-store",
+
+        signal:
+          AbortSignal.timeout(
+            7_000
+          ),
+      }
+    );
+
+  if (
+    !imageResponse.ok
+  ) {
+    console.warn(
+      "Product image download failed:",
+      imageResponse.status
+    );
+
+    return null;
+  }
+
+  const rawContentType =
+    imageResponse.headers.get(
+      "content-type"
+    ) ?? "";
+
+  const contentType =
+    rawContentType
+      .split(";")[0]
+      .trim()
+      .toLowerCase();
+
+  const extension =
+    getProductImageExtension(
+      contentType
+    );
+
+  if (!extension) {
+    console.warn(
+      "Unsupported product image type:",
+      contentType
+    );
+
+    return null;
+  }
+
+  const declaredLength =
+    Number(
+      imageResponse.headers.get(
+        "content-length"
+      ) ?? "0"
+    );
+
+  if (
+    Number.isFinite(
+      declaredLength
+    ) &&
+    declaredLength >
+      PRODUCT_IMAGE_MAX_BYTES
+  ) {
+    console.warn(
+      "Product image is too large."
+    );
+
+    return null;
+  }
+
+  const arrayBuffer =
+    await imageResponse.arrayBuffer();
+
+  if (
+    arrayBuffer.byteLength >
+    PRODUCT_IMAGE_MAX_BYTES
+  ) {
+    console.warn(
+      "Downloaded product image is too large."
+    );
+
+    return null;
+  }
+
+  return {
+    bytes:
+      new Uint8Array(
+        arrayBuffer
+      ),
+
+    contentType,
+
+    extension,
+  };
+}
+
+async function saveMatchedProductImage({
+  supabase,
+  userId,
+  householdId,
+  deviceId,
+  productUpc,
+}: {
+  supabase: ServerSupabaseClient;
+  userId: string;
+  householdId: string | null;
+  deviceId: string;
+  productUpc: string;
+}) {
+  const image =
+    await downloadMatchedProductImage(
+      productUpc
+    );
+
+  if (!image) {
+    return false;
+  }
+
+  const filePath =
+    userId +
+    "/" +
+    deviceId +
+    "/" +
+    crypto.randomUUID() +
+    "." +
+    image.extension;
+
+  const {
+    error: uploadError,
+  } =
+    await supabase.storage
+      .from(
+        "device-images"
+      )
+      .upload(
+        filePath,
+        image.bytes,
+        {
+          cacheControl:
+            "3600",
+
+          contentType:
+            image.contentType,
+
+          upsert:
+            false,
+        }
+      );
+
+  if (uploadError) {
+    throw uploadError;
+  }
+
+  const {
+    error: imageRecordError,
+  } =
+    await supabase
+      .from(
+        "device_images"
+      )
+      .insert({
+        device_id:
+          deviceId,
+
+        user_id:
+          userId,
+
+        household_id:
+          householdId,
+
+        image_url:
+          filePath,
+      });
+
+  /*
+   * If the DB row fails, remove the uploaded
+   * object so we don't leave orphaned files.
+   */
+  if (imageRecordError) {
+    await supabase.storage
+      .from(
+        "device-images"
+      )
+      .remove([
+        filePath,
+      ]);
+
+    throw imageRecordError;
+  }
+
+  return true;
+}
+
+
+const AUTO_MANUAL_MAX_BYTES =
+  15 * 1024 * 1024;
+
+type IcecatManualAsset = {
+  ID?: string;
+  URL?: string;
+  Type?: string;
+  ContentType?: string;
+  Description?: string;
+  Size?: string | number;
+  Language?: string;
+  IsPrivate?: string | number;
+};
+
+type IcecatManualResponse = {
+  msg?: string;
+
+  data?: {
+    Multimedia?: IcecatManualAsset[];
+  };
+};
+
+function normalizeManualBarcode(
+  value: string | null | undefined
+) {
+  if (!value) {
+    return null;
+  }
+
+  const barcode =
+    value.replace(/\D/g, "");
+
+  return [
+    8,
+    12,
+    13,
+    14,
+  ].includes(barcode.length)
+    ? barcode
+    : null;
+}
+
+function isIcecatAssetUrl(
+  value: string
+) {
+  try {
+    const url =
+      new URL(value);
+
+    const hostname =
+      url.hostname
+        .trim()
+        .toLowerCase();
+
+    return (
+      url.protocol === "https:" &&
+      (
+        hostname === "icecat.biz" ||
+        hostname.endsWith(
+          ".icecat.biz"
+        )
+      )
+    );
+  } catch {
+    return false;
+  }
+}
+
+function rankManualAsset(
+  asset: IcecatManualAsset
+) {
+  const type =
+    asset.Type
+      ?.trim()
+      .toLowerCase() ?? "";
+
+  const description =
+    asset.Description
+      ?.trim()
+      .toLowerCase() ?? "";
+
+  const language =
+    asset.Language
+      ?.trim()
+      .toUpperCase() ?? "";
+
+  let score = 0;
+
+  if (
+    type === "manual pdf"
+  ) {
+    score += 100;
+  } else if (
+    type.includes(
+      "manual"
+    )
+  ) {
+    score += 80;
+  }
+
+  if (
+    description.includes(
+      "user manual"
+    )
+  ) {
+    score += 60;
+  } else if (
+    description.includes(
+      "manual"
+    )
+  ) {
+    score += 40;
+  }
+
+  /*
+   * Prefer English when possible.
+   * Empty language is commonly
+   * international content.
+   */
+  if (
+    language === "EN"
+  ) {
+    score += 20;
+  } else if (
+    language === ""
+  ) {
+    score += 10;
+  }
+
+  return score;
+}
+
+function chooseIcecatManual(
+  assets: IcecatManualAsset[]
+) {
+  return assets
+    .filter((asset) => {
+      const type =
+        asset.Type
+          ?.trim()
+          .toLowerCase() ?? "";
+
+      const description =
+        asset.Description
+          ?.trim()
+          .toLowerCase() ?? "";
+
+      const contentType =
+        asset.ContentType
+          ?.trim()
+          .toLowerCase() ?? "";
+
+      const looksLikeManual =
+        type.includes(
+          "manual"
+        ) ||
+        description.includes(
+          "manual"
+        );
+
+      const isPdf =
+        contentType ===
+          "application/pdf" ||
+        asset.URL
+          ?.toLowerCase()
+          .includes(".pdf");
+
+      const isPublic =
+        String(
+          asset.IsPrivate ?? "0"
+        ) !== "1";
+
+      return (
+        looksLikeManual &&
+        isPdf &&
+        isPublic &&
+        Boolean(
+          asset.URL
+        )
+      );
+    })
+    .sort(
+      (left, right) =>
+        rankManualAsset(
+          right
+        ) -
+        rankManualAsset(
+          left
+        )
+    )[0] ?? null;
+}
+
+function createManualDocumentName(
+  brand: string,
+  modelNumber: string,
+  deviceName: string
+) {
+  const identity =
+    [
+      brand.trim(),
+      modelNumber.trim(),
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .trim() ||
+    deviceName.trim() ||
+    "Device";
+
+  return (
+    identity +
+    " User Manual.pdf"
+  );
+}
+
+async function findIcecatManual(
+  productUpc: string
+) {
+  const barcode =
+    normalizeManualBarcode(
+      productUpc
+    );
+
+  if (!barcode) {
+    return null;
+  }
+
+  const username =
+    process.env
+      .ICECAT_USERNAME
+      ?.trim();
+
+  const apiToken =
+    process.env
+      .ICECAT_ACCESS_TOKEN
+      ?.trim();
+
+  const contentToken =
+    process.env
+      .ICECAT_CONTENT_TOKEN
+      ?.trim();
+
+  if (
+    !username ||
+    !apiToken ||
+    !contentToken
+  ) {
+    console.warn(
+      "Icecat manual lookup skipped: credentials are incomplete."
+    );
+
+    return null;
+  }
+
+  const url =
+    new URL(
+      "https://live.icecat.biz/api"
+    );
+
+  url.searchParams.set(
+    "lang",
+    "EN"
+  );
+
+  url.searchParams.set(
+    "shopname",
+    username
+  );
+
+  url.searchParams.set(
+    "GTIN",
+    barcode
+  );
+
+  url.searchParams.set(
+    "content",
+    "manuals"
+  );
+
+  const response =
+    await fetch(
+      url,
+      {
+        method: "GET",
+
+        headers: {
+          Accept:
+            "application/json",
+
+          "api-token":
+            apiToken,
+
+          "content-token":
+            contentToken,
+        },
+
+        cache:
+          "no-store",
+
+        signal:
+          AbortSignal.timeout(
+            7_000
+          ),
+      }
+    );
+
+  if (!response.ok) {
+    console.warn(
+      "Icecat manual request failed:",
+      response.status
+    );
+
+    return null;
+  }
+
+  const payload =
+    (await response.json()) as
+      IcecatManualResponse;
+
+  if (
+    payload.msg !== "OK"
+  ) {
+    console.warn(
+      "Icecat manual unavailable:",
+      payload.msg
+    );
+
+    return null;
+  }
+
+  const assets =
+    Array.isArray(
+      payload.data?.Multimedia
+    )
+      ? payload.data
+          ?.Multimedia ?? []
+      : [];
+
+  const manual =
+    chooseIcecatManual(
+      assets
+    );
+
+  if (
+    !manual?.URL ||
+    !isIcecatAssetUrl(
+      manual.URL
+    )
+  ) {
+    return null;
+  }
+
+  return {
+    manual,
+    contentToken,
+  };
+}
+
+async function downloadIcecatManual(
+  manualUrl: string,
+  contentToken: string
+) {
+  const url =
+    new URL(
+      manualUrl
+    );
+
+  /*
+   * Icecat documents that content_token
+   * may be supplied to product assets.
+   * This happens only server-side.
+   */
+  url.searchParams.set(
+    "content_token",
+    contentToken
+  );
+
+  const response =
+    await fetch(
+      url,
+      {
+        method: "GET",
+
+        headers: {
+          Accept:
+            "application/pdf",
+        },
+
+        cache:
+          "no-store",
+
+        redirect:
+          "error",
+
+        signal:
+          AbortSignal.timeout(
+            12_000
+          ),
+      }
+    );
+
+  if (!response.ok) {
+    console.warn(
+      "Icecat manual download failed:",
+      response.status
+    );
+
+    return null;
+  }
+
+  const contentLength =
+    Number(
+      response.headers.get(
+        "content-length"
+      ) ?? "0"
+    );
+
+  if (
+    Number.isFinite(
+      contentLength
+    ) &&
+    contentLength >
+      AUTO_MANUAL_MAX_BYTES
+  ) {
+    console.warn(
+      "Icecat manual exceeds 15 MB."
+    );
+
+    return null;
+  }
+
+  const arrayBuffer =
+    await response.arrayBuffer();
+
+  if (
+    arrayBuffer.byteLength <= 0 ||
+    arrayBuffer.byteLength >
+      AUTO_MANUAL_MAX_BYTES
+  ) {
+    return null;
+  }
+
+  /*
+   * Verify the actual PDF signature,
+   * not only the HTTP MIME header.
+   */
+  const firstBytes =
+    new Uint8Array(
+      arrayBuffer.slice(
+        0,
+        5
+      )
+    );
+
+  const pdfSignature =
+    String.fromCharCode(
+      ...firstBytes
+    );
+
+  if (
+    pdfSignature !==
+    "%PDF-"
+  ) {
+    console.warn(
+      "Downloaded Icecat manual was not a valid PDF."
+    );
+
+    return null;
+  }
+
+  return new Uint8Array(
+    arrayBuffer
+  );
+}
+
+async function saveIcecatManualForDevice({
+  supabase,
+  admin,
+  userId,
+  householdId,
+  deviceId,
+  deviceName,
+  brand,
+  modelNumber,
+  productUpc,
+}: {
+  supabase: Awaited<
+    ReturnType<
+      typeof createClient
+    >
+  >;
+
+  admin: ReturnType<
+    typeof createAdminClient
+  >;
+
+  userId: string;
+  householdId: string | null;
+  deviceId: string;
+  deviceName: string;
+  brand: string;
+  modelNumber: string;
+  productUpc: string;
+}): Promise<
+  "found" |
+  "not_found" |
+  "skipped"
+> {
+  /*
+   * Respect the same server-side
+   * document quota used by normal uploads.
+   */
+  try {
+    await assertCanAddDocument(
+      admin,
+      userId
+    );
+  } catch (
+    error
+  ) {
+    if (
+      error instanceof
+      HouseholdQuotaError
+    ) {
+      console.warn(
+        "Automatic manual skipped because document quota was reached."
+      );
+
+      return "skipped";
+    }
+
+    throw error;
+  }
+
+  /*
+   * Avoid duplicate manuals if an action
+   * is retried or the same device is saved
+   * more than once.
+   */
+  const {
+    data: existingManual,
+  } =
+    await supabase
+      .from(
+        "device_documents"
+      )
+      .select("id")
+      .eq(
+        "device_id",
+        deviceId
+      )
+      .eq(
+        "document_type",
+        "Manual"
+      )
+      .limit(1)
+      .maybeSingle();
+
+  if (
+    existingManual
+  ) {
+    return "found";
+  }
+
+  const result =
+    await findIcecatManual(
+      productUpc
+    );
+
+  if (!result) {
+    return "not_found";
+  }
+
+  const {
+    manual,
+    contentToken,
+  } = result;
+
+  const declaredSize =
+    Number(
+      manual.Size ??
+        "0"
+    );
+
+  if (
+    Number.isFinite(
+      declaredSize
+    ) &&
+    declaredSize >
+      AUTO_MANUAL_MAX_BYTES
+  ) {
+    console.warn(
+      "Icecat manual metadata reports a file larger than 15 MB."
+    );
+
+    return "not_found";
+  }
+
+  const pdf =
+    await downloadIcecatManual(
+      manual.URL!,
+      contentToken
+    );
+
+  if (!pdf) {
+    return "not_found";
+  }
+
+  const documentName =
+    createManualDocumentName(
+      brand,
+      modelNumber,
+      deviceName
+    );
+
+  const filePath =
+    userId +
+    "/" +
+    deviceId +
+    "/" +
+    crypto.randomUUID() +
+    ".pdf";
+
+  const {
+    error: uploadError,
+  } =
+    await supabase.storage
+      .from(
+        "device-documents"
+      )
+      .upload(
+        filePath,
+        pdf,
+        {
+          cacheControl:
+            "3600",
+
+          contentType:
+            "application/pdf",
+
+          upsert:
+            false,
+        }
+      );
+
+  if (
+    uploadError
+  ) {
+    throw uploadError;
+  }
+
+  const {
+    error: recordError,
+  } =
+    await supabase
+      .from(
+        "device_documents"
+      )
+      .insert({
+        device_id:
+          deviceId,
+
+        user_id:
+          userId,
+
+        household_id:
+          householdId,
+
+        document_name:
+          documentName,
+
+        document_type:
+          "Manual",
+
+        file_path:
+          filePath,
+
+        file_size:
+          pdf.byteLength,
+
+        mime_type:
+          "application/pdf",
+      });
+
+  if (
+    recordError
+  ) {
+    await supabase.storage
+      .from(
+        "device-documents"
+      )
+      .remove([
+        filePath,
+      ]);
+
+    throw recordError;
+  }
+
+  return "found";
+}
 
 export async function addDevice(
   input: AddDeviceInput
@@ -173,6 +1290,15 @@ export async function addDevice(
       user_id: user.id,
       household_id: householdId,
       device_name: trimmedName,
+
+      manual_status:
+        input.productUpc
+          ? "pending"
+          : null,
+
+      manual_checked_at:
+        null,
+
       category:
         input.category.trim() || null,
       brand:
@@ -236,6 +1362,177 @@ export async function addDevice(
       deviceId: createdDevice.id,
     });
 
+    /*
+     * A database-matched product image is a convenience,
+     * not a requirement for creating the device.
+     *
+     * If the remote image/CDN fails, the device still
+     * remains successfully saved.
+     */
+    if (
+      input.productUpc
+    ) {
+      try {
+        const productImageSaved =
+          await saveMatchedProductImage({
+            supabase,
+            userId:
+              user.id,
+            householdId,
+            deviceId:
+              createdDevice.id,
+            productUpc:
+              input.productUpc,
+          });
+
+        if (
+          productImageSaved
+        ) {
+          await recordActivity({
+            activityType:
+              "photo.uploaded",
+
+            title:
+              "Product photo added",
+
+            description:
+              "A matched product image was saved automatically.",
+
+            userId:
+              user.id,
+
+            householdId,
+
+            deviceId:
+              createdDevice.id,
+          });
+        }
+      } catch (imageError) {
+        console.warn(
+          "Unable to save matched product image:",
+          imageError
+        );
+      }
+    }
+
+    /*
+     * Automatically attach an official manual
+     * when the device came from an exact
+     * UPC/EAN database match.
+     *
+     * This is intentionally non-fatal:
+     * a missing manual must never prevent
+     * the device itself from being saved.
+     */
+    if (
+      input.productUpc
+    ) {
+      try {
+        const manualResult =
+          await saveIcecatManualForDevice({
+            supabase,
+            admin,
+
+            userId:
+              user.id,
+
+            householdId,
+
+            deviceId:
+              createdDevice.id,
+
+            deviceName:
+              trimmedName,
+
+            brand:
+              input.brand,
+
+            modelNumber:
+              input.modelNumber,
+
+            productUpc:
+              input.productUpc,
+          });
+
+        if (
+          manualResult ===
+          "found"
+        ) {
+          const {
+            error: manualStatusError,
+          } = await supabase
+            .from("devices")
+            .update({
+              manual_status: "found",
+              manual_checked_at:
+                new Date().toISOString(),
+            })
+            .eq(
+              "id",
+              createdDevice.id
+            );
+
+          if (manualStatusError) {
+            console.warn(
+              "Unable to save manual lookup status:",
+              manualStatusError
+            );
+          }
+
+          await recordActivity({
+            activityType:
+              "document.uploaded",
+
+            title:
+              "User manual added",
+
+            description:
+              "The official product manual was found and saved automatically.",
+
+            userId:
+              user.id,
+
+            householdId,
+
+            deviceId:
+              createdDevice.id,
+          });
+        } else if (
+          manualResult ===
+          "not_found"
+        ) {
+          const {
+            error: manualStatusError,
+          } = await supabase
+            .from("devices")
+            .update({
+              manual_status:
+                "not_found",
+              manual_checked_at:
+                new Date().toISOString(),
+            })
+            .eq(
+              "id",
+              createdDevice.id
+            );
+
+          if (manualStatusError) {
+            console.warn(
+              "Unable to save manual lookup status:",
+              manualStatusError
+            );
+          }
+        }
+      } catch (
+        manualError
+      ) {
+        console.warn(
+          "Automatic manual lookup failed:",
+          manualError
+        );
+      }
+    }
+
     if (input.warrantyDate) {
       await recordActivity({
         activityType: "warranty.added",
@@ -274,6 +1571,14 @@ export async function addDevice(
 
   revalidatePath("/devices");
   revalidatePath("/dashboard");
+
+  if (
+    createdDevice?.id
+  ) {
+    revalidatePath(
+      `/devices/${createdDevice.id}`
+    );
+  }
 
   return {
     success: true,

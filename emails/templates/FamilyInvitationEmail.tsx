@@ -130,6 +130,6 @@ FamilyInvitationEmail.PreviewProps = {
   householdName: "The Morgan Household",
   roleLabel: "Member",
   acceptanceUrl:
-    "https://hometechvault.com/family/accept/sample-token",
+    "https://www.hometechvault.com/family/accept/sample-token",
   expirationLabel: "August 20, 2026",
 } satisfies FamilyInvitationEmailProps;

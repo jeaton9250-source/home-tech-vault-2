@@ -107,6 +107,14 @@ export default function AddDevicePage() {
   const [notes, setNotes] =
     useState("");
 
+  /*
+   * When a product database match includes a UPC/EAN,
+   * keep it so the server can permanently copy the
+   * product image into the user's vault after save.
+   */
+  const [productUpc, setProductUpc] =
+    useState("");
+
   function handleDeviceMatch(
     device: DeviceLookupResult
   ) {
@@ -128,6 +136,10 @@ export default function AddDevicePage() {
 
     setCategory(
       device.category
+    );
+
+    setProductUpc(
+      device.upc ?? ""
     );
   }
 
@@ -203,6 +215,7 @@ export default function AddDevicePage() {
         purchasePrice,
         location,
         notes,
+        productUpc,
       });
 
       if (!result.success) {

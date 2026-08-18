@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   title: "Home Tech Vault Pricing | Free, Pro, and Family Plans",
   description:
     "Compare Home Tech Vault Free, Pro, and Family plans. Choose monthly billing or save about 17% with annual billing.",
-  alternates: { canonical: "https://hometechvault.com/pricing" },
+  alternates: { canonical: "https://www.hometechvault.com/pricing" },
 };
 
 export default function PricingPage() {

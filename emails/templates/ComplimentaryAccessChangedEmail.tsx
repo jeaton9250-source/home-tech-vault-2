@@ -103,6 +103,6 @@ ComplimentaryAccessChangedEmail.PreviewProps = {
   firstName: "Alex",
   previousPlanLabel: "Pro",
   newPlanLabel: "Family",
-  accountUrl: "https://hometechvault.com/account",
+  accountUrl: "https://www.hometechvault.com/account",
   expiresAtLabel: "August 20, 2026",
 } satisfies ComplimentaryAccessChangedEmailProps;

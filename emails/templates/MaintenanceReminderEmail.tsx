@@ -77,5 +77,5 @@ MaintenanceReminderEmail.PreviewProps = {
   deviceName: "Mesh Wi-Fi Router",
   dueLabel: "Overdue by 5 days",
   maintenanceUrl:
-    "https://hometechvault.com/maintenance",
+    "https://www.hometechvault.com/maintenance",
 } satisfies MaintenanceReminderEmailProps;

@@ -48,7 +48,7 @@ export default function WelcomeEmail({
 
 WelcomeEmail.PreviewProps = {
   firstName: "Alex",
-  dashboardUrl: "https://hometechvault.com/dashboard",
+  dashboardUrl: "https://www.hometechvault.com/dashboard",
 } satisfies WelcomeEmailProps;
 
 export function renderWelcomePlainText(

@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     "Compare Home Tech Vault and Home Assistant. Learn the difference between home technology inventory and warranty organization versus local smart-home automation and control.",
   alternates: {
     canonical:
-      "https://hometechvault.com/compare/home-tech-vault-vs-home-assistant",
+      "https://www.hometechvault.com/compare/home-tech-vault-vs-home-assistant",
   },
 };
 

@@ -48,6 +48,86 @@ const defaultSubscription: Subscription = {
   stripe_customer_id: null,
 };
 
+const SUBSCRIPTION_CACHE_TTL_MS =
+  60_000;
+
+const SUBSCRIPTION_CACHE_PREFIX =
+  "htv:subscription:v1:";
+
+type CachedSubscriptionState = {
+  cachedAt: number;
+  subscription: Subscription;
+  isAdmin: boolean;
+};
+
+function readSubscriptionCache(
+  userId: string
+): CachedSubscriptionState | null {
+  if (
+    typeof window === "undefined"
+  ) {
+    return null;
+  }
+
+  try {
+    const key =
+      SUBSCRIPTION_CACHE_PREFIX +
+      userId;
+
+    const raw =
+      window.sessionStorage.getItem(
+        key
+      );
+
+    if (!raw) {
+      return null;
+    }
+
+    const cached =
+      JSON.parse(
+        raw
+      ) as CachedSubscriptionState;
+
+    if (
+      !cached?.cachedAt ||
+      Date.now() -
+        cached.cachedAt >
+        SUBSCRIPTION_CACHE_TTL_MS
+    ) {
+      window.sessionStorage.removeItem(
+        key
+      );
+
+      return null;
+    }
+
+    return cached;
+  } catch {
+    return null;
+  }
+}
+
+function writeSubscriptionCache(
+  userId: string,
+  value: CachedSubscriptionState
+) {
+  if (
+    typeof window === "undefined"
+  ) {
+    return;
+  }
+
+  try {
+    window.sessionStorage.setItem(
+      SUBSCRIPTION_CACHE_PREFIX +
+        userId,
+      JSON.stringify(value)
+    );
+  } catch {
+    // Storage is only a performance enhancement.
+  }
+}
+
 export function useSubscription() {
   const [loading, setLoading] =
     useState(true);
@@ -62,6 +142,10 @@ export function useSubscription() {
 
   const refreshSubscription =
     useCallback(async () => {
+      let cachedState:
+        | CachedSubscriptionState
+        | null = null;
+
       try {
         setLoading(true);
 
@@ -87,8 +171,31 @@ export function useSubscription() {
           );
 
           setIsAdmin(false);
+          setLoading(false);
 
           return;
+        }
+
+        cachedState =
+          readSubscriptionCache(
+            user.id
+          );
+
+        if (cachedState) {
+          setSubscription(
+            cachedState.subscription
+          );
+
+          setIsAdmin(
+            cachedState.isAdmin
+          );
+
+          /*
+           * Cached access can paint immediately.
+           * The database refresh below continues
+           * silently.
+           */
+          setLoading(false);
         }
 
         const [
@@ -150,7 +257,8 @@ export function useSubscription() {
             .toLowerCase() ||
           "inactive";
 
-        setSubscription({
+        const resolvedSubscription:
+          Subscription = {
           plan,
           status: normalizedStatus,
           current_period_end:
@@ -158,12 +266,32 @@ export function useSubscription() {
               ?.current_period_end ||
             null,
           stripe_customer_id:
-            subscriptionData?.stripe_customer_id ??
+            subscriptionData
+              ?.stripe_customer_id ??
             null,
-        });
+        };
+
+        const resolvedIsAdmin =
+          profileData?.is_admin ===
+          true;
+
+        setSubscription(
+          resolvedSubscription
+        );
 
         setIsAdmin(
-          profileData?.is_admin === true
+          resolvedIsAdmin
+        );
+
+        writeSubscriptionCache(
+          user.id,
+          {
+            cachedAt: Date.now(),
+            subscription:
+              resolvedSubscription,
+            isAdmin:
+              resolvedIsAdmin,
+          }
         );
       } catch (error) {
         console.error(
@@ -171,11 +299,13 @@ export function useSubscription() {
           error
         );
 
-        setSubscription(
-          defaultSubscription
-        );
+        if (!cachedState) {
+          setSubscription(
+            defaultSubscription
+          );
 
-        setIsAdmin(false);
+          setIsAdmin(false);
+        }
       } finally {
         setLoading(false);
       }
@@ -191,8 +321,22 @@ export function useSubscription() {
       },
     } =
       supabase.auth.onAuthStateChange(
-        () => {
-          refreshSubscription();
+        (event) => {
+          /*
+           * refreshSubscription() already ran when this hook
+           * mounted. INITIAL_SESSION would immediately duplicate
+           * the subscription + profile requests.
+           *
+           * Token refreshes also do not change billing access.
+           */
+          if (
+            event === "INITIAL_SESSION" ||
+            event === "TOKEN_REFRESHED"
+          ) {
+            return;
+          }
+
+          void refreshSubscription();
         }
       );
 

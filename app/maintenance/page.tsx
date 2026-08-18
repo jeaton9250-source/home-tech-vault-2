@@ -207,84 +207,8 @@ export default function MaintenancePage() {
   }, [user, isDemo, householdId, permissionsLoading]);
 
   useEffect(() => {
-    let mounted = true;
-
-    async function runLoad() {
-      if (permissionsLoading) {
-        return;
-      }
-
-      try {
-        setLoadingTasks(true);
-        setErrorMessage("");
-
-        if (isDemo || !user) {
-          const sampleTasks = demoMaintenance.map((item, index) =>
-            normalizeDemoTask(item, index)
-          );
-
-          if (!mounted) {
-            return;
-          }
-
-          setTasks(sampleTasks);
-          return;
-        }
-
-        const { data, error } = await applyHouseholdScope(
-          supabase
-            .from("maintenance_tasks")
-            .select(
-              `
-              *,
-              devices (
-                device_name
-              )
-            `
-            )
-            .order("completed", {
-              ascending: true,
-            })
-            .order("due_date", {
-              ascending: true,
-              nullsFirst: false,
-            }),
-          householdId,
-          user.id
-        );
-
-        if (error) {
-          throw error;
-        }
-
-        if (!mounted) {
-          return;
-        }
-
-        setTasks((data ?? []) as MaintenanceTask[]);
-      } catch (error: unknown) {
-        console.error("Maintenance loading error:", error);
-
-        if (!mounted) {
-          return;
-        }
-
-        setErrorMessage(
-          "Unable to load maintenance tasks. Please try again."
-        );
-      } finally {
-        if (mounted) {
-          setLoadingTasks(false);
-        }
-      }
-    }
-
-    void runLoad();
-
-    return () => {
-      mounted = false;
-    };
-  }, [user, isDemo, householdId, permissionsLoading]);
+    void loadTasks();
+  }, [loadTasks]);
 
   async function reloadTasks() {
     if (!user || isDemo) {

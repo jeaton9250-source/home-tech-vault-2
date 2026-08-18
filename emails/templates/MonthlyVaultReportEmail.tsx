@@ -86,5 +86,5 @@ MonthlyVaultReportEmail.PreviewProps = {
   deviceCount: 24,
   protectedValue: "$18,400",
   expiringWarranties: 2,
-  reportUrl: "https://hometechvault.com/reports",
+  reportUrl: "https://www.hometechvault.com/reports",
 } satisfies MonthlyVaultReportEmailProps;
