@@ -18,6 +18,7 @@ import PageShell from "@/components/ui/PageShell";
 import PageCard from "@/components/ui/PageCard";
 import { DashboardSkeleton } from "@/components/ui/Skeleton";
 import HomeHealthDashboard from "@/components/home-health/HomeHealthDashboard";
+import VaultSetupProgress from "@/components/dashboard/VaultSetupProgress";
 
 import type { DashboardOverviewStats } from "@/lib/dashboard/types";
 import type { HomeHealthResult } from "@/lib/home-health/types";
@@ -66,6 +67,7 @@ export default function DashboardPage() {
     loading: permissionsLoading,
     permissionsReady,
     isVerifiedPlatformAdmin,
+    canCreate,
   } = usePermissions();
 
   const [firstName, setFirstName] =
@@ -264,6 +266,21 @@ export default function DashboardPage() {
 
   return (
     <PageShell className="!pt-4 md:!pt-5">
+      {!isDemo ? (
+        <VaultSetupProgress
+          deviceCount={
+            overviewStats.deviceCount
+          }
+          documentCount={
+            overviewStats.documentCount
+          }
+          hasHousehold={
+            Boolean(householdId)
+          }
+          canCreate={canCreate}
+        />
+      ) : null}
+
       <HomeHealthDashboard
         firstName={firstName}
         homeHealth={homeHealth}
