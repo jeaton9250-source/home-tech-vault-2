@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
+import { buildServerPlanAccessContext } from "@/lib/permissions/serverPlanAccess";
 import { loadAdminPendingInvitations } from "@/lib/admin/invitations";
 
 function startOfDay(date: Date) {
@@ -113,21 +114,78 @@ export async function loadAdminUserMetrics(): Promise<AdminUserMetrics> {
         ? 100
         : 0;
 
+  /*
+   * Admin user metrics represent ACTUAL access,
+   * not only Stripe subscriptions.
+   *
+   * This means complimentary admin grants and
+   * inherited household access are reflected in
+   * the same way as the User Directory.
+   */
   let proSubscribers = 0;
   let freeUsers = 0;
 
-  for (const row of subscriptionsResult.data ?? []) {
-    const plan =
-      row.plan?.trim().toLowerCase() || "free";
-    const status =
-      row.status?.trim().toLowerCase() || "inactive";
+  const metricUsers =
+    activeTodayResult.data.users ?? [];
 
-    if (
-      (plan === "pro" || plan === "family") &&
-      (status === "active" || status === "trialing")
-    ) {
+  const effectivePlanEntries =
+    await Promise.all(
+      metricUsers.map(async (user) => {
+        try {
+          const planAccess =
+            await buildServerPlanAccessContext(
+              admin,
+              user.id
+            );
+
+          return {
+            userId: user.id,
+            effectivePlan:
+              planAccess.result.effectivePlan,
+          };
+        } catch (error) {
+          console.error(
+            `Unable to resolve effective plan for user metric ${user.id}:`,
+            error
+          );
+
+          const subscription =
+            (subscriptionsResult.data ?? []).find(
+              (row) =>
+                row.user_id === user.id
+            );
+
+          const plan =
+            subscription?.plan
+              ?.trim()
+              .toLowerCase() || "free";
+
+          const status =
+            subscription?.status
+              ?.trim()
+              .toLowerCase() || "inactive";
+
+          const hasPaidAccess =
+            status === "active" ||
+            status === "trialing";
+
+          return {
+            userId: user.id,
+            effectivePlan:
+              hasPaidAccess &&
+              (plan === "pro" ||
+                plan === "family")
+                ? plan
+                : "free",
+          };
+        }
+      })
+    );
+
+  for (const user of effectivePlanEntries) {
+    if (user.effectivePlan === "pro") {
       proSubscribers += 1;
-    } else if (plan === "free" || !plan) {
+    } else if (user.effectivePlan === "free") {
       freeUsers += 1;
     }
   }

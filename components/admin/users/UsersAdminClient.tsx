@@ -648,7 +648,7 @@ export default function UsersAdminClient({
           value={metrics.pendingInvitations}
         />
         <AdminSummaryCard
-          label="Pro Subscribers"
+          label="Pro Users"
           value={metrics.proSubscribers}
         />
         <AdminSummaryCard
