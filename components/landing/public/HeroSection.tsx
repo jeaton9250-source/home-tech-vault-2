@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 import Link from "next/link";
 
 import {
@@ -9,8 +11,10 @@ import {
   Laptop,
   Network,
   Receipt,
+  Router,
   ShieldCheck,
   Sparkles,
+  Wifi,
   Wrench,
 } from "lucide-react";
 
@@ -50,7 +54,12 @@ const categories = [
 export default function HeroSection({
   isSignedIn = false,
 }: HeroSectionProps) {
-  const primaryHref = isSignedIn
+    const [activePreviewTab, setActivePreviewTab] =
+    useState<
+      "overview" | "devices" | "documents" | "network"
+    >("overview");
+
+const primaryHref = isSignedIn
     ? "/dashboard"
     : MARKETING_ROUTES.signup;
 
@@ -177,147 +186,64 @@ export default function HeroSection({
 
               {/* MINI NAV */}
 
-              <div className="flex gap-5 overflow-x-auto border-b border-white/10 px-5 py-3 sm:px-6">
+              <div
+                className="flex gap-5 overflow-x-auto border-b border-white/10 px-5 py-3 sm:px-6"
+                role="tablist"
+                aria-label="Interactive Home Tech Vault preview"
+              >
                 <MiniNavItem
                   label="Overview"
-                  active
+                  active={activePreviewTab === "overview"}
+                  onClick={() =>
+                    setActivePreviewTab("overview")
+                  }
                 />
 
-                <MiniNavItem label="Devices" />
-                <MiniNavItem label="Documents" />
-                <MiniNavItem label="Network" />
+                <MiniNavItem
+                  label="Devices"
+                  active={activePreviewTab === "devices"}
+                  onClick={() =>
+                    setActivePreviewTab("devices")
+                  }
+                />
+
+                <MiniNavItem
+                  label="Documents"
+                  active={activePreviewTab === "documents"}
+                  onClick={() =>
+                    setActivePreviewTab("documents")
+                  }
+                />
+
+                <MiniNavItem
+                  label="Network"
+                  active={activePreviewTab === "network"}
+                  onClick={() =>
+                    setActivePreviewTab("network")
+                  }
+                />
               </div>
 
-              {/* DASHBOARD CONTENT */}
+              {/* INTERACTIVE DASHBOARD CONTENT */}
 
               <div className="p-5 sm:p-6">
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                  <MetricCard
-                    value="18"
-                    label="Devices"
-                  />
+                {activePreviewTab === "overview" && (
+                  <OverviewPreview />
+                )}
 
-                  <MetricCard
-                    value="34"
-                    label="Documents"
-                  />
+                {activePreviewTab === "devices" && (
+                  <DevicesPreview />
+                )}
 
-                  <MetricCard
-                    value="7"
-                    label="Warranties"
-                  />
+                {activePreviewTab === "documents" && (
+                  <DocumentsPreview />
+                )}
 
-                  <MetricCard
-                    value="4"
-                    label="Maintenance"
-                  />
-                </div>
-
-                <div className="mt-6 grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
-                  {/* RECENT DEVICES */}
-
-                  <div className="rounded-2xl border border-white/10 bg-[#0d1926]">
-                    <div className="flex items-center justify-between border-b border-white/10 px-4 py-3.5">
-                      <div>
-                        <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-white/30">
-                          Recently organized
-                        </p>
-
-                        <p className="mt-1 text-xs font-semibold text-[#e4e9ec]">
-                          Your latest device records
-                        </p>
-                      </div>
-
-                      <Laptop
-                        size={16}
-                        className="text-[#789557]"
-                      />
-                    </div>
-
-                    <div className="space-y-px bg-white/10">
-                      <DeviceRow
-                        name='LG 34" UltraWide Monitor'
-                        location="Office"
-                        detail="Warranty tracked"
-                      />
-
-                      <DeviceRow
-                        name="Apple TV 4K"
-                        location="Living Room"
-                        detail="Receipt saved"
-                      />
-
-                      <DeviceRow
-                        name="Eero Pro 6E"
-                        location="Network"
-                        detail="Manual attached"
-                      />
-                    </div>
-                  </div>
-
-                  {/* VAULT STATUS */}
-
-                  <div className="rounded-2xl border border-white/10 bg-[#0d1926] p-4">
-                    <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-white/30">
-                      Vault status
-                    </p>
-
-                    <div className="mt-4 flex items-end gap-2">
-                      <span className="font-serif text-4xl text-[#f4f0e8]">
-                        92
-                      </span>
-
-                      <span className="pb-1 text-xs text-white/30">
-                        / 100
-                      </span>
-                    </div>
-
-                    <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10">
-                      <div className="h-full w-[92%] rounded-full bg-[#718d4f]" />
-                    </div>
-
-                    <div className="mt-5 space-y-3">
-                      <StatusLine
-                        text="Receipts organized"
-                        complete
-                      />
-
-                      <StatusLine
-                        text="Warranties tracked"
-                        complete
-                      />
-
-                      <StatusLine
-                        text="1 item needs attention"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* SMART IMPORT STRIP */}
-
-                <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-[#718d4f]/20 bg-[#718d4f]/8 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#718d4f]/25 bg-[#718d4f]/10 text-[#8ca667]">
-                      <Sparkles size={16} />
-                    </div>
-
-                    <div>
-                      <p className="text-xs font-semibold text-[#e4e9ec]">
-                        Smart Import™ ready
-                      </p>
-
-                      <p className="mt-1 text-[10px] text-white/35">
-                        Forward a receipt. We&apos;ll prepare the record.
-                      </p>
-                    </div>
-                  </div>
-
-                  <span className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#8ca667]">
-                    Ready to use
-                  </span>
-                </div>
+                {activePreviewTab === "network" && (
+                  <NetworkPreview />
+                )}
               </div>
+
             </div>
 
             {/* FLOATING WARRANTY CARD */}
@@ -414,20 +340,353 @@ export default function HeroSection({
 function MiniNavItem({
   label,
   active = false,
+  onClick,
 }: {
   label: string;
   active?: boolean;
+  onClick: () => void;
 }) {
   return (
-    <span
+    <button
+      type="button"
+      role="tab"
+      aria-selected={active}
+      onClick={onClick}
       className={
         active
-          ? "border-b border-[#718d4f] pb-1 text-[10px] font-semibold text-[#e7ecef]"
-          : "pb-1 text-[10px] font-medium text-white/30"
+          ? "cursor-pointer border-b border-[#718d4f] pb-1 text-[10px] font-semibold text-[#e7ecef] transition-colors"
+          : "cursor-pointer pb-1 text-[10px] font-medium text-white/30 transition-colors hover:text-white/75"
       }
     >
       {label}
-    </span>
+    </button>
+  );
+}
+
+function OverviewPreview() {
+  return (
+    <>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <MetricCard value="18" label="Devices" />
+        <MetricCard value="34" label="Documents" />
+        <MetricCard value="7" label="Warranties" />
+        <MetricCard value="4" label="Maintenance" />
+      </div>
+
+      <div className="mt-6 grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+        <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#0d1926]">
+          <PreviewHeader
+            eyebrow="Recently organized"
+            title="Your latest device records"
+            icon={<Laptop size={16} />}
+          />
+
+          <div className="space-y-px bg-white/10">
+            <DeviceRow
+              name='LG 34" UltraWide Monitor'
+              location="Office"
+              detail="Warranty tracked"
+            />
+
+            <DeviceRow
+              name="Apple TV 4K"
+              location="Living Room"
+              detail="Receipt saved"
+            />
+
+            <DeviceRow
+              name="Eero Pro 6E"
+              location="Network"
+              detail="Manual attached"
+            />
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-white/10 bg-[#0d1926] p-4">
+          <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-white/30">
+            Vault status
+          </p>
+
+          <div className="mt-4 flex items-end gap-2">
+            <span className="font-serif text-4xl text-[#f4f0e8]">
+              92
+            </span>
+
+            <span className="pb-1 text-xs text-white/30">
+              / 100
+            </span>
+          </div>
+
+          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10">
+            <div className="h-full w-[92%] rounded-full bg-[#718d4f]" />
+          </div>
+
+          <div className="mt-5 space-y-3">
+            <StatusLine
+              text="Receipts organized"
+              complete
+            />
+            <StatusLine
+              text="Warranties tracked"
+              complete
+            />
+            <StatusLine text="1 item needs attention" />
+          </div>
+        </div>
+      </div>
+
+      <SmartImportStrip />
+    </>
+  );
+}
+
+function DevicesPreview() {
+  return (
+    <>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <MetricCard value="18" label="Devices" />
+        <MetricCard value="15" label="Online" />
+        <MetricCard value="7" label="Protected" />
+        <MetricCard value="6" label="Rooms" />
+      </div>
+
+      <div className="mt-6 overflow-hidden rounded-2xl border border-white/10 bg-[#0d1926]">
+        <PreviewHeader
+          eyebrow="Device inventory"
+          title="Technology across your home"
+          icon={<Laptop size={16} />}
+        />
+
+        <div className="space-y-px bg-white/10">
+          <DeviceRow
+            name='LG 34" UltraWide Monitor'
+            location="Office"
+            detail="Online · Warranty active"
+          />
+
+          <DeviceRow
+            name="Apple TV 4K"
+            location="Living Room"
+            detail="Online · Receipt saved"
+          />
+
+          <DeviceRow
+            name="Samsung OLED TV"
+            location="Family Room"
+            detail="Online · Manual attached"
+          />
+
+          <DeviceRow
+            name="Sonos Arc"
+            location="Living Room"
+            detail="Online · Protected"
+          />
+        </div>
+      </div>
+    </>
+  );
+}
+
+function DocumentsPreview() {
+  return (
+    <>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <MetricCard value="34" label="Documents" />
+        <MetricCard value="11" label="Receipts" />
+        <MetricCard value="9" label="Manuals" />
+        <MetricCard value="7" label="Warranties" />
+      </div>
+
+      <div className="mt-6 overflow-hidden rounded-2xl border border-white/10 bg-[#0d1926]">
+        <PreviewHeader
+          eyebrow="Document vault"
+          title="Records connected to your devices"
+          icon={<FileText size={16} />}
+        />
+
+        <div className="space-y-px bg-white/10">
+          <DocumentRow
+            icon={<Receipt size={14} />}
+            title="Best Buy Purchase Receipt"
+            meta='LG 34" UltraWide Monitor · May 8, 2026'
+          />
+
+          <DocumentRow
+            icon={<FileText size={14} />}
+            title="Owner's Manual"
+            meta="Eero Pro 6E · PDF"
+          />
+
+          <DocumentRow
+            icon={<ShieldCheck size={14} />}
+            title="Extended Warranty"
+            meta="Samsung OLED TV · Active"
+          />
+
+          <DocumentRow
+            icon={<Receipt size={14} />}
+            title="Apple Store Receipt"
+            meta="Apple TV 4K · Saved"
+          />
+        </div>
+      </div>
+    </>
+  );
+}
+
+function NetworkPreview() {
+  return (
+    <>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <MetricCard value="18" label="Connected" />
+        <MetricCard value="15" label="Online" />
+        <MetricCard value="3" label="Offline" />
+        <MetricCard value="1" label="Gateway" />
+      </div>
+
+      <div className="mt-6 grid gap-4 lg:grid-cols-[1.08fr_0.92fr]">
+        <div className="rounded-2xl border border-white/10 bg-[#0d1926] p-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#718d4f]/10 text-[#8ca667]">
+              <Router size={17} />
+            </div>
+
+            <div>
+              <p className="text-xs font-semibold text-[#e4e9ec]">
+                Eero Pro 6E
+              </p>
+
+              <p className="mt-1 text-[9px] text-white/30">
+                Main Gateway · Online
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-5 space-y-3">
+            <StatusLine
+              text="Internet connection healthy"
+              complete
+            />
+            <StatusLine
+              text="15 devices currently online"
+              complete
+            />
+            <StatusLine
+              text="3 devices have not checked in recently"
+            />
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-white/10 bg-[#0d1926] p-4">
+          <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-white/30">
+            Network health
+          </p>
+
+          <div className="mt-5 flex items-center gap-3">
+            <Wifi
+              size={22}
+              className="text-[#8ca667]"
+            />
+
+            <div>
+              <p className="font-serif text-2xl text-[#f4f0e8]">
+                Good
+              </p>
+
+              <p className="mt-1 text-[9px] text-white/30">
+                Home network looks healthy
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-6 h-1.5 overflow-hidden rounded-full bg-white/10">
+            <div className="h-full w-[88%] rounded-full bg-[#718d4f]" />
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function PreviewHeader({
+  eyebrow,
+  title,
+  icon,
+}: {
+  eyebrow: string;
+  title: string;
+  icon: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-center justify-between border-b border-white/10 px-4 py-3.5">
+      <div>
+        <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-white/30">
+          {eyebrow}
+        </p>
+
+        <p className="mt-1 text-xs font-semibold text-[#e4e9ec]">
+          {title}
+        </p>
+      </div>
+
+      <div className="text-[#789557]">
+        {icon}
+      </div>
+    </div>
+  );
+}
+
+function DocumentRow({
+  icon,
+  title,
+  meta,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  meta: string;
+}) {
+  return (
+    <div className="flex items-center gap-3 bg-[#101d2b] px-4 py-3.5 transition-colors hover:bg-[#15283a]">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#718d4f]/10 text-[#8ca667]">
+        {icon}
+      </div>
+
+      <div className="min-w-0">
+        <p className="truncate text-[11px] font-semibold text-[#e6ebee]">
+          {title}
+        </p>
+
+        <p className="mt-0.5 truncate text-[9px] text-white/30">
+          {meta}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function SmartImportStrip() {
+  return (
+    <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-[#718d4f]/20 bg-[#718d4f]/8 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex items-center gap-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#718d4f]/25 bg-[#718d4f]/10 text-[#8ca667]">
+          <Sparkles size={16} />
+        </div>
+
+        <div>
+          <p className="text-xs font-semibold text-[#e4e9ec]">
+            Smart Import™ ready
+          </p>
+
+          <p className="mt-1 text-[10px] text-white/35">
+            Forward a receipt. We&apos;ll prepare the record.
+          </p>
+        </div>
+      </div>
+
+      <span className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#8ca667]">
+        Ready to use
+      </span>
+    </div>
   );
 }
 
@@ -461,7 +720,7 @@ function DeviceRow({
   detail: string;
 }) {
   return (
-    <div className="flex items-center gap-3 bg-[#101d2b] px-4 py-3.5">
+    <div className="flex items-center gap-3 bg-[#101d2b] px-4 py-3.5 transition-colors hover:bg-[#15283a]">
       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#718d4f]/10 text-[#8ca667]">
         <Laptop size={14} />
       </div>
