@@ -7,6 +7,9 @@ export type DeviceLookupResult = {
   category: string;
   confidence: "catalog" | "icecat" | "upcitemdb" | "inferred";
   description: string;
+
+  imageUrl?: string;
+  upc?: string;
 };
 
 type CatalogDevice = Omit<

@@ -28,6 +28,8 @@
     "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.110.2",
     "@vercel/analytics": "^2.0.1",
+    "@zxing/browser": "^0.2.1",
+    "@zxing/library": "^0.23.0",
     "framer-motion": "^12.42.2",
     "geist": "^1.7.2",
     "jspdf": "^4.2.1",

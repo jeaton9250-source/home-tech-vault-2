@@ -380,6 +380,39 @@ function scoreItem(
 
   let score = 0;
 
+  /*
+   * Barcode lookups are exact identifiers.
+   * UPCitemdb may return the barcode in
+   * upc, ean, or gtin, so compare all three
+   * before doing normal text ranking.
+   */
+  const barcodeQuery =
+    query.replace(/\D/g, "");
+
+  const itemBarcodes = [
+    item.upc,
+    item.ean,
+    item.gtin,
+  ]
+    .filter(
+      (value): value is string =>
+        typeof value === "string"
+    )
+    .map((value) =>
+      value.replace(/\D/g, "")
+    );
+
+  if (
+    [8, 12, 13, 14].includes(
+      barcodeQuery.length
+    ) &&
+    itemBarcodes.includes(
+      barcodeQuery
+    )
+  ) {
+    score += 250;
+  }
+
   if (
     modelCompact &&
     queryCompact.includes(
@@ -449,6 +482,22 @@ function scoreItem(
   return score;
 }
 
+function isBarcode(
+  value: string
+) {
+  const cleaned =
+    value.trim();
+
+  return (
+    /^\d+$/.test(
+      cleaned
+    ) &&
+    [8, 12, 13, 14].includes(
+      cleaned.length
+    )
+  );
+}
+
 function buildUpcMatches(
   response: UpcResponse,
   query: string
@@ -460,6 +509,116 @@ function buildUpcMatches(
       ? response.items
       : [];
 
+  /*
+   * UPC / EAN / GTIN lookup:
+   *
+   * UPCitemdb has already performed an
+   * exact identifier lookup. Do NOT run
+   * these results through text ranking.
+   */
+  if (isBarcode(query)) {
+    const item =
+      items[0];
+
+    if (!item) {
+      return [];
+    }
+
+    const title =
+      item.title?.trim() ||
+      [
+        item.brand,
+        item.model,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .trim();
+
+    /*
+     * A barcode-only record is not useful
+     * enough to auto-fill the vault.
+     * Require at least a real product title,
+     * brand, or model.
+     */
+    const hasProductIdentity =
+      Boolean(
+        item.title?.trim() ||
+        item.brand?.trim() ||
+        item.model?.trim()
+      );
+
+    if (!hasProductIdentity) {
+      return [];
+    }
+
+    const brand =
+      item.brand?.trim() ||
+      "";
+
+    const model =
+      item.model?.trim() ||
+      "";
+
+    const barcode =
+      item.upc ||
+      item.ean ||
+      item.gtin ||
+      query;
+
+    const imageUrl =
+      item.images?.find(
+        (image) =>
+          typeof image ===
+            "string" &&
+          image.startsWith(
+            "https://"
+          )
+      );
+
+    const match:
+      DeviceLookupMatch = {
+        id:
+          `upc-${barcode}`,
+
+        deviceName:
+          title ||
+          `${brand} ${model}`.trim() ||
+          "Product",
+
+        brand,
+
+        manufacturer:
+          brand,
+
+        modelNumber:
+          model,
+
+        category:
+          normalizeCategory(
+            item.category,
+            title
+          ),
+
+        description:
+          "Verified by UPC/EAN barcode",
+
+        confidence:
+          "upcitemdb",
+
+        upc:
+          barcode,
+
+        imageUrl,
+      };
+
+    return [match];
+  }
+
+  /*
+   * Normal text/model search still uses
+   * ranking because it can return multiple
+   * possible products.
+   */
   return items
     .map((item) => ({
       item,
@@ -537,6 +696,8 @@ function buildUpcMatches(
           imageUrl:
             item.images?.find(
               (image) =>
+                typeof image ===
+                  "string" &&
                 image.startsWith(
                   "https://"
                 )
@@ -549,25 +710,37 @@ function buildUpcMatches(
 async function searchUpcItemDb(
   query: string
 ) {
+  const barcode =
+    isBarcode(query);
+
   const url =
     new URL(
-      "https://api.upcitemdb.com/prod/trial/search"
+      barcode
+        ? "https://api.upcitemdb.com/prod/trial/lookup"
+        : "https://api.upcitemdb.com/prod/trial/search"
     );
 
-  url.searchParams.set(
-    "s",
-    query
-  );
+  if (barcode) {
+    url.searchParams.set(
+      "upc",
+      query
+    );
+  } else {
+    url.searchParams.set(
+      "s",
+      query
+    );
 
-  url.searchParams.set(
-    "type",
-    "product"
-  );
+    url.searchParams.set(
+      "type",
+      "product"
+    );
 
-  url.searchParams.set(
-    "match_mode",
-    "0"
-  );
+    url.searchParams.set(
+      "match_mode",
+      "0"
+    );
+  }
 
   const controller =
     new AbortController();
@@ -895,8 +1068,19 @@ export async function GET(
   const cacheKey =
     normalize(query);
 
+  /*
+   * Never use an old server-memory
+   * cache entry for barcode scans.
+   * Barcode lookups are cheap exact
+   * identifier requests and should
+   * always receive fresh enrichment.
+   */
   const cached =
-    cache.get(cacheKey);
+    isBarcode(query)
+      ? undefined
+      : cache.get(
+          cacheKey
+        );
 
   if (
     cached &&
