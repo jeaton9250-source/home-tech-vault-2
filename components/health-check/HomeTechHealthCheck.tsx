@@ -3,6 +3,7 @@
 import {
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
@@ -33,12 +34,107 @@ import {
 const STORAGE_KEY =
   "htv_home_tech_health_check_v1";
 
+function createAttemptId() {
+  if (
+    typeof crypto !== "undefined" &&
+    typeof crypto.randomUUID === "function"
+  ) {
+    return crypto.randomUUID();
+  }
+
+  return [
+    Date.now().toString(16),
+    Math.random()
+      .toString(16)
+      .slice(2),
+    Math.random()
+      .toString(16)
+      .slice(2),
+  ].join("-");
+}
+
+function readHealthCheckAttribution() {
+  if (typeof window === "undefined") {
+    return {
+      source: null,
+      campaign: null,
+      referrerHost: null,
+    };
+  }
+
+  const params =
+    new URLSearchParams(
+      window.location.search
+    );
+
+  const source =
+    params.get("utm_source") ||
+    params.get("source");
+
+  const campaign =
+    params.get("utm_campaign");
+
+  let referrerHost: string | null = null;
+
+  if (document.referrer) {
+    try {
+      referrerHost =
+        new URL(document.referrer).hostname;
+    } catch {
+      referrerHost = null;
+    }
+  }
+
+  return {
+    source:
+      source?.trim().toLowerCase() ||
+      "direct",
+    campaign:
+      campaign?.trim() || null,
+    referrerHost,
+  };
+}
+
+async function recordHealthCheckCompletion(
+  attemptId: string,
+  score: number
+) {
+  const attribution =
+    readHealthCheckAttribution();
+
+  try {
+    await fetch(
+      "/api/public/health-check/completion",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
+        keepalive: true,
+        body: JSON.stringify({
+          attemptId,
+          score,
+          ...attribution,
+        }),
+      }
+    );
+  } catch {
+    // Analytics must never interfere with the
+    // public Health Check experience.
+  }
+}
+
 type SavedState = {
   answers: HealthCheckAnswers;
   completed: boolean;
 };
 
 export default function HomeTechHealthCheck() {
+  const attemptIdRef = useRef<string>(
+    createAttemptId()
+  );
+
   const [started, setStarted] =
     useState(false);
 
@@ -153,7 +249,18 @@ export default function HomeTechHealthCheck() {
       HEALTH_CHECK_QUESTIONS.length -
         1
     ) {
+      const finalResult =
+        calculateHealthCheck(
+          nextAnswers
+        );
+
       setCompleted(true);
+
+      void recordHealthCheckCompletion(
+        attemptIdRef.current,
+        finalResult.score
+      );
+
       return;
     }
 
@@ -163,6 +270,9 @@ export default function HomeTechHealthCheck() {
   }
 
   function restart() {
+    attemptIdRef.current =
+      createAttemptId();
+
     setAnswers({});
     setCompleted(false);
     setStarted(true);

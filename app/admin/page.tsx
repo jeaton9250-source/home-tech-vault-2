@@ -1,4 +1,5 @@
 import {
+  ClipboardCheck,
   Eye,
   FileText,
   HardDrive,
@@ -12,6 +13,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { loadAdminAnalytics } from "@/lib/admin/data/loaders";
 import { loadAdminDashboardMetrics } from "@/lib/admin/data/dashboard";
+import { loadAdminHealthCheckMetrics } from "@/lib/admin/data/healthCheck";
 import { loadAdminVercelAnalytics } from "@/lib/admin/data/vercelAnalytics";
 import { loadAdminSystemHealth } from "@/lib/admin/data/loaders";
 import { loadFoundingMembersDashboardMetrics } from "@/lib/admin/data/foundingMembers";
@@ -49,6 +51,7 @@ export default async function AdminDashboardPage() {
     health,
     foundingMetricsResult,
     traffic,
+    healthCheckMetrics,
   ] = await Promise.all([
     loadAdminDashboardMetrics(),
     loadAdminAnalytics(),
@@ -57,6 +60,7 @@ export default async function AdminDashboardPage() {
       () => null
     ),
     loadAdminVercelAnalytics(),
+    loadAdminHealthCheckMetrics(),
   ]);
 
   const supabase = await createClient();
@@ -194,6 +198,66 @@ export default async function AdminDashboardPage() {
             },
           ]}
         />
+      </FounderSection>
+
+      <FounderSection
+        id="founder-health-check-heading"
+        title="Health Check Funnel"
+        subtitle="Anonymous completion activity from the free Home Tech Health Check."
+      >
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <FounderMetricCard
+            label="Health Checks"
+            value={healthCheckMetrics.totalCompleted}
+            hint="Total completed"
+            href="/health-check"
+            icon={
+              <ClipboardCheck
+                aria-hidden="true"
+                className="h-5 w-5"
+              />
+            }
+          />
+
+          <FounderMetricCard
+            label="Completed Today"
+            value={healthCheckMetrics.completedToday}
+            hint="Since 12:00 AM UTC"
+            href="/health-check"
+            icon={
+              <ClipboardCheck
+                aria-hidden="true"
+                className="h-5 w-5"
+              />
+            }
+          />
+
+          <FounderMetricCard
+            label="Average Score"
+            value={healthCheckMetrics.averageScore}
+            hint="Average out of 100"
+            href="/health-check"
+            icon={
+              <ClipboardCheck
+                aria-hidden="true"
+                className="h-5 w-5"
+              />
+            }
+          />
+
+          <FounderMetricCard
+            label="Reddit Completions"
+            value={healthCheckMetrics.redditCompleted}
+            hint="utm_source=reddit"
+            href="/health-check"
+            icon={
+              <ClipboardCheck
+                aria-hidden="true"
+                className="h-5 w-5"
+              />
+            }
+          />
+        </div>
       </FounderSection>
 
       <FounderSection
