@@ -122,8 +122,8 @@ export default function ImpersonationBanner() {
     "this user";
 
   return (
-    <div className="fixed inset-x-0 top-0 z-[1000] border-b border-[#8ca667]/40 bg-[#0b1623] text-[#f4f0e8] shadow-lg">
-      <div className="mx-auto flex min-h-12 max-w-[1600px] flex-wrap items-center justify-between gap-3 px-4 py-2 sm:px-6">
+    <div className="fixed bottom-4 left-4 z-[1000] w-[calc(100%-2rem)] max-w-[430px] overflow-hidden rounded-[18px] border border-[#8ca667]/35 bg-[#0b1623] text-[#f4f0e8] shadow-[0_18px_55px_-18px_rgba(11,22,35,0.75)] sm:bottom-6 sm:left-6">
+      <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-center gap-3">
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#617c43]">
             <Eye size={16} />
@@ -134,10 +134,9 @@ export default function ImpersonationBanner() {
               Impersonating {label}
             </p>
 
-            <p className="text-xs text-[#eee9df]/70">
-              You are viewing Home Tech Vault
-              exactly as this user. Changes you
-              make affect their account.
+            <p className="mt-0.5 text-xs leading-5 text-[#eee9df]/65">
+              Viewing Home Tech Vault as this user.
+              Changes affect their account.
             </p>
 
             {error ? (
@@ -154,7 +153,7 @@ export default function ImpersonationBanner() {
             void exitImpersonation();
           }}
           disabled={exiting}
-          className="inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/10 px-3 text-sm font-semibold text-[#f4f0e8] transition hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/10 px-3 text-sm font-semibold text-[#f4f0e8] transition hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-60 sm:self-center"
         >
           {exiting ? (
             <Loader2
