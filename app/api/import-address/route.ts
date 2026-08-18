@@ -14,6 +14,11 @@ import {
   ensureReceiptAddress,
 } from "@/lib/import/receiptAddress";
 
+import {
+  createAdminClient,
+} from "@/lib/supabase/admin";
+
+
 export async function GET() {
   try {
     const cookieStore =
@@ -97,35 +102,92 @@ export async function GET() {
 
     /*
       ------------------------------------------------
-      FIND HOUSEHOLD
+      FIND CANONICAL HOUSEHOLD
       ------------------------------------------------
 
-      First try to get a household from
-      an existing device.
+      Do not derive household ownership from devices.
+
+      A brand-new user usually has zero devices, which
+      previously caused Smart Import to lose household
+      context on exactly the accounts that need it most.
+
+      Authentication above is still performed using the
+      signed-in user's session. Database provisioning below
+      uses the server-only admin client.
+    */
+    const admin =
+      createAdminClient();
+
+    let householdId:
+      | string
+      | null = null;
+
+    /*
+      Prefer the user's explicit household membership.
     */
     const {
-      data: existingDevice,
-    } = await supabase
-      .from("devices")
+      data: membership,
+      error: membershipError,
+    } = await admin
+      .from("household_members")
       .select(
-        "household_id"
+        "household_id, role"
       )
       .eq(
         "user_id",
         user.id
       )
-      .not(
-        "household_id",
-        "is",
-        null
+      .order(
+        "joined_at",
+        {
+          ascending: true,
+        }
       )
       .limit(1)
       .maybeSingle();
 
-    const householdId =
-      existingDevice
-        ?.household_id ??
-      null;
+    if (membershipError) {
+      console.error(
+        "Smart Import household membership lookup failed:",
+        membershipError
+      );
+    }
+
+    if (membership?.household_id) {
+      householdId =
+        membership.household_id;
+    }
+
+    /*
+      Legacy/fallback path:
+      if membership creation somehow has not completed yet,
+      check whether the user owns a canonical household.
+    */
+    if (!householdId) {
+      const {
+        data: ownedHousehold,
+        error: ownedHouseholdError,
+      } = await admin
+        .from("households")
+        .select("id")
+        .eq(
+          "owner_id",
+          user.id
+        )
+        .limit(1)
+        .maybeSingle();
+
+      if (ownedHouseholdError) {
+        console.error(
+          "Smart Import owned household lookup failed:",
+          ownedHouseholdError
+        );
+      }
+
+      householdId =
+        ownedHousehold?.id ??
+        null;
+    }
 
     /*
       ------------------------------------------------
@@ -177,7 +239,7 @@ export async function GET() {
     try {
       const {
         data: profile,
-      } = await supabase
+      } = await admin
         .from("profiles")
         .select(
           "first_name, last_name, full_name"
@@ -274,7 +336,7 @@ export async function GET() {
     */
     const result =
       await ensureReceiptAddress({
-        supabase,
+        supabase: admin,
 
         userId:
           user.id,
