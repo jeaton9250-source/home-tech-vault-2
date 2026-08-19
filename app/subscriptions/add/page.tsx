@@ -8,14 +8,14 @@ import {
   Save,
 } from "lucide-react";
 
-import { supabase } from "@/lib/supabase";
 import {
-  getDefaultActivityTitle,
-  recordActivity,
-} from "@/lib/activity";
+  createSubscription,
+} from "@/app/subscriptions/actions";
 import {
-  withHouseholdInsertFields,
-} from "@/lib/data/householdScope";
+  MAX_SUBSCRIPTION_MONTHLY_COST,
+  SUBSCRIPTION_FIELD_LIMITS,
+  validateSubscriptionInput,
+} from "@/lib/subscriptions/subscriptionInputValidation";
 import { usePermissions } from "@/hooks/usePermissions";
 import DemoWriteGate from "@/components/demo/DemoWriteGate";
 
@@ -32,7 +32,6 @@ export default function AddSubscriptionPage() {
     user,
     isDemo,
     canCreate,
-    householdId,
     loading: permissionsLoading,
   } = usePermissions();
 
@@ -45,7 +44,9 @@ export default function AddSubscriptionPage() {
   const [saving, setSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(
+    event: FormEvent<HTMLFormElement>
+  ) {
     event.preventDefault();
     setErrorMessage("");
 
@@ -66,48 +67,49 @@ export default function AddSubscriptionPage() {
       return;
     }
 
-    if (!serviceName.trim()) {
-      setErrorMessage("Enter a service name.");
+    const validation =
+      validateSubscriptionInput({
+        serviceName,
+        category,
+        monthlyCost,
+        renewalDate,
+        billingCycle,
+        notes,
+      });
+
+    if (!validation.success) {
+      setErrorMessage(validation.error);
       return;
     }
 
     try {
       setSaving(true);
 
-      const { error } = await supabase
-        .from("subscriptions")
-        .insert(
-          withHouseholdInsertFields(
-            {
-              service_name: serviceName.trim(),
-              category: category.trim() || null,
-              monthly_cost: monthlyCost
-                ? Number(monthlyCost)
-                : 0,
-              renewal_date: renewalDate || null,
-              billing_cycle: billingCycle,
-              notes: notes.trim() || null,
-            },
-            householdId,
-            user.id
-          )
+      const result =
+        await createSubscription({
+          serviceName,
+          category,
+          monthlyCost,
+          renewalDate,
+          billingCycle,
+          notes,
+        });
+
+      if (!result.success) {
+        if (
+          result.code ===
+          "UNAUTHENTICATED"
+        ) {
+          router.push("/login");
+          return;
+        }
+
+        setErrorMessage(
+          result.error ||
+            "Unable to save this subscription."
         );
-
-      if (error) {
-        throw error;
+        return;
       }
-
-      await recordActivity({
-        activityType: "subscription.added",
-        title: getDefaultActivityTitle(
-          "subscription.added",
-          serviceName.trim()
-        ),
-        description:
-          "Subscription service recorded in the vault.",
-        userId: user.id,
-        householdId,
-      });
 
       router.push("/subscriptions");
       router.refresh();
@@ -118,7 +120,9 @@ export default function AddSubscriptionPage() {
       );
 
       setErrorMessage(
-        "Unable to save this subscription. Please try again."
+        error instanceof Error
+          ? error.message
+          : "Unable to save this subscription. Please try again."
       );
     } finally {
       setSaving(false);
@@ -200,6 +204,7 @@ export default function AddSubscriptionPage() {
           <FormField label="Service Name">
             <input
               value={serviceName}
+              maxLength={SUBSCRIPTION_FIELD_LIMITS.serviceName}
               onChange={(event) =>
                 setServiceName(event.target.value)
               }
@@ -213,6 +218,7 @@ export default function AddSubscriptionPage() {
           <FormField label="Category">
             <input
               value={category}
+              maxLength={SUBSCRIPTION_FIELD_LIMITS.category}
               onChange={(event) =>
                 setCategory(event.target.value)
               }
@@ -225,6 +231,9 @@ export default function AddSubscriptionPage() {
           <FormField label="Monthly Cost">
             <input
               type="number"
+              min="0"
+              max={MAX_SUBSCRIPTION_MONTHLY_COST}
+              step="0.01"
               value={monthlyCost}
               onChange={(event) =>
                 setMonthlyCost(event.target.value)
@@ -267,6 +276,7 @@ export default function AddSubscriptionPage() {
             <FormField label="Notes">
               <textarea
                 value={notes}
+                maxLength={SUBSCRIPTION_FIELD_LIMITS.notes}
                 onChange={(event) =>
                   setNotes(event.target.value)
                 }

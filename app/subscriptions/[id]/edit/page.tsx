@@ -15,9 +15,16 @@ import {
 
 import { supabase } from "@/lib/supabase";
 import {
-  applyHouseholdMutationScope,
   applyHouseholdScope,
 } from "@/lib/data/householdScope";
+import {
+  updateSubscription,
+} from "@/app/subscriptions/actions";
+import {
+  MAX_SUBSCRIPTION_MONTHLY_COST,
+  SUBSCRIPTION_FIELD_LIMITS,
+  validateSubscriptionInput,
+} from "@/lib/subscriptions/subscriptionInputValidation";
 import { usePermissions } from "@/hooks/usePermissions";
 import DemoWriteGate from "@/components/demo/DemoWriteGate";
 
@@ -146,35 +153,49 @@ export default function EditSubscriptionPage({
       return;
     }
 
-    if (!serviceName.trim()) {
-      setErrorMessage("Enter a service name.");
+    const validation =
+      validateSubscriptionInput({
+        serviceName,
+        category,
+        monthlyCost,
+        renewalDate,
+        billingCycle,
+        notes,
+      });
+
+    if (!validation.success) {
+      setErrorMessage(validation.error);
       return;
     }
 
     try {
       setSaving(true);
 
-      const { error } =
-        await applyHouseholdMutationScope(
-          supabase
-            .from("subscriptions")
-            .update({
-              service_name: serviceName.trim(),
-              category: category.trim() || null,
-              monthly_cost: monthlyCost
-                ? Number(monthlyCost)
-                : 0,
-              renewal_date: renewalDate || null,
-              billing_cycle: billingCycle,
-              notes: notes.trim() || null,
-            })
-            .eq("id", id),
-          householdId,
-          user.id
-        );
+      const result =
+        await updateSubscription({
+          subscriptionId: id,
+          serviceName,
+          category,
+          monthlyCost,
+          renewalDate,
+          billingCycle,
+          notes,
+        });
 
-      if (error) {
-        throw error;
+      if (!result.success) {
+        if (
+          result.code ===
+          "UNAUTHENTICATED"
+        ) {
+          router.push("/login");
+          return;
+        }
+
+        setErrorMessage(
+          result.error ||
+            "Unable to save changes."
+        );
+        return;
       }
 
       router.push("/subscriptions");
@@ -186,7 +207,9 @@ export default function EditSubscriptionPage({
       );
 
       setErrorMessage(
-        "Unable to save changes. Please try again."
+        error instanceof Error
+          ? error.message
+          : "Unable to save changes. Please try again."
       );
     } finally {
       setSaving(false);
@@ -286,6 +309,7 @@ export default function EditSubscriptionPage({
           <FormField label="Service Name">
             <input
               value={serviceName}
+              maxLength={SUBSCRIPTION_FIELD_LIMITS.serviceName}
               onChange={(event) =>
                 setServiceName(event.target.value)
               }
@@ -298,6 +322,7 @@ export default function EditSubscriptionPage({
           <FormField label="Category">
             <input
               value={category}
+              maxLength={SUBSCRIPTION_FIELD_LIMITS.category}
               onChange={(event) =>
                 setCategory(event.target.value)
               }
@@ -309,6 +334,9 @@ export default function EditSubscriptionPage({
           <FormField label="Monthly Cost">
             <input
               type="number"
+              min="0"
+              max={MAX_SUBSCRIPTION_MONTHLY_COST}
+              step="0.01"
               value={monthlyCost}
               onChange={(event) =>
                 setMonthlyCost(event.target.value)
@@ -350,6 +378,7 @@ export default function EditSubscriptionPage({
             <FormField label="Notes">
               <textarea
                 value={notes}
+                maxLength={SUBSCRIPTION_FIELD_LIMITS.notes}
                 onChange={(event) =>
                   setNotes(event.target.value)
                 }
