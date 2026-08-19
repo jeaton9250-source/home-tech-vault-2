@@ -22,6 +22,7 @@ import PageShell from "@/components/ui/PageShell";
 import PageCard from "@/components/ui/PageCard";
 import { DashboardSkeleton } from "@/components/ui/Skeleton";
 import HomeHealthDashboard from "@/components/home-health/HomeHealthDashboard";
+import NewVaultGettingStarted from "@/components/dashboard/NewVaultGettingStarted";
 import VaultSetupProgress from "@/components/dashboard/VaultSetupProgress";
 
 import type { DashboardOverviewStats } from "@/lib/dashboard/types";
@@ -387,6 +388,11 @@ export default function DashboardPageClient({
           canCreate={canCreate}
         />
       ) : null}
+
+      <NewVaultGettingStarted
+        deviceCount={overviewStats?.deviceCount ?? 0}
+        documentCount={overviewStats?.documentCount ?? 0}
+      />
 
       <HomeHealthDashboard
         firstName={firstName}
