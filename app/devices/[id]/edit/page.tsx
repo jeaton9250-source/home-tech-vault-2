@@ -10,13 +10,16 @@ import {
 
 import { supabase } from "@/lib/supabase";
 import {
-  applyHouseholdMutationScope,
+  updateDevice,
+} from "@/app/devices/actions";
+import {
+  DEVICE_FIELD_LIMITS,
+  MAX_DEVICE_PURCHASE_PRICE,
+  validateDeviceInput,
+} from "@/lib/devices/deviceInputValidation";
+import {
   applyHouseholdScope,
 } from "@/lib/data/householdScope";
-import {
-  getDefaultActivityTitle,
-  recordActivity,
-} from "@/lib/activity";
 import { usePermissions } from "@/hooks/usePermissions";
 import { getEditAccess, getEditAccessMessage } from "@/lib/permissions/editAccess";
 import { isDevelopmentEnvironment } from "@/lib/permissions/developmentAccess";
@@ -74,6 +77,7 @@ export default function EditDevicePage() {
   const [loadingDevice, setLoadingDevice] = useState(true);
   const [saving, setSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [submitError, setSubmitError] = useState("");
 
   useEffect(() => {
     async function loadDevice() {
@@ -167,92 +171,106 @@ export default function EditDevicePage() {
   ) {
     event.preventDefault();
 
-    if (!form.device_name.trim()) {
-      alert("Please enter a device name.");
-      return;
-    }
+    setSubmitError("");
 
     if (!user) {
       router.push("/login");
       return;
     }
 
+    /*
+     * Fast browser feedback.
+     *
+     * The server action performs this same
+     * validation again before writing.
+     */
+    const validation =
+      validateDeviceInput({
+        deviceName:
+          form.device_name,
+        category:
+          form.category,
+        brand:
+          form.brand,
+        manufacturer: "",
+        modelNumber:
+          form.model_number,
+        serialNumber:
+          form.serial_number,
+        purchaseDate:
+          form.purchase_date,
+        warrantyDate:
+          form.warranty_date,
+        purchasePrice:
+          form.purchase_price,
+        location:
+          form.location,
+        notes:
+          form.notes,
+      });
+
+    if (!validation.success) {
+      setSubmitError(
+        validation.error
+      );
+      return;
+    }
+
     try {
       setSaving(true);
 
-      const { error } =
-        await applyHouseholdMutationScope(
-          supabase
-            .from("devices")
-            .update({
-              device_name:
-                form.device_name.trim(),
-              category:
-                form.category.trim() || null,
-              brand:
-                form.brand.trim() || null,
-              model_number:
-                form.model_number.trim() ||
-                null,
-              serial_number:
-                form.serial_number.trim() ||
-                null,
-              purchase_date:
-                form.purchase_date || null,
-              warranty_date:
-                form.warranty_date || null,
-              purchase_price: form.purchase_price
-                ? Number(form.purchase_price)
-                : null,
-              location:
-                form.location.trim() || null,
-              notes:
-                form.notes.trim() || null,
-            })
-            .eq("id", params.id),
-          householdId,
-          user.id
-        );
-
-      if (error) {
-        throw error;
-      }
-
-      await recordActivity({
-        activityType: "device.edited",
-        title: getDefaultActivityTitle(
-          "device.edited",
-          form.device_name.trim()
-        ),
-        description:
-          "Device details were updated.",
-        userId: user.id,
-        householdId,
-        deviceId: params.id as string,
-      });
-
-      if (form.warranty_date) {
-        await recordActivity({
-          activityType: "warranty.added",
-          title: getDefaultActivityTitle(
-            "warranty.added",
-            form.device_name.trim()
-          ),
-          description:
-            "Warranty information was updated on this device.",
-          userId: user.id,
-          householdId,
-          deviceId: params.id as string,
+      const result =
+        await updateDevice({
+          deviceId: params.id,
+          deviceName:
+            form.device_name,
+          category:
+            form.category,
+          brand:
+            form.brand,
+          modelNumber:
+            form.model_number,
+          serialNumber:
+            form.serial_number,
+          purchaseDate:
+            form.purchase_date,
+          warrantyDate:
+            form.warranty_date,
+          purchasePrice:
+            form.purchase_price,
+          location:
+            form.location,
+          notes:
+            form.notes,
         });
+
+      if (!result.success) {
+        if (
+          result.code ===
+          "UNAUTHENTICATED"
+        ) {
+          router.push("/login");
+          return;
+        }
+
+        setSubmitError(
+          result.error ||
+            "Unable to update this device."
+        );
+        return;
       }
 
-      alert("Device updated successfully.");
-      router.push(`/devices/${params.id}`);
+      router.push(
+        `/devices/${result.deviceId}`
+      );
       router.refresh();
     } catch (error) {
-      console.error("Unable to update device:", error);
+      console.error(
+        "Unable to update device:",
+        error
+      );
 
-      alert(
+      setSubmitError(
         error instanceof Error
           ? error.message
           : "Unable to update the device."
@@ -396,6 +414,14 @@ export default function EditDevicePage() {
           onSubmit={handleSubmit}
           className="grid gap-6 md:grid-cols-2"
         >
+          {submitError ? (
+            <div
+              role="alert"
+              className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 md:col-span-2"
+            >
+              {submitError}
+            </div>
+          ) : null}
           <FormInput
             label="Device Name"
             value={form.device_name}
@@ -404,6 +430,7 @@ export default function EditDevicePage() {
             }
             placeholder="MacBook Pro"
             required
+            maxLength={DEVICE_FIELD_LIMITS.deviceName}
           />
 
           <FormInput
@@ -413,6 +440,7 @@ export default function EditDevicePage() {
               updateField("category", value)
             }
             placeholder="Computer"
+            maxLength={DEVICE_FIELD_LIMITS.category}
           />
 
           <FormInput
@@ -422,6 +450,7 @@ export default function EditDevicePage() {
               updateField("brand", value)
             }
             placeholder="Apple"
+            maxLength={DEVICE_FIELD_LIMITS.brand}
           />
 
           <FormInput
@@ -431,6 +460,7 @@ export default function EditDevicePage() {
               updateField("model_number", value)
             }
             placeholder="M3 Pro"
+            maxLength={DEVICE_FIELD_LIMITS.modelNumber}
           />
 
           <FormInput
@@ -440,6 +470,7 @@ export default function EditDevicePage() {
               updateField("serial_number", value)
             }
             placeholder="Serial number"
+            maxLength={DEVICE_FIELD_LIMITS.serialNumber}
           />
 
           <FormInput
@@ -449,6 +480,7 @@ export default function EditDevicePage() {
               updateField("location", value)
             }
             placeholder="Home Office"
+            maxLength={DEVICE_FIELD_LIMITS.location}
           />
 
           <FormInput
@@ -479,6 +511,7 @@ export default function EditDevicePage() {
             placeholder="1999.00"
             step="0.01"
             min="0"
+            max={MAX_DEVICE_PURCHASE_PRICE}
           />
 
           <div className="md:col-span-2">
@@ -493,6 +526,7 @@ export default function EditDevicePage() {
                   updateField("notes", event.target.value)
                 }
                 placeholder="Add notes about this device..."
+                maxLength={DEVICE_FIELD_LIMITS.notes}
                 className="min-h-32 w-full resize-y rounded-xl border border-border-subtle bg-white px-4 py-3 text-text-primary outline-none focus:border-interaction focus:ring-2 focus:ring-interaction/15"
               />
             </label>
@@ -539,6 +573,8 @@ type FormInputProps = {
   required?: boolean;
   step?: string;
   min?: string;
+  max?: string | number;
+  maxLength?: number;
 };
 
 function FormInput({
@@ -550,6 +586,8 @@ function FormInput({
   required,
   step,
   min,
+  max,
+  maxLength,
 }: FormInputProps) {
   return (
     <label className="block">
@@ -563,6 +601,8 @@ function FormInput({
         required={required}
         step={step}
         min={min}
+        max={max}
+        maxLength={maxLength}
         onChange={(event) =>
           onChange(event.target.value)
         }

@@ -6,6 +6,7 @@ import {
 
 import { createClient } from "@/lib/supabase/server";
 import {
+  applyHouseholdMutationScope,
   applyHouseholdScope,
   fetchHouseholdIdForUser,
 } from "@/lib/data/householdScope";
@@ -1603,5 +1604,218 @@ export async function addDevice(
   return {
     success: true,
     deviceId: createdDevice.id,
+  };
+}
+
+
+export type UpdateDeviceInput = {
+  deviceId: string;
+  deviceName: string;
+  category: string;
+  brand: string;
+  modelNumber: string;
+  serialNumber: string;
+  purchaseDate: string;
+  warrantyDate: string;
+  purchasePrice: string;
+  location: string;
+  notes: string;
+};
+
+export type UpdateDeviceResult =
+  | {
+      success: true;
+      deviceId: string;
+    }
+  | {
+      success: false;
+      error: string;
+      code?:
+        | "UNAUTHENTICATED"
+        | "VALIDATION_ERROR"
+        | "NOT_FOUND_OR_FORBIDDEN"
+        | "UNKNOWN";
+    };
+
+export async function updateDevice(
+  input: UpdateDeviceInput
+): Promise<UpdateDeviceResult> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    return {
+      success: false,
+      error:
+        "You must be signed in to update a device.",
+      code: "UNAUTHENTICATED",
+    };
+  }
+
+  const deviceId =
+    input.deviceId.trim();
+
+  if (!deviceId) {
+    return {
+      success: false,
+      error: "A device id is required.",
+      code: "VALIDATION_ERROR",
+    };
+  }
+
+  /*
+   * Edit Device does not currently expose
+   * manufacturer or product UPC fields.
+   *
+   * We still use the same canonical validator
+   * as Add Device, but leave those values blank
+   * and do not overwrite them in the update.
+   */
+  const validation =
+    validateDeviceInput({
+      deviceName:
+        input.deviceName,
+      category:
+        input.category,
+      brand:
+        input.brand,
+      manufacturer: "",
+      modelNumber:
+        input.modelNumber,
+      serialNumber:
+        input.serialNumber,
+      purchaseDate:
+        input.purchaseDate,
+      warrantyDate:
+        input.warrantyDate,
+      purchasePrice:
+        input.purchasePrice,
+      location:
+        input.location,
+      notes:
+        input.notes,
+    });
+
+  if (!validation.success) {
+    return {
+      success: false,
+      error: validation.error,
+      code: "VALIDATION_ERROR",
+    };
+  }
+
+  const normalized =
+    validation.data;
+
+  const householdId =
+    await fetchHouseholdIdForUser(
+      user.id,
+      supabase
+    );
+
+  const {
+    data: updatedRows,
+    error: updateError,
+  } =
+    await applyHouseholdMutationScope(
+      supabase
+        .from("devices")
+        .update({
+          device_name:
+            normalized.deviceName,
+          category:
+            normalized.category || null,
+          brand:
+            normalized.brand || null,
+          model_number:
+            normalized.modelNumber || null,
+          serial_number:
+            normalized.serialNumber || null,
+          purchase_date:
+            normalized.purchaseDate,
+          warranty_date:
+            normalized.warrantyDate,
+          purchase_price:
+            normalized.purchasePrice,
+          location:
+            normalized.location || null,
+          notes:
+            normalized.notes || null,
+        })
+        .eq("id", deviceId)
+        .select("id"),
+      householdId,
+      user.id
+    );
+
+  if (updateError) {
+    console.error(
+      "Error updating device:",
+      updateError
+    );
+
+    return {
+      success: false,
+      error:
+        "Unable to update this device. Please try again.",
+      code: "UNKNOWN",
+    };
+  }
+
+  if (
+    !updatedRows ||
+    updatedRows.length === 0
+  ) {
+    return {
+      success: false,
+      error:
+        "This device could not be found or you do not have permission to edit it.",
+      code: "NOT_FOUND_OR_FORBIDDEN",
+    };
+  }
+
+  await recordActivity({
+    activityType: "device.edited",
+    title: getDefaultActivityTitle(
+      "device.edited",
+      normalized.deviceName
+    ),
+    description:
+      "Device details were updated.",
+    userId: user.id,
+    householdId,
+    deviceId,
+  });
+
+  if (normalized.warrantyDate) {
+    await recordActivity({
+      activityType:
+        "warranty.added",
+      title: getDefaultActivityTitle(
+        "warranty.added",
+        normalized.deviceName
+      ),
+      description:
+        "Warranty information was updated on this device.",
+      userId: user.id,
+      householdId,
+      deviceId,
+    });
+  }
+
+  revalidatePath(
+    `/devices/${deviceId}`
+  );
+  revalidatePath("/devices");
+  revalidatePath("/dashboard");
+  revalidatePath("/warranties");
+
+  return {
+    success: true,
+    deviceId,
   };
 }
