@@ -112,14 +112,16 @@ export async function GET(request: Request) {
       error: userError,
     } = await supabase.auth.getUser();
 
-    if (userError) {
-      throw userError;
-    }
-
-    if (!user) {
+    if (userError || !user) {
       return NextResponse.json(
         { error: "Unauthorized" },
-        { status: 401 }
+        {
+          status: 401,
+          headers: {
+            "Cache-Control":
+              "private, no-store, max-age=0",
+          },
+        }
       );
     }
 
