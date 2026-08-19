@@ -23,6 +23,11 @@ import {
 import { usePermissions } from "@/hooks/usePermissions";
 import DemoWriteGate from "@/components/demo/DemoWriteGate";
 import { addDevice } from "@/app/devices/actions";
+import {
+  DEVICE_FIELD_LIMITS,
+  MAX_DEVICE_PURCHASE_PRICE,
+  validateDeviceInput,
+} from "@/lib/devices/deviceInputValidation";
 import SmartDeviceSearch, { type DeviceLookupResult } from "@/components/devices/SmartDeviceSearch";
 import { buildDeviceMaintenanceRecommendationsUrl } from "@/lib/devices/maintenanceRecommendations";
 import { supabase } from "@/lib/supabase";
@@ -240,6 +245,29 @@ export default function AddDevicePage() {
       return;
     }
 
+    const validation =
+      validateDeviceInput({
+        deviceName,
+        category,
+        brand,
+        manufacturer,
+        modelNumber,
+        serialNumber,
+        purchaseDate,
+        warrantyDate,
+        purchasePrice,
+        location,
+        notes,
+        productUpc,
+      });
+
+    if (!validation.success) {
+      setErrorMessage(
+        validation.error
+      );
+      return;
+    }
+
     try {
       setSaving(true);
 
@@ -302,7 +330,8 @@ export default function AddDevicePage() {
           "VALIDATION_ERROR"
         ) {
           setErrorMessage(
-            "Give this device a name."
+            result.error ||
+              "Check the device details and try again."
           );
           return;
         }
@@ -610,6 +639,7 @@ export default function AddDevicePage() {
             >
               <input
                 autoFocus
+                maxLength={DEVICE_FIELD_LIMITS.deviceName}
                 value={deviceName}
                 onChange={(event) =>
                   setDeviceName(
@@ -623,6 +653,7 @@ export default function AddDevicePage() {
 
             <FormField label="Serial Number">
               <input
+                maxLength={DEVICE_FIELD_LIMITS.serialNumber}
                 value={serialNumber}
                 onChange={(event) =>
                   setSerialNumber(
@@ -636,6 +667,7 @@ export default function AddDevicePage() {
 
             <FormField label="Location">
               <input
+                maxLength={DEVICE_FIELD_LIMITS.location}
                 value={location}
                 onChange={(event) =>
                   setLocation(
@@ -690,7 +722,8 @@ export default function AddDevicePage() {
                 <div className="grid gap-4 lg:grid-cols-2">
                   <FormField label="Brand">
                     <input
-                      value={brand}
+                      maxLength={DEVICE_FIELD_LIMITS.brand}
+                value={brand}
                       onChange={(event) =>
                         setBrand(
                           event.target.value
@@ -705,7 +738,8 @@ export default function AddDevicePage() {
 
                   <FormField label="Model">
                     <input
-                      value={modelNumber}
+                      maxLength={DEVICE_FIELD_LIMITS.modelNumber}
+                value={modelNumber}
                       onChange={(event) =>
                         setModelNumber(
                           event.target.value
@@ -720,7 +754,8 @@ export default function AddDevicePage() {
 
                   <FormField label="Category">
                     <input
-                      value={category}
+                      maxLength={DEVICE_FIELD_LIMITS.category}
+                value={category}
                       onChange={(event) =>
                         setCategory(
                           event.target.value
@@ -752,6 +787,7 @@ export default function AddDevicePage() {
                     <input
                       type="number"
                       min="0"
+                      max={MAX_DEVICE_PURCHASE_PRICE}
                       step="0.01"
                       value={purchasePrice}
                       onChange={(event) =>
@@ -785,7 +821,8 @@ export default function AddDevicePage() {
                 <div className="mt-5">
                   <FormField label="Notes">
                     <textarea
-                      value={notes}
+                      maxLength={DEVICE_FIELD_LIMITS.notes}
+                value={notes}
                       onChange={(event) =>
                         setNotes(
                           event.target.value

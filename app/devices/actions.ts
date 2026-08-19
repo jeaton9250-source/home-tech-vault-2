@@ -1,5 +1,9 @@
 "use server";
 
+import {
+  validateDeviceInput,
+} from "@/lib/devices/deviceInputValidation";
+
 import { createClient } from "@/lib/supabase/server";
 import {
   applyHouseholdScope,
@@ -1231,15 +1235,22 @@ export async function addDevice(
     };
   }
 
-  const trimmedName = input.deviceName.trim();
+  const validation =
+    validateDeviceInput(input);
 
-  if (!trimmedName) {
+  if (!validation.success) {
     return {
       success: false,
-      error: "Enter a device name.",
+      error: validation.error,
       code: "VALIDATION_ERROR",
     };
   }
+
+  const normalizedInput =
+    validation.data;
+
+  const trimmedName =
+    normalizedInput.deviceName;
 
   const householdId =
     await fetchHouseholdIdForUser(
@@ -1283,7 +1294,7 @@ export async function addDevice(
   );
 
   const trimmedLocation =
-    input.location.trim();
+    normalizedInput.location;
 
   const { data: createdDevice, error } = await supabase
     .from("devices")
@@ -1293,7 +1304,7 @@ export async function addDevice(
       device_name: trimmedName,
 
       manual_status:
-        input.productUpc
+        normalizedInput.productUpc
           ? "pending"
           : null,
 
@@ -1301,27 +1312,25 @@ export async function addDevice(
         null,
 
       category:
-        input.category.trim() || null,
+        normalizedInput.category || null,
       brand:
-        input.brand.trim() || null,
+        normalizedInput.brand || null,
       manufacturer:
-        input.manufacturer.trim() || null,
+        normalizedInput.manufacturer || null,
       model_number:
-        input.modelNumber.trim() || null,
+        normalizedInput.modelNumber || null,
       serial_number:
-        input.serialNumber.trim() || null,
+        normalizedInput.serialNumber || null,
       purchase_date:
-        input.purchaseDate || null,
+        normalizedInput.purchaseDate,
       warranty_date:
-        input.warrantyDate || null,
+        normalizedInput.warrantyDate,
       purchase_price:
-        input.purchasePrice
-          ? Number(input.purchasePrice)
-          : null,
+        normalizedInput.purchasePrice,
       location:
         trimmedLocation || null,
       notes:
-        input.notes.trim() || null,
+        normalizedInput.notes || null,
     })
     .select("id")
     .single();
@@ -1379,7 +1388,7 @@ export async function addDevice(
        * remains successfully saved.
        */
       if (
-        input.productUpc
+        normalizedInput.productUpc
       ) {
         try {
           const productImageSaved =
@@ -1391,7 +1400,7 @@ export async function addDevice(
               deviceId:
                 createdDevice.id,
               productUpc:
-                input.productUpc,
+                normalizedInput.productUpc,
             });
 
           if (
@@ -1434,7 +1443,7 @@ export async function addDevice(
        * the device itself from being saved.
        */
       if (
-        input.productUpc
+        normalizedInput.productUpc
       ) {
         try {
           const manualResult =
@@ -1454,13 +1463,13 @@ export async function addDevice(
                 trimmedName,
 
               brand:
-                input.brand,
+                normalizedInput.brand,
 
               modelNumber:
-                input.modelNumber,
+                normalizedInput.modelNumber,
 
               productUpc:
-                input.productUpc,
+                normalizedInput.productUpc,
             });
 
           if (
@@ -1544,7 +1553,7 @@ export async function addDevice(
 
     });
 
-    if (input.warrantyDate) {
+    if (normalizedInput.warrantyDate) {
       await recordActivity({
         activityType: "warranty.added",
         title: getDefaultActivityTitle(
