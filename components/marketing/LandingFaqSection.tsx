@@ -34,13 +34,13 @@ export default function LandingFaqSection() {
           }}
           className="text-center"
         >
-          <p className="text-overline text-text-muted">
+          <p className="text-overline text-[#617c43]">
             FAQ
           </p>
-          <h2 className="mt-4 text-3xl font-medium tracking-[-0.03em] md:text-4xl">
+          <h2 className="mt-4 text-3xl font-medium tracking-[-0.03em] text-[#17212a] md:text-4xl">
             Common questions
           </h2>
-          <p className="mt-4 text-base leading-7 text-text-muted">
+          <p className="mt-4 text-base leading-7 text-[#58666f]">
             Quick answers about accounts, devices,
             privacy, and getting started.
           </p>
@@ -55,7 +55,7 @@ export default function LandingFaqSection() {
             return (
               <article
                 key={item.question}
-                className="overflow-hidden rounded-[var(--radius-card)] border border-border-subtle bg-surface-card shadow-[var(--shadow-sm)]"
+                className="overflow-hidden rounded-[var(--radius-card)] border border-[#182533]/15 bg-[#fffdf8] shadow-[var(--shadow-sm)]"
               >
                 <h3>
                   <button
@@ -68,14 +68,14 @@ export default function LandingFaqSection() {
                           : item.question
                       )
                     }
-                    className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left text-sm font-medium text-text-primary transition hover:bg-surface-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-interaction md:px-6 md:text-base"
+                    className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left text-sm font-semibold text-[#17212a] transition hover:bg-[#f2eee6] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-interaction md:px-6 md:text-base"
                   >
                     {item.question}
                     <ChevronDown
                       size={18}
                       aria-hidden
                       className={cn(
-                        "shrink-0 text-text-muted transition-transform",
+                        "shrink-0 text-[#617c43] transition-transform",
                         isOpen && "rotate-180"
                       )}
                     />
@@ -83,7 +83,7 @@ export default function LandingFaqSection() {
                 </h3>
 
                 {isOpen ? (
-                  <div className="border-t border-border-subtle px-5 py-4 text-sm leading-7 text-text-muted md:px-6">
+                  <div className="border-t border-[#182533]/10 bg-[#faf7f1] px-5 py-4 text-sm leading-7 text-[#4f5b63] md:px-6">
                     {item.answer}
                   </div>
                 ) : null}
@@ -92,7 +92,7 @@ export default function LandingFaqSection() {
           })}
         </div>
 
-        <p className="mt-8 text-center text-sm text-text-muted">
+        <p className="mt-8 text-center text-sm text-[#58666f]">
           Need more detail?{" "}
           <Link
             href={MARKETING_ROUTES.faq}

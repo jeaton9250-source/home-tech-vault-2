@@ -41,14 +41,16 @@ export default function FaqPage() {
   return (
     <MarketingLayout>
       <StructuredData data={createFaqJsonLd(hubQuestions)} />
-      <FaqAccordion />
+      <div className="[&_.text-text-muted]:!text-[#58666f] [&_.text-text-secondary]:!text-[#34424d] [&_.text-text-primary]:!text-[#17212a] [&_.border-border-subtle]:!border-[#182533]/15 [&_button]:!text-[#17212a]">
+        <FaqAccordion />
+      </div>
 
       <MarketingContent className="border-t border-border-subtle/80 pt-12">
         <div className="mx-auto max-w-3xl">
           <h2 className="text-2xl font-medium tracking-[-0.03em] text-text-primary">
             All FAQ pages
           </h2>
-          <p className="mt-3 text-sm leading-6 text-text-muted">
+          <p className="mt-3 text-sm leading-6 text-[#58666f]">
             Each question below has its own URL, FAQ schema, and related
             article links.
           </p>
@@ -65,7 +67,7 @@ export default function FaqPage() {
 
               return (
                 <section key={category}>
-                  <h3 className="text-overline text-text-muted">
+                  <h3 className="text-overline text-[#617c43]">
                     {category}
                   </h3>
                   <ul className="mt-4 space-y-2.5">
@@ -73,7 +75,7 @@ export default function FaqPage() {
                       <li key={faq.slug}>
                         <Link
                           href={seoFaqPath(faq.slug)}
-                          className="htv-focus-ring text-sm leading-6 text-text-secondary transition hover:text-text-primary"
+                          className="htv-focus-ring text-sm font-medium leading-6 text-[#34424d] transition hover:text-[#17212a]"
                         >
                           {faq.question}
                         </Link>

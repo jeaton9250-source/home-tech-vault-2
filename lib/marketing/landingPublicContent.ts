@@ -43,7 +43,7 @@ export const LANDING_PROBLEM_CARDS = [
   },
   {
     title: "What is protected if something breaks?",
-    text: "Warranties, receipts, and receipts live in drawers or buried in email. When something fails, finding proof takes hours.",
+    text: "Warranties, receipts, and manuals live in drawers or buried in email. When something fails, finding proof takes hours.",
     icon: "shield" as const,
   },
   {
@@ -162,9 +162,9 @@ export const LANDING_FAMILY = {
 
 export const LANDING_SECURITY_POINTS = [
   "Private account access with secure sign-in",
-  "Secure authentication powered by Supabase",
-  "Household permissions on Family plans",
-  "Cloud-based access from your browser",
+  "Private storage for device photos and documents",
+  "Household access controlled by roles and permissions",
+  "HTTPS plus modern browser security protections",
   "Data separated by account and household",
 ] as const;
 

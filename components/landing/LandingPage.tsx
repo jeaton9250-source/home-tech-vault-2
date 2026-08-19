@@ -5,6 +5,7 @@ import HomeTechHealthCheckSection from "@/components/landing/public/HomeTechHeal
 import LandingFooter from "@/components/landing/public/LandingFooter";
 import LandingHeader from "@/components/landing/public/LandingHeader";
 import SmartScanDemoSection from "@/components/landing/public/SmartScanDemoSection";
+import TrustSection from "@/components/landing/public/TrustSection";
 
 import {
   DeviceRecordsSection,
@@ -89,6 +90,10 @@ export default function LandingPage({
         {/* HOUSEHOLD */}
 
         <FamilySection />
+
+        {/* PRIVACY + TRUST */}
+
+        <TrustSection />
 
         {/* DIFFERENTIATION */}
 
