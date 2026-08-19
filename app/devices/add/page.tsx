@@ -377,7 +377,7 @@ export default function AddDevicePage() {
 
   if (permissionsLoading) {
     return (
-      <PageShell>
+      <PageShell className="pb-[calc(2rem+env(safe-area-inset-bottom))] sm:pb-10">
         <PageCard className="flex min-h-56 items-center justify-center">
           <div className="flex items-center gap-3 text-text-secondary">
             <Loader2
@@ -403,7 +403,7 @@ export default function AddDevicePage() {
 
   if (!user) {
     return (
-      <PageShell>
+      <PageShell className="pb-[calc(2rem+env(safe-area-inset-bottom))] sm:pb-10">
         <PageCard className="text-center">
           <h1 className="text-2xl font-bold text-text-primary">
             Sign in to add a device
@@ -427,7 +427,7 @@ export default function AddDevicePage() {
 
   if (!canCreate || isViewer) {
     return (
-      <PageShell>
+      <PageShell className="pb-[calc(2rem+env(safe-area-inset-bottom))] sm:pb-10">
         <PageTitle
           eyebrow="Read-only access"
           title="You cannot add devices"
@@ -469,7 +469,7 @@ export default function AddDevicePage() {
     deviceLimitReached
   ) {
     return (
-      <PageShell>
+      <PageShell className="pb-[calc(2rem+env(safe-area-inset-bottom))] sm:pb-10">
         <PageTitle
           eyebrow="Device Limit Reached"
           title={limitMessage.title}
@@ -510,7 +510,7 @@ export default function AddDevicePage() {
   }
 
   return (
-    <PageShell>
+    <PageShell className="pb-[calc(2rem+env(safe-area-inset-bottom))] sm:pb-10">
       <button
         type="button"
         onClick={() =>
@@ -571,7 +571,7 @@ export default function AddDevicePage() {
       <PageCard>
         <form
           onSubmit={saveDevice}
-          className="space-y-7"
+          className="scroll-mt-4 space-y-7"
         >
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-home-health">
@@ -603,7 +603,7 @@ export default function AddDevicePage() {
             <div className="h-px flex-1 bg-border-subtle" />
           </div>
 
-          <div className="grid gap-5 md:grid-cols-2">
+          <div className="grid gap-4 lg:grid-cols-2">
             <FormField
               label="Device Name"
               required
@@ -687,7 +687,7 @@ export default function AddDevicePage() {
 
             {showMoreDetails && (
               <div className="border-t border-border-subtle px-5 py-5">
-                <div className="grid gap-5 md:grid-cols-2">
+                <div className="grid gap-4 lg:grid-cols-2">
                   <FormField label="Brand">
                     <input
                       value={brand}
