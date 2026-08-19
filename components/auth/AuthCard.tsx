@@ -13,25 +13,40 @@ export default function AuthCard({
   description,
   children,
 }: AuthCardProps) {
+  const showOverline =
+    Boolean(overline) &&
+    overline?.trim().toLowerCase() !==
+      title.trim().toLowerCase();
+
   return (
-    <div className="w-full max-w-[440px] rounded-[var(--radius-card)] border border-border-subtle bg-surface-card p-6 shadow-[var(--shadow-sm),var(--shadow-md)] md:p-8">
-      {overline ? (
-        <p className="text-overline text-interaction">
-          {overline}
-        </p>
-      ) : null}
+    <div className="w-full max-w-[440px] rounded-[30px] border border-[#182533]/10 bg-[#f8f5ef] p-6 shadow-[0_32px_80px_-52px_rgba(15,25,35,0.65)] sm:p-8">
+      <div className="text-center">
+        {showOverline ? (
+          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#617c43]">
+            {overline}
+          </p>
+        ) : null}
 
-      <h1 className="mt-2 text-2xl font-medium tracking-[-0.03em] text-text-primary md:text-[1.75rem]">
-        {title}
-      </h1>
+        <h1
+          className={
+            showOverline
+              ? "mt-3 font-serif text-3xl font-medium tracking-[-0.04em] text-[#17212a]"
+              : "font-serif text-3xl font-medium tracking-[-0.04em] text-[#17212a]"
+          }
+        >
+          {title}
+        </h1>
 
-      {description ? (
-        <p className="mt-3 text-sm leading-6 text-text-muted">
-          {description}
-        </p>
-      ) : null}
+        {description ? (
+          <p className="mx-auto mt-3 max-w-sm text-sm leading-6 text-[#707a81]">
+            {description}
+          </p>
+        ) : null}
+      </div>
 
-      <div className="mt-7">{children}</div>
+      <div className="mt-7">
+        {children}
+      </div>
     </div>
   );
 }

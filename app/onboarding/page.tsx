@@ -478,19 +478,57 @@ function OnboardingFlow() {
   }
 
   async function handleGetStarted() {
+    if (!user) {
+      return;
+    }
+
     setErrorMessage("");
+
+    const normalizedName =
+      profileName.trim();
+
+    if (!normalizedName) {
+      setErrorMessage(
+        "Enter your name to continue."
+      );
+      return;
+    }
 
     try {
       setSubmitting(true);
+
+      const { error: profileError } =
+        await supabase
+          .from("profiles")
+          .upsert(
+            {
+              id: user.id,
+              full_name:
+                normalizedName,
+            },
+            {
+              onConflict: "id",
+            }
+          );
+
+      if (profileError) {
+        throw profileError;
+      }
+
+      setProfileName(
+        normalizedName
+      );
+
       trackOnboardingStepCompleted(
         "welcome"
       );
+
       await persistStep("home");
     } catch (error) {
       setErrorMessage(
         getErrorMessage(
           error,
-          "Unable to continue."
+          "Unable to save your name."
         )
       );
     } finally {
@@ -1082,39 +1120,58 @@ function OnboardingFlow() {
       )}
 
       {step === "welcome" && (
-        <>
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            void handleGetStarted();
+          }}
+        >
           <OnboardingEyebrow>
             Welcome home
           </OnboardingEyebrow>
 
           <OnboardingTitle>
-            Welcome to Home Tech Vault
-            {profileName
-              ? `, ${profileName.split(" ")[0]}`
-              : ""}
-            .
+            Let's personalize your vault.
           </OnboardingTitle>
 
           <OnboardingDescription>
-            Let&apos;s create one organized
-            place for your home&apos;s
-            technology. You can track
-            devices, documents, warranties,
-            and more — starting with the
-            basics.
+            First, tell us what to call you.
+            Your home and device setup comes next.
           </OnboardingDescription>
 
-          <p className="mt-4 text-sm text-text-tertiary">
-            Estimated setup time: about 3
-            minutes
-          </p>
+          <div className="mt-7">
+            <OnboardingField
+              label="Your name"
+              htmlFor="onboarding-name"
+              required
+            >
+              <input
+                id="onboarding-name"
+                value={profileName}
+                onChange={(event) =>
+                  setProfileName(
+                    event.target.value
+                  )
+                }
+                autoComplete="name"
+                placeholder="Your name"
+                className={
+                  inputClassName
+                }
+                autoFocus
+                required
+              />
+            </OnboardingField>
+          </div>
 
           <OnboardingActions>
             <Button
               type="button"
               variant="ghost"
               onClick={() =>
-                void handleSkip("welcome")
+                void handleSkip(
+                  "welcome"
+                )
               }
               disabled={submitting}
             >
@@ -1122,10 +1179,7 @@ function OnboardingFlow() {
             </Button>
 
             <Button
-              type="button"
-              onClick={() =>
-                void handleGetStarted()
-              }
+              type="submit"
               disabled={submitting}
             >
               {submitting ? (
@@ -1134,10 +1188,11 @@ function OnboardingFlow() {
                   className="animate-spin"
                 />
               ) : null}
-              Get Started
+
+              Continue
             </Button>
           </OnboardingActions>
-        </>
+        </form>
       )}
 
       {step === "home" && (

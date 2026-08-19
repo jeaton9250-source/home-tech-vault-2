@@ -27,18 +27,10 @@ const signupBenefits = [
 
 export default function SignupPage() {
   const router = useRouter();
-
-  const [fullName, setFullName] =
-    useState("");
-  const [householdName, setHouseholdName] =
-    useState("");
-  const [email, setEmail] = useState("");
+const [email, setEmail] = useState("");
   const [password, setPassword] =
     useState("");
-  const [confirmPassword, setConfirmPassword] =
-    useState("");
-
-  const [
+const [
     showPassword,
     setShowPassword,
   ] = useState(false);
@@ -46,11 +38,7 @@ export default function SignupPage() {
     showConfirmPassword,
     setShowConfirmPassword,
   ] = useState(false);
-
-  const [agreedToTerms, setAgreedToTerms] =
-    useState(false);
-
-  const [submitting, setSubmitting] =
+const [submitting, setSubmitting] =
     useState(false);
 
   const [errorMessage, setErrorMessage] =
@@ -67,25 +55,8 @@ export default function SignupPage() {
     setErrorMessage("");
     setSuccessMessage("");
 
-    const normalizedName = fullName.trim();
-    const normalizedHousehold =
-      householdName.trim();
     const normalizedEmail =
       email.trim().toLowerCase();
-
-    if (!normalizedName) {
-      setErrorMessage(
-        "Enter your full name."
-      );
-      return;
-    }
-
-    if (!normalizedHousehold) {
-      setErrorMessage(
-        "Enter a household name."
-      );
-      return;
-    }
 
     if (!normalizedEmail) {
       setErrorMessage(
@@ -97,20 +68,6 @@ export default function SignupPage() {
     if (password.length < 8) {
       setErrorMessage(
         "Your password must be at least 8 characters."
-      );
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setErrorMessage(
-        "Your passwords do not match."
-      );
-      return;
-    }
-
-    if (!agreedToTerms) {
-      setErrorMessage(
-        "You must agree to the Terms and Privacy Policy."
       );
       return;
     }
@@ -127,12 +84,8 @@ export default function SignupPage() {
         email: normalizedEmail,
         password,
         options: {
-          data: {
-            full_name: normalizedName,
-            household_name:
-              normalizedHousehold,
-          },
-          emailRedirectTo: `${window.location.origin}/dashboard`,
+          emailRedirectTo:
+            `${window.location.origin}/dashboard`,
         },
       });
 
@@ -143,72 +96,14 @@ export default function SignupPage() {
       const user = data.user;
       const session = data.session;
 
+      // Projects with email confirmation disabled can
+      // enter onboarding immediately.
       if (user && session) {
-        const {
-          error: profileError,
-        } = await supabase
-          .from("profiles")
-          .upsert(
-            {
-              id: user.id,
-              full_name:
-                normalizedName,
-              household_name:
-                normalizedHousehold,
-              avatar_url: null,
-            },
-            {
-              onConflict: "id",
-            }
-          );
-
-        if (profileError) {
-          console.error(
-            "Unable to create profile:",
-            profileError
-          );
-        }
-
-        /*
-         * A signup with an immediate authenticated session can
-         * create its canonical household now. If email confirmation
-         * is required and session is null, normal onboarding will
-         * call the same endpoint through saveHomeName().
-         */
-        const householdResponse =
-          await fetch(
-            "/api/household/ensure",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type":
-                  "application/json",
-              },
-              body: JSON.stringify({
-                householdName:
-                  normalizedHousehold,
-              }),
-            }
-          );
-
-        if (!householdResponse.ok) {
-          const householdPayload =
-            (await householdResponse.json()) as {
-              error?: string;
-            };
-
-          console.error(
-            "Unable to create canonical household:",
-            householdPayload.error ||
-              householdResponse.statusText
-          );
-        }
-
         const destination =
           await resolvePostAuthRedirect(
             supabase,
             user.id,
-            "/dashboard"
+            "/onboarding"
           );
 
         router.replace(destination);
@@ -217,7 +112,7 @@ export default function SignupPage() {
       }
 
       setSuccessMessage(
-        "Your vault was created. Check your email to confirm your account, then sign in."
+        "Check your email to confirm your account. After signing in, we'll finish setting up your vault."
       );
     } catch (error) {
       console.error(
@@ -243,9 +138,9 @@ export default function SignupPage() {
       brandHref="/"
     >
       <AuthCard
-        overline="Get started"
-        title="Create your Home Tech Vault"
-        description="Set up one secure place for your household devices, warranties, documents, subscriptions, and maintenance records."
+        overline="Free to start"
+        title="Create your vault"
+        description="Free to start. No credit card required."
       >
         <GoogleAuthButton
           nextPath="/onboarding"
@@ -313,39 +208,8 @@ export default function SignupPage() {
           noValidate
         >
           <FormInput
-            id="signup-full-name"
-            label="Full name"
-            type="text"
-            value={fullName}
-            onChange={(event) =>
-              setFullName(
-                event.target.value
-              )
-            }
-            autoComplete="name"
-            placeholder="Your full name"
-            required
-          />
-
-          <FormInput
-            id="signup-household-name"
-            label="Household name"
-            type="text"
-            value={householdName}
-            onChange={(event) =>
-              setHouseholdName(
-                event.target.value
-              )
-            }
-            autoComplete="organization"
-            placeholder="My household"
-            helperText="This is the name your household will see in Home Tech Vault."
-            required
-          />
-
-          <FormInput
             id="signup-email"
-            label="Email address"
+            label="Email"
             type="email"
             value={email}
             onChange={(event) =>
@@ -373,66 +237,37 @@ export default function SignupPage() {
             required
           />
 
-          <PasswordInput
-            id="signup-confirm-password"
-            label="Confirm password"
-            value={confirmPassword}
-            onChange={setConfirmPassword}
-            autoComplete="new-password"
-            placeholder="Enter your password again"
-            showPassword={showConfirmPassword}
-            onToggleVisibility={() =>
-              setShowConfirmPassword(
-                (current) => !current
-              )
-            }
-            required
-          />
-
-          <label className="flex cursor-pointer items-start gap-3 rounded-[var(--radius-input)] border border-border-subtle bg-surface-sunken/70 p-4">
-            <input
-              type="checkbox"
-              checked={agreedToTerms}
-              onChange={(event) =>
-                setAgreedToTerms(
-                  event.target.checked
-                )
-              }
-              className="mt-1 h-4 w-4 accent-interaction"
-            />
-
-            <span className="text-sm leading-6 text-text-secondary">
-              I agree to the{" "}
-              <Link
-                href="/terms"
-                className="font-medium text-interaction underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interaction"
-              >
-                Terms
-              </Link>{" "}
-              and{" "}
-              <Link
-                href="/privacy"
-                className="font-medium text-interaction underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interaction"
-              >
-                Privacy Policy
-              </Link>
-              .
-            </span>
-          </label>
-
           <Button
             type="submit"
             fullWidth
             size="lg"
             loading={submitting}
-            loadingLabel="Creating your vault..."
+            loadingLabel="Creating account..."
           >
-            Create My Vault
+            Create free account
           </Button>
+
+          <p className="text-center text-xs leading-5 text-[#7b858c]">
+            By continuing, you agree to our{" "}
+            <Link
+              href="/terms"
+              className="font-medium text-[#617c43] underline decoration-[#617c43]/30 underline-offset-4 hover:text-[#718d4f]"
+            >
+              Terms
+            </Link>{" "}
+            and{" "}
+            <Link
+              href="/privacy"
+              className="font-medium text-[#617c43] underline decoration-[#617c43]/30 underline-offset-4 hover:text-[#718d4f]"
+            >
+              Privacy Policy
+            </Link>
+            .
+          </p>
         </form>
 
         <p className="mt-6 text-center text-sm leading-6 text-text-muted">
-          Already have a vault?{" "}
+          Already have an account?{" "}
           <Link
             href="/login"
             className="font-medium text-interaction underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interaction"

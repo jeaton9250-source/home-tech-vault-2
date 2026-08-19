@@ -348,7 +348,7 @@ export default function LoginPage() {
       ? "Use the email address that received the household invitation. You will return to the invitation after signing in."
       : isCreateAccountInvitation
         ? "Continue setting up the Home Tech Vault account you were invited to create."
-        : "Sign in to access your devices, warranties, documents, subscriptions, and household technology records.";
+        : "Sign in to your Home Tech Vault.";
 
   if (isLostInviteConfirmRedirect) {
     return (
@@ -546,7 +546,7 @@ export default function LoginPage() {
           >
             {isFamilyInvitation
               ? "Sign in and accept invitation"
-              : "Sign In"}
+              : "Sign in"}
           </Button>
         </form>
 
