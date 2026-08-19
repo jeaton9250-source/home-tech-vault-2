@@ -9,11 +9,13 @@ import {
 } from "lucide-react";
 
 import DashboardHero from "@/components/dashboard/DashboardHero";
+import DashboardUnlockGate from "@/components/dashboard/DashboardUnlockGate";
 import HomeAdvisorPreview from "@/components/advisor/HomeAdvisorPreview";
 import RecommendedNextStep from "@/components/dashboard/RecommendedNextStep";
 import SmartSearch from "@/components/search/SmartSearch";
 import HomeHealthEmptyState from "@/components/home-health/HomeHealthEmptyState";
 import { useHomeAdvisor } from "@/hooks/useHomeAdvisor";
+import { usePermissions } from "@/hooks/usePermissions";
 import { getHomeHealthDisplayMessage } from "@/lib/home-health/display";
 
 import type { DashboardOverviewStats } from "@/lib/dashboard/types";
@@ -31,10 +33,33 @@ export default function HomeHealthDashboard({
   overviewStats,
 }: HomeHealthDashboardProps) {
   const {
+    isDemo,
+    role,
+    canCreate,
+  } = usePermissions();
+
+  const {
     advisor,
     loading: advisorLoading,
     error: advisorError,
   } = useHomeAdvisor();
+
+  const shouldLockDashboard =
+    !isDemo &&
+    canCreate &&
+    role !== "viewer" &&
+    overviewStats.deviceCount < 3;
+
+  if (shouldLockDashboard) {
+    return (
+      <DashboardUnlockGate
+        firstName={firstName}
+        deviceCount={
+          overviewStats.deviceCount
+        }
+      />
+    );
+  }
 
   const healthSummary =
     advisor?.summary ||

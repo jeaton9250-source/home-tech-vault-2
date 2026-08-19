@@ -828,7 +828,7 @@ export default function DeviceAddedPage() {
           <div className="flex flex-col gap-3 border-t border-[#617c43]/15 bg-[#f8f5ef]/70 px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
             <div className="flex flex-wrap gap-2">
               <Link
-                href="/devices/add"
+                href="/devices/add?first=1"
                 onClick={() =>
                   trackAction(
                     "scan_another"
