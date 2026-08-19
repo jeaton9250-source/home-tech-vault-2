@@ -29,7 +29,7 @@ const securityHeaders = [
   {
     key: "Permissions-Policy",
     value:
-      "camera=(), microphone=(), geolocation=(), payment=()",
+      "camera=(self), microphone=(), geolocation=(), payment=()",
   },
   {
     key: "Strict-Transport-Security",
@@ -57,6 +57,49 @@ const securityHeaders = [
   },
 ];
 
+const privateNoIndexSources = [
+  "/login/:path*",
+  "/signup/:path*",
+  "/forgot-password/:path*",
+  "/reset-password/:path*",
+  "/set-password/:path*",
+  "/auth/:path*",
+  "/upgrade/:path*",
+  "/dashboard/:path*",
+  "/devices/:path*",
+  "/documents/:path*",
+  "/network/:path*",
+  "/home/:path*",
+  "/family/:path*",
+  "/settings/:path*",
+  "/account/:path*",
+  "/profile/:path*",
+  "/reports/:path*",
+  "/warranties/:path*",
+  "/imports/:path*",
+  "/notifications/:path*",
+  "/maintenance/:path*",
+  "/subscriptions/:path*",
+  "/activity/:path*",
+  "/audit/:path*",
+  "/advisor/:path*",
+  "/ai/:path*",
+  "/insights/:path*",
+  "/smart-search/:path*",
+  "/onboarding/:path*",
+  "/invite/:path*",
+  "/apple-home/:path*",
+  "/admin/:path*",
+  "/api/:path*",
+];
+
+const noIndexHeaders = [
+  {
+    key: "X-Robots-Tag",
+    value: "noindex, nofollow, noarchive",
+  },
+];
+
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   async redirects() {
@@ -80,6 +123,10 @@ const nextConfig: NextConfig = {
         source: "/:path*",
         headers: securityHeaders,
       },
+      ...privateNoIndexSources.map((source) => ({
+        source,
+        headers: noIndexHeaders,
+      })),
       {
         source: "/sitemap.xml",
         headers: [
