@@ -16,6 +16,7 @@ import {
   recordActivity,
 } from "@/lib/activity";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 
 export type AddDeviceInput = {
   deviceName: string;
@@ -1363,175 +1364,185 @@ export async function addDevice(
     });
 
     /*
-     * A database-matched product image is a convenience,
-     * not a requirement for creating the device.
+     * HTV_BACKGROUND_DEVICE_ENRICHMENT
      *
-     * If the remote image/CDN fails, the device still
-     * remains successfully saved.
+     * The device is already saved.
+     * Image and manual work continues after
+     * the action response is released.
      */
-    if (
-      input.productUpc
-    ) {
-      try {
-        const productImageSaved =
-          await saveMatchedProductImage({
-            supabase,
-            userId:
-              user.id,
-            householdId,
-            deviceId:
-              createdDevice.id,
-            productUpc:
-              input.productUpc,
-          });
-
-        if (
-          productImageSaved
-        ) {
-          await recordActivity({
-            activityType:
-              "photo.uploaded",
-
-            title:
-              "Product photo added",
-
-            description:
-              "A matched product image was saved automatically.",
-
-            userId:
-              user.id,
-
-            householdId,
-
-            deviceId:
-              createdDevice.id,
-          });
-        }
-      } catch (imageError) {
-        console.warn(
-          "Unable to save matched product image:",
-          imageError
-        );
-      }
-    }
-
-    /*
-     * Automatically attach an official manual
-     * when the device came from an exact
-     * UPC/EAN database match.
-     *
-     * This is intentionally non-fatal:
-     * a missing manual must never prevent
-     * the device itself from being saved.
-     */
-    if (
-      input.productUpc
-    ) {
-      try {
-        const manualResult =
-          await saveIcecatManualForDevice({
-            supabase,
-            admin,
-
-            userId:
-              user.id,
-
-            householdId,
-
-            deviceId:
-              createdDevice.id,
-
-            deviceName:
-              trimmedName,
-
-            brand:
-              input.brand,
-
-            modelNumber:
-              input.modelNumber,
-
-            productUpc:
-              input.productUpc,
-          });
-
-        if (
-          manualResult ===
-          "found"
-        ) {
-          const {
-            error: manualStatusError,
-          } = await supabase
-            .from("devices")
-            .update({
-              manual_status: "found",
-              manual_checked_at:
-                new Date().toISOString(),
-            })
-            .eq(
-              "id",
-              createdDevice.id
-            );
-
-          if (manualStatusError) {
-            console.warn(
-              "Unable to save manual lookup status:",
-              manualStatusError
-            );
-          }
-
-          await recordActivity({
-            activityType:
-              "document.uploaded",
-
-            title:
-              "User manual added",
-
-            description:
-              "The official product manual was found and saved automatically.",
-
-            userId:
-              user.id,
-
-            householdId,
-
-            deviceId:
-              createdDevice.id,
-          });
-        } else if (
-          manualResult ===
-          "not_found"
-        ) {
-          const {
-            error: manualStatusError,
-          } = await supabase
-            .from("devices")
-            .update({
-              manual_status:
-                "not_found",
-              manual_checked_at:
-                new Date().toISOString(),
-            })
-            .eq(
-              "id",
-              createdDevice.id
-            );
-
-          if (manualStatusError) {
-            console.warn(
-              "Unable to save manual lookup status:",
-              manualStatusError
-            );
-          }
-        }
-      } catch (
-        manualError
+    after(async () => {
+      /*
+       * A database-matched product image is a convenience,
+       * not a requirement for creating the device.
+       *
+       * If the remote image/CDN fails, the device still
+       * remains successfully saved.
+       */
+      if (
+        input.productUpc
       ) {
-        console.warn(
-          "Automatic manual lookup failed:",
-          manualError
-        );
+        try {
+          const productImageSaved =
+            await saveMatchedProductImage({
+              supabase,
+              userId:
+                user.id,
+              householdId,
+              deviceId:
+                createdDevice.id,
+              productUpc:
+                input.productUpc,
+            });
+
+          if (
+            productImageSaved
+          ) {
+            await recordActivity({
+              activityType:
+                "photo.uploaded",
+
+              title:
+                "Product photo added",
+
+              description:
+                "A matched product image was saved automatically.",
+
+              userId:
+                user.id,
+
+              householdId,
+
+              deviceId:
+                createdDevice.id,
+            });
+          }
+        } catch (imageError) {
+          console.warn(
+            "Unable to save matched product image:",
+            imageError
+          );
+        }
       }
-    }
+
+      /*
+       * Automatically attach an official manual
+       * when the device came from an exact
+       * UPC/EAN database match.
+       *
+       * This is intentionally non-fatal:
+       * a missing manual must never prevent
+       * the device itself from being saved.
+       */
+      if (
+        input.productUpc
+      ) {
+        try {
+          const manualResult =
+            await saveIcecatManualForDevice({
+              supabase,
+              admin,
+
+              userId:
+                user.id,
+
+              householdId,
+
+              deviceId:
+                createdDevice.id,
+
+              deviceName:
+                trimmedName,
+
+              brand:
+                input.brand,
+
+              modelNumber:
+                input.modelNumber,
+
+              productUpc:
+                input.productUpc,
+            });
+
+          if (
+            manualResult ===
+            "found"
+          ) {
+            const {
+              error: manualStatusError,
+            } = await supabase
+              .from("devices")
+              .update({
+                manual_status: "found",
+                manual_checked_at:
+                  new Date().toISOString(),
+              })
+              .eq(
+                "id",
+                createdDevice.id
+              );
+
+            if (manualStatusError) {
+              console.warn(
+                "Unable to save manual lookup status:",
+                manualStatusError
+              );
+            }
+
+            await recordActivity({
+              activityType:
+                "document.uploaded",
+
+              title:
+                "User manual added",
+
+              description:
+                "The official product manual was found and saved automatically.",
+
+              userId:
+                user.id,
+
+              householdId,
+
+              deviceId:
+                createdDevice.id,
+            });
+          } else if (
+            manualResult ===
+            "not_found"
+          ) {
+            const {
+              error: manualStatusError,
+            } = await supabase
+              .from("devices")
+              .update({
+                manual_status:
+                  "not_found",
+                manual_checked_at:
+                  new Date().toISOString(),
+              })
+              .eq(
+                "id",
+                createdDevice.id
+              );
+
+            if (manualStatusError) {
+              console.warn(
+                "Unable to save manual lookup status:",
+                manualStatusError
+              );
+            }
+          }
+        } catch (
+          manualError
+        ) {
+          console.warn(
+            "Automatic manual lookup failed:",
+            manualError
+          );
+        }
+      }
+
+    });
 
     if (input.warrantyDate) {
       await recordActivity({

@@ -159,6 +159,14 @@ export default function SmartDeviceSearch({
       null
     );
 
+  const [
+    lastBarcode,
+    setLastBarcode,
+  ] =
+    useState<string | null>(
+      null
+    );
+
   const videoRef =
     useRef<HTMLVideoElement | null>(
       null
@@ -227,6 +235,12 @@ export default function SmartDeviceSearch({
 
     const barcodeLookup =
       isBarcode(cleaned);
+
+    if (barcodeLookup) {
+      setLastBarcode(
+        cleaned
+      );
+    }
 
     /*
      * Never reuse an old failed
@@ -415,6 +429,7 @@ export default function SmartDeviceSearch({
       scannerControlsRef.current = null;
 
       setScannerOpen(true);
+      setLastBarcode(null);
       setScannerStarting(true);
       setScannerMessage(
         "Starting rear camera..."
@@ -680,6 +695,8 @@ export default function SmartDeviceSearch({
   }
 
   function changeSelection() {
+    setLastBarcode(null);
+
     setSelectedDevice(
       null
     );
@@ -695,6 +712,8 @@ export default function SmartDeviceSearch({
     value: string
   ) {
     setQuery(value);
+
+    setLastBarcode(null);
 
     setSelectedDevice(
       null
@@ -756,6 +775,79 @@ export default function SmartDeviceSearch({
 
   return (
     <div className="space-y-3">
+      {lastBarcode ? (
+        <div
+          data-smart-scan-status
+          aria-live="polite"
+          className="overflow-hidden rounded-2xl border border-[#617c43]/20 bg-[#f3f6ee] shadow-sm"
+        >
+          <div className="flex items-start gap-3 p-4">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#617c43] text-white">
+              <Check
+                size={17}
+              />
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-sm font-semibold text-[#17212a]">
+                  {searching
+                    ? "Barcode detected"
+                    : selectedDevice
+                      ? "Product found"
+                      : "Barcode checked"}
+                </p>
+
+                {searching ? (
+                  <Loader2
+                    size={14}
+                    className="animate-spin text-[#617c43]"
+                  />
+                ) : null}
+              </div>
+
+              {searching ? (
+                <div className="mt-2">
+                  <p className="text-xs leading-5 text-[#68737b]">
+                    Finding the exact product...
+                  </p>
+
+                  <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[#617c43]/10">
+                    <div className="h-full w-2/3 animate-pulse rounded-full bg-[#617c43]" />
+                  </div>
+                </div>
+              ) : selectedDevice ? (
+                <div className="mt-2">
+                  <p className="truncate text-sm font-semibold text-[#17212a]">
+                    {selectedDevice.deviceName}
+                  </p>
+
+                  <p className="mt-1 text-xs text-[#68737b]">
+                    {[
+                      selectedDevice.brand,
+                      selectedDevice.modelNumber,
+                    ]
+                      .filter(Boolean)
+                      .join(" - ")}
+                  </p>
+
+                  <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-[#617c43]/10 px-2.5 py-1 text-[11px] font-semibold text-[#617c43]">
+                    <Sparkles
+                      size={12}
+                    />
+
+                    Details filled automatically
+                  </div>
+                </div>
+              ) : (
+                <p className="mt-2 text-xs leading-5 text-[#68737b]">
+                  We read the barcode, but no exact product match was returned. You can still enter the device manually.
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : null}
       <div>
         <label className="block">
           <span className="mb-2 block text-sm font-semibold text-text-primary">
