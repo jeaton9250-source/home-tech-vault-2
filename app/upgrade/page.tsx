@@ -26,7 +26,6 @@ export default function UpgradePage() {
     plan,
     planDisplayName,
     roleDisplayName,
-    role,
     isDemo,
     isFree,
     isPlatformAdmin,
@@ -50,11 +49,7 @@ export default function UpgradePage() {
     Boolean(user) &&
     !isDemo &&
     !isPlatformAdmin &&
-    !billingManagedByHousehold &&
-    (
-      !role ||
-      role === "admin"
-    );
+    !billingManagedByHousehold;
 
   async function startCheckout(plan: PaidPlan) {
     try {

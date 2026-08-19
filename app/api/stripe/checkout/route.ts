@@ -87,26 +87,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const normalizedRole =
-      typeof membership?.role === "string"
-        ? membership.role
-            .trim()
-            .toLowerCase()
-        : null;
-
-    if (
-      normalizedRole === "member" ||
-      normalizedRole === "viewer"
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            "Only the household owner can start or change a subscription.",
-        },
-        { status: 403 }
-      );
-    }
-
+    /*
+     * Do not authorize billing from the normalized
+     * membership role alone. Household ownership is
+     * the authoritative billing check.
+     */
     if (membership?.household_id) {
       const {
         data: household,
