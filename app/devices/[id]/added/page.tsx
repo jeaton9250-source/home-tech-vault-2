@@ -1,5 +1,7 @@
 "use client";
 
+import DashboardUnlockCelebration from "@/components/dashboard/DashboardUnlockCelebration";
+
 import {
   ArrowRight,
   BookOpen,
@@ -484,7 +486,9 @@ export default function DeviceAddedPage() {
     return (
       <PageShell>
         <PageCard className="mx-auto max-w-2xl text-center">
-          <h1 className="font-serif text-3xl font-medium tracking-[-0.04em] text-[#17212a]">
+                      <DashboardUnlockCelebration />
+
+<h1 className="font-serif text-3xl font-medium tracking-[-0.04em] text-[#17212a]">
             Your device was saved.
           </h1>
 
