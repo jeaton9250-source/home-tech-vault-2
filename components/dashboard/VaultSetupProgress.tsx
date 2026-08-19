@@ -146,6 +146,93 @@ export default function VaultSetupProgress({
       "Save my first document";
   }
 
+  /*
+   * After the user reaches the first 3-device
+   * milestone, setup stops behaving like a hero.
+   * The dashboard should now be the primary view.
+   */
+  if (needsDocument) {
+    return (
+      <section
+        aria-labelledby="vault-setup-title"
+        className="overflow-hidden rounded-[22px] border border-[#152638] bg-[#0b1623] text-white shadow-[0_18px_45px_-38px_rgba(11,22,35,0.8)]"
+      >
+        <div className="flex flex-col gap-4 px-5 py-4 sm:px-6 sm:py-5 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <div className="flex items-center gap-2 text-[#a9c38a]">
+                <Sparkles
+                  size={14}
+                  aria-hidden
+                />
+
+                <p className="text-[10px] font-semibold uppercase tracking-[0.14em]">
+                  First milestone complete
+                </p>
+              </div>
+
+              <span className="rounded-full border border-[#8ca667]/20 bg-[#8ca667]/10 px-2.5 py-1 text-[10px] font-semibold text-[#a9c38a]">
+                {percentage}% ready
+              </span>
+            </div>
+
+            <h2
+              id="vault-setup-title"
+              className="mt-2 text-xl font-semibold tracking-[-0.03em] text-[#f4f0e8] sm:text-2xl"
+            >
+              3 devices organized. Protect the paperwork next.
+            </h2>
+
+            <p className="mt-1.5 max-w-2xl text-sm leading-5 text-white/55">
+              Save one receipt, warranty, or manual so it is
+              already here when you need it.
+            </p>
+          </div>
+
+          <div className="shrink-0">
+            {canCreate ? (
+              <Link
+                href="/documents/upload"
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#718d4f] px-4 text-sm font-semibold text-white transition hover:bg-[#617c43] sm:w-auto"
+              >
+                <FileText
+                  size={16}
+                  aria-hidden
+                />
+
+                Save a document
+
+                <ArrowRight
+                  size={15}
+                  aria-hidden
+                />
+              </Link>
+            ) : (
+              <span className="text-xs text-white/45">
+                Read-only household
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2 border-t border-white/[0.07] px-5 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+          <p className="text-[11px] font-medium text-white/40">
+            {completedCount} of {steps.length} setup steps complete
+          </p>
+
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10 sm:w-36">
+            <div
+              className="h-full rounded-full bg-[#8ca667] transition-[width] duration-500"
+              style={{
+                width: `${percentage}%`,
+              }}
+            />
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section
       aria-labelledby="vault-setup-title"
