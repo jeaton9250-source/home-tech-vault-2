@@ -57,6 +57,98 @@ export async function POST(request: Request) {
       );
     }
 
+    /*
+     * Checkout authorization must also be enforced
+     * server-side. Client-side disabled buttons are
+     * presentation only and can be bypassed.
+     */
+    const {
+      data: membership,
+      error: membershipError,
+    } = await supabase
+      .from("household_members")
+      .select("household_id, role")
+      .eq("user_id", user.id)
+      .limit(1)
+      .maybeSingle();
+
+    if (membershipError) {
+      console.error(
+        "Unable to verify checkout household access:",
+        membershipError
+      );
+
+      return NextResponse.json(
+        {
+          error:
+            "Unable to verify billing permissions.",
+        },
+        { status: 500 }
+      );
+    }
+
+    const normalizedRole =
+      typeof membership?.role === "string"
+        ? membership.role
+            .trim()
+            .toLowerCase()
+        : null;
+
+    if (
+      normalizedRole === "member" ||
+      normalizedRole === "viewer"
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Only the household owner can start or change a subscription.",
+        },
+        { status: 403 }
+      );
+    }
+
+    if (membership?.household_id) {
+      const {
+        data: household,
+        error: householdError,
+      } = await supabase
+        .from("households")
+        .select("owner_id")
+        .eq(
+          "id",
+          membership.household_id
+        )
+        .maybeSingle();
+
+      if (householdError) {
+        console.error(
+          "Unable to verify household billing owner:",
+          householdError
+        );
+
+        return NextResponse.json(
+          {
+            error:
+              "Unable to verify household billing permissions.",
+          },
+          { status: 500 }
+        );
+      }
+
+      if (
+        household?.owner_id &&
+        household.owner_id !== user.id
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              "Only the household owner can start or change a subscription.",
+          },
+          { status: 403 }
+        );
+      }
+    }
+
     const priceId =
       plan === "pro"
         ? process.env.STRIPE_PRO_PRICE_ID

@@ -26,6 +26,7 @@ export default function UpgradePage() {
     plan,
     planDisplayName,
     roleDisplayName,
+    role,
     isDemo,
     isFree,
     isPlatformAdmin,
@@ -37,11 +38,23 @@ export default function UpgradePage() {
   const [loadingPlan, setLoadingPlan] =
     useState<PaidPlan | null>(null);
 
+  /*
+   * Starting a subscription and managing an existing
+   * subscription are different permissions.
+   *
+   * A brand-new Free owner has no Stripe customer yet,
+   * so canManageBilling is correctly false. They must
+   * still be allowed to start their first checkout.
+   */
   const canPurchase =
     Boolean(user) &&
     !isDemo &&
     !isPlatformAdmin &&
-    canManageBilling;
+    !billingManagedByHousehold &&
+    (
+      !role ||
+      role === "admin"
+    );
 
   async function startCheckout(plan: PaidPlan) {
     try {
