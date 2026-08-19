@@ -1,324 +1,296 @@
 "use client";
 
+import Link from "next/link";
+
 import {
+  ArrowRight,
   Check,
   FileText,
-  Laptop,
-  Network,
+  ScanBarcode,
+  ShieldCheck,
   Sparkles,
   X,
 } from "lucide-react";
-import Link from "next/link";
-import {
-  useSearchParams,
-} from "next/navigation";
-import {
-  trackDashboardReached,
-} from "@/lib/analytics/activation";
+
 import {
   useEffect,
-  useMemo,
   useState,
 } from "react";
 
 type NewVaultGettingStartedProps = {
   deviceCount: number;
   documentCount: number;
+  networkConfigured?: boolean;
+
+  /*
+   * Allow the dashboard to continue passing
+   * any existing optional props without making
+   * this component brittle.
+   */
+  [key: string]: unknown;
 };
 
-type SetupItem = {
-  title: string;
-  description: string;
-  href: string;
-  action: string;
-  complete: boolean;
-  icon: typeof Laptop;
-};
+const DISMISSED_KEY =
+  "htv:new-vault-getting-started:v2";
 
 export default function NewVaultGettingStarted({
   deviceCount,
   documentCount,
 }: NewVaultGettingStartedProps) {
-  const searchParams =
-    useSearchParams();
+  const [
+    ready,
+    setReady,
+  ] = useState(false);
 
-  const [dismissed, setDismissed] =
-    useState(false);
-
-  const [justCompletedOnboarding, setJustCompletedOnboarding] =
-    useState(false);
-
-  useEffect(() => {
-    setJustCompletedOnboarding(
-      searchParams.get("welcome") === "1"
-    );
-  }, [searchParams]);
+  const [
+    dismissed,
+    setDismissed,
+  ] = useState(false);
 
   useEffect(() => {
-    const fromOnboarding =
-      searchParams.get(
-        "welcome"
+    const params =
+      new URLSearchParams(
+        window.location.search
+      );
+
+    const arrivingFromOnboarding =
+      params.get("welcome") === "1";
+
+    const previouslyDismissed =
+      window.localStorage.getItem(
+        DISMISSED_KEY
       ) === "1";
 
-    if (!fromOnboarding) {
-      return;
-    }
-
-    trackDashboardReached({
-      deviceCount,
-      documentCount,
-      fromOnboarding,
-    });
-  }, [
-    searchParams,
-    deviceCount,
-    documentCount,
-  ]);
-
-  const items = useMemo<SetupItem[]>(
-    () => [
-      {
-        title: "Add your first device",
-        description:
-          "Smart Scan can identify a product and fill in the important details for you.",
-        href:
-          deviceCount > 0
-            ? "/devices/add"
-            : "/devices/add?first=1",
-        action:
-          deviceCount > 0
-            ? "Add another device"
-            : "Smart Scan a device",
-        complete: deviceCount > 0,
-        icon: Laptop,
-      },
-      {
-        title: "Save a receipt or manual",
-        description:
-          "Keep proof of purchase, manuals, and other important files with your home records.",
-        href: "/documents/upload",
-        action: "Add a document",
-        complete:
-          documentCount > 0,
-        icon: FileText,
-      },
-      {
-        title: "Document your home network",
-        description:
-          "Save the router, provider, and network details that matter when something stops working.",
-        href: "/network/edit",
-        action: "Add network details",
-        complete: false,
-        icon: Network,
-      },
-    ],
-    [
-      deviceCount,
-      documentCount,
-    ]
-  );
-
-  const completedCount =
-    items.filter(
-      (item) => item.complete
-    ).length;
-
-  const shouldShow =
-    justCompletedOnboarding ||
-    (
-      deviceCount <= 1 &&
-      documentCount === 0
+    setDismissed(
+      !arrivingFromOnboarding &&
+        previouslyDismissed
     );
 
+    setReady(true);
+  }, []);
+
+  /*
+   * Once someone has several devices,
+   * the normal dashboard is more useful
+   * than beginner guidance.
+   */
+  const isNewVault =
+    deviceCount <= 3;
+
   if (
+    !ready ||
     dismissed ||
-    !shouldShow
+    !isNewVault
   ) {
     return null;
   }
 
-  const primaryItem =
-    items.find(
-      (item) => !item.complete
-    ) ?? items[0];
+  const hasDevice =
+    deviceCount > 0;
+
+  const hasDocument =
+    documentCount > 0;
+
+  const primaryHref =
+    hasDevice
+      ? "/devices/add"
+      : "/devices/add?first=1";
+
+  const primaryLabel =
+    hasDevice
+      ? "Scan another device"
+      : "Scan your first device";
+
+  function dismiss() {
+    window.localStorage.setItem(
+      DISMISSED_KEY,
+      "1"
+    );
+
+    setDismissed(true);
+  }
 
   return (
-    <section className="relative mb-6 overflow-hidden rounded-[28px] border border-[#617c43]/20 bg-[#f3f6ee] shadow-[0_24px_60px_-46px_rgba(15,25,35,0.55)]">
+    <section className="relative overflow-hidden rounded-[28px] border border-[#17212a]/10 bg-[#f8f5ef] shadow-[0_24px_70px_-52px_rgba(23,33,42,0.55)]">
       <div
-        className="pointer-events-none absolute -right-20 -top-20 h-52 w-52 rounded-full bg-[#617c43]/10 blur-3xl"
+        className="pointer-events-none absolute -right-16 -top-20 h-52 w-52 rounded-full bg-[#617c43]/10 blur-3xl"
         aria-hidden
       />
 
-      <div className="relative p-5 sm:p-6 lg:p-7">
-        <div className="flex items-start justify-between gap-5">
-          <div>
-            <div className="inline-flex items-center gap-2 text-[#617c43]">
-              <Sparkles
-                size={15}
-                aria-hidden
-              />
+      <div className="relative p-5 sm:p-7 lg:p-8">
+        <div className="flex items-start justify-between gap-4">
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#617c43]/15 bg-[#617c43]/8 px-3 py-1.5 text-[11px] font-semibold text-[#617c43]">
+            <Sparkles
+              size={13}
+            />
 
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em]">
-                Getting started
-              </p>
-            </div>
-
-            <h2 className="mt-3 font-serif text-3xl font-medium tracking-[-0.04em] text-[#17212a] sm:text-4xl">
-              Your vault is ready.
-            </h2>
-
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-[#68737b] sm:text-base">
-              You have the foundation.
-              Build it out a little at a
-              time — there is no need to
-              organize your whole home
-              today.
-            </p>
+            {hasDevice
+              ? "YOUR VAULT IS TAKING SHAPE"
+              : "START HERE"}
           </div>
 
           <button
             type="button"
-            onClick={() =>
-              setDismissed(true)
+            onClick={
+              dismiss
             }
             aria-label="Dismiss getting started"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#182533]/10 bg-white/50 text-[#758087] transition hover:bg-white hover:text-[#17212a]"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#8b938f] transition hover:bg-[#17212a]/5 hover:text-[#17212a]"
           >
             <X
               size={16}
-              aria-hidden
             />
           </button>
         </div>
 
-        <div className="mt-7 flex items-center gap-3">
-          <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[#d9dfd0]">
-            <div
-              className="h-full rounded-full bg-[#617c43] transition-all duration-500"
-              style={{
-                width: `${Math.max(
-                  12,
-                  (
-                    completedCount /
-                    items.length
-                  ) *
-                    100
-                )}%`,
-              }}
-            />
-          </div>
+        <div className="mt-5 max-w-2xl">
+          <h2 className="font-serif text-[29px] font-medium leading-[1.06] tracking-[-0.04em] text-[#17212a] sm:text-4xl">
+            {hasDevice
+              ? "You have already started."
+              : "Start with one thing you own."}
+          </h2>
 
-          <span className="shrink-0 text-xs font-semibold text-[#617c43]">
-            {completedCount} of{" "}
-            {items.length} started
-          </span>
-        </div>
-
-        <div className="mt-6 grid gap-3 lg:grid-cols-3">
-          {items.map(
-            (item, index) => {
-              const Icon =
-                item.icon;
-
-              return (
-                <article
-                  key={
-                    item.title
-                  }
-                  className={`rounded-[22px] border p-5 transition ${
-                    item.complete
-                      ? "border-[#617c43]/20 bg-[#617c43]/5"
-                      : "border-[#182533]/10 bg-[#f8f5ef]"
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div
-                      className={`flex h-10 w-10 items-center justify-center rounded-xl ${
-                        item.complete
-                          ? "bg-[#617c43] text-white"
-                          : "bg-[#617c43]/10 text-[#617c43]"
-                      }`}
-                    >
-                      {item.complete ? (
-                        <Check
-                          size={18}
-                          aria-hidden
-                        />
-                      ) : (
-                        <Icon
-                          size={18}
-                          aria-hidden
-                        />
-                      )}
-                    </div>
-
-                    <span className="font-serif text-sm text-[#a1a8a2]">
-                      0{index + 1}
-                    </span>
-                  </div>
-
-                  <h3 className="mt-5 text-sm font-semibold text-[#17212a]">
-                    {item.title}
-                  </h3>
-
-                  <p className="mt-2 min-h-[60px] text-xs leading-5 text-[#707a81]">
-                    {
-                      item.description
-                    }
-                  </p>
-
-                  {item.complete ? (
-                    <div className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-[#617c43]">
-                      <Check
-                        size={13}
-                        aria-hidden
-                      />
-                      Started
-                    </div>
-                  ) : (
-                    <Link
-                      href={item.href}
-                      className="mt-4 inline-flex text-xs font-semibold text-[#17212a] underline decoration-[#17212a]/20 underline-offset-4 transition hover:text-[#617c43]"
-                    >
-                      {item.action} →
-                    </Link>
-                  )}
-                </article>
-              );
-            }
-          )}
-        </div>
-
-        <div className="mt-6 flex flex-col gap-3 border-t border-[#182533]/10 pt-5 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs leading-5 text-[#788289]">
-            Home Tech Vault gets more useful
-            as you add information — but one
-            useful record is enough to start.
+          <p className="mt-3 max-w-xl text-sm leading-6 text-[#6f797f] sm:text-[15px]">
+            {hasDevice
+              ? "Keep going while it is easy. Scan another device and Home Tech Vault will help keep the important details and paperwork together."
+              : "Scan a TV, router, laptop, appliance, game console, or anything else with a product barcode. Home Tech Vault will do as much of the setup as it can for you."}
           </p>
+        </div>
 
-          <div className="flex shrink-0 gap-3">
-            <button
-              type="button"
-              onClick={() =>
-                setDismissed(true)
-              }
-              className="rounded-xl px-4 py-2.5 text-xs font-semibold text-[#707a81] transition hover:text-[#17212a]"
-            >
-              Explore dashboard
-            </button>
+        <div className="mt-6 grid gap-3 sm:grid-cols-2">
+          <div className="rounded-2xl border border-[#17212a]/8 bg-white/60 p-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#617c43]/10 text-[#617c43]">
+                <ScanBarcode
+                  size={18}
+                />
+              </div>
 
-            <Link
-              href={
-                primaryItem.href
-              }
-              className="inline-flex items-center justify-center rounded-xl bg-[#17212a] px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-[#27333d]"
-            >
-              {
-                primaryItem.action
-              }
-            </Link>
+              <div>
+                <p className="text-2xl font-semibold tracking-[-0.04em] text-[#17212a]">
+                  {deviceCount}
+                </p>
+
+                <p className="text-xs text-[#788187]">
+                  {deviceCount === 1
+                    ? "device organized"
+                    : "devices organized"}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-[#17212a]/8 bg-white/60 p-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#17212a]/6 text-[#17212a]">
+                <FileText
+                  size={18}
+                />
+              </div>
+
+              <div>
+                <p className="text-2xl font-semibold tracking-[-0.04em] text-[#17212a]">
+                  {documentCount}
+                </p>
+
+                <p className="text-xs text-[#788187]">
+                  {documentCount === 1
+                    ? "document saved"
+                    : "documents saved"}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
+
+        <div className="mt-6 rounded-2xl border border-[#617c43]/15 bg-[#f1f4ed] p-4 sm:p-5">
+          <div className="flex gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#617c43] text-white">
+              <ShieldCheck
+                size={18}
+              />
+            </div>
+
+            <div>
+              <p className="text-sm font-semibold text-[#17212a]">
+                Why this matters
+              </p>
+
+              <p className="mt-1 text-sm leading-6 text-[#69747a]">
+                If something breaks, gets stolen, or needs a warranty claim, you will not have to start from scratch looking for the model, purchase information, receipt, or manual.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+          <Link
+            href={
+              primaryHref
+            }
+            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-[#17212a] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:brightness-110"
+          >
+            <ScanBarcode
+              size={17}
+            />
+
+            {primaryLabel}
+
+            <ArrowRight
+              size={16}
+            />
+          </Link>
+
+          {hasDevice &&
+          !hasDocument ? (
+            <Link
+              href="/documents/upload"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-[#17212a]/10 bg-white/65 px-5 py-3 text-sm font-semibold text-[#17212a] transition hover:bg-white"
+            >
+              <FileText
+                size={17}
+              />
+
+              Add a receipt
+            </Link>
+          ) : null}
+        </div>
+
+        {hasDevice ? (
+          <div className="mt-6 border-t border-[#17212a]/8 pt-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.13em] text-[#8a928f]">
+              Home Tech Vault is already doing the boring part
+            </p>
+
+            <div className="mt-3 grid gap-2 sm:grid-cols-3">
+              {[
+                "Remember the product",
+                "Keep its paperwork nearby",
+                "Be ready when something goes wrong",
+              ].map(
+                (item) => (
+                  <div
+                    key={
+                      item
+                    }
+                    className="flex items-start gap-2 text-xs leading-5 text-[#69747a]"
+                  >
+                    <Check
+                      size={14}
+                      className="mt-0.5 shrink-0 text-[#617c43]"
+                    />
+
+                    {item}
+                  </div>
+                )
+              )}
+            </div>
+          </div>
+        ) : null}
+
+        <p className="mt-5 text-xs leading-5 text-[#929997]">
+          You do not need to organize your whole house today. One useful device is enough to start.
+        </p>
       </div>
     </section>
   );

@@ -567,7 +567,7 @@ export default function DeviceAddedPage() {
             </div>
 
             <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#617c43]">
-              Device added
+              You're covered.
             </p>
 
             <h1 className="mt-3 font-serif text-3xl font-medium tracking-[-0.04em] text-[#17212a] sm:text-4xl">
@@ -645,8 +645,28 @@ export default function DeviceAddedPage() {
 
             <div className="p-6 sm:p-8">
               <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#617c43]">
-                What Home Tech Vault prepared
+                Already handled for you
               </p>
+
+              <div className="mt-4 rounded-2xl border border-[#617c43]/15 bg-[#f2f5ee] p-4 sm:p-5">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#617c43] text-white">
+                    <ShieldCheck
+                      size={17}
+                    />
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-semibold text-[#17212a]">
+                      This is why your vault matters.
+                    </p>
+
+                    <p className="mt-1 text-sm leading-6 text-[#69747a]">
+                      If this device breaks, gets stolen, or needs a warranty claim later, this is the place you can come back to for its important details and documents.
+                    </p>
+                  </div>
+                </div>
+              </div>
 
               <div className="mt-5 space-y-3">
                 <StatusRow
