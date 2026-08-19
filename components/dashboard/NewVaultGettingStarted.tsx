@@ -81,7 +81,10 @@ export default function NewVaultGettingStarted({
         title: "Add your first device",
         description:
           "Smart Scan can identify a product and fill in the important details for you.",
-        href: "/devices/add",
+        href:
+          deviceCount > 0
+            ? "/devices/add"
+            : "/devices/add?first=1",
         action:
           deviceCount > 0
             ? "Add another device"

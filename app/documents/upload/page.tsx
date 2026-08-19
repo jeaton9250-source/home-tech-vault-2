@@ -43,6 +43,11 @@ type Device = {
 export default function UploadDocumentPage() {
   const router = useRouter();
 
+  const [
+    returnTo,
+    setReturnTo,
+  ] = useState("/documents");
+
   const {
     user,
     isDemo,
@@ -81,6 +86,47 @@ export default function UploadDocumentPage() {
 
   const [file, setFile] =
     useState<File | null>(null);
+
+  useEffect(() => {
+    const query =
+      new URLSearchParams(
+        window.location.search
+      );
+
+    const requestedDevice =
+      query.get("deviceId")
+        ?.trim();
+
+    const requestedType =
+      query.get("type")
+        ?.trim();
+
+    const requestedReturn =
+      query.get("returnTo")
+        ?.trim();
+
+    if (requestedDevice) {
+      setDeviceId(
+        requestedDevice
+      );
+    }
+
+    if (requestedType) {
+      setFileType(
+        requestedType
+      );
+    }
+
+    if (
+      requestedReturn &&
+      requestedReturn.startsWith("/") &&
+      !requestedReturn.startsWith("//")
+    ) {
+      setReturnTo(
+        requestedReturn
+      );
+    }
+  }, []);
 
   useEffect(() => {
     async function loadHouseholdDevices() {
@@ -317,7 +363,9 @@ export default function UploadDocumentPage() {
         });
       }
 
-      router.push("/documents");
+      router.push(
+        returnTo
+      );
       router.refresh();
     } catch (error) {
       console.error(

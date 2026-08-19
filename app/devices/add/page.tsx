@@ -3,6 +3,7 @@
 import {
   FormEvent,
   useState,
+  useEffect,
 } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -24,6 +25,13 @@ import DemoWriteGate from "@/components/demo/DemoWriteGate";
 import { addDevice } from "@/app/devices/actions";
 import SmartDeviceSearch, { type DeviceLookupResult } from "@/components/devices/SmartDeviceSearch";
 import { buildDeviceMaintenanceRecommendationsUrl } from "@/lib/devices/maintenanceRecommendations";
+import { supabase } from "@/lib/supabase";
+import {
+  completeOnboarding,
+  trackFirstDeviceAdded,
+  trackOnboardingCompleted,
+  trackOnboardingStepCompleted,
+} from "@/lib/onboarding";
 
 import PageShell from "@/components/ui/PageShell";
 import PageTitle from "@/components/ui/PageTitle";
@@ -32,6 +40,38 @@ import Button from "@/components/ui/Button";
 
 export default function AddDevicePage() {
   const router = useRouter();
+
+  const [
+    isFirstDeviceFlow,
+    setIsFirstDeviceFlow,
+  ] = useState(false);
+
+  useEffect(() => {
+    const query =
+      new URLSearchParams(
+        window.location.search
+      );
+
+    setIsFirstDeviceFlow(
+      query.get("first") === "1"
+    );
+  }, []);
+
+  const [
+    isOnboarding,
+    setIsOnboarding,
+  ] = useState(false);
+
+  useEffect(() => {
+    const query =
+      new URLSearchParams(
+        window.location.search
+      );
+
+    setIsOnboarding(
+      query.get("onboarding") === "1"
+    );
+  }, []);
 
   const {
     user,
@@ -271,6 +311,44 @@ export default function AddDevicePage() {
           result.error ||
             "Unable to save this device."
         );
+        return;
+      }
+
+      if (
+        isOnboarding &&
+        user
+      ) {
+        await completeOnboarding(
+          supabase,
+          user.id
+        );
+
+        trackFirstDeviceAdded(
+          "onboarding"
+        );
+
+        trackOnboardingStepCompleted(
+          "device"
+        );
+
+        trackOnboardingCompleted();
+
+        router.replace(
+          `/devices/${result.deviceId}/added?onboarding=1`
+        );
+
+        router.refresh();
+        return;
+      }
+
+      if (
+        isFirstDeviceFlow
+      ) {
+        router.replace(
+          `/devices/${result.deviceId}/added?first=1`
+        );
+
+        router.refresh();
         return;
       }
 
