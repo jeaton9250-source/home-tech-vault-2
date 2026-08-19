@@ -5,11 +5,16 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, Loader2, Save } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
-import { recordActivity } from "@/lib/activity";
 import {
   applyHouseholdScope,
-  withHouseholdInsertFields,
 } from "@/lib/data/householdScope";
+import {
+  createMaintenanceTask,
+} from "@/app/maintenance/actions";
+import {
+  MAINTENANCE_FIELD_LIMITS,
+  validateMaintenanceTaskInput,
+} from "@/lib/maintenance/maintenanceInputValidation";
 import { usePermissions } from "@/hooks/usePermissions";
 import DemoWriteGate from "@/components/demo/DemoWriteGate";
 
@@ -142,7 +147,9 @@ export default function NewMaintenanceTaskPage() {
     searchParams,
   ]);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(
+    event: FormEvent<HTMLFormElement>
+  ) {
     event.preventDefault();
     setErrorMessage("");
 
@@ -163,59 +170,63 @@ export default function NewMaintenanceTaskPage() {
       return;
     }
 
-    if (!title.trim()) {
-      setErrorMessage("Please enter a task title.");
+    const validation =
+      validateMaintenanceTaskInput({
+        title,
+        description,
+        taskType,
+        dueDate,
+        recurringInterval,
+      });
+
+    if (!validation.success) {
+      setErrorMessage(
+        validation.error
+      );
       return;
     }
 
     try {
       setSaving(true);
 
-      const { error } = await supabase
-        .from("maintenance_tasks")
-        .insert(
-          withHouseholdInsertFields(
-            {
-              device_id: deviceId || null,
-              title: title.trim(),
-              description: description.trim() || null,
-              task_type: taskType,
-              due_date: dueDate || null,
-              completed: false,
-              recurring_interval:
-                recurringInterval === "None"
-                  ? null
-                  : recurringInterval,
-            },
-            householdId,
-            user.id
-          )
-        );
-
-      if (error) {
-        throw error;
-      }
-
-      if (deviceId) {
-        await recordActivity({
-          activityType: "maintenance.scheduled",
-          title: "Maintenance scheduled",
-          description: dueDate
-            ? `${title.trim()} scheduled for ${dueDate}.`
-            : `${title.trim()} was added as a maintenance task.`,
-          userId: user.id,
-          householdId,
+      const result =
+        await createMaintenanceTask({
           deviceId,
+          title,
+          description,
+          taskType,
+          dueDate,
+          recurringInterval,
         });
+
+      if (!result.success) {
+        if (
+          result.code ===
+          "UNAUTHENTICATED"
+        ) {
+          router.push("/login");
+          return;
+        }
+
+        setErrorMessage(
+          result.error ||
+            "Unable to create this maintenance task."
+        );
+        return;
       }
 
       router.push(returnTo);
       router.refresh();
     } catch (error) {
-      console.error("Maintenance task error:", error);
+      console.error(
+        "Maintenance task error:",
+        error
+      );
 
       setErrorMessage(
-        "Unable to create this maintenance task. Please try again."
+        error instanceof Error
+          ? error.message
+          : "Unable to create this maintenance task. Please try again."
       );
     } finally {
       setSaving(false);
@@ -289,6 +300,7 @@ export default function NewMaintenanceTaskPage() {
           <FormField label="Task Title">
             <input
               value={title}
+              maxLength={MAINTENANCE_FIELD_LIMITS.title}
               onChange={(event) => setTitle(event.target.value)}
               placeholder="Clean laptop vents"
               required
@@ -363,6 +375,7 @@ export default function NewMaintenanceTaskPage() {
             <FormField label="Description">
               <textarea
                 value={description}
+                maxLength={MAINTENANCE_FIELD_LIMITS.description}
                 onChange={(event) =>
                   setDescription(event.target.value)
                 }
