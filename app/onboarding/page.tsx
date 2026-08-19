@@ -62,6 +62,10 @@ import {
   trackOnboardingStarted,
   trackOnboardingStepCompleted,
 } from "@/lib/onboarding";
+import {
+  trackAccountCreated,
+  trackHomeNamed,
+} from "@/lib/analytics/activation";
 
 import type {
   OnboardingDataSnapshot,
@@ -108,6 +112,59 @@ function OnboardingFlow() {
   } = usePermissions();
 
   const quota = useHouseholdLimits();
+
+  useEffect(() => {
+    if (
+      !user ||
+      restart
+    ) {
+      return;
+    }
+
+    const createdAt =
+      Date.parse(
+        user.created_at ?? ""
+      );
+
+    if (
+      !Number.isFinite(
+        createdAt
+      )
+    ) {
+      return;
+    }
+
+    const accountAge =
+      Date.now() -
+      createdAt;
+
+    const isNewAccount =
+      accountAge >= 0 &&
+      accountAge <=
+        30 * 60 * 1000;
+
+    if (!isNewAccount) {
+      return;
+    }
+
+    const rawProvider =
+      user.app_metadata
+        ?.provider;
+
+    const provider =
+      rawProvider === "google"
+        ? "google"
+        : rawProvider === "apple"
+          ? "apple"
+          : "email";
+
+    trackAccountCreated(
+      provider
+    );
+  }, [
+    user,
+    restart,
+  ]);
 
   const [initializing, setInitializing] =
     useState(true);
@@ -596,6 +653,12 @@ function OnboardingFlow() {
           user.id,
           homeName
         );
+      }
+
+      if (
+        !sharedHouseholdLocked
+      ) {
+        trackHomeNamed();
       }
 
       trackOnboardingStepCompleted("home");

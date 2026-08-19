@@ -13,6 +13,9 @@ import {
   useSearchParams,
 } from "next/navigation";
 import {
+  trackDashboardReached,
+} from "@/lib/analytics/activation";
+import {
   useEffect,
   useMemo,
   useState,
@@ -50,6 +53,27 @@ export default function NewVaultGettingStarted({
       searchParams.get("welcome") === "1"
     );
   }, [searchParams]);
+
+  useEffect(() => {
+    const fromOnboarding =
+      searchParams.get(
+        "welcome"
+      ) === "1";
+
+    if (!fromOnboarding) {
+      return;
+    }
+
+    trackDashboardReached({
+      deviceCount,
+      documentCount,
+      fromOnboarding,
+    });
+  }, [
+    searchParams,
+    deviceCount,
+    documentCount,
+  ]);
 
   const items = useMemo<SetupItem[]>(
     () => [

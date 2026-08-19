@@ -4,12 +4,18 @@ import Link from "next/link";
 import {
   FormEvent,
   useState,
+  useEffect,
 } from "react";
 import { useRouter } from "next/navigation";
 
 import AuthCard from "@/components/auth/AuthCard";
 import AuthLayout from "@/components/auth/AuthLayout";
 import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
+import {
+  trackAccountCreated,
+  trackAuthStarted,
+  trackSignupViewed,
+} from "@/lib/analytics/activation";
 import PasswordInput from "@/components/auth/PasswordInput";
 import Alert from "@/components/ui/Alert";
 import Button from "@/components/ui/Button";
@@ -27,6 +33,10 @@ const signupBenefits = [
 
 export default function SignupPage() {
   const router = useRouter();
+
+  useEffect(() => {
+    trackSignupViewed();
+  }, []);
 const [email, setEmail] = useState("");
   const [password, setPassword] =
     useState("");
@@ -72,6 +82,10 @@ const [submitting, setSubmitting] =
       return;
     }
 
+    trackAuthStarted(
+      "email"
+    );
+
     try {
       setSubmitting(true);
 
@@ -91,6 +105,18 @@ const [submitting, setSubmitting] =
 
       if (signupError) {
         throw signupError;
+      }
+
+      if (
+        data.user &&
+        (
+          data.user.identities
+            ?.length ?? 0
+        ) > 0
+      ) {
+        trackAccountCreated(
+          "email"
+        );
       }
 
       const user = data.user;
@@ -142,10 +168,14 @@ const [submitting, setSubmitting] =
         title="Create your vault"
         description="Free to start. No credit card required."
       >
-        <GoogleAuthButton
-          nextPath="/onboarding"
-          label="Continue with Google"
-        />
+        <div
+          onClickCapture={() => trackAuthStarted("google")}
+        >
+          <GoogleAuthButton
+                    nextPath="/onboarding"
+                    label="Continue with Google"
+                  />
+        </div>
 
         <p className="mt-3 text-center text-xs leading-5 text-text-muted">
           By continuing with Google, you agree to our{" "}

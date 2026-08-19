@@ -19,6 +19,9 @@ import {
 } from "@/lib/data/householdScope";
 import { recordActivity } from "@/lib/activity";
 import {
+  trackFirstDocumentAdded,
+} from "@/lib/analytics/activation";
+import {
   getHouseholdLimitMessage,
   useHouseholdLimits,
 } from "@/hooks/useHouseholdLimits";
@@ -290,6 +293,29 @@ export default function UploadDocumentPage() {
         householdId,
         deviceId: deviceId || undefined,
       });
+
+      const documentCountResult =
+        await applyHouseholdScope(
+          supabase
+            .from("documents")
+            .select("*", {
+              count: "exact",
+              head: true,
+            }),
+          householdId,
+          user.id
+        );
+
+      if (
+        !documentCountResult.error &&
+        documentCountResult.count === 1
+      ) {
+        trackFirstDocumentAdded({
+          fileType:
+            fileType ||
+            "document",
+        });
+      }
 
       router.push("/documents");
       router.refresh();
