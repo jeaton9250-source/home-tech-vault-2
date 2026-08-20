@@ -26,6 +26,9 @@ import OnboardingShell, {
 } from "@/components/onboarding/OnboardingShell";
 
 import Button from "@/components/ui/Button";
+import {
+  sendWelcomeEmailForCurrentUser,
+} from "@/app/onboarding/actions";
 
 import { usePermissions } from "@/hooks/usePermissions";
 import { useHouseholdLimits } from "@/hooks/useHouseholdLimits";
@@ -112,6 +115,31 @@ function OnboardingFlow() {
   } = usePermissions();
 
   const quota = useHouseholdLimits();
+
+
+  useEffect(() => {
+    if (
+      permissionsLoading ||
+      isDemo ||
+      !user ||
+      restart
+    ) {
+      return;
+    }
+
+    void sendWelcomeEmailForCurrentUser()
+      .catch((error) => {
+        console.error(
+          "[welcome-email] unable to start welcome delivery",
+          error
+        );
+      });
+  }, [
+    permissionsLoading,
+    isDemo,
+    user,
+    restart,
+  ]);
 
   useEffect(() => {
     if (
