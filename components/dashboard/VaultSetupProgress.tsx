@@ -77,6 +77,16 @@ export default function VaultSetupProgress({
    * card gets out of the way. The normal dashboard
    * becomes the primary experience.
    */
+  /*
+   * Before the 3-device milestone, the dedicated
+   * DashboardUnlockGate owns the onboarding
+   * experience. Avoid showing two competing setup
+   * cards on the dashboard.
+   */
+  if (deviceCount < 3) {
+    return null;
+  }
+
   if (setupComplete) {
     return null;
   }

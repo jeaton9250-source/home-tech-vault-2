@@ -5,257 +5,609 @@ import Link from "next/link";
 import {
   ArrowRight,
   Check,
+  FileText,
+  Gauge,
   LockKeyhole,
-  ScanBarcode,
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
 
 type DashboardUnlockGateProps = {
-  firstName: string;
   deviceCount: number;
+
+  /*
+   * Keep this component compatible with any
+   * additional props already being passed by
+   * HomeHealthDashboard.
+   */
+  [key: string]: unknown;
 };
 
 const REQUIRED_DEVICES = 3;
 
 export default function DashboardUnlockGate({
-  firstName,
   deviceCount,
 }: DashboardUnlockGateProps) {
-  const progress =
-    Math.min(
-      Math.max(
-        deviceCount,
-        0
-      ),
-      REQUIRED_DEVICES
-    );
+  const safeDeviceCount = Math.min(
+    Math.max(deviceCount, 0),
+    REQUIRED_DEVICES
+  );
 
   const remaining =
     Math.max(
       REQUIRED_DEVICES -
-        progress,
+        safeDeviceCount,
       0
     );
 
   const percentage =
     Math.round(
-      (progress /
+      (safeDeviceCount /
         REQUIRED_DEVICES) *
         100
     );
 
-  const headline =
-    progress === 0
-      ? "Build your vault."
-      : progress === 1
-        ? "Nice start. Keep going."
-        : "One more device to go.";
+  const title =
+    remaining === 1
+      ? "One more device unlocks your full Vault."
+      : remaining === 2
+        ? "Two more devices unlock your full Vault."
+        : "Build the foundation of your Home Tech Vault.";
 
   const description =
-    progress === 0
-      ? "Add 3 devices to unlock your personalized Home Tech Vault dashboard."
-      : progress === 1
-        ? "Your first device is organized. Add two more so your dashboard has enough information to become useful."
-        : "Add one more device and your full home dashboard will unlock automatically.";
+    remaining === 1
+      ? "You're almost there. Add one more piece of technology and Home Tech Vault can turn your starter inventory into a useful home dashboard."
+      : "Add the technology you rely on most. Three real devices gives your Vault enough context to become much more useful.";
 
   const buttonLabel =
-    progress === 0
-      ? "Scan your first device"
-      : progress === 1
-        ? "Scan device 2"
-        : "Add one more device";
+    remaining === 1
+      ? "Add my final device"
+      : safeDeviceCount === 0
+        ? "Add my first device"
+        : "Add my next device";
 
   return (
-    <div className="mx-auto w-full max-w-[920px] px-1 pb-16 pt-4 sm:pt-6">
-      <section className="relative overflow-hidden rounded-[32px] border border-[#17212a]/10 bg-[#f8f5ef] shadow-[0_30px_80px_-55px_rgba(23,33,42,0.55)]">
+    <div
+      className="
+        mx-auto w-full max-w-[1100px]
+        pb-16 pt-3
+      "
+    >
+      <section
+        className="
+          relative overflow-hidden
+          rounded-[32px]
+          border border-[#17212a]/10
+          bg-[#0d1925]
+          px-5 py-8
+          text-white
+          shadow-[0_30px_80px_-50px_rgba(11,22,35,0.85)]
+          sm:px-8 sm:py-10
+          lg:px-12 lg:py-12
+        "
+      >
+        {/* Ambient premium glow */}
         <div
+          className="
+            pointer-events-none
+            absolute inset-0
+            overflow-hidden
+          "
           aria-hidden
-          className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-[#617c43]/10 blur-3xl"
-        />
+        >
+          <div
+            className="
+              absolute
+              -right-24 -top-28
+              h-[360px] w-[360px]
+              rounded-full
+              bg-[#718d4f]/16
+              blur-[90px]
+            "
+          />
 
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -bottom-28 -left-20 h-64 w-64 rounded-full bg-[#17212a]/5 blur-3xl"
-        />
+          <div
+            className="
+              absolute
+              -bottom-36 -left-20
+              h-[320px] w-[320px]
+              rounded-full
+              bg-[#a4b987]/8
+              blur-[100px]
+            "
+          />
+        </div>
 
-        <div className="relative p-5 sm:p-8 lg:p-10">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#617c43]/15 bg-[#617c43]/8 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#617c43]">
+        <div className="relative">
+          {/* Small status */}
+          <div
+            className="
+              flex flex-wrap
+              items-center
+              justify-between
+              gap-3
+            "
+          >
+            <div
+              className="
+                inline-flex
+                items-center gap-2
+                rounded-full
+                border border-[#9db77c]/20
+                bg-[#718d4f]/10
+                px-3.5 py-2
+                text-[10px]
+                font-semibold
+                uppercase
+                tracking-[0.16em]
+                text-[#b8ca9f]
+              "
+            >
               <Sparkles
                 size={13}
+                aria-hidden
               />
-              Build your vault
+
+              Starter Vault
             </div>
 
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#17212a]/8 bg-white/60 px-3 py-1.5 text-xs font-semibold text-[#68737b]">
+            <div
+              className="
+                inline-flex
+                items-center gap-2
+                text-xs
+                font-medium
+                text-white/45
+              "
+            >
               <LockKeyhole
-                size={13}
+                size={14}
+                aria-hidden
               />
-              Dashboard locked
+
+              Full dashboard unlocks at 3
             </div>
           </div>
 
-          <div className="mx-auto mt-8 max-w-2xl text-center sm:mt-10">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-[22px] bg-[#17212a] text-white shadow-[0_18px_40px_-22px_rgba(23,33,42,0.8)]">
+          {/* Main message */}
+          <div
+            className="
+              mx-auto
+              mt-10
+              max-w-[760px]
+              text-center
+            "
+          >
+            <div
+              className="
+                mx-auto
+                flex h-14 w-14
+                items-center justify-center
+                rounded-[20px]
+                border border-white/10
+                bg-white/[0.055]
+                text-[#a9c38a]
+                shadow-[0_16px_40px_rgba(0,0,0,0.18)]
+              "
+            >
               <ShieldCheck
-                size={28}
+                size={26}
+                strokeWidth={1.7}
+                aria-hidden
               />
             </div>
 
-            <p className="mt-6 text-xs font-semibold uppercase tracking-[0.15em] text-[#87908c]">
-              {firstName}&apos;s Home Tech Vault
+            <p
+              className="
+                mt-7
+                text-[10px]
+                font-semibold
+                uppercase
+                tracking-[0.2em]
+                text-[#9db77c]
+              "
+            >
+              {safeDeviceCount} of 3 devices added
             </p>
 
-            <h1 className="mt-3 font-serif text-4xl font-medium leading-[1.02] tracking-[-0.045em] text-[#17212a] sm:text-5xl">
-              {headline}
+            <h1
+              className="
+                mx-auto
+                mt-3
+                max-w-[720px]
+                font-serif
+                text-4xl
+                font-medium
+                leading-[1.04]
+                tracking-[-0.045em]
+                text-[#f6f3ec]
+                sm:text-5xl
+                lg:text-[3.4rem]
+              "
+            >
+              {title}
             </h1>
 
-            <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-[#69747a] sm:text-[15px]">
+            <p
+              className="
+                mx-auto
+                mt-5
+                max-w-[640px]
+                text-sm
+                leading-7
+                text-white/55
+                sm:text-base
+              "
+            >
               {description}
             </p>
           </div>
 
-          <div className="mx-auto mt-8 max-w-xl">
-            <div className="flex items-end justify-between gap-4">
+          {/* Progress */}
+          <div
+            className="
+              mx-auto
+              mt-9
+              max-w-[650px]
+            "
+          >
+            <div
+              className="
+                flex items-end
+                justify-between
+                gap-4
+              "
+            >
               <div>
-                <p className="text-sm font-semibold text-[#17212a]">
-                  {progress} of 3 devices added
+                <p
+                  className="
+                    text-[10px]
+                    font-semibold
+                    uppercase
+                    tracking-[0.14em]
+                    text-white/35
+                  "
+                >
+                  Vault activation
                 </p>
 
-                <p className="mt-1 text-xs text-[#858e8a]">
-                  {remaining === 0
-                    ? "Your dashboard is ready."
-                    : remaining === 1
-                      ? "1 device remaining"
-                      : `${remaining} devices remaining`}
+                <p
+                  className="
+                    mt-1
+                    text-sm
+                    font-semibold
+                    text-white/85
+                  "
+                >
+                  {remaining === 1
+                    ? "1 device remaining"
+                    : `${remaining} devices remaining`}
                 </p>
               </div>
 
-              <p className="text-sm font-semibold text-[#617c43]">
+              <p
+                className="
+                  text-sm
+                  font-semibold
+                  text-[#abc38b]
+                "
+              >
                 {percentage}%
               </p>
             </div>
 
-            <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-[#17212a]/7">
+            <div
+              className="
+                mt-4
+                h-2
+                overflow-hidden
+                rounded-full
+                bg-white/8
+              "
+            >
               <div
-                className="h-full rounded-full bg-[#617c43] transition-all duration-500"
+                className="
+                  h-full
+                  rounded-full
+                  bg-[#7f9c5d]
+                  transition-all
+                  duration-500
+                "
                 style={{
                   width:
                     `${percentage}%`,
                 }}
               />
             </div>
-          </div>
 
-          <div className="mx-auto mt-7 grid max-w-xl grid-cols-3 gap-2.5 sm:gap-3">
-            {[0, 1, 2].map(
-              (index) => {
-                const complete =
-                  index <
-                  progress;
-
-                const active =
-                  index ===
-                  progress;
-
-                return (
-                  <div
-                    key={index}
-                    className={
-                      complete
-                        ? "rounded-2xl border border-[#617c43]/20 bg-[#f0f4eb] p-3 text-center sm:p-4"
-                        : active
-                          ? "rounded-2xl border border-[#17212a]/15 bg-white p-3 text-center shadow-sm sm:p-4"
-                          : "rounded-2xl border border-[#17212a]/7 bg-white/40 p-3 text-center sm:p-4"
-                    }
-                  >
-                    <div
-                      className={
-                        complete
-                          ? "mx-auto flex h-9 w-9 items-center justify-center rounded-full bg-[#617c43] text-white"
-                          : active
-                            ? "mx-auto flex h-9 w-9 items-center justify-center rounded-full bg-[#17212a] text-white"
-                            : "mx-auto flex h-9 w-9 items-center justify-center rounded-full bg-[#17212a]/5 text-[#9ba19e]"
-                      }
-                    >
-                      {complete ? (
-                        <Check
-                          size={17}
-                        />
-                      ) : (
-                        <span className="text-xs font-bold">
-                          {index + 1}
-                        </span>
-                      )}
-                    </div>
-
-                    <p
-                      className={
-                        complete
-                          ? "mt-2 text-[11px] font-semibold text-[#617c43]"
-                          : "mt-2 text-[11px] font-semibold text-[#69747a]"
-                      }
-                    >
-                      {complete
-                        ? "Added"
-                        : index ===
-                            progress
-                          ? "Next"
-                          : "Locked"}
-                    </p>
-                  </div>
-                );
-              }
-            )}
-          </div>
-
-          <div className="mx-auto mt-8 max-w-md">
-            <Link
-              href="/devices/add?first=1"
-              className="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-[#17212a] px-6 py-3.5 text-sm font-semibold text-white shadow-[0_16px_35px_-22px_rgba(23,33,42,0.75)] transition hover:brightness-110"
+            {/* Three simple device slots */}
+            <div
+              className="
+                mt-5
+                grid grid-cols-3
+                gap-2.5
+              "
             >
-              <ScanBarcode
-                size={18}
+              {[0, 1, 2].map(
+                (index) => {
+                  const complete =
+                    index <
+                    safeDeviceCount;
+
+                  const next =
+                    index ===
+                    safeDeviceCount;
+
+                  return (
+                    <div
+                      key={index}
+                      className={`
+                        flex
+                        min-h-[76px]
+                        flex-col
+                        items-center
+                        justify-center
+                        rounded-2xl
+                        border
+                        px-3 py-3
+                        text-center
+                        ${
+                          complete
+                            ? "border-[#8faa69]/20 bg-[#718d4f]/12"
+                            : next
+                              ? "border-white/16 bg-white/[0.06]"
+                              : "border-white/7 bg-white/[0.025]"
+                        }
+                      `}
+                    >
+                      <div
+                        className={`
+                          flex
+                          h-7 w-7
+                          items-center
+                          justify-center
+                          rounded-full
+                          text-xs
+                          font-semibold
+                          ${
+                            complete
+                              ? "bg-[#718d4f] text-white"
+                              : next
+                                ? "bg-[#f4f0e8] text-[#17212a]"
+                                : "bg-white/6 text-white/25"
+                          }
+                        `}
+                      >
+                        {complete ? (
+                          <Check
+                            size={14}
+                            strokeWidth={2.5}
+                          />
+                        ) : (
+                          index + 1
+                        )}
+                      </div>
+
+                      <span
+                        className={`
+                          mt-2
+                          text-[10px]
+                          font-medium
+                          ${
+                            complete
+                              ? "text-[#abc38b]"
+                              : next
+                                ? "text-white/75"
+                                : "text-white/25"
+                          }
+                        `}
+                      >
+                        {complete
+                          ? "Added"
+                          : next
+                            ? "Next"
+                            : "Locked"}
+                      </span>
+                    </div>
+                  );
+                }
+              )}
+            </div>
+          </div>
+
+          {/* What unlocks */}
+          <div
+            className="
+              mx-auto
+              mt-10
+              max-w-[820px]
+            "
+          >
+            <div
+              className="
+                flex items-center
+                justify-center gap-3
+              "
+            >
+              <span
+                className="
+                  h-px flex-1
+                  bg-white/8
+                "
               />
 
+              <p
+                className="
+                  text-[10px]
+                  font-semibold
+                  uppercase
+                  tracking-[0.18em]
+                  text-white/35
+                "
+              >
+                What you&apos;re unlocking
+              </p>
+
+              <span
+                className="
+                  h-px flex-1
+                  bg-white/8
+                "
+              />
+            </div>
+
+            <div
+              className="
+                mt-5
+                grid gap-3
+                sm:grid-cols-3
+              "
+            >
+              <UnlockPreview
+                icon={Gauge}
+                title="Vault readiness"
+                description="See how complete and prepared your home technology record is."
+              />
+
+              <UnlockPreview
+                icon={FileText}
+                title="Protection gaps"
+                description="Surface missing warranties, receipts, and important device details."
+              />
+
+              <UnlockPreview
+                icon={Sparkles}
+                title="Clear next steps"
+                description="Know what deserves attention instead of guessing what to organize next."
+              />
+            </div>
+          </div>
+
+          {/* CTA */}
+          <div
+            className="
+              mx-auto
+              mt-9
+              max-w-[460px]
+              text-center
+            "
+          >
+            <Link
+              href="/devices/add?first=1"
+              className="
+                group
+                flex w-full
+                items-center
+                justify-center
+                gap-2
+                rounded-2xl
+                bg-[#f5f1e8]
+                px-6 py-4
+                text-sm
+                font-semibold
+                text-[#17212a]
+                shadow-[0_16px_40px_rgba(0,0,0,0.22)]
+                transition
+                duration-200
+                hover:-translate-y-0.5
+                hover:bg-white
+                focus:outline-none
+                focus:ring-2
+                focus:ring-[#9db77c]
+                focus:ring-offset-2
+                focus:ring-offset-[#0d1925]
+              "
+            >
               {buttonLabel}
 
               <ArrowRight
                 size={17}
+                className="
+                  transition-transform
+                  duration-200
+                  group-hover:translate-x-0.5
+                "
+                aria-hidden
               />
             </Link>
 
-            <p className="mt-3 text-center text-xs text-[#929997]">
-              Smart Scan usually takes only a few seconds.
+            <p
+              className="
+                mt-4
+                text-xs
+                leading-5
+                text-white/30
+              "
+            >
+              Add the devices you rely on most
+              first. You can complete the details
+              later.
             </p>
-          </div>
-
-          <div className="mx-auto mt-9 max-w-2xl border-t border-[#17212a]/8 pt-7">
-            <div className="grid gap-5 sm:grid-cols-2">
-              <div>
-                <p className="text-sm font-semibold text-[#17212a]">
-                  Why 3 devices?
-                </p>
-
-                <p className="mt-2 text-xs leading-5 text-[#727c81]">
-                  Your dashboard is much more useful when Home Tech Vault has a little context about what you own. Three devices gives you something meaningful to see immediately.
-                </p>
-              </div>
-
-              <div>
-                <p className="text-sm font-semibold text-[#17212a]">
-                  Keep it simple.
-                </p>
-
-                <p className="mt-2 text-xs leading-5 text-[#727c81]">
-                  You do not need receipts, serial numbers, warranties, or every detail right now. Scan the device, save it, and keep moving.
-                </p>
-              </div>
-            </div>
           </div>
         </div>
       </section>
     </div>
+  );
+}
+
+type UnlockPreviewProps = {
+  icon: typeof Gauge;
+  title: string;
+  description: string;
+};
+
+function UnlockPreview({
+  icon: Icon,
+  title,
+  description,
+}: UnlockPreviewProps) {
+  return (
+    <article
+      className="
+        rounded-[22px]
+        border border-white/7
+        bg-white/[0.035]
+        p-4
+      "
+    >
+      <div
+        className="
+          flex h-9 w-9
+          items-center
+          justify-center
+          rounded-xl
+          bg-[#718d4f]/14
+          text-[#abc38b]
+        "
+      >
+        <Icon
+          size={17}
+          strokeWidth={1.8}
+          aria-hidden
+        />
+      </div>
+
+      <h2
+        className="
+          mt-4
+          text-sm
+          font-semibold
+          text-white/90
+        "
+      >
+        {title}
+      </h2>
+
+      <p
+        className="
+          mt-1.5
+          text-xs
+          leading-5
+          text-white/40
+        "
+      >
+        {description}
+      </p>
+    </article>
   );
 }
