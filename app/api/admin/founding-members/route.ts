@@ -78,7 +78,7 @@ export async function GET(request: Request) {
 export async function PATCH(request: Request) {
   try {
     const session =
-      await requirePlatformAdminSession();
+      await requirePlatformAdminSession(request);
     const body =
       (await request.json()) as {
         enabled?: boolean;

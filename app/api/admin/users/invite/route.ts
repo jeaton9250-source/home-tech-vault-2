@@ -23,7 +23,7 @@ export async function POST(request: Request) {
   try {
     logInviteRoute("authenticate_requester");
 
-    const session = await requirePlatformAdminSession();
+    const session = await requirePlatformAdminSession(request);
 
     logInviteRoute("requester_authorized", {
       userId: session.userId,
@@ -42,7 +42,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           error:
-            "Server configuration is incomplete. Set SUPABASE_SERVICE_ROLE_KEY on the server with the current service_role secret from Supabase Dashboard → Settings → API.",
+            "Server configuration is incomplete.",
         },
         { status: 500 }
       );
@@ -153,9 +153,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error:
-          error instanceof Error
-            ? error.message
-            : "An unexpected error occurred while sending the invitation.",
+          "An unexpected error occurred while sending the invitation.",
       },
       { status: 500 }
     );

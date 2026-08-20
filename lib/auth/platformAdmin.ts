@@ -58,7 +58,33 @@ export async function getPlatformAdminSession(): Promise<PlatformAdminSession | 
   };
 }
 
-export async function requirePlatformAdminSession(): Promise<PlatformAdminSession> {
+function assertPlatformAdminRequestOrigin(
+  request: Request
+) {
+  const origin =
+    request.headers.get("origin");
+
+  const expectedOrigin =
+    new URL(request.url).origin;
+
+  if (
+    !origin ||
+    origin !== expectedOrigin
+  ) {
+    throw new Error(
+      "INVALID_ORIGIN"
+    );
+  }
+}
+
+export async function requirePlatformAdminSession(
+  request?: Request
+): Promise<PlatformAdminSession> {
+  if (request) {
+    assertPlatformAdminRequestOrigin(
+      request
+    );
+  }
   const supabase = await createClient();
 
   const {
@@ -139,6 +165,19 @@ export async function requirePlatformAdminPage(): Promise<PlatformAdminSession> 
 export function platformAdminAccessResponse(
   error: unknown
 ) {
+  if (
+    error instanceof Error &&
+    error.message === "INVALID_ORIGIN"
+  ) {
+    return Response.json(
+      {
+        error:
+          "Invalid request origin.",
+      },
+      { status: 403 }
+    );
+  }
+
   if (
     error instanceof PlatformAdminAccessError
   ) {

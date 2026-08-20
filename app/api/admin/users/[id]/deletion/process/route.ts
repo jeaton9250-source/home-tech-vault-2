@@ -29,7 +29,7 @@ export async function POST(
 ) {
   try {
     const session =
-      await requirePlatformAdminSession();
+      await requirePlatformAdminSession(request);
 
     const { id } = await context.params;
     const body =
@@ -75,6 +75,34 @@ export async function POST(
     }
 
     if (!jobId) {
+      return NextResponse.json(
+        {
+          error:
+            "No deletion job found for this user.",
+        },
+        { status: 404 }
+      );
+    }
+
+    const {
+      data: deletionJob,
+      error: deletionJobError,
+    } = await admin
+      .from(
+        "admin_account_deletion_jobs"
+      )
+      .select("target_user_id")
+      .eq("id", jobId)
+      .maybeSingle();
+
+    if (deletionJobError) {
+      throw deletionJobError;
+    }
+
+    if (
+      !deletionJob ||
+      deletionJob.target_user_id !== id
+    ) {
       return NextResponse.json(
         {
           error:

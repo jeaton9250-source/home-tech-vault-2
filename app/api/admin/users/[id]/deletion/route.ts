@@ -89,7 +89,7 @@ export async function POST(
 ) {
   try {
     const session =
-      await requirePlatformAdminSession();
+      await requirePlatformAdminSession(request);
 
     const { id } = await context.params;
     const body =
@@ -208,7 +208,7 @@ export async function DELETE(
 ) {
   try {
     const session =
-      await requirePlatformAdminSession();
+      await requirePlatformAdminSession(request);
 
     const { id } = await context.params;
     const body =

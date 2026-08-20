@@ -32,7 +32,7 @@ export async function POST(
 ) {
   try {
     const adminSession =
-      await requirePlatformAdminSession();
+      await requirePlatformAdminSession(request);
     const { id: targetUserId } =
       await context.params;
 

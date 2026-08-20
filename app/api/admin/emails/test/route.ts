@@ -20,7 +20,7 @@ type TestEmailBody = {
 export async function POST(request: Request) {
   try {
     const session =
-      await requirePlatformAdminSession();
+      await requirePlatformAdminSession(request);
 
     const body =
       (await request.json()) as TestEmailBody;

@@ -37,7 +37,7 @@ export async function DELETE(
 ) {
   try {
     const session =
-      await requirePlatformAdminSession();
+      await requirePlatformAdminSession(request);
 
     const { id: targetUserId } =
       await context.params;

@@ -22,7 +22,7 @@ export async function POST(
 ) {
   try {
     const session =
-      await requirePlatformAdminSession();
+      await requirePlatformAdminSession(request);
 
     const { id } = await context.params;
     const payload = (await request.json()) as NoteBody;

@@ -37,7 +37,7 @@ export async function POST(
 ) {
   try {
     const adminSession =
-      await requirePlatformAdminSession();
+      await requirePlatformAdminSession(request);
     const { id: targetUserId } =
       await context.params;
 
@@ -170,9 +170,7 @@ export async function POST(
     return NextResponse.json(
       {
         error:
-          error instanceof Error
-            ? error.message
-            : "Unable to create plan grant.",
+          "Unable to create plan grant.",
       },
       { status: 500 }
     );
@@ -185,7 +183,7 @@ export async function DELETE(
 ) {
   try {
     const adminSession =
-      await requirePlatformAdminSession();
+      await requirePlatformAdminSession(request);
     const { id: targetUserId } =
       await context.params;
 
@@ -301,9 +299,7 @@ export async function DELETE(
     return NextResponse.json(
       {
         error:
-          error instanceof Error
-            ? error.message
-            : "Unable to revoke plan grant.",
+          "Unable to revoke plan grant.",
       },
       { status: 500 }
     );

@@ -56,7 +56,7 @@ export async function DELETE(
 ) {
   try {
     const session =
-      await requirePlatformAdminSession();
+      await requirePlatformAdminSession(request);
     const { userId } = await context.params;
     const body =
       (await request.json()) as {

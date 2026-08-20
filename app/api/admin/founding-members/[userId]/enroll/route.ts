@@ -65,7 +65,7 @@ export async function POST(
 ) {
   try {
     const session =
-      await requirePlatformAdminSession();
+      await requirePlatformAdminSession(request);
     const { userId } = await context.params;
     const body =
       (await request.json()) as {

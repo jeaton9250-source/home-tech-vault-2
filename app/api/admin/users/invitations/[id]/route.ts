@@ -23,7 +23,7 @@ export async function POST(
   context: RouteContext
 ) {
   try {
-    const session = await requirePlatformAdminSession();
+    const session = await requirePlatformAdminSession(request);
     const admin = createAdminClient();
     const { id } = await context.params;
     const inviteRoutePath = new URL(request.url).pathname;
@@ -76,7 +76,7 @@ export async function DELETE(
   context: RouteContext
 ) {
   try {
-    await requirePlatformAdminSession();
+    await requirePlatformAdminSession(_request);
     const admin = createAdminClient();
     const { id } = await context.params;
 

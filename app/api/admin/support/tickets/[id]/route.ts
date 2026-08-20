@@ -100,7 +100,7 @@ export async function PATCH(
 ) {
   try {
     const session =
-      await requirePlatformAdminSession();
+      await requirePlatformAdminSession(request);
 
     const { id } = await context.params;
     const body = (await request.json()) as TicketPatchBody;
