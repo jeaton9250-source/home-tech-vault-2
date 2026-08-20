@@ -11,9 +11,7 @@ import {
 import DashboardHero from "@/components/dashboard/DashboardHero";
 import DashboardUnlockGate from "@/components/dashboard/DashboardUnlockGate";
 import HomeAdvisorPreview from "@/components/advisor/HomeAdvisorPreview";
-import RecommendedNextStep from "@/components/dashboard/RecommendedNextStep";
 import SmartSearch from "@/components/search/SmartSearch";
-import HomeHealthEmptyState from "@/components/home-health/HomeHealthEmptyState";
 import { useHomeAdvisor } from "@/hooks/useHomeAdvisor";
 import { usePermissions } from "@/hooks/usePermissions";
 import { getHomeHealthDisplayMessage } from "@/lib/home-health/display";
@@ -61,13 +59,17 @@ export default function HomeHealthDashboard({
     );
   }
 
+  /*
+   * Keep the hero as a quick status snapshot.
+   * The detailed AI synthesis belongs in Home Advisor below,
+   * so we intentionally do not repeat advisor.summary here.
+   */
   const healthSummary =
-    advisor?.summary ||
-    (homeHealth.status
+    homeHealth.status
       ? getHomeHealthDisplayMessage(
           homeHealth.status
         )
-      : null);
+      : null;
 
   return (
     <div className="mx-auto w-full max-w-[1240px] pb-14">
@@ -124,7 +126,7 @@ export default function HomeHealthDashboard({
 
       {/* OVERVIEW METRICS */}
 
-      <section className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <section className="mt-5 grid overflow-hidden rounded-[22px] border border-[#182533]/10 bg-[#f8f5ef] shadow-[0_16px_40px_-36px_rgba(15,25,35,0.4)] sm:grid-cols-2 lg:grid-cols-5">
         <StatCard
           icon={Wifi}
           label="Devices"
@@ -177,7 +179,7 @@ export default function HomeHealthDashboard({
 
       {/* MAIN DASHBOARD */}
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[1.08fr_0.92fr]">
+      <div className="mt-5 grid items-start gap-5 lg:grid-cols-[1.16fr_0.84fr]">
         {/* LEFT */}
 
         <div className="space-y-6">
@@ -192,24 +194,7 @@ export default function HomeHealthDashboard({
             />
           </SectionShell>
 
-          <SectionShell
-            eyebrow="Next Step"
-            title="Keep your Vault moving forward"
-          >
-            {homeHealth.isEmpty ? (
-              <HomeHealthEmptyState
-                recommendation={
-                  homeHealth.recommendation
-                }
-              />
-            ) : (
-              <RecommendedNextStep
-                recommendation={
-                  homeHealth.recommendation
-                }
-              />
-            )}
-          </SectionShell>
+
         </div>
 
         {/* RIGHT */}
@@ -248,40 +233,7 @@ export default function HomeHealthDashboard({
             </div>
           </section>
 
-          {/* VAULT GROWTH */}
 
-          <section className="rounded-[26px] border border-[#182533]/10 bg-[#f8f5ef] p-6 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)]">
-            <div className="flex items-center gap-3">
-              <span className="h-px w-6 bg-[#617c43]" />
-
-              <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-[#617c43]">
-                Your Home Tech Vault
-              </p>
-            </div>
-
-            <h2 className="mt-3 max-w-md font-serif text-2xl font-medium leading-tight tracking-[-0.03em] text-[#17212a]">
-              Your Vault becomes more useful as
-              it grows.
-            </h2>
-
-            <p className="mt-3 text-sm leading-6 text-[#68737b]">
-              Add devices, receipts, warranties,
-              manuals, and maintenance information
-              over time. The more complete your Vault
-              becomes, the easier it is to understand
-              what you own and what may need attention.
-            </p>
-
-            <div className="mt-5 space-y-2.5">
-              <InsightRow text="Keep important devices documented" />
-
-              <InsightRow text="Attach receipts and manuals" />
-
-              <InsightRow text="Track warranty coverage" />
-
-              <InsightRow text="Share useful information with your household" />
-            </div>
-          </section>
         </div>
       </div>
     </div>
@@ -308,39 +260,43 @@ function StatCard({
   attention = false,
 }: StatCardProps) {
   return (
-    <div className="group rounded-[22px] border border-[#182533]/10 bg-[#f8f5ef] p-4 shadow-[0_16px_40px_-34px_rgba(15,25,35,0.45)] transition hover:-translate-y-0.5 hover:border-[#617c43]/20">
-      <div className="flex items-center justify-between gap-3">
+    <div className="min-w-0 border-b border-[#182533]/8 px-4 py-3.5 last:border-b-0 sm:even:border-l lg:border-b-0 lg:border-l-0 lg:border-r lg:last:border-r-0">
+      <div className="flex items-center gap-3">
         <div
-          className={`flex h-9 w-9 items-center justify-center rounded-xl ${
+          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ${
             attention
               ? "bg-[#b58a42]/10 text-[#9a7336]"
               : "bg-[#617c43]/10 text-[#617c43]"
           }`}
         >
           <Icon
-            size={17}
+            size={15}
             aria-hidden
           />
         </div>
 
-        <span
-          className={`font-serif text-2xl font-medium tracking-[-0.04em] ${
-            attention
-              ? "text-[#9a7336]"
-              : "text-[#17212a]"
-          }`}
-        >
-          {value}
-        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-baseline justify-between gap-3">
+            <p className="truncate text-[11px] font-semibold text-[#56616a]">
+              {label}
+            </p>
+
+            <span
+              className={`shrink-0 font-serif text-xl font-medium tracking-[-0.04em] ${
+                attention
+                  ? "text-[#9a7336]"
+                  : "text-[#17212a]"
+              }`}
+            >
+              {value}
+            </span>
+          </div>
+
+          <p className="mt-0.5 truncate text-[10px] text-[#8a949b]">
+            {detail}
+          </p>
+        </div>
       </div>
-
-      <p className="mt-4 text-xs font-semibold text-[#17212a]">
-        {label}
-      </p>
-
-      <p className="mt-1 text-[10px] leading-4 text-[#7a858d]">
-        {detail}
-      </p>
     </div>
   );
 }

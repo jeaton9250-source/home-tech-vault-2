@@ -63,7 +63,7 @@ const welcomeMessage: ChatMessage = {
   id: "welcome",
   role: "assistant",
   content:
-    "Hi! I’m your Home Tech Vault Advisor. Ask me about your devices, warranties, rooms, documents, values, or subscriptions.",
+    "I’m connected to your Home Tech Vault. Ask me what needs attention, what is missing, what is covered, or for help understanding your home technology.",
 };
 
 export default function AIAdvisorPopup() {
@@ -74,14 +74,44 @@ export default function AIAdvisorPopup() {
     canViewFeature,
   } = usePermissions();
 
-  const { isOpen, close, pendingQuery } =
-    useAIAdvisor();
+  const {
+    isOpen,
+    close,
+    pendingQuery,
+    consumePendingQuery,
+  } = useAIAdvisor();
 
   const messagesEndRef =
     useRef<HTMLDivElement | null>(null);
 
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
+
+  /*
+   * AI_ADVISOR_DRAFT_SYNC
+   *
+   * A query opened from Smart Search used to live in
+   * pendingQuery while the send button only watched
+   * message. Keep one source of truth for the composer.
+   */
+  useEffect(() => {
+    if (
+      !isOpen ||
+      !pendingQuery?.trim()
+    ) {
+      return;
+    }
+
+    setMessage(
+      pendingQuery.trim()
+    );
+
+    consumePendingQuery();
+  }, [
+    isOpen,
+    pendingQuery,
+    consumePendingQuery,
+  ]);
 
   const [devices, setDevices] =
     useState<Device[]>([]);
@@ -296,7 +326,10 @@ export default function AIAdvisorPopup() {
     event?.preventDefault();
 
     const question = (
-      presetMessage || message
+      presetMessage ||
+      message ||
+      pendingQuery ||
+      ""
     ).trim();
 
     if (
@@ -327,12 +360,79 @@ export default function AIAdvisorPopup() {
         await loadVaultData();
       }
 
-      await new Promise((resolve) =>
-        window.setTimeout(resolve, 350)
-      );
-
-      const answer =
+      /*
+       * Keep the existing rule-based answer
+       * available as an instant fallback.
+       */
+      const fallbackAnswer =
         generateVaultAnswer(question);
+
+      const history = messages
+        .filter(
+          (entry) =>
+            entry.id !== "welcome"
+        )
+        .slice(-8)
+        .map(
+          (entry) => ({
+            role: entry.role,
+            content: entry.content,
+          })
+        );
+
+      let answer =
+        fallbackAnswer;
+
+      try {
+        const response =
+          await fetch(
+            "/api/ai/ask",
+            {
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+
+              body:
+                JSON.stringify({
+                  question,
+                  history,
+                }),
+            }
+          );
+
+        const payload =
+          (
+            await response
+              .json()
+              .catch(
+                () => ({})
+              )
+          ) as {
+            answer?: string;
+            error?: string;
+          };
+
+        if (
+          response.ok &&
+          payload.answer?.trim()
+        ) {
+          answer =
+            payload.answer.trim();
+        } else {
+          console.warn(
+            "Vault Intelligence AI unavailable; using deterministic fallback.",
+            response.status
+          );
+        }
+      } catch (aiError) {
+        console.warn(
+          "Vault Intelligence request failed; using deterministic fallback.",
+          aiError
+        );
+      }
 
       const assistantMessage: ChatMessage = {
         id: crypto.randomUUID(),
@@ -884,6 +984,8 @@ Try asking:
     setMessages([
       welcomeMessage,
     ]);
+    setMessage("");
+    consumePendingQuery();
   }
 
   useEffect(() => {
@@ -992,7 +1094,7 @@ Try asking:
                       size={16}
                       className="animate-spin"
                     />
-                    Analyzing your vault...
+                    Reviewing your Vault...
                   </div>
                 </div>
               )}
@@ -1042,7 +1144,7 @@ Try asking:
           >
             <div className="flex items-end gap-2">
               <textarea
-                value={message || pendingQuery || ""}
+                value={message}
                 onChange={(event) =>
                   setMessage(
                     event.target.value
@@ -1058,7 +1160,7 @@ Try asking:
                     submitMessage();
                   }
                 }}
-                placeholder="Ask about your technology..."
+                placeholder="Ask your Vault anything..."
                 rows={1}
                 className="max-h-28 min-h-12 flex-1 resize-none rounded-2xl border border-border-subtle bg-surface-sunken px-4 py-3 text-sm text-text-primary outline-none focus:border-interaction focus:ring-2 focus:ring-interaction/20"
               />
@@ -1066,8 +1168,8 @@ Try asking:
               <button
                 type="submit"
                 disabled={
-                  !message.trim() ||
-                  sending
+                  sending ||
+                  message.trim().length === 0
                 }
                 aria-label="Send message"
                 className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-charcoal text-surface-card transition hover:bg-charcoal-hover disabled:cursor-not-allowed disabled:opacity-40"

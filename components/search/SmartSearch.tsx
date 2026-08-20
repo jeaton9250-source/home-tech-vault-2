@@ -27,9 +27,9 @@ import {
 } from "lucide-react";
 
 import SearchResults from "@/components/search/SearchResults";
+import VaultSearchAssistant from "@/components/search/VaultSearchAssistant";
 import Button from "@/components/ui/Button";
 import { useDemoMode } from "@/hooks/useDemoMode";
-import { useAIAdvisor } from "@/hooks/useAIAdvisor";
 import { usePermissions } from "@/hooks/usePermissions";
 import { buildDemoSmartSearchResponse } from "@/lib/demo/demoSmartSearch";
 import {
@@ -107,6 +107,10 @@ export default function SmartSearch({
   const searchParams = useSearchParams();
 
   const { isDemo } = useDemoMode();
+
+  const {
+    canViewFeature,
+  } = usePermissions();
 
   const urlQuery = getSmartSearchQueryFromUrl(
     searchParams,
@@ -313,21 +317,20 @@ export default function SmartSearch({
               aria-hidden
             />
 
-            Search your vault
+            Ask Your Vault
           </div>
 
           {/* Heading */}
           <div className="mt-6 max-w-3xl">
             <h1 className="text-3xl font-medium tracking-[-0.045em] text-text-primary sm:text-4xl lg:text-5xl">
               {heading ||
-                "Ask your home anything."}
+                "Ask your Vault."}
             </h1>
 
             <p className="mt-4 max-w-2xl text-sm leading-6 text-text-secondary sm:text-base lg:text-lg">
-              Search across your devices,
-              receipts, warranties, manuals,
-              maintenance records, and home
-              information from one place.
+              Ask one question. Get a simple
+              answer from your Vault, with exact
+              records shown when they are useful.
             </p>
           </div>
 
@@ -565,6 +568,26 @@ export default function SmartSearch({
               "rounded-[28px] border border-border-subtle bg-surface-card p-4 shadow-sm sm:p-6"
           )}
         >
+          {!isDemo &&
+          !loading &&
+          response?.query ? (
+            <div className="mb-6">
+              <VaultSearchAssistant
+                query={
+                  response.query
+                }
+                enabled={
+                  canViewFeature(
+                    "aiAdvisor"
+                  )
+                }
+                exactMatchCount={
+                  response.total
+                }
+              />
+            </div>
+          ) : null}
+
           {isDemo ? (
             <SearchResults
               response={
@@ -577,7 +600,13 @@ export default function SmartSearch({
               query={trimmedQuery}
               demoMode
             />
-          ) : (
+          ) : canViewFeature(
+              "aiAdvisor"
+            ) &&
+            response &&
+            response.total === 0 &&
+            !loading &&
+            !error ? null : (
             <AuthenticatedSearchResults
               response={
                 trimmedQuery
@@ -618,29 +647,7 @@ function DashboardSearch({
 }) {
   return (
     <div>
-      <div className="flex items-start gap-3">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#eef3e8] text-[#617c43]">
-          <Sparkles
-            size={18}
-            aria-hidden
-          />
-        </div>
-
-        <div>
-          <h2 className="text-lg font-semibold tracking-tight text-[#f4f0e8] md:text-xl">
-            {heading ||
-              "Ask your home"}
-          </h2>
-
-          <p className="mt-1 text-sm leading-6 text-[#b6c0c7]">
-            Search naturally across your
-            devices, documents, warranties,
-            and home records.
-          </p>
-        </div>
-      </div>
-
-      <form
+<form
         onSubmit={onSubmit}
         className="mt-5"
       >
@@ -660,7 +667,12 @@ function DashboardSearch({
               )
             }
             placeholder="Ask something about your home..."
-            className="htv-focus-ring w-full rounded-[14px] border-0 bg-transparent py-3 pl-10 pr-12 text-sm text-[#f4f0e8] outline-none placeholder:text-[#9da9b1]"
+            className="htv-focus-ring w-full rounded-[14px] border-0 bg-transparent py-3 pl-10 pr-12 text-sm font-medium text-[#f4f0e8] caret-[#f4f0e8] outline-none placeholder:text-[#aeb8c1] placeholder:opacity-100"
+            style={{
+              color: "#f4f0e8",
+              WebkitTextFillColor: "#f4f0e8",
+              caretColor: "#f4f0e8",
+            }}
             aria-label="Search your home"
           />
 
@@ -684,7 +696,7 @@ function DashboardSearch({
         </div>
       </form>
 
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className="mt-3 flex flex-wrap gap-2">
         {SUGGESTED_SEARCHES.slice(
           0,
           3
@@ -718,26 +730,13 @@ function AuthenticatedSearchResults({
   error: string;
   query: string;
 }) {
-  const {
-    open: openAdvisor,
-  } = useAIAdvisor();
-
-  const {
-    canViewFeature,
-  } = usePermissions();
-
   return (
     <SearchResults
       response={response}
       loading={loading}
       error={error}
       query={query}
-      showAdvisorCta={canViewFeature(
-        "aiAdvisor"
-      )}
-      onOpenAdvisor={
-        openAdvisor
-      }
+      showAdvisorCta={false}
     />
   );
 }
