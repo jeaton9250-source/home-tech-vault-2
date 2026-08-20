@@ -1,6 +1,16 @@
 "use server";
 
 import {
+  resolveOfficialManualPdf,
+} from "@/lib/manuals/officialManualResolver";
+
+
+import {
+  normalizeDeviceIdentityForLookup,
+} from "@/lib/ai/normalizeDeviceIdentity";
+
+
+import {
   validateDeviceInput,
 } from "@/lib/devices/deviceInputValidation";
 
@@ -472,7 +482,7 @@ async function saveMatchedProductImage({
 
 
 const AUTO_MANUAL_MAX_BYTES =
-  15 * 1024 * 1024;
+  48 * 1024 * 1024;
 
 type IcecatManualAsset = {
   ID?: string;
@@ -685,18 +695,17 @@ function createManualDocumentName(
   );
 }
 
-async function findIcecatManual(
-  productUpc: string
-) {
-  const barcode =
-    normalizeManualBarcode(
-      productUpc
-    );
-
-  if (!barcode) {
-    return null;
-  }
-
+async function findIcecatManual({
+  productUpc,
+  brand,
+  modelNumber,
+  deviceName,
+}: {
+  productUpc?: string;
+  brand: string;
+  modelNumber: string;
+  deviceName: string;
+}) {
   const username =
     process.env
       .ICECAT_USERNAME
@@ -718,114 +727,299 @@ async function findIcecatManual(
     !contentToken
   ) {
     console.warn(
-      "Icecat manual lookup skipped: credentials are incomplete."
+      "[manual-enrichment] Icecat credentials are incomplete"
     );
 
     return null;
   }
 
-  const url =
-    new URL(
-      "https://live.icecat.biz/api"
+  /*
+   * Capture validated credentials as definite
+   * strings before entering the nested function.
+   */
+  const icecatUsername = username;
+  const icecatApiToken = apiToken;
+  const icecatContentToken =
+    contentToken;
+
+  async function requestManual(
+    identity:
+      | {
+          gtin: string;
+        }
+      | {
+          brand: string;
+          productCode: string;
+        }
+  ) {
+    const url =
+      new URL(
+        "https://live.icecat.biz/api"
+      );
+
+    url.searchParams.set(
+      "lang",
+      "EN"
     );
 
-  url.searchParams.set(
-    "lang",
-    "EN"
-  );
+    url.searchParams.set(
+      "shopname",
+      icecatUsername
+    );
 
-  url.searchParams.set(
-    "shopname",
-    username
-  );
+    url.searchParams.set(
+      "content",
+      "manuals"
+    );
 
-  url.searchParams.set(
-    "GTIN",
-    barcode
-  );
+    if ("gtin" in identity) {
+      url.searchParams.set(
+        "GTIN",
+        identity.gtin
+      );
+    } else {
+      url.searchParams.set(
+        "Brand",
+        identity.brand
+      );
 
-  url.searchParams.set(
-    "content",
-    "manuals"
-  );
+      url.searchParams.set(
+        "ProductCode",
+        identity.productCode
+      );
+    }
 
-  const response =
-    await fetch(
-      url,
+    const response =
+      await fetch(
+        url,
+        {
+          method: "GET",
+
+          headers: {
+            Accept:
+              "application/json",
+
+            "api-token":
+              icecatApiToken,
+
+            "content-token":
+              icecatContentToken,
+          },
+
+          cache: "no-store",
+
+          signal:
+            AbortSignal.timeout(
+              7_000
+            ),
+        }
+      );
+
+    if (!response.ok) {
+      console.warn(
+        "[manual-enrichment] Icecat HTTP:",
+        response.status
+      );
+
+      return null;
+    }
+
+    const payload =
+      (await response.json()) as
+        IcecatManualResponse;
+
+    if (payload.msg !== "OK") {
+      console.info(
+        "[manual-enrichment] Icecat returned no matching product"
+      );
+
+      return null;
+    }
+
+    const assets =
+      Array.isArray(
+        payload.data?.Multimedia
+      )
+        ? payload.data?.Multimedia ?? []
+        : [];
+
+    const manual =
+      chooseIcecatManual(
+        assets
+      );
+
+    if (
+      !manual?.URL ||
+      !isIcecatAssetUrl(
+        manual.URL
+      )
+    ) {
+      console.info(
+        "[manual-enrichment] product found but no usable manual asset"
+      );
+
+      return null;
+    }
+
+    return {
+      manual,
+      contentToken:
+        icecatContentToken,
+    };
+  }
+
+
+  /*
+   * 1. Exact barcode match.
+   */
+  const barcode =
+    normalizeManualBarcode(
+      productUpc
+    );
+
+  if (barcode) {
+    console.info(
+      "[manual-enrichment] trying GTIN"
+    );
+
+    const result =
+      await requestManual({
+        gtin: barcode,
+      });
+
+    if (result) {
+      console.info(
+        "[manual-enrichment] ✓ matched by GTIN"
+      );
+
+      return result;
+    }
+  }
+
+
+  /*
+   * 2. Exact manufacturer identity.
+   */
+  const cleanBrand =
+    brand.trim();
+
+  const cleanModel =
+    modelNumber.trim();
+
+  if (
+    cleanBrand &&
+    cleanModel
+  ) {
+    console.info(
+      "[manual-enrichment] trying brand + model",
       {
-        method: "GET",
-
-        headers: {
-          Accept:
-            "application/json",
-
-          "api-token":
-            apiToken,
-
-          "content-token":
-            contentToken,
-        },
-
-        cache:
-          "no-store",
-
-        signal:
-          AbortSignal.timeout(
-            7_000
-          ),
+        brand: cleanBrand,
+        modelNumber:
+          cleanModel,
       }
     );
 
-  if (!response.ok) {
-    console.warn(
-      "Icecat manual request failed:",
-      response.status
+    const result =
+      await requestManual({
+        brand:
+          cleanBrand,
+
+        productCode:
+          cleanModel,
+      });
+
+    if (result) {
+      console.info(
+        "[manual-enrichment] ✓ matched by brand + model"
+      );
+
+      return result;
+    }
+  }
+
+
+  /*
+   * 3. Groq may clean formatting.
+   *
+   * It never generates or chooses a manual.
+   * Icecat still has to verify the product.
+   */
+  if (!cleanModel) {
+    return null;
+  }
+
+  console.info(
+    "[manual-enrichment] trying AI identity normalization"
+  );
+
+  const normalized =
+    await normalizeDeviceIdentityForLookup({
+      deviceName,
+      brand:
+        cleanBrand,
+      modelNumber:
+        cleanModel,
+    });
+
+  if (!normalized) {
+    console.info(
+      "[manual-enrichment] AI identity normalization rejected"
     );
 
     return null;
   }
 
-  const payload =
-    (await response.json()) as
-      IcecatManualResponse;
+  const sameBrand =
+    normalized.brand
+      .toLowerCase() ===
+    cleanBrand.toLowerCase();
+
+  const sameModel =
+    normalized.modelNumber
+      .toLowerCase() ===
+    cleanModel.toLowerCase();
 
   if (
-    payload.msg !== "OK"
+    sameBrand &&
+    sameModel
   ) {
-    console.warn(
-      "Icecat manual unavailable:",
-      payload.msg
+    console.info(
+      "[manual-enrichment] AI identity unchanged"
     );
 
     return null;
   }
 
-  const assets =
-    Array.isArray(
-      payload.data?.Multimedia
-    )
-      ? payload.data
-          ?.Multimedia ?? []
-      : [];
+  console.info(
+    "[manual-enrichment] trying AI-normalized identity",
+    {
+      brand:
+        normalized.brand,
 
-  const manual =
-    chooseIcecatManual(
-      assets
+      modelNumber:
+        normalized.modelNumber,
+
+      confidence:
+        normalized.confidence,
+    }
+  );
+
+  const result =
+    await requestManual({
+      brand:
+        normalized.brand,
+
+      productCode:
+        normalized.modelNumber,
+    });
+
+  if (result) {
+    console.info(
+      "[manual-enrichment] ✓ matched after AI normalization"
     );
-
-  if (
-    !manual?.URL ||
-    !isIcecatAssetUrl(
-      manual.URL
-    )
-  ) {
-    return null;
   }
 
-  return {
-    manual,
-    contentToken,
-  };
+  return result;
 }
 
 async function downloadIcecatManual(
@@ -972,7 +1166,7 @@ async function saveIcecatManualForDevice({
   deviceName: string;
   brand: string;
   modelNumber: string;
-  productUpc: string;
+  productUpc?: string;
 }): Promise<
   "found" |
   "not_found" |
@@ -1034,47 +1228,70 @@ async function saveIcecatManualForDevice({
     return "found";
   }
 
+  let pdf:
+    | Uint8Array
+    | null =
+      null;
+
   const result =
-    await findIcecatManual(
-      productUpc
-    );
+    await findIcecatManual({
+      productUpc,
+      brand,
+      modelNumber,
+      deviceName,
+    });
 
-  if (!result) {
-    return "not_found";
+  if (result) {
+    const {
+      manual,
+      contentToken,
+    } = result;
+
+    const declaredSize =
+      Number(
+        manual.Size ??
+          "0"
+      );
+
+    if (
+      !Number.isFinite(
+        declaredSize
+      ) ||
+      declaredSize <=
+        AUTO_MANUAL_MAX_BYTES
+    ) {
+      pdf =
+        await downloadIcecatManual(
+          manual.URL!,
+          contentToken
+        );
+
+      if (pdf) {
+        console.info(
+          "[manual-resolver] Icecat manual verified"
+        );
+      }
+    }
   }
-
-  const {
-    manual,
-    contentToken,
-  } = result;
-
-  const declaredSize =
-    Number(
-      manual.Size ??
-        "0"
-    );
-
-  if (
-    Number.isFinite(
-      declaredSize
-    ) &&
-    declaredSize >
-      AUTO_MANUAL_MAX_BYTES
-  ) {
-    console.warn(
-      "Icecat manual metadata reports a file larger than 15 MB."
-    );
-
-    return "not_found";
-  }
-
-  const pdf =
-    await downloadIcecatManual(
-      manual.URL!,
-      contentToken
-    );
 
   if (!pdf) {
+    console.info(
+      "[manual-resolver] Icecat missed; trying official manufacturer web search"
+    );
+
+    pdf =
+      await resolveOfficialManualPdf({
+        brand,
+        modelNumber,
+        deviceName,
+      });
+  }
+
+  if (!pdf) {
+    console.info(
+      "[manual-resolver] no verified manual found"
+    );
+
     return "not_found";
   }
 
@@ -1297,6 +1514,18 @@ export async function addDevice(
   const trimmedLocation =
     normalizedInput.location;
 
+  const canAttemptManualLookup =
+    Boolean(
+      normalizedInput.productUpc?.trim() ||
+      (
+        (
+          normalizedInput.brand ||
+          normalizedInput.manufacturer
+        ) &&
+        normalizedInput.modelNumber
+      )
+    );
+
   const { data: createdDevice, error } = await supabase
     .from("devices")
     .insert({
@@ -1305,7 +1534,7 @@ export async function addDevice(
       device_name: trimmedName,
 
       manual_status:
-        normalizedInput.productUpc
+        canAttemptManualLookup
           ? "pending"
           : null,
 
@@ -1401,7 +1630,8 @@ export async function addDevice(
               deviceId:
                 createdDevice.id,
               productUpc:
-                normalizedInput.productUpc,
+                normalizedInput.productUpc ??
+                undefined,
             });
 
           if (
@@ -1444,7 +1674,7 @@ export async function addDevice(
        * the device itself from being saved.
        */
       if (
-        normalizedInput.productUpc
+        canAttemptManualLookup
       ) {
         try {
           const manualResult =
@@ -1464,13 +1694,16 @@ export async function addDevice(
                 trimmedName,
 
               brand:
-                normalizedInput.brand,
+                normalizedInput.brand ||
+                normalizedInput.manufacturer,
 
               modelNumber:
                 normalizedInput.modelNumber,
 
               productUpc:
-                normalizedInput.productUpc,
+                normalizedInput.productUpc ??
+                undefined,
+
             });
 
           if (
@@ -1604,6 +1837,346 @@ export async function addDevice(
   return {
     success: true,
     deviceId: createdDevice.id,
+  };
+}
+
+
+
+export type RetryDeviceManualLookupResult =
+  | {
+      success: true;
+      status:
+        | "found"
+        | "not_found"
+        | "skipped";
+      checkedAt: string;
+      modelNumber: string;
+    }
+  | {
+      success: false;
+      error: string;
+    };
+
+
+export async function retryDeviceManualLookup(input: {
+  deviceId: string;
+  modelNumber?: string;
+}): Promise<RetryDeviceManualLookupResult> {
+  const supabase =
+    await createClient();
+
+  const {
+    data: { user },
+    error: userError,
+  } =
+    await supabase.auth.getUser();
+
+  if (
+    userError ||
+    !user
+  ) {
+    return {
+      success: false,
+      error:
+        "You must be signed in to search for a manual.",
+    };
+  }
+
+  const deviceId =
+    input.deviceId
+      ?.trim();
+
+  if (!deviceId) {
+    return {
+      success: false,
+      error:
+        "A device id is required.",
+    };
+  }
+
+  const requestedModel =
+    input.modelNumber
+      ?.trim() ?? "";
+
+  if (
+    requestedModel.length >
+    160
+  ) {
+    return {
+      success: false,
+      error:
+        "The model number is too long.",
+    };
+  }
+
+  const householdId =
+    await fetchHouseholdIdForUser(
+      user.id,
+      supabase
+    );
+
+  /*
+   * RLS + household scope determine whether
+   * this user may read the device.
+   */
+  const deviceQuery =
+    applyHouseholdScope(
+      supabase
+        .from("devices")
+        .select(
+          [
+            "id",
+            "device_name",
+            "brand",
+            "manufacturer",
+            "model_number",
+            "manual_status",
+          ].join(",")
+        )
+        .eq(
+          "id",
+          deviceId
+        ),
+      householdId,
+      user.id
+    );
+
+  const {
+    data: device,
+    error: deviceError,
+  } =
+    await deviceQuery
+      .maybeSingle();
+
+  if (
+    deviceError ||
+    !device
+  ) {
+    return {
+      success: false,
+      error:
+        "This device could not be found or you do not have permission to update it.",
+    };
+  }
+
+  const brand =
+    String(
+      device.brand ??
+      device.manufacturer ??
+      ""
+    ).trim();
+
+  const existingModel =
+    String(
+      device.model_number ??
+      ""
+    ).trim();
+
+  const modelNumber =
+    requestedModel ||
+    existingModel;
+
+  if (!brand) {
+    return {
+      success: false,
+      error:
+        "Add the device brand before searching for an official manual.",
+    };
+  }
+
+  if (!modelNumber) {
+    return {
+      success: false,
+      error:
+        "Enter the exact model number from the product label before searching again.",
+    };
+  }
+
+  /*
+   * If the user supplied a more exact model,
+   * save it to the Vault before searching.
+   */
+  if (
+    requestedModel &&
+    requestedModel !==
+      existingModel
+  ) {
+    const {
+      data: updatedRows,
+      error: modelUpdateError,
+    } =
+      await applyHouseholdMutationScope(
+        supabase
+          .from("devices")
+          .update({
+            model_number:
+              requestedModel,
+          })
+          .eq(
+            "id",
+            deviceId
+          )
+          .select("id"),
+        householdId,
+        user.id
+      );
+
+    if (
+      modelUpdateError ||
+      !updatedRows ||
+      updatedRows.length === 0
+    ) {
+      return {
+        success: false,
+        error:
+          "Home Tech Vault could not save the updated model number.",
+      };
+    }
+  }
+
+  const admin =
+    createAdminClient();
+
+  let result:
+    | "found"
+    | "not_found"
+    | "skipped";
+
+  try {
+    /*
+     * This reuses the same trusted pipeline
+     * as automatic device creation:
+     *
+     * Brand + Model
+     * -> AI formatting cleanup when useful
+     * -> verified Icecat product
+     * -> validated PDF
+     * -> device-documents
+     */
+    result =
+      await saveIcecatManualForDevice({
+        supabase,
+        admin,
+
+        userId:
+          user.id,
+
+        householdId,
+
+        deviceId,
+
+        deviceName:
+          String(
+            device.device_name ??
+            "Device"
+          ).trim(),
+
+        brand,
+
+        modelNumber,
+
+        productUpc:
+          undefined,
+      });
+  } catch (error) {
+    console.warn(
+      "Manual retry failed:",
+      error
+    );
+
+    return {
+      success: false,
+      error:
+        "The manual search could not be completed. Please try again.",
+    };
+  }
+
+  const checkedAt =
+    new Date()
+      .toISOString();
+
+  /*
+   * "skipped" usually means quota/access
+   * prevented another document from being saved.
+   * Do not overwrite the truthful existing
+   * manual status in that case.
+   */
+  if (
+    result !==
+    "skipped"
+  ) {
+    const {
+      data: statusRows,
+      error: statusError,
+    } =
+      await applyHouseholdMutationScope(
+        supabase
+          .from("devices")
+          .update({
+            manual_status:
+              result,
+
+            manual_checked_at:
+              checkedAt,
+          })
+          .eq(
+            "id",
+            deviceId
+          )
+          .select("id"),
+        householdId,
+        user.id
+      );
+
+    if (
+      statusError ||
+      !statusRows ||
+      statusRows.length === 0
+    ) {
+      console.warn(
+        "Unable to save retry manual status:",
+        statusError
+      );
+    }
+  }
+
+  if (
+    result ===
+    "found"
+  ) {
+    await recordActivity({
+      activityType:
+        "document.uploaded",
+
+      title:
+        "User manual added",
+
+      description:
+        "An official product manual was found and saved automatically.",
+
+      userId:
+        user.id,
+
+      householdId,
+
+      deviceId,
+    });
+  }
+
+  revalidatePath(
+    `/devices/${deviceId}`
+  );
+
+  revalidatePath(
+    "/documents"
+  );
+
+  return {
+    success: true,
+    status:
+      result,
+    checkedAt,
+    modelNumber,
   };
 }
 

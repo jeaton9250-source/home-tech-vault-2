@@ -111,6 +111,16 @@ export default function AddDevicePage() {
   const [saving, setSaving] =
     useState(false);
 
+  /*
+   * The Add Device screen begins with discovery,
+   * not a blank data-entry form.
+   */
+  const [
+    deviceChosenFromLookup,
+    setDeviceChosenFromLookup,
+  ] = useState(false);
+
+
   const [
     showMoreDetails,
     setShowMoreDetails,
@@ -186,7 +196,10 @@ export default function AddDevicePage() {
     setProductUpc(
       device.upc ?? ""
     );
-  }
+    setDeviceChosenFromLookup(
+      true
+    );
+}
 
   async function saveDevice(
     event: FormEvent<HTMLFormElement>
@@ -554,42 +567,10 @@ export default function AddDevicePage() {
       <PageTitle
         eyebrow="Quick Add"
         title="Add a device"
-        description="Start with the basics. You can add receipts, warranties, purchase details, and everything else later."
+        description="Find what you own with Quick Search or scan its UPC. Home Tech Vault fills in the product details for you."
       />
 
-      <PageCard className="overflow-hidden border-home-health/20 bg-home-health-soft/20">
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-home-health text-white">
-              <Sparkles size={21} />
-            </div>
 
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-home-health">
-                Faster option
-              </p>
-
-              <h2 className="mt-1 text-lg font-semibold text-text-primary">
-                Already have the purchase email?
-              </h2>
-
-              <p className="mt-1 max-w-xl text-sm leading-6 text-text-secondary">
-                Smart Import can pull device and
-                purchase information from your
-                order confirmation so you do less
-                typing.
-              </p>
-            </div>
-          </div>
-
-          <Button
-            href="/imports"
-            variant="secondary"
-          >
-            Use Smart Import
-          </Button>
-        </div>
-      </PageCard>
 
       {errorMessage && (
         <PageCard className="border-red-200 bg-red-50 text-red-700">
@@ -608,19 +589,23 @@ export default function AddDevicePage() {
             </p>
 
             <h2 className="mt-2 text-xl font-semibold text-text-primary">
-              Just the basics.
+              Find your device.
             </h2>
 
             <p className="mt-1 text-sm leading-6 text-text-secondary">
-              Search for your device first.
-              Home Tech Vault can fill the basics
-              so you do less typing.
+              Choose Quick Search or Scan UPC.
+              Once you pick the right product,
+              Home Tech Vault fills in the details.
             </p>
           </div>
 
           <SmartDeviceSearch
             onSelect={handleDeviceMatch}
           />
+          {/* HTV_DEVICE_LOOKUP_CONFIRM_START */}
+          {deviceChosenFromLookup ? (
+            <>
+
 
           <div className="flex items-center gap-4">
             <div className="h-px flex-1 bg-border-subtle" />
@@ -899,7 +884,11 @@ export default function AddDevicePage() {
               </Button>
             </div>
           </div>
-        </form>
+
+            </>
+          ) : null}
+          {/* HTV_DEVICE_LOOKUP_CONFIRM_END */}
+          </form>
       </PageCard>
     </PageShell>
   );

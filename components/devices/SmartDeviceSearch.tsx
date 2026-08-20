@@ -113,6 +113,14 @@ export default function SmartDeviceSearch({
     useState("");
 
   const [
+    entryMode,
+    setEntryMode,
+  ] =
+    useState<
+      "search" | "scan" | null
+    >(null);
+
+  const [
     selectedDevice,
     setSelectedDevice,
   ] =
@@ -315,12 +323,65 @@ export default function SmartDeviceSearch({
         (await response.json()) as
           LookupResponse;
 
-      const matches =
+      const catalogMatches =
         Array.isArray(
           data.matches
         )
           ? data.matches
           : [];
+
+      /*
+       * [device-quick-find] OpenAI expansion
+       *
+       * Text Quick Search expands every explicit
+       * search across the web. Barcode lookup
+       * stays database-first and only asks
+       * OpenAI when UPCItemDB/Icecat missed.
+       */
+      let matches =
+        catalogMatches;
+
+      const shouldExpandWithOpenAI =
+        !barcodeLookup ||
+        catalogMatches.length === 0;
+
+      if (shouldExpandWithOpenAI) {
+        try {
+          const aiResponse =
+            await fetch(
+              `/api/devices/ai-lookup?q=${encodeURIComponent(
+                cleaned
+              )}`,
+              {
+                method: "GET",
+                cache: "no-store",
+              }
+            );
+
+          if (aiResponse.ok) {
+            const aiData =
+              (await aiResponse.json()) as LookupResponse;
+
+            const aiMatches =
+              Array.isArray(
+                aiData.matches
+              )
+                ? aiData.matches
+                : [];
+
+            matches =
+              mergeResults(
+                catalogMatches,
+                aiMatches
+              );
+          }
+        } catch (error) {
+          console.warn(
+            "[device-quick-find] OpenAI expansion unavailable",
+            error
+          );
+        }
+      }
 
       /*
        * Only cache successful responses.
@@ -754,6 +815,19 @@ export default function SmartDeviceSearch({
     }
 
     if (
+      String(
+        device.confidence
+      ) === "openai"
+    ) {
+      return {
+        label:
+          "Web verified",
+        Icon:
+          Sparkles,
+      };
+    }
+
+    if (
       device.confidence ===
       "catalog"
     ) {
@@ -775,6 +849,66 @@ export default function SmartDeviceSearch({
 
   return (
     <div className="space-y-3">
+      <div
+        data-device-entry-method-picker
+        className="grid gap-3 sm:grid-cols-2"
+      >
+        <button
+          type="button"
+          onClick={() => {
+            stopScanner();
+            setEntryMode(
+              "search"
+            );
+          }}
+          className={`group rounded-3xl border p-5 text-left transition ${
+            entryMode === "search"
+              ? "border-home-health/35 bg-home-health-soft/35 shadow-sm"
+              : "border-border-subtle bg-white hover:border-home-health/25 hover:bg-surface-sunken/35"
+          }`}
+        >
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-home-health-soft text-home-health">
+            <Search size={20} />
+          </div>
+
+          <p className="mt-4 text-base font-bold text-text-primary">
+            Quick Search
+          </p>
+
+          <p className="mt-1 text-sm leading-6 text-text-secondary">
+            Type the brand, product name, or model. HTV searches its databases and the web.
+          </p>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setEntryMode(
+              "scan"
+            );
+            void startScanner();
+          }}
+          className={`group rounded-3xl border p-5 text-left transition ${
+            entryMode === "scan"
+              ? "border-charcoal/30 bg-charcoal/[0.04] shadow-sm"
+              : "border-border-subtle bg-white hover:border-charcoal/20 hover:bg-surface-sunken/35"
+          }`}
+        >
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-charcoal text-white">
+            <ScanBarcode
+              size={21}
+            />
+          </div>
+
+          <p className="mt-4 text-base font-bold text-text-primary">
+            Scan UPC
+          </p>
+
+          <p className="mt-1 text-sm leading-6 text-text-secondary">
+            Point your camera at a UPC or EAN barcode and let HTV identify the product.
+          </p>
+        </button>
+      </div>
       {lastBarcode ? (
         <div
           data-smart-scan-status
@@ -841,13 +975,14 @@ export default function SmartDeviceSearch({
                 </div>
               ) : (
                 <p className="mt-2 text-xs leading-5 text-[#68737b]">
-                  We read the barcode, but no exact product match was returned. You can still enter the device manually.
+                  We read the barcode, but no exact product match was returned. Try Quick Search with the brand and model number.
                 </p>
               )}
             </div>
           </div>
         </div>
       ) : null}
+      {entryMode === "search" ? (
       <div>
         <label className="block">
           <span className="mb-2 block text-sm font-semibold text-text-primary">
@@ -920,7 +1055,7 @@ export default function SmartDeviceSearch({
 
             {searching
               ? "Searching..."
-              : "Find exact model"}
+              : "Search devices"}
           </button>
 
           <button
@@ -943,6 +1078,8 @@ export default function SmartDeviceSearch({
           </span>
         </div>
       </div>
+
+      ) : null}
 
       <div
         className={
