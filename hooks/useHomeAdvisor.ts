@@ -37,6 +37,96 @@ function applyDismissals(
   };
 }
 
+
+function compactAdvisorDashboardSummary(
+  advisor: HomeAdvisorResult
+): string {
+  const original =
+    humanizeAdvisorText(
+      advisor.summary
+    )
+      .replace(
+        /^(the most urgent tasks are|the most important tasks are)\s*:\s*/i,
+        ""
+      )
+      .replace(
+        /\s*once those are handled[^.]*\.?/gi,
+        ""
+      )
+      .replace(
+        /\s*this will restore full functionality[^.]*\.?/gi,
+        ""
+      )
+      .replace(
+        /\s*this will keep the home running smoothly[^.]*\.?/gi,
+        ""
+      )
+      .replace(/\s+/g, " ")
+      .trim();
+
+  const urgentCount =
+    advisor.grouped.urgent.length;
+
+  const attentionCount =
+    advisor.grouped.attention.length;
+
+  const suggestionCount =
+    advisor.grouped.suggestion.length;
+
+  /*
+   * Keep genuinely concise AI copy.
+   * Anything paragraph-like is replaced with
+   * a short, actionable dashboard summary.
+   */
+  if (
+    original.length > 0 &&
+    original.length <= 150 &&
+    !/once those are handled|restore full functionality|running smoothly/i.test(
+      original
+    )
+  ) {
+    return original;
+  }
+
+  if (urgentCount > 0) {
+    if (attentionCount > 0) {
+      return `Start with ${urgentCount} critical ${
+        urgentCount === 1
+          ? "issue"
+          : "issues"
+      }, then review ${attentionCount} more ${
+        attentionCount === 1
+          ? "item"
+          : "items"
+      } needing attention.`;
+    }
+
+    return `Start with the ${urgentCount} critical ${
+      urgentCount === 1
+        ? "issue"
+        : "issues"
+    } shown below.`;
+  }
+
+  if (attentionCount > 0) {
+    return `Review ${attentionCount} ${
+      attentionCount === 1
+        ? "item"
+        : "items"
+    } needing attention, starting with the highest priority.`;
+  }
+
+  if (suggestionCount > 0) {
+    return `Your home looks stable. Review ${suggestionCount} suggested ${
+      suggestionCount === 1
+        ? "improvement"
+        : "improvements"
+    } when convenient.`;
+  }
+
+  return "Everything looks good. No urgent action is needed.";
+}
+
 function humanizeAdvisorResult(
   advisor: HomeAdvisorResult
 ): HomeAdvisorResult {
@@ -46,9 +136,10 @@ function humanizeAdvisorResult(
 
   return {
     ...advisor,
-    summary: humanizeAdvisorText(
-      advisor.summary
-    ),
+    summary:
+      compactAdvisorDashboardSummary(
+        advisor
+      ),
     insights,
     grouped: groupAdvisorInsights(insights),
     insightCount: insights.length,
