@@ -14,10 +14,17 @@ import {
 
 import { supabase } from "@/lib/supabase";
 import {
+  completeDocumentUpload,
+  prepareDocumentUpload,
+} from "@/app/documents/actions";
+import {
+  DOCUMENT_FIELD_LIMITS,
+  DOCUMENT_TYPES,
+  validateDocumentMetadata,
+} from "@/lib/documents/documentInputValidation";
+import {
   applyHouseholdScope,
-  withHouseholdInsertFields,
 } from "@/lib/data/householdScope";
-import { recordActivity } from "@/lib/activity";
 import {
   trackFirstDocumentAdded,
 } from "@/lib/analytics/activation";
@@ -111,7 +118,13 @@ export default function UploadDocumentPage() {
       );
     }
 
-    if (requestedType) {
+    if (
+      requestedType &&
+      DOCUMENT_TYPES.includes(
+        requestedType as
+          (typeof DOCUMENT_TYPES)[number]
+      )
+    ) {
       setFileType(
         requestedType
       );
@@ -202,6 +215,44 @@ export default function UploadDocumentPage() {
     }
   );
 
+  function handleDocumentActionFailure(
+    result: {
+      error: string;
+      code?: string;
+    }
+  ) {
+    if (
+      result.code ===
+      "UNAUTHENTICATED"
+    ) {
+      router.push("/login");
+      return;
+    }
+
+    if (
+      result.code ===
+      "HOUSEHOLD_DOCUMENT_LIMIT"
+    ) {
+      router.push("/family");
+      return;
+    }
+
+    if (
+      result.code ===
+      "FREE_DOCUMENT_LIMIT"
+    ) {
+      router.push(
+        "/upgrade?reason=document-limit"
+      );
+      return;
+    }
+
+    setErrorMessage(
+      result.error ||
+        "Unable to upload this document."
+    );
+  }
+
   async function uploadDocument() {
     setErrorMessage("");
 
@@ -219,7 +270,11 @@ export default function UploadDocumentPage() {
       return;
     }
 
-    if (!canCreate || !canUpload || isViewer) {
+    if (
+      !canCreate ||
+      !canUpload ||
+      isViewer
+    ) {
       setErrorMessage(
         "Viewer access is read-only. You cannot upload documents."
       );
@@ -251,39 +306,74 @@ export default function UploadDocumentPage() {
       return;
     }
 
-    const validation = validateDocumentUpload(file);
+    const fileValidation =
+      validateDocumentUpload(
+        file
+      );
 
-    if (!validation.ok) {
-      setErrorMessage(validation.error);
+    if (!fileValidation.ok) {
+      setErrorMessage(
+        fileValidation.error
+      );
+      return;
+    }
+
+    const metadataValidation =
+      validateDocumentMetadata({
+        documentName,
+        fileName:
+          file.name,
+        fileType,
+        deviceId,
+        fileSize:
+          file.size,
+        browserContentType:
+          file.type,
+      });
+
+    if (
+      !metadataValidation.success
+    ) {
+      setErrorMessage(
+        metadataValidation.error
+      );
       return;
     }
 
     try {
       setUploading(true);
 
-      const safeFileName =
-        file.name.replace(
-          /[^a-zA-Z0-9._-]/g,
-          "-"
+      const prepared =
+        await prepareDocumentUpload({
+          documentName,
+          fileName:
+            file.name,
+          fileType,
+          deviceId,
+          fileSize:
+            file.size,
+          browserContentType:
+            file.type,
+        });
+
+      if (!prepared.success) {
+        handleDocumentActionFailure(
+          prepared
         );
-
-      const ownerPath =
-        householdId || user.id;
-
-      const filePath =
-        `${ownerPath}/${deviceId || "unassigned"}/` +
-        `${crypto.randomUUID()}-${safeFileName}`;
+        return;
+      }
 
       const {
         error: uploadError,
       } = await supabase.storage
         .from("documents")
         .upload(
-          filePath,
+          prepared.storagePath,
           file,
           {
             upsert: false,
-            contentType: validation.contentType,
+            contentType:
+              prepared.contentType,
           }
         );
 
@@ -291,70 +381,36 @@ export default function UploadDocumentPage() {
         throw uploadError;
       }
 
-      // Store the storage object path — never a durable public URL.
-      const {
-        error: dbError,
-      } = await supabase
-        .from("documents")
-        .insert(
-          withHouseholdInsertFields(
-            {
-              device_id:
-                deviceId || null,
-              file_name:
-                file.name,
-              document_name:
-                documentName.trim() ||
-                file.name,
-              file_url: filePath,
-              file_type:
-                fileType,
-            },
-            householdId,
-            user.id
-          )
-        );
+      const completed =
+        await completeDocumentUpload({
+          documentName,
+          fileName:
+            file.name,
+          fileType,
+          deviceId,
+          fileSize:
+            file.size,
+          browserContentType:
+            file.type,
+          storagePath:
+            prepared.storagePath,
+        });
 
-      if (dbError) {
+      if (!completed.success) {
         await supabase.storage
           .from("documents")
-          .remove([filePath]);
+          .remove([
+            prepared.storagePath,
+          ]);
 
-        throw dbError;
+        handleDocumentActionFailure(
+          completed
+        );
+        return;
       }
 
-      await recordActivity({
-        activityType:
-          fileType === "Receipt"
-            ? "receipt.uploaded"
-            : "document.uploaded",
-        title:
-          fileType === "Receipt"
-            ? `Receipt uploaded (${file.name})`
-            : `Document uploaded (${documentName.trim() || file.name})`,
-        description: deviceId
-          ? "Document linked to a device in your vault."
-          : "Document saved to your household vault.",
-        userId: user.id,
-        householdId,
-        deviceId: deviceId || undefined,
-      });
-
-      const documentCountResult =
-        await applyHouseholdScope(
-          supabase
-            .from("documents")
-            .select("*", {
-              count: "exact",
-              head: true,
-            }),
-          householdId,
-          user.id
-        );
-
       if (
-        !documentCountResult.error &&
-        documentCountResult.count === 1
+        completed.firstDocument
       ) {
         trackFirstDocumentAdded({
           fileType:
@@ -363,9 +419,7 @@ export default function UploadDocumentPage() {
         });
       }
 
-      router.push(
-        returnTo
-      );
+      router.push(returnTo);
       router.refresh();
     } catch (error) {
       console.error(
@@ -482,6 +536,7 @@ export default function UploadDocumentPage() {
           <FormField label="Document Name">
             <input
               value={documentName}
+              maxLength={DOCUMENT_FIELD_LIMITS.documentName}
               onChange={(event) =>
                 setDocumentName(
                   event.target.value
