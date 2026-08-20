@@ -67,6 +67,7 @@ export function FormField({
   type = "text",
   disabled = false,
   helperText,
+  maxLength,
 }: {
   label: string;
   icon: ComponentType<{
@@ -79,6 +80,7 @@ export function FormField({
   type?: string;
   disabled?: boolean;
   helperText?: string;
+  maxLength?: number;
 }) {
   return (
     <label className="block">
@@ -96,6 +98,7 @@ export function FormField({
           type={type}
           value={value}
           disabled={disabled}
+          maxLength={maxLength}
           onChange={(event) =>
             onChange?.(event.target.value)
           }

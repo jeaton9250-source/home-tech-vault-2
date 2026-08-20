@@ -19,7 +19,13 @@ import {
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
-import { stripPrivilegedProfileFields } from "@/lib/auth/stripPrivilegedProfileFields";
+import {
+  updateProfileSettings,
+} from "@/app/settings/actions";
+import {
+  PROFILE_FIELD_LIMITS,
+  validateProfileInput,
+} from "@/lib/account-settings/profileInputValidation";
 import { usePermissions } from "@/hooks/usePermissions";
 import FoundingMemberBadge from "@/components/founding-members/FoundingMemberBadge";
 
@@ -183,34 +189,70 @@ export default function ProfileTab() {
       return;
     }
 
+    const validation =
+      validateProfileInput({
+        fullName,
+        householdName,
+        city,
+        phone,
+      });
+
+    if (!validation.success) {
+      setErrorMessage(
+        validation.error
+      );
+      return;
+    }
+
     try {
       setSaving(true);
       setSaved(false);
       setErrorMessage("");
 
-      const { error } = await supabase
-        .from("profiles")
-        .upsert(
-          stripPrivilegedProfileFields({
-            id: user.id,
-            full_name:
-              fullName.trim() || null,
-            household_name:
-              householdName.trim() || null,
-            city: city.trim() || null,
-            phone: phone.trim() || null,
-          }),
-          { onConflict: "id" }
-        );
+      const result =
+        await updateProfileSettings({
+          fullName,
+          householdName,
+          city,
+          phone,
+        });
 
-      if (error) {
-        throw error;
+      if (!result.success) {
+        if (
+          result.code ===
+          "UNAUTHENTICATED"
+        ) {
+          router.push("/login");
+          return;
+        }
+
+        setErrorMessage(
+          result.error
+        );
+        return;
       }
 
+      setFullName(
+        validation.data.fullName ||
+          ""
+      );
+      setHouseholdName(
+        validation.data
+          .householdName || ""
+      );
+      setCity(
+        validation.data.city || ""
+      );
+      setPhone(
+        validation.data.phone || ""
+      );
+
       setSaved(true);
+
       window.setTimeout(() => {
         setSaved(false);
       }, 2500);
+
       router.refresh();
     } catch (error) {
       console.error(
@@ -219,9 +261,7 @@ export default function ProfileTab() {
       );
 
       setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "Unable to save your profile."
+        "Unable to save your profile."
       );
     } finally {
       setSaving(false);
@@ -331,6 +371,9 @@ export default function ProfileTab() {
             value={fullName}
             placeholder="Your full name"
             onChange={setFullName}
+            maxLength={
+              PROFILE_FIELD_LIMITS.fullName
+            }
           />
 
           <FormField
@@ -339,6 +382,9 @@ export default function ProfileTab() {
             value={householdName}
             placeholder="The Morgan Household"
             onChange={setHouseholdName}
+            maxLength={
+              PROFILE_FIELD_LIMITS.householdName
+            }
           />
 
           <FormField
@@ -347,6 +393,9 @@ export default function ProfileTab() {
             value={city}
             placeholder="Wilmington, NC"
             onChange={setCity}
+            maxLength={
+              PROFILE_FIELD_LIMITS.city
+            }
           />
 
           <FormField
@@ -356,6 +405,9 @@ export default function ProfileTab() {
             placeholder="(910) 555-1234"
             onChange={setPhone}
             type="tel"
+            maxLength={
+              PROFILE_FIELD_LIMITS.phone
+            }
           />
 
           <div className="md:col-span-2">
