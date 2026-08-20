@@ -1,6 +1,7 @@
 "use client";
 
 import HeroSection from "@/components/landing/public/HeroSection";
+import ManualDiscoverySection from "@/components/landing/public/ManualDiscoverySection";
 import HomeTechHealthCheckSection from "@/components/landing/public/HomeTechHealthCheckSection";
 import LandingFooter from "@/components/landing/public/LandingFooter";
 import LandingHeader from "@/components/landing/public/LandingHeader";
@@ -58,6 +59,7 @@ export default function LandingPage({
         <HeroSection
           isSignedIn={isSignedIn}
         />
+        <ManualDiscoverySection isSignedIn={isSignedIn} />
 
         {/* FREE ACQUISITION TOOL */}
 
