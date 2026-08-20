@@ -21,6 +21,26 @@ import {
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+function privateJson(
+  body: unknown,
+  init: ResponseInit = {}
+) {
+  const headers = new Headers(init.headers);
+
+  headers.set(
+    "Cache-Control",
+    "private, no-store, max-age=0"
+  );
+
+  headers.set("Pragma", "no-cache");
+
+  return NextResponse.json(body, {
+    ...init,
+    headers,
+  });
+}
+
+
 export async function POST(
   request: Request
 ) {
@@ -31,7 +51,7 @@ export async function POST(
       await getServerImpersonationSession();
 
     if (!recovery) {
-      return NextResponse.json(
+      return privateJson(
         {
           error:
             "No active impersonation session.",
@@ -55,7 +75,7 @@ export async function POST(
     ) {
       await clearImpersonationCookie();
 
-      return NextResponse.json(
+      return privateJson(
         {
           error:
             "The active session no longer matches the impersonated user.",
@@ -107,7 +127,7 @@ export async function POST(
 
       await clearImpersonationCookie();
 
-      return NextResponse.json(
+      return privateJson(
         {
           error:
             "Administrator access can no longer be restored.",
@@ -144,7 +164,7 @@ export async function POST(
        * cookie intact until expiration so
        * another exit attempt may succeed.
        */
-      return NextResponse.json(
+      return privateJson(
         {
           error:
             "The administrator session could not be restored. You may retry, or sign out and sign back in.",
@@ -215,7 +235,7 @@ export async function POST(
 
     await clearImpersonationCookie();
 
-    return NextResponse.json({
+    return privateJson({
       ok: true,
       redirectTo:
         "/admin/users",
@@ -226,7 +246,7 @@ export async function POST(
       error.message ===
         "INVALID_ORIGIN"
     ) {
-      return NextResponse.json(
+      return privateJson(
         {
           error:
             "Invalid request origin.",
@@ -240,7 +260,7 @@ export async function POST(
       error
     );
 
-    return NextResponse.json(
+    return privateJson(
       {
         error:
           "Unable to restore administrator session.",

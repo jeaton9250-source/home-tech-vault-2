@@ -16,13 +16,33 @@ import {
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+function privateJson(
+  body: unknown,
+  init: ResponseInit = {}
+) {
+  const headers = new Headers(init.headers);
+
+  headers.set(
+    "Cache-Control",
+    "private, no-store, max-age=0"
+  );
+
+  headers.set("Pragma", "no-cache");
+
+  return NextResponse.json(body, {
+    ...init,
+    headers,
+  });
+}
+
+
 export async function GET() {
   try {
     const recovery =
       await getServerImpersonationSession();
 
     if (!recovery) {
-      return NextResponse.json({
+      return privateJson({
         active: false,
       });
     }
@@ -65,7 +85,7 @@ export async function GET() {
 
       await clearImpersonationCookie();
 
-      return NextResponse.json({
+      return privateJson({
         active: false,
       });
     }
@@ -99,19 +119,14 @@ export async function GET() {
         );
     }
 
-    return NextResponse.json({
+    return privateJson({
       active: true,
+      label:
+        recovery.targetName?.trim() ||
+        recovery.targetEmail ||
+        "this user",
 
-      target: {
-        userId:
-          recovery.targetUserId,
-        email:
-          recovery.targetEmail,
-        name:
-          recovery.targetName,
-      },
-
-      expiresAt:
+expiresAt:
         new Date(
           recovery.expiresAt
         ).getTime(),
@@ -122,7 +137,7 @@ export async function GET() {
       error
     );
 
-    return NextResponse.json({
+    return privateJson({
       active: false,
     });
   }

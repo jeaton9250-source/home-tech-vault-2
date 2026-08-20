@@ -9,6 +9,11 @@ import {
   pickFreshestDiscoveryPresence,
 } from "@/lib/devices/deviceNetworkTimestamps";
 import { supabase } from "@/lib/supabase";
+import {
+  buildDiscoveryDeviceOrFilter,
+  buildUuidRealtimeFilter,
+  isSafeUuid,
+} from "@/lib/security/supabaseFilters";
 import { applyHouseholdScope } from "@/lib/data/householdScope";
 
 export type DeviceNetworkRecord = {
@@ -61,6 +66,17 @@ export function useDeviceNetworkRefresh(
       return;
     }
 
+    if (
+      !isSafeUuid(input.deviceId) ||
+      !isSafeUuid(input.userId) ||
+      !isSafeUuid(input.householdId)
+    ) {
+      console.warn(
+        "Skipping device network refresh because one or more identifiers are invalid."
+      );
+      return;
+    }
+
     let cancelled = false;
     const householdId = input.householdId;
     const userId = input.userId;
@@ -91,7 +107,9 @@ export function useDeviceNetworkRefresh(
         .eq("household_id", householdId)
         .is("ignored_at", null)
         .or(
-          `imported_device_id.eq.${input.deviceId},mac_address.not.is.null`
+          buildDiscoveryDeviceOrFilter(
+            input.deviceId
+          )
         )
         .order("last_seen_at", { ascending: false })
         .limit(20);
@@ -163,7 +181,10 @@ export function useDeviceNetworkRefresh(
           event: "UPDATE",
           schema: "public",
           table: "devices",
-          filter: `id=eq.${input.deviceId}`,
+          filter: buildUuidRealtimeFilter(
+            "id",
+            input.deviceId
+          ),
         },
         () => {
           void refreshNetworkState();
@@ -175,7 +196,10 @@ export function useDeviceNetworkRefresh(
           event: "*",
           schema: "public",
           table: "discovered_devices",
-          filter: `imported_device_id=eq.${input.deviceId}`,
+          filter: buildUuidRealtimeFilter(
+            "imported_device_id",
+            input.deviceId
+          ),
         },
         () => {
           void refreshNetworkState();

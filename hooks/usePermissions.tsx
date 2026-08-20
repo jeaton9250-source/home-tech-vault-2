@@ -50,6 +50,10 @@ import type {
 } from "@/hooks/useSubscription";
 
 import { supabase } from "@/lib/supabase";
+import {
+  buildUuidRealtimeFilter,
+  isSafeUuid,
+} from "@/lib/security/supabaseFilters";
 
 export type {
   FeatureKey,
@@ -93,11 +97,7 @@ type HouseholdAccessPayload =
         | "subscription"
         | "admin_grant"
         | "none";
-      ownerGrantsPro?: boolean;
-      ownerGrantsPremium?: boolean;
       effectivePlan?: SubscriptionPlan;
-      inheritsProPlan?: boolean;
-      inheritsFamilyPlan?: boolean;
       canUseProFeatures?: boolean;
     };
 
@@ -797,6 +797,13 @@ function usePermissionsState() {
       return;
     }
 
+    if (!isSafeUuid(user.id)) {
+      console.warn(
+        "Skipping household membership realtime subscription because the user identifier is invalid."
+      );
+      return;
+    }
+
     const channel = supabase
       .channel(
         `household-membership-${user.id}`
@@ -807,7 +814,10 @@ function usePermissionsState() {
           event: "*",
           schema: "public",
           table: "household_members",
-          filter: `user_id=eq.${user.id}`,
+          filter: buildUuidRealtimeFilter(
+            "user_id",
+            user.id
+          ),
         },
         () => {
           void loadHouseholdContext();

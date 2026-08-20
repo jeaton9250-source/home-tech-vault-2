@@ -6,6 +6,26 @@ import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
+function privateJson(
+  body: unknown,
+  init: ResponseInit = {}
+) {
+  const headers = new Headers(init.headers);
+
+  headers.set(
+    "Cache-Control",
+    "private, no-store, max-age=0"
+  );
+
+  headers.set("Pragma", "no-cache");
+
+  return NextResponse.json(body, {
+    ...init,
+    headers,
+  });
+}
+
+
 export async function GET() {
   try {
     const supabase = await createClient();
@@ -20,7 +40,7 @@ export async function GET() {
     }
 
     if (!user) {
-      return NextResponse.json(
+      return privateJson(
         { error: "Unauthorized" },
         { status: 401 }
       );
@@ -32,7 +52,7 @@ export async function GET() {
         user.id
       );
 
-    return NextResponse.json({
+    return privateJson({
       grant: toSafeGrantSummary(grant),
     });
   } catch (error) {
@@ -41,12 +61,10 @@ export async function GET() {
       error
     );
 
-    return NextResponse.json(
+    return privateJson(
       {
         error:
-          error instanceof Error
-            ? error.message
-            : "Unable to load plan grant.",
+          "Unable to load plan grant.",
       },
       { status: 500 }
     );

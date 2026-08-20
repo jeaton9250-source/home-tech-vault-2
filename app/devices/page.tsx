@@ -28,6 +28,10 @@ import {
 import DeviceImageDisplay from "@/components/devices/DeviceImageDisplay";
 
 import { supabase } from "@/lib/supabase";
+import {
+  buildUuidRealtimeFilter,
+  isSafeUuid,
+} from "@/lib/security/supabaseFilters";
 import { applyHouseholdScope } from "@/lib/data/householdScope";
 import type {
   Device as BaseDevice,
@@ -412,6 +416,13 @@ export default function DevicesPage() {
       return;
     }
 
+    if (!isSafeUuid(householdId)) {
+      console.warn(
+        "Skipping device realtime subscription because the household identifier is invalid."
+      );
+      return;
+    }
+
     let cancelled = false;
     const userId = user.id;
 
@@ -604,7 +615,10 @@ export default function DevicesPage() {
           event: "UPDATE",
           schema: "public",
           table: "devices",
-          filter: `household_id=eq.${householdId}`,
+          filter: buildUuidRealtimeFilter(
+            "household_id",
+            householdId
+          ),
         },
         () => {
           void refreshDevicePresence();
@@ -616,7 +630,10 @@ export default function DevicesPage() {
           event: "*",
           schema: "public",
           table: "discovered_devices",
-          filter: `household_id=eq.${householdId}`,
+          filter: buildUuidRealtimeFilter(
+            "household_id",
+            householdId
+          ),
         },
         () => {
           void refreshDevicePresence();

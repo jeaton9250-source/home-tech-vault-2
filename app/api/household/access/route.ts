@@ -17,9 +17,35 @@ import {
 } from "@/lib/permissions/subscriptionAccess";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import {
+  isSafeUuid,
+} from "@/lib/security/supabaseFilters";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+function privateJson(
+  body: unknown,
+  init: ResponseInit = {}
+) {
+  const headers = new Headers(init.headers);
+
+  headers.set(
+    "Cache-Control",
+    "private, no-store, max-age=0"
+  );
+
+  headers.set(
+    "Pragma",
+    "no-cache"
+  );
+
+  return NextResponse.json(body, {
+    ...init,
+    headers,
+  });
+}
+
 
 type HouseholdAccessResponse = {
   householdId: string;
@@ -33,11 +59,7 @@ type HouseholdAccessResponse = {
     | "subscription"
     | "admin_grant"
     | "none";
-  ownerGrantsPro: boolean;
-  ownerGrantsPremium: boolean;
   effectivePlan: "free" | "pro" | "family";
-  inheritsProPlan: boolean;
-  inheritsFamilyPlan: boolean;
   canUseProFeatures: boolean;
 };
 
@@ -113,7 +135,7 @@ export async function GET(request: Request) {
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return NextResponse.json(
+      return privateJson(
         { error: "Unauthorized" },
         {
           status: 401,
@@ -126,8 +148,25 @@ export async function GET(request: Request) {
     }
 
     const url = new URL(request.url);
+
     const requestedHouseholdId =
-      url.searchParams.get("householdId");
+      url.searchParams
+        .get("householdId")
+        ?.trim() ||
+      null;
+
+    if (
+      requestedHouseholdId &&
+      !isSafeUuid(requestedHouseholdId)
+    ) {
+      return privateJson(
+        {
+          error:
+            "Invalid household identifier.",
+        },
+        { status: 400 }
+      );
+    }
 
     const admin = createAdminClient();
 
@@ -142,7 +181,7 @@ export async function GET(request: Request) {
       !membershipResult.membership ||
       !membershipResult.householdId
     ) {
-      return NextResponse.json(
+      return privateJson(
         { membership: null },
         {
           headers: {
@@ -167,7 +206,7 @@ export async function GET(request: Request) {
     }
 
     if (!household) {
-      return NextResponse.json(
+      return privateJson(
         { membership: null },
         {
           headers: {
@@ -225,21 +264,13 @@ export async function GET(request: Request) {
           null,
         ownerPlanSource:
           ownerBilling.ownerPlanSource,
-        ownerGrantsPro:
-          entitlement.ownerGrantsPro,
-        ownerGrantsPremium:
-          entitlement.ownerGrantsPremium,
         effectivePlan:
           entitlement.effectivePlan,
-        inheritsProPlan:
-          entitlement.inheritsProPlan,
-        inheritsFamilyPlan:
-          entitlement.inheritsFamilyPlan,
         canUseProFeatures:
           entitlement.canUseProFeatures,
       };
 
-    return NextResponse.json(payload, {
+    return privateJson(payload, {
       headers: {
         "Cache-Control":
           "private, no-store, max-age=0",
@@ -251,12 +282,10 @@ export async function GET(request: Request) {
       error
     );
 
-    return NextResponse.json(
+    return privateJson(
       {
         error:
-          error instanceof Error
-            ? error.message
-            : "Unable to load household access.",
+          "Unable to load household access.",
       },
       { status: 500 }
     );

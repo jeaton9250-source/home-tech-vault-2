@@ -13,11 +13,7 @@ import {
 
 type ImpersonationState = {
   active: boolean;
-  target?: {
-    userId: string;
-    email: string | null;
-    name: string | null;
-  };
+  label?: string;
   expiresAt?: number;
 };
 
@@ -117,8 +113,7 @@ export default function ImpersonationBanner() {
   }
 
   const label =
-    state.target?.name?.trim() ||
-    state.target?.email ||
+    state.label?.trim() ||
     "this user";
 
   return (
