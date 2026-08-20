@@ -59,12 +59,11 @@ export default function LandingPage({
         <HeroSection
           isSignedIn={isSignedIn}
         />
-        <ManualDiscoverySection isSignedIn={isSignedIn} />
-
-        {/* FREE ACQUISITION TOOL */}
+{/* FREE ACQUISITION TOOL */}
 
         <HomeTechHealthCheckSection />
 
+        <ManualDiscoverySection isSignedIn={isSignedIn} />
         {/* WHAT THE VAULT HOLDS */}
 
         <VaultOverviewSection />
