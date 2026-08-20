@@ -2,6 +2,7 @@ import Stripe from "stripe";
 import { NextResponse } from "next/server";
 
 import { createClient } from "@/lib/supabase/server";
+import { getStripeReturnOrigin } from "@/lib/billing/stripeReturnUrl";
 
 export const runtime = "nodejs";
 
@@ -66,8 +67,7 @@ export async function POST(request: Request) {
     }
 
     const appUrl =
-      process.env.NEXT_PUBLIC_APP_URL ||
-      new URL(request.url).origin;
+      getStripeReturnOrigin(request);
 
     const portalSession =
       await stripe.billingPortal.sessions.create({
