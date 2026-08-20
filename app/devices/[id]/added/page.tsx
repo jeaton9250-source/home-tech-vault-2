@@ -486,8 +486,6 @@ export default function DeviceAddedPage() {
     return (
       <PageShell>
         <PageCard className="mx-auto max-w-2xl text-center">
-                      <DashboardUnlockCelebration />
-
 <h1 className="font-serif text-3xl font-medium tracking-[-0.04em] text-[#17212a]">
             Your device was saved.
           </h1>
@@ -561,6 +559,9 @@ export default function DeviceAddedPage() {
 
   return (
     <PageShell className="!pt-5 md:!pt-7">
+
+      <DashboardUnlockCelebration />
+
       <div className="mx-auto max-w-5xl">
         <section className="overflow-hidden rounded-[32px] border border-[#617c43]/20 bg-[#f3f6ee] shadow-[0_30px_80px_-55px_rgba(15,25,35,0.65)]">
           <div className="border-b border-[#617c43]/15 px-6 py-7 text-center sm:px-8 sm:py-9">
