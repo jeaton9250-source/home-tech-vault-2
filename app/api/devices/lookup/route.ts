@@ -771,6 +771,8 @@ async function searchUpcItemDb(
             controller.signal,
 
           cache: "no-store",
+
+          redirect: "error",
         }
       );
 
@@ -945,6 +947,8 @@ async function searchIcecat(
             controller.signal,
 
           cache: "no-store",
+
+          redirect: "error",
         }
       );
 

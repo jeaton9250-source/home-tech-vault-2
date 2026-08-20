@@ -51,13 +51,11 @@ export async function DELETE(
         : error
     );
 
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Unable to delete this device. Please try again.";
-
     return Response.json(
-      { error: message },
+      {
+        error:
+          "Unable to delete this device. Please try again.",
+      },
       { status: 500 }
     );
   }
