@@ -27,7 +27,6 @@ import {
 } from "lucide-react";
 
 import SearchResults from "@/components/search/SearchResults";
-import VaultSearchAssistant from "@/components/search/VaultSearchAssistant";
 import Button from "@/components/ui/Button";
 import { useDemoMode } from "@/hooks/useDemoMode";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -572,20 +571,7 @@ export default function SmartSearch({
           !loading &&
           response?.query ? (
             <div className="mb-6">
-              <VaultSearchAssistant
-                query={
-                  response.query
-                }
-                enabled={
-                  canViewFeature(
-                    "aiAdvisor"
-                  )
-                }
-                exactMatchCount={
-                  response.total
-                }
-              />
-            </div>
+</div>
           ) : null}
 
           {isDemo ? (
