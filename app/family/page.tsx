@@ -1435,62 +1435,397 @@ const {
   ) {
     return (
       <PageShell>
-        <section className="relative overflow-hidden rounded-[30px] border border-white/10 bg-[#0b1623] px-6 py-9 text-[#f4f0e8] shadow-[0_28px_70px_-44px_rgba(0,0,0,0.75)] md:px-10 md:py-11">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8ca667]">
-            Family Sharing
-          </p>
+        <div className="mx-auto w-full max-w-[1180px] pb-14">
+          {/* FAMILY HERO */}
+          <section className="relative overflow-hidden rounded-[32px] border border-white/10 bg-[#0b1623] px-6 py-10 text-[#f4f0e8] shadow-[0_28px_70px_-44px_rgba(0,0,0,0.75)] md:px-10 md:py-12 lg:px-12">
+            <div
+              className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-[#718d4f]/15 blur-[90px]"
+              aria-hidden
+            />
 
-          <h1 className="mt-3 font-serif text-4xl font-medium tracking-[-0.045em] text-[#f4f0e8] md:text-5xl">
-            Share your vault.
-          </h1>
+            <div
+              className="pointer-events-none absolute -bottom-36 left-1/4 h-72 w-72 rounded-full bg-[#8ca667]/8 blur-[100px]"
+              aria-hidden
+            />
 
-          <p className="mt-4 max-w-xl text-sm leading-7 text-[#b6c0c7] md:text-base">
-            Invite household
-            members and manage your
-            home technology
-            together.
-          </p>
-        </section>
+            <div className="relative max-w-3xl">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[#8ca667]/20 bg-[#718d4f]/10 px-3.5 py-2">
+                <Crown
+                  size={13}
+                  className="text-[#a9c38a]"
+                  aria-hidden
+                />
 
-        <PageCard className="overflow-hidden p-0">
-          <div className="bg-[#0b1623] p-8 text-[#f4f0e8] md:p-10">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-[#718d4f]/25 bg-[#718d4f]/10 text-[#8ca667]">
-              <Crown size={27} />
+                <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a9c38a]">
+                  Family Plan
+                </span>
+              </div>
+
+              <h1 className="mt-7 max-w-3xl font-serif text-4xl font-medium leading-[1.04] tracking-[-0.05em] text-[#f4f0e8] md:text-5xl lg:text-[3.5rem]">
+                Your home&apos;s information
+                shouldn&apos;t live with just
+                one person.
+              </h1>
+
+              <p className="mt-5 max-w-2xl text-sm leading-7 text-[#b6c0c7] md:text-base">
+                Give the people you trust access
+                to the same devices, receipts,
+                warranties, maintenance records,
+                and home technology information —
+                without giving everyone the same
+                level of control.
+              </p>
+
+              <div className="mt-7 flex flex-wrap gap-2">
+                {[
+                  "Shared household vault",
+                  "Role-based access",
+                  "One trusted record",
+                ].map((label) => (
+                  <span
+                    key={label}
+                    className="rounded-full border border-white/8 bg-white/[0.045] px-3 py-1.5 text-xs font-medium text-white/65"
+                  >
+                    {label}
+                  </span>
+                ))}
+              </div>
             </div>
+          </section>
 
-            <p className="mt-6 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8ca667]">
-              Family Plan
-              Exclusive
-            </p>
+          {/* MAIN FAMILY PREVIEW */}
+          <section className="mt-5 overflow-hidden rounded-[30px] border border-[#17212a]/10 bg-[#fdfcf9] shadow-[0_24px_65px_-48px_rgba(11,22,35,0.35)]">
+            <div className="grid lg:grid-cols-[1.05fr_0.95fr]">
+              {/* LEFT */}
+              <div className="p-6 sm:p-8 lg:p-10">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#617c43]">
+                  Built for real households
+                </p>
 
-            <h2 className="mt-3 max-w-2xl font-serif text-3xl font-medium tracking-[-0.04em] text-[#f4f0e8]">
-              Bring your household
-              into one shared vault.
-            </h2>
+                <h2 className="mt-3 max-w-xl font-serif text-3xl font-medium tracking-[-0.04em] text-[#17212a] sm:text-4xl">
+                  One vault.
+                  <span className="block">
+                    The right access for everyone.
+                  </span>
+                </h2>
 
-            <p className="mt-4 max-w-2xl text-sm leading-7 text-[#b6c0c7]">
-              Family Sharing is
-              available only with
-              the Family plan. Share
-              devices, documents,
-              warranties,
-              maintenance,
-              subscriptions,
-              reports, and network
-              information.
-            </p>
+                <p className="mt-4 max-w-xl text-sm leading-7 text-[#68737b]">
+                  Stop keeping important home
+                  information scattered across
+                  texts, drawers, inboxes, and one
+                  person&apos;s memory.
+                </p>
 
-            <Button
-              href="/upgrade"
-              variant="secondary"
-              className="mt-7"
-            >
-              <Crown size={17} />
-              Upgrade to Family
-            </Button>
-          </div>
-        </PageCard>
+                <div className="mt-8 space-y-3">
+                  <FamilyBenefit
+                    icon={Users}
+                    title="Bring your household together"
+                    description="Invite the people who help manage your home so everyone works from the same trusted information."
+                  />
+
+                  <FamilyBenefit
+                    icon={ShieldCheck}
+                    title="Control who can do what"
+                    description="Use Admin, Member, and Viewer access instead of giving every person full control."
+                  />
+
+                  <FamilyBenefit
+                    icon={Home}
+                    title="Keep the whole home in sync"
+                    description="Share devices, documents, warranties, maintenance, subscriptions, reports, and network information."
+                  />
+                </div>
+
+                <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                  <Button
+                    href="/upgrade"
+                    className="justify-center"
+                  >
+                    <Crown size={17} />
+                    Unlock Family Sharing
+                  </Button>
+
+                  <Button
+                    href="/upgrade"
+                    variant="secondary"
+                    className="justify-center"
+                  >
+                    Compare Plans
+                  </Button>
+                </div>
+
+                <p className="mt-4 text-xs leading-5 text-[#8a9297]">
+                  Your existing Vault stays exactly
+                  where it is. Family simply adds
+                  secure household access around it.
+                </p>
+              </div>
+
+              {/* RIGHT — PRODUCT PREVIEW */}
+              <div className="border-t border-[#17212a]/8 bg-[#f5f2eb] p-6 sm:p-8 lg:border-l lg:border-t-0 lg:p-10">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#7b856f]">
+                      Household Preview
+                    </p>
+
+                    <h3 className="mt-2 text-lg font-semibold tracking-[-0.025em] text-[#17212a]">
+                      Your shared Home Tech Vault
+                    </h3>
+                  </div>
+
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#0b1623] text-[#a9c38a]">
+                    <Users
+                      size={20}
+                      aria-hidden
+                    />
+                  </div>
+                </div>
+
+                {/* MEMBER PREVIEW */}
+                <div className="mt-6 rounded-[22px] border border-[#17212a]/8 bg-white p-4 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-[#17212a]">
+                        Household access
+                      </p>
+
+                      <p className="mt-1 text-xs text-[#8a9297]">
+                        Everyone gets the access
+                        they need.
+                      </p>
+                    </div>
+
+                    <span className="rounded-full bg-[#edf2e8] px-2.5 py-1 text-[10px] font-semibold text-[#617c43]">
+                      Family
+                    </span>
+                  </div>
+
+                  <div className="mt-5 space-y-2.5">
+                    <FamilyMemberPreview
+                      initials="Y"
+                      name="You"
+                      detail="Household owner"
+                      role="Admin"
+                      active
+                    />
+
+                    <FamilyMemberPreview
+                      initials="P"
+                      name="Partner"
+                      detail="Can add and update records"
+                      role="Member"
+                    />
+
+                    <FamilyMemberPreview
+                      initials="F"
+                      name="Family member"
+                      detail="Can see important information"
+                      role="Viewer"
+                    />
+                  </div>
+
+                  <div className="mt-4 flex items-center justify-center gap-2 rounded-xl border border-dashed border-[#617c43]/25 bg-[#617c43]/5 px-4 py-3 text-xs font-medium text-[#617c43]">
+                    <UserPlus
+                      size={14}
+                      aria-hidden
+                    />
+                    Invite another household member
+                  </div>
+                </div>
+
+                {/* SHARED CONTENT PREVIEW */}
+                <div className="mt-4 rounded-[22px] border border-[#17212a]/8 bg-[#0b1623] p-5 text-white">
+                  <div className="flex items-center gap-2">
+                    <Sparkles
+                      size={15}
+                      className="text-[#a9c38a]"
+                      aria-hidden
+                    />
+
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#a9c38a]">
+                      Shared automatically
+                    </p>
+                  </div>
+
+                  <div className="mt-5 grid grid-cols-2 gap-2.5">
+                    {[
+                      "Devices",
+                      "Documents",
+                      "Warranties",
+                      "Maintenance",
+                      "Subscriptions",
+                      "Network",
+                    ].map((item) => (
+                      <div
+                        key={item}
+                        className="flex items-center gap-2 rounded-xl border border-white/7 bg-white/[0.045] px-3 py-2.5"
+                      >
+                        <CheckCircle2
+                          size={14}
+                          className="shrink-0 text-[#8ca667]"
+                          aria-hidden
+                        />
+
+                        <span className="text-xs font-medium text-white/65">
+                          {item}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-4 rounded-[18px] border border-[#718d4f]/15 bg-[#edf2e8] p-4">
+                  <div className="flex items-start gap-3">
+                    <ShieldCheck
+                      size={18}
+                      className="mt-0.5 shrink-0 text-[#617c43]"
+                      aria-hidden
+                    />
+
+                    <div>
+                      <p className="text-sm font-semibold text-[#17212a]">
+                        You stay in control.
+                      </p>
+
+                      <p className="mt-1 text-xs leading-5 text-[#68737b]">
+                        Decide who can view, edit,
+                        invite members, or manage
+                        your household Vault.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* BOTTOM VALUE STRIP */}
+          <section className="mt-5 grid gap-3 sm:grid-cols-3">
+            <FamilyValueCard
+              value="1"
+              label="Shared source of truth"
+              description="No more wondering who has the receipt, model number, or warranty."
+            />
+
+            <FamilyValueCard
+              value="3"
+              label="Permission levels"
+              description="Admin, Member, and Viewer roles keep access intentional."
+            />
+
+            <FamilyValueCard
+              value="All"
+              label="Your household tech"
+              description="Keep the information behind your home accessible when it matters."
+            />
+          </section>
+        </div>
       </PageShell>
+    );
+  }
+
+  function FamilyBenefit({
+    icon: Icon,
+    title,
+    description,
+  }: {
+    icon: ComponentType<{
+      size?: number;
+      className?: string;
+    }>;
+    title: string;
+    description: string;
+  }) {
+    return (
+      <div className="flex gap-4 rounded-[20px] border border-[#17212a]/8 bg-[#f8f6f1] p-4">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#e9efe2] text-[#617c43]">
+          <Icon
+            size={18}
+            aria-hidden
+          />
+        </div>
+
+        <div>
+          <p className="text-sm font-semibold text-[#17212a]">
+            {title}
+          </p>
+
+          <p className="mt-1 text-xs leading-5 text-[#68737b]">
+            {description}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  function FamilyMemberPreview({
+    initials,
+    name,
+    detail,
+    role,
+    active = false,
+  }: {
+    initials: string;
+    name: string;
+    detail: string;
+    role: string;
+    active?: boolean;
+  }) {
+    return (
+      <div className="flex items-center justify-between gap-3 rounded-xl bg-[#f8f6f1] px-3 py-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <div
+            className={
+              active
+                ? "flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#0b1623] text-xs font-semibold text-white"
+                : "flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#17212a]/8 bg-white text-xs font-semibold text-[#68737b]"
+            }
+          >
+            {initials}
+          </div>
+
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-[#17212a]">
+              {name}
+            </p>
+
+            <p className="truncate text-[11px] text-[#8a9297]">
+              {detail}
+            </p>
+          </div>
+        </div>
+
+        <span className="shrink-0 rounded-full border border-[#17212a]/8 bg-white px-2.5 py-1 text-[10px] font-semibold text-[#68737b]">
+          {role}
+        </span>
+      </div>
+    );
+  }
+
+  function FamilyValueCard({
+    value,
+    label,
+    description,
+  }: {
+    value: string;
+    label: string;
+    description: string;
+  }) {
+    return (
+      <article className="rounded-[22px] border border-[#17212a]/8 bg-[#fdfcf9] p-5">
+        <p className="font-serif text-3xl font-medium tracking-[-0.04em] text-[#617c43]">
+          {value}
+        </p>
+
+        <p className="mt-2 text-sm font-semibold text-[#17212a]">
+          {label}
+        </p>
+
+        <p className="mt-1.5 text-xs leading-5 text-[#68737b]">
+          {description}
+        </p>
+      </article>
     );
   }
 
