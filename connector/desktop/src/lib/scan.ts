@@ -15,10 +15,72 @@ import type {
   ScanSummary,
 } from "./types";
 
+function nativeScanErrorMessage(
+  error: unknown
+): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  if (
+    typeof error === "string" &&
+    error.trim()
+  ) {
+    return error.trim();
+  }
+
+  if (
+    error &&
+    typeof error === "object" &&
+    "message" in error
+  ) {
+    const message = (
+      error as {
+        message?: unknown;
+      }
+    ).message;
+
+    if (
+      typeof message === "string" &&
+      message.trim()
+    ) {
+      return message.trim();
+    }
+  }
+
+  try {
+    const serialized =
+      JSON.stringify(error);
+
+    if (
+      serialized &&
+      serialized !== "{}"
+    ) {
+      return serialized;
+    }
+  } catch {
+    // Fall through to the generic message.
+  }
+
+  return "The local network scanner returned an unknown error.";
+}
+
 export async function runLocalNetworkScan() {
-  return invoke<ScanSummary>(
-    "scan_my_network"
-  );
+  try {
+    return await invoke<ScanSummary>(
+      "scan_my_network"
+    );
+  } catch (error) {
+    const message =
+      nativeScanErrorMessage(error);
+
+    console.error(
+      "[connector-scan] native scan failed:",
+      error
+    );
+
+    throw new Error(message);
+  }
 }
 
 export function cancelLocalNetworkScan() {

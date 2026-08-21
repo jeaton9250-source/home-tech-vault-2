@@ -15,12 +15,21 @@ pub fn merge_scan_observations(
             .as_deref()
             .and_then(oui::lookup_manufacturer);
 
-        let local_fingerprint = super::fingerprint::stable_fingerprint(
+        let local_fingerprint = match super::fingerprint::stable_fingerprint(
             entry.mac_address.as_deref(),
             entry.hostname.as_deref(),
             manufacturer.as_deref(),
             None,
-        )?;
+        ) {
+            Ok(value) => value,
+            Err(error) => {
+                eprintln!(
+                    "[htv-connector] skipping sparse ARP observation at {}: {}",
+                    entry.ip_address, error
+                );
+                continue;
+            }
+        };
 
         by_ip.insert(
             entry.ip_address.clone(),
@@ -65,12 +74,21 @@ pub fn merge_scan_observations(
             .as_deref()
             .and_then(guess_manufacturer_from_hostname);
 
-        let local_fingerprint = super::fingerprint::stable_fingerprint(
+        let local_fingerprint = match super::fingerprint::stable_fingerprint(
             None,
             hostname.as_deref(),
             manufacturer.as_deref(),
             None,
-        )?;
+        ) {
+            Ok(value) => value,
+            Err(error) => {
+                eprintln!(
+                    "[htv-connector] skipping sparse mDNS observation at {}: {}",
+                    ip_address, error
+                );
+                continue;
+            }
+        };
 
         let mut device = ScannedDevice {
             local_fingerprint,
@@ -95,12 +113,21 @@ pub fn merge_scan_observations(
 
     for observation in ssdp_observations {
         if !by_ip.contains_key(&observation.ip_address) {
-            let local_fingerprint = super::fingerprint::stable_fingerprint(
+            let local_fingerprint = match super::fingerprint::stable_fingerprint(
                 None,
                 observation.friendly_name.as_deref(),
                 None,
                 observation.device_type.as_deref(),
-            )?;
+            ) {
+                Ok(value) => value,
+                Err(error) => {
+                    eprintln!(
+                        "[htv-connector] skipping sparse SSDP observation at {}: {}",
+                        observation.ip_address, error
+                    );
+                    continue;
+                }
+            };
 
             by_ip.insert(
                 observation.ip_address.clone(),
@@ -219,6 +246,20 @@ fn guess_manufacturer_from_hostname(hostname: &str) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn sparse_arp_observation_does_not_abort_scan() {
+        let arp_entries = vec![ArpEntry {
+            ip_address: "192.168.1.99".into(),
+            mac_address: None,
+            hostname: None,
+        }];
+
+        let devices = merge_scan_observations(arp_entries, vec![], vec![])
+            .expect("sparse observations should be skipped");
+
+        assert!(devices.is_empty());
+    }
 
     #[test]
     fn same_ip_different_mac_stays_distinct() {

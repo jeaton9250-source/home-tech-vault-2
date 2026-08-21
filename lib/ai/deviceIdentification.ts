@@ -27,6 +27,7 @@ const AI_DEVICE_TIMEOUT_MS = 8_000;
 const DEFAULT_MONTHLY_REQUEST_LIMIT = 100;
 
 const LOW_CONFIDENCE_LEVELS = new Set([
+  "medium",
   "low",
   "unknown",
 ]);
@@ -790,7 +791,7 @@ export async function identifyDeviceWithAi(
 
   if (
     !planContext.result
-      .featureAccess.aiAdvisor
+      .featureAccess.networkDiscover
   ) {
     return fallback(
       "not_entitled"
@@ -857,14 +858,20 @@ export async function identifyDeviceWithAi(
 
                   text:
                     [
-                      "You identify consumer home-network devices from limited discovery metadata.",
-                      "Use only the supplied evidence.",
-                      "Do not invent an exact model, manufacturer, or product name.",
-                      "Return null for fields that cannot be supported.",
-                      "Use a broad category such as Television, Streaming Device, Router, Camera, Speaker, Printer, Computer, Phone, Tablet, Smart Home, Network Device, or Unknown.",
-                      "Confidence must reflect how strongly the supplied evidence supports the result.",
-                      "The reason must be concise and mention the strongest evidence.",
-                    ].join(" "),
+                       "You identify consumer home-network devices from limited discovery metadata.",
+                       "Your primary job is to produce a clean, human-friendly display_name for the device.",
+                       "Use only the supplied evidence.",
+                       "Do not invent an exact model, manufacturer, or product family that the evidence does not support.",
+                       "Return null for exact fields that cannot be supported.",
+                       "A useful generic display_name is allowed when the category or manufacturer is supported, for example Apple TV, LG Smart TV, Roku Streaming Device, HP Printer, Smart Speaker, Security Camera, or Network Device.",
+                       "Never use an IP address, MAC address, UUID, raw fingerprint, protocol banner, server banner, or meaningless random identifier as display_name.",
+                       "Do not return raw .local, .lan, or .home.arpa hostnames as display_name. Convert meaningful hostname words into a readable consumer label and discard network-only suffixes.",
+                       "Prefer manufacturer plus product family or category when supported.",
+                       "Preserve meaningful product-family terms from the evidence, but do not guess a model suffix.",
+                       "Use a broad category such as Television, Streaming Device, Router, Camera, Speaker, Printer, Computer, Phone, Tablet, Smart Home, Network Device, or Unknown.",
+                       "Confidence must reflect how strongly the supplied evidence supports the result.",
+                       "The reason must be concise and mention the strongest evidence.",
+                     ].join(" "),
                 },
               ],
             },
