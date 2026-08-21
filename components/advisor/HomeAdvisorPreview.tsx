@@ -11,7 +11,7 @@ import {
 } from "@/lib/advisor/presentation";
 import type { HomeAdvisorResult } from "@/lib/advisor/types";
 
-const PREVIEW_LIMIT = 5;
+const PREVIEW_LIMIT = 3;
 
 type HomeAdvisorPreviewProps = {
   advisor: HomeAdvisorResult | null;
@@ -70,18 +70,48 @@ export default function HomeAdvisorPreview({
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-xl font-bold tracking-tight text-text-primary">
-                What needs attention?
+                Vault Intelligence
               </h2>
               <span className="htv-glass-pill px-2.5 py-0.5 text-[0.6875rem] font-bold text-premium bg-premium-soft border-premium/20">
                 Home Advisor
               </span>
             </div>
             <p className="text-xs text-text-muted">
-              Proactive recommendations in plain language
+              Your Vault watches for what deserves attention
             </p>
           </div>
         </div>
       </div>
+
+      {advisor.summary ? (
+        <div className="mt-6 rounded-[22px] border border-[#617c43]/15 bg-[#f2f5ed] p-5">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Sparkles
+                size={14}
+                className="text-[#617c43]"
+                aria-hidden
+              />
+
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#617c43]">
+                What your Vault found
+              </p>
+            </div>
+
+            <span className="rounded-full border border-[#617c43]/15 bg-white px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.1em] text-[#617c43]">
+              {advisor.summarySource === "ai"
+                ? "AI synthesis"
+                : "Vault analysis"}
+            </span>
+          </div>
+
+          <p className="mt-3 text-sm font-medium leading-7 text-[#25313a]">
+            {humanizeAdvisorText(
+              advisor.summary
+            )}
+          </p>
+        </div>
+      ) : null}
 
       {topInsights.length > 0 ? (
         <div className="mt-6 space-y-3">

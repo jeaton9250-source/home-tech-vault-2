@@ -646,9 +646,9 @@ function AdvisorFollowUp({
 
           <button
             type="button"
-            onClick={
-              onOpenAdvisor
-            }
+            onClick={() => {
+              onOpenAdvisor();
+            }}
             className="htv-focus-ring mt-4 inline-flex items-center gap-2 rounded-xl border border-interaction/20 bg-surface-card px-3.5 py-2.5 text-sm font-semibold text-text-primary transition hover:bg-surface-sunken"
           >
             <Sparkles

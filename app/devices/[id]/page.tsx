@@ -71,6 +71,10 @@ import { cn } from "@/lib/design-system/cn";
 
 import { usePermissions } from "@/hooks/usePermissions";
 
+import {
+  retryDeviceManualLookup,
+} from "@/app/devices/actions";
+
 import DeviceDocuments from "@/components/DeviceDocuments";
 import DeviceTimeline from "@/components/DeviceTimeline";
 import DeviceProfileMaintenance from "@/components/devices/DeviceProfileMaintenance";
@@ -232,6 +236,206 @@ export default function DevicePage() {
     useState(false);
 
   const actionsRef = useRef<HTMLDivElement>(null);
+
+  const [
+    manualFinderOpen,
+    setManualFinderOpen,
+  ] = useState(false);
+
+  const [
+    manualFinderModel,
+    setManualFinderModel,
+  ] = useState("");
+
+  const [
+    manualFinderPending,
+    setManualFinderPending,
+  ] = useState(false);
+
+  const [
+    manualFinderMessage,
+    setManualFinderMessage,
+  ] = useState("");
+
+  async function handleManualFinderSearch() {
+    if (
+      !device ||
+      manualFinderPending
+    ) {
+      return;
+    }
+
+    const modelNumber =
+      manualFinderModel
+        .trim();
+
+    if (!modelNumber) {
+      setManualFinderMessage(
+        "Enter the full model number from the product label."
+      );
+
+      return;
+    }
+
+    try {
+      setManualFinderPending(
+        true
+      );
+
+      setManualFinderMessage(
+        ""
+      );
+
+      /*
+       * Show immediate feedback without writing
+       * a temporary DB status that could become
+       * stuck if a remote lookup fails.
+       */
+      setDevice(
+        (current) =>
+          current
+            ? {
+                ...current,
+                manual_status:
+                  "pending",
+              }
+            : current
+      );
+
+      const result =
+        await retryDeviceManualLookup({
+          deviceId:
+            device.id,
+
+          modelNumber,
+        });
+
+      if (!result.success) {
+        setDevice(
+          (current) =>
+            current
+              ? {
+                  ...current,
+                  manual_status:
+                    "not_found",
+                }
+              : current
+        );
+
+        setManualFinderMessage(
+          result.error
+        );
+
+        return;
+      }
+
+      if (
+        result.status ===
+        "found"
+      ) {
+        setDevice(
+          (current) =>
+            current
+              ? {
+                  ...current,
+
+                  model_number:
+                    result.modelNumber,
+
+                  manual_status:
+                    "found",
+
+                  manual_checked_at:
+                    result.checkedAt,
+                }
+              : current
+        );
+
+        setManualFinderMessage(
+          "Official manual found. Opening the updated device record..."
+        );
+
+        /*
+         * Reload so DeviceDocuments also fetches
+         * the newly-created PDF immediately.
+         */
+        window.location.assign(
+          `/devices/${device.id}?tab=documents`
+        );
+
+        return;
+      }
+
+      if (
+        result.status ===
+        "skipped"
+      ) {
+        setDevice(
+          (current) =>
+            current
+              ? {
+                  ...current,
+                  manual_status:
+                    "not_found",
+                }
+              : current
+        );
+
+        setManualFinderMessage(
+          "The search could not save another document. Check your document limit and try again."
+        );
+
+        return;
+      }
+
+      setDevice(
+        (current) =>
+          current
+            ? {
+                ...current,
+
+                model_number:
+                  result.modelNumber,
+
+                manual_status:
+                  "not_found",
+
+                manual_checked_at:
+                  result.checkedAt,
+              }
+            : current
+      );
+
+      setManualFinderMessage(
+        "We still couldn't verify an official manual. Double-check the full model number on the product label."
+      );
+    } catch (error) {
+      console.error(
+        "Unable to retry manual lookup:",
+        error
+      );
+
+      setDevice(
+        (current) =>
+          current
+            ? {
+                ...current,
+                manual_status:
+                  "not_found",
+              }
+            : current
+      );
+
+      setManualFinderMessage(
+        "The manual search could not be completed. Please try again."
+      );
+    } finally {
+      setManualFinderPending(
+        false
+      );
+    }
+  }
+
 
   function selectTab(tab: DeviceDetailTab) {
     const params = new URLSearchParams(
@@ -1814,9 +2018,179 @@ export default function DevicePage() {
                             ? "Home Tech Vault has not completed this device's automatic manual lookup yet."
                             : device.manual_status ===
                                 "not_found"
-                              ? "We checked the connected product source but could not find a verified manual for this exact model."
+                              ? "We couldn't match an official manual yet. The saved model may be a product family instead of the exact model number."
                               : "No automatic manual lookup was recorded for this device. You can still upload the correct manual yourself."}
                       </p>
+
+                      {device.manual_status ===
+                      "not_found" ? (
+                        <div
+                          data-manual-finder="true"
+                          className="mt-4"
+                        >
+                          {!manualFinderOpen ? (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setManualFinderModel(
+                                  device.model_number ??
+                                    ""
+                                );
+
+                                setManualFinderMessage(
+                                  ""
+                                );
+
+                                setManualFinderOpen(
+                                  true
+                                );
+                              }}
+                              disabled={
+                                !canUpload
+                              }
+                              className={cn(
+                                "inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold transition",
+                                canUpload
+                                  ? "border border-home-health/20 bg-home-health-soft text-home-health hover:bg-home-health/10"
+                                  : "cursor-not-allowed border border-border-subtle bg-surface-sunken text-text-muted"
+                              )}
+                            >
+                              ✨ Help me find my manual
+                            </button>
+                          ) : (
+                            <div className="max-w-xl rounded-[20px] border border-border-subtle bg-surface-sunken/60 p-4">
+                              <p className="text-sm font-semibold text-text-primary">
+                                Find the exact version
+                              </p>
+
+                              <p className="mt-1 text-xs leading-5 text-text-secondary">
+                                Look for the full model
+                                number on the label on
+                                the back or bottom of
+                                the device. A series
+                                name alone may not be
+                                specific enough.
+                              </p>
+
+                              <label className="mt-4 block">
+                                <span className="mb-1.5 block text-xs font-semibold text-text-secondary">
+                                  Full model number
+                                </span>
+
+                                <input
+                                  type="text"
+                                  value={
+                                    manualFinderModel
+                                  }
+                                  onChange={(
+                                    event
+                                  ) => {
+                                    setManualFinderModel(
+                                      event
+                                        .target
+                                        .value
+                                    );
+
+                                    if (
+                                      manualFinderMessage
+                                    ) {
+                                      setManualFinderMessage(
+                                        ""
+                                      );
+                                    }
+                                  }}
+                                  onKeyDown={(
+                                    event
+                                  ) => {
+                                    if (
+                                      event.key ===
+                                        "Enter" &&
+                                      !manualFinderPending
+                                    ) {
+                                      event.preventDefault();
+
+                                      void handleManualFinderSearch();
+                                    }
+                                  }}
+                                  disabled={
+                                    manualFinderPending
+                                  }
+                                  autoComplete="off"
+                                  placeholder="Enter the exact model from the label"
+                                  className="w-full rounded-xl border border-border-subtle bg-surface-card px-3.5 py-2.5 text-sm text-text-primary outline-none transition placeholder:text-text-muted focus:border-home-health/40 focus:ring-2 focus:ring-home-health/10 disabled:cursor-wait disabled:opacity-70"
+                                />
+                              </label>
+
+                              <div className="mt-3 flex flex-wrap items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    void handleManualFinderSearch();
+                                  }}
+                                  disabled={
+                                    manualFinderPending ||
+                                    !manualFinderModel.trim()
+                                  }
+                                  className={cn(
+                                    "inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold transition",
+                                    manualFinderPending ||
+                                      !manualFinderModel.trim()
+                                      ? "cursor-not-allowed bg-charcoal/50 text-surface-card"
+                                      : "bg-charcoal text-surface-card hover:bg-charcoal-hover"
+                                  )}
+                                >
+                                  {manualFinderPending
+                                    ? "Searching..."
+                                    : "Search again"}
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setManualFinderOpen(
+                                      false
+                                    );
+
+                                    setManualFinderMessage(
+                                      ""
+                                    );
+                                  }}
+                                  disabled={
+                                    manualFinderPending
+                                  }
+                                  className="inline-flex items-center justify-center rounded-full border border-border-subtle bg-surface-card px-4 py-2 text-sm font-semibold text-text-secondary transition hover:bg-surface-hover disabled:cursor-wait disabled:opacity-50"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+
+                              {manualFinderPending ? (
+                                <div className="mt-3">
+                                  <p className="text-xs font-medium text-text-secondary">
+                                    Checking official
+                                    product sources...
+                                  </p>
+
+                                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-border-subtle">
+                                    <div className="h-full w-2/3 animate-pulse rounded-full bg-home-health" />
+                                  </div>
+                                </div>
+                              ) : null}
+
+                              {manualFinderMessage ? (
+                                <p
+                                  className="mt-3 text-xs leading-5 text-text-secondary"
+                                  aria-live="polite"
+                                >
+                                  {
+                                    manualFinderMessage
+                                  }
+                                </p>
+                              ) : null}
+                            </div>
+                          )}
+                        </div>
+                      ) : null}
 
                       {device.manual_checked_at ? (
                         <p className="mt-2 text-xs text-text-tertiary">

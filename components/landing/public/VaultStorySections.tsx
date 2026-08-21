@@ -64,60 +64,154 @@ export function VaultOverviewSection() {
   return (
     <section
       id="vault-overview"
-      className="relative overflow-hidden bg-[#0e1b29] px-5 py-24 text-[#f4f0e8] md:px-8 md:py-32 lg:px-12"
+      className="relative overflow-hidden bg-[#0e1b29] px-5 py-24 text-[#f4f0e8] md:px-8 md:py-28 lg:px-12"
     >
       <div className="pointer-events-none absolute -left-40 top-24 h-[500px] w-[500px] rounded-full bg-[#718d4f]/5 blur-[120px]" />
 
       <div className="relative mx-auto max-w-[1240px]">
-        <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
+        <div className="grid gap-14 lg:grid-cols-[0.88fr_1.12fr] lg:items-center">
           <div>
             <Eyebrow>The Vault</Eyebrow>
 
             <h2 className="mt-5 max-w-xl font-serif text-4xl font-medium leading-[1.03] tracking-[-0.045em] text-[#f4f0e8] sm:text-5xl">
-              One place for the technology that runs your home.
+              One place for every device — and everything connected to it.
             </h2>
-          </div>
 
-          <div className="lg:pb-2">
-            <p className="max-w-xl text-base leading-8 text-[#aeb8c1]">
-              Your devices, receipts, warranties, manuals, maintenance records,
-              and network details already exist. Home Tech Vault gives them one
-              organized place to live.
+            <p className="mt-6 max-w-xl text-base leading-8 text-[#aeb8c1]">
+              Keep the device itself, purchase details, receipts, manuals,
+              warranties, maintenance history, and useful network information
+              together instead of scattered across drawers, inboxes, and apps.
             </p>
+
+            <div className="mt-8 grid gap-3 sm:grid-cols-2">
+              <FeatureCheck text="Brand, model, and serial number" />
+              <FeatureCheck text="Purchase date and price" />
+              <FeatureCheck text="Receipts and manuals" />
+              <FeatureCheck text="Warranty information" />
+              <FeatureCheck text="Maintenance history" />
+              <FeatureCheck text="Network context" />
+            </div>
           </div>
-        </div>
 
-        <div className="mt-16 grid border-l border-t border-white/10 sm:grid-cols-2 lg:grid-cols-3">
-          {vaultAreas.map((area) => {
-            const Icon = area.icon;
+          <div className="relative">
+            <div className="absolute -inset-8 -z-10 rounded-full bg-[#718d4f]/5 blur-3xl" />
 
-            return (
-              <article
-                key={area.title}
-                className="group relative min-h-[255px] border-b border-r border-white/10 p-7 transition-colors duration-300 hover:bg-white/[0.025] sm:p-8"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#718d4f]/30 bg-[#718d4f]/10 text-[#8ca667]">
-                    <Icon size={19} strokeWidth={1.7} />
+            <div className="overflow-hidden rounded-[28px] border border-white/15 bg-[#132231] shadow-[0_35px_90px_-40px_rgba(0,0,0,0.85)]">
+              <div className="border-b border-white/10 px-6 py-5 sm:px-8">
+                <div className="flex items-center justify-between gap-5">
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[#718d4f]/25 bg-[#718d4f]/10 text-[#8ca667]">
+                      <Laptop
+                        size={21}
+                        aria-hidden
+                      />
+                    </div>
+
+                    <div>
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-white/35">
+                        Office
+                      </p>
+
+                      <h3 className="mt-1 font-serif text-xl text-[#f4f0e8]">
+                        LG UltraWide Monitor
+                      </h3>
+                    </div>
                   </div>
 
-                  <span className="font-serif text-sm text-white/25">
-                    {area.number}
+                  <span className="rounded-full border border-[#718d4f]/30 bg-[#718d4f]/10 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#8ca667]">
+                    Organized
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid gap-px bg-white/10 sm:grid-cols-2">
+                <DarkInfoCard
+                  label="Model"
+                  value="34WQ500-B"
+                />
+
+                <DarkInfoCard
+                  label="Purchased"
+                  value="Aug 12, 2026"
+                />
+
+                <DarkInfoCard
+                  label="Purchase Price"
+                  value="$349.99"
+                />
+
+                <DarkInfoCard
+                  label="Warranty"
+                  value="Tracked"
+                />
+              </div>
+
+              <div className="border-t border-white/10 p-6 sm:p-8">
+                <div className="flex items-center justify-between gap-4">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-white/35">
+                    Attached records
+                  </p>
+
+                  <span className="text-[10px] font-medium text-[#8ca667]">
+                    Everything connected
                   </span>
                 </div>
 
-                <h3 className="mt-8 font-serif text-2xl font-medium text-[#f4f0e8]">
-                  {area.title}
-                </h3>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  <AttachmentCard
+                    icon={Receipt}
+                    title="Purchase receipt"
+                    meta="Best Buy · PDF"
+                  />
 
-                <p className="mt-3 max-w-xs text-sm leading-6 text-[#929da7]">
-                  {area.text}
-                </p>
+                  <AttachmentCard
+                    icon={FileText}
+                    title="Owner manual"
+                    meta="LG · PDF"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-                <div className="absolute bottom-0 left-0 h-px w-0 bg-[#718d4f] transition-all duration-300 group-hover:w-full" />
-              </article>
-            );
-          })}
+        <div className="mt-16 border-t border-white/10 pt-8">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/35">
+            One Vault connects the rest of your home tech
+          </p>
+
+          <div className="mt-5 grid gap-px overflow-hidden rounded-[22px] border border-white/10 bg-white/10 sm:grid-cols-2 lg:grid-cols-6">
+            {vaultAreas.map((area) => {
+              const Icon = area.icon;
+
+              return (
+                <div
+                  key={area.title}
+                  className="bg-[#101e2d] px-4 py-5 transition hover:bg-[#132535]"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#718d4f]/10 text-[#8ca667]">
+                      <Icon
+                        size={15}
+                        strokeWidth={1.7}
+                        aria-hidden
+                      />
+                    </div>
+
+                    <div className="min-w-0">
+                      <p className="font-serif text-base font-medium text-[#f4f0e8]">
+                        {area.title}
+                      </p>
+
+                      <p className="mt-0.5 text-[9px] uppercase tracking-[0.12em] text-white/25">
+                        {area.number}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
     </section>
@@ -475,29 +569,86 @@ export function MaintenanceSection() {
 /* -------------------------------------------------------------------------- */
 
 export function FamilySection() {
+  const trustItems = [
+    {
+      icon: ShieldCheck,
+      title: "Private by default",
+      text: "Your Vault is tied to authenticated account access and household permissions.",
+    },
+    {
+      icon: FileText,
+      title: "Protected uploads",
+      text: "Device photos and documents use private storage with access policies.",
+    },
+    {
+      icon: Users,
+      title: "Controlled sharing",
+      text: "Household roles help determine who can view or manage shared information.",
+    },
+    {
+      icon: Wifi,
+      title: "Secure connections",
+      text: "HTTPS and modern browser protections help secure every Home Tech Vault session.",
+    },
+  ];
+
   return (
-    <section className="relative overflow-hidden bg-[#0b1623] px-5 py-24 text-[#f4f0e8] md:px-8 md:py-32 lg:px-12">
-      <div className="mx-auto max-w-[1050px]">
+    <section className="relative overflow-hidden bg-[#0b1623] px-5 py-24 text-[#f4f0e8] md:px-8 md:py-28 lg:px-12">
+      <div className="pointer-events-none absolute -right-40 top-10 h-[520px] w-[520px] rounded-full bg-[#718d4f]/5 blur-[120px]" />
+
+      <div className="relative mx-auto max-w-[1120px]">
         <div className="grid gap-14 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
           <div>
-            <Eyebrow>Built for the household</Eyebrow>
+            <Eyebrow>Household + privacy</Eyebrow>
 
-            <h2 className="mt-5 font-serif text-4xl font-medium leading-[1.04] tracking-[-0.045em] sm:text-5xl">
-              Important home information shouldn&apos;t live in one
-              person&apos;s head.
+            <h2 className="mt-5 max-w-xl font-serif text-4xl font-medium leading-[1.04] tracking-[-0.045em] sm:text-5xl">
+              Share what matters with your household.
+              <span className="mt-2 block text-[#8ca667]">
+                Keep the rest private.
+              </span>
             </h2>
 
             <p className="mt-6 max-w-lg text-base leading-8 text-[#aeb8c1]">
-              Home Tech Vault helps households keep useful technology
-              information organized and accessible to the right people.
+              Important home technology information should be accessible to
+              the right people without turning receipts, serial numbers,
+              documents, or network details into public information.
             </p>
+
+            <div className="mt-8 flex flex-wrap gap-3">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[#718d4f]/25 bg-[#718d4f]/10 px-3.5 py-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#9ab576]">
+                <Users
+                  size={13}
+                  aria-hidden
+                />
+                Role-based household access
+              </div>
+
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-white/55">
+                <ShieldCheck
+                  size={13}
+                  aria-hidden
+                />
+                Private account access
+              </div>
+            </div>
+
+            <Link
+              href="/trust"
+              className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-[#9ab576] transition hover:text-[#b3cb91]"
+            >
+              See how we protect your data
+              <span aria-hidden>→</span>
+            </Link>
           </div>
 
           <div className="overflow-hidden rounded-[28px] border border-white/15 bg-[#132231] shadow-[0_35px_80px_-45px_rgba(0,0,0,0.9)]">
             <div className="border-b border-white/10 p-6 sm:p-8">
               <div className="flex items-center gap-3">
                 <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#718d4f]/25 bg-[#718d4f]/10 text-[#8ca667]">
-                  <Home size={19} />
+                  <Home
+                    size={19}
+                    aria-hidden
+                  />
                 </div>
 
                 <div>
@@ -505,22 +656,97 @@ export function FamilySection() {
                     Household
                   </p>
 
-                  <p className="mt-1 font-serif text-xl">Sample Home</p>
+                  <p className="mt-1 font-serif text-xl">
+                    Sample Home
+                  </p>
                 </div>
               </div>
             </div>
 
             <div className="space-y-px bg-white/10">
-              <HouseholdRow initials="DU" name="Demo User" role="Admin" />
-              <HouseholdRow initials="HM" name="Household Member" role="Member" />
-              <HouseholdRow initials="HV" name="Household Viewer" role="Viewer" />
+              <HouseholdRow
+                initials="DU"
+                name="Demo User"
+                role="Admin"
+              />
+
+              <HouseholdRow
+                initials="HM"
+                name="Household Member"
+                role="Member"
+              />
+
+              <HouseholdRow
+                initials="HV"
+                name="Household Viewer"
+                role="Viewer"
+              />
             </div>
 
             <div className="grid grid-cols-3 border-t border-white/10">
-              <HouseholdBenefit title="Share" text="Useful knowledge" />
-              <HouseholdBenefit title="Control" text="Access levels" />
-              <HouseholdBenefit title="Organize" text="One household" />
+              <HouseholdBenefit
+                title="Share"
+                text="Useful knowledge"
+              />
+
+              <HouseholdBenefit
+                title="Control"
+                text="Access levels"
+              />
+
+              <HouseholdBenefit
+                title="Organize"
+                text="One household"
+              />
             </div>
+          </div>
+        </div>
+
+        <div className="mt-14 border-t border-white/10 pt-8">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#8ca667]">
+                Privacy & security
+              </p>
+
+              <h3 className="mt-2 max-w-2xl font-serif text-2xl font-medium text-[#f4f0e8] sm:text-3xl">
+                Built for the information you wouldn&apos;t post publicly.
+              </h3>
+            </div>
+
+            <p className="max-w-md text-sm leading-6 text-[#8f9aa4]">
+              Household sharing and privacy belong together: useful access
+              for the people you choose, with protections around the data
+              you store.
+            </p>
+          </div>
+
+          <div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {trustItems.map((item) => {
+              const Icon = item.icon;
+
+              return (
+                <div
+                  key={item.title}
+                  className="rounded-[18px] border border-white/10 bg-white/[0.035] p-5 transition hover:border-[#718d4f]/25 hover:bg-white/[0.05]"
+                >
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#718d4f]/20 bg-[#718d4f]/10 text-[#8ca667]">
+                    <Icon
+                      size={16}
+                      aria-hidden
+                    />
+                  </div>
+
+                  <p className="mt-4 text-sm font-semibold text-[#f4f0e8]">
+                    {item.title}
+                  </p>
+
+                  <p className="mt-2 text-xs leading-5 text-[#929da7]">
+                    {item.text}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

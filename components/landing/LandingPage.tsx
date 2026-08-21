@@ -5,11 +5,8 @@ import ManualDiscoverySection from "@/components/landing/public/ManualDiscoveryS
 import HomeTechHealthCheckSection from "@/components/landing/public/HomeTechHealthCheckSection";
 import LandingFooter from "@/components/landing/public/LandingFooter";
 import LandingHeader from "@/components/landing/public/LandingHeader";
-import SmartScanDemoSection from "@/components/landing/public/SmartScanDemoSection";
-import TrustSection from "@/components/landing/public/TrustSection";
 
 import {
-  DeviceRecordsSection,
   DocumentsWarrantySection,
   FamilySection,
   MaintenanceSection,
@@ -68,15 +65,7 @@ export default function LandingPage({
 
         <VaultOverviewSection />
 
-        {/* MAJOR DIFFERENTIATOR */}
-
-        <SmartScanDemoSection />
-
-        {/* CORE DEVICE INVENTORY */}
-
-        <DeviceRecordsSection />
-
-        {/* DOCUMENTS + WARRANTIES */}
+{/* DOCUMENTS + WARRANTIES */}
 
         <DocumentsWarrantySection />
 
@@ -92,11 +81,7 @@ export default function LandingPage({
 
         <FamilySection />
 
-        {/* PRIVACY + TRUST */}
-
-        <TrustSection />
-
-        {/* DIFFERENTIATION */}
+{/* DIFFERENTIATION */}
 
         <WhyVaultSection />
 

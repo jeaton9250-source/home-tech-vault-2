@@ -34,9 +34,21 @@ export function AIAdvisorProvider({
     useState<string | null>(null);
 
   const open = useCallback((query?: string) => {
-    if (query?.trim()) {
-      setPendingQuery(query.trim());
+    /*
+     * React click handlers receive a MouseEvent.
+     * Only treat real strings as Advisor queries.
+     */
+    const normalizedQuery =
+      typeof query === "string"
+        ? query.trim()
+        : "";
+
+    if (normalizedQuery) {
+      setPendingQuery(
+        normalizedQuery
+      );
     }
+
     setIsOpen(true);
   }, []);
 

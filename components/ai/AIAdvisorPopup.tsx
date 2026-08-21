@@ -1030,7 +1030,7 @@ Try asking:
                 </h2>
 
                 <p className="text-xs text-text-secondary">
-                  Connected to your vault
+                  Grounded in your Vault
                 </p>
               </div>
             </div>
