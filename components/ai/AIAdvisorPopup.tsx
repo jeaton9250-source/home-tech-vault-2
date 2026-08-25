@@ -298,6 +298,7 @@ export default function AIAdvisorPopup() {
 
   useEffect(() => {
     if (
+      !isOpen ||
       permissionsLoading ||
       isDemo ||
       !user
@@ -307,6 +308,7 @@ export default function AIAdvisorPopup() {
 
     loadVaultData();
   }, [
+    isOpen,
     user,
     isDemo,
     permissionsLoading,
