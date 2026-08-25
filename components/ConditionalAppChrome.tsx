@@ -6,10 +6,7 @@ import { usePathname } from "next/navigation";
 import ClearDemoOnAuthRoute from "@/components/auth/ClearDemoOnAuthRoute";
 import AppChrome from "@/components/AppChrome";
 import { normalizePathname } from "@/lib/isChromeFreeRoute";
-import {
-  isPublicAuthPath,
-  isPublicMarketingPath,
-} from "@/lib/marketing/routes";
+import { isPublicAuthPath } from "@/lib/marketing/routes";
 
 type ConditionalAppChromeProps = {
   children: ReactNode;
@@ -25,11 +22,12 @@ export default function ConditionalAppChrome({
   const publicAuthRoute =
     isPublicAuthPath(pathname);
 
-  const publicMarketingRoute =
-    isPublicMarketingPath(pathname);
+  const newHomeownerRoute =
+    pathname === "/new-homeowners" ||
+    pathname.startsWith("/new-homeowners/");
 
   // Public auth pages must never inherit
-  // AppChrome, AuthGuard, or stale demo state.
+  // AppChrome, AuthGuard, or a stale demo session.
   if (publicAuthRoute) {
     return (
       <>
@@ -39,12 +37,13 @@ export default function ConditionalAppChrome({
     );
   }
 
-  // Marketing pages are completely public
-  // and must never pass through AppChrome/AuthGuard.
-  if (publicMarketingRoute) {
+  // The new-homeowner landing page is public
+  // and must not pass through AppChrome/AuthGuard.
+  if (newHomeownerRoute) {
     return <>{children}</>;
   }
 
-  // Everything else is part of the authenticated app.
+  // Keep the existing application behavior everywhere else.
+  // Some existing pages rely on providers inside AppChrome.
   return <AppChrome>{children}</AppChrome>;
 }
