@@ -32,7 +32,7 @@ const PUBLIC_MARKETING_PREFIXES = [
   "/trust",
   "/security",
   "/demo",
-  "/new-homeowner",
+  "/new-homeowners",
   "/knowledge",
   "/guides",
   "/compare",
@@ -105,6 +105,7 @@ export async function middleware(request: NextRequest) {
             getAll() {
               return request.cookies.getAll();
             },
+
             setAll(cookiesToSet) {
               cookiesToSet.forEach(({ name, value }) => {
                 request.cookies.set(name, value);
@@ -123,6 +124,7 @@ export async function middleware(request: NextRequest) {
               );
             },
           },
+
           ...(anonKeyLooksLikeJwt(anonKey)
             ? {
                 global: {
@@ -135,13 +137,15 @@ export async function middleware(request: NextRequest) {
         }
       );
 
-      // Refresh session cookies; do not gate public auth routes.
+      // Refresh session cookies.
+      // This does NOT require a user to be signed in.
       await supabase.auth.getUser();
     }
   } catch (error) {
     console.error("Middleware session refresh failed:", error);
   }
 
+  // Only protected/app routes get private cache headers.
   if (!publicAuth && !isPublicMarketingPath(pathname)) {
     response.headers.set(
       "Cache-Control",
@@ -157,7 +161,7 @@ export const config = {
     /*
      * Run on all paths except static assets and SEO metadata endpoints.
      * Keeping /sitemap.xml and /robots.txt out of middleware avoids
-     * private cache headers / auth cookie work that can confuse crawlers.
+     * unnecessary auth cookie work and private cache headers.
      */
     "/((?!_next/static|_next/image|favicon.ico|robots\\.txt|sitemap\\.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
