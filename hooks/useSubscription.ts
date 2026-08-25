@@ -191,11 +191,17 @@ export function useSubscription() {
           );
 
           /*
-           * Cached access can paint immediately.
-           * The database refresh below continues
-           * silently.
+           * The subscription snapshot is already
+           * freshness-limited by readSubscriptionCache().
+           * Treat a valid snapshot as a true fast path
+           * instead of immediately repeating the
+           * subscription + profile database requests.
+           *
+           * Auth state changes can still trigger an
+           * explicit refresh when access may have changed.
            */
           setLoading(false);
+          return;
         }
 
         const [
