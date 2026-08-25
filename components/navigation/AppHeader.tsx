@@ -74,8 +74,6 @@ export default function AppHeader() {
     }, []);
 
   useEffect(() => {
-    void loadPendingImports();
-
     const interval =
       window.setInterval(
         () => {
