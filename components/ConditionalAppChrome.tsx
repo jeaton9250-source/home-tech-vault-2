@@ -22,12 +22,8 @@ export default function ConditionalAppChrome({
   const publicAuthRoute =
     isPublicAuthPath(pathname);
 
-  const newHomeownerRoute =
-    pathname === "/new-homeowners" ||
-    pathname.startsWith("/new-homeowners/");
-
-  // Public auth pages must never inherit
-  // AppChrome, AuthGuard, or a stale demo session.
+  // Public auth pages must never inherit app chrome,
+  // AuthGuard, or a stale demo session.
   if (publicAuthRoute) {
     return (
       <>
@@ -37,13 +33,5 @@ export default function ConditionalAppChrome({
     );
   }
 
-  // The new-homeowner landing page is public
-  // and must not pass through AppChrome/AuthGuard.
-  if (newHomeownerRoute) {
-    return <>{children}</>;
-  }
-
-  // Keep the existing application behavior everywhere else.
-  // Some existing pages rely on providers inside AppChrome.
   return <AppChrome>{children}</AppChrome>;
 }
