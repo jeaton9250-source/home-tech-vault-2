@@ -18,13 +18,18 @@ type ConditionalAppChromeProps = {
 export default function ConditionalAppChrome({
   children,
 }: ConditionalAppChromeProps) {
-  const pathname = normalizePathname(usePathname());
+  const pathname = normalizePathname(
+    usePathname()
+  );
 
-  const publicAuthRoute = isPublicAuthPath(pathname);
-  const publicMarketingRoute = isPublicMarketingPath(pathname);
+  const publicAuthRoute =
+    isPublicAuthPath(pathname);
 
-  // Public auth pages must never inherit app chrome,
-  // AuthGuard, or a stale demo session.
+  const publicMarketingRoute =
+    isPublicMarketingPath(pathname);
+
+  // Public auth pages must never inherit
+  // AppChrome, AuthGuard, or stale demo state.
   if (publicAuthRoute) {
     return (
       <>
@@ -34,10 +39,12 @@ export default function ConditionalAppChrome({
     );
   }
 
-  // Public marketing pages must also stay outside AppChrome/AuthGuard.
+  // Marketing pages are completely public
+  // and must never pass through AppChrome/AuthGuard.
   if (publicMarketingRoute) {
     return <>{children}</>;
   }
 
+  // Everything else is part of the authenticated app.
   return <AppChrome>{children}</AppChrome>;
 }
