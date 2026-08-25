@@ -17,6 +17,7 @@ import ProfileMenu from "@/components/navigation/ProfileMenu";
 import MobileNavSheet from "@/components/navigation/MobileNavSheet";
 
 import { usePermissions } from "@/hooks/usePermissions";
+import { useNotifications } from "@/hooks/useNotifications";
 
 import { isPrimaryNavActive } from "@/lib/navigation/activeGroup";
 import { PRIMARY_NAV_ITEMS } from "@/lib/navigation/config";
@@ -30,6 +31,7 @@ type ImportResponse = {
 
 export default function AppHeader() {
   const pathname = usePathname();
+  const notificationsState = useNotifications();
 
   const [
     pendingImportCount,
@@ -112,7 +114,7 @@ export default function AppHeader() {
 
   return (
     <>
-      <MobileNavSheet />
+      <MobileNavSheet notificationsState={notificationsState} />
 
       <header className="sticky top-0 z-50 hidden border-b border-white/10 bg-[#183047]/95 text-[#f5f1e8] shadow-[0_10px_35px_-28px_rgba(0,0,0,0.85)] backdrop-blur-xl md:block">
         <div className="mx-auto grid h-[72px] max-w-[var(--content-max)] grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 px-4 sm:px-6 lg:px-8">
@@ -195,6 +197,7 @@ export default function AppHeader() {
             <div className="flex items-center rounded-full border border-white/10 bg-white/[0.04] p-1 text-[#f5f1e8] shadow-inner [&_button]:text-[#f5f1e8] [&_button:hover]:bg-white/[0.07]">
               <NotificationBell
                 compact
+                notificationsState={notificationsState}
               />
 
               <ProfileMenu compact />

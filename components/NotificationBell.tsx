@@ -11,9 +11,9 @@ import {
 import DropdownMenu from "@/components/navigation/DropdownMenu";
 
 import { useNavMenu } from "@/hooks/useNavMenu";
-import {
-  useNotifications,
-  type VaultNotification,
+import type {
+  NotificationsState,
+  VaultNotification,
 } from "@/hooks/useNotifications";
 
 import { NOTIFICATIONS_LOCAL_STATE_NOTE } from "@/lib/notifications";
@@ -23,10 +23,12 @@ import { cn } from "@/lib/design-system/cn";
 
 type NotificationBellProps = {
   compact?: boolean;
+  notificationsState: NotificationsState;
 };
 
 export default function NotificationBell({
   compact = false,
+  notificationsState,
 }: NotificationBellProps) {
   const router = useRouter();
   const { closeMenu } = useNavMenu();
@@ -38,7 +40,7 @@ export default function NotificationBell({
     loading,
     markAsRead,
     markAllAsRead,
-  } = useNotifications();
+  } = notificationsState;
 
   const displayUnreadCount =
     unreadCount > 99 ? "99+" : String(unreadCount);

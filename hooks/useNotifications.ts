@@ -229,3 +229,5 @@ export function useNotifications() {
     dismissNotification,
   };
 }
+
+export type NotificationsState = ReturnType<typeof useNotifications>;

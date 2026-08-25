@@ -33,6 +33,7 @@ import ProfileMenu from "@/components/navigation/ProfileMenu";
 import { useAIAdvisor } from "@/hooks/useAIAdvisor";
 import { useDemoMode } from "@/hooks/useDemoMode";
 import { usePermissions } from "@/hooks/usePermissions";
+import type { NotificationsState } from "@/hooks/useNotifications";
 
 import { isPrimaryNavActive } from "@/lib/navigation/activeGroup";
 import { MOBILE_NAV_ITEMS } from "@/lib/navigation/config";
@@ -40,7 +41,13 @@ import { shouldShowPremiumBadge } from "@/lib/navigation/navVisibility";
 
 import { supabase } from "@/lib/supabase";
 
-export default function MobileNavSheet() {
+type MobileNavSheetProps = {
+  notificationsState: NotificationsState;
+};
+
+export default function MobileNavSheet({
+  notificationsState,
+}: MobileNavSheetProps) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -167,6 +174,7 @@ export default function MobileNavSheet() {
           <div className="flex items-center rounded-full border border-white/10 bg-white/[0.04] p-0.5 [&_button]:text-[#f5f1e8] [&_button:hover]:bg-white/[0.07]">
             <NotificationBell
               compact
+              notificationsState={notificationsState}
             />
 
             <ProfileMenu compact />
