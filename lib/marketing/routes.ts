@@ -10,6 +10,7 @@ export const MARKETING_ROUTES = {
   terms: "/terms",
   signup: "/signup",
   login: "/login",
+  newHomeowners: "/new-homeowners",
 } as const;
 
 export const PUBLIC_AUTH_PATHS = [
@@ -32,7 +33,7 @@ export const PUBLIC_AUTH_PATH_SET = new Set<string>(
 export function isPublicAuthPath(
   pathname: string | null | undefined
 ): boolean {
-  const path = normalizePublicAuthPathname(pathname);
+  const path = normalizePathname(pathname);
 
   if (PUBLIC_AUTH_PATH_SET.has(path)) {
     return true;
@@ -45,20 +46,6 @@ export function isPublicAuthPath(
   }
 
   return false;
-}
-
-function normalizePublicAuthPathname(
-  pathname: string | null | undefined
-): string {
-  if (!pathname || pathname === "") {
-    return "/";
-  }
-
-  if (pathname.length > 1 && pathname.endsWith("/")) {
-    return pathname.slice(0, -1);
-  }
-
-  return pathname;
 }
 
 /** Routes accessible without signing in. */
@@ -83,12 +70,45 @@ export const PUBLIC_MARKETING_PATHS = [
   "/home-inventory-software",
   "/digital-home-vault",
   "/home-tech-checklist",
-  "/new-homeowner",
+  MARKETING_ROUTES.newHomeowners,
   "/health-check",
   "/knowledge",
   "/guides",
   "/compare",
 ] as const;
+
+export const PUBLIC_MARKETING_PATH_SET = new Set<string>(
+  PUBLIC_MARKETING_PATHS
+);
+
+/**
+ * Returns true when a route is a public marketing page.
+ * These pages must never be wrapped in the authenticated app shell.
+ */
+export function isPublicMarketingPath(
+  pathname: string | null | undefined
+): boolean {
+  const path = normalizePathname(pathname);
+
+  if (path === "/") {
+    return true;
+  }
+
+  if (PUBLIC_MARKETING_PATH_SET.has(path)) {
+    return true;
+  }
+
+  for (const route of PUBLIC_MARKETING_PATHS) {
+    if (
+      route !== "/" &&
+      path.startsWith(`${route}/`)
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
 
 export const PUBLIC_UPGRADE_PATHS = [
   "/upgrade",
@@ -137,7 +157,7 @@ export const INDEXABLE_MARKETING_PATHS = [
   "/home-inventory-software",
   "/digital-home-vault",
   "/home-tech-checklist",
-  "/new-homeowner",
+  MARKETING_ROUTES.newHomeowners,
   "/knowledge",
   "/guides",
   "/compare",
@@ -156,3 +176,17 @@ export const SEO_LANDING_PATHS = [
   "/digital-home-vault",
   "/home-tech-checklist",
 ] as const;
+
+function normalizePathname(
+  pathname: string | null | undefined
+): string {
+  if (!pathname || pathname === "") {
+    return "/";
+  }
+
+  if (pathname.length > 1 && pathname.endsWith("/")) {
+    return pathname.slice(0, -1);
+  }
+
+  return pathname;
+}
