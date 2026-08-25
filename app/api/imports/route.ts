@@ -30,7 +30,7 @@ function createSupabaseServerClient(
   );
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const cookieStore = await cookies();
 
@@ -51,6 +51,42 @@ export async function GET() {
           status: 401,
         }
       );
+    }
+
+    const url = new URL(request.url);
+    const countOnly =
+      url.searchParams.get("count") === "1";
+
+    if (countOnly) {
+      const { count, error } = await supabase
+        .from("device_imports")
+        .select("id", {
+          count: "exact",
+          head: true,
+        })
+        .eq("user_id", user.id)
+        .eq("status", "pending");
+
+      if (error) {
+        console.error(
+          "Unable to count imports:",
+          error
+        );
+
+        return NextResponse.json(
+          {
+            error:
+              "Unable to load your Smart Imports.",
+          },
+          {
+            status: 500,
+          }
+        );
+      }
+
+      return NextResponse.json({
+        count: count ?? 0,
+      });
     }
 
     const { data, error } = await supabase

@@ -23,10 +23,8 @@ import { isPrimaryNavActive } from "@/lib/navigation/activeGroup";
 import { PRIMARY_NAV_ITEMS } from "@/lib/navigation/config";
 import { shouldShowPremiumBadge } from "@/lib/navigation/navVisibility";
 
-type ImportResponse = {
-  imports?: Array<{
-    id: string;
-  }>;
+type ImportCountResponse = {
+  count?: number;
 };
 
 export default function AppHeader() {
@@ -49,7 +47,7 @@ export default function AppHeader() {
       try {
         const response =
           await fetch(
-            "/api/imports",
+            "/api/imports?count=1",
             {
               method: "GET",
               cache: "no-store",
@@ -61,11 +59,11 @@ export default function AppHeader() {
         }
 
         const data:
-          ImportResponse =
+          ImportCountResponse =
           await response.json();
 
         setPendingImportCount(
-          data.imports?.length ?? 0
+          data.count ?? 0
         );
       } catch {
         // Navigation should never fail
