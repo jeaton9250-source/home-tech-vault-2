@@ -37,6 +37,73 @@ type ProfileMenuProps = {
   compact?: boolean;
 };
 
+const PROFILE_CACHE_TTL_MS = 60_000;
+
+type CachedProfileName = {
+  cachedAt: number;
+  displayName: string;
+};
+
+const profileNameCache =
+  new Map<string, CachedProfileName>();
+
+const profileNameInFlight =
+  new Map<string, Promise<string>>();
+
+async function loadProfileName(
+  userId: string,
+  email: string
+) {
+  const cached =
+    profileNameCache.get(userId);
+
+  if (
+    cached &&
+    Date.now() - cached.cachedAt <=
+      PROFILE_CACHE_TTL_MS
+  ) {
+    return cached.displayName;
+  }
+
+  const existingRequest =
+    profileNameInFlight.get(userId);
+
+  if (existingRequest) {
+    return existingRequest;
+  }
+
+  const request = (async () => {
+    try {
+      const { data } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", userId)
+        .maybeSingle();
+
+      const displayName =
+        data?.full_name?.trim() ||
+        email.split("@")[0] ||
+        "Account";
+
+      profileNameCache.set(userId, {
+        cachedAt: Date.now(),
+        displayName,
+      });
+
+      return displayName;
+    } finally {
+      profileNameInFlight.delete(userId);
+    }
+  })();
+
+  profileNameInFlight.set(
+    userId,
+    request
+  );
+
+  return request;
+}
+
 export default function ProfileMenu({
   compact = false,
 }: ProfileMenuProps) {
@@ -80,18 +147,19 @@ export default function ProfileMenu({
         return;
       }
 
-      setEmail(user.email || "");
+      const userEmail =
+        user.email || "";
 
-      const { data } = await supabase
-        .from("profiles")
-        .select("full_name")
-        .eq("id", user.id)
-        .maybeSingle();
+      setEmail(userEmail);
+
+      const resolvedDisplayName =
+        await loadProfileName(
+          user.id,
+          userEmail
+        );
 
       setDisplayName(
-        data?.full_name?.trim() ||
-          user.email?.split("@")[0] ||
-          "Account"
+        resolvedDisplayName
       );
     }
 
