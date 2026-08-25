@@ -99,7 +99,7 @@ const [submitting, setSubmitting] =
         password,
         options: {
           emailRedirectTo:
-            `${window.location.origin}/onboarding`,
+            `${window.location.origin}/dashboard`,
         },
       });
 

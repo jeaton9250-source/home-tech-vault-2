@@ -41,9 +41,7 @@ export default function HomeHealthDashboard({
     advisor,
     loading: advisorLoading,
     error: advisorError,
-  } = useHomeAdvisor({
-    defer: true,
-  });
+  } = useHomeAdvisor();
 
   /*
    * Keep the hero as a quick status snapshot.

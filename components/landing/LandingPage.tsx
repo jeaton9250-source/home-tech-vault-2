@@ -1,6 +1,7 @@
 "use client";
 
 import HeroSection from "@/components/landing/public/HeroSection";
+import FinalCta from "@/components/landing/public/FinalCta";
 import ManualDiscoverySection from "@/components/landing/public/ManualDiscoverySection";
 import HomeTechHealthCheckSection from "@/components/landing/public/HomeTechHealthCheckSection";
 import LandingFooter from "@/components/landing/public/LandingFooter";
@@ -60,6 +61,7 @@ export default function LandingPage({
         
 
         {/* 10. FINAL CONVERSION CTA */}
+        <FinalCta isSignedIn={isSignedIn} />
         
       </main>
 

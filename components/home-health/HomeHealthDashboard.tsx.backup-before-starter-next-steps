@@ -1,7 +1,5 @@
 "use client";
 
-import Link from "next/link";
-
 import {
   FileText,
   House,
@@ -41,9 +39,7 @@ export default function HomeHealthDashboard({
     advisor,
     loading: advisorLoading,
     error: advisorError,
-  } = useHomeAdvisor({
-    defer: true,
-  });
+  } = useHomeAdvisor();
 
   /*
    * Keep the hero as a quick status snapshot.
@@ -180,47 +176,6 @@ export default function HomeHealthDashboard({
             />
           </SectionShell>
 
-          {overviewStats.deviceCount <= 2 &&
-          overviewStats.documentCount === 0 ? (
-            <section className="overflow-hidden rounded-[26px] border border-[#182533]/10 bg-[#f8f5ef] p-5 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] sm:p-6">
-              <div className="flex items-center gap-3">
-                <span className="h-px w-6 bg-[#617c43]" />
-                <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-[#617c43]">
-                  Keep building your vault
-                </p>
-              </div>
-
-              <h2 className="mt-3 font-serif text-xl font-medium tracking-[-0.03em] text-[#17212a] sm:text-2xl">
-                Add what would be useful later.
-              </h2>
-
-              <p className="mt-2 max-w-xl text-sm leading-6 text-[#68737b]">
-                You do not need to finish everything today. Save the next detail
-                you would hate to search for when something goes wrong.
-              </p>
-
-              <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                <StarterAction
-                  href="/documents/upload"
-                  title="Save a document"
-                  description="Receipt, warranty, or manual"
-                />
-
-                <StarterAction
-                  href="/maintenance/new"
-                  title="Add maintenance"
-                  description="Remember the next home task"
-                />
-
-                <StarterAction
-                  href="/network/edit"
-                  title="Add Home Wi-Fi"
-                  description="Keep router and internet details handy"
-                />
-              </div>
-            </section>
-          ) : null}
-
 
         </div>
 
@@ -325,35 +280,6 @@ function StatCard({
         </div>
       </div>
     </div>
-  );
-}
-
-function StarterAction({
-  href,
-  title,
-  description,
-}: {
-  href: string;
-  title: string;
-  description: string;
-}) {
-  return (
-    <Link
-      href={href}
-      className="group rounded-2xl border border-[#182533]/10 bg-[#eee9df]/55 p-4 transition hover:-translate-y-0.5 hover:bg-[#eee9df]"
-    >
-      <p className="text-sm font-semibold text-[#17212a]">
-        {title}
-      </p>
-
-      <p className="mt-1 text-xs leading-5 text-[#68737b]">
-        {description}
-      </p>
-
-      <p className="mt-3 text-xs font-semibold text-[#617c43]">
-        Add now →
-      </p>
-    </Link>
   );
 }
 

@@ -125,7 +125,7 @@ export default function DemoPage() {
               <button
                 type="button"
                 onClick={enterDemo}
-                className="mt-9 inline-flex min-h-[52px] items-center justify-center gap-2 rounded-xl border border-[#718d4f]/45 bg-[#617c43] px-7 text-sm font-semibold text-white shadow-[0_20px_40px_-20px_rgba(97,124,67,0.8)] transition hover:bg-[#718d4f]"
+                className="mt-9 inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-xl border border-[#718d4f]/45 bg-[#617c43] px-7 text-sm font-semibold text-white shadow-[0_20px_40px_-20px_rgba(97,124,67,0.8)] transition hover:bg-[#718d4f] sm:w-auto"
               >
                 Enter the Demo
 

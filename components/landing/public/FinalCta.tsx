@@ -2,66 +2,41 @@
 
 import Link from "next/link";
 
-import {
-  ArrowRight,
-  Sparkles,
-} from "lucide-react";
-
-import { MARKETING_ROUTES } from "@/lib/marketing/routes";
-
 type FinalCtaProps = {
   isSignedIn?: boolean;
 };
 
-export default function FinalCta({
-  isSignedIn = false,
-}: FinalCtaProps) {
-  const href = isSignedIn
-    ? "/imports"
-    : MARKETING_ROUTES.signup;
-
+export default function FinalCta({ isSignedIn = false }: FinalCtaProps) {
   return (
-    <section className="bg-surface-card px-5 pb-24 pt-8 md:px-8 md:pb-32 lg:px-12">
-      <div className="mx-auto max-w-[var(--content-max)] overflow-hidden rounded-[32px] bg-charcoal px-6 py-14 text-center text-white sm:px-10 md:py-20">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10">
-          <Sparkles
-            size={21}
-            aria-hidden
-          />
-        </div>
-
-        <h2 className="mx-auto mt-6 max-w-3xl text-3xl font-semibold tracking-[-0.04em] sm:text-4xl lg:text-5xl">
-          Your next receipt could be
-          your first Vault entry.
-        </h2>
-
-        <p className="mx-auto mt-5 max-w-2xl text-sm leading-7 text-white/70 sm:text-base">
-          Create your Home Tech Vault,
-          forward one purchase confirmation,
-          and see how easy it can be to
-          start organizing your home
-          technology.
+    <section className="bg-[#183047] px-6 py-20 sm:px-8 sm:py-24">
+      <div className="mx-auto max-w-4xl text-center">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#9ab879]">
+          Start small
         </p>
 
-        <Link
-          href={href}
-          className="mt-8 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-white px-7 text-sm font-semibold text-charcoal transition hover:opacity-90"
-        >
-          {isSignedIn
-            ? "Open Smart Import"
-            : "Create My Free Vault"}
+        <h2 className="mx-auto mt-5 max-w-3xl font-serif text-4xl font-medium leading-[1.05] tracking-[-0.04em] text-[#f5f1e8] sm:text-5xl">
+          Your home is worth keeping organized.
+        </h2>
 
-          <ArrowRight
-            size={17}
-            aria-hidden
-          />
-        </Link>
+        <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-[#c8d0d5]">
+          Start with one appliance, one receipt, or one document. Build your
+          Home Tech Vault from there.
+        </p>
 
-        {!isSignedIn && (
-          <p className="mt-4 text-xs text-white/50">
-            No credit card required.
-          </p>
-        )}
+        <div className="mt-9 flex flex-col items-center justify-center gap-3">
+          <Link
+            href={isSignedIn ? "/dashboard" : "/signup"}
+            className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#718d4f] px-7 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-px hover:bg-[#7f9b5a] hover:shadow-md"
+          >
+            {isSignedIn ? "Open My Vault" : "Create My Free Vault"}
+          </Link>
+
+          {!isSignedIn ? (
+            <p className="text-xs text-[#aeb8c1]">
+              No credit card required.
+            </p>
+          ) : null}
+        </div>
       </div>
     </section>
   );

@@ -1846,16 +1846,17 @@ function OnboardingFlow() {
       {step === "complete" && (
         <>
           <OnboardingEyebrow>
-            Your vault has started
+            You&apos;re ready
           </OnboardingEyebrow>
 
           <OnboardingTitle>
-            Your first home record is in.
+            Your Home Tech Vault is ready
           </OnboardingTitle>
 
           <OnboardingDescription>
-            That&apos;s all you need to get started. Keep building your vault
-            whenever something is worth remembering.
+            Here&apos;s what you set up.
+            You can always add more from
+            your dashboard.
           </OnboardingDescription>
 
           <ul className="mt-8 space-y-3">
@@ -1868,33 +1869,48 @@ function OnboardingFlow() {
             />
 
             <ProgressItem
-              label="First item added"
+              label="Devices added"
               complete={
                 (progressSummary?.devicesAdded ??
                   0) > 0
               }
-              detail={`${progressSummary?.devicesAdded ?? 0} item${(progressSummary?.devicesAdded ?? 0) === 1 ? "" : "s"} saved`}
+              detail={`${progressSummary?.devicesAdded ?? 0} device${(progressSummary?.devicesAdded ?? 0) === 1 ? "" : "s"}`}
+            />
+
+            <ProgressItem
+              label="Documents added"
+              complete={
+                (progressSummary?.documentsAdded ??
+                  0) > 0
+              }
+              detail={`${progressSummary?.documentsAdded ?? 0} document${(progressSummary?.documentsAdded ?? 0) === 1 ? "" : "s"}`}
+            />
+
+            <ProgressItem
+              label="Network added"
+              complete={
+                progressSummary?.networkAdded ??
+                false
+              }
             />
           </ul>
 
-          <div className="mt-8 rounded-2xl border border-border-subtle bg-surface-sunken p-5">
-            <p className="text-sm font-semibold text-text-primary">
-              What would you like to do next?
-            </p>
-
-            <p className="mt-2 text-sm leading-6 text-text-secondary">
-              You can head into your vault now, add another item, or attach a
-              receipt, manual, or other home document.
-            </p>
-          </div>
-
           {hasFamilyFeatureAccess && (
             <p className="mt-6 text-sm leading-6 text-text-secondary">
-              You can also invite family members later from the Family section.
+              Invite family later from the
+              Family section when you&apos;re
+              ready to share your vault.
             </p>
           )}
 
-          <div className="mt-8 grid gap-3 sm:grid-cols-3">
+          <OnboardingActions>
+            <Button
+              href="/devices"
+              variant="ghost"
+            >
+              Explore Devices
+            </Button>
+
             <Button
               type="button"
               onClick={() =>
@@ -1902,23 +1918,9 @@ function OnboardingFlow() {
               }
               disabled={submitting}
             >
-              Go to Dashboard
+              Go to Home Pulse
             </Button>
-
-            <Button
-              href="/devices/add"
-              variant="ghost"
-            >
-              Add Another Item
-            </Button>
-
-            <Button
-              href="/documents"
-              variant="ghost"
-            >
-              Upload a Document
-            </Button>
-          </div>
+          </OnboardingActions>
         </>
       )}
     </OnboardingShell>

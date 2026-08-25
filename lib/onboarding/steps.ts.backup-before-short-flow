@@ -1,6 +1,6 @@
 import type { OnboardingStep } from "@/lib/onboarding/types";
 
-export const ONBOARDING_STEP_COUNT = 4;
+export const ONBOARDING_STEP_COUNT = 6;
 
 export function stepIndex(
   step: OnboardingStep
@@ -8,17 +8,16 @@ export function stepIndex(
   switch (step) {
     case "welcome":
       return 1;
-
     case "home":
       return 2;
-
     case "device":
       return 3;
-
     case "document":
-    case "network":
-    case "complete":
       return 4;
+    case "network":
+      return 5;
+    case "complete":
+      return 6;
   }
 }
 
@@ -28,19 +27,14 @@ export function nextStep(
   switch (step) {
     case "welcome":
       return "home";
-
     case "home":
       return "device";
-
     case "device":
-      return "complete";
-
+      return "document";
     case "document":
       return "network";
-
     case "network":
       return "complete";
-
     case "complete":
       return "complete";
   }
@@ -52,21 +46,16 @@ export function previousStep(
   switch (step) {
     case "welcome":
       return "welcome";
-
     case "home":
       return "welcome";
-
     case "device":
       return "home";
-
     case "document":
       return "device";
-
     case "network":
       return "document";
-
     case "complete":
-      return "device";
+      return "network";
   }
 }
 

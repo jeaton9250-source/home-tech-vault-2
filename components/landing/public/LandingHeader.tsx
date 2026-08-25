@@ -329,7 +329,7 @@ export default function LandingHeader({
       </div>
 
       {mobileOpen ? (
-        <div className="border-t border-white/10 bg-[#183047] px-5 pb-6 pt-4 md:hidden">
+        <div className="max-h-[calc(100vh-72px)] overflow-y-auto border-t border-white/10 bg-[#183047] px-5 pb-8 pt-4 overscroll-contain md:hidden">
           <nav className="mx-auto flex max-w-xl flex-col">
             <MobileHeading>
               Explore

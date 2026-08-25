@@ -48,9 +48,9 @@ const features = [
   {
     icon: Wrench,
     eyebrow: "Maintenance",
-    title: "Remember what your home needs.",
+    title: "Remember the little things your home needs.",
     description:
-      "Keep service history and recurring home tasks together so filters, servicing, cleaning, and other upkeep are easier to stay on top of.",
+      "Keep maintenance history and recurring household tasks together so filters, servicing, cleaning, and other upkeep are easier to remember.",
     href: "/features",
     linkLabel: null,
   },
@@ -59,18 +59,36 @@ const features = [
     eyebrow: "Home Wi-Fi",
     title: "Keep your internet details somewhere useful.",
     description:
-      "Save router information, internet provider details, Wi-Fi notes, and connected-device information without turning your home into an IT project.",
+      "Save router information, internet provider details, Wi-Fi notes, connected-device information, and other network details without turning your home into an IT project.",
     href: "/network-documentation",
     linkLabel: "Explore Home Wi-Fi",
   },
   {
     icon: Sparkles,
-    eyebrow: "Smart Import & Sharing",
-    title: "Spend less time entering details.",
+    eyebrow: "Smart Import",
+    title: "Spend less time typing everything in.",
     description:
-      "Let Home Tech Vault help identify useful device information, manuals, and details, then share access with the people who help manage your home.",
+      "Give Home Tech Vault the information you already have and let it help identify devices, manufacturers, models, manuals, and useful details.",
     href: MARKETING_ROUTES.demo,
-    linkLabel: "Explore the demo",
+    linkLabel: "See how it works",
+  },
+  {
+    icon: Users,
+    eyebrow: "Household Sharing",
+    title: "Give your household one place to look.",
+    description:
+      "Share access with the people who help manage your home while keeping your home records organized in one central vault.",
+    href: "/family",
+    linkLabel: "Learn about household access",
+  },
+  {
+    icon: PackageSearch,
+    eyebrow: "One Organized Vault",
+    title: "Everything stays connected.",
+    description:
+      "Instead of keeping receipts in email, manuals in drawers, warranty dates in your head, and appliance details in separate notes, keep the useful pieces together.",
+    href: MARKETING_ROUTES.signup,
+    linkLabel: "Start my home vault",
   },
 ] as const;
 
@@ -78,17 +96,17 @@ const moments = [
   {
     icon: Receipt,
     title: "Something breaks",
-    text: "Pull up the model, receipt, manual, warranty, and service history without digging through drawers or email.",
+    text: "Find the model, receipt, manual, warranty, and other useful details without hunting through the house.",
   },
   {
     icon: ShieldCheck,
     title: "You need proof",
-    text: "Find purchase records and supporting documents when a warranty claim, repair, or insurance request needs them.",
+    text: "Pull up purchase information and supporting documents when a warranty, service call, or claim needs them.",
   },
   {
     icon: Wrench,
     title: "It is time for maintenance",
-    text: "See what was serviced, when it happened, and what needs attention next.",
+    text: "Keep useful service history and recurring home tasks from disappearing into forgotten notes.",
   },
 ];
 
@@ -101,22 +119,22 @@ export default function FeaturesPageContent() {
             <div className="flex items-center gap-3">
               <span className="h-px w-7 bg-[#617c43]" />
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#617c43]">
-                Built for homeowners
+                Everything in one place
               </p>
             </div>
 
             <h1 className="mt-6 max-w-4xl font-serif text-5xl font-medium leading-[0.98] tracking-[-0.05em] text-[#17212a] sm:text-6xl lg:text-7xl">
-              Built for the details
+              Your entire home.
               <br />
               <span className="text-[#617c43]">
-                that come with your home.
+                One organized vault.
               </span>
             </h1>
 
             <p className="mt-7 max-w-2xl text-lg leading-8 text-[#68716c]">
-              Keep appliances, documents, warranties, maintenance, Home Wi-Fi,
-              receipts, manuals, and household records connected in one place —
-              so the useful details are there when you need them.
+              Home Tech Vault keeps the information that comes with your home
+              together — devices, documents, warranties, maintenance, Home
+              Wi-Fi, receipts, manuals, and the details you will want later.
             </p>
 
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
@@ -132,7 +150,7 @@ export default function FeaturesPageContent() {
                 href={MARKETING_ROUTES.demo}
                 className="inline-flex min-h-[52px] items-center justify-center rounded-full border border-[#17212a]/15 bg-[#fffdf8] px-7 text-sm font-semibold text-[#17212a] transition hover:bg-white"
               >
-                Explore the Demo
+                See an Example
               </Link>
             </div>
 
@@ -340,22 +358,13 @@ export default function FeaturesPageContent() {
             important home record. Your Vault can grow as you need it.
           </p>
 
-          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link
-              href={MARKETING_ROUTES.signup}
-              className="inline-flex min-h-[54px] items-center justify-center gap-2 rounded-full bg-[#fffdf8] px-8 text-sm font-semibold text-[#40502f] transition hover:bg-white"
-            >
-              Create My Free Vault
-              <ArrowRight size={16} aria-hidden />
-            </Link>
-
-            <Link
-              href={MARKETING_ROUTES.demo}
-              className="inline-flex min-h-[54px] items-center justify-center rounded-full border border-white/30 px-8 text-sm font-semibold text-white transition hover:bg-white/10"
-            >
-              Explore the Demo
-            </Link>
-          </div>
+          <Link
+            href={MARKETING_ROUTES.signup}
+            className="mt-8 inline-flex min-h-[54px] items-center justify-center gap-2 rounded-full bg-[#fffdf8] px-8 text-sm font-semibold text-[#40502f] transition hover:bg-white"
+          >
+            Create My Free Vault
+            <ArrowRight size={16} aria-hidden />
+          </Link>
         </div>
       </section>
     </MarketingLayout>

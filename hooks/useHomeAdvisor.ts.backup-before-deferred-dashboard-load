@@ -146,14 +146,7 @@ function humanizeAdvisorResult(
   };
 }
 
-type UseHomeAdvisorOptions = {
-  defer?: boolean;
-};
-
-export function useHomeAdvisor(
-  options: UseHomeAdvisorOptions = {}
-) {
-  const { defer = false } = options;
+export function useHomeAdvisor() {
   const {
     user,
     isDemo,
@@ -247,20 +240,9 @@ export function useHomeAdvisor(
   ]);
 
   useEffect(() => {
-    if (!defer) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- async fetch updates loading state after await
-      void loadAdvisor();
-      return;
-    }
-
-    const timer = window.setTimeout(() => {
-      void loadAdvisor();
-    }, 800);
-
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [defer, loadAdvisor]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- async fetch updates loading state after await
+    void loadAdvisor();
+  }, [loadAdvisor]);
 
   const advisor = useMemo(() => {
     if (!rawAdvisor) {

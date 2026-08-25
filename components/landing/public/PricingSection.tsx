@@ -232,7 +232,7 @@ export default function PricingSection({
           })}
         </div>
 
-        <div className="mt-7 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-[#8e9690]">
+        <div className="mt-7 flex flex-col items-center justify-center gap-1.5 text-center text-xs leading-5 text-[#8e9690] sm:flex-row sm:gap-3">
           <span>Cancel anytime.</span>
           <span className="hidden sm:inline">•</span>
           <span>Secure checkout through Stripe.</span>

@@ -595,17 +595,11 @@ function usePermissionsState() {
           );
 
           /*
-           * This snapshot is fresh for only 60 seconds.
-           * Use it as a true fast path instead of
-           * immediately repeating both permission API
-           * requests during normal navigation.
-           *
-           * Realtime membership events and the existing
-           * window-focus refresh will still revalidate
-           * permissions when needed.
+           * Let the UI paint from the recent
+           * snapshot while the network verifies
+           * it below.
            */
           setRoleLoading(false);
-          return;
         }
 
         const [
