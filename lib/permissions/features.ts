@@ -42,7 +42,7 @@ export const FEATURE_LABELS: Record<
   documents: "Documents",
   warranties: "Warranties",
   maintenance: "Maintenance",
-  network: "Network",
+  network: "Home Wi-Fi",
   networkDiscover: "Network Discovery",
   connectorMonitoring: "Connector Monitoring",
   rooms: "Rooms",

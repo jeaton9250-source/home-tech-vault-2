@@ -91,7 +91,7 @@ export default function HomeHealthDashboard({
 
           <p className="mt-2 max-w-2xl text-sm leading-6 text-[#68737b] sm:text-base">
             Your devices, records, warranties,
-            network details, and household
+            Home Wi-Fi details, and household
             information — organized in one place.
           </p>
         </div>
@@ -202,19 +202,19 @@ export default function HomeHealthDashboard({
         <div className="space-y-6">
           {/* SEARCH */}
 
-          <section className="relative overflow-hidden rounded-[26px] border border-[#182533]/10 bg-[#101d2b] p-6 text-[#f4f0e8] shadow-[0_24px_55px_-40px_rgba(0,0,0,0.7)]">
+          <section className="relative overflow-hidden rounded-[26px] border border-[#182533]/10 bg-[#183047] p-6 text-[#f5f1e8] shadow-[0_24px_55px_-40px_rgba(0,0,0,0.7)]">
             <div className="pointer-events-none absolute -right-20 -top-20 h-52 w-52 rounded-full bg-[#718d4f]/10 blur-3xl" />
 
             <div className="relative">
               <div className="flex items-center gap-3">
                 <span className="h-px w-6 bg-[#718d4f]" />
 
-                <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-[#8ca667]">
+                <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-[#718d4f]">
                   Ask Your Vault
                 </p>
               </div>
 
-              <h2 className="mt-3 font-serif text-2xl font-medium tracking-[-0.03em] text-[#f4f0e8]">
+              <h2 className="mt-3 font-serif text-2xl font-medium tracking-[-0.03em] text-[#f5f1e8]">
                 Find anything in your home.
               </h2>
 

@@ -4,7 +4,7 @@ export const SUPPORT_CATEGORIES = [
   "Family Sharing",
   "Devices",
   "Documents",
-  "Network",
+  "Internet & Wi-Fi",
   "Technical Issue",
   "Feature Request",
   "Privacy or Security",

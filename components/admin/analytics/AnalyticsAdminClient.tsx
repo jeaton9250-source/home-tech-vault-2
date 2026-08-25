@@ -656,11 +656,11 @@ export default function AnalyticsAdminClient({
         description="Where new users move from discovery to building a useful Home Tech Vault · rolling 30-day signup cohort."
       >
         <div className="grid gap-4 xl:grid-cols-[1.35fr_0.65fr]">
-          <div className="overflow-hidden rounded-[22px] border border-[#152638] bg-[#0b1623]">
+          <div className="overflow-hidden rounded-[22px] border border-[#152638] bg-[#183047]">
             <div className="border-b border-white/10 px-5 py-4 md:px-6">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold text-[#f4f0e8]">
+                  <p className="text-sm font-semibold text-[#f5f1e8]">
                     Visitor → Activated User
                   </p>
 
@@ -692,7 +692,7 @@ export default function AnalyticsAdminClient({
                     </p>
 
                     <div className="mt-4 flex items-end gap-2">
-                      <p className="text-4xl font-semibold tracking-[-0.055em] text-[#f4f0e8]">
+                      <p className="text-4xl font-semibold tracking-[-0.055em] text-[#f5f1e8]">
                         {stage.value.toLocaleString()}
                       </p>
 
@@ -710,7 +710,7 @@ export default function AnalyticsAdminClient({
                       <div className="mt-5">
                         <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
                           <div
-                            className="h-full rounded-full bg-[#8ca667]"
+                            className="h-full rounded-full bg-[#718d4f]"
                             style={{
                               width: `${
                                 Math.max(
@@ -745,7 +745,7 @@ export default function AnalyticsAdminClient({
                       </div>
                     ) : (
                       <div className="mt-5">
-                        <div className="h-1.5 rounded-full bg-[#8ca667]" />
+                        <div className="h-1.5 rounded-full bg-[#718d4f]" />
 
                         <p className="mt-2 text-[11px] font-medium text-[#9eb77d]">
                           Activation milestone
@@ -986,7 +986,7 @@ export default function AnalyticsAdminClient({
         }
       >
         <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-          <div className="overflow-hidden rounded-[22px] border border-[#152638] bg-[#0b1623]">
+          <div className="overflow-hidden rounded-[22px] border border-[#152638] bg-[#183047]">
             <div className="grid sm:grid-cols-2 xl:grid-cols-4">
               {[
                 {
@@ -1033,7 +1033,7 @@ export default function AnalyticsAdminClient({
                       {metric.label}
                     </p>
 
-                    <p className="mt-3 text-3xl font-semibold tracking-[-0.05em] text-[#f4f0e8]">
+                    <p className="mt-3 text-3xl font-semibold tracking-[-0.05em] text-[#f5f1e8]">
                       {
                         metric.value
                       }

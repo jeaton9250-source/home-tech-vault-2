@@ -58,7 +58,7 @@ export const PRIMARY_NAV_ITEMS: PrimaryNavItem[] = [
   },
 
   {
-    label: "Network",
+    label: "Home Wi-Fi",
     href: "/network",
     icon: Radar,
     feature: "network",
@@ -187,7 +187,7 @@ export const SECONDARY_ROUTE_ITEMS: ProfileNavItem[] = [
   },
 
   {
-    label: "Network",
+    label: "Home Wi-Fi",
     href: "/network",
     icon: Radar,
     feature: "network",

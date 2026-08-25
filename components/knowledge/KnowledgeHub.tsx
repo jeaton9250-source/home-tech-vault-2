@@ -64,15 +64,15 @@ export default function KnowledgeHub({
         data={jsonLd}
       />
 
-      <header className="border-b border-white/10 bg-[#0b1623] px-6 py-14 text-[#f4f0e8] md:px-8 md:py-20">
+      <header className="border-b border-white/10 bg-[#183047] px-6 py-14 text-[#f5f1e8] md:px-8 md:py-20">
         <div className="mx-auto max-w-6xl">
           <Breadcrumb items={breadcrumbs} />
 
-          <p className="mt-7 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8ca667]">
+          <p className="mt-7 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#718d4f]">
             Knowledge Center
           </p>
 
-          <h1 className="mt-4 max-w-4xl font-serif text-4xl font-medium tracking-[-0.045em] text-[#f4f0e8] md:text-6xl md:leading-[1.04]">
+          <h1 className="mt-4 max-w-4xl font-serif text-4xl font-medium tracking-[-0.045em] text-[#f5f1e8] md:text-6xl md:leading-[1.04]">
             Helpful guides for managing the technology in your home.
           </h1>
 
@@ -204,7 +204,7 @@ export default function KnowledgeHub({
 
         <CallToAction
           title={`Put what you learn to work in ${siteConfig.name}`}
-          description="Organize your devices, documents, warranties, network details, and household technology records in one secure place."
+          description="Organize your devices, documents, warranties, Home Wi-Fi details, and household technology records in one secure place."
           primaryLabel="Start free"
           primaryHref={MARKETING_ROUTES.signup}
           secondaryLabel="See features"

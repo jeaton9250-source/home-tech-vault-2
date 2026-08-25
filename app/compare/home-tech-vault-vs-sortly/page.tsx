@@ -18,7 +18,7 @@ export default function SortlyComparisonPage() {
       eyebrow="Home Tech Vault vs. Sortly"
       headline="A home technology vault or a general inventory system?"
       summary="Both products can help organize items, but they are built around different jobs. Home Tech Vault focuses on household technology, warranties, documents, and network discovery. Sortly is a broader inventory-management platform."
-      bestForHomeTechVault="You want a homeowner-friendly place for devices, warranty dates, receipts, manuals, network information, maintenance, and optional automatic discovery."
+      bestForHomeTechVault="You want a homeowner-friendly place for devices, warranty dates, receipts, manuals, Home Wi-Fi information, maintenance, and optional automatic discovery."
       bestForCompetitor="You need broader inventory workflows such as business stock, supplies, assets, barcode or QR processes, and inventory operations beyond home technology."
       officialSourceUrl="https://www.sortly.com/"
       rows={[

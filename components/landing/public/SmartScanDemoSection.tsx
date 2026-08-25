@@ -322,12 +322,12 @@ export default function SmartScanDemoSection() {
               delay: 0.7,
               ease: [0.22, 1, 0.36, 1],
             }}
-            className="overflow-hidden rounded-[28px] border border-white/15 bg-[#0f1d2b] text-[#f4f0e8] shadow-[0_35px_90px_-40px_rgba(0,0,0,0.8)]"
+            className="overflow-hidden rounded-[28px] border border-white/15 bg-[#183047] text-[#f5f1e8] shadow-[0_35px_90px_-40px_rgba(0,0,0,0.8)]"
           >
             <div className="border-b border-white/10 bg-[#132536] px-6 py-5 sm:px-8">
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#718d4f]/30 bg-[#718d4f]/10 text-[#8ca667]">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#718d4f]/30 bg-[#718d4f]/10 text-[#718d4f]">
                     <Sparkles
                       size={17}
                       strokeWidth={1.8}
@@ -335,7 +335,7 @@ export default function SmartScanDemoSection() {
                   </div>
 
                   <div>
-                    <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-[#8ca667]">
+                    <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-[#718d4f]">
                       Smart Scan
                     </p>
 
@@ -345,12 +345,12 @@ export default function SmartScanDemoSection() {
                   </div>
                 </div>
 
-                <span className="rounded-full border border-[#718d4f]/25 bg-[#718d4f]/10 px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.08em] text-[#8ca667]">
+                <span className="rounded-full border border-[#718d4f]/25 bg-[#718d4f]/10 px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.08em] text-[#718d4f]">
                   Match
                 </span>
               </div>
 
-              <h3 className="mt-6 font-serif text-2xl leading-tight text-[#f4f0e8] sm:text-3xl">
+              <h3 className="mt-6 font-serif text-2xl leading-tight text-[#f5f1e8] sm:text-3xl">
                 Belkin USB-C
                 <br />
                 4-in-1 Hub
@@ -390,7 +390,7 @@ export default function SmartScanDemoSection() {
                         index *
                           0.1,
                     }}
-                    className="grid grid-cols-[0.7fr_1.3fr] bg-[#101d2b] px-6 py-4 sm:px-8"
+                    className="grid grid-cols-[0.7fr_1.3fr] bg-[#183047] px-6 py-4 sm:px-8"
                   >
                     <span className="text-[10px] font-semibold uppercase tracking-[0.11em] text-white/30">
                       {
@@ -409,7 +409,7 @@ export default function SmartScanDemoSection() {
             </div>
 
             <div className="border-t border-white/10 p-6 sm:p-8">
-              <div className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-[#8ba866]/40 bg-[#617c43] px-5 text-sm font-semibold text-white shadow-[0_16px_35px_-20px_rgba(97,124,67,0.9)]">
+              <div className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-[#718d4f]/40 bg-[#617c43] px-5 text-sm font-semibold text-white shadow-[0_16px_35px_-20px_rgba(97,124,67,0.9)]">
                 <CheckCircle2
                   size={16}
                 />

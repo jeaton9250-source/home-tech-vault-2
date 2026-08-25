@@ -21,9 +21,9 @@ export const colors = {
   charcoalSoft: "#374151",
 
   /** Interaction blue — links, focus, progress, selected controls only */
-  interaction: "#4A6FA5",
-  interactionHover: "#3D5D8C",
-  interactionSoft: "#E8EEF4",
+  interaction: "#617c43",
+  interactionHover: "#526b38",
+  interactionSoft: "#edf2e7",
 
   /** Royal plum — premium badges, insights identity */
   premium: "#4A3561",

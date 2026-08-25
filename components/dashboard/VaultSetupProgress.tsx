@@ -165,12 +165,12 @@ export default function VaultSetupProgress({
     return (
       <section
         aria-labelledby="vault-setup-title"
-        className="overflow-hidden rounded-[22px] border border-[#152638] bg-[#0b1623] text-white shadow-[0_18px_45px_-38px_rgba(11,22,35,0.8)]"
+        className="overflow-hidden rounded-[22px] border border-[#152638] bg-[#183047] text-white shadow-[0_18px_45px_-38px_rgba(11,22,35,0.8)]"
       >
         <div className="flex flex-col gap-4 px-5 py-4 sm:px-6 sm:py-5 lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2.5">
-              <div className="flex items-center gap-2 text-[#a9c38a]">
+              <div className="flex items-center gap-2 text-[#9bb27a]">
                 <Sparkles
                   size={14}
                   aria-hidden
@@ -181,14 +181,14 @@ export default function VaultSetupProgress({
                 </p>
               </div>
 
-              <span className="rounded-full border border-[#8ca667]/20 bg-[#8ca667]/10 px-2.5 py-1 text-[10px] font-semibold text-[#a9c38a]">
+              <span className="rounded-full border border-[#718d4f]/20 bg-[#718d4f]/10 px-2.5 py-1 text-[10px] font-semibold text-[#9bb27a]">
                 {percentage}% ready
               </span>
             </div>
 
             <h2
               id="vault-setup-title"
-              className="mt-2 text-xl font-semibold tracking-[-0.03em] text-[#f4f0e8] sm:text-2xl"
+              className="mt-2 text-xl font-semibold tracking-[-0.03em] text-[#f5f1e8] sm:text-2xl"
             >
               3 devices organized. Protect the paperwork next.
             </h2>
@@ -232,7 +232,7 @@ export default function VaultSetupProgress({
 
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10 sm:w-36">
             <div
-              className="h-full rounded-full bg-[#8ca667] transition-[width] duration-500"
+              className="h-full rounded-full bg-[#718d4f] transition-[width] duration-500"
               style={{
                 width: `${percentage}%`,
               }}
@@ -246,11 +246,11 @@ export default function VaultSetupProgress({
   return (
     <section
       aria-labelledby="vault-setup-title"
-      className="overflow-hidden rounded-[28px] border border-[#152638] bg-[#0b1623] text-white shadow-[0_24px_65px_-45px_rgba(11,22,35,0.8)]"
+      className="overflow-hidden rounded-[28px] border border-[#152638] bg-[#183047] text-white shadow-[0_24px_65px_-45px_rgba(11,22,35,0.8)]"
     >
       <div className="grid lg:grid-cols-[1.25fr_0.75fr]">
         <div className="p-6 sm:p-7 lg:p-8">
-          <div className="flex items-center gap-2 text-[#a9c38a]">
+          <div className="flex items-center gap-2 text-[#9bb27a]">
             <Sparkles
               size={16}
               aria-hidden
@@ -263,7 +263,7 @@ export default function VaultSetupProgress({
 
           <h2
             id="vault-setup-title"
-            className="mt-4 max-w-2xl text-3xl font-semibold tracking-[-0.045em] text-[#f4f0e8] sm:text-[38px] sm:leading-[1.08]"
+            className="mt-4 max-w-2xl text-3xl font-semibold tracking-[-0.045em] text-[#f5f1e8] sm:text-[38px] sm:leading-[1.08]"
           >
             {title}
           </h2>
@@ -301,7 +301,7 @@ export default function VaultSetupProgress({
               {hasNoDevices ? (
                 <Link
                   href="/onboarding?restart=1"
-                  className="inline-flex h-12 items-center gap-2 rounded-xl border border-white/15 bg-white/[0.06] px-5 text-sm font-semibold text-[#f4f0e8] transition hover:bg-white/[0.1]"
+                  className="inline-flex h-12 items-center gap-2 rounded-xl border border-white/15 bg-white/[0.06] px-5 text-sm font-semibold text-[#f5f1e8] transition hover:bg-white/[0.1]"
                 >
                   Continue guided setup
                 </Link>
@@ -321,14 +321,14 @@ export default function VaultSetupProgress({
                 Vault readiness
               </span>
 
-              <span className="text-sm font-semibold text-[#a9c38a]">
+              <span className="text-sm font-semibold text-[#9bb27a]">
                 {percentage}%
               </span>
             </div>
 
             <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
               <div
-                className="h-full rounded-full bg-[#8ca667] transition-[width] duration-500"
+                className="h-full rounded-full bg-[#718d4f] transition-[width] duration-500"
                 style={{
                   width: `${percentage}%`,
                 }}
@@ -350,7 +350,7 @@ export default function VaultSetupProgress({
               </p>
             </div>
 
-            <div className="flex h-11 w-11 items-center justify-center rounded-full border border-[#8ca667]/30 bg-[#8ca667]/10 text-[#a9c38a]">
+            <div className="flex h-11 w-11 items-center justify-center rounded-full border border-[#718d4f]/30 bg-[#718d4f]/10 text-[#9bb27a]">
               <span className="text-sm font-semibold">
                 {percentage}%
               </span>
@@ -385,7 +385,7 @@ export default function VaultSetupProgress({
                   className={
                     step.complete
                       ? "text-sm font-medium text-white/55 line-through decoration-white/20"
-                      : "text-sm font-medium text-[#f4f0e8]"
+                      : "text-sm font-medium text-[#f5f1e8]"
                   }
                 >
                   {step.label}
@@ -396,7 +396,7 @@ export default function VaultSetupProgress({
 
           {deviceCount > 0 &&
           deviceCount < 3 ? (
-            <div className="mt-5 rounded-xl border border-[#8ca667]/20 bg-[#8ca667]/10 px-4 py-3">
+            <div className="mt-5 rounded-xl border border-[#718d4f]/20 bg-[#718d4f]/10 px-4 py-3">
               <p className="text-sm font-medium text-[#c8d8b4]">
                 {deviceCount} of 3 starter
                 devices added

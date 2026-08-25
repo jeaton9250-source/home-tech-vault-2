@@ -41,6 +41,7 @@ const page = {
 
   heroDescription:
     "Keep your appliances, electronics, receipts, warranties, manuals, serial numbers, and purchase details organized in one place — so you can find them when something breaks, needs service, or gets replaced.",
+  screenshots: [],
 };
 
 export const metadata = createSeoMetadata({

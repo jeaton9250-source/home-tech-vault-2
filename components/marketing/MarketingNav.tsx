@@ -44,7 +44,7 @@ export default function MarketingNav({
     : "Create My Free Vault";
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#0b1623]/95 text-[#f4f0e8] backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#183047]/95 text-[#f5f1e8] backdrop-blur-xl">
       {minimal ? (
         <LandingAnnouncementBar />
       ) : null}
@@ -60,7 +60,7 @@ export default function MarketingNav({
           aria-label="Home Tech Vault home"
           className="flex shrink-0 items-center gap-3"
         >
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#718d4f]/35 bg-[#718d4f]/10 text-[#8ca667]">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#718d4f]/35 bg-[#718d4f]/10 text-[#718d4f]">
             <ShieldCheck
               size={20}
               strokeWidth={1.7}
@@ -68,11 +68,11 @@ export default function MarketingNav({
           </div>
 
           <div className="leading-none">
-            <p className="font-serif text-[17px] font-semibold tracking-[-0.02em] text-[#f4f0e8]">
+            <p className="font-serif text-[17px] font-semibold tracking-[-0.02em] text-[#f5f1e8]">
               Home Tech
             </p>
 
-            <p className="mt-1 font-serif text-[17px] font-semibold tracking-[-0.02em] text-[#f4f0e8]">
+            <p className="mt-1 font-serif text-[17px] font-semibold tracking-[-0.02em] text-[#f5f1e8]">
               Vault
             </p>
           </div>
@@ -126,14 +126,14 @@ export default function MarketingNav({
 
         <div className="hidden items-center gap-3 md:flex">
           {!loading && !isSignedIn ? (
-            <SignInLink className="inline-flex min-h-11 items-center justify-center rounded-xl border border-white/50 px-5 text-sm font-medium text-[#f4f0e8] transition hover:bg-white/10">
+            <SignInLink className="inline-flex min-h-11 items-center justify-center rounded-xl border border-white/50 px-5 text-sm font-medium text-[#f5f1e8] transition hover:bg-white/10">
               Sign In
             </SignInLink>
           ) : null}
 
           <Link
             href={startHref}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[#8ba866]/45 bg-[#617c43] px-5 text-sm font-semibold text-white transition hover:bg-[#718d4f]"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[#718d4f]/45 bg-[#617c43] px-5 text-sm font-semibold text-white transition hover:bg-[#718d4f]"
           >
             {startLabel}
 
@@ -176,7 +176,7 @@ export default function MarketingNav({
       {/* MOBILE MENU */}
 
       {mobileOpen ? (
-        <div className="border-t border-white/10 bg-[#0b1623] px-5 py-5 lg:hidden">
+        <div className="border-t border-white/10 bg-[#183047] px-5 py-5 lg:hidden">
           <nav
             className="mx-auto flex max-w-xl flex-col gap-1"
             aria-label="Primary mobile"
@@ -227,7 +227,7 @@ export default function MarketingNav({
             <div className="mt-3 flex flex-col gap-2 border-t border-white/10 pt-4">
               {!isSignedIn ? (
                 <SignInLink
-                  className="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-white/40 px-4 text-sm font-medium text-[#f4f0e8]"
+                  className="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-white/40 px-4 text-sm font-medium text-[#f5f1e8]"
                   onClick={() =>
                     setMobileOpen(false)
                   }

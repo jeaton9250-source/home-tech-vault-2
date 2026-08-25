@@ -385,8 +385,8 @@ export default function VaultSearchAssistant({
               items-center
               justify-center
               rounded-xl
-              bg-[#0b1623]
-              text-[#a9c38a]
+              bg-[#183047]
+              text-[#9bb27a]
             "
           >
             <BrainCircuit
@@ -486,8 +486,8 @@ export default function VaultSearchAssistant({
               items-center
               justify-center
               rounded-xl
-              bg-[#0b1623]
-              text-[#a9c38a]
+              bg-[#183047]
+              text-[#9bb27a]
             "
           >
             <BrainCircuit
@@ -637,7 +637,7 @@ export default function VaultSearchAssistant({
                     max-w-[85%]
                     rounded-2xl
                     rounded-br-md
-                    bg-[#0b1623]
+                    bg-[#183047]
                     px-4
                     py-2.5
                     text-sm
@@ -850,7 +850,7 @@ export default function VaultSearchAssistant({
                 items-center
                 justify-center
                 rounded-lg
-                bg-[#0b1623]
+                bg-[#183047]
                 text-white
                 transition
                 hover:bg-[#162536]

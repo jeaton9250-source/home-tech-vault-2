@@ -12,9 +12,9 @@ import {
 } from "@/lib/marketing/socialMetadata";
 
 const title =
-  "Home Tech Vault | Home Inventory & Warranty Tracker That Discovers Your Devices";
+  "Home Tech Vault | Your Entire Home. One Organized Vault.";
 const description =
-  "Automatically discover the technology connected to your home, then keep devices, receipts, manuals, documents, and warranties organized in one secure vault.";
+  "Organize your devices, appliances, receipts, warranties, manuals, maintenance records, important documents, and home technology in one secure Home Tech Vault.";
 
 export const metadata: Metadata = {
   title,
@@ -25,11 +25,16 @@ export const metadata: Metadata = {
   keywords: [
     "home inventory",
     "home inventory app",
+    "home organizer",
+    "home document organizer",
     "warranty tracker",
+    "appliance warranty tracker",
+    "home maintenance tracker",
+    "receipt organizer",
+    "manual organizer",
     "device inventory",
     "home technology organizer",
-    "home network discovery",
-    "receipt and manual organizer",
+    "digital home vault",
     "home tech vault",
   ],
   openGraph: {

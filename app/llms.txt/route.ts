@@ -5,7 +5,7 @@ const content = `# Home Tech Vault
 > Home Tech Vault is a home inventory and warranty tracker for the technology in a household.
 
 ## Canonical positioning
-Home Tech Vault helps homeowners discover and organize devices, receipts, manuals, documents, warranties, network information, and maintenance records in one place.
+Home Tech Vault helps homeowners discover and organize devices, receipts, manuals, documents, warranties, Home Wi-Fi information, and maintenance records in one place.
 
 ## Platform support
 - The web application works in a supported browser.

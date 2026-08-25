@@ -18,7 +18,7 @@ export default function HomeZadaComparisonPage() {
       eyebrow="Home Tech Vault vs. HomeZada"
       headline="Focused home technology management or broader home management?"
       summary="Home Tech Vault is intentionally focused on the technology inside a home. HomeZada covers a wider set of homeowner jobs, including inventory, maintenance, projects, and home finances."
-      bestForHomeTechVault="Your priority is organizing devices, warranties, receipts, manuals, network information, and technology maintenance with optional network discovery."
+      bestForHomeTechVault="Your priority is organizing devices, warranties, receipts, manuals, Home Wi-Fi information, and technology maintenance with optional Wi-Fi device discovery."
       bestForCompetitor="You want a broader whole-home platform that includes home projects, general maintenance, property information, and financial management alongside inventory."
       officialSourceUrl="https://www.homezada.com/buyers-sellers/pricing"
       rows={[
@@ -28,7 +28,7 @@ export default function HomeZadaComparisonPage() {
           competitor: "Broader whole-home management",
         },
         {
-          feature: "Automatic network discovery",
+          feature: "Automatic Wi-Fi device discovery",
           homeTechVault: "Available through the optional Mac connector",
           competitor: "Not presented as the main inventory workflow",
           competitorPositive: false,

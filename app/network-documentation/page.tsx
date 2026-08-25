@@ -2,7 +2,12 @@ import SEOLandingPage from "@/components/seo/SEOLandingPage";
 import { createSeoMetadata } from "@/lib/seo";
 import { getSeoLandingPage } from "@/lib/seo/landingPages";
 
-const page = getSeoLandingPage("network-documentation")!;
+const basePage = getSeoLandingPage("network-documentation")!;
+
+const page = {
+  ...basePage,
+  screenshots: [],
+};
 
 export const metadata = createSeoMetadata({
   title: page.metaTitle,

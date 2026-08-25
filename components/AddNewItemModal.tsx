@@ -19,7 +19,7 @@ const items = [
   { href: "/documents", label: "Document", icon: FileText },
   { href: "/warranties", label: "Warranty", icon: Shield },
   { href: "/subscriptions", label: "Subscription", icon: CreditCard },
-  { href: "/network", label: "Network", icon: Wifi },
+  { href: "/network", label: "Home Wi-Fi", icon: Wifi },
   { href: "/security", label: "Password", icon: KeyRound },
   { href: "/notes", label: "Note", icon: StickyNote },
 ];

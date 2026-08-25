@@ -162,7 +162,7 @@ export default function DownloadAuditPdfButton() {
       "Upload receipts and warranty documents for high-value devices.",
       "Add photos to improve your visual inventory.",
       "Keep subscription renewal dates updated.",
-      "Review your network information twice per year.",
+      "Review your Home Wi-Fi information twice per year.",
     ];
 
     recommendations.forEach((item, index) => {

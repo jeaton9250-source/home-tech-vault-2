@@ -848,10 +848,10 @@ export default function HomeTechReadinessCheck() {
 
             {/* PERSONALIZED CTA */}
 
-            <div className="mx-auto mt-12 max-w-4xl overflow-hidden rounded-[30px] bg-[#0f1d2b] p-7 text-[#f4f0e8] shadow-[0_35px_80px_-45px_rgba(0,0,0,.8)] sm:p-9">
+            <div className="mx-auto mt-12 max-w-4xl overflow-hidden rounded-[30px] bg-[#183047] p-7 text-[#f5f1e8] shadow-[0_35px_80px_-45px_rgba(0,0,0,.8)] sm:p-9">
               <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
                 <div>
-                  <div className="flex items-center gap-2 text-[#8ca667]">
+                  <div className="flex items-center gap-2 text-[#718d4f]">
                     <ScanBarcode
                       size={16}
                       aria-hidden

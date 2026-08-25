@@ -42,6 +42,7 @@ const page = {
 
   heroDescription:
     "Keep warranty dates, receipts, serial numbers, manuals, and proof of purchase connected to the appliance or device they belong to — so you are ready when something breaks.",
+  screenshots: [],
 };
 
 export const metadata = createSeoMetadata({

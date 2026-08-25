@@ -275,7 +275,7 @@ export default function SmartImportDemoSection() {
               delay: 0.7,
               ease: [0.22, 1, 0.36, 1],
             }}
-            className="overflow-hidden rounded-[28px] border border-white/15 bg-[#0f1d2b] text-[#f4f0e8] shadow-[0_35px_90px_-40px_rgba(0,0,0,0.8)]"
+            className="overflow-hidden rounded-[28px] border border-white/15 bg-[#183047] text-[#f5f1e8] shadow-[0_35px_90px_-40px_rgba(0,0,0,0.8)]"
           >
             {/* RESULT TOP */}
 
@@ -291,7 +291,7 @@ export default function SmartImportDemoSection() {
                       duration: 1.3,
                       delay: 1.3,
                     }}
-                    className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#718d4f]/30 bg-[#718d4f]/10 text-[#8ca667]"
+                    className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#718d4f]/30 bg-[#718d4f]/10 text-[#718d4f]"
                   >
                     <Sparkles
                       size={17}
@@ -300,7 +300,7 @@ export default function SmartImportDemoSection() {
                   </motion.div>
 
                   <div>
-                    <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-[#8ca667]">
+                    <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-[#718d4f]">
                       Smart Import™
                     </p>
 
@@ -310,7 +310,7 @@ export default function SmartImportDemoSection() {
                   </div>
                 </div>
 
-                <span className="rounded-full border border-[#718d4f]/25 bg-[#718d4f]/10 px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.08em] text-[#8ca667]">
+                <span className="rounded-full border border-[#718d4f]/25 bg-[#718d4f]/10 px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.08em] text-[#718d4f]">
                   Found
                 </span>
               </div>
@@ -331,7 +331,7 @@ export default function SmartImportDemoSection() {
                   delay: 1.15,
                   duration: 0.4,
                 }}
-                className="mt-6 font-serif text-2xl leading-tight text-[#f4f0e8] sm:text-3xl"
+                className="mt-6 font-serif text-2xl leading-tight text-[#f5f1e8] sm:text-3xl"
               >
                 LG 34&quot; UltraWide Monitor
               </motion.h3>
@@ -365,7 +365,7 @@ export default function SmartImportDemoSection() {
                         1.25 +
                         index * 0.12,
                     }}
-                    className="grid grid-cols-[0.7fr_1.3fr] bg-[#101d2b] px-6 py-4 sm:px-8"
+                    className="grid grid-cols-[0.7fr_1.3fr] bg-[#183047] px-6 py-4 sm:px-8"
                   >
                     <span className="text-[10px] font-semibold uppercase tracking-[0.11em] text-white/30">
                       {field.label}
@@ -399,7 +399,7 @@ export default function SmartImportDemoSection() {
                   duration: 0.4,
                   delay: 2,
                 }}
-                className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-[#8ba866]/40 bg-[#617c43] px-5 text-sm font-semibold text-white shadow-[0_16px_35px_-20px_rgba(97,124,67,0.9)] transition hover:bg-[#718d4f]"
+                className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-[#718d4f]/40 bg-[#617c43] px-5 text-sm font-semibold text-white shadow-[0_16px_35px_-20px_rgba(97,124,67,0.9)] transition hover:bg-[#718d4f]"
               >
                 <Check
                   size={16}
@@ -426,7 +426,7 @@ export default function SmartImportDemoSection() {
               >
                 <CheckCircle2
                   size={13}
-                  className="text-[#8ca667]"
+                  className="text-[#718d4f]"
                 />
 
                 <p className="text-[10px] text-white/35">

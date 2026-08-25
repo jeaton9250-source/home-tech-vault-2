@@ -1393,7 +1393,7 @@ function ModernDeviceCard({
         />
 
         {device.category && (
-          <span className="absolute left-4 top-4 rounded-full border border-white/20 bg-[#0b1623]/85 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#f4f0e8] shadow-sm backdrop-blur">
+          <span className="absolute left-4 top-4 rounded-full border border-white/20 bg-[#183047]/85 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#f5f1e8] shadow-sm backdrop-blur">
             {device.category}
           </span>
         )}

@@ -1437,31 +1437,31 @@ const {
       <PageShell>
         <div className="mx-auto w-full max-w-[1180px] pb-14">
           {/* FAMILY HERO */}
-          <section className="relative overflow-hidden rounded-[32px] border border-white/10 bg-[#0b1623] px-6 py-10 text-[#f4f0e8] shadow-[0_28px_70px_-44px_rgba(0,0,0,0.75)] md:px-10 md:py-12 lg:px-12">
+          <section className="relative overflow-hidden rounded-[32px] border border-white/10 bg-[#183047] px-6 py-10 text-[#f5f1e8] shadow-[0_28px_70px_-44px_rgba(0,0,0,0.75)] md:px-10 md:py-12 lg:px-12">
             <div
               className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-[#718d4f]/15 blur-[90px]"
               aria-hidden
             />
 
             <div
-              className="pointer-events-none absolute -bottom-36 left-1/4 h-72 w-72 rounded-full bg-[#8ca667]/8 blur-[100px]"
+              className="pointer-events-none absolute -bottom-36 left-1/4 h-72 w-72 rounded-full bg-[#718d4f]/8 blur-[100px]"
               aria-hidden
             />
 
             <div className="relative max-w-3xl">
-              <div className="inline-flex items-center gap-2 rounded-full border border-[#8ca667]/20 bg-[#718d4f]/10 px-3.5 py-2">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[#718d4f]/20 bg-[#718d4f]/10 px-3.5 py-2">
                 <Crown
                   size={13}
-                  className="text-[#a9c38a]"
+                  className="text-[#9bb27a]"
                   aria-hidden
                 />
 
-                <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a9c38a]">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#9bb27a]">
                   Family Plan
                 </span>
               </div>
 
-              <h1 className="mt-7 max-w-3xl font-serif text-4xl font-medium leading-[1.04] tracking-[-0.05em] text-[#f4f0e8] md:text-5xl lg:text-[3.5rem]">
+              <h1 className="mt-7 max-w-3xl font-serif text-4xl font-medium leading-[1.04] tracking-[-0.05em] text-[#f5f1e8] md:text-5xl lg:text-[3.5rem]">
                 Your home&apos;s information
                 shouldn&apos;t live with just
                 one person.
@@ -1532,7 +1532,7 @@ const {
                   <FamilyBenefit
                     icon={Home}
                     title="Keep the whole home in sync"
-                    description="Share devices, documents, warranties, maintenance, subscriptions, reports, and network information."
+                    description="Share devices, documents, warranties, maintenance, subscriptions, reports, and home Wi-Fi information."
                   />
                 </div>
 
@@ -1574,7 +1574,7 @@ const {
                     </h3>
                   </div>
 
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#0b1623] text-[#a9c38a]">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#183047] text-[#9bb27a]">
                     <Users
                       size={20}
                       aria-hidden
@@ -1635,15 +1635,15 @@ const {
                 </div>
 
                 {/* SHARED CONTENT PREVIEW */}
-                <div className="mt-4 rounded-[22px] border border-[#17212a]/8 bg-[#0b1623] p-5 text-white">
+                <div className="mt-4 rounded-[22px] border border-[#17212a]/8 bg-[#183047] p-5 text-white">
                   <div className="flex items-center gap-2">
                     <Sparkles
                       size={15}
-                      className="text-[#a9c38a]"
+                      className="text-[#9bb27a]"
                       aria-hidden
                     />
 
-                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#a9c38a]">
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#9bb27a]">
                       Shared automatically
                     </p>
                   </div>
@@ -1655,7 +1655,7 @@ const {
                       "Warranties",
                       "Maintenance",
                       "Subscriptions",
-                      "Network",
+                      "Home Wi-Fi",
                     ].map((item) => (
                       <div
                         key={item}
@@ -1663,7 +1663,7 @@ const {
                       >
                         <CheckCircle2
                           size={14}
-                          className="shrink-0 text-[#8ca667]"
+                          className="shrink-0 text-[#718d4f]"
                           aria-hidden
                         />
 
@@ -1778,7 +1778,7 @@ const {
           <div
             className={
               active
-                ? "flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#0b1623] text-xs font-semibold text-white"
+                ? "flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#183047] text-xs font-semibold text-white"
                 : "flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#17212a]/8 bg-white text-xs font-semibold text-[#68737b]"
             }
           >
@@ -1844,14 +1844,14 @@ const {
 
   return (
     <PageShell>
-      <section className="relative overflow-hidden rounded-[30px] border border-white/10 bg-[#0b1623] px-6 py-9 text-[#f4f0e8] shadow-[0_28px_70px_-44px_rgba(0,0,0,0.75)] md:px-10 md:py-11">
+      <section className="relative overflow-hidden rounded-[30px] border border-white/10 bg-[#183047] px-6 py-9 text-[#f5f1e8] shadow-[0_28px_70px_-44px_rgba(0,0,0,0.75)] md:px-10 md:py-11">
         <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8ca667]">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#718d4f]">
               Household Access
             </p>
 
-            <h1 className="mt-3 font-serif text-4xl font-medium tracking-[-0.045em] text-[#f4f0e8] md:text-5xl">
+            <h1 className="mt-3 font-serif text-4xl font-medium tracking-[-0.045em] text-[#f5f1e8] md:text-5xl">
               Family Sharing.
             </h1>
 
@@ -1865,7 +1865,7 @@ const {
               !isDemo &&
               canUseFamilySharing && (
                 <div className="mt-5 flex flex-wrap items-center gap-3">
-                  <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1.5 text-xs font-semibold text-[#f4f0e8]">
+                  <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1.5 text-xs font-semibold text-[#f5f1e8]">
                     Plan:{" "}
                     {isPlatformAdmin
                       ? "Master Account"
@@ -2016,14 +2016,14 @@ const {
           </section>
 
           <PageCard className="overflow-hidden p-0">
-            <div className="relative overflow-hidden bg-[#0b1623] p-7 text-[#f4f0e8] md:p-9">
+            <div className="relative overflow-hidden bg-[#183047] p-7 text-[#f5f1e8] md:p-9">
               <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8ca667]">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#718d4f]">
                     Your Household
                   </p>
 
-                  <h2 className="mt-2 font-serif text-3xl font-medium tracking-[-0.04em] text-[#f4f0e8]">
+                  <h2 className="mt-2 font-serif text-3xl font-medium tracking-[-0.04em] text-[#f5f1e8]">
                     {household.name}
                   </h2>
 
@@ -2040,7 +2040,7 @@ const {
                     Household owner
                   </p>
 
-                  <p className="mt-1 font-serif font-medium text-[#f4f0e8]">
+                  <p className="mt-1 font-serif font-medium text-[#f5f1e8]">
                     {ownerMember?.fullName ||
                       "Owner"}
                   </p>
@@ -2053,7 +2053,7 @@ const {
             <PageCard className="border-[#182533]/10 bg-[#f8f5ef] p-7 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] md:p-8">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8ca667]">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#718d4f]">
                     Members
                   </p>
 
@@ -2140,7 +2140,7 @@ const {
                 </div>
 
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8ca667]">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#718d4f]">
                     Invitations
                   </p>
 
@@ -2210,7 +2210,7 @@ const {
           </section>
 
           <PageCard className="border-[#182533]/10 bg-[#f8f5ef] p-7 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] md:p-8">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8ca667]">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#718d4f]">
               Role Permissions
             </p>
 
@@ -2291,16 +2291,16 @@ function CreateHouseholdCard({
   return (
     <PageCard className="overflow-hidden p-0">
       <div className="grid lg:grid-cols-[0.8fr_1.2fr]">
-        <div className="bg-[#0b1623] p-8 text-[#f4f0e8] md:p-10">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-[#718d4f]/25 bg-[#718d4f]/10 text-[#8ca667]">
+        <div className="bg-[#183047] p-8 text-[#f5f1e8] md:p-10">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-[#718d4f]/25 bg-[#718d4f]/10 text-[#718d4f]">
             <Home size={26} />
           </div>
 
-          <p className="mt-6 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8ca667]">
+          <p className="mt-6 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#718d4f]">
             Get Started
           </p>
 
-          <h2 className="mt-3 font-serif text-3xl font-medium tracking-[-0.04em] text-[#f4f0e8]">
+          <h2 className="mt-3 font-serif text-3xl font-medium tracking-[-0.04em] text-[#f5f1e8]">
             Create your
             household.
           </h2>
@@ -2620,7 +2620,7 @@ function InviteModal({
       <div className="w-full max-w-lg rounded-[28px] border border-[#182533]/10 bg-[#f8f5ef] shadow-2xl">
         <div className="flex items-start justify-between gap-4 border-b border-[#182533]/10 p-6">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8ca667]">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#718d4f]">
               Family Sharing
             </p>
 

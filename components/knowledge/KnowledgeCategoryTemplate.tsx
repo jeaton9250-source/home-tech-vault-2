@@ -65,15 +65,15 @@ export default function KnowledgeCategoryTemplate({
         data={jsonLd}
       />
 
-      <header className="border-b border-white/10 bg-[#0b1623] px-6 py-14 text-[#f4f0e8] md:px-8 md:py-18">
+      <header className="border-b border-white/10 bg-[#183047] px-6 py-14 text-[#f5f1e8] md:px-8 md:py-18">
         <div className="mx-auto max-w-6xl">
           <Breadcrumb items={breadcrumbs} />
 
-          <p className="mt-7 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8ca667]">
+          <p className="mt-7 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#718d4f]">
             Knowledge Center · {category.name}
           </p>
 
-          <h1 className="mt-4 max-w-4xl font-serif text-4xl font-medium tracking-[-0.045em] text-[#f4f0e8] md:text-6xl md:leading-[1.04]">
+          <h1 className="mt-4 max-w-4xl font-serif text-4xl font-medium tracking-[-0.045em] text-[#f5f1e8] md:text-6xl md:leading-[1.04]">
             {category.name} guides
           </h1>
 

@@ -22,7 +22,7 @@ const navItems = [
   "Documents",
   "Warranties",
   "Maintenance",
-  "Network",
+  "Home Wi-Fi",
 ] as const;
 
 const devices = [
@@ -250,7 +250,7 @@ function DashboardMockup() {
             { label: "Devices", value: "28" },
             { label: "Documents", value: "46" },
             { label: "Warranties", value: "12" },
-            { label: "Network", value: "9" },
+            { label: "Home Wi-Fi", value: "9" },
           ].map((stat) => (
             <div
               key={stat.label}

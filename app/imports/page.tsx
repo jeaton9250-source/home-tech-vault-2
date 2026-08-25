@@ -502,7 +502,7 @@ export default function ImportsPage() {
 
         {/* PERSONAL IMPORT EMAIL */}
 
-        <section className="relative mt-8 overflow-hidden rounded-[30px] border border-white/10 bg-[#0b1623] text-[#f4f0e8] shadow-[0_30px_70px_-44px_rgba(0,0,0,0.7)]">
+        <section className="relative mt-8 overflow-hidden rounded-[30px] border border-white/10 bg-[#183047] text-[#f5f1e8] shadow-[0_30px_70px_-44px_rgba(0,0,0,0.7)]">
           <div className="p-5 sm:p-7">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex min-w-0 items-start gap-4">
@@ -531,7 +531,7 @@ export default function ImportsPage() {
                       personal address...
                     </div>
                   ) : importEmail ? (
-                    <p className="mt-2 break-all font-serif text-lg font-medium tracking-[-0.02em] text-[#f4f0e8] sm:text-xl">
+                    <p className="mt-2 break-all font-serif text-lg font-medium tracking-[-0.02em] text-[#f5f1e8] sm:text-xl">
                       {importEmail}
                     </p>
                   ) : (
@@ -597,7 +597,7 @@ export default function ImportsPage() {
 
             <div className="mt-5 rounded-2xl border border-[#718d4f]/15 bg-[#718d4f]/8 px-4 py-3">
               <p className="text-xs leading-5 text-[#aeb8c1]">
-                <span className="font-semibold text-[#f4f0e8]">
+                <span className="font-semibold text-[#f5f1e8]">
                   Tip:
                 </span>{" "}
                 Save this address as
@@ -740,7 +740,7 @@ function ImportStep({
       </div>
 
       <div>
-        <p className="text-xs font-semibold text-[#f4f0e8]">
+        <p className="text-xs font-semibold text-[#f5f1e8]">
           {title}
         </p>
 
@@ -1127,7 +1127,7 @@ function MiniBenefit({
       </div>
 
       <div>
-        <p className="text-xs font-semibold text-[#f4f0e8]">
+        <p className="text-xs font-semibold text-[#f5f1e8]">
           {title}
         </p>
 

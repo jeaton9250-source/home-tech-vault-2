@@ -289,10 +289,10 @@ export default function HomeTechHealthCheck() {
 
   if (!started) {
     return (
-      <div className="overflow-hidden rounded-[30px] border border-white/10 bg-[#0e1b29] shadow-[0_35px_90px_-50px_rgba(0,0,0,0.75)]">
+      <div className="overflow-hidden rounded-[30px] border border-white/10 bg-[#183047] shadow-[0_35px_90px_-50px_rgba(0,0,0,0.75)]">
         <div className="grid gap-8 p-7 md:p-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:p-12">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#8ca667]/30 bg-[#8ca667]/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#b9c9a4]">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#718d4f]/30 bg-[#718d4f]/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#b9c9a4]">
               <ClipboardCheck
                 size={14}
                 aria-hidden
@@ -300,7 +300,7 @@ export default function HomeTechHealthCheck() {
               Free Home Tech Health Check
             </div>
 
-            <h2 className="mt-5 max-w-2xl font-serif text-4xl font-medium leading-[1.05] tracking-[-0.035em] text-[#f4f0e8] md:text-5xl">
+            <h2 className="mt-5 max-w-2xl font-serif text-4xl font-medium leading-[1.05] tracking-[-0.035em] text-[#f5f1e8] md:text-5xl">
               How healthy is your home technology?
             </h2>
 
@@ -322,7 +322,7 @@ export default function HomeTechHealthCheck() {
                 >
                   <CheckCircle2
                     size={16}
-                    className="text-[#8ca667]"
+                    className="text-[#718d4f]"
                     aria-hidden
                   />
                   {item}
@@ -335,7 +335,7 @@ export default function HomeTechHealthCheck() {
               onClick={() =>
                 setStarted(true)
               }
-              className="mt-8 inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#718d4f] px-6 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#7f995b] focus:outline-none focus:ring-2 focus:ring-[#b9c9a4] focus:ring-offset-2 focus:ring-offset-[#0e1b29]"
+              className="mt-8 inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#718d4f] px-6 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#7f995b] focus:outline-none focus:ring-2 focus:ring-[#b9c9a4] focus:ring-offset-2 focus:ring-offset-[#183047]"
             >
               Check My Home Tech Health
               <ArrowRight
@@ -346,7 +346,7 @@ export default function HomeTechHealthCheck() {
           </div>
 
           <div className="rounded-[26px] border border-white/10 bg-white/[0.045] p-6 md:p-8">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8ca667]">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#718d4f]">
               Your report includes
             </p>
 
@@ -383,7 +383,7 @@ export default function HomeTechHealthCheck() {
                     key={title}
                     className="flex gap-4 rounded-2xl border border-white/8 bg-[#132536]/70 p-4"
                   >
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#8ca667]/12 text-[#a9bc90]">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#718d4f]/12 text-[#a9bc90]">
                       <Icon
                         size={19}
                         aria-hidden
@@ -391,7 +391,7 @@ export default function HomeTechHealthCheck() {
                     </div>
 
                     <div>
-                      <p className="font-medium text-[#f4f0e8]">
+                      <p className="font-medium text-[#f5f1e8]">
                         {title}
                       </p>
                       <p className="mt-1 text-sm leading-6 text-[#aba9a4]">
@@ -410,15 +410,15 @@ export default function HomeTechHealthCheck() {
 
   if (completed) {
     return (
-      <div className="overflow-hidden rounded-[30px] border border-white/10 bg-[#0e1b29] shadow-[0_35px_90px_-50px_rgba(0,0,0,0.75)]">
+      <div className="overflow-hidden rounded-[30px] border border-white/10 bg-[#183047] shadow-[0_35px_90px_-50px_rgba(0,0,0,0.75)]">
         <div className="p-7 md:p-10 lg:p-12">
           <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-2xl">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8ca667]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#718d4f]">
                 Your Home Tech Health Score
               </p>
 
-              <h2 className="mt-4 font-serif text-4xl font-medium tracking-[-0.035em] text-[#f4f0e8] md:text-5xl">
+              <h2 className="mt-4 font-serif text-4xl font-medium tracking-[-0.035em] text-[#f5f1e8] md:text-5xl">
                 {result.status}
               </h2>
 
@@ -446,7 +446,7 @@ export default function HomeTechHealthCheck() {
                   </p>
 
                   <div className="mt-4 flex items-end justify-between gap-3">
-                    <p className="font-serif text-3xl font-medium text-[#f4f0e8]">
+                    <p className="font-serif text-3xl font-medium text-[#f5f1e8]">
                       {category.score}
                       <span className="text-base text-[#8a928f]">
                         /100
@@ -460,7 +460,7 @@ export default function HomeTechHealthCheck() {
 
                   <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-white/8">
                     <div
-                      className="h-full rounded-full bg-[#8ca667]"
+                      className="h-full rounded-full bg-[#718d4f]"
                       style={{
                         width: `${category.score}%`,
                       }}
@@ -473,7 +473,7 @@ export default function HomeTechHealthCheck() {
 
           <div className="mt-8 grid gap-6 lg:grid-cols-[1.08fr_0.92fr]">
             <div className="rounded-[24px] border border-white/10 bg-[#132536] p-6 md:p-7">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#8ca667]">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#718d4f]">
                 Your next 3 steps
               </p>
 
@@ -489,7 +489,7 @@ export default function HomeTechHealthCheck() {
                       }
                       className="flex gap-4"
                     >
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#8ca667]/30 bg-[#8ca667]/10 text-sm font-semibold text-[#b9c9a4]">
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#718d4f]/30 bg-[#718d4f]/10 text-sm font-semibold text-[#b9c9a4]">
                         {index + 1}
                       </span>
 
@@ -504,12 +504,12 @@ export default function HomeTechHealthCheck() {
               </ol>
             </div>
 
-            <div className="rounded-[24px] border border-[#8ca667]/25 bg-[#8ca667]/10 p-6 md:p-7">
+            <div className="rounded-[24px] border border-[#718d4f]/25 bg-[#718d4f]/10 p-6 md:p-7">
               <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#b9c9a4]">
                 Turn your score into action
               </p>
 
-              <h3 className="mt-3 font-serif text-2xl font-medium tracking-[-0.02em] text-[#f4f0e8]">
+              <h3 className="mt-3 font-serif text-2xl font-medium tracking-[-0.02em] text-[#f5f1e8]">
                 Build the home record your health check is missing.
               </h3>
 
@@ -534,7 +534,7 @@ export default function HomeTechHealthCheck() {
               <button
                 type="button"
                 onClick={restart}
-                className="mt-4 flex items-center gap-2 text-sm font-medium text-[#b9b6af] transition hover:text-[#f4f0e8]"
+                className="mt-4 flex items-center gap-2 text-sm font-medium text-[#b9b6af] transition hover:text-[#f5f1e8]"
               >
                 <RotateCcw
                   size={15}
@@ -557,11 +557,11 @@ export default function HomeTechHealthCheck() {
     answers[question.id];
 
   return (
-    <div className="overflow-hidden rounded-[30px] border border-white/10 bg-[#0e1b29] shadow-[0_35px_90px_-50px_rgba(0,0,0,0.75)]">
+    <div className="overflow-hidden rounded-[30px] border border-white/10 bg-[#183047] shadow-[0_35px_90px_-50px_rgba(0,0,0,0.75)]">
       <div className="p-7 md:p-10 lg:p-12">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#8ca667]">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#718d4f]">
               Home Tech Health Check
             </p>
             <p className="mt-1 text-sm text-[#aaa7a0]">
@@ -587,7 +587,7 @@ export default function HomeTechHealthCheck() {
           aria-label="Health Check progress"
         >
           <div
-            className="h-full rounded-full bg-[#8ca667] transition-[width] duration-300"
+            className="h-full rounded-full bg-[#718d4f] transition-[width] duration-300"
             style={{
               width: `${progress}%`,
             }}
@@ -595,7 +595,7 @@ export default function HomeTechHealthCheck() {
         </div>
 
         <div className="mx-auto max-w-3xl py-10 md:py-14">
-          <h2 className="font-serif text-3xl font-medium leading-tight tracking-[-0.03em] text-[#f4f0e8] md:text-4xl">
+          <h2 className="font-serif text-3xl font-medium leading-tight tracking-[-0.03em] text-[#f5f1e8] md:text-4xl">
             {question.question}
           </h2>
 
@@ -633,8 +633,8 @@ export default function HomeTechHealthCheck() {
                     }
                     className={
                       selected
-                        ? "min-h-14 rounded-2xl border border-[#8ca667] bg-[#8ca667]/15 px-5 py-4 text-base font-semibold text-[#f4f0e8] outline-none transition focus:ring-2 focus:ring-[#b9c9a4]"
-                        : "min-h-14 rounded-2xl border border-white/10 bg-[#132536] px-5 py-4 text-base font-semibold text-[#e8e3da] outline-none transition hover:border-[#8ca667]/50 hover:bg-[#192b3e] focus:ring-2 focus:ring-[#b9c9a4]"
+                        ? "min-h-14 rounded-2xl border border-[#718d4f] bg-[#718d4f]/15 px-5 py-4 text-base font-semibold text-[#f5f1e8] outline-none transition focus:ring-2 focus:ring-[#b9c9a4]"
+                        : "min-h-14 rounded-2xl border border-white/10 bg-[#132536] px-5 py-4 text-base font-semibold text-[#e8e3da] outline-none transition hover:border-[#718d4f]/50 hover:bg-[#192b3e] focus:ring-2 focus:ring-[#b9c9a4]"
                     }
                   >
                     {option.label}
@@ -659,7 +659,7 @@ export default function HomeTechHealthCheck() {
                     )
                 )
               }
-              className="inline-flex items-center gap-2 text-sm font-medium text-[#aaa7a0] transition hover:text-[#f4f0e8] disabled:cursor-not-allowed disabled:opacity-30"
+              className="inline-flex items-center gap-2 text-sm font-medium text-[#aaa7a0] transition hover:text-[#f5f1e8] disabled:cursor-not-allowed disabled:opacity-30"
             >
               <ArrowLeft
                 size={16}

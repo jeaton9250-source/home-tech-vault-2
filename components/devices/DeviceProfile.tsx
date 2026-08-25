@@ -684,7 +684,7 @@ export default function DeviceProfile({
               <Wifi size={20} />
             </div>
             <div>
-              <p className="text-overline text-section-technology">Network</p>
+              <p className="text-overline text-section-technology">Home Wi-Fi</p>
               <h2 className="text-2xl font-semibold tracking-[-0.03em] text-text-primary">
                 Network status
               </h2>
@@ -766,7 +766,7 @@ export default function DeviceProfile({
               <Wifi size={20} />
             </div>
             <div>
-              <p className="text-overline text-section-technology">Network</p>
+              <p className="text-overline text-section-technology">Home Wi-Fi</p>
               <h2 className="text-2xl font-semibold tracking-[-0.03em] text-text-primary">
                 Network status
               </h2>

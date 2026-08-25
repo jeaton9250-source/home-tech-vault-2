@@ -68,7 +68,7 @@ export default function AdminMobileNav() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 border-b border-white/8 bg-[#0b1623]/95 text-white backdrop-blur-xl lg:hidden">
+      <header className="sticky top-0 z-50 border-b border-white/8 bg-[#183047]/95 text-white backdrop-blur-xl lg:hidden">
         <div className="flex h-16 items-center gap-3 px-4 sm:px-6">
           <Link
             href="/admin"
@@ -112,7 +112,7 @@ export default function AdminMobileNav() {
             <motion.nav
               id="admin-mobile-nav-panel"
               aria-label="Admin"
-              className="fixed inset-y-0 right-0 z-[70] flex w-[min(100vw-2rem,360px)] flex-col border-l border-white/10 bg-[#0b1623] text-white shadow-2xl lg:hidden"
+              className="fixed inset-y-0 right-0 z-[70] flex w-[min(100vw-2rem,360px)] flex-col border-l border-white/10 bg-[#183047] text-white shadow-2xl lg:hidden"
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}

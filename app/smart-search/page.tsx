@@ -62,7 +62,7 @@ export default async function SmartSearchPage({
         </h1>
         <p className="max-w-2xl text-sm leading-6 text-text-secondary">
           Your full search workspace for devices, documents,
-          warranties, maintenance, and network details.
+          warranties, maintenance, and Home Wi-Fi details.
         </p>
       </header>
 

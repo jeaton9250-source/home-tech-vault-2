@@ -462,11 +462,11 @@ export default async function AdminDashboardPage() {
           />
         }
       >
-        <div className="overflow-hidden rounded-[22px] border border-[#152638] bg-[#0b1623] shadow-[0_18px_50px_-32px_rgba(11,22,35,0.75)]">
+        <div className="overflow-hidden rounded-[22px] border border-[#152638] bg-[#183047] shadow-[0_18px_50px_-32px_rgba(11,22,35,0.75)]">
           <div className="border-b border-white/8 px-5 py-4 md:px-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-xs font-semibold text-[#f4f0e8]">
+                <p className="text-xs font-semibold text-[#f5f1e8]">
                   Acquisition snapshot
                 </p>
 

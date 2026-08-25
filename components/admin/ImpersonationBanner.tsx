@@ -117,7 +117,7 @@ export default function ImpersonationBanner() {
     "this user";
 
   return (
-    <div className="fixed bottom-4 left-4 z-[1000] w-[calc(100%-2rem)] max-w-[430px] overflow-hidden rounded-[18px] border border-[#8ca667]/35 bg-[#0b1623] text-[#f4f0e8] shadow-[0_18px_55px_-18px_rgba(11,22,35,0.75)] sm:bottom-6 sm:left-6">
+    <div className="fixed bottom-4 left-4 z-[1000] w-[calc(100%-2rem)] max-w-[430px] overflow-hidden rounded-[18px] border border-[#718d4f]/35 bg-[#183047] text-[#f5f1e8] shadow-[0_18px_55px_-18px_rgba(11,22,35,0.75)] sm:bottom-6 sm:left-6">
       <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-center gap-3">
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#617c43]">
@@ -148,7 +148,7 @@ export default function ImpersonationBanner() {
             void exitImpersonation();
           }}
           disabled={exiting}
-          className="inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/10 px-3 text-sm font-semibold text-[#f4f0e8] transition hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-60 sm:self-center"
+          className="inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/10 px-3 text-sm font-semibold text-[#f5f1e8] transition hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-60 sm:self-center"
         >
           {exiting ? (
             <Loader2

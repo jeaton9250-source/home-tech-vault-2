@@ -206,7 +206,7 @@ export default function NetworkHeader({
           className="inline-flex items-center gap-2 font-medium text-[#68737b] transition hover:text-[#17212a]"
         >
           <Settings size={15} />
-          Network Details
+          Home Wi-Fi
         </Link>
       </div>
     </div>

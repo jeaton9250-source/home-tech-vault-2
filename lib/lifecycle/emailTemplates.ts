@@ -101,13 +101,13 @@ function layout(input: {
             <tr>
               <td
                 style="
-                  background:#0b1623;
+                  background:#183047;
                   padding:28px 32px;
                 "
               >
                 <div
                   style="
-                    color:#8ca667;
+                    color:#718d4f;
                     font-size:11px;
                     font-weight:700;
                     letter-spacing:.14em;
@@ -120,7 +120,7 @@ function layout(input: {
                 <div
                   style="
                     margin-top:8px;
-                    color:#f4f0e8;
+                    color:#f5f1e8;
                     font-size:17px;
                     line-height:24px;
                   "

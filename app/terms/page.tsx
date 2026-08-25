@@ -21,7 +21,7 @@ const sections = [
   },
   {
     title: "The service",
-    body: "Home Tech Vault helps households organize technology, documents, warranties, maintenance, network information, and related home records. Available features depend on your subscription plan.",
+    body: "Home Tech Vault helps households organize technology, documents, warranties, maintenance, Home Wi-Fi information, and related home records. Available features depend on your subscription plan.",
   },
   {
     title: "Accounts",

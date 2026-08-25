@@ -151,7 +151,7 @@ const DEVICE_TABS: {
   { id: "documents", label: "Documents" },
   { id: "maintenance", label: "Maintenance" },
   { id: "warranty", label: "Warranty" },
-  { id: "network", label: "Network" },
+  { id: "network", label: "Home Wi-Fi" },
   { id: "timeline", label: "Timeline" },
 ];
 
@@ -1322,7 +1322,7 @@ export default function DevicePage() {
         </Link>
 
         {!canEdit && !isGuestDemo ? (
-          <ViewerBanner description="You can view this device, its photos, documents, network details, and history. Viewer access cannot edit, upload, or delete anything." />
+          <ViewerBanner description="You can view this device, its photos, documents, Home Wi-Fi details, and history. Viewer access cannot edit, upload, or delete anything." />
         ) : null}
 
         <PageCard className="p-6 md:p-8">
@@ -1802,7 +1802,7 @@ export default function DevicePage() {
                 <Wifi size={20} />
               </div>
               <div>
-                <p className="text-overline text-section-technology">Network</p>
+                <p className="text-overline text-section-technology">Home Wi-Fi</p>
                 <h2 className="text-2xl font-semibold tracking-[-0.03em] text-text-primary">
                   Network details
                 </h2>
@@ -1885,7 +1885,7 @@ export default function DevicePage() {
               <div className="mt-6">
                 <EmptyState
                   icon={Wifi}
-                  title="No network details yet"
+                  title="No Home Wi-Fi details yet"
                   description="Network details will appear after this device is detected by a Home Tech Vault connector."
                   actionLabel="Match Network Device"
                   actionHref="/network/discovery"

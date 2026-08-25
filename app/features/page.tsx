@@ -3,9 +3,9 @@ import { createPageMetadata } from "@/lib/marketing/metadata";
 import { MARKETING_ROUTES } from "@/lib/marketing/routes";
 
 export const metadata = createPageMetadata({
-  title: "Features — Technology, Vault, Network & Family",
+  title: "Features — Technology, Vault, Home Wi-Fi & Family",
   description:
-    "Explore the four pillars of Home Tech Vault: device inventory, digital document vault, network center, and household sharing.",
+    "Explore Home Tech Vault features for home inventory, documents, warranties, Home Wi-Fi, maintenance, and household sharing.",
   path: MARKETING_ROUTES.features,
   keywords: [
     "home technology inventory",
@@ -15,5 +15,7 @@ export const metadata = createPageMetadata({
 });
 
 export default function FeaturesPage() {
-  return <FeaturesPageContent />;
+  return (
+    <FeaturesPageContent />
+  );
 }

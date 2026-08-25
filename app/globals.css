@@ -7,55 +7,55 @@
 
 @theme inline {
   /* Surfaces — stone & ivory */
-  --color-surface-base: #faf9f7;
-  --color-surface-card: #fdfcfa;
-  --color-surface-sunken: #f3f1ec;
-  --color-surface-hover: #f7f5f0;
+  --color-surface-base: #f5f1e8;
+  --color-surface-card: #fffdf8;
+  --color-surface-sunken: #e7dfd0;
+  --color-surface-hover: #eee8dc;
 
   /* Typography — charcoal warmth */
-  --color-text-primary: #1c1917;
-  --color-text-secondary: #44403c;
-  --color-text-muted: #78716c;
-  --color-text-tertiary: #a8a29e;
+  --color-text-primary: #17212a;
+  --color-text-secondary: #59625d;
+  --color-text-muted: #68716c;
+  --color-text-tertiary: #8e9690;
 
   /* Borders — architectural hairlines */
-  --color-border-subtle: #e7e2da;
-  --color-border-strong: #d6d0c4;
+  --color-border-subtle: #ded7ca;
+  --color-border-strong: #c9c0b0;
 
   /* Charcoal — primary actions */
-  --color-charcoal: #111827;
-  --color-charcoal-hover: #1f2937;
-  --color-charcoal-soft: #374151;
+  --color-charcoal: #183047;
+  --color-charcoal-hover: #223e58;
+  --color-charcoal-soft: #365066;
 
   /* Interaction — links, focus, progress, selected (never primary buttons) */
-  --color-accent: #4a6fa5;
-  --color-accent-hover: #3d5d8c;
-  --color-accent-soft: #e8eef4;
+  --color-accent: #617c43;
+  --color-accent-hover: #718d4f;
+  --color-accent-soft: #edf2e7;
 
-  --color-interaction: #4a6fa5;
-  --color-interaction-hover: #3d5d8c;
-  --color-interaction-soft: #e8eef4;
+  --color-interaction: #617c43;
+  --color-interaction-hover: #718d4f;
+  --color-interaction-soft: #edf2e7;
 
   /* Premium — royal plum */
-  --color-premium: #4a3561;
-  --color-premium-hover: #3d2d52;
-  --color-premium-soft: #f3eef8;
+  --color-premium: #40502f;
+  --color-premium-hover: #334126;
+  --color-premium-soft: #edf1e8;
 
   /* Home Health — signature emerald */
-  --color-home-health: #1f5c45;
-  --color-home-health-hover: #184a38;
-  --color-home-health-soft: #ecf6f0;
-  --color-home-health-muted: #c5ddd3;
+  --color-home-health: #617c43;
+  --color-home-health-hover: #526b38;
+  --color-home-health-soft: #edf2e7;
+  --color-home-health-muted: #cbd8bb;
 
   /* Section accents */
-  --color-section-technology: #2c3e5c;
-  --color-section-technology-soft: #eef1f6;
-  --color-section-vault: #3d3566;
-  --color-section-vault-soft: #f0eef8;
-  --color-section-network: #1f4d52;
-  --color-section-network-soft: #ecf5f4;
-  --color-section-insights: #4a3561;
-  --color-section-insights-soft: #f3eef8;
+  --color-section-technology: #183047;
+  --color-section-technology-soft: #e9eef1;
+  --color-section-vault: #617c43;
+  --color-section-vault-soft: #edf2e7;
+  --color-section-network: #40502f;
+  --color-section-network-soft: #edf1e8;
+  --color-section-insights: #617c43;
+  --color-section-insights-soft: #edf2e7;
 
   /* Status */
   --color-success: #1f5c45;
@@ -645,4 +645,8 @@ textarea::placeholder {
     radial-gradient(at 85% 20%, rgba(243, 238, 248, 0.75) 0px, transparent 50%),
     radial-gradient(at 50% 80%, rgba(238, 241, 246, 0.7) 0px, transparent 50%);
 }
+
+
+
+
 

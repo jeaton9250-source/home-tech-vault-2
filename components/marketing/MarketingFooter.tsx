@@ -14,11 +14,11 @@ import {
 
 export default function MarketingFooter() {
   return (
-    <footer className="border-t border-white/10 bg-[#0b1623] text-[#f4f0e8]">
+    <footer className="border-t border-white/10 bg-[#183047] text-[#f5f1e8]">
       <div className="mx-auto max-w-6xl px-8 py-16 md:px-10 md:py-20">
         <div className="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between lg:gap-16">
           <div className="max-w-sm lg:max-w-md">
-            <div className="[&_svg]:text-[#8ca667] [&_span]:text-[#f4f0e8] [&_p]:text-[#f4f0e8]">
+            <div className="[&_svg]:text-[#718d4f] [&_span]:text-[#f5f1e8] [&_p]:text-[#f5f1e8]">
               <Logo />
             </div>
 
@@ -75,7 +75,7 @@ function FooterColumn({
     <nav aria-labelledby={headingId}>
       <p
         id={headingId}
-        className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#8ca667]"
+        className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#718d4f]"
       >
         {title}
       </p>
@@ -85,7 +85,7 @@ function FooterColumn({
           <li key={`${link.href}-${link.label}`}>
             <Link
               href={link.href}
-              className="text-sm leading-6 text-[#c7cfd5] transition-colors duration-200 hover:text-[#f4f0e8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8ca667]"
+              className="text-sm leading-6 text-[#c7cfd5] transition-colors duration-200 hover:text-[#f5f1e8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#718d4f]"
             >
               {link.label}
             </Link>

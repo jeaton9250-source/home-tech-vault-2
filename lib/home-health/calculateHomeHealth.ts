@@ -462,7 +462,7 @@ function buildCategoryCards(
     },
     {
       key: "network",
-      title: "Network",
+      title: "Home Wi-Fi",
       status: networkStatus,
       progress: input.networkConfigured
         ? 100

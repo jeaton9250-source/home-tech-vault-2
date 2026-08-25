@@ -1,5 +1,7 @@
 "use client";
 
+import PublicMarketingShell from "@/components/landing/public/PublicMarketingShell";
+
 import {
   useEffect,
   useState,
@@ -28,7 +30,7 @@ import { SUPPORT_CATEGORIES } from "@/lib/support/categories";
 import { MARKETING_ROUTES } from "@/lib/marketing/routes";
 import { SUPPORT_EMAIL } from "@/lib/marketing/trust";
 
-import MarketingLayout, {
+import {
   MarketingContent,
   MarketingPageHero,
 } from "@/components/marketing/MarketingLayout";
@@ -315,7 +317,7 @@ export default function ContactPage() {
         },
         {
           href: "/network",
-          label: "Network center",
+          label: "Home Wi-Fi",
         },
       ]
     : [
@@ -338,7 +340,7 @@ export default function ContactPage() {
       ];
 
   return (
-    <MarketingLayout>
+    <PublicMarketingShell isSignedIn={isSignedIn}>
       <MarketingPageHero
         eyebrow="Contact"
         title="We’re here to help."
@@ -697,7 +699,7 @@ export default function ContactPage() {
         </div>
       </section>
       </MarketingContent>
-    </MarketingLayout>
+    </PublicMarketingShell>
   );
 }
 

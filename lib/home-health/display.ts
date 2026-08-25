@@ -140,7 +140,7 @@ export function getRecommendationDisplayDescription(
   recommendation: HomeHealthRecommendation
 ): string {
   if (recommendation.id === "network") {
-    return "Save your router, provider, and network details so important information is easy to find later.";
+    return "Save your router, provider, and Home Wi-Fi details so important information is easy to find later.";
   }
 
   return recommendation.description;
@@ -193,7 +193,7 @@ export function getVaultCategoryStates(
     },
     {
       key: "network",
-      label: "Network",
+      label: "Home Wi-Fi",
       complete:
         network?.status === "healthy",
     },

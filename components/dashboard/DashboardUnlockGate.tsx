@@ -186,7 +186,7 @@ export default function DashboardUnlockGate({
                 rounded-[20px]
                 border border-white/10
                 bg-white/[0.055]
-                text-[#a9c38a]
+                text-[#9bb27a]
                 shadow-[0_16px_40px_rgba(0,0,0,0.18)]
               "
             >
@@ -373,7 +373,7 @@ export default function DashboardUnlockGate({
                             complete
                               ? "bg-[#718d4f] text-white"
                               : next
-                                ? "bg-[#f4f0e8] text-[#17212a]"
+                                ? "bg-[#f5f1e8] text-[#17212a]"
                                 : "bg-white/6 text-white/25"
                           }
                         `}

@@ -84,7 +84,7 @@ export const landingVaultPillars = [
     detail: "Filters, service dates, and reminders — taken care of.",
   },
   {
-    label: "Network",
+    label: "Home Wi-Fi",
     detail:
       "Know what's connected. Always know when a device was last seen.",
   },

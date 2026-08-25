@@ -150,7 +150,7 @@ export function calculateHealthCheck(
     const extras = [
       "Keep your home technology inventory current whenever you add or replace a device.",
       "Review your technology records a few times each year.",
-      "Keep important receipts, warranties, manuals, and network details together.",
+      "Keep important receipts, warranties, manuals, and Home Wi-Fi details together.",
     ];
 
     for (const extra of extras) {

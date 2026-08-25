@@ -1,9 +1,8 @@
+import PublicMarketingShell from "@/components/landing/public/PublicMarketingShell";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, ExternalLink, ShieldCheck } from "lucide-react";
 
-import LandingFooter from "@/components/landing/public/LandingFooter";
-import LandingHeader from "@/components/landing/public/LandingHeader";
 
 export const metadata: Metadata = {
   title: "About Home Tech Vault | Built by Jason Eaton",
@@ -17,9 +16,9 @@ export default function AboutPage() {
   const linkedinUrl = process.env.NEXT_PUBLIC_FOUNDER_LINKEDIN_URL;
 
   return (
-    <div className="min-h-screen bg-surface-base">
-      <LandingHeader />
-      <main className="px-5 py-16 md:px-8 md:py-24 lg:px-12">
+    <PublicMarketingShell>
+<div className="min-h-screen bg-surface-base">
+<main className="px-5 py-16 md:px-8 md:py-24 lg:px-12">
         <div className="mx-auto max-w-5xl">
           <div className="grid items-center gap-10 lg:grid-cols-[0.8fr_1.2fr]">
             <div className="rounded-[32px] border border-border-subtle bg-surface-card p-6 shadow-lift">
@@ -67,7 +66,7 @@ export default function AboutPage() {
                   When a device breaks or a warranty question comes up, homeowners
                   should not have to search through five different places. Home Tech
                   Vault gives each household one organized place for devices,
-                  warranties, receipts, manuals, documents, network information, and
+                  warranties, receipts, manuals, documents, Home Wi-Fi information, and
                   maintenance history.
                 </p>
                 <p>
@@ -107,7 +106,7 @@ export default function AboutPage() {
           </div>
         </div>
       </main>
-      <LandingFooter />
-    </div>
+</div>
+</PublicMarketingShell>
   );
 }

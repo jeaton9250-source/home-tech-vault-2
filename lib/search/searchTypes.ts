@@ -60,7 +60,7 @@ export const SMART_SEARCH_GROUP_LABELS: Record<
   warranties: "Warranties",
   maintenance: "Maintenance",
   documents: "Documents",
-  network: "Network",
+  network: "Home Wi-Fi",
 };
 
 export function emptySearchResults(): SmartSearchGroupedResults {

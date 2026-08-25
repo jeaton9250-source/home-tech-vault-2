@@ -4,7 +4,7 @@ export type FaqCategory =
   | "Accounts"
   | "Devices"
   | "Documents"
-  | "Network"
+  | "Internet & Wi-Fi"
   | "Privacy"
   | "Billing"
   | "Family";
@@ -19,7 +19,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
   "Accounts",
   "Devices",
   "Documents",
-  "Network",
+  "Internet & Wi-Fi",
   "Privacy",
   "Billing",
   "Family",
@@ -63,16 +63,16 @@ export const FAQ_ITEMS: FaqItem[] = [
       "Common document formats including PDF and images are supported. Files stay linked to the device record they belong to.",
   },
   {
-    category: "Network",
-    question: "Does Home Tech Vault store network details?",
+    category: "Internet & Wi-Fi",
+    question: "Can Home Tech Vault keep my Wi-Fi details?",
     answer:
       "Yes. Keep router information, Wi-Fi notes, and connected device records in one dependable place — especially helpful when troubleshooting or sharing access.",
   },
   {
-    category: "Network",
+    category: "Internet & Wi-Fi",
     question: "Is network monitoring included on every plan?",
     answer:
-      "Basic network documentation is available on all plans. Advanced network monitoring is included with Pro and Family.",
+      "Basic home Wi-Fi information is available on all plans. Advanced connectivity features are included with Pro and Family.",
   },
   {
     category: "Privacy",

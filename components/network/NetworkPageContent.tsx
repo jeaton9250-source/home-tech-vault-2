@@ -190,7 +190,7 @@ const canManageConnector =
                   Unable to load network
                 </p>
                 <p className="mt-1 text-sm leading-6 text-[#68737b]">
-                  Network information is temporarily unavailable. Please try
+                  Home Wi-Fi information is temporarily unavailable. Please try
                   again.
                 </p>
               </div>

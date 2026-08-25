@@ -39,7 +39,7 @@ const screenshots = [
   },
   {
     id: "network",
-    label: "Network",
+    label: "Home Wi-Fi",
     icon: Wifi,
     accent: sections.network.accent,
     soft: sections.network.soft,
@@ -77,7 +77,7 @@ export default function ProductScreenshotsSection() {
         </h2>
         <p className="mt-4 text-base leading-7 text-text-muted">
           Explore real interface previews for devices,
-          documents, network details, and household sharing.
+          documents, Home Wi-Fi details, and household sharing.
         </p>
       </div>
 

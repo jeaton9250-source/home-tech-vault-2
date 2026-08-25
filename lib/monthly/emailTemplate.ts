@@ -168,7 +168,7 @@ export function createMonthlyVaultReportEmail(
 
   if (!data.networkConfigured) {
     attention.push(
-      "Your household network details are not documented yet"
+      "Your Home Wi-Fi details are not saved yet"
     );
   }
 
@@ -239,13 +239,13 @@ export function createMonthlyVaultReportEmail(
             <tr>
               <td
                 style="
-                  background:#0b1623;
+                  background:#183047;
                   padding:30px 32px;
                 "
               >
                 <div
                   style="
-                    color:#8ca667;
+                    color:#718d4f;
                     font-size:11px;
                     font-weight:700;
                     letter-spacing:.14em;
@@ -258,7 +258,7 @@ export function createMonthlyVaultReportEmail(
                 <div
                   style="
                     margin-top:10px;
-                    color:#f4f0e8;
+                    color:#f5f1e8;
                     font-family:Georgia,serif;
                     font-size:27px;
                     line-height:35px;
@@ -305,14 +305,14 @@ export function createMonthlyVaultReportEmail(
                   style="
                     margin-top:26px;
                     border-radius:22px;
-                    background:#101d2b;
+                    background:#183047;
                     padding:28px;
                     text-align:center;
                   "
                 >
                   <div
                     style="
-                      color:#8ca667;
+                      color:#718d4f;
                       font-size:10px;
                       font-weight:700;
                       letter-spacing:.15em;
@@ -325,7 +325,7 @@ export function createMonthlyVaultReportEmail(
                   <div
                     style="
                       margin-top:8px;
-                      color:#f4f0e8;
+                      color:#f5f1e8;
                       font-family:Georgia,serif;
                       font-size:54px;
                       line-height:60px;

@@ -39,7 +39,7 @@ export default function DashboardHero({
 
   return (
     <section
-      className="relative overflow-hidden rounded-[30px] border border-white/10 bg-[#0b1623] px-6 py-7 text-[#f4f0e8] shadow-[0_30px_75px_-42px_rgba(0,0,0,0.7)] sm:px-8 sm:py-8 lg:px-10 lg:py-9"
+      className="relative overflow-hidden rounded-[30px] border border-white/10 bg-[#183047] px-6 py-7 text-[#f5f1e8] shadow-[0_30px_75px_-42px_rgba(0,0,0,0.7)] sm:px-8 sm:py-8 lg:px-10 lg:py-9"
       data-tour="home-pulse"
     >
       {/* AMBIENT BACKGROUND */}
@@ -65,13 +65,13 @@ export default function DashboardHero({
             <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-white/45">
               <Sparkles
                 size={12}
-                className="text-[#8ca667]"
+                className="text-[#718d4f]"
               />
 
               {formatDisplayDate()}
             </span>
 
-            <span className="inline-flex items-center gap-2 rounded-full border border-[#718d4f]/25 bg-[#718d4f]/10 px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-[#8ca667]">
+            <span className="inline-flex items-center gap-2 rounded-full border border-[#718d4f]/25 bg-[#718d4f]/10 px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-[#718d4f]">
               <ShieldCheck
                 size={12}
               />
@@ -83,12 +83,12 @@ export default function DashboardHero({
           <div className="mt-7 flex items-center gap-3">
             <span className="h-px w-7 bg-[#718d4f]" />
 
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8ca667]">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#718d4f]">
               {homeName}
             </p>
           </div>
 
-          <h1 className="mt-4 max-w-2xl font-serif text-3xl font-medium leading-[1.03] tracking-[-0.045em] text-[#f4f0e8] sm:text-4xl lg:text-[2.8rem]">
+          <h1 className="mt-4 max-w-2xl font-serif text-3xl font-medium leading-[1.03] tracking-[-0.045em] text-[#f5f1e8] sm:text-4xl lg:text-[2.8rem]">
             Your home,
             <br />
 
@@ -130,7 +130,7 @@ export default function DashboardHero({
                 ariaLabel={`Home Health Score: ${score}%`}
               >
                 <div className="text-center">
-                  <span className="font-serif text-3xl font-medium tracking-[-0.045em] text-[#f4f0e8]">
+                  <span className="font-serif text-3xl font-medium tracking-[-0.045em] text-[#f5f1e8]">
                     {score}%
                   </span>
 
@@ -148,11 +148,11 @@ export default function DashboardHero({
             </div>
           ) : (
             <div className="min-w-[180px] rounded-[24px] border border-white/10 bg-white/[0.045] px-6 py-6 text-center">
-              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl border border-[#718d4f]/25 bg-[#718d4f]/10 text-[#8ca667]">
+              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl border border-[#718d4f]/25 bg-[#718d4f]/10 text-[#718d4f]">
                 <Sparkles size={16} />
               </div>
 
-              <p className="mt-4 font-serif text-lg text-[#f4f0e8]">
+              <p className="mt-4 font-serif text-lg text-[#f5f1e8]">
                 Getting Started
               </p>
 

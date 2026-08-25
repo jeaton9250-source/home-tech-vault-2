@@ -146,7 +146,7 @@ export const landingVaultCards = [
     wash: "from-[#f8f6f2] to-[#f0ece4]",
   },
   {
-    label: "Network",
+    label: "Home Wi-Fi",
     detail: "Know what's connected — and when it was last seen.",
     wash: "from-[#eef6f1] to-[#e3efe8]",
   },

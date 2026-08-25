@@ -104,15 +104,15 @@ export default function KnowledgeArticleTemplate({
         data={jsonLd}
       />
 
-      <header className="border-b border-white/10 bg-[#0b1623] px-6 py-12 text-[#f4f0e8] md:px-8 md:py-16">
+      <header className="border-b border-white/10 bg-[#183047] px-6 py-12 text-[#f5f1e8] md:px-8 md:py-16">
         <div className="mx-auto max-w-6xl">
           <Breadcrumb items={breadcrumbs} />
 
-          <p className="mt-6 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8ca667]">
+          <p className="mt-6 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#718d4f]">
             {category?.name ?? "Knowledge"}
           </p>
 
-          <h1 className="mt-3 max-w-4xl font-serif text-4xl font-medium tracking-[-0.045em] text-[#f4f0e8] md:text-6xl md:leading-[1.04]">
+          <h1 className="mt-3 max-w-4xl font-serif text-4xl font-medium tracking-[-0.045em] text-[#f5f1e8] md:text-6xl md:leading-[1.04]">
             {article.title}
           </h1>
 
@@ -208,8 +208,8 @@ export default function KnowledgeArticleTemplate({
         <aside className="hidden lg:block">
           <div className="sticky top-24 space-y-6">
             <TableOfContents items={tocItems} />
-            <div className="rounded-[24px] border border-white/10 bg-[#0b1623] p-5 text-[#f4f0e8] shadow-[0_20px_45px_-35px_rgba(0,0,0,0.7)]">
-              <p className="font-serif text-lg font-medium text-[#f4f0e8]">
+            <div className="rounded-[24px] border border-white/10 bg-[#183047] p-5 text-[#f5f1e8] shadow-[0_20px_45px_-35px_rgba(0,0,0,0.7)]">
+              <p className="font-serif text-lg font-medium text-[#f5f1e8]">
                 Ready to organize?
               </p>
               <p className="mt-2 text-sm leading-6 text-[#b6c0c7]">

@@ -90,7 +90,7 @@ export function MobileNavLink({
           className={
             isActive
               ? "text-white"
-              : "text-[#8ca667]"
+              : "text-[#718d4f]"
           }
         />
       ) : null}

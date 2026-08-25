@@ -24,7 +24,7 @@ export default function AdminShell({
       <AdminMobileNav />
 
       {/* DESKTOP SIDEBAR */}
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[264px] flex-col border-r border-white/8 bg-[#0b1623] lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[264px] flex-col border-r border-white/8 bg-[#183047] lg:flex">
         <div className="border-b border-white/8 px-5 py-5">
           <Link
             href="/admin"
@@ -36,7 +36,7 @@ export default function AdminShell({
               </div>
 
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold tracking-[-0.01em] text-[#f4f0e8]">
+                <p className="truncate text-sm font-semibold tracking-[-0.01em] text-[#f5f1e8]">
                   Home Tech Vault
                 </p>
 
@@ -55,7 +55,7 @@ export default function AdminShell({
         <div className="border-t border-white/8 p-3">
           <div className="rounded-xl border border-white/8 bg-white/[0.035] p-3">
             <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-[#8ca667]" />
+              <span className="h-2 w-2 rounded-full bg-[#718d4f]" />
 
               <p className="text-xs font-medium text-white/65">
                 Production

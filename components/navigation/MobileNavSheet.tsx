@@ -136,14 +136,14 @@ export default function MobileNavSheet() {
     <>
       {/* MOBILE HEADER */}
 
-      <header className="sticky top-0 z-40 border-b border-white/10 bg-[#0b1623]/95 text-[#f4f0e8] shadow-[0_10px_30px_-24px_rgba(0,0,0,0.8)] backdrop-blur-xl md:hidden">
+      <header className="sticky top-0 z-40 border-b border-white/10 bg-[#183047]/95 text-[#f5f1e8] shadow-[0_10px_30px_-24px_rgba(0,0,0,0.8)] backdrop-blur-xl md:hidden">
         <div className="flex h-[68px] items-center gap-2 px-3 sm:px-4">
           <button
             type="button"
             onClick={() =>
               setOpen(true)
             }
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-[#f4f0e8] transition hover:bg-white/[0.07]"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-[#f5f1e8] transition hover:bg-white/[0.07]"
             aria-label="Open navigation menu"
           >
             <Menu size={20} />
@@ -153,7 +153,7 @@ export default function MobileNavSheet() {
             href="/dashboard"
             className="flex min-w-0 flex-1 items-center gap-2.5"
           >
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#718d4f]/30 bg-[#718d4f]/10 text-[#8ca667]">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#718d4f]/30 bg-[#718d4f]/10 text-[#718d4f]">
               <ShieldCheck
                 size={17}
               />
@@ -164,7 +164,7 @@ export default function MobileNavSheet() {
             </p>
           </Link>
 
-          <div className="flex items-center rounded-full border border-white/10 bg-white/[0.04] p-0.5 [&_button]:text-[#f4f0e8] [&_button:hover]:bg-white/[0.07]">
+          <div className="flex items-center rounded-full border border-white/10 bg-white/[0.04] p-0.5 [&_button]:text-[#f5f1e8] [&_button:hover]:bg-white/[0.07]">
             <NotificationBell
               compact
             />
@@ -235,7 +235,7 @@ export default function MobileNavSheet() {
                   1,
                 ],
               }}
-              className="fixed inset-y-0 right-0 z-[60] flex w-[min(100vw,360px)] flex-col border-l border-white/10 bg-[#0b1623] text-[#f4f0e8] shadow-[0_0_60px_rgba(0,0,0,0.35)] md:hidden"
+              className="fixed inset-y-0 right-0 z-[60] flex w-[min(100vw,360px)] flex-col border-l border-white/10 bg-[#183047] text-[#f5f1e8] shadow-[0_0_60px_rgba(0,0,0,0.35)] md:hidden"
               role="dialog"
               aria-modal="true"
               aria-label="Navigation menu"
@@ -244,7 +244,7 @@ export default function MobileNavSheet() {
 
               <div className="flex h-16 items-center justify-between border-b border-white/10 px-5">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#718d4f]/30 bg-[#718d4f]/10 text-[#8ca667]">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#718d4f]/30 bg-[#718d4f]/10 text-[#718d4f]">
                     <ShieldCheck
                       size={17}
                     />
@@ -283,7 +283,7 @@ export default function MobileNavSheet() {
                     type="button"
                     variant="secondary"
                     size="sm"
-                    className="border-white/10 bg-white/[0.05] text-[#f4f0e8] hover:border-[#718d4f]/30 hover:bg-white/[0.08]"
+                    className="border-white/10 bg-white/[0.05] text-[#f5f1e8] hover:border-[#718d4f]/30 hover:bg-white/[0.08]"
                     onClick={() => {
                       openAdvisor();
                       setOpen(

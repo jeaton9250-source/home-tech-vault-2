@@ -119,7 +119,7 @@ export const HOW_IT_WORKS_STEPS = [
     step: 4,
     title: "Organize the rest",
     description:
-      "Add network details, subscriptions, and maintenance tasks.",
+      "Add Home Wi-Fi details, subscriptions, and maintenance tasks.",
   },
   {
     step: 5,

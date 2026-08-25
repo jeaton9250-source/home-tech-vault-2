@@ -4,7 +4,7 @@ export default function HomeTechHealthCheckSection() {
   return (
     <section
       id="home-tech-health-check"
-      className="bg-[#f4f0e8] px-5 py-14 md:px-8 md:py-20 lg:px-12"
+      className="bg-[#f5f1e8] px-5 py-14 md:px-8 md:py-20 lg:px-12"
       aria-labelledby="home-tech-health-check-heading"
     >
       <div className="mx-auto w-full max-w-6xl">

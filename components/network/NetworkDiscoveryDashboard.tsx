@@ -290,7 +290,7 @@ export default function NetworkDiscoveryDashboard(props: {
                 className={`rounded-full px-4 py-2 text-sm font-medium transition ${
                   pageTab === tab.key
                     ? "bg-[#617c43] text-white shadow-sm"
-                    : "border border-[#182533]/8 bg-[#eee9df]/60 text-[#68737b] hover:border-[#617c43]/20 hover:bg-[#f4f0e8]"
+                    : "border border-[#182533]/8 bg-[#eee9df]/60 text-[#68737b] hover:border-[#617c43]/20 hover:bg-[#f5f1e8]"
                 }`}
               >
                 {tab.label}
@@ -379,7 +379,7 @@ export default function NetworkDiscoveryDashboard(props: {
                   className={`rounded-full px-4 py-2 text-sm font-medium transition ${
                     reviewFilter === tab.key
                       ? "bg-[#617c43] text-white shadow-sm"
-                      : "border border-[#182533]/8 bg-[#eee9df]/60 text-[#68737b] hover:border-[#617c43]/20 hover:bg-[#f4f0e8]"
+                      : "border border-[#182533]/8 bg-[#eee9df]/60 text-[#68737b] hover:border-[#617c43]/20 hover:bg-[#f5f1e8]"
                   }`}
                 >
                   {tab.label}
@@ -939,7 +939,7 @@ function DiscoveryDeviceCard({
 
         <details className="group mt-5 rounded-xl border border-[#182533]/8 bg-[#eee9df]/55">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-medium text-text-primary">
-            <span>Device and network details</span>
+            <span>Device and Home Wi-Fi details</span>
             <span className="text-xs font-normal text-text-secondary">
               Optional
             </span>

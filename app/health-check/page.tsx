@@ -27,7 +27,7 @@ export const metadata: Metadata = {
 
 export default function HealthCheckPage() {
   return (
-    <div className="min-h-screen bg-[#f4f0e8]">
+    <div className="min-h-screen bg-[#f5f1e8]">
       <LandingHeader />
 
       <main className="px-5 py-14 md:px-8 md:py-20 lg:px-12">

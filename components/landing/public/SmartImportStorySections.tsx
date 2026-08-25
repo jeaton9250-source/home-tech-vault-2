@@ -354,7 +354,7 @@ export function VaultFeaturesSection() {
     },
     {
       icon: Network,
-      title: "Network",
+      title: "Home Wi-Fi",
       text: "Keep useful context about the technology in your home.",
     },
     {

@@ -1101,7 +1101,7 @@ function OnboardingFlow() {
       setErrorMessage(
         getErrorMessage(
           error,
-          "Unable to save network details."
+          "Unable to save Wi-Fi details."
         )
       );
     } finally {
@@ -1747,7 +1747,7 @@ function OnboardingFlow() {
           </OnboardingEyebrow>
 
           <OnboardingTitle>
-            Add basic network details
+            Add your home Wi-Fi details
           </OnboardingTitle>
 
           <OnboardingDescription>
@@ -1837,7 +1837,7 @@ function OnboardingFlow() {
               type="submit"
               disabled={submitting}
             >
-              Save network details
+              Save Wi-Fi details
             </Button>
           </OnboardingActions>
         </form>

@@ -65,6 +65,7 @@ function normalizePublicAuthPathname(
 export const PUBLIC_MARKETING_PATHS = [
   MARKETING_ROUTES.home,
   MARKETING_ROUTES.features,
+  "/how-it-works",
   MARKETING_ROUTES.pricing,
   MARKETING_ROUTES.demo,
   MARKETING_ROUTES.faq,
@@ -82,6 +83,7 @@ export const PUBLIC_MARKETING_PATHS = [
   "/home-inventory-software",
   "/digital-home-vault",
   "/home-tech-checklist",
+  "/new-homeowner",
   "/health-check",
   "/knowledge",
   "/guides",
@@ -117,6 +119,7 @@ export const PUBLIC_STATIC_PREFIXES = [
 export const INDEXABLE_MARKETING_PATHS = [
   MARKETING_ROUTES.home,
   MARKETING_ROUTES.features,
+  "/how-it-works",
   MARKETING_ROUTES.pricing,
   MARKETING_ROUTES.demo,
   MARKETING_ROUTES.faq,
@@ -134,6 +137,7 @@ export const INDEXABLE_MARKETING_PATHS = [
   "/home-inventory-software",
   "/digital-home-vault",
   "/home-tech-checklist",
+  "/new-homeowner",
   "/knowledge",
   "/guides",
   "/compare",

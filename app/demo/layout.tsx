@@ -4,7 +4,7 @@ import { MARKETING_ROUTES } from "@/lib/marketing/routes";
 export const metadata = createPageMetadata({
   title: "Interactive Demo",
   description:
-    "Explore a complete sample Home Tech Vault with devices, warranties, documents, maintenance, and network details — no account required.",
+    "Explore a complete sample Home Tech Vault with devices, warranties, documents, maintenance, and Home Wi-Fi details — no account required.",
   path: MARKETING_ROUTES.demo,
 });
 

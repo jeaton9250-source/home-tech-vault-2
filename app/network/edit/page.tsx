@@ -136,7 +136,7 @@ export default function EditNetwork() {
   async function saveNetwork() {
     if (isDemo) {
       alert(
-        "Demo mode is read-only. Sign in to save network information."
+        "Demo mode is read-only. Sign in to save Home Wi-Fi information."
       );
       return;
     }
@@ -147,7 +147,7 @@ export default function EditNetwork() {
 
     if (!canEdit) {
       alert(
-        "You do not have permission to edit network information."
+        "You do not have permission to edit Home Wi-Fi information."
       );
       return;
     }
@@ -224,10 +224,10 @@ export default function EditNetwork() {
         error
       );
       alert(
-        "Unable to save network information. Please try again."
+        "Unable to save Home Wi-Fi information. Please try again."
       );
     } else {
-      alert("Network information saved!");
+      alert("Home Wi-Fi information saved!");
       window.location.href = "/network";
     }
   }

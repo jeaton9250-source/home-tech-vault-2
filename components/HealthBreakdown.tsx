@@ -13,7 +13,7 @@ const items = [
   { label: "Organization", key: "organization" as const },
   { label: "Maintenance", key: "maintenance" as const },
   { label: "Documentation", key: "documentation" as const },
-  { label: "Network", key: "network" as const },
+  { label: "Home Wi-Fi", key: "network" as const },
 ];
 
 export default function HealthBreakdown({

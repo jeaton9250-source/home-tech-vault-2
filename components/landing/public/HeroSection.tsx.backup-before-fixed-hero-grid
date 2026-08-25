@@ -1,0 +1,174 @@
+"use client";
+
+import Image from "next/image";
+import Link from "next/link";
+
+import {
+  ArrowRight,
+  FileText,
+  Home,
+  Receipt,
+  ShieldCheck,
+  Wrench,
+} from "lucide-react";
+
+import { MARKETING_ROUTES } from "@/lib/marketing/routes";
+
+type HeroSectionProps = {
+  isSignedIn: boolean;
+};
+
+export default function HeroSection({
+  isSignedIn,
+}: HeroSectionProps) {
+  const primaryHref = isSignedIn
+    ? "/dashboard"
+    : MARKETING_ROUTES.signup;
+
+  const primaryLabel = isSignedIn
+    ? "Open My Vault"
+    : "Start My Home Vault";
+
+  return (
+    <section className="relative overflow-hidden bg-[#f5f1e8] px-5 py-16 md:px-8 md:py-20 lg:px-12 lg:py-24">
+      <div className="mx-auto grid w-full max-w-[1380px] grid-cols-1 gap-10 md:grid-cols-[minmax(0,0.78fr)_minmax(0,1.22fr)] md:items-center md:gap-10 lg:gap-14">
+        {/* LEFT */}
+        <div className="relative z-10 min-w-0 md:pr-2">
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#17212a]/10 bg-[#fffdf8] px-4 py-2 shadow-sm">
+            <Home
+              size={14}
+              className="text-[#617c43]"
+            />
+
+            <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#617c43]">
+              A simpler way to remember your home
+            </span>
+          </div>
+
+          <h1 className="mt-8 max-w-[600px] font-serif text-[3.2rem] font-medium leading-[0.98] tracking-[-0.055em] text-[#17212a] sm:text-[4rem] lg:text-[4.6rem]">
+            Your home comes with
+            <br />
+            <span className="text-[#617c43]">
+              a lot to remember.
+            </span>
+          </h1>
+
+          <p className="mt-7 max-w-[550px] text-lg leading-8 text-[#68716c]">
+            Keep the receipts, warranties, manuals, appliances,
+            maintenance records, and important details you&apos;ll
+            want later in one simple place.
+          </p>
+
+          <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+            <Link
+              href={primaryHref}
+              className="inline-flex min-h-[54px] items-center justify-center gap-2 rounded-full bg-[#617c43] px-7 text-sm font-semibold text-white shadow-[0_18px_38px_-22px_rgba(97,124,67,0.9)] transition hover:bg-[#718d4f]"
+            >
+              {primaryLabel}
+              <ArrowRight size={16} />
+            </Link>
+
+            <Link
+              href={MARKETING_ROUTES.demo}
+              className="inline-flex min-h-[54px] items-center justify-center rounded-full border border-[#17212a]/15 bg-[#fffdf8]/70 px-7 text-sm font-semibold text-[#17212a] transition hover:bg-[#fffdf8]"
+            >
+              See an Example
+            </Link>
+          </div>
+
+          {!isSignedIn && (
+            <p className="mt-5 text-sm text-[#7c847f]">
+              Free to start. No credit card required.
+            </p>
+          )}
+        </div>
+
+        {/* RIGHT — HOUSE IMAGE */}
+        <div className="relative w-full min-w-0 md:self-center">
+          <div className="absolute -inset-8 -z-10 rounded-[50px] bg-[#617c43]/8 blur-3xl" />
+
+          <div className="w-full rounded-[34px] bg-[#e7dfd0] p-3 shadow-[0_35px_90px_-45px_rgba(23,33,42,0.4)]">
+            <div className="relative w-full overflow-hidden rounded-[27px] h-[420px] md:h-[440px] lg:h-[520px]">
+              <Image
+                src="/images/home-hero.jpg"
+                alt="A warm and welcoming home"
+                width={1600}
+                height={1200}
+                priority
+                quality={75}
+                sizes="(max-width: 767px) 100vw, (max-width: 1023px) 90vw, 58vw"
+                className="h-full w-full object-cover object-[center_45%]"
+              />
+
+              <div className="absolute inset-0 bg-gradient-to-t from-[#17212a]/35 via-transparent to-transparent" />
+
+              {/* PERSONAL HOME CARD */}
+              <div className="absolute bottom-5 left-1/2 w-[92%] -translate-x-1/2 rounded-[20px] border border-white/30 bg-[#fffdf8]/95 px-5 py-4 shadow-xl backdrop-blur-md">
+                <div className="flex flex-col gap-4 xl:flex-row xl:items-center">
+                  <div className="min-w-[190px]">
+                    <p className="text-[9px] font-semibold uppercase tracking-[0.17em] text-[#617c43]">
+                      My Home
+                    </p>
+
+                    <p className="mt-1 font-serif text-xl text-[#17212a]">
+                      The things I&apos;ll want later.
+                    </p>
+                  </div>
+
+                  <div className="grid flex-1 grid-cols-2 gap-2 sm:grid-cols-4">
+                    <HomeRecord
+                      icon={Receipt}
+                      label="Receipts"
+                    />
+
+                    <HomeRecord
+                      icon={ShieldCheck}
+                      label="Warranties"
+                    />
+
+                    <HomeRecord
+                      icon={FileText}
+                      label="Documents"
+                    />
+
+                    <HomeRecord
+                      icon={Wrench}
+                      label="Maintenance"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* SMALL PERSONAL NOTE */}
+          <div className="absolute -bottom-5 left-5 z-20 hidden max-w-[220px] rotate-[-2deg] rounded-2xl border border-[#17212a]/8 bg-[#fffdf8] px-4 py-3 shadow-lg md:block">
+            <p className="font-serif text-base leading-6 text-[#40502f]">
+              Because “I know I saved that somewhere” gets old.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function HomeRecord({
+  icon: Icon,
+  label,
+}: {
+  icon: typeof Home;
+  label: string;
+}) {
+  return (
+    <div className="flex min-w-0 items-center gap-2 rounded-xl bg-[#f5f1e8] px-3 py-2.5">
+      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#617c43]/10 text-[#617c43]">
+        <Icon size={13} />
+      </div>
+
+      <span className="truncate text-[11px] font-medium text-[#59625d]">
+        {label}
+      </span>
+    </div>
+  );
+}

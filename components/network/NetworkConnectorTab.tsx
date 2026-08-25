@@ -275,7 +275,7 @@ export default function NetworkConnectorTab({
                 administrator must install
                 and pair the connector.
                 Household members can view
-                synced network information
+                synced Home Wi-Fi information
                 after setup.
               </p>
             </div>

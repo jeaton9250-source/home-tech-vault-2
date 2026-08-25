@@ -1,0 +1,116 @@
+"use client";
+
+import Link from "next/link";
+import {
+  ArrowRight,
+  FileText,
+  Laptop,
+  Users,
+  Wifi,
+} from "lucide-react";
+
+import MarketingLayout, {
+  MarketingContent,
+  MarketingPageHero,
+} from "@/components/marketing/MarketingLayout";
+import {
+  CommandCenterPreview,
+  DocumentsPreview,
+  FamilyPreview,
+  NetworkPreview,
+  PillarPreview,
+} from "@/components/landing/LandingPreviews";
+import { MARKETING_ROUTES } from "@/lib/marketing/routes";
+import { sections } from "@/lib/design-system/tokens";
+
+const pillars = [
+  {
+    icon: Laptop,
+    title: "Technology",
+    outcome:
+      "Know every device you own — where it lives, what it cost, and whether it is still protected.",
+    accent: sections.technology.accent,
+    soft: sections.technology.soft,
+    preview: <CommandCenterPreview />,
+  },
+  {
+    icon: FileText,
+    title: "Digital Vault",
+    outcome:
+      "Find receipts and manuals in seconds when something breaks, a claim opens, or insurance asks for proof.",
+    accent: sections.digitalVault.accent,
+    soft: sections.digitalVault.soft,
+    preview: <DocumentsPreview />,
+  },
+  {
+    icon: Wifi,
+    title: "Home Wi-Fi",
+    outcome:
+      "Keep router details, Wi-Fi notes, and connected devices within reach — not buried in a notes app.",
+    accent: sections.network.accent,
+    soft: sections.network.soft,
+    preview: <NetworkPreview />,
+  },
+  {
+    icon: Users,
+    title: "Family",
+    outcome:
+      "Give the people who help run your home shared access without handing over every password.",
+    accent: sections.insights.accent,
+    soft: sections.insights.soft,
+    preview: <FamilyPreview />,
+  },
+] as const;
+
+export default function FeaturesPageContent() {
+  return (
+    <MarketingLayout>
+      <MarketingPageHero
+        eyebrow="Features"
+        title="Four pillars. One calm home record."
+        description="Home Tech Vault is built around how households actually manage technology — not how enterprise software thinks they should."
+      >
+        <Link
+          href={MARKETING_ROUTES.demo}
+          className="mt-8 inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-button)] bg-charcoal px-6 py-2.5 text-sm font-medium text-surface-card transition hover:bg-charcoal-hover"
+        >
+          See it in action
+          <ArrowRight size={16} aria-hidden />
+        </Link>
+      </MarketingPageHero>
+
+      <MarketingContent className="pt-0">
+        <div className="grid gap-20 md:gap-28">
+          {pillars.map((pillar, index) => (
+            <article
+              key={pillar.title}
+              className={`grid gap-10 lg:grid-cols-2 lg:items-center ${
+                index % 2 === 1
+                  ? "lg:[&>*:first-child]:order-2"
+                  : ""
+              }`}
+            >
+              <div>
+                <p className="text-overline text-text-muted">
+                  {pillar.title}
+                </p>
+
+                <h2 className="mt-3 text-2xl font-medium tracking-[-0.02em] md:text-3xl">
+                  {pillar.outcome}
+                </h2>
+              </div>
+
+              <PillarPreview
+                icon={pillar.icon}
+                accent={pillar.accent}
+                soft={pillar.soft}
+              >
+                {pillar.preview}
+              </PillarPreview>
+            </article>
+          ))}
+        </div>
+      </MarketingContent>
+    </MarketingLayout>
+  );
+}

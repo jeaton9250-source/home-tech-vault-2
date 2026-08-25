@@ -637,7 +637,7 @@ function DashboardSearch({
         onSubmit={onSubmit}
         className="mt-5"
       >
-        <div className="relative rounded-[18px] border border-white/15 bg-white/[0.08] p-1.5 transition focus-within:border-[#8ca667]/60 focus-within:bg-white/[0.11]">
+        <div className="relative rounded-[18px] border border-white/15 bg-white/[0.08] p-1.5 transition focus-within:border-[#718d4f]/60 focus-within:bg-white/[0.11]">
           <Search
             size={18}
             className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#aeb8c1]"
@@ -653,11 +653,11 @@ function DashboardSearch({
               )
             }
             placeholder="Ask something about your home..."
-            className="htv-focus-ring w-full rounded-[14px] border-0 bg-transparent py-3 pl-10 pr-12 text-sm font-medium text-[#f4f0e8] caret-[#f4f0e8] outline-none placeholder:text-[#aeb8c1] placeholder:opacity-100"
+            className="htv-focus-ring w-full rounded-[14px] border-0 bg-transparent py-3 pl-10 pr-12 text-sm font-medium text-[#f5f1e8] caret-[#f5f1e8] outline-none placeholder:text-[#aeb8c1] placeholder:opacity-100"
             style={{
-              color: "#f4f0e8",
-              WebkitTextFillColor: "#f4f0e8",
-              caretColor: "#f4f0e8",
+              color: "#f5f1e8",
+              WebkitTextFillColor: "#f5f1e8",
+              caretColor: "#f5f1e8",
             }}
             aria-label="Search your home"
           />
@@ -695,7 +695,7 @@ function DashboardSearch({
                 item.query
               )
             }
-            className="rounded-full border border-white/15 bg-white/[0.08] px-3 py-1.5 text-[11px] font-medium text-[#d8ded8] transition hover:border-[#8ca667]/45 hover:bg-white/[0.12] hover:text-white"
+            className="rounded-full border border-white/15 bg-white/[0.08] px-3 py-1.5 text-[11px] font-medium text-[#d8ded8] transition hover:border-[#718d4f]/45 hover:bg-white/[0.12] hover:text-white"
           >
             {item.label}
           </button>

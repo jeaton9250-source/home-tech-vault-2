@@ -208,7 +208,7 @@ export default async function AuditPage() {
             Keep subscription renewal dates updated.
           </li>
           <li>
-            Review your network information at least twice
+            Review your Home Wi-Fi information at least twice
             per year.
           </li>
         </ul>

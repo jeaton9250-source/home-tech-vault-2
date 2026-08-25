@@ -151,7 +151,7 @@ export const LANDING_FAMILY = {
   items: [
     "Invite family members with simple, secure access",
     "Shared peace of mind for parents, partners, and house sitters",
-    "Keep sensitive network details protected with role-based access",
+    "Keep important home Wi-Fi details protected with role-based access",
   ],
   members: [
     { name: "Alex", role: "Owner" },
@@ -241,7 +241,7 @@ export const LANDING_BINDER_CATEGORIES = [
     icon: "laptop" as const,
   },
   {
-    label: "Network",
+    label: "Home Wi-Fi",
     detail: "Connected devices and discovery.",
     icon: "wifi" as const,
   },
