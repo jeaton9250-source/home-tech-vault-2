@@ -25,35 +25,59 @@ export default function FounderHeader({
     : "Welcome back";
 
   return (
-    <header className="flex flex-col gap-5 border-b border-[#ded8ce] pb-7 lg:flex-row lg:items-end lg:justify-between">
-      <div>
-        <div className="flex flex-wrap items-center gap-3">
-          <p className="text-sm font-medium text-[#617c43]">
-            {greeting}
+    <header className="relative overflow-hidden rounded-[30px] border border-[#182533]/[0.07] bg-[#fffdf9] px-7 py-8 shadow-[0_28px_70px_-54px_rgba(15,28,40,0.55)] md:px-9 md:py-9">
+      <div
+        aria-hidden="true"
+        className="absolute right-0 top-0 h-56 w-56 translate-x-16 -translate-y-20 rounded-full bg-[#718d4f]/[0.06] blur-3xl"
+      />
+
+      <div className="relative flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <div className="flex flex-wrap items-center gap-3">
+            <p className="text-sm font-medium text-[#617c43]">
+              {greeting}
+            </p>
+
+            <span className="inline-flex items-center gap-2 rounded-full border border-[#718d4f]/15 bg-[#718d4f]/[0.06] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.15em] text-[#617c43]">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full rounded-full bg-[#718d4f]/35" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-[#718d4f]" />
+              </span>
+              Platform operational
+            </span>
+          </div>
+
+          <p className="mt-6 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#8b847a]">
+            Executive overview
           </p>
 
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-[#718d4f]/20 bg-[#718d4f]/8 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.13em] text-[#617c43]">
-            <CircleCheck size={12} />
-            Production Live
-          </span>
+          <h1 className="mt-2 max-w-3xl font-serif text-[38px] font-semibold leading-[0.98] tracking-[-0.045em] text-[#17202a] md:text-[52px]">
+            Founder Control Center
+          </h1>
+
+          <p className="mt-5 max-w-2xl text-[15px] leading-7 text-[#65615a] md:text-base">
+            Your operating view of growth, customers,
+            product activity, and platform health.
+          </p>
         </div>
 
-        <h1 className="mt-3 text-3xl font-semibold tracking-[-0.045em] text-[#17202a] md:text-[40px] md:leading-none">
-          Founder Control Center
-        </h1>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/admin/analytics"
+            className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#182533]/10 bg-white px-4 text-sm font-medium text-[#47515a] transition hover:border-[#182533]/20 hover:text-[#17202a]"
+          >
+            View analytics
+            <ArrowUpRight size={15} />
+          </Link>
 
-        <p className="mt-3 max-w-2xl text-[15px] leading-7 text-[#5d5a54] md:text-base">
-          Growth, customers, product activity,
-          and platform health in one place.
-        </p>
+          <Button
+            href="/admin/users"
+            size="md"
+          >
+            Manage Users
+          </Button>
+        </div>
       </div>
-
-      <Button
-        href="/admin/users"
-        size="md"
-      >
-        Manage Users
-      </Button>
     </header>
   );
 }
@@ -80,13 +104,13 @@ export function FounderSection({
         <div>
           <h2
             id={id}
-            className="text-xl font-semibold tracking-[-0.025em] text-[#18202b]"
+            className="font-serif text-[24px] font-semibold tracking-[-0.035em] text-[#18202b]"
           >
             {title}
           </h2>
 
           {subtitle ? (
-            <p className="mt-1 text-[15px] leading-6 text-[#5d5a54]">
+            <p className="mt-1.5 text-[14px] leading-6 text-[#6e6961]">
               {subtitle}
             </p>
           ) : null}
@@ -95,7 +119,7 @@ export function FounderSection({
         {action}
       </div>
 
-      <div className="mt-4">
+      <div className="mt-5">
         {children}
       </div>
     </section>

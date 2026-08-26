@@ -29,27 +29,27 @@ export default function AdminControlCenterHeader() {
       );
 
   return (
-    <header className="sticky top-0 z-30 hidden border-b border-[#e4ded3] bg-[#f8f5ef]/95 backdrop-blur-xl lg:block">
-      <div className="flex min-h-[70px] items-center justify-between gap-5 px-7 xl:px-9">
+    <header className="sticky top-0 z-30 hidden border-b border-white/[0.06] bg-[#142b40]/[0.97] text-[#f7f3ec] shadow-[0_18px_50px_-46px_rgba(5,15,25,0.8)] backdrop-blur-xl lg:block">
+      <div className="flex min-h-[76px] items-center justify-between gap-6 px-8 xl:px-10">
         <div className="min-w-0">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6f6a62]">
+          <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-[#aab79e]">
             Founder Control Center
           </p>
 
-          <h2 className="mt-1 truncate text-lg font-semibold tracking-[-0.02em] text-[#18202b]">
+          <h2 className="mt-1.5 truncate font-serif text-[19px] font-semibold tracking-[-0.025em] text-[#f7f3ec]">
             {currentItem?.label ??
-              "Administration"}
+              "Overview"}
           </h2>
         </div>
 
-        <div className="flex flex-1 items-center justify-end gap-2.5">
-          <div className="w-full max-w-[390px]">
+        <div className="flex flex-1 items-center justify-end gap-3">
+          <div className="w-full max-w-[420px]">
             <AdminGlobalSearch />
           </div>
 
           <a
             href={ADMIN_APP_HOME_HREF}
-            className="inline-flex h-10 items-center gap-2 rounded-xl border border-[#ded8ce] bg-white px-3.5 text-sm font-medium text-[#51565d] shadow-sm transition hover:border-[#cfc8bd] hover:text-[#18202b]"
+            className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.05] px-3.5 text-sm font-medium text-white/70 transition hover:border-white/20 hover:bg-white/[0.08] hover:text-white"
           >
             View App
             <ExternalLink size={14} />

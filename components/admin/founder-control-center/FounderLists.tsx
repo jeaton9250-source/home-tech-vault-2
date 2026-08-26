@@ -39,18 +39,18 @@ export function FounderRecentSignups({
         />
       }
     >
-      <div className="overflow-hidden rounded-[20px] border border-border-subtle">
+      <div className="overflow-hidden rounded-[26px] border border-[#182533]/10 bg-[#fffdf9] shadow-[0_24px_60px_-52px_rgba(18,32,45,0.6)]">
         {signups.length === 0 ? (
           <p className="px-4 py-8 text-center text-sm text-[#5f5b55]">
             No recent signups.
           </p>
         ) : (
-          <ul className="divide-y divide-border-subtle">
+          <ul className="divide-y divide-[#182533]/10">
             {signups.slice(0, 5).map((signup) => (
               <li key={signup.id}>
                 <Link
                   href={`/admin/users?selected=${signup.id}`}
-                  className="flex flex-col gap-2 bg-surface-sunken px-4 py-4 transition hover:bg-surface-card sm:flex-row sm:items-center sm:justify-between"
+                  className="group flex flex-col gap-3 bg-[#fffdf9] px-5 py-5 transition hover:bg-[#f5f1e9] sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div>
                     <p className="font-semibold text-[#18202b]">
@@ -87,7 +87,7 @@ export function FounderActivityTimeline({
       title="Platform Activity"
       subtitle="Recent meaningful events across the platform."
     >
-      <ol className="space-y-0">
+      <ol className="rounded-[26px] border border-[#182533]/10 bg-[#fffdf9] px-6 py-6 shadow-[0_24px_60px_-52px_rgba(18,32,45,0.6)]">
         {events.length === 0 ? (
           <li className="rounded-[20px] border border-border-subtle bg-surface-sunken px-5 py-8 text-center text-sm text-[#5f5b55]">
             No recent platform activity.
@@ -100,7 +100,7 @@ export function FounderActivityTimeline({
             const content = (
               <>
                 <div className="flex items-center gap-3">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full border border-border-subtle bg-surface-sunken text-charcoal">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#182533]/10 bg-[#f5f1e9] text-[#617c43]">
                     <Icon
                       aria-hidden="true"
                       className="h-4 w-4"
@@ -115,7 +115,7 @@ export function FounderActivityTimeline({
                     )}
                   </time>
                 </div>
-                <p className="mt-3 text-sm leading-6 text-text-primary">
+                <p className="mt-3 text-[14px] leading-6 text-[#333c44]">
                   {event.description}
                 </p>
               </>
@@ -125,7 +125,7 @@ export function FounderActivityTimeline({
               <li
                 key={event.id}
                 className={cn(
-                  "relative border-l border-border-subtle pl-6",
+                  "relative border-l border-[#dcd5ca] pl-7",
                   index < events.length - 1
                     ? "pb-6"
                     : "pb-0"
@@ -133,7 +133,7 @@ export function FounderActivityTimeline({
               >
                 <span
                   aria-hidden="true"
-                  className="absolute -left-[5px] top-3 h-2.5 w-2.5 rounded-full border border-border-subtle bg-surface-card"
+                  className="absolute -left-[6px] top-3 h-3 w-3 rounded-full border-2 border-[#fffdf9] bg-[#718d4f] shadow-[0_0_0_1px_rgba(113,141,79,0.25)]"
                 />
                 {event.href ? (
                   <Link

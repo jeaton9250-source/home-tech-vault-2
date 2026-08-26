@@ -39,7 +39,7 @@ const toneStyles: Record<
   neutral: {
     icon: CircleDot,
     className:
-      "border-border-subtle bg-surface-sunken text-[#5f5b55]",
+      "border-[#182533]/10 bg-[#fffdf9] text-[#5f5b55]",
   },
 };
 
@@ -80,7 +80,7 @@ export default function FounderPriorities({
               <li key={item.id}>
                 <Link
                   href={item.href}
-                  className="group flex items-start gap-4 rounded-[20px] border border-border-subtle bg-surface-sunken px-4 py-4 transition hover:border-charcoal/10 hover:bg-surface-card"
+                  className="group flex items-start gap-4 rounded-[26px] border border-[#182533]/10 bg-[#fffdf9] px-4 py-4 transition hover:border-charcoal/10 hover:bg-surface-card"
                 >
                   <span
                     className={cn(
@@ -100,7 +100,7 @@ export default function FounderPriorities({
                       </span>
                       {typeof item.count ===
                       "number" ? (
-                        <span className="rounded-full border border-border-subtle px-2 py-0.5 text-xs font-medium text-[#5f5b55]">
+                        <span className="rounded-full border border-[#182533]/10 px-2 py-0.5 text-xs font-medium text-[#5f5b55]">
                           {item.count}
                         </span>
                       ) : null}
@@ -136,7 +136,7 @@ export function FounderAttentionList({
       subtitle="Unresolved platform items that may need follow-up."
     >
       {items.length === 0 ? (
-        <div className="rounded-[20px] border border-border-subtle bg-surface-sunken px-5 py-8 text-center">
+        <div className="rounded-[26px] border border-[#182533]/10 bg-[#fffdf9] px-5 py-8 text-center">
           <p className="font-semibold text-[#18202b]">
             Nothing pending
           </p>
@@ -151,7 +151,7 @@ export function FounderAttentionList({
             <li key={item.id}>
               <Link
                 href={item.href}
-                className="block rounded-[20px] border border-border-subtle bg-surface-sunken px-4 py-4 transition hover:bg-surface-card"
+                className="block rounded-[26px] border border-[#182533]/10 bg-[#fffdf9] px-4 py-4 transition hover:bg-surface-card"
               >
                 <p className="font-semibold text-[#18202b]">
                   {item.title}
@@ -175,7 +175,7 @@ export function FounderFeedbackEmptyState() {
       title="User Feedback"
       subtitle="Customer sentiment and product feedback."
     >
-      <div className="rounded-[20px] border border-border-subtle bg-surface-sunken px-5 py-8 text-center">
+      <div className="rounded-[26px] border border-[#182533]/10 bg-[#fffdf9] px-5 py-8 text-center">
         <p className="font-semibold text-[#18202b]">
           No feedback system is connected yet.
         </p>
