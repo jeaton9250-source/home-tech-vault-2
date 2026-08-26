@@ -58,7 +58,7 @@ export function describeConnectorAccess(
   }
 
   if (access.maxConnectors === 1) {
-    return "1 connector on Free";
+    return "1 connector on Free · manual scans and discovery included";
   }
 
   return `Up to ${access.maxConnectors} connectors on Pro`;

@@ -475,14 +475,17 @@ export default function NetworkConnectPage() {
             </div>
             <div>
               <h2 className="text-lg font-semibold text-text-primary">
-                Household required
+                Set up your home Vault
               </h2>
               <p className="mt-2 text-sm leading-6 text-text-secondary">
-                Connectors are linked to a household. Create or join a household
-                from Family before pairing.
+                Pairing needs a home Vault so discovered devices have a
+                secure place to live. This is included with Free and does
+                not require a Family plan.
               </p>
               <div className="mt-4">
-                <Button href="/family">Go to Family</Button>
+                <Button href="/onboarding/create-household">
+                  Set Up My Home
+                </Button>
               </div>
             </div>
           </div>
@@ -508,8 +511,8 @@ export default function NetworkConnectPage() {
             Generate pairing code
           </h2>
           <p className="mt-2 text-sm leading-6 text-text-secondary">
-            {connectorLimitLabel(plan)}. Household Admins can create a one-time
-            code for the connector app.
+            {connectorLimitLabel(plan)}. Generate a one-time code to securely
+            connect the desktop app to your home Vault.
           </p>
 
           {canManageConnector ? (

@@ -11,10 +11,10 @@ export type ConnectorAccessContext = {
 };
 
 export const CONNECTOR_UPGRADE_MESSAGE =
-  "The Home Tech Vault Connector, Home Assistant syncing, and automatic network monitoring are available with a Pro or Family plan.";
+  "The Home Tech Vault Connector is included on Free. Upgrade to Pro or Family for automatic monitoring and expanded connector features.";
 
 export const CONNECTOR_MONITORING_FREE_MESSAGE =
-  "Pro or Family required";
+  "Automatic monitoring requires Pro or Family";
 
 export function resolveConnectorLimits(
   plan: SubscriptionPlan,

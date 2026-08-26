@@ -22,9 +22,9 @@ import { brand } from "@/lib/design-system/tokens";
 import { supabase } from "@/lib/supabase";
 
 const setupBenefits = [
-  "Name the household you will own",
-  "Start with a blank vault dashboard",
-  "Invite family members when you are ready",
+  "Create the home Vault used by your Connector",
+  "Keep discovered devices organized in one place",
+  "Invite household members later if you want",
 ] as const;
 
 export default function CreateHouseholdOnboardingPage() {
@@ -32,8 +32,6 @@ export default function CreateHouseholdOnboardingPage() {
 
   const [checkingSession, setCheckingSession] = useState(true);
   const [sessionReady, setSessionReady] = useState(false);
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
   const [householdName, setHouseholdName] = useState("");
   const [homeNickname, setHomeNickname] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -89,20 +87,7 @@ export default function CreateHouseholdOnboardingPage() {
         });
 
         setSessionReady(true);
-
-        setFirstName(
-          typeof session.user.user_metadata
-            ?.first_name === "string"
-            ? session.user.user_metadata.first_name
-            : ""
-        );
-        setLastName(
-          typeof session.user.user_metadata
-            ?.last_name === "string"
-            ? session.user.user_metadata.last_name
-            : ""
-        );
-      } finally {
+} finally {
         if (mounted) {
           setCheckingSession(false);
         }
@@ -121,42 +106,36 @@ export default function CreateHouseholdOnboardingPage() {
       return;
     }
 
-    if (!firstName.trim() || !lastName.trim()) {
-      setErrorMessage("Enter your first and last name.");
-      return;
-    }
-
     try {
       setSubmitting(true);
 
       const response = await fetch(
-        "/api/invite/create-account/household",
+        "/api/household/ensure",
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            firstName: firstName.trim(),
-            lastName: lastName.trim(),
             householdName: householdName.trim(),
-            homeNickname: homeNickname.trim() || null,
           }),
         }
       );
 
       const payload = (await response.json()) as {
-        redirectTo?: string;
+        success?: boolean;
+        householdId?: string;
+        householdName?: string;
         error?: string;
       };
 
       if (!response.ok) {
         throw new Error(
-          payload.error || "Unable to create your household."
+          payload.error || "Unable to create your home Vault."
         );
       }
 
-      router.replace(payload.redirectTo || "/dashboard");
+      router.replace("/network/connect");
       router.refresh();
     } catch (error) {
       console.error("Create household onboarding error:", error);
@@ -184,13 +163,13 @@ export default function CreateHouseholdOnboardingPage() {
   return (
     <AuthLayout
       headline={brand.identity}
-      description="Name the Home Tech Vault household you will own."
+      description="Set up the home Vault your Connector will use."
       benefits={[...setupBenefits]}
     >
       <AuthCard
         overline="Vault setup"
         title="Name your Home Tech Vault"
-        description="Choose the household name that will appear across your dashboard."
+        description="Choose the home name that will appear across your Vault."
       >
         {errorMessage ? (
           <AuthAlert variant="error">{errorMessage}</AuthAlert>
@@ -199,12 +178,12 @@ export default function CreateHouseholdOnboardingPage() {
         <form onSubmit={handleSubmit} className="mt-5 space-y-4">
           <FormInput
             id="household-name"
-            label="Household / vault name"
+            label="Home Vault name"
             value={householdName}
             onChange={(event) =>
               setHouseholdName(event.target.value)
             }
-            placeholder="Eaton Home"
+            placeholder="My Home"
             autoComplete="organization"
             required
           />

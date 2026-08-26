@@ -143,14 +143,17 @@ export default function ConnectorHubSection({
             Home Tech Vault Connector
           </p>
           <h2 className="mt-2 text-2xl font-semibold text-text-primary">
-            Join a household to pair a connector
+            Set up your home Vault
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-text-secondary">
-            Connectors are linked to a household vault. Create or join a
-            household from Family before installing the connector.
+            The Connector uses a home Vault to organize discovered devices.
+            Connector access is included on Free and does not require a
+            Family plan.
           </p>
           <div className="mt-5">
-            <Button href="/family">Go to Family</Button>
+            <Button href="/onboarding/create-household">
+              Set Up My Home
+            </Button>
           </div>
         </PageCard>
       </section>

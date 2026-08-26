@@ -7,6 +7,10 @@ import {
   resolveConnectorLimits,
 } from "./access";
 
+import {
+  getConnectorPlanEntitlements,
+} from "./connectorPlans";
+
 describe("connector access", () => {
   it("allows one connector on free", () => {
     assert.equal(
@@ -60,6 +64,50 @@ describe("connector access", () => {
     assert.equal(
       resolveConnectorLimits("family", false).canUseMonitoring,
       true
+    );
+  });
+
+
+  it("includes connector discovery on free", () => {
+    const free =
+      getConnectorPlanEntitlements(
+        "free",
+        false
+      );
+
+    assert.equal(
+      free.canDownload,
+      true
+    );
+
+    assert.equal(
+      free.canPair,
+      true
+    );
+
+    assert.equal(
+      free.canManualScan,
+      true
+    );
+
+    assert.equal(
+      free.canDiscovery,
+      true
+    );
+
+    assert.equal(
+      free.canAutoMonitoring,
+      false
+    );
+
+    assert.equal(
+      free.canBackgroundScanning,
+      false
+    );
+
+    assert.equal(
+      free.maxConnectors,
+      1
     );
   });
 

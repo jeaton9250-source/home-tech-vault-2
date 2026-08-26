@@ -134,51 +134,29 @@ export default function NetworkConnectorTab({
   if (!householdId) {
     return (
       <PageCard className="border-[#182533]/10 bg-[#f8f5ef] p-7 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] md:p-8">
-        <h2 className="text-xl font-semibold text-[#17212a]">
-          Join a household to pair a
-          connector
+        <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-[#617c43]">
+          Home Tech Vault Connector
+        </p>
+
+        <h2 className="mt-2 text-xl font-semibold text-[#17212a]">
+          Set up your home Vault
         </h2>
 
-        <p className="mt-3 text-sm leading-7 text-[#68737b]">
-          Connectors are linked to a
-          household vault. Create or join a
-          household from Family before
-          installing the connector.
+        <p className="mt-3 max-w-2xl text-sm leading-7 text-[#68737b]">
+          The Connector needs a home Vault to keep discovered
+          devices organized. This is included with your Free
+          account and does not require a Family plan.
         </p>
 
         <div className="mt-6">
-          <Button href="/family">
-            Go to Family
+          <Button href="/onboarding/create-household">
+            Set Up My Home
           </Button>
         </div>
       </PageCard>
     );
   }
 
-  if (!data.monitoringEnabled) {
-    return (
-      <PageCard className="border-[#182533]/10 bg-[#f8f5ef] p-7 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] md:p-8">
-        <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-[#617c43]">
-          Home Tech Vault Connector
-        </p>
-
-        <h2 className="mt-2 text-2xl font-semibold text-[#17212a]">
-          Upgrade to use the connector
-        </h2>
-
-        <p className="mt-3 max-w-2xl text-sm leading-7 text-[#68737b]">
-          Home network discovery, Home
-          Assistant syncing, and automatic
-          monitoring are available with Home
-          Tech Vault Pro or Family.
-        </p>
-
-        <div className="mt-6">
-          <ConnectorUpgradePrompt />
-        </div>
-      </PageCard>
-    );
-  }
 
   if (
     activeConnectors.length === 0
