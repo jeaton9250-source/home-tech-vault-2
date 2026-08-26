@@ -1,14 +1,12 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
+  ArrowLeft,
   ArrowRight,
-  FileText,
   Home,
-  Receipt,
-  ShieldCheck,
-  Wrench,
 } from "lucide-react";
 
 import { MARKETING_ROUTES } from "@/lib/marketing/routes";
@@ -16,6 +14,36 @@ import { MARKETING_ROUTES } from "@/lib/marketing/routes";
 type HeroSectionProps = {
   isSignedIn: boolean;
 };
+
+const slides = [
+  {
+    label: "Home",
+    eyebrow: "Your home at a glance",
+    title: "Everything important, visible in one place.",
+    description:
+      "See your devices, warranties, documents, household details, Vault Readiness, and home insights from one dashboard.",
+    image: "/marketing/home-dashboard-full.png",
+    alt: "Home Tech Vault home dashboard showing vault readiness, devices, warranties, documents, Home Advisor, and Ask Your Vault",
+  },
+  {
+    label: "Devices",
+    eyebrow: "Every device has a home",
+    title: "Keep the details you will need later.",
+    description:
+      "Organize appliances and technology with model numbers, purchase details, warranties, documents, locations, and more.",
+    image: "/marketing/devices-dashboard-v2.png",
+    alt: "Home Tech Vault devices page showing organized home appliances and technology",
+  },
+  {
+    label: "Home Wi-Fi",
+    eyebrow: "Know your home network",
+    title: "Your Wi-Fi information, documented.",
+    description:
+      "Keep important home network details organized alongside the rest of your home instead of scattered across notes and router labels.",
+    image: "/marketing/home-wifi-dashboard.png",
+    alt: "Home Tech Vault Home Wi-Fi page showing organized home network information",
+  },
+];
 
 export default function HeroSection({
   isSignedIn,
@@ -28,43 +56,62 @@ export default function HeroSection({
     ? "Open My Vault"
     : "Start My Home Vault";
 
+  const [activeSlide, setActiveSlide] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+
+  useEffect(() => {
+    if (isPaused) return;
+
+    const timer = window.setInterval(() => {
+      setActiveSlide((current) =>
+        current === slides.length - 1 ? 0 : current + 1
+      );
+    }, 6000);
+
+    return () => window.clearInterval(timer);
+  }, [isPaused]);
+
+  const previousSlide = () => {
+    setActiveSlide((current) =>
+      current === 0 ? slides.length - 1 : current - 1
+    );
+  };
+
+  const nextSlide = () => {
+    setActiveSlide((current) =>
+      current === slides.length - 1 ? 0 : current + 1
+    );
+  };
+
+  const slide = slides[activeSlide];
+
   return (
     <section
-      className="bg-[#f5f1e8]"
+      className="overflow-hidden bg-[#f5f1e8]"
       style={{
-        padding: "80px 48px",
+        padding: "64px 48px 54px",
       }}
     >
       <div
         style={{
           maxWidth: "1380px",
           margin: "0 auto",
-          display: "flex",
-          flexDirection: "row",
-          flexWrap: "nowrap",
-          alignItems: "center",
-          gap: "56px",
           width: "100%",
         }}
       >
-        {/* LEFT */}
+        {/* HERO COPY */}
         <div
           style={{
-            flex: "0 0 42%",
-            width: "42%",
-            minWidth: 0,
+            width: "100%",
+            maxWidth: "940px",
+            margin: "0 auto",
+            textAlign: "center",
           }}
         >
           <div className="inline-flex items-center gap-2 rounded-full border border-[#17212a]/10 bg-[#fffdf8] px-4 py-2 shadow-sm">
             <Home size={14} className="text-[#617c43]" />
 
-            <span
-              style={{
-                fontSize: "11px",
-                letterSpacing: "0.16em",
-              }}
-              className="font-semibold uppercase text-[#617c43]"
-            >
+            <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#617c43]">
               A simpler way to remember your home
             </span>
           </div>
@@ -72,16 +119,17 @@ export default function HeroSection({
           <h1
             style={{
               marginTop: "28px",
-              maxWidth: "620px",
-              fontSize: "clamp(52px, 5vw, 78px)",
+              maxWidth: "940px",
+              marginLeft: "auto",
+              marginRight: "auto",
+              fontSize: "clamp(52px, 5.5vw, 82px)",
               lineHeight: "0.98",
               letterSpacing: "-0.055em",
               fontWeight: 500,
             }}
             className="font-serif text-[#17212a]"
           >
-            Your home comes with
-            <br />
+            Your home comes with{" "}
             <span className="text-[#617c43]">
               a lot to remember.
             </span>
@@ -89,8 +137,10 @@ export default function HeroSection({
 
           <p
             style={{
-              marginTop: "28px",
-              maxWidth: "560px",
+              marginTop: "24px",
+              maxWidth: "720px",
+              marginLeft: "auto",
+              marginRight: "auto",
               fontSize: "18px",
               lineHeight: "1.75",
             }}
@@ -101,10 +151,10 @@ export default function HeroSection({
             want later in one simple place.
           </p>
 
-          <div className="mt-9 flex flex-wrap gap-3">
+          <div className="mt-9 flex flex-wrap justify-center gap-3">
             <Link
               href={primaryHref}
-              className="inline-flex min-h-[56px] items-center justify-center gap-2 rounded-full bg-[#617c43] px-8 text-[15px] font-semibold text-white shadow-[0_18px_38px_-22px_rgba(97,124,67,0.9)] transition hover:bg-[#718d4f]"
+              className="inline-flex min-h-[56px] items-center justify-center gap-2 rounded-full bg-[#617c43] px-8 text-[15px] font-semibold text-white shadow-[0_18px_38px_-22px_rgba(97,124,67,0.9)] transition hover:-translate-y-0.5 hover:bg-[#718d4f]"
             >
               {primaryLabel}
               <ArrowRight size={16} />
@@ -119,112 +169,130 @@ export default function HeroSection({
           </div>
         </div>
 
-        {/* RIGHT */}
+        {/* PRODUCT TOUR */}
         <div
-          style={{
-            flex: "1 1 58%",
-            width: "58%",
-            minWidth: 0,
-          }}
+          className="mx-auto mt-16 w-full max-w-[1180px]"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
         >
-          <div className="rounded-[34px] bg-[#e7dfd0] p-3 shadow-[0_35px_90px_-45px_rgba(23,33,42,0.4)]">
-            <div
-              className="relative overflow-hidden rounded-[27px]"
-              style={{
-                width: "100%",
-                height: "500px",
-              }}
-            >
-              <Image
-                src="/images/home-hero.jpg"
-                alt="A warm and welcoming home"
-                width={1600}
-                height={1200}
-                priority
-                quality={75}
-                className="h-full w-full object-cover object-[center_45%]"
-              />
+          <div className="mb-5 flex items-center justify-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-[#617c43]" />
+            <span className="text-[10px] font-semibold uppercase tracking-[0.17em] text-[#617c43]">
+              Inside Home Tech Vault
+            </span>
+          </div>
 
-              <div className="absolute inset-0 bg-gradient-to-t from-[#17212a]/30 via-transparent to-transparent" />
+          {/* Tabs */}
+          <div className="mb-6 flex flex-wrap justify-center gap-2">
+            {slides.map((item, index) => (
+              <button
+                key={item.label}
+                type="button"
+                onClick={() => setActiveSlide(index)}
+                className={`rounded-full px-5 py-2.5 text-[12px] font-semibold transition ${
+                  index === activeSlide
+                    ? "bg-[#17212a] text-white shadow-md"
+                    : "border border-[#17212a]/10 bg-[#fffdf8] text-[#68716c] hover:border-[#617c43]/30 hover:text-[#17212a]"
+                }`}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
 
-              {/* TOP RIGHT NOTE */}
-              <div className="absolute right-5 top-5 max-w-[220px] rotate-[2deg] rounded-2xl border border-white/40 bg-[#fffdf8]/95 px-4 py-3 shadow-lg backdrop-blur-sm">
-                <p className="font-serif text-base leading-6 text-[#40502f]">
-                  Because “I know I saved that somewhere” gets old.
-                </p>
+          <div className="relative">
+            <div className="pointer-events-none absolute -inset-16 rounded-full bg-[#617c43]/10 blur-3xl" />
+
+            <div className="relative overflow-hidden rounded-[36px] border border-[#17212a]/10 bg-[#fffdf8] p-3 shadow-[0_40px_100px_-35px_rgba(23,33,42,0.35)]">
+              {/* Screenshot stage */}
+              <div className="relative flex h-[520px] items-start justify-center overflow-hidden rounded-[28px] bg-[#eee9df] sm:h-[620px] md:h-[720px] lg:h-[820px]">
+                {slides.map((item, index) => (
+                  <div
+                    key={item.image}
+                    className={`absolute inset-0 flex items-start justify-center transition-all duration-700 ease-out ${
+                      index === activeSlide
+                        ? "translate-x-0 opacity-100"
+                        : index < activeSlide
+                          ? "-translate-x-6 opacity-0"
+                          : "translate-x-6 opacity-0"
+                    }`}
+                  >
+                    <Image
+                      src={item.image}
+                      alt={item.alt}
+                      width={1400}
+                      height={1200}
+                      priority={index === 0}
+                      quality={90}
+                      sizes="(min-width: 1200px) 1180px, 94vw"
+                      className="h-full w-full object-contain object-top"
+                    />
+                  </div>
+                ))}
               </div>
 
-              {/* BOTTOM OVERLAY */}
-              <div className="absolute bottom-5 left-1/2 w-[92%] -translate-x-1/2 rounded-[22px] border border-white/30 bg-[#fffdf8]/95 px-5 py-4 shadow-xl backdrop-blur-md">
-                <div className="mb-4">
-                  <p className="text-[9px] font-semibold uppercase tracking-[0.17em] text-[#617c43]">
-                    My Home
-                  </p>
+              {/* Arrows */}
+              <button
+                type="button"
+                onClick={previousSlide}
+                aria-label="Previous product screenshot"
+                className="absolute left-6 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-[#17212a]/10 bg-[#fffdf8]/95 text-[#17212a] shadow-lg backdrop-blur transition hover:scale-105"
+              >
+                <ArrowLeft size={18} />
+              </button>
 
-                  <p className="mt-1 font-serif text-[22px] text-[#17212a]">
-                    The things I&apos;ll want later.
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-4 gap-3">
-                  <HomeRecord
-                    icon={Receipt}
-                    label="Receipts"
-                  />
-
-                  <HomeRecord
-                    icon={ShieldCheck}
-                    label="Warranties"
-                  />
-
-                  <HomeRecord
-                    icon={FileText}
-                    label="Documents"
-                  />
-
-                  <HomeRecord
-                    icon={Wrench}
-                    label="Maintenance"
-                  />
-                </div>
-              </div>
+              <button
+                type="button"
+                onClick={nextSlide}
+                aria-label="Next product screenshot"
+                className="absolute right-6 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-[#17212a]/10 bg-[#fffdf8]/95 text-[#17212a] shadow-lg backdrop-blur transition hover:scale-105"
+              >
+                <ArrowRight size={18} />
+              </button>
             </div>
+          </div>
+
+          {/* Slide description */}
+          <div className="mx-auto mt-7 max-w-3xl text-center">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.17em] text-[#617c43]">
+              {slide.eyebrow}
+            </p>
+
+            <h2 className="mt-2 font-serif text-2xl text-[#17212a] md:text-3xl">
+              {slide.title}
+            </h2>
+
+            <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-[#68716c]">
+              {slide.description}
+            </p>
+          </div>
+
+          {/* Progress dots */}
+          <div className="mt-6 flex items-center justify-center gap-2">
+            {slides.map((item, index) => (
+              <button
+                key={item.label}
+                type="button"
+                aria-label={`Show ${item.label}`}
+                onClick={() => setActiveSlide(index)}
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  index === activeSlide
+                    ? "w-8 bg-[#617c43]"
+                    : "w-2 bg-[#17212a]/20 hover:bg-[#17212a]/35"
+                }`}
+              />
+            ))}
           </div>
         </div>
       </div>
 
       <style jsx>{`
         @media (max-width: 700px) {
-          section > div {
-            flex-direction: column !important;
-          }
-
-          section > div > div {
-            width: 100% !important;
-            flex: none !important;
+          section {
+            padding: 48px 20px 42px !important;
           }
         }
       `}</style>
     </section>
-  );
-}
-
-function HomeRecord({
-  icon: Icon,
-  label,
-}: {
-  icon: typeof Home;
-  label: string;
-}) {
-  return (
-    <div className="flex min-w-0 items-center gap-2.5 rounded-xl bg-[#f5f1e8] px-3.5 py-3">
-      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#617c43]/10 text-[#617c43]">
-        <Icon size={13} />
-      </div>
-
-      <span className="text-[11px] font-medium leading-4 text-[#59625d]">
-        {label}
-      </span>
-    </div>
   );
 }
