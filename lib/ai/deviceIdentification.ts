@@ -547,6 +547,360 @@ function parseStructuredSuggestion(
   };
 }
 
+
+function normalizedEvidenceText(
+  values: Array<
+    string | null | undefined
+  >
+): string {
+  return values
+    .filter(
+      (value): value is string =>
+        Boolean(value?.trim())
+    )
+    .join(" ")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function normalizedComparableText(
+  value: string | null | undefined
+): string {
+  return normalizedEvidenceText([value]);
+}
+
+function evidenceContainsValue(
+  evidence: string,
+  value: string | null
+): boolean {
+  const normalized =
+    normalizedComparableText(value);
+
+  if (!normalized) {
+    return false;
+  }
+
+  return (
+    evidence === normalized ||
+    evidence.includes(
+      ` ${normalized} `
+    ) ||
+    evidence.startsWith(
+      `${normalized} `
+    ) ||
+    evidence.endsWith(
+      ` ${normalized}`
+    )
+  );
+}
+
+function determineAiConfidenceCeiling(
+  device: ParsedDiscoveryDevice
+): number {
+  const hasModel =
+    Boolean(device.model?.trim());
+
+  const hasManufacturer =
+    Boolean(
+      device.manufacturer?.trim()
+    );
+
+  const hasFriendlyName =
+    Boolean(
+      device.friendlyName?.trim()
+    );
+
+  const hasHostname =
+    Boolean(device.hostname?.trim());
+
+  const hasMdns =
+    (device.mdnsServices?.length ?? 0) >
+    0;
+
+  const hasSsdp =
+    Boolean(
+      device.ssdpDeviceType?.trim()
+    );
+
+  const protocolSignals =
+    Number(hasMdns) +
+    Number(hasSsdp);
+
+  if (
+    hasModel &&
+    hasManufacturer &&
+    protocolSignals > 0
+  ) {
+    return 0.97;
+  }
+
+  if (hasModel && hasManufacturer) {
+    return 0.94;
+  }
+
+  if (
+    hasManufacturer &&
+    protocolSignals >= 2
+  ) {
+    return 0.88;
+  }
+
+  if (
+    hasManufacturer &&
+    protocolSignals === 1
+  ) {
+    return 0.84;
+  }
+
+  if (protocolSignals >= 2) {
+    return 0.80;
+  }
+
+  if (protocolSignals === 1) {
+    return 0.75;
+  }
+
+  if (
+    hasManufacturer &&
+    (hasFriendlyName || hasHostname)
+  ) {
+    return 0.70;
+  }
+
+  if (hasManufacturer) {
+    return 0.65;
+  }
+
+  if (hasFriendlyName || hasHostname) {
+    return 0.55;
+  }
+
+  return 0.45;
+}
+
+export function applyAiDeviceGuardrails(
+  suggestion: AiDeviceSuggestion,
+  device: ParsedDiscoveryDevice,
+  deterministic: IdentificationResult
+): AiDeviceSuggestion {
+  const evidence =
+    normalizedEvidenceText([
+      device.hostname,
+      device.manufacturer,
+      device.model,
+      device.friendlyName,
+      device.deviceType,
+      ...(device.discoverySources ?? []),
+      ...(device.mdnsServices ?? []),
+      device.ssdpDeviceType,
+      deterministic.likelyBrand,
+      deterministic.model,
+      deterministic.likelyCategory,
+      ...(
+        deterministic
+          .identificationReasons ?? []
+      ),
+    ]);
+
+  const observedModel =
+    normalizeOptionalText(
+      device.model
+    );
+
+  const suggestedModel =
+    normalizeOptionalText(
+      suggestion.model
+    );
+
+  const modelSupported =
+    Boolean(
+      observedModel &&
+      suggestedModel &&
+      (
+        normalizedComparableText(
+          observedModel
+        ) ===
+          normalizedComparableText(
+            suggestedModel
+          ) ||
+        normalizedComparableText(
+          observedModel
+        ).includes(
+          normalizedComparableText(
+            suggestedModel
+          )
+        ) ||
+        normalizedComparableText(
+          suggestedModel
+        ).includes(
+          normalizedComparableText(
+            observedModel
+          )
+        )
+      )
+    );
+
+  const suggestedManufacturer =
+    normalizeOptionalText(
+      suggestion.manufacturer
+    );
+
+  const manufacturerSupported =
+    Boolean(
+      suggestedManufacturer &&
+      evidenceContainsValue(
+        evidence,
+        suggestedManufacturer
+      )
+    );
+
+  const safeModel =
+    modelSupported
+      ? suggestedModel
+      : null;
+
+  const safeManufacturer =
+    manufacturerSupported
+      ? suggestedManufacturer
+      : null;
+
+  const safeCategory =
+    normalizeOptionalText(
+      suggestion.category
+    );
+
+  const safeDeviceType =
+    normalizeOptionalText(
+      suggestion.deviceType
+    );
+
+  let safeDisplayName =
+    normalizeOptionalText(
+      suggestion.displayName
+    );
+
+  if (
+    (
+      suggestedModel &&
+      !safeModel
+    ) ||
+    (
+      suggestedManufacturer &&
+      !safeManufacturer
+    )
+  ) {
+    safeDisplayName =
+      [
+        safeManufacturer,
+        safeModel,
+        safeCategory ??
+          safeDeviceType ??
+          deterministic.likelyCategory,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .trim() ||
+      (
+        deterministic.displayName &&
+        deterministic.displayName !==
+          "Unknown network device"
+          ? deterministic.displayName
+          : null
+      ) ||
+      safeCategory ||
+      safeDeviceType ||
+      "Network Device";
+  }
+
+  const ceiling =
+    determineAiConfidenceCeiling(
+      device
+    );
+
+  const requestedConfidence =
+    Number.isFinite(
+      suggestion.confidence
+    )
+      ? Math.max(
+          0,
+          Math.min(
+            1,
+            suggestion.confidence
+          )
+        )
+      : 0;
+
+  const confidence =
+    Math.min(
+      requestedConfidence,
+      ceiling
+    );
+
+  const notes: string[] = [];
+
+  if (
+    suggestedModel &&
+    !modelSupported
+  ) {
+    notes.push(
+      "Exact model was not confirmed by observed metadata."
+    );
+  }
+
+  if (
+    suggestedManufacturer &&
+    !manufacturerSupported
+  ) {
+    notes.push(
+      "Manufacturer was not confirmed by discovery evidence."
+    );
+  }
+
+  if (
+    requestedConfidence > ceiling
+  ) {
+    notes.push(
+      `Confidence capped at ${Math.round(
+        ceiling * 100
+      )}% by network evidence.`
+    );
+  }
+
+  return {
+    displayName:
+      safeDisplayName,
+
+    manufacturer:
+      safeManufacturer,
+
+    model:
+      safeModel,
+
+    category:
+      safeCategory,
+
+    deviceType:
+      safeDeviceType,
+
+    confidence,
+
+    reason:
+      [
+        normalizeOptionalText(
+          suggestion.reason,
+          220
+        ),
+        ...notes,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .slice(0, 300) ||
+      "Limited network evidence was available.",
+  };
+}
+
 async function saveSuggestion(
   admin: SupabaseClient,
   input: {
@@ -776,7 +1130,12 @@ export async function identifyDeviceWithAi(
 
   if (cached) {
     return {
-      suggestion: cached,
+      suggestion:
+        applyAiDeviceGuardrails(
+          cached,
+          input.device,
+          input.deterministic
+        ),
       source: "cache",
       fingerprintHash,
       observationHash,
@@ -986,9 +1345,16 @@ export async function identifyDeviceWithAi(
       );
     }
 
-    const suggestion =
+    const rawSuggestion =
       parseStructuredSuggestion(
         outputText
+      );
+
+    const suggestion =
+      applyAiDeviceGuardrails(
+        rawSuggestion,
+        input.device,
+        input.deterministic
       );
 
     const inputTokens =

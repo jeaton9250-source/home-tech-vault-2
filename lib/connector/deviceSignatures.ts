@@ -335,6 +335,38 @@ export const DEVICE_SIGNATURES: DeviceSignature[] = [
     reasonTemplate: "Home Assistant hub signals detected",
   }),
   sig({
+    id: "spectrum-sax-router",
+    brand: "Spectrum",
+    category: "Router / Mesh System",
+    weight: 5,
+
+    /*
+     * Spectrum Advanced WiFi routers commonly
+     * expose the hardware model directly as the
+     * network hostname, for example:
+     *
+     *   sax2v1r.lan
+     *   SAX2V1R
+     *
+     * Keep these patterns deliberately narrow so
+     * arbitrary "sax..." hostnames are not treated
+     * as Spectrum routers.
+     */
+    hostnamePatterns: [
+      /^sax1v1[rs](?:[.\-_]|$)/i,
+      /^sax2v1[rs](?:[.\-_]|$)/i,
+    ],
+
+    modelPatterns: [
+      /^sax1v1[rs]$/i,
+      /^sax2v1[rs]$/i,
+    ],
+
+    reasonTemplate:
+      "Hostname or model matches a Spectrum SAX-series Wi-Fi router",
+  }),
+
+  sig({
     id: "unifi-network",
     brand: "Ubiquiti",
     category: "Router / Mesh System",

@@ -2,6 +2,47 @@ import type { DeviceCatalogEntry } from "@/lib/device-intelligence/catalog/apple
 
 export const NETWORKING_CATALOG: DeviceCatalogEntry[] = [
   {
+    id: "spectrum-sax2v1r",
+    manufacturer: "Spectrum",
+    family: "SAX2V1R",
+    suggestedName: "Spectrum WiFi 6E Router",
+    category: "router",
+    hostnamePatterns: [
+      /^sax2v1r(?:[.\-_]|$)/i,
+    ],
+  },
+  {
+    id: "spectrum-sax2v1s",
+    manufacturer: "Spectrum",
+    family: "SAX2V1S",
+    suggestedName: "Spectrum WiFi Router",
+    category: "router",
+    hostnamePatterns: [
+      /^sax2v1s(?:[.\-_]|$)/i,
+    ],
+  },
+  {
+    id: "spectrum-sax1v1r",
+    manufacturer: "Spectrum",
+    family: "SAX1V1R",
+    suggestedName: "Spectrum WiFi Router",
+    category: "router",
+    hostnamePatterns: [
+      /^sax1v1r(?:[.\-_]|$)/i,
+    ],
+  },
+  {
+    id: "spectrum-sax1v1s",
+    manufacturer: "Spectrum",
+    family: "SAX1V1S",
+    suggestedName: "Spectrum WiFi Router",
+    category: "router",
+    hostnamePatterns: [
+      /^sax1v1s(?:[.\-_]|$)/i,
+    ],
+  },
+
+  {
     id: "generic-router",
     manufacturer: "Unknown",
     family: "Router",
