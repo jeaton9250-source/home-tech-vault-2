@@ -37,18 +37,6 @@ export const PRIMARY_NAV_ITEMS: PrimaryNavItem[] = [
     activePrefixes: ["/devices"],
   },
 
-  /*
-    Smart Import
-
-    No feature restriction yet so every
-    signed-in user can access it.
-  */
-  {
-    label: "Smart Import",
-    href: "/imports",
-    icon: Sparkles,
-    activePrefixes: ["/imports"],
-  },
 
   {
     label: "Search",
@@ -112,33 +100,7 @@ export const PROFILE_MENU_ITEMS: ProfileNavItem[] = [
     icon: HelpCircle,
   },
 
-  {
-    label: "Account",
-    href: "/settings?tab=profile",
-    icon: User,
-    feature: "account",
-  },
 
-  {
-    label: "Warranties",
-    href: "/warranties",
-    icon: ShieldCheck,
-    feature: "warranties",
-  },
-
-  {
-    label: "Subscriptions",
-    href: "/subscriptions",
-    icon: CreditCard,
-    feature: "subscriptions",
-  },
-
-  {
-    label: "Reports",
-    href: "/reports",
-    icon: LayoutDashboard,
-    feature: "reports",
-  },
 ];
 
 /** Additional routes preserved from former dropdowns */

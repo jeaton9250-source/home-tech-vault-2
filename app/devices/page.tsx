@@ -15,12 +15,15 @@ import {
   Check,
   ChevronDown,
   Filter,
+  Inbox,
   Laptop,
   Loader2,
   MapPin,
   Plus,
+  Radar,
   Search,
   ShieldCheck,
+  Sparkles,
   SlidersHorizontal,
   X,
 } from "lucide-react";
@@ -926,47 +929,133 @@ export default function DevicesPage() {
     router.push("/devices/add");
   }
 
+  function handleSmartImport() {
+    if (isDemo) {
+      showReadOnlyModal();
+      return;
+    }
+
+    if (!user) {
+      router.push("/signup");
+      return;
+    }
+
+    if (
+      role === "viewer" ||
+      isViewer
+    ) {
+      router.push("/family");
+      return;
+    }
+
+    router.push("/imports");
+  }
+
+  function handleWifiDiscovery() {
+    if (isDemo) {
+      showReadOnlyModal();
+      return;
+    }
+
+    if (!user) {
+      router.push("/signup");
+      return;
+    }
+
+    router.push(
+      "/network?tab=discovery"
+    );
+  }
+
   return (
     <PageShell>
       <div data-tour="devices">
       <PageHero
         section="technology"
-        eyebrow={isDemo ? "Interactive Demo" : "Personal Vault"}
-        title={isDemo ? "Morgan Household devices." : "Your devices."}
+        eyebrow={
+          isDemo
+            ? "Interactive Demo"
+            : "Your Home Inventory"
+        }
+        title={
+          isDemo
+            ? "Morgan Household devices."
+            : "Your devices."
+        }
         description={
           isDemo
             ? "23 devices organized with photos, warranties, receipts, and notes."
-            : "Everything you own, organized in one calm and secure place."
+            : "Everything you own, thoughtfully organized in one place."
         }
       >
         {showAddDeviceAction ||
-        (permissionsLoading && Boolean(user) && !isDemo) ? (
-          <Button
-            type="button"
-            onClick={handleAddDevice}
-            disabled={loading}
-          >
-            {loading ? (
-              <Loader2
-                size={17}
-                className="animate-spin"
-              />
-            ) : (
-              <Plus size={17} />
-            )}
-            {getAddDeviceButtonLabel()}
-          </Button>
+        (permissionsLoading &&
+          Boolean(user) &&
+          !isDemo) ? (
+          <>
+            <Button
+              type="button"
+              onClick={
+                handleAddDevice
+              }
+              disabled={loading}
+            >
+              {loading ? (
+                <Loader2
+                  size={17}
+                  className="animate-spin"
+                />
+              ) : (
+                <Plus
+                  size={17}
+                />
+              )}
+
+              {getAddDeviceButtonLabel()}
+            </Button>
+
+            {!loading &&
+            role !== "viewer" ? (
+              <button
+                type="button"
+                onClick={
+                  handleSmartImport
+                }
+                className="inline-flex items-center gap-2 px-2 py-2 text-sm font-semibold text-[#52606a] transition hover:text-[#617c43]"
+              >
+                <Inbox
+                  size={16}
+                />
+
+                Smart Import
+
+                <ArrowRight
+                  size={14}
+                />
+              </button>
+            ) : null}
+          </>
         ) : isDemo ? (
           <Button
             type="button"
-            onClick={handleAddDevice}
+            onClick={
+              handleAddDevice
+            }
           >
-            <Plus size={17} />
+            <Plus
+              size={17}
+            />
+
             Add Device
           </Button>
         ) : !user ? (
-          <Button href="/signup">
-            <Plus size={17} />
+          <Button
+            href="/signup"
+          >
+            <Plus
+              size={17}
+            />
+
             Create Your Vault
           </Button>
         ) : showViewerAccess ? (
@@ -990,34 +1079,101 @@ export default function DevicesPage() {
         </PageCard>
       )}
 
+
+
       {!loading &&
-        devices.length > 0 && (
-          <section className="grid gap-4 sm:grid-cols-3">
-            <SummaryCard
-              label="Devices"
-              value={devices.length.toLocaleString()}
-              icon={Laptop}
-            />
+        devices.length > 0 &&
+        !showViewerAccess && (
+          <div className="mt-8 flex flex-col gap-3 border-b border-[#182533]/8 pb-5 md:mt-10 md:flex-row md:items-center md:justify-between">
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+            <button
+              type="button"
+              onClick={handleAddDevice}
+              className="group inline-flex items-center gap-2 text-sm font-semibold text-[#52606a] transition hover:text-[#617c43]"
+            >
+              <Sparkles
+                size={14}
+                className="text-[#718d4f]"
+              />
 
-            <SummaryCard
-              label="Protected Value"
-              value={formatCurrency(
-                protectedValue
-              )}
-              icon={ShieldCheck}
-            />
+              Quick Search
 
-            <SummaryCard
-              label="Active Warranties"
-              value={activeWarrantyCount.toLocaleString()}
-              icon={Check}
-            />
-          </section>
+              <ArrowRight
+                size={12}
+                className="opacity-0 transition group-hover:translate-x-0.5 group-hover:opacity-100"
+              />
+            </button>
+
+            <button
+              type="button"
+              onClick={handleSmartImport}
+              className="group inline-flex items-center gap-2 text-sm font-semibold text-[#52606a] transition hover:text-[#617c43]"
+            >
+              <Inbox
+                size={14}
+                className="text-[#718d4f]"
+              />
+
+              Smart Import
+
+              <ArrowRight
+                size={12}
+                className="opacity-0 transition group-hover:translate-x-0.5 group-hover:opacity-100"
+              />
+            </button>
+
+            <button
+              type="button"
+              onClick={handleWifiDiscovery}
+              className="group inline-flex items-center gap-2 text-sm font-semibold text-[#52606a] transition hover:text-[#617c43]"
+            >
+              <Radar
+                size={14}
+                className="text-[#718d4f]"
+              />
+
+              Home Wi-Fi
+
+              <ArrowRight
+                size={12}
+                className="opacity-0 transition group-hover:translate-x-0.5 group-hover:opacity-100"
+              />
+            </button>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-[#7b858c]">
+              <span>
+                {devices.length.toLocaleString()} devices
+              </span>
+
+              <span
+                aria-hidden="true"
+                className="text-[#b9beb9]"
+              >
+                •
+              </span>
+
+              <span>
+                {formatCurrency(protectedValue)} protected
+              </span>
+
+              <span
+                aria-hidden="true"
+                className="text-[#b9beb9]"
+              >
+                •
+              </span>
+
+              <span>
+                {activeWarrantyCount.toLocaleString()} active warranties
+              </span>
+            </div>
+          </div>
         )}
 
       {!loading &&
         devices.length > 0 && (
-          <PageCard className="border-[#182533]/10 bg-[#f8f5ef] p-5 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] md:p-6">
+          <PageCard className="mt-6 border-0 bg-transparent p-0 shadow-none">
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-3 md:flex-row md:items-center">
                 <div className="relative flex-1">
@@ -1035,7 +1191,7 @@ export default function DevicesPage() {
                       )
                     }
                     placeholder="Search your devices..."
-                    className="w-full rounded-xl border border-[#182533]/10 bg-[#eee9df]/60 py-3.5 pl-11 pr-11 text-sm text-[#17212a] outline-none transition placeholder:text-[#8a949b] focus:border-[#617c43]/40 focus:bg-[#f8f5ef] focus:ring-4 focus:ring-[#617c43]/10"
+                    className="w-full rounded-[16px] border border-[#182533]/8 bg-[#f4f1ea]/65 py-3.5 pl-11 pr-11 text-sm text-[#17212a] outline-none transition placeholder:text-[#9aa2a7] focus:border-[#617c43]/30 focus:bg-white focus:ring-4 focus:ring-[#617c43]/8"
                   />
 
                   {searchTerm && (
@@ -1060,7 +1216,7 @@ export default function DevicesPage() {
                         !current
                     )
                   }
-                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-[#182533]/10 bg-[#f8f5ef] px-5 text-sm font-semibold text-[#17212a] transition hover:border-[#617c43]/25 hover:bg-[#f2eee6]"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[16px] border border-[#182533]/8 bg-white/70 px-5 text-sm font-semibold text-[#52606a] transition hover:border-[#617c43]/20 hover:bg-white hover:text-[#17212a]"
                 >
                   <SlidersHorizontal
                     size={17}
@@ -1119,7 +1275,11 @@ export default function DevicesPage() {
                             : "border border-[#182533]/10 bg-[#f8f5ef] text-[#68737b] hover:border-[#617c43]/30 hover:text-[#17212a]")
                         }
                       >
-                        {category}
+                        {category === "All"
+                    ? "All"
+                    : formatDeviceCategoryLabel(
+                        category
+                      )}
                       </button>
                     );
                   }
@@ -1195,16 +1355,8 @@ export default function DevicesPage() {
                 </div>
               )}
 
-              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#182533]/10 pt-4">
-                <p className="text-sm text-[#68737b]">
-                  {filteredDevices.length}{" "}
-                  {filteredDevices.length ===
-                  1
-                    ? "device"
-                    : "devices"}
-                </p>
-
-                {filtersActive && (
+              {filtersActive && (
+                <div className="flex justify-end border-t border-[#182533]/10 pt-4">
                   <button
                     type="button"
                     onClick={clearFilters}
@@ -1213,8 +1365,8 @@ export default function DevicesPage() {
                     <X size={15} />
                     Clear filters
                   </button>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </PageCard>
         )}
@@ -1231,7 +1383,7 @@ export default function DevicesPage() {
           </div>
         </PageCard>
       ) : filteredDevices.length > 0 ? (
-        <section className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+        <section className="mt-4 grid gap-8 sm:grid-cols-2 xl:grid-cols-3">
           {filteredDevices.map(
             (device) => (
               <ModernDeviceCard
@@ -1365,6 +1517,70 @@ export default function DevicesPage() {
   );
 }
 
+function formatDeviceCategoryLabel(
+  category:
+    | string
+    | null
+    | undefined
+) {
+  const normalized =
+    String(
+      category ?? ""
+    )
+      .trim()
+      .toLowerCase();
+
+  const categoryLabels:
+    Record<string, string> = {
+      firetv:
+        "Fire TV",
+      "fire tv":
+        "Fire TV",
+      gaming:
+        "Gaming",
+      game:
+        "Gaming",
+      mobile:
+        "Mobile",
+      phone:
+        "Phone & Tablet",
+      tablet:
+        "Phone & Tablet",
+      "phone / tablet":
+        "Phone & Tablet",
+      "phone & tablet":
+        "Phone & Tablet",
+      camera:
+        "Cameras",
+      cameras:
+        "Cameras",
+      light:
+        "Lighting",
+      lighting:
+        "Lighting",
+      television:
+        "Televisions",
+      televisions:
+        "Televisions",
+      tv:
+        "Televisions",
+      unknown:
+        "Other",
+      other:
+        "Other",
+    };
+
+  return (
+    categoryLabels[
+      normalized
+    ] ??
+    String(
+      category ??
+        "Other"
+    )
+  );
+}
+
 function ModernDeviceCard({
   device,
   isDemo = false,
@@ -1383,31 +1599,25 @@ function ModernDeviceCard({
         "/devices/" +
         device.id
       }
-      className="group overflow-hidden rounded-[26px] border border-[#182533]/10 bg-[#f8f5ef] shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] transition duration-300 hover:-translate-y-1 hover:border-[#617c43]/25 hover:shadow-[0_26px_60px_-38px_rgba(15,25,35,0.55)]"
+      className="group overflow-hidden rounded-[32px] border border-[#182533]/[0.06] bg-[#fffefa] shadow-[0_24px_60px_-48px_rgba(15,25,35,0.34)] transition duration-300 hover:-translate-y-1 hover:border-[#182533]/10 hover:shadow-[0_34px_80px_-52px_rgba(15,25,35,0.46)]"
     >
-      <div className="relative">
+      <div className="relative overflow-hidden">
         <DeviceImageDisplay
           device={device}
           variant="card"
-          className="transition duration-500 group-hover:scale-[1.01]"
+          className="transition duration-500 group-hover:scale-[1.015]"
         />
-
-        {device.category && (
-          <span className="absolute left-4 top-4 rounded-full border border-white/20 bg-[#183047]/85 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#f5f1e8] shadow-sm backdrop-blur">
-            {device.category}
-          </span>
-        )}
       </div>
 
-      <div className="p-5">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <h2 className="truncate font-serif text-xl font-medium tracking-[-0.03em] text-[#17212a]">
+      <div className="px-6 pb-6 pt-7">
+        <div className="flex items-start justify-between gap-5">
+          <div className="min-w-0 flex-1">
+            <h2 className="truncate font-serif text-[22px] font-medium tracking-[-0.035em] text-[#17212a]">
               {device.device_name ||
                 "Unnamed Device"}
             </h2>
 
-            <p className="mt-1 truncate text-sm text-[#68737b]">
+            <p className="mt-1.5 truncate text-[13px] text-[#7b858c]">
               {[
                 device.brand,
                 device.model_number,
@@ -1416,67 +1626,66 @@ function ModernDeviceCard({
                 .join(" · ") ||
                 "Device details"}
             </p>
-
-            <p className="mt-2 text-sm text-[#68737b]">
-              {isDemo
-                ? formatDemoDevicePresenceListLine({
-                    online: device.online,
-                    lastSeenAt: device.last_seen_at,
-                    firstSeenAt: device.first_seen_at,
-                    networkUpdatedAt: device.network_updated_at,
-                  })
-                : getDevicePresence({
-                    online: device.online,
-                    lastSeenAt: device.last_seen_at,
-                    firstSeenAt: device.first_seen_at,
-                    networkUpdatedAt: device.network_updated_at,
-                  }).listLine}
-            </p>
           </div>
 
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#182533]/10 bg-[#eee9df]/65 text-[#7b858c] transition group-hover:border-[#617c43]/20 group-hover:bg-[#617c43] group-hover:text-white">
-            <ArrowRight size={17} />
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#9aa2a7] transition group-hover:translate-x-0.5 group-hover:text-[#617c43]">
+            <ArrowRight size={18} />
           </div>
         </div>
 
-        <div className="mt-5 flex flex-wrap gap-2">
+        <div className="mt-4">
+          <p className="text-[13px] leading-5 text-[#68737b]">
+            {isDemo
+              ? formatDemoDevicePresenceListLine({
+                  online: device.online,
+                  lastSeenAt: device.last_seen_at,
+                  firstSeenAt: device.first_seen_at,
+                  networkUpdatedAt: device.network_updated_at,
+                })
+              : getDevicePresence({
+                  online: device.online,
+                  lastSeenAt: device.last_seen_at,
+                  firstSeenAt: device.first_seen_at,
+                  networkUpdatedAt: device.network_updated_at,
+                }).listLine}
+          </p>
+        </div>
+
+        <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-[12px] text-[#7b858c]">
           {device.location && (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#182533]/8 bg-[#eee9df]/65 px-3 py-1.5 text-xs font-medium text-[#68737b]">
-              <MapPin size={13} />
+            <span className="inline-flex items-center gap-1.5">
+              <MapPin
+                size={12}
+                className="text-[#718d4f]"
+              />
+
               {device.location}
             </span>
           )}
 
-          <span
-            className={
-              "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium " +
-              warranty.className
-            }
-          >
-            <ShieldCheck size={13} />
+          <span className="inline-flex items-center gap-1.5">
+            <ShieldCheck
+              size={12}
+              className="text-[#718d4f]"
+            />
+
             {warranty.label}
           </span>
         </div>
 
-        <div className="mt-5 flex items-end justify-between border-t border-[#182533]/8 pt-4">
-          <div>
-            <p className="text-[10px] uppercase tracking-[0.08em] text-[#8a949b]">
-              Purchase Value
-            </p>
+        <div className="mt-5 flex items-center justify-between border-t border-[#182533]/6 pt-4">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#a0a7ab]">
+            Value
+          </span>
 
-            <p className="mt-1 font-serif font-medium text-[#17212a]">
-              {device.purchase_price
-                ? formatCurrency(
-                    Number(
-                      device.purchase_price
-                    )
+          <span className="font-serif text-[15px] font-medium text-[#17212a]">
+            {device.purchase_price
+              ? formatCurrency(
+                  Number(
+                    device.purchase_price
                   )
-                : "Not recorded"}
-            </p>
-          </div>
-
-          <span className="text-sm font-semibold text-[#617c43]">
-            View device
+                )
+              : "—"}
           </span>
         </div>
       </div>

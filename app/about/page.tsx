@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default function AboutPage() {
-  const founderPhoto = process.env.NEXT_PUBLIC_FOUNDER_PHOTO_URL;
+  const founderPhoto = "/images/jason-eaton.jpg";
   const linkedinUrl = process.env.NEXT_PUBLIC_FOUNDER_LINKEDIN_URL;
 
   return (
@@ -26,14 +26,14 @@ export default function AboutPage() {
                 <img
                   src={founderPhoto}
                   alt="Jason Eaton, founder of Home Tech Vault"
-                  className="aspect-square w-full rounded-[24px] object-cover"
+                  className="h-auto w-full rounded-[24px] object-contain"
                 />
               ) : (
                 <div className="flex aspect-square w-full items-center justify-center rounded-[24px] bg-gradient-to-br from-home-health-soft to-premium-soft text-6xl font-semibold text-text-primary">
                   JE
                 </div>
               )}
-              <p className="mt-5 text-xl font-semibold text-text-primary">Jason Eaton</p>
+              <p className="mt-4 text-xl font-semibold text-text-primary">Jason Eaton</p>
               <p className="mt-1 text-sm text-text-muted">Founder, Home Tech Vault</p>
               {linkedinUrl ? (
                 <a

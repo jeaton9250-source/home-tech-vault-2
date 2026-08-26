@@ -127,7 +127,7 @@ const variantStyles: Record<
   }
 > = {
   card: {
-    aspect: "aspect-[4/3]",
+    aspect: "aspect-[16/9]",
     sizes:
       "(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw",
     containDemo: true,
@@ -175,9 +175,11 @@ export default function DeviceImageDisplay({
     <div
       className={cn(
         "relative overflow-hidden",
-        isDemoAsset
-          ? "bg-[#F3F1EC]"
-          : "bg-surface-sunken",
+        variant === "card"
+          ? "bg-[#f7f6f2]"
+          : isDemoAsset
+            ? "bg-[#F3F1EC]"
+            : "bg-surface-sunken",
         styles.aspect,
         className
       )}
@@ -209,7 +211,9 @@ export default function DeviceImageDisplay({
                     : "scale-[1.03]"
                 )
               : styles.containDemo
-                ? "object-contain p-4 md:p-6"
+                ? variant === "card"
+                  ? "object-contain p-8 md:p-10"
+                  : "object-contain p-4 md:p-6"
                 : "object-cover",
             "transition duration-500",
             imageClassName
@@ -218,28 +222,56 @@ export default function DeviceImageDisplay({
         />
       ) : (
         <div
-          className="flex h-full w-full flex-col items-center justify-center"
-          style={
-            {
-              background: tech.soft,
-              color: tech.accent,
-            } as CSSProperties
+          className={
+            variant === "card"
+              ? "flex h-full w-full items-center justify-center bg-[#f7f6f2]"
+              : "flex h-full w-full flex-col items-center justify-center"
           }
-          aria-hidden={variant === "thumbnail"}
+          style={
+            variant === "card"
+              ? ({
+                  color:
+                    tech.accent,
+                } as CSSProperties)
+              : ({
+                  background:
+                    tech.soft,
+                  color:
+                    tech.accent,
+                } as CSSProperties)
+          }
+          aria-hidden={
+            variant ===
+            "thumbnail"
+          }
         >
-          <div className="flex h-16 w-16 items-center justify-center rounded-[var(--radius-card)] border border-border-subtle bg-surface-card shadow-[var(--shadow-sm)]">
+          <div
+            className={
+              variant === "card"
+                ? "flex h-[92px] w-[92px] items-center justify-center text-[#183047]"
+                : "flex h-16 w-16 items-center justify-center rounded-[var(--radius-card)] border border-border-subtle bg-surface-card shadow-[var(--shadow-sm)]"
+            }
+          >
             <CategoryFallbackIcon
-              category={device.category}
-              size={28}
+              category={
+                device.category
+              }
+              size={
+                variant ===
+                "card"
+                  ? 42
+                  : 28
+              }
             />
           </div>
 
-          {variant !== "thumbnail" && (
+          {variant !== "thumbnail" &&
+          variant !== "card" ? (
             <p className="mt-3 text-xs font-medium text-text-tertiary">
               {device.category ||
                 "Device"}
             </p>
-          )}
+          ) : null}
         </div>
       )}
     </div>

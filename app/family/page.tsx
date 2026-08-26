@@ -2123,65 +2123,57 @@ const {
 
           {/* SHARING PERMISSIONS */}
           <section className="border-t border-[#182533]/10 py-8">
-            <details className="group">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4">
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#718d4f]">
-                    Who can do what?
-                  </p>
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#718d4f]">
+                Who can do what?
+              </p>
 
-                  <h2 className="mt-2 font-serif text-xl font-medium tracking-[-0.03em] text-[#17212a]">
-                    Choose how much access each person gets.
-                  </h2>
-                </div>
+              <h2 className="mt-2 font-serif text-xl font-medium tracking-[-0.03em] text-[#17212a]">
+                Choose how much access each person gets.
+              </h2>
+            </div>
 
-                <span className="text-sm font-medium text-[#617c43]">
-                  
-                </span>
-              </summary>
-
-              <div className="mt-7 grid gap-x-8 gap-y-6 border-t border-[#182533]/10 pt-7 sm:grid-cols-2">
-                <div>
-                  <p className="font-semibold text-[#17212a]">
-                    Owner
-                  </p>
-                  <p className="mt-1 text-sm leading-6 text-[#68737b]">
-                    Full household control, including invitations,
-                    roles and billing.
-                  </p>
-                </div>
-
-                <div>
-                  <p className="font-semibold text-[#17212a]">
-                    Admin
-                  </p>
-                  <p className="mt-1 text-sm leading-6 text-[#68737b]">
-                    Helps manage the shared Vault and household
-                    information.
-                  </p>
-                </div>
-
-                <div>
-                  <p className="font-semibold text-[#17212a]">
-                    Member
-                  </p>
-                  <p className="mt-1 text-sm leading-6 text-[#68737b]">
-                    Can view, add and update shared household
-                    information.
-                  </p>
-                </div>
-
-                <div>
-                  <p className="font-semibold text-[#17212a]">
-                    Viewer
-                  </p>
-                  <p className="mt-1 text-sm leading-6 text-[#68737b]">
-                    Can view household information without making
-                    changes.
-                  </p>
-                </div>
+            <div className="mt-7 grid gap-x-8 gap-y-6 border-t border-[#182533]/10 pt-7 sm:grid-cols-2">
+              <div>
+                <p className="font-semibold text-[#17212a]">
+                  Owner
+                </p>
+                <p className="mt-1 text-sm leading-6 text-[#68737b]">
+                  Full household control, including invitations,
+                  roles and billing.
+                </p>
               </div>
-            </details>
+
+              <div>
+                <p className="font-semibold text-[#17212a]">
+                  Admin
+                </p>
+                <p className="mt-1 text-sm leading-6 text-[#68737b]">
+                  Helps manage the shared Vault and household
+                  information.
+                </p>
+              </div>
+
+              <div>
+                <p className="font-semibold text-[#17212a]">
+                  Member
+                </p>
+                <p className="mt-1 text-sm leading-6 text-[#68737b]">
+                  Can view, add and update shared household
+                  information.
+                </p>
+              </div>
+
+              <div>
+                <p className="font-semibold text-[#17212a]">
+                  Viewer
+                </p>
+                <p className="mt-1 text-sm leading-6 text-[#68737b]">
+                  Can view household information without making
+                  changes.
+                </p>
+              </div>
+            </div>
           </section>
         </>
       )}

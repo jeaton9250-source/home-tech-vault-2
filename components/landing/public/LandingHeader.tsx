@@ -282,6 +282,18 @@ export default function LandingHeader({
           >
             Pricing
           </Link>
+
+          <Link
+            href="/about"
+            className={[
+              "whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+              isActive("/about")
+                ? "bg-white/10 text-white"
+                : "text-[#c4c9cf] hover:bg-white/5 hover:text-white",
+            ].join(" ")}
+          >
+            About the Founder
+          </Link>
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">

@@ -1,5 +1,6 @@
 export const MARKETING_ROUTES = {
   home: "/",
+  about: "/about",
   features: "/features",
   pricing: "/pricing",
   demo: "/demo",
@@ -51,6 +52,7 @@ export function isPublicAuthPath(
 /** Routes accessible without signing in. */
 export const PUBLIC_MARKETING_PATHS = [
   MARKETING_ROUTES.home,
+  MARKETING_ROUTES.about,
   MARKETING_ROUTES.features,
   "/how-it-works",
   MARKETING_ROUTES.pricing,
@@ -138,6 +140,7 @@ export const PUBLIC_STATIC_PREFIXES = [
 /** Indexable marketing URLs for sitemap generation. */
 export const INDEXABLE_MARKETING_PATHS = [
   MARKETING_ROUTES.home,
+  MARKETING_ROUTES.about,
   MARKETING_ROUTES.features,
   "/how-it-works",
   MARKETING_ROUTES.pricing,

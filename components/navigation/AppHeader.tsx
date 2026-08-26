@@ -3,11 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import {
-  useCallback,
-  useEffect,
-  useState,
-} from "react";
 
 import { ShieldCheck } from "lucide-react";
 
@@ -23,90 +18,15 @@ import { isPrimaryNavActive } from "@/lib/navigation/activeGroup";
 import { PRIMARY_NAV_ITEMS } from "@/lib/navigation/config";
 import { shouldShowPremiumBadge } from "@/lib/navigation/navVisibility";
 
-type ImportCountResponse = {
-  count?: number;
-};
-
 export default function AppHeader() {
   const pathname = usePathname();
   const notificationsState = useNotifications();
-
-  const [
-    pendingImportCount,
-    setPendingImportCount,
-  ] = useState(0);
 
   const {
     canViewFeature,
     inheritsFamilyPlan,
     hasFamilyFeatureAccess,
   } = usePermissions();
-
-  const loadPendingImports =
-    useCallback(async () => {
-      try {
-        const response =
-          await fetch(
-            "/api/imports?count=1",
-            {
-              method: "GET",
-              cache: "no-store",
-            }
-          );
-
-        if (!response.ok) {
-          return;
-        }
-
-        const data:
-          ImportCountResponse =
-          await response.json();
-
-        setPendingImportCount(
-          data.count ?? 0
-        );
-      } catch {
-        // Navigation should never fail
-        // because the badge request failed.
-      }
-    }, []);
-
-  useEffect(() => {
-    const interval =
-      window.setInterval(
-        () => {
-          void loadPendingImports();
-        },
-        30000
-      );
-
-    function handleFocus() {
-      void loadPendingImports();
-    }
-
-    window.addEventListener(
-      "focus",
-      handleFocus
-    );
-
-    return () => {
-      window.clearInterval(
-        interval
-      );
-
-      window.removeEventListener(
-        "focus",
-        handleFocus
-      );
-    };
-  }, [loadPendingImports]);
-
-  useEffect(() => {
-    void loadPendingImports();
-  }, [
-    pathname,
-    loadPendingImports,
-  ]);
 
   return (
     <>
@@ -156,16 +76,7 @@ export default function AppHeader() {
                     );
 
                   const badge =
-                    item.href ===
-                      "/imports" &&
-                    pendingImportCount > 0
-                      ? pendingImportCount >
-                        99
-                        ? "99+"
-                        : String(
-                            pendingImportCount
-                          )
-                      : premiumBadge;
+                    premiumBadge;
 
                   return (
                     <NavLink
