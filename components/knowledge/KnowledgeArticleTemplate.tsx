@@ -106,7 +106,9 @@ export default function KnowledgeArticleTemplate({
 
       <header className="border-b border-white/10 bg-[#183047] px-6 py-12 text-[#f5f1e8] md:px-8 md:py-16">
         <div className="mx-auto max-w-6xl">
-          <Breadcrumb items={breadcrumbs} />
+          <div className="[&_a]:text-white/55 [&_a:hover]:text-white [&_span]:text-white/35">
+            <Breadcrumb items={breadcrumbs} />
+          </div>
 
           <p className="mt-6 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#718d4f]">
             {category?.name ?? "Knowledge"}

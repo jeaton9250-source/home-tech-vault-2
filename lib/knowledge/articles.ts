@@ -39,6 +39,10 @@ const articleLoaders: Record<
     import(
       "@/content/knowledge/devices/what-to-record-when-you-unbox-a-device"
     ),
+  "what-home-technology-information-should-you-keep": () =>
+    import(
+      "@/content/knowledge/devices/what-home-technology-information-should-you-keep"
+    ),
   "documenting-your-home-network": () =>
     import(
       "@/content/knowledge/networking/documenting-your-home-network"

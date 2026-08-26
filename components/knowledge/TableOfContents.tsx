@@ -43,7 +43,7 @@ export default function TableOfContents({
               <span className="mr-2 text-text-muted">
                 {index + 1}.
               </span>
-              {item.label}
+              {item.label.replace(/^\d+\.\s*/, "")}
             </a>
           </li>
         ))}

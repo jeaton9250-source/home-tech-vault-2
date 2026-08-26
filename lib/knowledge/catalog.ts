@@ -11,10 +11,10 @@ export type KnowledgeArticleMeta = {
 };
 
 /**
- * Canonical Knowledge Center catalog — 50 articles across 7 categories.
+ * Canonical Knowledge Center catalog — 51 articles across 7 categories.
  */
 export const KNOWLEDGE_CATALOG: KnowledgeArticleMeta[] = [
-  // Devices (7)
+  // Devices (8)
   {
     slug: "how-to-inventory-every-device-in-your-home",
     category: "devices",
@@ -139,6 +139,28 @@ export const KNOWLEDGE_CATALOG: KnowledgeArticleMeta[] = [
       "after-you-buy-setup-documentation",
       "proof-of-purchase-for-electronics",
       "how-to-inventory-every-device-in-your-home",
+    ],
+  },
+
+  {
+    slug: "what-home-technology-information-should-you-keep",
+    category: "devices",
+    title:
+      "What Home Technology Information Should You Keep? A Homeowner's Checklist",
+    description:
+      "Learn what technology information every homeowner should save, including device serial numbers, receipts, warranties, manuals, Wi-Fi information, and maintenance records.",
+    publishedAt: "2026-08-25",
+    keywords: [
+      "home technology information",
+      "home technology checklist",
+      "home electronics records",
+      "home device documentation",
+      "digital home binder",
+    ],
+    relatedSlugs: [
+      "how-to-inventory-every-device-in-your-home",
+      "serial-numbers-and-why-they-matter",
+      "documenting-your-home-network",
     ],
   },
 
