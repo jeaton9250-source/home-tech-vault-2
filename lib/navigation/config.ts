@@ -66,7 +66,7 @@ export const PRIMARY_NAV_ITEMS: PrimaryNavItem[] = [
   },
 
   {
-    label: "Family",
+    label: "Household",
     href: "/family",
     icon: Users,
     feature: "family",

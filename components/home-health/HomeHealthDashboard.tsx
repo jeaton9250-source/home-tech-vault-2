@@ -17,6 +17,7 @@ import { useHomeAdvisor } from "@/hooks/useHomeAdvisor";
 import { usePermissions } from "@/hooks/usePermissions";
 import { getHomeHealthDisplayMessage } from "@/lib/home-health/display";
 
+import VaultSetupProgress from "@/components/dashboard/VaultSetupProgress";
 import type { DashboardOverviewStats } from "@/lib/dashboard/types";
 import type { HomeHealthResult } from "@/lib/home-health/types";
 
@@ -24,12 +25,14 @@ type HomeHealthDashboardProps = {
   firstName: string;
   homeHealth: HomeHealthResult;
   overviewStats: DashboardOverviewStats;
+  hasHousehold: boolean;
 };
 
 export default function HomeHealthDashboard({
   firstName,
   homeHealth,
   overviewStats,
+  hasHousehold,
 }: HomeHealthDashboardProps) {
   const {
     isDemo,
@@ -59,49 +62,6 @@ export default function HomeHealthDashboard({
 
   return (
     <div className="mx-auto w-full max-w-[1240px] pb-14">
-      {/* PAGE INTRO */}
-
-      <section className="mb-5 flex flex-col gap-4 px-1 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <div className="flex items-center gap-3">
-            <span className="h-px w-7 bg-[#617c43]" />
-
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#617c43]">
-              Home Overview
-            </p>
-          </div>
-
-          <h1 className="mt-3 font-serif text-3xl font-medium tracking-[-0.04em] text-[#101a22] sm:text-4xl">
-            Welcome home, {firstName}.
-          </h1>
-
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-[#68737b] sm:text-base">
-            Your devices, records, warranties,
-            Home Wi-Fi details, and household
-            information — organized in one place.
-          </p>
-        </div>
-
-        <div className="inline-flex w-fit items-center gap-3 rounded-2xl border border-[#617c43]/20 bg-[#617c43]/8 px-4 py-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#617c43] text-white">
-            <ShieldCheck
-              size={17}
-              aria-hidden
-            />
-          </div>
-
-          <div>
-            <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-[#78836f]">
-              Vault Readiness
-            </p>
-
-            <p className="mt-0.5 text-sm font-semibold text-[#17212a]">
-              {homeHealth.score}% ready
-            </p>
-          </div>
-        </div>
-      </section>
-
       {/* HERO */}
 
       <DashboardHero
@@ -259,6 +219,15 @@ export default function HomeHealthDashboard({
               </div>
             </div>
           </section>
+
+          {!isDemo ? (
+            <VaultSetupProgress
+              deviceCount={overviewStats.deviceCount}
+              documentCount={overviewStats.documentCount}
+              hasHousehold={hasHousehold}
+              canCreate={canCreate}
+            />
+          ) : null}
 
 
         </div>

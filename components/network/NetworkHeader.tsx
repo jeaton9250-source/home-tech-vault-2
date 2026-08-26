@@ -52,24 +52,17 @@ export default function NetworkHeader({
     <div className="space-y-4">
       <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0">
-          <p className="text-overline text-[#8a949b]">
-            Network
+          <p className="text-overline text-[#718d4f]">
+            Home Wi-Fi
           </p>
 
-          <h1 className="mt-1 text-3xl font-medium tracking-[-0.035em] text-[#17212a] md:text-4xl">
-            Your Home Network
+          <h1 className="mt-1 font-serif text-3xl font-medium tracking-[-0.04em] text-[#17212a] md:text-4xl">
+            Your Home Wi-Fi
           </h1>
 
           <p className="mt-2 max-w-2xl text-sm leading-6 text-[#68737b] md:text-base">
-            View connected devices, Home Assistant
-            states, monitoring, and connector status.
+            See what&apos;s connected to your home and anything that needs attention.
           </p>
-
-          {!loading && headerSummary ? (
-            <p className="mt-2 text-sm font-medium text-[#68737b]">
-              {headerSummary}
-            </p>
-          ) : null}
         </div>
 
         {!loading ? (

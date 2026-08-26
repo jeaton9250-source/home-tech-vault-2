@@ -2,6 +2,7 @@
 
 import {
   resolveOfficialManualPdf,
+  resolveOfficialManualWebGuide,
 } from "@/lib/manuals/officialManualResolver";
 
 
@@ -1233,50 +1234,23 @@ async function saveIcecatManualForDevice({
     | null =
       null;
 
-  const result =
-    await findIcecatManual({
-      productUpc,
-      brand,
-      modelNumber,
-      deviceName,
-    });
-
-  if (result) {
-    const {
-      manual,
-      contentToken,
-    } = result;
-
-    const declaredSize =
-      Number(
-        manual.Size ??
-          "0"
-      );
-
-    if (
-      !Number.isFinite(
-        declaredSize
-      ) ||
-      declaredSize <=
-        AUTO_MANUAL_MAX_BYTES
-    ) {
-      pdf =
-        await downloadIcecatManual(
-          manual.URL!,
-          contentToken
-        );
-
-      if (pdf) {
-        console.info(
-          "[manual-resolver] Icecat manual verified"
-        );
-      }
-    }
-  }
-
-  if (!pdf) {
+  /*
+   * Manual lookup order:
+   *
+   * 1. OpenAI searches the official manufacturer website.
+   * 2. The resolver verifies/downloads the correct manual PDF.
+   * 3. Icecat is used only as a fallback.
+   *
+   * The storage/document pipeline below remains unchanged.
+   */
+  try {
     console.info(
-      "[manual-resolver] Icecat missed; trying official manufacturer web search"
+      "[manual-resolver] trying OpenAI official manufacturer search first",
+      {
+        brand,
+        modelNumber,
+        deviceName,
+      }
     );
 
     pdf =
@@ -1285,11 +1259,83 @@ async function saveIcecatManualForDevice({
         modelNumber,
         deviceName,
       });
+
+    if (pdf) {
+      console.info(
+        "[manual-resolver] OpenAI official manual verified"
+      );
+    }
+  } catch (error) {
+    console.warn(
+      "[manual-resolver] OpenAI official manual search failed",
+      error
+    );
+  }
+
+  /*
+   * Icecat is now fallback-only.
+   */
+  if (!pdf) {
+    try {
+      console.info(
+        "[manual-resolver] OpenAI missed; trying Icecat fallback"
+      );
+
+      const result =
+        await findIcecatManual({
+          productUpc,
+          brand,
+          modelNumber,
+          deviceName,
+        });
+
+      if (result) {
+        const {
+          manual,
+          contentToken,
+        } = result;
+
+        const declaredSize =
+          Number(
+            manual.Size ??
+              "0"
+          );
+
+        if (
+          !Number.isFinite(
+            declaredSize
+          ) ||
+          declaredSize <=
+            AUTO_MANUAL_MAX_BYTES
+        ) {
+          pdf =
+            await downloadIcecatManual(
+              manual.URL!,
+              contentToken
+            );
+
+          if (pdf) {
+            console.info(
+              "[manual-resolver] Icecat fallback manual verified"
+            );
+          }
+        }
+      }
+    } catch (error) {
+      console.warn(
+        "[manual-resolver] Icecat fallback failed",
+        error
+      );
+    }
   }
 
   if (!pdf) {
     console.info(
-      "[manual-resolver] no verified manual found"
+      "[manual-resolver] no verified manual found",
+      {
+        brand,
+        modelNumber,
+      }
     );
 
     return "not_found";
@@ -1387,6 +1433,132 @@ async function saveIcecatManualForDevice({
 
   return "found";
 }
+
+
+async function saveBestManualForDevice(
+  args: Parameters<
+    typeof saveIcecatManualForDevice
+  >[0]
+): Promise<
+  | "found"
+  | "not_found"
+  | "skipped"
+> {
+  /*
+   * Prefer the existing PDF pipeline.
+   *
+   * It already does:
+   * OpenAI official PDF
+   * -> Icecat fallback
+   * -> validation
+   * -> Supabase Storage
+   * -> device_documents.
+   */
+  const pdfResult =
+    await saveIcecatManualForDevice(
+      args
+    );
+
+  if (
+    pdfResult ===
+    "found"
+  ) {
+    /*
+     * A stored PDF wins over a previously
+     * discovered web guide.
+     */
+    await args.supabase
+      .from(
+        "devices"
+      )
+      .update({
+        manual_url:
+          null,
+      })
+      .eq(
+        "id",
+        args.deviceId
+      );
+
+    return "found";
+  }
+
+  /*
+   * If the PDF path misses — or the document
+   * quota prevents another stored PDF — try an
+   * official manufacturer web guide.
+   *
+   * A URL does not consume document storage.
+   */
+  try {
+    console.info(
+      "[manual-resolver] trying official web-guide fallback",
+      {
+        brand:
+          args.brand,
+        modelNumber:
+          args.modelNumber,
+      }
+    );
+
+    const guideUrl =
+      await resolveOfficialManualWebGuide({
+        brand:
+          args.brand,
+        modelNumber:
+          args.modelNumber,
+        deviceName:
+          args.deviceName,
+      });
+
+    if (!guideUrl) {
+      return pdfResult;
+    }
+
+    const {
+      error:
+        guideSaveError,
+    } =
+      await args.supabase
+        .from(
+          "devices"
+        )
+        .update({
+          manual_url:
+            guideUrl,
+        })
+        .eq(
+          "id",
+          args.deviceId
+        );
+
+    if (
+      guideSaveError
+    ) {
+      console.warn(
+        "[manual-resolver] unable to save official web guide",
+        guideSaveError
+      );
+
+      return pdfResult;
+    }
+
+    console.info(
+      "[manual-resolver] official web guide saved",
+      guideUrl
+    );
+
+    return "found";
+  } catch (error) {
+    console.warn(
+      "[manual-resolver] official web-guide fallback failed",
+      error
+    );
+
+    return pdfResult;
+  }
+}
+
 
 export async function addDevice(
   input: AddDeviceInput
@@ -1678,7 +1850,7 @@ export async function addDevice(
       ) {
         try {
           const manualResult =
-            await saveIcecatManualForDevice({
+            await saveBestManualForDevice({
               supabase,
               admin,
 
@@ -2054,7 +2226,7 @@ export async function retryDeviceManualLookup(input: {
      * -> device-documents
      */
     result =
-      await saveIcecatManualForDevice({
+      await saveBestManualForDevice({
         supabase,
         admin,
 

@@ -291,7 +291,7 @@ export default function SmartDeviceSearch({
 
       const response =
         await fetch(
-          `/api/devices/lookup?q=${encodeURIComponent(
+          `/api/devices/ai-lookup?q=${encodeURIComponent(
             cleaned
           )}`,
           {

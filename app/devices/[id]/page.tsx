@@ -121,6 +121,7 @@ type Device = {
     | null;
 
   manual_checked_at?: string | null;
+  manual_url?: string | null;
 };
 
 type DeviceImageRow = {
@@ -1801,83 +1802,139 @@ export default function DevicePage() {
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-sm)]">
                 <Wifi size={20} />
               </div>
+
               <div>
-                <p className="text-overline text-section-technology">Home Wi-Fi</p>
+                <p className="text-overline text-section-technology">
+                  Home Wi-Fi
+                </p>
+
                 <h2 className="text-2xl font-semibold tracking-[-0.03em] text-text-primary">
-                  Network details
+                  {hasNetwork
+                    ? "Connected to your home"
+                    : "Not connected yet"}
                 </h2>
               </div>
             </div>
 
-            {connectorStatusMayBeOutdated ? (
-              <p className="mt-4 rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
-                Connector online. Device status may be outdated.
-              </p>
-            ) : null}
-
             {hasNetwork ? (
               <>
-                <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                  <DetailCard
-                    label="Online status"
-                    value={devicePresence.label}
-                  />
+                <div className="mt-5 rounded-[22px] border border-[#718d4f]/20 bg-[#718d4f]/[0.06] px-5 py-4">
+                  <div className="flex items-start gap-3">
+                    <span className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-[#718d4f]" />
+
+                    <div>
+                      <p className="font-medium text-text-primary">
+                        {devicePresence.label === "Online"
+                          ? "This device is connected."
+                          : "This device was recently seen."}
+                      </p>
+
+                      <p className="mt-1 text-sm leading-6 text-text-secondary">
+                        Last seen {devicePresence.lastActiveLabel.toLowerCase()} on your Home Wi-Fi.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {connectorStatusMayBeOutdated ? (
+                  <p className="mt-4 text-sm leading-6 text-text-secondary">
+                    The connection status may take a few minutes to refresh.
+                  </p>
+                ) : null}
+
+                <div className="mt-6 grid gap-4 sm:grid-cols-3">
                   <DetailCard
                     label="Last seen"
                     value={devicePresence.lastActiveLabel}
                   />
+
                   <DetailCard
                     label="IP address"
-                    value={displayValue(device.ip_address, "Not provided")}
-                  />
-                  <DetailCard
-                    label="MAC address"
-                    value={displayValue(device.mac_address, "Not provided")}
-                  />
-                  <DetailCard
-                    label="Manufacturer"
-                    value={displayValue(device.manufacturer, "Not provided")}
-                  />
-                  <DetailCard
-                    label="Discovery source"
-                    value={displayValue(device.discovery_source, "Not provided")}
-                  />
-                  {device.hostname ? (
-                    <DetailCard
-                      label="Hostname"
-                      value={device.hostname}
-                    />
-                  ) : null}
-                  <DetailCard
-                    label="Connector"
                     value={displayValue(
-                      resolvedConnectorName,
-                      "Home Tech Vault Connector"
+                      device.ip_address,
+                      "Not available"
                     )}
                   />
-                  {device.first_seen_at ? (
-                    <DetailCard
-                      label="First detected"
-                      value={
-                        formatProfileDate(device.first_seen_at) ??
-                        "Not recorded"
-                      }
-                    />
-                  ) : null}
-                  {device.network_updated_at ? (
-                    <DetailCard
-                      label="Last network update"
-                      value={formatNetworkUpdatedAt(device.network_updated_at)}
-                    />
-                  ) : null}
+
+                  <DetailCard
+                    label="Connected through"
+                    value={displayValue(
+                      resolvedConnectorName,
+                      "Home Tech Vault"
+                    )}
+                  />
                 </div>
 
+                <details className="mt-6 rounded-[22px] border border-border-subtle bg-surface-sunken/50">
+                  <summary className="cursor-pointer select-none px-5 py-4 text-sm font-medium text-text-primary">
+                    Technical details
+                  </summary>
+
+                  <div className="grid gap-4 border-t border-border-subtle px-5 py-5 sm:grid-cols-2">
+                    {device.hostname ? (
+                      <DetailCard
+                        label="Device name"
+                        value={device.hostname}
+                      />
+                    ) : null}
+
+                    <DetailCard
+                      label="MAC address"
+                      value={displayValue(
+                        device.mac_address,
+                        "Not available"
+                      )}
+                    />
+
+                    {device.manufacturer ? (
+                      <DetailCard
+                        label="Manufacturer"
+                        value={device.manufacturer}
+                      />
+                    ) : null}
+
+                    {device.first_seen_at ? (
+                      <DetailCard
+                        label="First seen"
+                        value={
+                          formatProfileDate(
+                            device.first_seen_at
+                          ) ?? "Not recorded"
+                        }
+                      />
+                    ) : null}
+
+                    {device.network_updated_at ? (
+                      <DetailCard
+                        label="Last Wi-Fi update"
+                        value={formatNetworkUpdatedAt(
+                          device.network_updated_at
+                        )}
+                      />
+                    ) : null}
+
+                    {device.discovery_source ? (
+                      <DetailCard
+                        label="How it was found"
+                        value={device.discovery_source}
+                      />
+                    ) : null}
+                  </div>
+                </details>
+
                 <div className="mt-6 flex flex-wrap gap-3">
-                  <Button href="/network/discovery" variant="secondary">
-                    Review discovery
+                  <Button
+                    href="/network/discovery"
+                    variant="secondary"
+                  >
+                    Check device
                   </Button>
-                  <Button href="/network?tab=monitoring" variant="ghost">
-                    View monitoring
+
+                  <Button
+                    href="/network"
+                    variant="ghost"
+                  >
+                    View Home Wi-Fi
                   </Button>
                 </div>
               </>
@@ -1885,9 +1942,9 @@ export default function DevicePage() {
               <div className="mt-6">
                 <EmptyState
                   icon={Wifi}
-                  title="No Home Wi-Fi details yet"
-                  description="Network details will appear after this device is detected by a Home Tech Vault connector."
-                  actionLabel="Match Network Device"
+                  title="Not connected to Home Wi-Fi yet"
+                  description="Once this device is found on your home network, its connection details will appear here."
+                  actionLabel="Find this device"
                   actionHref="/network/discovery"
                   className="shadow-none"
                 />
@@ -2213,6 +2270,27 @@ export default function DevicePage() {
                         device.manual_status ===
                         "found"
                       ) {
+                        /*
+                         * Official web guides live directly on
+                         * the manufacturer website rather than
+                         * in Supabase Storage.
+                         */
+                        if (
+                          device.manual_url
+                        ) {
+                          window.open(
+                            device.manual_url,
+                            "_blank",
+                            "noopener,noreferrer"
+                          );
+
+                          return;
+                        }
+
+                        /*
+                         * Otherwise use the existing stored-PDF
+                         * preview link rendered by DeviceDocuments.
+                         */
                         const manualLink =
                           document.querySelector<HTMLAnchorElement>(
                             '[data-device-manual-preview="true"]'
@@ -2307,6 +2385,10 @@ export default function DevicePage() {
               <PageCard className="p-6 md:p-8">
                 <DeviceDocuments
                   deviceId={device.id}
+                  manualUrl={
+                    device.manual_url ??
+                    null
+                  }
                   embedded
                   onManualStatusChange={(
                     status

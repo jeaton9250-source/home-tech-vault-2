@@ -239,15 +239,15 @@ export default function AcceptFamilyInvitationPage() {
         </div>
 
         <p className="mt-6 text-overline text-charcoal-soft">
-          Family Sharing
+          Household Access
         </p>
 
         <h1 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-text-primary">
           {state === "success"
-            ? "Invitation accepted"
+            ? "You’re in"
             : state === "error"
-              ? "Unable to join household"
-              : "Joining household"}
+              ? "Unable to join this household"
+              : "Joining your household"}
         </h1>
 
         <p className="mt-4 leading-7 text-text-secondary">
@@ -260,7 +260,7 @@ export default function AcceptFamilyInvitationPage() {
               href="/family"
               variant="secondary"
             >
-              Go to Family Sharing
+              Go to Household Access
             </Button>
 
             <Button href="/contact">
@@ -271,7 +271,7 @@ export default function AcceptFamilyInvitationPage() {
 
         {state === "success" && (
           <p className="mt-5 text-sm text-text-tertiary">
-            Opening your shared household...
+            Opening your household...
           </p>
         )}
       </PageCard>

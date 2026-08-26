@@ -611,7 +611,6 @@ function RoomsContent() {
     <PageShell>
       <PageHero
         section="technology"
-        eyebrow={householdName}
         title="Your rooms."
         description="Browse your technology the same way you think about your home."
       >

@@ -53,6 +53,7 @@ type DeviceRecord = {
   warranty_date: string | null;
   manual_status: ManualStatus;
   manual_checked_at: string | null;
+  manual_url: string | null;
 };
 
 type ManualRecord = {
@@ -188,6 +189,7 @@ export default function DeviceAddedPage() {
                   "warranty_date",
                   "manual_status",
                   "manual_checked_at",
+                  "manual_url",
                 ].join(",")
               )
               .eq(
@@ -317,6 +319,11 @@ export default function DeviceAddedPage() {
 
         let manualUrl:
           string | null =
+          (
+            deviceResult.data as {
+              manual_url?: string | null;
+            }
+          ).manual_url ??
           null;
 
         const manual =

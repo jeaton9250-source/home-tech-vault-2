@@ -23,7 +23,6 @@ import PageCard from "@/components/ui/PageCard";
 import { DashboardSkeleton } from "@/components/ui/Skeleton";
 import HomeHealthDashboard from "@/components/home-health/HomeHealthDashboard";
 import NewVaultGettingStarted from "@/components/dashboard/NewVaultGettingStarted";
-import VaultSetupProgress from "@/components/dashboard/VaultSetupProgress";
 
 import type { DashboardOverviewStats } from "@/lib/dashboard/types";
 import type { HomeHealthResult } from "@/lib/home-health/types";
@@ -374,20 +373,7 @@ export default function DashboardPageClient({
 
   return (
     <PageShell className="!pt-4 md:!pt-5">
-      {!isDemo ? (
-        <VaultSetupProgress
-          deviceCount={
-            overviewStats.deviceCount
-          }
-          documentCount={
-            overviewStats.documentCount
-          }
-          hasHousehold={
-            Boolean(householdId)
-          }
-          canCreate={canCreate}
-        />
-      ) : null}
+      
 
       <NewVaultGettingStarted
         deviceCount={overviewStats?.deviceCount ?? 0}
@@ -398,7 +384,8 @@ export default function DashboardPageClient({
         firstName={firstName}
         homeHealth={homeHealth}
         overviewStats={overviewStats}
-      />
+              hasHousehold={Boolean(householdId)}
+/>
     </PageShell>
   );
 }

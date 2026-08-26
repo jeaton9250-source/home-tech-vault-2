@@ -5,7 +5,7 @@ export type DeviceLookupResult = {
   manufacturer: string;
   modelNumber: string;
   category: string;
-  confidence: "catalog" | "icecat" | "upcitemdb" | "inferred";
+  confidence: "catalog" | "icecat" | "upcitemdb" | "openai" | "inferred";
   description: string;
 
   imageUrl?: string;

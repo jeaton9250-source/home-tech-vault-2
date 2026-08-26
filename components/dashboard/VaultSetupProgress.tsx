@@ -140,37 +140,15 @@ export default function VaultSetupProgress({
   }
 
   if (needsDocument) {
-    eyebrow =
-      "First milestone complete";
-
-    title =
-      "Now protect the information behind your devices.";
-
-    description =
-      "Save one receipt, warranty, manual, or other document so important device information is available when you actually need it.";
-
-    primaryHref =
-      "/documents/upload";
-
-    primaryLabel =
-      "Save my first document";
-  }
-
-  /*
-   * After the user reaches the first 3-device
-   * milestone, setup stops behaving like a hero.
-   * The dashboard should now be the primary view.
-   */
-  if (needsDocument) {
     return (
       <section
         aria-labelledby="vault-setup-title"
-        className="overflow-hidden rounded-[22px] border border-[#152638] bg-[#183047] text-white shadow-[0_18px_45px_-38px_rgba(11,22,35,0.8)]"
+        className="rounded-[20px] border border-[#182533]/10 bg-[#f8f5ef] px-5 py-4 shadow-[0_14px_35px_-32px_rgba(15,25,35,0.45)] sm:px-6"
       >
-        <div className="flex flex-col gap-4 px-5 py-4 sm:px-6 sm:py-5 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2.5">
-              <div className="flex items-center gap-2 text-[#9bb27a]">
+              <div className="flex items-center gap-2 text-[#617c43]">
                 <Sparkles
                   size={14}
                   aria-hidden
@@ -181,21 +159,20 @@ export default function VaultSetupProgress({
                 </p>
               </div>
 
-              <span className="rounded-full border border-[#718d4f]/20 bg-[#718d4f]/10 px-2.5 py-1 text-[10px] font-semibold text-[#9bb27a]">
+              <span className="rounded-full bg-[#617c43]/10 px-2.5 py-1 text-[10px] font-semibold text-[#617c43]">
                 {percentage}% ready
               </span>
             </div>
 
             <h2
               id="vault-setup-title"
-              className="mt-2 text-xl font-semibold tracking-[-0.03em] text-[#f5f1e8] sm:text-2xl"
+              className="mt-2 font-serif text-lg font-medium tracking-[-0.025em] text-[#17212a] sm:text-xl"
             >
               3 devices organized. Protect the paperwork next.
             </h2>
 
-            <p className="mt-1.5 max-w-2xl text-sm leading-5 text-white/55">
-              Save one receipt, warranty, or manual so it is
-              already here when you need it.
+            <p className="mt-1 max-w-2xl text-sm leading-5 text-[#68737b]">
+              Save one receipt, warranty, or manual so it is already here when you need it.
             </p>
           </div>
 
@@ -203,34 +180,34 @@ export default function VaultSetupProgress({
             {canCreate ? (
               <Link
                 href="/documents/upload"
-                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#718d4f] px-4 text-sm font-semibold text-white transition hover:bg-[#617c43] sm:w-auto"
+                className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-[#617c43]/20 bg-[#617c43]/10 px-4 text-sm font-semibold text-[#526b39] transition hover:bg-[#617c43] hover:text-white sm:w-auto"
               >
                 <FileText
-                  size={16}
+                  size={15}
                   aria-hidden
                 />
 
                 Save a document
 
                 <ArrowRight
-                  size={15}
+                  size={14}
                   aria-hidden
                 />
               </Link>
             ) : (
-              <span className="text-xs text-white/45">
+              <span className="text-xs text-[#8a949b]">
                 Read-only household
               </span>
             )}
           </div>
         </div>
 
-        <div className="flex flex-col gap-2 border-t border-white/[0.07] px-5 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-          <p className="text-[11px] font-medium text-white/40">
+        <div className="mt-4 flex flex-col gap-2 border-t border-[#182533]/8 pt-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-[11px] font-medium text-[#8a949b]">
             {completedCount} of {steps.length} setup steps complete
           </p>
 
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10 sm:w-36">
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#182533]/8 sm:w-40">
             <div
               className="h-full rounded-full bg-[#718d4f] transition-[width] duration-500"
               style={{

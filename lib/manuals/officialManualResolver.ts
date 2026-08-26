@@ -1469,7 +1469,8 @@ async function searchWithOpenAI({
     "The saved model may be a product family instead of a complete regional SKU.",
     "Search only the allowed official manufacturer domains.",
     "Prefer United States documentation; Canada is acceptable when it clearly covers the same North American product family.",
-    "Find an official support page and the actual English User Manual / Owner Manual PDF.",
+    "Find the official English User Manual / Owner Manual. Prefer a downloadable PDF when one exists.",
+    "If the manufacturer provides the manual primarily as an official web-based User Guide instead of a PDF, identify that official guide page.",
     "Official manufacturer asset/CDN subdomains are valid when they are subdomains of an allowed manufacturer domain.",
     "When an official User Guide or Owner Manual PDF exists, include the direct PDF URL in your answer even when the filename is opaque.",
     "Do not return OS upgrade guides, firmware files, repair guides, installation guides, quick-start guides, brochures, retailers, forums, mirrors, ManualsLib, Scribd, or third-party sources.",
@@ -1479,9 +1480,13 @@ async function searchWithOpenAI({
     "When verified, include plain-text lines:",
     "SUPPORT: https://...",
     "MANUAL: https://...",
+    "GUIDE: https://...",
     "MANUAL_TYPE: User Manual",
     "",
-    "If no applicable official user manual can be verified, say NOT_FOUND.",
+    "MANUAL should contain a direct official PDF URL when available.",
+    "GUIDE should contain an official manufacturer web-based user guide when no PDF is available.",
+    "Never use a retailer, forum, mirror, ManualsLib, Scribd, or other third-party guide.",
+    "If no applicable official user manual or official web guide can be verified, say NOT_FOUND.",
   ].join("\n");
 
   try {
@@ -1589,6 +1594,449 @@ async function searchWithOpenAI({
 
     return null;
   }
+}
+
+
+export async function resolveOfficialManualWebGuide({
+  brand,
+  modelNumber,
+  deviceName,
+}: {
+  brand: string;
+  modelNumber: string;
+  deviceName: string;
+}): Promise<string | null> {
+  const cleanBrand =
+    brand.trim();
+
+  const cleanModel =
+    modelNumber.trim();
+
+  const cleanDeviceName =
+    deviceName.trim();
+
+  if (
+    !cleanBrand ||
+    !cleanModel
+  ) {
+    return null;
+  }
+
+  const domains =
+    resolveDomains(
+      cleanBrand
+    );
+
+  if (
+    domains.length === 0
+  ) {
+    console.info(
+      "[manual-openai] no approved manufacturer domain for web guide",
+      {
+        brand:
+          cleanBrand,
+      }
+    );
+
+    return null;
+  }
+
+  const search =
+    await searchWithOpenAI({
+      brand:
+        cleanBrand,
+      modelNumber:
+        cleanModel,
+      deviceName:
+        cleanDeviceName,
+      domains,
+    });
+
+  if (!search) {
+    return null;
+  }
+
+  /*
+   * Normalize text so:
+   *
+   * A2589
+   * A-2589
+   * A 2589
+   *
+   * can be compared reliably.
+   */
+  const compact = (
+    value: string
+  ) =>
+    value
+      .toLowerCase()
+      .replace(
+        /[^a-z0-9]+/g,
+        ""
+      );
+
+  const words = (
+    value: string
+  ) =>
+    value
+      .toLowerCase()
+      .replace(
+        /[^a-z0-9]+/g,
+        " "
+      )
+      .split(/\s+/)
+      .filter(
+        (word) =>
+          word.length >= 3
+      )
+      .filter(
+        (word) =>
+          ![
+            "the",
+            "and",
+            "with",
+            "wifi",
+            "cellular",
+            "generation",
+            "model",
+            "official",
+            "guide",
+            "manual",
+            "support",
+          ].includes(
+            word
+          )
+      );
+
+  const modelCompact =
+    compact(
+      cleanModel
+    );
+
+  const deviceWords =
+    Array.from(
+      new Set(
+        words(
+          cleanDeviceName
+        )
+      )
+    );
+
+  const responseText =
+    [
+      search.output_text ??
+        "",
+      ...(search.output ?? [])
+        .flatMap(
+          (item) =>
+            item.content ?? []
+        )
+        .map(
+          (content) =>
+            content.text ??
+            ""
+        ),
+    ].join("\n");
+
+  /*
+   * Include an explicitly supplied GUIDE URL,
+   * but DO NOT automatically choose it.
+   *
+   * OpenAI may return a generic guide root even
+   * when its citations contain a much better
+   * exact-product page.
+   */
+  const explicitGuide =
+    responseText.match(
+      /(?:^|\n)\s*GUIDE:\s*(https:\/\/[^\s<>"']+)/i
+    )?.[1] ??
+    null;
+
+  const rawCandidates =
+    collectOpenAIUrls(
+      search
+    )
+      .filter(
+        (item) =>
+          trustedUrl(
+            item.url,
+            domains
+          )
+      )
+      .filter(
+        (item) =>
+          !looksLikeDownload(
+            item.url
+          )
+      );
+
+  if (
+    explicitGuide &&
+    trustedUrl(
+      explicitGuide,
+      domains
+    ) &&
+    !looksLikeDownload(
+      explicitGuide
+    )
+  ) {
+    rawCandidates.push({
+      url:
+        explicitGuide,
+      context:
+        "OpenAI explicit GUIDE result",
+    });
+  }
+
+  /*
+   * De-duplicate before ranking.
+   */
+  const candidates =
+    Array.from(
+      new Map(
+        rawCandidates.map(
+          (candidate) => [
+            candidate.url,
+            candidate,
+          ]
+        )
+      ).values()
+    );
+
+  function scoreCandidate(
+    candidate: {
+      url: string;
+      context: string;
+    }
+  ) {
+    const url =
+      candidate.url
+        .toLowerCase();
+
+    const evidence =
+      (
+        candidate.url +
+        " " +
+        candidate.context
+      ).toLowerCase();
+
+    const compactEvidence =
+      compact(
+        evidence
+      );
+
+    let score = 0;
+
+    /*
+     * Strongest possible evidence:
+     * exact manufacturer model number.
+     */
+    if (
+      modelCompact &&
+      compactEvidence.includes(
+        modelCompact
+      )
+    ) {
+      score += 200;
+    }
+
+    /*
+     * Product-name overlap.
+     *
+     * Example:
+     * "iPad Air 5th generation"
+     * should outrank a generic
+     * /guide/ipad/welcome page.
+     */
+    let matchedWords = 0;
+
+    for (
+      const word of
+        deviceWords
+    ) {
+      if (
+        evidence.includes(
+          word
+        )
+      ) {
+        matchedWords += 1;
+      }
+    }
+
+    score +=
+      matchedWords * 18;
+
+    if (
+      deviceWords.length > 0 &&
+      matchedWords >=
+        Math.min(
+          2,
+          deviceWords.length
+        )
+    ) {
+      score += 50;
+    }
+
+    /*
+     * Positive guide signals.
+     */
+    if (
+      /user[-\s]?guide|user[-\s]?manual|owner'?s?[-\s]?manual/.test(
+        evidence
+      )
+    ) {
+      score += 35;
+    }
+
+    if (
+      /\/guide\//.test(
+        url
+      )
+    ) {
+      score += 20;
+    }
+
+    if (
+      /support/.test(
+        url
+      )
+    ) {
+      score += 8;
+    }
+
+    /*
+     * Generic roots should lose to an
+     * exact-product guide whenever possible.
+     */
+    if (
+      /\/welcome(?:\/|$|\?)/.test(
+        url
+      )
+    ) {
+      score -= 120;
+    }
+
+    if (
+      /\/support\/?$/.test(
+        url
+      )
+    ) {
+      score -= 100;
+    }
+
+    if (
+      /\/guide\/[^/]+\/?$/.test(
+        url
+      )
+    ) {
+      score -= 45;
+    }
+
+    /*
+     * Reject clearly incorrect documentation.
+     */
+    if (
+      /firmware|driver|software update|repair manual|service manual|installation guide|quick start|quickstart|brochure/.test(
+        evidence
+      )
+    ) {
+      score -= 500;
+    }
+
+    return {
+      candidate,
+      score,
+      matchedWords,
+    };
+  }
+
+  const ranked =
+    candidates
+      .map(
+        scoreCandidate
+      )
+      .sort(
+        (a, b) =>
+          b.score -
+          a.score
+      );
+
+  console.info(
+    "[manual-openai] ranked official web-guide candidates",
+    ranked
+      .slice(
+        0,
+        6
+      )
+      .map(
+        ({
+          candidate,
+          score,
+          matchedWords,
+        }) => ({
+          url:
+            candidate.url,
+          score,
+          matchedWords,
+        })
+      )
+  );
+
+  /*
+   * Require at least meaningful guide/product
+   * evidence. A generic manufacturer support
+   * homepage should never become a "manual".
+   */
+  const best =
+    ranked.find(
+      ({
+        candidate,
+        score,
+      }) => {
+        if (
+          score < 20
+        ) {
+          return false;
+        }
+
+        const evidence =
+          (
+            candidate.url +
+            " " +
+            candidate.context
+          ).toLowerCase();
+
+        return !(
+          /firmware|driver|software update|repair manual|service manual|installation guide|quick start|quickstart|brochure/.test(
+            evidence
+          )
+        );
+      }
+    );
+
+  if (!best) {
+    console.info(
+      "[manual-openai] no sufficiently specific official web guide found"
+    );
+
+    return null;
+  }
+
+  console.info(
+    "[manual-openai] selected official web guide",
+    {
+      url:
+        best.candidate.url,
+      score:
+        best.score,
+      model:
+        cleanModel,
+      deviceName:
+        cleanDeviceName,
+    }
+  );
+
+  return best.candidate.url;
 }
 
 export async function resolveOfficialManualPdf({

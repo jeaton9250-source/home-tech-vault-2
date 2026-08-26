@@ -33,9 +33,6 @@ export default function DashboardHero({
       ? "Your home technology is organized and ready. Important information is easy to find when you need it."
       : "Add your first device to begin building your Home Tech Vault.");
 
-  const homeName = isDemo
-    ? MORGAN_HOUSEHOLD.name
-    : `${firstName}'s Home`;
 
   return (
     <section
@@ -80,16 +77,9 @@ export default function DashboardHero({
             </span>
           </div>
 
-          <div className="mt-7 flex items-center gap-3">
-            <span className="h-px w-7 bg-[#718d4f]" />
-
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#718d4f]">
-              {homeName}
-            </p>
-          </div>
 
           <h1 className="mt-4 max-w-2xl font-serif text-3xl font-medium leading-[1.03] tracking-[-0.045em] text-[#f5f1e8] sm:text-4xl lg:text-[2.8rem]">
-            Your home,
+            {firstName}&apos;s home,
             <br />
 
             <span className="text-[#718d4f]">

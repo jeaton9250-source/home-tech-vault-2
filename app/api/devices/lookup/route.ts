@@ -68,7 +68,8 @@ type DeviceLookupMatch = {
   description: string;
   confidence:
     | "upcitemdb"
-    | "icecat";
+    | "icecat"
+    | "openai";
   upc?: string;
   imageUrl?: string;
 };
@@ -137,6 +138,71 @@ function compact(
     );
 }
 
+
+function buildLookupQueries(
+  query: string
+) {
+  const cleaned =
+    cleanQuery(query);
+
+  const variants =
+    new Set<string>([
+      cleaned,
+    ]);
+
+  const detectedBrand =
+    detectBrand(cleaned);
+
+  const compactQuery =
+    compact(cleaned);
+
+  /*
+   * Bare manufacturer model numbers are often
+   * indexed with the brand or the word "model"
+   * instead of by the identifier alone.
+   */
+  if (
+    /^[a-z]+[-\s]?\d+[a-z0-9-]*$/i.test(
+      cleaned
+    )
+  ) {
+    variants.add(
+      `model ${cleaned}`
+    );
+  }
+
+  /*
+   * Apple hardware identifiers commonly use
+   * A followed by four digits, such as A2589.
+   */
+  if (
+    /^a\d{4}$/i.test(
+      compactQuery
+    )
+  ) {
+    variants.add(
+      `Apple ${cleaned}`
+    );
+
+    variants.add(
+      `Apple model ${cleaned}`
+    );
+  } else if (
+    detectedBrand &&
+    !normalize(cleaned).includes(
+      normalize(detectedBrand)
+    )
+  ) {
+    variants.add(
+      `${detectedBrand} ${cleaned}`
+    );
+  }
+
+  return Array.from(
+    variants
+  ).slice(0, 4);
+}
+
 function detectBrand(
   query: string
 ) {
@@ -161,6 +227,9 @@ function detectBrand(
 
   if (
     /\bmacbook\b|\biphone\b|\bipad\b|\bimac\b/i.test(
+      query
+    ) ||
+    /^\s*a[-\s]?\d{4}\s*$/i.test(
       query
     )
   ) {
@@ -713,121 +782,172 @@ async function searchUpcItemDb(
   const barcode =
     isBarcode(query);
 
-  const url =
-    new URL(
-      barcode
-        ? "https://api.upcitemdb.com/prod/trial/lookup"
-        : "https://api.upcitemdb.com/prod/trial/search"
-    );
+  const queries =
+    barcode
+      ? [query]
+      : buildLookupQueries(
+          query
+        );
 
-  if (barcode) {
-    url.searchParams.set(
-      "upc",
-      query
-    );
-  } else {
-    url.searchParams.set(
-      "s",
-      query
-    );
+  const allMatches:
+    DeviceLookupMatch[] = [];
 
-    url.searchParams.set(
-      "type",
-      "product"
-    );
+  let rateLimited = false;
+  let remaining: string | null =
+    null;
 
-    url.searchParams.set(
-      "match_mode",
-      "0"
-    );
-  }
-
-  const controller =
-    new AbortController();
-
-  const timeout =
-    setTimeout(
-      () =>
-        controller.abort(),
-      7000
-    );
-
-  try {
-    const response =
-      await fetch(
-        url.toString(),
-        {
-          method: "GET",
-
-          headers: {
-            Accept:
-              "application/json",
-
-            "Content-Type":
-              "application/json",
-          },
-
-          signal:
-            controller.signal,
-
-          cache: "no-store",
-
-          redirect: "error",
-        }
+  for (
+    const searchQuery of queries
+  ) {
+    const url =
+      new URL(
+        barcode
+          ? "https://api.upcitemdb.com/prod/trial/lookup"
+          : "https://api.upcitemdb.com/prod/trial/search"
       );
 
-    const remaining =
-      response.headers.get(
-        "x-ratelimit-remaining"
+    if (barcode) {
+      url.searchParams.set(
+        "upc",
+        searchQuery
+      );
+    } else {
+      url.searchParams.set(
+        "s",
+        searchQuery
       );
 
-    if (
-      response.status === 429
-    ) {
-      return {
-        matches:
-          [] as DeviceLookupMatch[],
+      url.searchParams.set(
+        "type",
+        "product"
+      );
 
-        rateLimited: true,
-
-        remaining,
-      };
+      url.searchParams.set(
+        "match_mode",
+        "0"
+      );
     }
 
-    if (!response.ok) {
-      console.error(
-        "[upcitemdb] HTTP error:",
-        response.status
+    const controller =
+      new AbortController();
+
+    const timeout =
+      setTimeout(
+        () =>
+          controller.abort(),
+        7000
       );
 
-      return {
-        matches:
-          [] as DeviceLookupMatch[],
+    try {
+      const response =
+        await fetch(
+          url.toString(),
+          {
+            method: "GET",
+            headers: {
+              Accept:
+                "application/json",
+              "Content-Type":
+                "application/json",
+            },
+            signal:
+              controller.signal,
+            cache: "no-store",
+            redirect: "error",
+          }
+        );
 
-        rateLimited: false,
+      remaining =
+        response.headers.get(
+          "x-ratelimit-remaining"
+        );
 
-        remaining,
-      };
-    }
+      if (
+        response.status === 429
+      ) {
+        rateLimited = true;
+        break;
+      }
 
-    const body =
-      (await response.json()) as
-        UpcResponse;
+      if (!response.ok) {
+        console.error(
+          "[upcitemdb] HTTP error:",
+          response.status
+        );
 
-    return {
-      matches:
+        continue;
+      }
+
+      const body =
+        (await response.json()) as
+          UpcResponse;
+
+      const matches =
         buildUpcMatches(
           body,
           query
-        ),
+        );
 
-      rateLimited: false,
+      allMatches.push(
+        ...matches
+      );
 
-      remaining,
-    };
-  } finally {
-    clearTimeout(timeout);
+      /*
+       * Barcode lookups are exact, so there
+       * is never a reason to run variants.
+       */
+      if (barcode) {
+        break;
+      }
+
+      /*
+       * Stop early once a strong model result
+       * has been found. This keeps external
+       * requests under control.
+       */
+      if (
+        allMatches.some(
+          (match) =>
+            compact(
+              match.modelNumber
+            ).includes(
+              compact(query)
+            )
+        )
+      ) {
+        break;
+      }
+    } catch (error) {
+      console.error(
+        "[upcitemdb] lookup failed:",
+        error
+      );
+    } finally {
+      clearTimeout(timeout);
+    }
   }
+
+  const unique =
+    Array.from(
+      new Map(
+        allMatches.map(
+          (match) => [
+            `${compact(
+              match.brand
+            )}:${compact(
+              match.modelNumber
+            )}:${match.id}`,
+            match,
+          ]
+        )
+      ).values()
+    ).slice(0, 5);
+
+  return {
+    matches: unique,
+    rateLimited,
+    remaining,
+  };
 }
 
 async function searchIcecat(

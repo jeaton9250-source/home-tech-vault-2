@@ -586,14 +586,14 @@ export default function FamilyPage() {
           };
 
         console.error(
-          "Family Sharing loading error:",
+          "Household Access loading error:",
           error
         );
 
         setErrorMessage(
           possibleError.message ||
             possibleError.details ||
-            "Unable to load Family Sharing."
+            "Unable to load Your Household."
         );
       } finally {
         setLoadingFamily(false);
@@ -1542,7 +1542,7 @@ const {
                     className="justify-center"
                   >
                     <Crown size={17} />
-                    Unlock Family Sharing
+                    Unlock Household Access
                   </Button>
 
                   <Button
@@ -1844,62 +1844,7 @@ const {
 
   return (
     <PageShell>
-      <section className="relative overflow-hidden rounded-[30px] border border-white/10 bg-[#183047] px-6 py-9 text-[#f5f1e8] shadow-[0_28px_70px_-44px_rgba(0,0,0,0.75)] md:px-10 md:py-11">
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#718d4f]">
-              Household Access
-            </p>
 
-            <h1 className="mt-3 font-serif text-4xl font-medium tracking-[-0.045em] text-[#f5f1e8] md:text-5xl">
-              Family Sharing.
-            </h1>
-
-            <p className="mt-4 max-w-xl text-sm leading-7 text-[#b6c0c7] md:text-base">
-              Invite trusted people
-              and manage your Home
-              Tech Vault together.
-            </p>
-
-            {!permissionsLoading &&
-              !isDemo &&
-              canUseFamilySharing && (
-                <div className="mt-5 flex flex-wrap items-center gap-3">
-                  <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1.5 text-xs font-semibold text-[#f5f1e8]">
-                    Plan:{" "}
-                    {isPlatformAdmin
-                      ? "Master Account"
-                      : planDisplayName}
-                  </span>
-
-                  {roleDisplayName && (
-                    <span className="rounded-full border border-[#718d4f]/25 bg-[#718d4f]/10 px-3 py-1.5 text-xs font-semibold text-[#a9bd8b]">
-                      {roleDisplayName}
-                    </span>
-                  )}
-                </div>
-              )}
-          </div>
-
-          {household &&
-            canInvite &&
-            availableSeats > 0 && (
-              <Button
-                variant="secondary"
-                onClick={() =>
-                  setShowInviteForm(
-                    true
-                  )
-                }
-              >
-                <UserPlus
-                  size={17}
-                />
-                Invite Member
-              </Button>
-            )}
-        </div>
-      </section>
 
       {!isDemo &&
         canUseFamilySharing &&
@@ -1918,7 +1863,7 @@ const {
 
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#617c43]">
-                Family Plan Preview
+                Household Preview
               </p>
 
               <p className="mt-2 text-sm leading-6 text-[#68737b]">
@@ -1980,195 +1925,143 @@ const {
         />
       ) : (
         <>
-          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <SummaryCard
-              icon={Users}
-              label="Members"
-              value={members.length.toString()}
-              description={`${availableSeats} seats available`}
-            />
+          {/* HOUSEHOLD HOME */}
+          <section className="overflow-hidden rounded-[32px] bg-[#183047] text-[#f8f5ef] shadow-[0_28px_70px_-48px_rgba(15,25,35,0.65)]">
+            <div className="grid gap-8 px-7 py-9 md:px-10 md:py-11 lg:grid-cols-[1fr_auto] lg:items-center">
+              <div className="max-w-2xl">
+                <h1 className="font-serif text-4xl font-medium tracking-[-0.045em] text-[#f8f5ef] md:text-5xl">
+                  {household.name}
+                </h1>
 
-            <SummaryCard
-              icon={Mail}
-              label="Pending"
-              value={invitations.length.toString()}
-              description="Open invitations"
-            />
+                <p className="mt-5 max-w-xl text-base leading-7 text-[#c2cbd1]">
+                  One shared place for the people you trust to help
+                  keep your home organized.
+                </p>
 
-            <SummaryCard
-              icon={
-                ShieldCheck
-              }
-              label="Your Role"
-              value={formatRole(
-                currentRole ||
-                  "viewer"
-              )}
-              description="Household permissions"
-            />
+                <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3 text-sm text-[#d6dcd9]">
+                  <span>
+                    {members.length}{" "}
+                    {members.length === 1
+                      ? "person"
+                      : "people"}
+                  </span>
 
-            <SummaryCard
-              icon={Crown}
-              label="Member Limit"
-              value={memberLimit.toString()}
-              description="Family-plan seats"
-            />
+                  <span
+                    aria-hidden="true"
+                    className="h-1 w-1 rounded-full bg-[#718d4f]"
+                  />
+
+                  <span>
+                    {availableSeats}{" "}
+                    {availableSeats === 1
+                      ? "spot"
+                      : "spots"}{" "}
+                    available
+                  </span>
+
+                  <span
+                    aria-hidden="true"
+                    className="h-1 w-1 rounded-full bg-[#718d4f]"
+                  />
+
+                  <span>Private by default</span>
+                </div>
+              </div>
+
+              {canManageHousehold &&
+                availableSeats > 0 && (
+                  <Button
+                    variant="secondary"
+                    onClick={() =>
+                      setShowInviteForm(true)
+                    }
+                  >
+                    <Plus size={16} />
+                    Invite Someone
+                  </Button>
+                )}
+            </div>
           </section>
 
-          <PageCard className="overflow-hidden p-0">
-            <div className="relative overflow-hidden bg-[#183047] p-7 text-[#f5f1e8] md:p-9">
-              <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#718d4f]">
-                    Your Household
-                  </p>
+          {/* PEOPLE */}
+          <section className="py-4 md:py-6">
+            <div className="flex flex-col gap-2 border-b border-[#182533]/10 pb-5 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#718d4f]">
+                  People in your household
+                </p>
 
-                  <h2 className="mt-2 font-serif text-3xl font-medium tracking-[-0.04em] text-[#f5f1e8]">
-                    {household.name}
-                  </h2>
+                <h2 className="mt-2 font-serif text-3xl font-medium tracking-[-0.04em] text-[#17212a]">
+                  Shared with
+                </h2>
 
-                  <p className="mt-3 text-sm text-[#aeb8c1]">
-                    Created{" "}
-                    {formatDate(
-                      household.created_at
-                    )}
-                  </p>
-                </div>
-
-                <div className="rounded-[20px] border border-white/10 bg-white/[0.05] px-5 py-4">
-                  <p className="text-xs text-[#9da9b1]">
-                    Household owner
-                  </p>
-
-                  <p className="mt-1 font-serif font-medium text-[#f5f1e8]">
-                    {ownerMember?.fullName ||
-                      "Owner"}
-                  </p>
-                </div>
+                <p className="mt-2 text-sm leading-6 text-[#68737b]">
+                  The people who can open and help organize this
+                  home&apos;s Vault.
+                </p>
               </div>
             </div>
-          </PageCard>
 
-          <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-            <PageCard className="border-[#182533]/10 bg-[#f8f5ef] p-7 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] md:p-8">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#718d4f]">
-                    Members
+            <div className="mt-5 space-y-3">
+              {members.map((member) => (
+                <MemberRow
+                  key={member.id}
+                  member={member}
+                  currentUserId={user?.id || ""}
+                  canManage={canManageHousehold}
+                  updating={
+                    updatingMemberId === member.id
+                  }
+                  removing={
+                    removingMemberId === member.id
+                  }
+                  onRoleChange={(role) =>
+                    updateMemberRole(
+                      member,
+                      role
+                    )
+                  }
+                  onRemove={() =>
+                    removeMember(member)
+                  }
+                />
+              ))}
+            </div>
+          </section>
+
+          {/* INVITATIONS + HOME PRIVACY */}
+          <section className="grid gap-10 border-t border-[#182533]/10 py-8 lg:grid-cols-[0.85fr_1.15fr] lg:gap-14">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#718d4f]">
+                Invitations
+              </p>
+
+              <h2 className="mt-2 font-serif text-2xl font-medium tracking-[-0.035em] text-[#17212a]">
+                Waiting to join
+              </h2>
+
+              <p className="mt-2 text-sm leading-6 text-[#68737b]">
+                Invitations stay here until they&apos;re accepted or
+                removed.
+              </p>
+
+              {invitations.length === 0 ? (
+                <div className="mt-6">
+                  <p className="font-serif text-lg text-[#17212a]">
+                    Everyone&apos;s here.
                   </p>
 
-                  <h2 className="mt-2 font-serif text-2xl font-medium tracking-[-0.035em] text-[#17212a]">
-                    Household access
-                  </h2>
-
-                  <p className="mt-2 text-sm leading-6 text-[#68737b]">
-                    Control what each
-                    person can view or
-                    manage.
+                  <p className="mt-1 text-sm leading-6 text-[#7a858d]">
+                    There are no outstanding household invitations.
                   </p>
-                </div>
-
-                {canManageHousehold &&
-                  availableSeats >
-                    0 && (
-                    <Button
-                      variant="secondary"
-                      onClick={() =>
-                        setShowInviteForm(
-                          true
-                        )
-                      }
-                    >
-                      <Plus
-                        size={16}
-                      />
-                      Invite
-                    </Button>
-                  )}
-              </div>
-
-              <div className="mt-7 space-y-3">
-                {members.map(
-                  (member) => (
-                    <MemberRow
-                      key={
-                        member.id
-                      }
-                      member={
-                        member
-                      }
-                      currentUserId={
-                        user?.id ||
-                        ""
-                      }
-                      canManage={
-                        canManageHousehold
-                      }
-                      updating={
-                        updatingMemberId ===
-                        member.id
-                      }
-                      removing={
-                        removingMemberId ===
-                        member.id
-                      }
-                      onRoleChange={(
-                        role
-                      ) =>
-                        updateMemberRole(
-                          member,
-                          role
-                        )
-                      }
-                      onRemove={() =>
-                        removeMember(
-                          member
-                        )
-                      }
-                    />
-                  )
-                )}
-              </div>
-            </PageCard>
-
-            <PageCard className="border-[#182533]/10 bg-[#f8f5ef] p-7 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] md:p-8">
-              <div className="flex items-start gap-4">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#617c43]/15 bg-[#617c43]/10 text-[#617c43]">
-                  <Clock3
-                    size={20}
-                  />
-                </div>
-
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#718d4f]">
-                    Invitations
-                  </p>
-
-                  <h2 className="mt-2 font-serif text-2xl font-medium tracking-[-0.035em] text-[#17212a]">
-                    Pending invites
-                  </h2>
-                </div>
-              </div>
-
-              {invitations.length ===
-              0 ? (
-                <div className="mt-7 rounded-[22px] border border-[#182533]/8 bg-[#eee9df]/55 p-5 text-sm leading-6 text-[#68737b]">
-                  No invitations are
-                  currently pending.
                 </div>
               ) : (
-                <div className="mt-7 space-y-3">
+                <div className="mt-6 space-y-3">
                   {invitations.map(
-                    (
-                      invitation
-                    ) => (
+                    (invitation) => (
                       <InvitationRow
-                        key={
-                          invitation.id
-                        }
-                        invitation={
-                          invitation
-                        }
+                        key={invitation.id}
+                        invitation={invitation}
                         canManage={
                           canManageHousehold
                         }
@@ -2191,55 +2084,105 @@ const {
                   )}
                 </div>
               )}
+            </div>
 
-              <div className="mt-6 rounded-[22px] border border-[#182533]/8 bg-[#eee9df]/35 p-4">
-                <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[#7a858d]">
-                  Invitation
-                  Delivery
+            <div className="rounded-[28px] bg-[#eee9df]/65 p-7 md:p-8">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#718d4f]">
+                Your home, shared carefully
+              </p>
+
+              <h2 className="mt-2 max-w-lg font-serif text-2xl font-medium tracking-[-0.035em] text-[#17212a]">
+                You decide who belongs here.
+              </h2>
+
+              <p className="mt-4 max-w-xl text-sm leading-7 text-[#68737b]">
+                Household information is only shared with people
+                you invite. Access can be changed or removed whenever
+                you need.
+              </p>
+
+              <div className="mt-7 border-t border-[#182533]/10 pt-6">
+                <p className="text-xs font-semibold text-[#17212a]">
+                  {ownerMember?.fullName ||
+                    "Household owner"}
                 </p>
 
-                <p className="mt-2 text-sm leading-6 text-[#68737b]">
-                  Use the copy button
-                  beside an invitation
-                  to share its secure
-                  link by text or
-                  email.
+                <p className="mt-1 text-sm text-[#7a858d]">
+                  Household owner
+                </p>
+
+                <p className="mt-4 text-xs text-[#8a949b]">
+                  Household created{" "}
+                  {formatDate(
+                    household.created_at
+                  )}
                 </p>
               </div>
-            </PageCard>
+            </div>
           </section>
 
-          <PageCard className="border-[#182533]/10 bg-[#f8f5ef] p-7 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] md:p-8">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#718d4f]">
-              Role Permissions
-            </p>
+          {/* SHARING PERMISSIONS */}
+          <section className="border-t border-[#182533]/10 py-8">
+            <details className="group">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4">
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#718d4f]">
+                    Who can do what?
+                  </p>
 
-            <h2 className="mt-2 font-serif text-2xl font-medium tracking-[-0.035em] text-[#17212a]">
-              Who can do what?
-            </h2>
+                  <h2 className="mt-2 font-serif text-xl font-medium tracking-[-0.03em] text-[#17212a]">
+                    Choose how much access each person gets.
+                  </h2>
+                </div>
 
-            <div className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              <RoleCard
-                role="Owner"
-                description="Full control, billing, invitations, roles, and household management."
-              />
+                <span className="text-sm font-medium text-[#617c43]">
+                  
+                </span>
+              </summary>
 
-              <RoleCard
-                role="Admin"
-                description="Can manage shared vault information and help organize the household."
-              />
+              <div className="mt-7 grid gap-x-8 gap-y-6 border-t border-[#182533]/10 pt-7 sm:grid-cols-2">
+                <div>
+                  <p className="font-semibold text-[#17212a]">
+                    Owner
+                  </p>
+                  <p className="mt-1 text-sm leading-6 text-[#68737b]">
+                    Full household control, including invitations,
+                    roles and billing.
+                  </p>
+                </div>
 
-              <RoleCard
-                role="Member"
-                description="Can view, add, and update shared household information."
-              />
+                <div>
+                  <p className="font-semibold text-[#17212a]">
+                    Admin
+                  </p>
+                  <p className="mt-1 text-sm leading-6 text-[#68737b]">
+                    Helps manage the shared Vault and household
+                    information.
+                  </p>
+                </div>
 
-              <RoleCard
-                role="Viewer"
-                description="Read-only access to the shared household vault."
-              />
-            </div>
-          </PageCard>
+                <div>
+                  <p className="font-semibold text-[#17212a]">
+                    Member
+                  </p>
+                  <p className="mt-1 text-sm leading-6 text-[#68737b]">
+                    Can view, add and update shared household
+                    information.
+                  </p>
+                </div>
+
+                <div>
+                  <p className="font-semibold text-[#17212a]">
+                    Viewer
+                  </p>
+                  <p className="mt-1 text-sm leading-6 text-[#68737b]">
+                    Can view household information without making
+                    changes.
+                  </p>
+                </div>
+              </div>
+            </details>
+          </section>
         </>
       )}
 
@@ -2395,132 +2338,168 @@ function MemberRow({
   ) => void;
   onRemove: () => void;
 }) {
-  const initials =
-    member.fullName
-      .split(" ")
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((name) =>
-        name[0]?.toUpperCase()
-      )
-      .join("");
+  const initials = member.fullName
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((name) =>
+      name[0]?.toUpperCase()
+    )
+    .join("");
 
   const isCurrentUser =
-    member.user_id ===
-    currentUserId;
+    member.user_id === currentUserId;
+
+  const roleDescription =
+    member.role === "owner"
+      ? "Keeps the household organized"
+      : member.role === "admin"
+        ? "Can help manage the shared Vault"
+        : member.role === "member"
+          ? "Can add and update shared information"
+          : "Can view shared household information";
 
   return (
-    <div className="flex flex-col gap-4 rounded-[22px] border border-[#182533]/10 bg-[#eee9df]/30 p-4 transition hover:border-[#617c43]/20 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex min-w-0 items-center gap-3">
-        {member.avatarUrl ? (
-          <img
-            src={member.avatarUrl}
-            alt={member.fullName}
-            className="h-11 w-11 rounded-full object-cover"
-          />
-        ) : (
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#617c43] text-xs font-bold text-white">
-            {initials || "HT"}
-          </div>
-        )}
+    <article className="group overflow-hidden rounded-[28px] border border-[#182533]/8 bg-[#f8f5ef] transition duration-200 hover:border-[#617c43]/20 hover:shadow-[0_18px_45px_-38px_rgba(15,25,35,0.55)]">
+      <div className="flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:justify-between md:p-6">
+        <div className="flex min-w-0 items-center gap-4">
+          <div className="relative shrink-0">
+            {member.avatarUrl ? (
+              <img
+                src={member.avatarUrl}
+                alt={member.fullName}
+                className="h-14 w-14 rounded-full object-cover ring-4 ring-[#eee9df]"
+              />
+            ) : (
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#617c43] font-serif text-base font-medium text-white ring-4 ring-[#eee9df]">
+                {initials || "HT"}
+              </div>
+            )}
 
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <p className="truncate font-serif font-medium text-[#17212a]">
-              {member.fullName}
-            </p>
-
-            {isCurrentUser && (
-              <span className="rounded-full border border-[#182533]/8 bg-[#182533]/5 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#68737b]">
-                You
+            {member.role === "owner" && (
+              <span
+                aria-label="Household owner"
+                className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-[#f8f5ef] bg-[#b58a42] text-white"
+              >
+                <Crown size={12} />
               </span>
             )}
           </div>
 
-          <p className="mt-1 text-xs text-[#8a949b]">
-            Joined{" "}
-            {formatDate(
-              member.joined_at
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="truncate font-serif text-lg font-medium tracking-[-0.02em] text-[#17212a]">
+                {member.fullName}
+              </p>
+
+              {isCurrentUser && (
+                <span className="rounded-full bg-[#617c43]/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#617c43]">
+                  You
+                </span>
+              )}
+            </div>
+
+            <p className="mt-1 text-sm leading-5 text-[#68737b]">
+              {roleDescription}
+            </p>
+
+            <p className="mt-2 text-xs text-[#9aa2a7]">
+              Joined{" "}
+              {formatDate(
+                member.joined_at
+              )}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+          {member.role === "owner" ? (
+            <span className="inline-flex items-center gap-2 rounded-full bg-[#b58a42]/10 px-3 py-2 text-xs font-semibold text-[#916c31]">
+              <Crown size={14} />
+              Owner
+            </span>
+          ) : canManage ? (
+            <label className="relative">
+              <span className="sr-only">
+                Change access for{" "}
+                {member.fullName}
+              </span>
+
+              <select
+                value={member.role}
+                disabled={updating}
+                onChange={(event) =>
+                  onRoleChange(
+                    event.target
+                      .value as Exclude<
+                      HouseholdRole,
+                      "owner"
+                    >
+                  )
+                }
+                className="appearance-none rounded-full border border-[#182533]/10 bg-[#eee9df]/65 py-2 pl-4 pr-9 text-xs font-semibold text-[#17212a] outline-none transition hover:border-[#617c43]/25 focus:border-[#617c43]/40 disabled:opacity-50"
+              >
+                <option value="admin">
+                  Admin
+                </option>
+                <option value="member">
+                  Member
+                </option>
+                <option value="viewer">
+                  View only
+                </option>
+              </select>
+
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-[#7a858d]"
+              >
+                ▾
+              </span>
+            </label>
+          ) : (
+            <span className="rounded-full bg-[#182533]/5 px-3 py-2 text-xs font-semibold text-[#68737b]">
+              {member.role === "viewer"
+                ? "View only"
+                : formatRole(
+                    member.role
+                  )}
+            </span>
+          )}
+
+          {updating && (
+            <Loader2
+              size={16}
+              className="animate-spin text-[#718d4f]"
+            />
+          )}
+
+          {canManage &&
+            member.role !== "owner" && (
+              <button
+                type="button"
+                onClick={onRemove}
+                disabled={removing}
+                aria-label={`Remove ${member.fullName} from household`}
+                title={`Remove ${member.fullName}`}
+                className="flex h-9 w-9 items-center justify-center rounded-full text-[#9a6b64] transition hover:bg-[#a6584e]/10 hover:text-[#984e46] disabled:opacity-50"
+              >
+                {removing ? (
+                  <Loader2
+                    size={15}
+                    className="animate-spin"
+                  />
+                ) : (
+                  <Trash2 size={15} />
+                )}
+              </button>
             )}
-          </p>
         </div>
       </div>
-
-      <div className="flex items-center gap-2">
-        {member.role ===
-        "owner" ? (
-          <span className="inline-flex items-center gap-2 rounded-full border border-[#b58a42]/20 bg-[#b58a42]/10 px-3 py-2 text-xs font-semibold text-[#916c31]">
-            <Crown size={14} />
-            Owner
-          </span>
-        ) : canManage ? (
-          <select
-            value={member.role}
-            disabled={updating}
-            onChange={(event) =>
-              onRoleChange(
-                event.target
-                  .value as Exclude<
-                  HouseholdRole,
-                  "owner"
-                >
-              )
-            }
-            className="rounded-xl border border-[#182533]/10 bg-[#f8f5ef] px-3 py-2 text-sm font-semibold text-[#17212a] outline-none focus:border-[#617c43]/40"
-          >
-            <option value="admin">
-              Admin
-            </option>
-
-            <option value="member">
-              Member
-            </option>
-
-            <option value="viewer">
-              Viewer
-            </option>
-          </select>
-        ) : (
-          <span className="rounded-full border border-[#182533]/8 bg-[#182533]/5 px-3 py-2 text-xs font-semibold text-[#68737b]">
-            {formatRole(
-              member.role
-            )}
-          </span>
-        )}
-
-        {updating && (
-          <Loader2
-            size={16}
-            className="animate-spin text-text-tertiary"
-          />
-        )}
-
-        {canManage &&
-          member.role !==
-            "owner" && (
-            <button
-              type="button"
-              onClick={onRemove}
-              disabled={removing}
-              aria-label={`Remove ${member.fullName}`}
-              className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#a6584e]/15 bg-[#a6584e]/10 text-[#984e46] transition hover:bg-[#a6584e] hover:text-white disabled:opacity-50"
-            >
-              {removing ? (
-                <Loader2
-                  size={16}
-                  className="animate-spin"
-                />
-              ) : (
-                <Trash2
-                  size={16}
-                />
-              )}
-            </button>
-          )}
-      </div>
-    </div>
+    </article>
   );
 }
+
 
 function InvitationRow({
   invitation,
@@ -2621,11 +2600,11 @@ function InviteModal({
         <div className="flex items-start justify-between gap-4 border-b border-[#182533]/10 p-6">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#718d4f]">
-              Family Sharing
+              Household Access
             </p>
 
             <h2 className="mt-2 font-serif text-2xl font-medium tracking-[-0.035em] text-[#17212a]">
-              Invite a member
+              Invite someone
             </h2>
 
             <p className="mt-2 text-sm text-text-secondary">
@@ -2650,8 +2629,6 @@ function InviteModal({
         <form
   onSubmit={(event) => {
     event.preventDefault();
-    alert("Invite form submitted");
-    console.log("[Family Invite] Modal form submitted");
     onSubmit(event);
   }}
   className="space-y-5 p-6"
@@ -2672,7 +2649,7 @@ function InviteModal({
                       .value,
                 })
               }
-              placeholder="family@example.com"
+              placeholder="name@example.com"
               required
               className="w-full rounded-xl border border-[#182533]/10 bg-[#eee9df]/50 px-4 py-3.5 text-[#17212a] outline-none focus:border-[#617c43]/40 focus:bg-[#f8f5ef] focus:ring-4 focus:ring-[#617c43]/10"
             />

@@ -214,9 +214,6 @@ export default function NetworkConnectorTab({
               Device import into your vault
             </li>
             <li>
-              Home Assistant device syncing
-            </li>
-            <li>
               Automatic monitoring with Pro
               or Family
             </li>
@@ -296,7 +293,7 @@ export default function NetworkConnectorTab({
   return (
     <>
       <div className="space-y-6">
-        <PageCard className="border-[#182533]/10 bg-[#f8f5ef] p-6 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] md:p-7">
+        <PageCard className="hidden border-[#182533]/10 bg-[#f8f5ef] p-6 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] md:p-7">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <div className="flex flex-wrap items-center gap-3">
