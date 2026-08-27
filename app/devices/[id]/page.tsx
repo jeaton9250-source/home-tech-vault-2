@@ -2500,6 +2500,18 @@ export default function DevicePage() {
                   onRerunManual={
                     handleForceManualRerun
                   }
+                  onManualRemoved={() => {
+                    setDevice((current) =>
+                      current
+                        ? {
+                            ...current,
+                            manual_url: null,
+                            manual_status: null,
+                            manual_checked_at: null,
+                          }
+                        : current
+                    );
+                  }}
                   onManualStatusChange={(
                     status
                   ) => {

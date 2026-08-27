@@ -53,6 +53,7 @@ type DeviceDocumentsProps = {
 
   onRerunManual?: () => void;
   rerunningManual?: boolean;
+  onManualRemoved?: () => void;
 };
 
 const documentTypes = [
@@ -70,6 +71,7 @@ export default function DeviceDocuments({
   onManualStatusChange,
   onRerunManual,
   rerunningManual = false,
+  onManualRemoved,
 }: DeviceDocumentsProps) {
   const [documents, setDocuments] = useState<DeviceDocument[]>([]);
   const [selectedType, setSelectedType] =
@@ -460,6 +462,43 @@ export default function DeviceDocuments({
     }
   }
 
+  async function removeOfficialManual() {
+    const confirmed = window.confirm(
+      "Remove this official manual from the device?"
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("devices")
+        .update({
+          manual_url: null,
+          manual_status: null,
+          manual_checked_at: null,
+        })
+        .eq("id", deviceId);
+
+      if (error) {
+        throw error;
+      }
+
+      onManualStatusChange?.(null);
+      onManualRemoved?.();
+    } catch (error) {
+      console.error(
+        "Unable to remove official manual:",
+        error
+      );
+
+      alert(
+        "Unable to remove this manual right now."
+      );
+    }
+  }
+
   async function deleteDocument(document: DeviceDocument) {
     const confirmed = window.confirm(
       `Delete "${document.document_name}"?`
@@ -845,6 +884,37 @@ export default function DeviceDocuments({
 
                   View manual
                 </a>
+
+                {onRerunManual ? (
+                  <button
+                    type="button"
+                    onClick={onRerunManual}
+                    disabled={rerunningManual}
+                    className="htv-focus-ring inline-flex items-center gap-2 rounded-full border border-border-subtle bg-surface-card px-4 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {rerunningManual ? (
+                      <Loader2
+                        size={16}
+                        className="animate-spin"
+                      />
+                    ) : (
+                      <RefreshCw size={16} />
+                    )}
+
+                    {rerunningManual
+                      ? "Searching..."
+                      : "Rerun Manual"}
+                  </button>
+                ) : null}
+
+                <button
+                  type="button"
+                  onClick={() => void removeOfficialManual()}
+                  className="htv-focus-ring inline-flex items-center gap-2 rounded-full border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100"
+                >
+                  <Trash2 size={16} />
+                  Remove Manual
+                </button>
               </div>
             </article>
           ) : null}
