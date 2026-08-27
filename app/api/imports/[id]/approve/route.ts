@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { retryDeviceManualLookup } from "@/app/devices/actions";
 
 type ApproveBody = {
   device_name?: string;
@@ -353,6 +354,34 @@ export async function POST(
         ? body.purchase_price
         : importRecord.purchase_price;
 
+    const smartImportBrand =
+      cleanText(
+        body.brand
+      ) ??
+      cleanText(
+        body.manufacturer
+      ) ??
+      cleanText(
+        importRecord.brand
+      ) ??
+      cleanText(
+        importRecord.manufacturer
+      );
+
+    const smartImportModel =
+      cleanText(
+        body.model_number
+      ) ??
+      cleanText(
+        importRecord.model_number
+      );
+
+    const canAttemptManualLookup =
+      Boolean(
+        smartImportBrand &&
+        smartImportModel
+      );
+
     const devicePayload = {
       user_id: user.id,
 
@@ -368,10 +397,7 @@ export async function POST(
         "Other",
 
       brand:
-        cleanText(body.brand) ??
-        cleanText(
-          importRecord.brand
-        ),
+        smartImportBrand,
 
       manufacturer:
         cleanText(
@@ -379,15 +405,19 @@ export async function POST(
         ) ??
         cleanText(
           importRecord.manufacturer
-        ),
+        ) ??
+        smartImportBrand,
 
       model_number:
-        cleanText(
-          body.model_number
-        ) ??
-        cleanText(
-          importRecord.model_number
-        ),
+        smartImportModel,
+
+      manual_status:
+        canAttemptManualLookup
+          ? "pending"
+          : null,
+
+      manual_checked_at:
+        null,
 
       serial_number:
         cleanText(
@@ -470,6 +500,109 @@ export async function POST(
         },
         {
           status: 500,
+        }
+      );
+    }
+
+    /*
+      Run the same official manual lookup
+      used by the normal Add Device flow.
+
+      Manual lookup is non-fatal. A device
+      should still import if no verified
+      official manual can be found.
+    */
+    let manualLookupStatus:
+      | "found"
+      | "not_found"
+      | "skipped"
+      | "not_attempted" =
+        "not_attempted";
+
+    let manualLookupWarning:
+      string | null = null;
+
+    if (
+      canAttemptManualLookup &&
+      smartImportModel
+    ) {
+      try {
+        console.info(
+          "[smart-import] Starting automatic manual lookup",
+          {
+            deviceId:
+              device.id,
+
+            deviceName,
+
+            brand:
+              smartImportBrand,
+
+            modelNumber:
+              smartImportModel,
+          }
+        );
+
+        const manualResult =
+          await retryDeviceManualLookup({
+            deviceId:
+              device.id,
+
+            modelNumber:
+              smartImportModel,
+          });
+
+        if (
+          manualResult.success
+        ) {
+          manualLookupStatus =
+            manualResult.status;
+
+          console.info(
+            "[smart-import] Automatic manual lookup completed",
+            {
+              deviceId:
+                device.id,
+
+              status:
+                manualResult.status,
+
+              modelNumber:
+                manualResult.modelNumber,
+            }
+          );
+        } else {
+          manualLookupWarning =
+            manualResult.error;
+
+          console.warn(
+            "[smart-import] Manual lookup returned an error:",
+            manualResult.error
+          );
+        }
+      } catch (
+        manualError
+      ) {
+        manualLookupWarning =
+          "The device was added, but automatic manual lookup could not be completed.";
+
+        console.warn(
+          "[smart-import] Automatic manual lookup failed:",
+          manualError
+        );
+      }
+    } else {
+      console.info(
+        "[smart-import] Manual lookup skipped because brand or model number is missing",
+        {
+          deviceId:
+            device.id,
+
+          brand:
+            smartImportBrand,
+
+          modelNumber:
+            smartImportModel,
         }
       );
     }
