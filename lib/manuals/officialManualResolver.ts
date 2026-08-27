@@ -2074,6 +2074,15 @@ export async function resolveOfficialManualWebGuide({
          * It must also match the requested model
          * or product name.
          */
+        const hasGuideIntent =
+          /user[-\s]?guide|user[-\s]?manual|owner'?s?[-\s]?manual|owner'?s?[-\s]?guide|\/guide\/|\/manual(?:s)?(?:\/|$|\?)/.test(
+            evidence
+          );
+
+        if (!hasGuideIntent) {
+          return false;
+        }
+
         return (
           exactModelMatch ||
           productWordMatches > 0
