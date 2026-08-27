@@ -61,6 +61,118 @@ function cleanText(
   return cleaned || null;
 }
 
+type SmartImportReceiptAttachment = {
+  emailId: string;
+  attachmentId: string;
+  filename: string;
+  contentType: string | null;
+  size: number | null;
+};
+
+function getSmartImportReceiptAttachments(
+  rawData: unknown
+): SmartImportReceiptAttachment[] {
+  if (
+    !rawData ||
+    typeof rawData !==
+      "object" ||
+    Array.isArray(rawData)
+  ) {
+    return [];
+  }
+
+  const record =
+    rawData as
+      Record<
+        string,
+        unknown
+      >;
+
+  if (
+    !Array.isArray(
+      record.receiptAttachments
+    )
+  ) {
+    return [];
+  }
+
+  const results:
+    SmartImportReceiptAttachment[] =
+      [];
+
+  for (
+    const value of
+    record.receiptAttachments
+  ) {
+    if (
+      !value ||
+      typeof value !==
+        "object" ||
+      Array.isArray(value)
+    ) {
+      continue;
+    }
+
+    const attachment =
+      value as
+        Record<
+          string,
+          unknown
+        >;
+
+    const emailId =
+      typeof attachment.emailId ===
+        "string"
+        ? attachment.emailId.trim()
+        : "";
+
+    const attachmentId =
+      typeof attachment.attachmentId ===
+        "string"
+        ? attachment.attachmentId.trim()
+        : "";
+
+    const filename =
+      typeof attachment.filename ===
+        "string"
+        ? attachment.filename.trim()
+        : "";
+
+    const contentType =
+      typeof attachment.contentType ===
+        "string"
+        ? attachment.contentType.trim()
+        : null;
+
+    const size =
+      typeof attachment.size ===
+        "number" &&
+      Number.isFinite(
+        attachment.size
+      )
+        ? attachment.size
+        : null;
+
+    if (
+      !emailId ||
+      !attachmentId ||
+      !filename
+    ) {
+      continue;
+    }
+
+    results.push({
+      emailId,
+      attachmentId,
+      filename,
+      contentType,
+      size,
+    });
+  }
+
+  return results;
+}
+
 export async function POST(
   request: Request,
   context: RouteContext
@@ -363,6 +475,465 @@ export async function POST(
     }
 
     /*
+      Automatically attach the original
+      receipt to the new device.
+
+      Original PDF/image attachments are
+      preferred. If none can be retrieved,
+      Smart Import saves the forwarded email
+      contents as a text receipt instead.
+    */
+    let receiptAttached =
+      false;
+
+    let receiptWarning:
+      string | null = null;
+
+    const receiptAttachments =
+      getSmartImportReceiptAttachments(
+        importRecord.raw_data
+      );
+
+    const safeDeviceName =
+      deviceName
+        .replace(
+          /[^a-zA-Z0-9._-]+/g,
+          "-"
+        )
+        .replace(
+          /^-+|-+$/g,
+          ""
+        )
+        .slice(
+          0,
+          80
+        ) ||
+      "device";
+
+    for (
+      const attachment of
+      receiptAttachments
+    ) {
+      if (
+        receiptAttached
+      ) {
+        break;
+      }
+
+      try {
+        const metadataResponse =
+          await fetch(
+            `https://api.resend.com/emails/receiving/${attachment.emailId}/attachments/${attachment.attachmentId}`,
+            {
+              headers: {
+                Authorization:
+                  `Bearer ${process.env.RESEND_API_KEY!}`,
+              },
+              signal:
+                AbortSignal.timeout(
+                  10_000
+                ),
+            }
+          );
+
+        if (
+          !metadataResponse.ok
+        ) {
+          console.warn(
+            "[smart-import] Unable to retrieve receipt attachment metadata:",
+            metadataResponse.status
+          );
+
+          continue;
+        }
+
+        const metadata =
+          await metadataResponse.json() as {
+            id?: string;
+            filename?: string;
+            content_type?: string;
+            size?: number;
+            download_url?: string;
+          };
+
+        if (
+          !metadata.download_url
+        ) {
+          continue;
+        }
+
+        if (
+          typeof metadata.size ===
+            "number" &&
+          metadata.size >
+            15 * 1024 * 1024
+        ) {
+          continue;
+        }
+
+        const downloadResponse =
+          await fetch(
+            metadata.download_url,
+            {
+              signal:
+                AbortSignal.timeout(
+                  15_000
+                ),
+            }
+          );
+
+        if (
+          !downloadResponse.ok
+        ) {
+          console.warn(
+            "[smart-import] Receipt download failed:",
+            downloadResponse.status
+          );
+
+          continue;
+        }
+
+        const receiptBuffer =
+          Buffer.from(
+            await downloadResponse
+              .arrayBuffer()
+          );
+
+        if (
+          receiptBuffer.length === 0 ||
+          receiptBuffer.length >
+            15 * 1024 * 1024
+        ) {
+          continue;
+        }
+
+        const originalName =
+          (
+            metadata.filename ||
+            attachment.filename ||
+            "receipt"
+          )
+            .replace(
+              /[^a-zA-Z0-9._-]+/g,
+              "-"
+            )
+            .replace(
+              /^-+|-+$/g,
+              ""
+            )
+            .slice(
+              0,
+              120
+            ) ||
+          "receipt";
+
+        const contentType =
+          metadata.content_type ||
+          attachment.contentType ||
+          "application/octet-stream";
+
+        const allowedTypes =
+          new Set([
+            "application/pdf",
+            "image/jpeg",
+            "image/jpg",
+            "image/png",
+            "image/webp",
+          ]);
+
+        const allowedExtension =
+          /\.(pdf|jpe?g|png|webp)$/i
+            .test(
+              originalName
+            );
+
+        if (
+          !allowedTypes.has(
+            contentType
+              .toLowerCase()
+          ) &&
+          !allowedExtension
+        ) {
+          continue;
+        }
+
+        const storagePath =
+          `${householdId}/${device.id}/` +
+          `${crypto.randomUUID()}-` +
+          originalName;
+
+        const {
+          error:
+            storageError,
+        } =
+          await supabase.storage
+            .from(
+              "documents"
+            )
+            .upload(
+              storagePath,
+              receiptBuffer,
+              {
+                upsert: false,
+                contentType,
+              }
+            );
+
+        if (
+          storageError
+        ) {
+          console.warn(
+            "[smart-import] Receipt storage failed:",
+            storageError
+          );
+
+          continue;
+        }
+
+        const {
+          error:
+            documentError,
+        } =
+          await supabase
+            .from(
+              "documents"
+            )
+            .insert({
+              user_id:
+                user.id,
+
+              household_id:
+                householdId,
+
+              device_id:
+                device.id,
+
+              file_name:
+                originalName,
+
+              document_name:
+                importRecord.retailer
+                  ? `${importRecord.retailer} Receipt`
+                  : `${deviceName} Receipt`,
+
+              file_url:
+                storagePath,
+
+              file_type:
+                "Receipt",
+            });
+
+        if (
+          documentError
+        ) {
+          console.warn(
+            "[smart-import] Receipt document record failed:",
+            documentError
+          );
+
+          await supabase.storage
+            .from(
+              "documents"
+            )
+            .remove([
+              storagePath,
+            ]);
+
+          continue;
+        }
+
+        receiptAttached =
+          true;
+
+        console.info(
+          "[smart-import] Original receipt attached",
+          {
+            importId:
+              id,
+
+            deviceId:
+              device.id,
+
+            filename:
+              originalName,
+          }
+        );
+      } catch (error) {
+        console.warn(
+          "[smart-import] Original receipt attachment failed:",
+          error
+        );
+      }
+    }
+
+    if (
+      !receiptAttached
+    ) {
+      const receiptText =
+        typeof importRecord.raw_text ===
+          "string"
+          ? importRecord.raw_text.trim()
+          : "";
+
+      if (receiptText) {
+        const receiptFileName =
+          `${safeDeviceName}-receipt.txt`;
+
+        const storagePath =
+          `${householdId}/${device.id}/` +
+          `${crypto.randomUUID()}-` +
+          receiptFileName;
+
+        const receiptContents = [
+          "Home Tech Vault Smart Import Receipt",
+          "",
+
+          importRecord.retailer
+            ? `Retailer: ${importRecord.retailer}`
+            : null,
+
+          importRecord.order_number
+            ? `Order: ${importRecord.order_number}`
+            : null,
+
+          importRecord.purchase_date
+            ? `Purchase date: ${importRecord.purchase_date}`
+            : null,
+
+          importRecord.sender_email
+            ? `Forwarded from: ${importRecord.sender_email}`
+            : null,
+
+          importRecord.subject
+            ? `Email subject: ${importRecord.subject}`
+            : null,
+
+          "",
+          "Original receipt / order confirmation:",
+          "",
+          receiptText,
+        ]
+          .filter(
+            (
+              value
+            ): value is string =>
+              value !== null
+          )
+          .join(
+            "\n"
+          );
+
+        try {
+          const receiptBlob =
+            new Blob(
+              [
+                receiptContents,
+              ],
+              {
+                type:
+                  "text/plain;charset=utf-8",
+              }
+            );
+
+          const {
+            error:
+              textStorageError,
+          } =
+            await supabase.storage
+              .from(
+                "documents"
+              )
+              .upload(
+                storagePath,
+                receiptBlob,
+                {
+                  upsert: false,
+                  contentType:
+                    "text/plain;charset=utf-8",
+                }
+              );
+
+          if (
+            textStorageError
+          ) {
+            receiptWarning =
+              "The device was added, but its receipt could not be saved.";
+          } else {
+            const {
+              error:
+                textDocumentError,
+            } =
+              await supabase
+                .from(
+                  "documents"
+                )
+                .insert({
+                  user_id:
+                    user.id,
+
+                  household_id:
+                    householdId,
+
+                  device_id:
+                    device.id,
+
+                  file_name:
+                    receiptFileName,
+
+                  document_name:
+                    importRecord.retailer
+                      ? `${importRecord.retailer} Receipt`
+                      : `${deviceName} Receipt`,
+
+                  file_url:
+                    storagePath,
+
+                  file_type:
+                    "Receipt",
+                });
+
+            if (
+              textDocumentError
+            ) {
+              await supabase.storage
+                .from(
+                  "documents"
+                )
+                .remove([
+                  storagePath,
+                ]);
+
+              receiptWarning =
+                "The device was added, but its receipt could not be linked.";
+            } else {
+              receiptAttached =
+                true;
+
+              console.info(
+                "[smart-import] Text receipt fallback attached",
+                {
+                  importId:
+                    id,
+
+                  deviceId:
+                    device.id,
+                }
+              );
+            }
+          }
+        } catch (error) {
+          console.warn(
+            "[smart-import] Text receipt fallback failed:",
+            error
+          );
+
+          receiptWarning =
+            "The device was added, but its receipt could not be saved.";
+        }
+      }
+    }
+
+    /*
       Mark the import approved and connect
       it to the device that was just created.
     */
@@ -412,6 +983,10 @@ export async function POST(
         deviceId:
           device.id,
         householdId,
+
+        receiptAttached,
+
+        receiptWarning,
       },
       {
         status: 201,

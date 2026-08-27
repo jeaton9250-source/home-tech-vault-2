@@ -244,6 +244,157 @@ export async function POST(
         receivedEmail.html || ""
       );
 
+    type SmartImportAttachment = {
+      emailId: string;
+      attachmentId: string;
+      filename: string;
+      contentType: string | null;
+      size: number | null;
+    };
+
+    let receiptAttachments:
+      SmartImportAttachment[] = [];
+
+    try {
+      const attachmentResponse =
+        await fetch(
+          `https://api.resend.com/emails/receiving/${event.data.email_id}/attachments`,
+          {
+            headers: {
+              Authorization:
+                `Bearer ${process.env.RESEND_API_KEY!}`,
+            },
+            signal:
+              AbortSignal.timeout(
+                10_000
+              ),
+          }
+        );
+
+      if (!attachmentResponse.ok) {
+        console.warn(
+          "[smart-import] Unable to list inbound attachments:",
+          attachmentResponse.status
+        );
+      } else {
+        const attachmentPayload =
+          await attachmentResponse.json() as {
+            data?: Array<{
+              id?: string;
+              filename?: string;
+              content_type?: string;
+              size?: number;
+            }>;
+          };
+
+        const allowedTypes =
+          new Set([
+            "application/pdf",
+            "image/jpeg",
+            "image/jpg",
+            "image/png",
+            "image/webp",
+          ]);
+
+        const allowedExtensions =
+          /\.(pdf|jpe?g|png|webp)$/i;
+
+        receiptAttachments =
+          (
+            attachmentPayload.data ??
+            []
+          )
+            .filter(
+              (attachment) => {
+                const contentType =
+                  attachment
+                    .content_type
+                    ?.toLowerCase() ??
+                  "";
+
+                const filename =
+                  attachment
+                    .filename ??
+                  "";
+
+                const supported =
+                  allowedTypes.has(
+                    contentType
+                  ) ||
+                  allowedExtensions.test(
+                    filename
+                  );
+
+                const reasonableSize =
+                  typeof attachment.size !==
+                    "number" ||
+                  attachment.size <=
+                    15 * 1024 * 1024;
+
+                return (
+                  Boolean(
+                    attachment.id
+                  ) &&
+                  supported &&
+                  reasonableSize
+                );
+              }
+            )
+            .slice(0, 5)
+            .map(
+              (attachment) => ({
+                emailId:
+                  event.data.email_id,
+
+                attachmentId:
+                  attachment.id!,
+
+                filename:
+                  attachment.filename ||
+                  "receipt",
+
+                contentType:
+                  attachment
+                    .content_type ??
+                  null,
+
+                size:
+                  typeof attachment.size ===
+                    "number"
+                    ? attachment.size
+                    : null,
+              })
+            );
+
+        if (
+          receiptAttachments.length >
+          0
+        ) {
+          console.info(
+            "[smart-import] Receipt attachments detected",
+            {
+              emailId:
+                event.data.email_id,
+
+              count:
+                receiptAttachments.length,
+
+              files:
+                receiptAttachments.map(
+                  (attachment) =>
+                    attachment.filename
+                ),
+            }
+          );
+        }
+      }
+    } catch (error) {
+      console.warn(
+        "[smart-import] Attachment discovery failed:",
+        error
+      );
+    }
+
     if (!rawText.trim()) {
       console.error(
         "Received email contained no readable content:",
@@ -376,9 +527,16 @@ export async function POST(
             rawText,
 
           raw_data: {
-            parsedItem: item,
+            parsedItem:
+              item,
+
             totalDeviceItems:
               parsedItems.length,
+
+            inboundEmailId:
+              event.data.email_id,
+
+            receiptAttachments,
           },
 
           status: "pending",
