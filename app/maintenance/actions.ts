@@ -45,6 +45,27 @@ export type CreateMaintenanceTasksResult =
         | "UNKNOWN";
     };
 
+export type AiMaintenanceRecommendation = {
+  id: string;
+  title: string;
+  description: string;
+  taskType: string;
+  recurringInterval: string | null;
+  dueInDays: number;
+  priority: number;
+  reason: string;
+};
+
+export type GenerateMaintenanceRecommendationsResult =
+  | {
+      success: true;
+      recommendations: AiMaintenanceRecommendation[];
+    }
+  | {
+      success: false;
+      error: string;
+    };
+
 export type CreateMaintenanceTaskResult =
   | {
       success: true;
@@ -163,6 +184,537 @@ async function verifyDeviceAccess(options: {
   return {
     success: true,
   };
+}
+
+export async function generateDeviceMaintenanceRecommendations(
+  deviceId: string
+): Promise<GenerateMaintenanceRecommendationsResult> {
+  const supabase =
+    await createClient();
+
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    return {
+      success: false,
+      error:
+        "You must be signed in to generate maintenance recommendations.",
+    };
+  }
+
+  const apiKey =
+    process.env.OPENAI_API_KEY
+      ?.trim();
+
+  if (!apiKey) {
+    return {
+      success: false,
+      error:
+        "Smart maintenance recommendations are temporarily unavailable.",
+    };
+  }
+
+  const householdId =
+    await fetchHouseholdIdForUser(
+      user.id,
+      supabase
+    );
+
+  const access =
+    await verifyDeviceAccess({
+      supabase,
+      deviceId,
+      householdId,
+      userId: user.id,
+    });
+
+  if (!access.success) {
+    return {
+      success: false,
+      error: access.error,
+    };
+  }
+
+  const {
+    data: device,
+    error: deviceError,
+  } = await applyHouseholdScope(
+    supabase
+      .from("devices")
+      .select(
+        "id, device_name, category, manufacturer, brand, model_number, purchase_date, manual_url"
+      )
+      .eq(
+        "id",
+        deviceId
+      ),
+    householdId,
+    user.id
+  ).maybeSingle();
+
+  if (
+    deviceError ||
+    !device
+  ) {
+    console.error(
+      "Unable to load device for smart maintenance:",
+      deviceError
+    );
+
+    return {
+      success: false,
+      error:
+        "Unable to load this device right now.",
+    };
+  }
+
+  const {
+    data: existingTasks,
+    error: taskError,
+  } = await applyHouseholdScope(
+    supabase
+      .from("maintenance_tasks")
+      .select(
+        "title, description, task_type, recurring_interval, completed"
+      )
+      .eq(
+        "device_id",
+        deviceId
+      ),
+    householdId,
+    user.id
+  );
+
+  if (taskError) {
+    console.warn(
+      "Unable to load existing tasks for smart maintenance:",
+      taskError
+    );
+  }
+
+  const existingSummary =
+    (existingTasks ?? [])
+      .slice(
+        0,
+        20
+      )
+      .map(
+        (task: {
+          title: string | null;
+          task_type: string | null;
+          recurring_interval: string | null;
+        }) =>
+          [
+            task.title,
+            task.task_type,
+            task.recurring_interval,
+          ]
+            .filter(Boolean)
+            .join(" | ")
+      );
+
+  const prompt = [
+    "You create conservative, practical maintenance recommendations for Home Tech Vault.",
+    "",
+    "DEVICE",
+    `Name: ${device.device_name ?? "Unknown"}`,
+    `Category: ${device.category ?? "Unknown"}`,
+    `Manufacturer: ${device.manufacturer ?? device.brand ?? "Unknown"}`,
+    `Brand: ${device.brand ?? device.manufacturer ?? "Unknown"}`,
+    `Model: ${device.model_number ?? "Unknown"}`,
+    `Purchase date: ${device.purchase_date ?? "Unknown"}`,
+    `Official manual available: ${device.manual_url ? "Yes" : "No"}`,
+    "",
+    "EXISTING TASKS",
+    existingSummary.length > 0
+      ? existingSummary.join("\n")
+      : "None",
+    "",
+    "Generate 3 to 6 useful routine maintenance recommendations specifically appropriate for this device.",
+    "",
+    "RULES",
+    "- Recommendations must make sense for this exact type of product.",
+    "- Use the manufacturer and model as context, but do not invent model-specific features.",
+    "- Do not infer maintenance from brand alone.",
+    "- Samsung does not automatically mean appliance or television.",
+    "- LG does not automatically mean appliance or television.",
+    "- Apple does not automatically mean computer.",
+    "- Avoid tasks already represented in EXISTING TASKS.",
+    "- Prefer routine homeowner-safe care.",
+    "- Do not recommend opening or disassembling the device.",
+    "- Do not recommend electrical repair, refrigerant work, internal battery service, high-voltage work, or other hazardous service.",
+    "- Do not invent replaceable filters, fluids, belts, batteries, cartridges, serviceable parts, or cleaning procedures unless they are normally applicable to this product type.",
+    "- For electronics, reasonable tasks can include software updates, safe exterior cleaning, ventilation inspection, connection checks, backup checks, battery-health review, and built-in diagnostics when appropriate.",
+    "- For appliances, only recommend filters, hoses, seals, coils, cleaning cycles, vents, or similar maintenance when appropriate to that appliance type.",
+    "- Keep descriptions concise and actionable.",
+    "- dueInDays must be between 1 and 365.",
+    "- priority must be between 1 and 100.",
+    "",
+    "Allowed taskType values:",
+    "Maintenance",
+    "Cleaning",
+    "Inspection",
+    "Software Update",
+    "Backup",
+    "Battery Replacement",
+    "",
+    "Allowed recurringInterval examples:",
+    "Weekly",
+    "Monthly",
+    "Every 3 Months",
+    "Every 6 Months",
+    "Yearly",
+    "As needed",
+    "",
+    "Return ONLY valid JSON with this shape:",
+    '{',
+    '  "recommendations": [',
+    '    {',
+    '      "id": "short-stable-slug",',
+    '      "title": "string",',
+    '      "description": "string",',
+    '      "taskType": "string",',
+    '      "recurringInterval": "string or null",',
+    '      "dueInDays": 30,',
+    '      "priority": 80,',
+    '      "reason": "short explanation"',
+    '    }',
+    '  ]',
+    '}',
+  ].join("\n");
+
+  try {
+    const response =
+      await fetch(
+        "https://api.openai.com/v1/responses",
+        {
+          method: "POST",
+          headers: {
+            Authorization:
+              `Bearer ${apiKey}`,
+            "Content-Type":
+              "application/json",
+          },
+          body:
+            JSON.stringify({
+              model:
+                process.env
+                  .OPENAI_MAINTENANCE_MODEL
+                  ?.trim() ||
+                "gpt-5-mini",
+              input: prompt,
+            }),
+        }
+      );
+
+    if (!response.ok) {
+      console.error(
+        "OpenAI maintenance request failed:",
+        response.status,
+        await response
+          .text()
+          .catch(() => "")
+      );
+
+      return {
+        success: false,
+        error:
+          "Unable to generate smart maintenance recommendations right now.",
+      };
+    }
+
+    const payload =
+      (await response.json()) as {
+        output_text?: string;
+        output?: Array<{
+          content?: Array<{
+            type?: string;
+            text?: string;
+          }>;
+        }>;
+      };
+
+    const responseText =
+      payload.output_text ??
+      payload.output
+        ?.flatMap(
+          (item) =>
+            item.content ?? []
+        )
+        .map(
+          (item) =>
+            item.text ?? ""
+        )
+        .join("\n")
+        .trim() ??
+      "";
+
+    const cleanedJson =
+      responseText
+        .replace(
+          /^```json\s*/i,
+          ""
+        )
+        .replace(
+          /^```\s*/i,
+          ""
+        )
+        .replace(
+          /\s*```$/,
+          ""
+        )
+        .trim();
+
+    let parsed: unknown;
+
+    try {
+      parsed =
+        JSON.parse(
+          cleanedJson
+        );
+    } catch (error) {
+      console.error(
+        "Unable to parse smart maintenance JSON:",
+        error
+      );
+
+      return {
+        success: false,
+        error:
+          "The smart maintenance response could not be verified.",
+      };
+    }
+
+    if (
+      !parsed ||
+      typeof parsed !==
+        "object"
+    ) {
+      return {
+        success: false,
+        error:
+          "The smart maintenance response was invalid.",
+      };
+    }
+
+    const rawRecommendations =
+      (
+        parsed as {
+          recommendations?: unknown;
+        }
+      ).recommendations;
+
+    if (
+      !Array.isArray(
+        rawRecommendations
+      )
+    ) {
+      return {
+        success: false,
+        error:
+          "No verified maintenance recommendations were returned.",
+      };
+    }
+
+    const allowedTaskTypes =
+      new Set([
+        "Maintenance",
+        "Cleaning",
+        "Inspection",
+        "Software Update",
+        "Backup",
+        "Battery Replacement",
+      ]);
+
+    const recommendations:
+      AiMaintenanceRecommendation[] =
+      rawRecommendations
+        .slice(
+          0,
+          6
+        )
+        .flatMap(
+          (
+            item,
+            index
+          ) => {
+            if (
+              !item ||
+              typeof item !==
+                "object"
+            ) {
+              return [];
+            }
+
+            const value =
+              item as Record<
+                string,
+                unknown
+              >;
+
+            const title =
+              typeof value.title ===
+              "string"
+                ? value.title.trim()
+                : "";
+
+            const description =
+              typeof value.description ===
+              "string"
+                ? value.description.trim()
+                : "";
+
+            const taskType =
+              typeof value.taskType ===
+                "string" &&
+              allowedTaskTypes.has(
+                value.taskType
+              )
+                ? value.taskType
+                : "Maintenance";
+
+            const recurringInterval =
+              typeof value.recurringInterval ===
+              "string"
+                ? value.recurringInterval.trim()
+                : null;
+
+            const dueInDays =
+              typeof value.dueInDays ===
+                "number" &&
+              Number.isFinite(
+                value.dueInDays
+              )
+                ? Math.min(
+                    365,
+                    Math.max(
+                      1,
+                      Math.round(
+                        value.dueInDays
+                      )
+                    )
+                  )
+                : 30;
+
+            const priority =
+              typeof value.priority ===
+                "number" &&
+              Number.isFinite(
+                value.priority
+              )
+                ? Math.min(
+                    100,
+                    Math.max(
+                      1,
+                      Math.round(
+                        value.priority
+                      )
+                    )
+                  )
+                : 50;
+
+            const reason =
+              typeof value.reason ===
+              "string"
+                ? value.reason.trim()
+                : "Smart recommendation";
+
+            if (
+              !title ||
+              !description
+            ) {
+              return [];
+            }
+
+            const providedId =
+              typeof value.id ===
+              "string"
+                ? value.id
+                    .trim()
+                    .toLowerCase()
+                    .replace(
+                      /[^a-z0-9]+/g,
+                      "-"
+                    )
+                    .replace(
+                      /^-+|-+$/g,
+                      ""
+                    )
+                : "";
+
+            return [
+              {
+                id:
+                  providedId ||
+                  `ai-maintenance-${index + 1}`,
+                title:
+                  title.slice(
+                    0,
+                    140
+                  ),
+                description:
+                  description.slice(
+                    0,
+                    500
+                  ),
+                taskType,
+                recurringInterval:
+                  recurringInterval
+                    ? recurringInterval.slice(
+                        0,
+                        80
+                      )
+                    : null,
+                dueInDays,
+                priority,
+                reason:
+                  reason.slice(
+                    0,
+                    120
+                  ),
+              },
+            ];
+          }
+        );
+
+    if (
+      recommendations.length ===
+      0
+    ) {
+      return {
+        success: false,
+        error:
+          "No verified maintenance recommendations were returned.",
+      };
+    }
+
+    return {
+      success: true,
+      recommendations:
+        recommendations.sort(
+          (
+            first,
+            second
+          ) =>
+            second.priority -
+            first.priority
+        ),
+    };
+  } catch (error) {
+    console.error(
+      "Unable to generate smart maintenance recommendations:",
+      error
+    );
+
+    return {
+      success: false,
+      error:
+        "Unable to generate smart maintenance recommendations right now.",
+    };
+  }
 }
 
 export async function createMaintenanceTask(

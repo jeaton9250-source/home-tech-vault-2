@@ -39,7 +39,10 @@ import {
 } from "@/lib/devices/maintenanceRecommendations";
 import Button from "@/components/ui/Button";
 import PageCard from "@/components/ui/PageCard";
-import { createMaintenanceTasksForDevice } from "@/app/maintenance/actions";
+import {
+  createMaintenanceTasksForDevice,
+  generateDeviceMaintenanceRecommendations,
+} from "@/app/maintenance/actions";
 
 type MaintenanceRow = {
   id: string;
@@ -143,10 +146,39 @@ export default function DeviceProfileMaintenance({
 
   const quickAddHref = `/maintenance/new?deviceId=${encodeURIComponent(deviceId)}&returnTo=${encodeURIComponent(`/devices/${deviceId}?tab=maintenance`)}`;
 
-  const recommendations = useMemo(
+  const fallbackRecommendations = useMemo(
     () => buildDeviceMaintenanceRecommendations(device, tasks),
     [device, tasks]
   );
+
+  const [
+    recommendations,
+    setRecommendations,
+  ] = useState<DeviceMaintenanceRecommendation[]>(
+    fallbackRecommendations
+  );
+
+  const [
+    loadingRecommendations,
+    setLoadingRecommendations,
+  ] = useState(false);
+
+  useEffect(() => {
+    if (
+      recommendationsOpen ||
+      loadingRecommendations
+    ) {
+      return;
+    }
+
+    setRecommendations(
+      fallbackRecommendations
+    );
+  }, [
+    fallbackRecommendations,
+    recommendationsOpen,
+    loadingRecommendations,
+  ]);
 
   const recommendationDismissedKey =
     `device-maintenance-recommendations-dismissed:${deviceId}`;
@@ -278,10 +310,67 @@ export default function DeviceProfileMaintenance({
     setRecommendationLaunchReason(null);
   }
 
-  function openRecommendations() {
+  async function openRecommendations() {
     setRecommendationsOpen(true);
     setRecommendationLaunchReason("manual");
     setRecommendationMessage("");
+
+    if (
+      isDemo ||
+      !user
+    ) {
+      setRecommendations(
+        fallbackRecommendations
+      );
+      return;
+    }
+
+    try {
+      setLoadingRecommendations(
+        true
+      );
+
+      const result =
+        await generateDeviceMaintenanceRecommendations(
+          deviceId
+        );
+
+      if (
+        result.success &&
+        result.recommendations.length > 0
+      ) {
+        setRecommendations(
+          result.recommendations
+        );
+
+        return;
+      }
+
+      setRecommendations(
+        fallbackRecommendations
+      );
+
+      setRecommendationMessage(
+        "Smart recommendations were unavailable, so Home Tech Vault is showing safe category-based suggestions instead."
+      );
+    } catch (error) {
+      console.error(
+        "Unable to load smart maintenance recommendations:",
+        error
+      );
+
+      setRecommendations(
+        fallbackRecommendations
+      );
+
+      setRecommendationMessage(
+        "Smart recommendations were unavailable, so Home Tech Vault is showing safe category-based suggestions instead."
+      );
+    } finally {
+      setLoadingRecommendations(
+        false
+      );
+    }
   }
 
   function showRecommendationChoices() {
