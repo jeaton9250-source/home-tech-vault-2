@@ -32,6 +32,7 @@ type DeviceDocumentRow = {
 
 type DeviceDocument = DeviceDocumentRow & {
   signedUrl: string;
+  source?: "device_documents" | "documents";
 };
 
 type DeviceDocumentsProps = {
@@ -65,7 +66,15 @@ export default function DeviceDocuments({
   onManualStatusChange,
 }: DeviceDocumentsProps) {
   const [documents, setDocuments] = useState<DeviceDocument[]>([]);
-  const [selectedType, setSelectedType] = useState("Manual");
+  const [selectedType, setSelectedType] =
+    useState("Manual");
+
+  const filteredDocuments =
+    documents.filter(
+      (document) =>
+        document.document_type ===
+        selectedType
+    );
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -93,39 +102,200 @@ export default function DeviceDocuments({
         throw new Error("Please sign in to view documents.");
       }
 
-      const { data, error } = await supabase
-        .from("device_documents")
-        .select("*")
-        .eq("device_id", deviceId)
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
+      const [
+        deviceDocumentsResult,
+        vaultDocumentsResult,
+      ] = await Promise.all([
+        supabase
+          .from("device_documents")
+          .select("*")
+          .eq(
+            "device_id",
+            deviceId
+          )
+          .eq(
+            "user_id",
+            user.id
+          )
+          .order(
+            "created_at",
+            {
+              ascending: false,
+            }
+          ),
 
-      if (error) {
-        throw error;
+        supabase
+          .from("documents")
+          .select(
+            "id, device_id, user_id, document_name, file_name, file_type, file_url, created_at"
+          )
+          .eq(
+            "device_id",
+            deviceId
+          )
+          .eq(
+            "user_id",
+            user.id
+          )
+          .order(
+            "created_at",
+            {
+              ascending: false,
+            }
+          ),
+      ]);
+
+      if (
+        deviceDocumentsResult.error
+      ) {
+        throw deviceDocumentsResult.error;
       }
 
-      const rows = (data || []) as DeviceDocumentRow[];
+      if (
+        vaultDocumentsResult.error
+      ) {
+        console.warn(
+          "Vault document loading error:",
+          vaultDocumentsResult.error
+        );
+      }
 
-      const documentsWithUrls = await Promise.all(
-        rows.map(async (document) => {
-          const { data: signedData, error: signedError } =
-            await supabase.storage
-              .from("device-documents")
-              .createSignedUrl(document.file_path, 3600);
+      const deviceRows =
+        (
+          deviceDocumentsResult.data ||
+          []
+        ) as DeviceDocumentRow[];
 
-          if (signedError) {
-            console.error("Signed URL error:", signedError);
-          }
+      const deviceDocumentsWithUrls =
+        await Promise.all(
+          deviceRows.map(
+            async (document) => {
+              const {
+                data: signedData,
+                error: signedError,
+              } =
+                await supabase.storage
+                  .from(
+                    "device-documents"
+                  )
+                  .createSignedUrl(
+                    document.file_path,
+                    3600
+                  );
 
-          return {
-            ...document,
-            signedUrl: signedData?.signedUrl || "",
-          };
-        })
-      );
+              if (signedError) {
+                console.error(
+                  "Device document signed URL error:",
+                  signedError
+                );
+              }
+
+              return {
+                ...document,
+
+                signedUrl:
+                  signedData?.signedUrl ||
+                  "",
+
+                source:
+                  "device_documents" as const,
+              };
+            }
+          )
+        );
+
+      const vaultRows =
+        vaultDocumentsResult.data ||
+        [];
+
+      const vaultDocumentsWithUrls =
+        await Promise.all(
+          vaultRows.map(
+            async (document) => {
+              const {
+                data: signedData,
+                error: signedError,
+              } =
+                await supabase.storage
+                  .from(
+                    "documents"
+                  )
+                  .createSignedUrl(
+                    document.file_url,
+                    3600
+                  );
+
+              if (signedError) {
+                console.error(
+                  "Vault document signed URL error:",
+                  signedError
+                );
+              }
+
+              return {
+                id:
+                  document.id,
+
+                device_id:
+                  document.device_id,
+
+                user_id:
+                  document.user_id,
+
+                document_name:
+                  document.document_name ||
+                  document.file_name ||
+                  "Document",
+
+                document_type:
+                  document.file_type ||
+                  "Other",
+
+                file_path:
+                  document.file_url,
+
+                file_size:
+                  null,
+
+                mime_type:
+                  null,
+
+                created_at:
+                  document.created_at,
+
+                signedUrl:
+                  signedData?.signedUrl ||
+                  "",
+
+                source:
+                  "documents" as const,
+              };
+            }
+          )
+        );
+
+      const mergedDocuments = [
+        ...deviceDocumentsWithUrls,
+        ...vaultDocumentsWithUrls,
+      ]
+        .filter(
+          (document) =>
+            Boolean(
+              document.signedUrl
+            )
+        )
+        .sort(
+          (a, b) =>
+            new Date(
+              b.created_at
+            ).getTime() -
+            new Date(
+              a.created_at
+            ).getTime()
+        );
 
       setDocuments(
-        documentsWithUrls.filter((document) => document.signedUrl)
+        mergedDocuments
       );
     } catch (error) {
       console.error("Document loading error:", error);
@@ -554,11 +724,17 @@ export default function DeviceDocuments({
           />
 
           <h3 className="mt-4 font-semibold text-text-primary">
-            No documents have been added yet.
+            No {selectedType.toLowerCase()} files have been added yet.
           </h3>
 
           <p className="mt-2 text-sm text-text-secondary">
-            Upload receipts or manuals to keep everything in one place.
+            {selectedType === "Receipt"
+              ? "Receipts linked to this device will appear here."
+              : selectedType === "Warranty"
+                ? "Warranty documents linked to this device will appear here."
+                : selectedType === "Manual"
+                  ? "Manuals linked to this device will appear here."
+                  : `${selectedType} files linked to this device will appear here.`}
           </p>
         </div>
       ) : (
@@ -641,7 +817,7 @@ export default function DeviceDocuments({
             </article>
           ) : null}
 
-          {documents.map((document) => {
+          {filteredDocuments.map((document) => {
             const Icon = getDocumentIcon(document.document_type);
 
             return (
