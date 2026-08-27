@@ -1,3 +1,4 @@
+import { parseOrderItems } from "@/lib/import/parseOrderItems";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
@@ -106,7 +107,10 @@ export async function POST(request: Request) {
       );
     }
 
-    const parsed = parseOrderConfirmation(rawText);
+    const parsedItems =
+      await parseOrderItems(
+        rawText
+      );
 
     /*
       Try to resolve the user's household ID
@@ -138,60 +142,107 @@ export async function POST(request: Request) {
     householdId =
       existingDevice?.household_id ?? null;
 
+    if (
+      parsedItems.length === 0
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "No importable devices were found.",
+        },
+        {
+          status: 422,
+        }
+      );
+    }
+
+    const importRows =
+      parsedItems.map(
+        (item, index) => ({
+          user_id:
+            user.id,
+
+          household_id:
+            householdId,
+
+          source: "email",
+
+          source_message_id:
+            body.sourceMessageId?.trim()
+              ? `${body.sourceMessageId.trim()}:${index + 1}`
+              : null,
+
+          sender_email:
+            body.senderEmail?.trim() ||
+            null,
+
+          subject:
+            body.subject?.trim() ||
+            null,
+
+          retailer:
+            item.retailer,
+
+          order_number:
+            item.orderNumber,
+
+          device_name:
+            item.deviceName,
+
+          category:
+            item.category,
+
+          brand:
+            item.brand,
+
+          manufacturer:
+            item.manufacturer,
+
+          model_number:
+            item.modelNumber,
+
+          serial_number:
+            item.serialNumber,
+
+          purchase_date:
+            item.purchaseDate,
+
+          purchase_price:
+            item.purchasePrice,
+
+          confidence:
+            item.confidence,
+
+          extraction_notes:
+            "Parsed using Smart Import multi-device extraction.",
+
+          raw_text:
+            rawText,
+
+          raw_data: {
+            parsedItem: item,
+            totalDeviceItems:
+              parsedItems.length,
+          },
+
+          status: "pending",
+
+          updated_at:
+            new Date().toISOString(),
+        })
+      );
+
     const {
-      data: createdImport,
+      data: createdImports,
       error: insertError,
     } = await supabase
       .from("device_imports")
-      .insert({
-        user_id: user.id,
-        household_id: householdId,
+      .insert(importRows)
+      .select("*");
 
-        source: "email",
-
-        source_message_id:
-          body.sourceMessageId?.trim() ||
-          null,
-
-        sender_email:
-          body.senderEmail?.trim() ||
-          null,
-
-        subject:
-          body.subject?.trim() ||
-          null,
-
-        retailer: parsed.retailer,
-        order_number: parsed.orderNumber,
-
-        device_name: parsed.deviceName,
-        category: parsed.category,
-        brand: parsed.brand,
-        manufacturer: parsed.manufacturer,
-        model_number: parsed.modelNumber,
-        serial_number: parsed.serialNumber,
-
-        purchase_date: parsed.purchaseDate,
-        purchase_price: parsed.purchasePrice,
-
-        confidence: parsed.confidence,
-
-        extraction_notes:
-          "Parsed using Smart Import V1 rule-based extraction.",
-
-        raw_text: rawText,
-
-        raw_data: {
-          parsed,
-        },
-
-        status: "pending",
-
-        updated_at:
-          new Date().toISOString(),
-      })
-      .select("*")
-      .single();
+    const createdImport =
+      createdImports?.[0] ??
+      null;
 
     if (insertError) {
       console.error(
@@ -233,7 +284,15 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         success: true,
-        import: createdImport,
+        import:
+          createdImport,
+
+        imports:
+          createdImports ?? [],
+
+        deviceCount:
+          createdImports?.length ??
+          0,
       },
       {
         status: 201,

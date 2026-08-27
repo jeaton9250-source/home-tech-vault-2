@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { createClient } from "@supabase/supabase-js";
 
-import { parseOrderConfirmation } from "@/lib/import/parseOrder";
+import { parseOrderItems } from "@/lib/import/parseOrderItems";
 
 const resend = new Resend(
   process.env.RESEND_API_KEY!
@@ -273,40 +273,28 @@ export async function POST(
 
       or the generic fallback.
     */
-    const parsed =
-      parseOrderConfirmation(
+    const parsedItems =
+      await parseOrderItems(
         rawText
       );
+
+    const parsed =
+      parsedItems[0] ?? null;
 
     console.log(
       "Smart Import parsed order:",
       {
+        deviceCount:
+          parsedItems.length,
         retailer:
-          parsed.retailer,
-
-        deviceName:
-          parsed.deviceName,
-
-        brand:
-          parsed.brand,
-
-        modelNumber:
-          parsed.modelNumber,
-
-        category:
-          parsed.category,
-
-        confidence:
-          parsed.confidence,
+          parsed?.retailer ??
+          null,
       }
     );
 
-    /*
-      If we can't identify anything that
-      resembles a device, don't create a
-      useless blank review card.
-    */
-    if (!parsed.deviceName) {
+    if (
+      parsedItems.length === 0
+    ) {
       console.log(
         "Smart Import skipped email because no device was detected:",
         event.data.email_id
@@ -326,100 +314,91 @@ export async function POST(
       The user will review this at /imports
       before anything enters their real vault.
     */
-    const {
-      data: createdImport,
-      error: insertError,
-    } = await supabaseAdmin
-      .from("device_imports")
-      .insert({
-        user_id:
-          importAddress.user_id,
+    const importRows =
+      parsedItems.map(
+        (item, index) => ({
+          user_id:
+            importAddress.user_id,
 
-        household_id:
-          importAddress.household_id,
+          household_id:
+            importAddress.household_id,
 
-        source: "email",
+          source: "email",
 
-        source_message_id:
-          event.data.email_id,
+          source_message_id:
+            `${event.data.email_id}:${index + 1}`,
 
-        sender_email:
-          event.data.from,
-
-        subject:
-          event.data.subject,
-
-        retailer:
-          parsed.retailer,
-
-        order_number:
-          parsed.orderNumber,
-
-        device_name:
-          parsed.deviceName,
-
-        category:
-          parsed.category,
-
-        brand:
-          parsed.brand,
-
-        manufacturer:
-          parsed.manufacturer,
-
-        model_number:
-          parsed.modelNumber,
-
-        serial_number:
-          parsed.serialNumber,
-
-        purchase_date:
-          parsed.purchaseDate,
-
-        purchase_price:
-          parsed.purchasePrice,
-
-        confidence:
-          parsed.confidence,
-
-        extraction_notes:
-          parsed.retailer
-            ? `Parsed using the Home Tech Vault ${parsed.retailer} Smart Import parser.`
-            : "Parsed using the Home Tech Vault generic Smart Import parser.",
-
-        raw_text:
-          rawText,
-
-        raw_data: {
-          resend_email_id:
-            event.data.email_id,
-
-          resend_message_id:
-            event.data.message_id ??
-            null,
-
-          recipient,
-
-          sender:
+          sender_email:
             event.data.from,
 
           subject:
             event.data.subject,
 
-          parser:
-            parsed.retailer ??
-            "generic",
+          retailer:
+            item.retailer,
 
-          parsed,
-        },
+          order_number:
+            item.orderNumber,
 
-        status: "pending",
+          device_name:
+            item.deviceName,
 
-        updated_at:
-          new Date().toISOString(),
-      })
-      .select("*")
-      .single();
+          category:
+            item.category,
+
+          brand:
+            item.brand,
+
+          manufacturer:
+            item.manufacturer,
+
+          model_number:
+            item.modelNumber,
+
+          serial_number:
+            item.serialNumber,
+
+          purchase_date:
+            item.purchaseDate,
+
+          purchase_price:
+            item.purchasePrice,
+
+          confidence:
+            item.confidence,
+
+          extraction_notes:
+            item.retailer
+              ? `Parsed using Home Tech Vault Smart Import multi-device extraction for ${item.retailer}.`
+              : "Parsed using Home Tech Vault Smart Import multi-device extraction.",
+
+          raw_text:
+            rawText,
+
+          raw_data: {
+            parsedItem: item,
+            totalDeviceItems:
+              parsedItems.length,
+          },
+
+          status: "pending",
+
+          updated_at:
+            new Date().toISOString(),
+        })
+      );
+
+    const {
+      data: createdImports,
+      error: insertError,
+    } = await supabaseAdmin
+      .from("device_imports")
+      .insert(importRows)
+      .select("*");
+
+    const createdImport =
+      createdImports?.[0] ??
+      null;
 
     if (insertError) {
       /*
@@ -475,16 +454,29 @@ export async function POST(
       importCreated: true,
 
       importId:
-        createdImport.id,
+        createdImport?.id ??
+        null,
+
+      importIds:
+        createdImports?.map(
+          (item) => item.id
+        ) ?? [],
+
+      deviceCount:
+        createdImports?.length ??
+        0,
 
       deviceName:
-        createdImport.device_name,
+        createdImport?.device_name ??
+        null,
 
       retailer:
-        createdImport.retailer,
+        createdImport?.retailer ??
+        null,
 
       confidence:
-        createdImport.confidence,
+        createdImport?.confidence ??
+        null,
     });
   } catch (error) {
     console.error(
