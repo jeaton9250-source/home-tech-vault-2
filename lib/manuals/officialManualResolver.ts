@@ -1473,7 +1473,9 @@ async function searchWithOpenAI({
     "If the manufacturer provides the manual primarily as an official web-based User Guide instead of a PDF, identify that official guide page.",
     "Official manufacturer asset/CDN subdomains are valid when they are subdomains of an allowed manufacturer domain.",
     "When an official User Guide or Owner Manual PDF exists, include the direct PDF URL in your answer even when the filename is opaque.",
-    "Do not return OS upgrade guides, firmware files, repair guides, installation guides, quick-start guides, brochures, retailers, forums, mirrors, ManualsLib, Scribd, or third-party sources.",
+    "Do not return OS upgrade guides, firmware files, repair guides, installation guides, quick-start guides, brochures, generic safety guides, personal safety guides, privacy guides, accessibility guides, legal guides, regulatory guides, retailers, forums, mirrors, ManualsLib, Scribd, or third-party sources.",
+    "Do not treat manufacturer-wide documentation as a product manual unless it explicitly applies to the requested product or product family.",
+    "For Apple products, reject generic Apple-wide documents such as Personal Safety, privacy, legal, accessibility, regulatory, or general Apple device guides when searching for a specific product.",
     "A family-level manual is acceptable only when the official manufacturer shows that it applies to the saved product family.",
     "Do not invent URLs or exact model suffixes.",
     "",
@@ -1878,6 +1880,25 @@ export async function resolveOfficialManualWebGuide({
     }
 
     /*
+     * Generic manufacturer-wide documentation
+     * must never outrank a real product manual.
+     *
+     * Example:
+     * "Personal Safety — User Guide for Apple devices"
+     * is not a HomePod mini manual.
+     */
+    const genericNonProductGuide =
+      /personal safety|safety guide|privacy guide|accessibility guide|legal guide|regulatory guide|general safety|for apple devices/.test(
+        evidence
+      );
+
+    if (
+      genericNonProductGuide
+    ) {
+      score -= 1000;
+    }
+
+    /*
      * Positive guide signals.
      */
     if (
@@ -1936,7 +1957,7 @@ export async function resolveOfficialManualWebGuide({
      * Reject clearly incorrect documentation.
      */
     if (
-      /firmware|driver|software update|repair manual|service manual|installation guide|quick start|quickstart|brochure/.test(
+      /firmware|driver|software update|repair manual|service manual|installation guide|quick start|quickstart|brochure|personal safety|safety guide|privacy guide|accessibility guide|legal guide|regulatory guide|general safety|for apple devices/.test(
         evidence
       )
     ) {
@@ -2006,10 +2027,56 @@ export async function resolveOfficialManualWebGuide({
             candidate.context
           ).toLowerCase();
 
-        return !(
-          /firmware|driver|software update|repair manual|service manual|installation guide|quick start|quickstart|brochure/.test(
+        const clearlyWrongDocument =
+          /firmware|driver|software update|repair manual|service manual|installation guide|quick start|quickstart|brochure|personal safety|safety guide|privacy guide|accessibility guide|legal guide|regulatory guide|general safety|for apple devices/.test(
             evidence
-          )
+          );
+
+        if (
+          clearlyWrongDocument
+        ) {
+          return false;
+        }
+
+        const compactCandidateEvidence =
+          compact(
+            evidence
+          );
+
+        const exactModelMatch =
+          Boolean(
+            modelCompact &&
+            compactCandidateEvidence.includes(
+              modelCompact
+            )
+          );
+
+        let productWordMatches =
+          0;
+
+        for (
+          const word of
+            deviceWords
+        ) {
+          if (
+            evidence.includes(
+              word
+            )
+          ) {
+            productWordMatches +=
+              1;
+          }
+        }
+
+        /*
+         * Never accept a generic "User Guide"
+         * solely because it contains those words.
+         * It must also match the requested model
+         * or product name.
+         */
+        return (
+          exactModelMatch ||
+          productWordMatches > 0
         );
       }
     );
