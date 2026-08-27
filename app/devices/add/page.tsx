@@ -114,6 +114,143 @@ export default function AddDevicePage() {
   const [saving, setSaving] =
     useState(false);
 
+  const [
+    saveProgress,
+    setSaveProgress,
+  ] = useState(0);
+
+  const [
+    saveStage,
+    setSaveStage,
+  ] = useState(
+    "Saving your device..."
+  );
+
+  function canSearchForManual() {
+    return Boolean(
+      productUpc?.trim() ||
+        (
+          (
+            brand?.trim() ||
+            manufacturer?.trim()
+          ) &&
+          modelNumber?.trim()
+        )
+    );
+  }
+
+
+  useEffect(() => {
+    if (!saving) {
+      setSaveProgress(0);
+      setSaveStage(
+        "Saving your device..."
+      );
+      return;
+    }
+
+    setSaveProgress(8);
+    setSaveStage(
+      "Saving your device..."
+    );
+
+    const startedAt =
+      Date.now();
+
+    const interval =
+      window.setInterval(() => {
+        const elapsed =
+          Date.now() -
+          startedAt;
+
+        setSaveProgress(
+          (current) => {
+            if (current >= 92) {
+              return 92;
+            }
+
+            if (current < 28) {
+              return Math.min(
+                current + 4,
+                28
+              );
+            }
+
+            if (current < 55) {
+              return Math.min(
+                current + 3,
+                55
+              );
+            }
+
+            if (current < 78) {
+              return Math.min(
+                current + 2,
+                78
+              );
+            }
+
+            return Math.min(
+              current + 1,
+              92
+            );
+          }
+        );
+
+        if (elapsed < 1800) {
+          setSaveStage(
+            "Saving your device..."
+          );
+        } else if (
+          !canSearchForManual()
+        ) {
+          if (elapsed < 4200) {
+            setSaveStage(
+              "Creating your device record..."
+            );
+          } else if (
+            elapsed < 7200
+          ) {
+            setSaveStage(
+              "Organizing your device details..."
+            );
+          } else {
+            setSaveStage(
+              "Preparing everything for your Vault..."
+            );
+          }
+        } else if (
+          elapsed < 4200
+        ) {
+          setSaveStage(
+            "Identifying the exact model..."
+          );
+        } else if (
+          elapsed < 7200
+        ) {
+          setSaveStage(
+            "Checking official manufacturer sources..."
+          );
+        } else if (
+          elapsed < 10500
+        ) {
+          setSaveStage(
+            "Verifying the best manual..."
+          );
+        } else {
+          setSaveStage(
+            "Preparing everything for your Vault..."
+          );
+        }
+      }, 300);
+
+    return () => {
+      window.clearInterval(
+        interval
+      );
+    };
+  }, [saving]);
+
   /*
    * The Add Device screen begins with discovery,
    * not a blank data-entry form.
@@ -867,6 +1004,65 @@ export default function AddDevicePage() {
               </div>
             )}
 
+          {saving ? (
+            <div
+              className="rounded-2xl border border-[#617c43]/20 bg-[#f2f5ee] p-4 sm:p-5"
+              role="status"
+              aria-live="polite"
+            >
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#617c43] text-white">
+                  <Loader2
+                    size={18}
+                    className="animate-spin"
+                  />
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold text-[#17212a]">
+                        {canSearchForManual()
+                          ? "Finding your manual..."
+                          : "Setting up your device..."}
+                      </p>
+
+                      <p className="mt-1 text-xs leading-5 text-[#69747a]">
+                        {saveStage}
+                      </p>
+                    </div>
+
+                    <span className="shrink-0 text-xs font-semibold tabular-nums text-[#617c43]">
+                      {Math.round(
+                        saveProgress
+                      )}
+                      %
+                    </span>
+                  </div>
+
+                  <div
+                    className="mt-3 h-2 overflow-hidden rounded-full bg-[#617c43]/15"
+                    aria-hidden="true"
+                  >
+                    <div
+                      className="h-full rounded-full bg-[#617c43] transition-[width] duration-300 ease-out"
+                      style={{
+                        width:
+                          `${saveProgress}%`,
+                      }}
+                    />
+                  </div>
+
+                  <p className="mt-3 text-[11px] leading-5 text-[#7b858a]">
+                    {canSearchForManual()
+                      ? "This may take a moment while Home Tech Vault checks trusted sources for the best match."
+                      : "Home Tech Vault is saving and organizing your device details."}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : null}
+
           <div className="flex flex-col-reverse gap-3 border-t border-border-subtle pt-6 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs text-text-secondary">
               You can finish the device
@@ -900,7 +1096,9 @@ export default function AddDevicePage() {
                 )}
 
                 {saving
-                  ? "Adding..."
+                  ? canSearchForManual()
+                    ? "Finding manual..."
+                    : "Adding device..."
                   : "Add Device"}
               </Button>
             </div>
