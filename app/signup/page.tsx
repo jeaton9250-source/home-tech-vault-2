@@ -117,6 +117,25 @@ const [submitting, setSubmitting] =
         trackAccountCreated(
           "email"
         );
+
+        // Founder notification is intentionally non-blocking.
+        // A notification failure must never stop account creation.
+        void fetch("/api/signup-notification", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: data.user.id,
+            email: normalizedEmail,
+            method: "email",
+          }),
+        }).catch((notificationError) => {
+          console.error(
+            "Signup notification request failed:",
+            notificationError
+          );
+        });
       }
 
       const user = data.user;
