@@ -2187,6 +2187,102 @@ export async function resolveOfficialManualPdf({
       "samsung.com"
     );
 
+  const isApple =
+    domains.includes(
+      "apple.com"
+    );
+
+  const compactPdfEvidence = (
+    value: string
+  ) =>
+    value
+      .toLowerCase()
+      .replace(
+        /[^a-z0-9]+/g,
+        ""
+      );
+
+  const appleProductWords =
+    deviceName
+      .toLowerCase()
+      .replace(
+        /[^a-z0-9]+/g,
+        " "
+      )
+      .split(/\s+/)
+      .filter(Boolean)
+      .filter(
+        (word) =>
+          word.length >= 4
+      )
+      .filter(
+        (word) =>
+          ![
+            "mini",
+            "plus",
+            "max",
+            "pro",
+            "generation",
+            "wifi",
+            "cellular",
+            "model",
+            "device",
+            "apple",
+          ].includes(word)
+      );
+
+  const modelCompact =
+    compactPdfEvidence(
+      cleanModel
+    );
+
+  function appleCandidateMatchesProduct(
+    candidate: {
+      url: string;
+      context: string;
+    }
+  ) {
+    if (!isApple) {
+      return true;
+    }
+
+    const evidence =
+      (
+        candidate.url +
+        " " +
+        candidate.context
+      ).toLowerCase();
+
+    const compactEvidence =
+      compactPdfEvidence(
+        evidence
+      );
+
+    if (
+      /personal safety|safety guide|privacy guide|accessibility guide|legal guide|regulatory guide|general safety|for apple devices/.test(
+        evidence
+      )
+    ) {
+      return false;
+    }
+
+    if (
+      modelCompact &&
+      compactEvidence.includes(
+        modelCompact
+      )
+    ) {
+      return true;
+    }
+
+    return appleProductWords.some(
+      (word) =>
+        evidence.includes(
+          word
+        )
+    );
+  }
+
   /*
    * Direct PDF candidates are accepted only
    * when the surrounding evidence identifies
@@ -2200,6 +2296,9 @@ export async function resolveOfficialManualPdf({
             item.url
           ) &&
           looksLikeUserManual(
+            item
+          ) &&
+          appleCandidateMatchesProduct(
             item
           )
       )
@@ -2397,6 +2496,9 @@ export async function resolveOfficialManualPdf({
               item.url
             ) &&
             looksLikeUserManual(
+              item
+            ) &&
+            appleCandidateMatchesProduct(
               item
             )
         )
