@@ -1476,6 +1476,7 @@ async function searchWithOpenAI({
     "Do not return OS upgrade guides, firmware files, repair guides, installation guides, quick-start guides, brochures, generic safety guides, personal safety guides, privacy guides, accessibility guides, legal guides, regulatory guides, retailers, forums, mirrors, ManualsLib, Scribd, or third-party sources.",
     "Do not treat manufacturer-wide documentation as a product manual unless it explicitly applies to the requested product or product family.",
     "For Apple products, reject generic Apple-wide documents such as Personal Safety, privacy, legal, accessibility, regulatory, or general Apple device guides when searching for a specific product.",
+    "For Apple products, never return Apple Books, Books, iBooks, EPUB, or book-download links. Prefer an Apple Support web-based User Guide or official PDF that opens directly in a browser.",
     "A family-level manual is acceptable only when the official manufacturer shows that it applies to the saved product family.",
     "Do not invent URLs or exact model suffixes.",
     "",
@@ -2369,7 +2370,7 @@ export async function resolveOfficialManualPdf({
       );
 
     const wrongDocument =
-      /personal safety|safety guide|privacy guide|accessibility guide|legal guide|regulatory guide|general safety|quick start|quickstart|quick guide|installation guide|repair manual|service manual|service guide|firmware|software update|brochure|spec sheet|datasheet/.test(
+      /personal safety|safety guide|privacy guide|accessibility guide|legal guide|regulatory guide|general safety|quick start|quickstart|quick guide|installation guide|repair manual|service manual|service guide|firmware|software update|brochure|spec sheet|datasheet|books\.apple\.com|itunes\.apple\.com\/.*book|ibooks|\.epub(?:\?|$)/.test(
         evidence
       );
 
