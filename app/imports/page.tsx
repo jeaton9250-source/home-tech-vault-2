@@ -303,6 +303,199 @@ export default function ImportsPage() {
     }));
   }
 
+  const [
+    bulkImporting,
+    setBulkImporting,
+  ] = useState(false);
+
+  const [
+    bulkProgress,
+    setBulkProgress,
+  ] = useState({
+    current: 0,
+    total: 0,
+  });
+
+  async function approveAllImports() {
+    if (
+      bulkImporting ||
+      imports.length === 0
+    ) {
+      return;
+    }
+
+    const itemsToImport =
+      [...imports];
+
+    const invalidItem =
+      itemsToImport.find(
+        (item) =>
+          !drafts[
+            item.id
+          ]?.device_name.trim()
+      );
+
+    if (invalidItem) {
+      setError(
+        "Every device needs a name before you can import them all."
+      );
+
+      return;
+    }
+
+    setBulkImporting(true);
+    setError(null);
+
+    setBulkProgress({
+      current: 0,
+      total:
+        itemsToImport.length,
+    });
+
+    const failedIds:
+      string[] = [];
+
+    for (
+      let index = 0;
+      index <
+      itemsToImport.length;
+      index += 1
+    ) {
+      const item =
+        itemsToImport[index];
+
+      const draft =
+        drafts[item.id];
+
+      setBulkProgress({
+        current:
+          index + 1,
+        total:
+          itemsToImport.length,
+      });
+
+      if (!draft) {
+        failedIds.push(
+          item.id
+        );
+
+        continue;
+      }
+
+      try {
+        const response =
+          await fetch(
+            `/api/imports/${item.id}/approve`,
+            {
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+
+              body:
+                JSON.stringify({
+                  device_name:
+                    draft.device_name,
+
+                  category:
+                    draft.category,
+
+                  brand:
+                    draft.brand,
+
+                  manufacturer:
+                    draft.manufacturer,
+
+                  model_number:
+                    draft.model_number,
+
+                  serial_number:
+                    draft.serial_number,
+
+                  purchase_date:
+                    draft.purchase_date,
+
+                  purchase_price:
+                    draft.purchase_price
+                      ? Number(
+                          draft.purchase_price
+                        )
+                      : null,
+
+                  warranty_expiration:
+                    draft.warranty_expiration,
+
+                  location:
+                    draft.location,
+                }),
+            }
+          );
+
+        const data =
+          await response.json();
+
+        if (!response.ok) {
+          console.error(
+            `[smart-import] unable to approve ${item.id}`,
+            data
+          );
+
+          failedIds.push(
+            item.id
+          );
+
+          continue;
+        }
+
+        removeImportFromPage(
+          item.id
+        );
+      } catch (err) {
+        console.error(
+          `[smart-import] bulk approval failed for ${item.id}`,
+          err
+        );
+
+        failedIds.push(
+          item.id
+        );
+      }
+    }
+
+    const successCount =
+      itemsToImport.length -
+      failedIds.length;
+
+    if (
+      failedIds.length > 0
+    ) {
+      setError(
+        `${successCount} device${
+          successCount === 1
+            ? ""
+            : "s"
+        } imported. ${
+          failedIds.length
+        } could not be imported and ${
+          failedIds.length === 1
+            ? "is"
+            : "are"
+        } still below for review.`
+      );
+    } else {
+      setError(null);
+    }
+
+    setBulkImporting(false);
+
+    setBulkProgress({
+      current: 0,
+      total: 0,
+    });
+  }
+
   async function approveImport(
     id: string
   ) {
@@ -623,25 +816,120 @@ export default function ImportsPage() {
         {!loading &&
           imports.length > 0 && (
             <div className="mt-10">
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#617c43]">
-                  Ready for review
-                </p>
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#617c43]">
+                    Ready for review
+                  </p>
 
-                <h2 className="mt-2 font-serif text-3xl font-medium tracking-[-0.035em] text-[#17212a]">
-                  We found{" "}
-                  {imports.length === 1
-                    ? "something"
-                    : `${imports.length} things`}{" "}
-                  for your vault.
-                </h2>
+                  <h2 className="mt-2 font-serif text-3xl font-medium tracking-[-0.035em] text-[#17212a]">
+                    We found{" "}
+                    {imports.length === 1
+                      ? "something"
+                      : `${imports.length} things`}{" "}
+                    for your vault.
+                  </h2>
 
-                <p className="mt-2 text-sm leading-6 text-[#68737b]">
-                  Check the details below.
-                  You can edit anything
-                  before adding it.
-                </p>
+                  <p className="mt-2 text-sm leading-6 text-[#68737b]">
+                    Check the details below.
+                    You can edit anything
+                    before adding it.
+                  </p>
+                </div>
+
+                {imports.length > 1 ? (
+                  <button
+                    type="button"
+                    onClick={
+                      approveAllImports
+                    }
+                    disabled={
+                      bulkImporting ||
+                      approvingId !==
+                        null ||
+                      rejectingId !==
+                        null
+                    }
+                    className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-xl bg-[#617c43] px-5 text-sm font-semibold text-white shadow-[0_16px_32px_-18px_rgba(97,124,67,0.9)] transition hover:bg-[#718d4f] disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {bulkImporting ? (
+                      <Loader2
+                        size={17}
+                        className="animate-spin"
+                        aria-hidden
+                      />
+                    ) : (
+                      <Check
+                        size={17}
+                        aria-hidden
+                      />
+                    )}
+
+                    {bulkImporting
+                      ? `Importing ${bulkProgress.current} of ${bulkProgress.total}...`
+                      : `Import All ${imports.length} Devices`}
+                  </button>
+                ) : null}
               </div>
+
+              {bulkImporting ? (
+                <div
+                  className="mt-5 rounded-2xl border border-[#617c43]/20 bg-[#617c43]/10 p-4"
+                  role="status"
+                  aria-live="polite"
+                >
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <Loader2
+                        size={17}
+                        className="animate-spin text-[#617c43]"
+                        aria-hidden
+                      />
+
+                      <div>
+                        <p className="text-sm font-semibold text-[#17212a]">
+                          Adding devices to your Vault
+                        </p>
+
+                        <p className="mt-0.5 text-xs text-[#68737b]">
+                          Importing device{" "}
+                          {bulkProgress.current}{" "}
+                          of{" "}
+                          {bulkProgress.total}
+                        </p>
+                      </div>
+                    </div>
+
+                    <span className="text-xs font-semibold tabular-nums text-[#617c43]">
+                      {bulkProgress.total > 0
+                        ? Math.round(
+                            (bulkProgress.current /
+                              bulkProgress.total) *
+                              100
+                          )
+                        : 0}
+                      %
+                    </span>
+                  </div>
+
+                  <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#617c43]/15">
+                    <div
+                      className="h-full rounded-full bg-[#617c43] transition-[width] duration-300 ease-out"
+                      style={{
+                        width:
+                          bulkProgress.total >
+                          0
+                            ? `${Math.round(
+                                (bulkProgress.current /
+                                  bulkProgress.total) *
+                                  100
+                              )}%`
+                            : "0%",
+                      }}
+                    />
+                  </div>
+                </div>
+              ) : null}
             </div>
           )}
 
@@ -688,6 +976,7 @@ export default function ImportsPage() {
                       item.id
                     }
                     busy={
+                      bulkImporting ||
                       approvingId ===
                         item.id ||
                       rejectingId ===
