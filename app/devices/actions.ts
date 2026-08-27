@@ -1150,6 +1150,7 @@ async function saveIcecatManualForDevice({
   brand,
   modelNumber,
   productUpc,
+  force = false,
 }: {
   supabase: Awaited<
     ReturnType<
@@ -1168,6 +1169,7 @@ async function saveIcecatManualForDevice({
   brand: string;
   modelNumber: string;
   productUpc?: string;
+  force?: boolean;
 }): Promise<
   "found" |
   "not_found" |
@@ -1224,7 +1226,8 @@ async function saveIcecatManualForDevice({
       .maybeSingle();
 
   if (
-    existingManual
+    existingManual &&
+    !force
   ) {
     return "found";
   }
@@ -2033,6 +2036,7 @@ export type RetryDeviceManualLookupResult =
 export async function retryDeviceManualLookup(input: {
   deviceId: string;
   modelNumber?: string;
+  force?: boolean;
 }): Promise<RetryDeviceManualLookupResult> {
   const supabase =
     await createClient();
@@ -2249,7 +2253,10 @@ export async function retryDeviceManualLookup(input: {
 
         productUpc:
           undefined,
-      });
+        force: Boolean(
+    input.force
+  ),
+});
   } catch (error) {
     console.warn(
       "Manual retry failed:",

@@ -258,6 +258,76 @@ export default function DevicePage() {
     setManualFinderMessage,
   ] = useState("");
 
+  async function handleForceManualRerun() {
+    if (
+      !device ||
+      manualFinderPending
+    ) {
+      return;
+    }
+
+    const modelNumber =
+      device.model_number?.trim();
+
+    if (!modelNumber) {
+      setManualFinderModel("");
+      setManualFinderMessage(
+        "Enter the full model number from the product label."
+      );
+      setManualFinderOpen(true);
+      return;
+    }
+
+    const confirmed =
+      window.confirm(
+        "Search again for a verified official manual?"
+      );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setManualFinderPending(true);
+
+      const result =
+        await retryDeviceManualLookup({
+          deviceId: device.id,
+          modelNumber,
+          force: true,
+        });
+
+      if (!result.success) {
+        alert(result.error);
+        return;
+      }
+
+      if (
+        result.status === "found"
+      ) {
+        window.location.assign(
+          `/devices/${device.id}?tab=documents`
+        );
+        return;
+      }
+
+      alert(
+        "No new verified official manual was found."
+      );
+    } catch (error) {
+      console.error(
+        "Unable to rerun manual lookup:",
+        error
+      );
+
+      alert(
+        "Unable to rerun the manual lookup."
+      );
+    } finally {
+      setManualFinderPending(false);
+    }
+  }
+
   async function handleManualFinderSearch() {
     if (
       !device ||
@@ -2424,6 +2494,12 @@ export default function DevicePage() {
                     null
                   }
                   embedded
+                  rerunningManual={
+                    manualFinderPending
+                  }
+                  onRerunManual={
+                    handleForceManualRerun
+                  }
                   onManualStatusChange={(
                     status
                   ) => {

@@ -9,6 +9,7 @@ import {
   Loader2,
   Plus,
   Receipt,
+  RefreshCw,
   ShieldCheck,
   Trash2,
 } from "lucide-react";
@@ -49,6 +50,9 @@ type DeviceDocumentsProps = {
   onManualStatusChange?: (
     status: "found" | null
   ) => void;
+
+  onRerunManual?: () => void;
+  rerunningManual?: boolean;
 };
 
 const documentTypes = [
@@ -64,6 +68,8 @@ export default function DeviceDocuments({
   manualUrl = null,
   embedded = false,
   onManualStatusChange,
+  onRerunManual,
+  rerunningManual = false,
 }: DeviceDocumentsProps) {
   const [documents, setDocuments] = useState<DeviceDocument[]>([]);
   const [selectedType, setSelectedType] =
@@ -905,25 +911,68 @@ export default function DeviceDocuments({
                     Download
                   </a>
 
-                  {!embedded ? (
+                  {document.document_type === "Manual" &&
+                  onRerunManual ? (
                     <button
                       type="button"
-                      onClick={() => deleteDocument(document)}
-                      disabled={deletingId === document.id}
-                      className="inline-flex items-center gap-2 rounded-xl bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100 disabled:opacity-60"
+                      onClick={onRerunManual}
+                      disabled={rerunningManual}
+                      className="htv-focus-ring inline-flex items-center gap-2 rounded-full border border-border-subtle bg-surface-sunken px-4 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      {deletingId === document.id ? (
+                      {rerunningManual ? (
                         <Loader2
-                          size={16}
+                          size={15}
                           className="animate-spin"
                         />
                       ) : (
-                        <Trash2 size={16} />
+                        <RefreshCw size={15} />
                       )}
 
-                      Delete
+                      {rerunningManual
+                        ? "Searching..."
+                        : "Rerun Manual"}
                     </button>
                   ) : null}
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      deleteDocument(
+                        document
+                      )
+                    }
+                    disabled={
+                      deletingId ===
+                      document.id
+                    }
+                    className={
+                      embedded
+                        ? "htv-focus-ring inline-flex items-center gap-2 rounded-full border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
+                        : "inline-flex items-center gap-2 rounded-xl bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100 disabled:opacity-60"
+                    }
+                  >
+                    {deletingId ===
+                    document.id ? (
+                      <Loader2
+                        size={
+                          embedded
+                            ? 15
+                            : 16
+                        }
+                        className="animate-spin"
+                      />
+                    ) : (
+                      <Trash2
+                        size={
+                          embedded
+                            ? 15
+                            : 16
+                        }
+                      />
+                    )}
+
+                    Delete
+                  </button>
                 </div>
               </article>
             );
