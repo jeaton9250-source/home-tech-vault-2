@@ -1912,7 +1912,7 @@ export async function loadAdminSystemHealth(): Promise<AdminSystemHealth> {
       label: "Supabase secret key override",
       status: process.env.SUPABASE_SECRET_KEY
         ? "configured"
-        : "missing",
+        : "optional",
       detail:
         "Optional fallback only; must not replace service_role",
     },
