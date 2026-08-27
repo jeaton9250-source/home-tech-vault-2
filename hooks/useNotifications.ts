@@ -8,6 +8,7 @@ import {
 } from "react";
 
 import { usePermissions } from "@/hooks/usePermissions";
+import { supabase } from "@/lib/supabase";
 
 import {
   demoNotifications,
@@ -60,17 +61,78 @@ export function useNotifications() {
       return;
     }
 
-    setReadIds(
-      loadIdSet(
-        getReadStorageKey(user?.id)
-      )
+    const localReadIds = loadIdSet(
+      getReadStorageKey(user?.id)
     );
 
-    setDismissedIds(
-      loadIdSet(
-        getDismissedStorageKey(user?.id)
-      )
+    const localDismissedIds = loadIdSet(
+      getDismissedStorageKey(user?.id)
     );
+
+    setReadIds(localReadIds);
+    setDismissedIds(localDismissedIds);
+
+    if (!user) {
+      return;
+    }
+
+    const userId = user.id;
+
+    async function loadRemoteNotificationState() {
+      const { data, error } = await supabase
+        .from("notification_user_state")
+        .select(
+          "notification_id, read_at, dismissed_at"
+        )
+        .eq("user_id", userId);
+
+      if (error) {
+        console.warn(
+          "Unable to load synced notification state:",
+          error
+        );
+        return;
+      }
+
+      const remoteReadIds = new Set<string>(
+        localReadIds
+      );
+
+      const remoteDismissedIds = new Set<string>(
+        localDismissedIds
+      );
+
+      for (const row of data ?? []) {
+        if (row.read_at) {
+          remoteReadIds.add(
+            row.notification_id
+          );
+        }
+
+        if (row.dismissed_at) {
+          remoteDismissedIds.add(
+            row.notification_id
+          );
+        }
+      }
+
+      setReadIds(remoteReadIds);
+      setDismissedIds(
+        remoteDismissedIds
+      );
+
+      saveIdSet(
+        getReadStorageKey(userId),
+        remoteReadIds
+      );
+
+      saveIdSet(
+        getDismissedStorageKey(userId),
+        remoteDismissedIds
+      );
+    }
+
+    void loadRemoteNotificationState();
   }, [user?.id]);
 
   useEffect(() => {
@@ -179,15 +241,49 @@ export function useNotifications() {
   );
 
   const markAllAsRead = useCallback(() => {
-    saveReadIds(
-      new Set(
-        notifications.map(
-          (notification) =>
-            notification.id
-        )
-      )
+    const ids = notifications.map(
+      (notification) =>
+        notification.id
     );
-  }, [notifications, saveReadIds]);
+
+    saveReadIds(
+      new Set(ids)
+    );
+
+    if (!user || ids.length === 0) {
+      return;
+    }
+
+    const now =
+      new Date().toISOString();
+
+    void supabase
+      .from("notification_user_state")
+      .upsert(
+        ids.map((notificationId) => ({
+          user_id: user.id,
+          notification_id: notificationId,
+          read_at: now,
+          updated_at: now,
+        })),
+        {
+          onConflict:
+            "user_id,notification_id",
+        }
+      )
+      .then(({ error }) => {
+        if (error) {
+          console.warn(
+            "Unable to sync mark-all-as-read state:",
+            error
+          );
+        }
+      });
+  }, [
+    notifications,
+    saveReadIds,
+    user,
+  ]);
 
   const dismissNotification = useCallback(
     (notificationId: string) => {
