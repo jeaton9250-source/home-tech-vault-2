@@ -24,6 +24,9 @@ import { usePermissions } from "@/hooks/usePermissions";
 import DemoWriteGate from "@/components/demo/DemoWriteGate";
 import { addDevice } from "@/app/devices/actions";
 import {
+  sendMilestoneEmailForCurrentUser,
+} from "@/app/onboarding/actions";
+import {
   DEVICE_FIELD_LIMITS,
   MAX_DEVICE_PURCHASE_PRICE,
   validateDeviceInput,
@@ -356,6 +359,15 @@ export default function AddDevicePage() {
         return;
       }
 
+      void sendMilestoneEmailForCurrentUser(
+        "first_device"
+      ).catch((emailError) => {
+        console.error(
+          "[milestone-email] first-device delivery failed",
+          emailError
+        );
+      });
+
       if (
         isOnboarding &&
         user
@@ -364,6 +376,15 @@ export default function AddDevicePage() {
           supabase,
           user.id
         );
+
+        void sendMilestoneEmailForCurrentUser(
+          "onboarding_complete"
+        ).catch((emailError) => {
+          console.error(
+            "[milestone-email] onboarding-complete delivery failed",
+            emailError
+          );
+        });
 
         trackFirstDeviceAdded(
           "onboarding"

@@ -285,3 +285,290 @@ export async function sendWelcomeEmailForCurrentUser() {
     sent: true,
   };
 }
+
+export type UserMilestoneEmailType =
+  | "first_device"
+  | "onboarding_complete";
+
+export async function sendMilestoneEmailForCurrentUser(
+  type: UserMilestoneEmailType
+) {
+  const {
+    default: MilestoneEmail,
+    getMilestoneSubject,
+    renderMilestonePlainText,
+  } = await import(
+    "@/emails/templates/MilestoneEmail"
+  );
+
+  const supabase =
+    await createClient();
+
+  const {
+    data: { user },
+    error: userError,
+  } =
+    await supabase.auth.getUser();
+
+  if (
+    userError ||
+    !user ||
+    !user.email
+  ) {
+    return {
+      ok: false as const,
+      sent: false,
+    };
+  }
+
+  if (type === "first_device") {
+    const {
+      count,
+      error: countError,
+    } = await supabase
+      .from("devices")
+      .select("id", {
+        count: "exact",
+        head: true,
+      });
+
+    if (countError) {
+      console.error(
+        "[milestone-email] unable to verify first device",
+        countError
+      );
+
+      return {
+        ok: false as const,
+        sent: false,
+      };
+    }
+
+    if (count !== 1) {
+      return {
+        ok: true as const,
+        sent: false,
+      };
+    }
+  }
+
+  const admin =
+    createAdminClient();
+
+  const emailType =
+    type === "first_device"
+      ? "milestone_first_device"
+      : "milestone_onboarding_complete";
+
+  const idempotencyKey =
+    `${user.id}:${emailType}`;
+
+  const {
+    data: existing,
+    error: existingError,
+  } = await admin
+    .from("lifecycle_email_log")
+    .select(
+      "id, status, attempted_at"
+    )
+    .eq(
+      "idempotency_key",
+      idempotencyKey
+    )
+    .maybeSingle();
+
+  if (existingError) {
+    console.error(
+      "[milestone-email] unable to read delivery state",
+      existingError
+    );
+
+    return {
+      ok: false as const,
+      sent: false,
+    };
+  }
+
+  if (
+    existing?.status === "sent"
+  ) {
+    return {
+      ok: true as const,
+      sent: false,
+    };
+  }
+
+  if (
+    existing?.status === "pending"
+  ) {
+    const attemptedAt =
+      Date.parse(
+        existing.attempted_at ?? ""
+      );
+
+    if (
+      Number.isFinite(attemptedAt) &&
+      Date.now() - attemptedAt <
+        PENDING_RETRY_MS
+    ) {
+      return {
+        ok: true as const,
+        sent: false,
+      };
+    }
+  }
+
+  const now =
+    new Date().toISOString();
+
+  let logId:
+    string | null =
+    existing?.id ?? null;
+
+  if (logId) {
+    const {
+      error: retryError,
+    } = await admin
+      .from("lifecycle_email_log")
+      .update({
+        status: "pending",
+        attempted_at: now,
+        updated_at: now,
+        error_message: null,
+        provider_message_id: null,
+      })
+      .eq("id", logId);
+
+    if (retryError) {
+      console.error(
+        "[milestone-email] unable to prepare retry",
+        retryError
+      );
+
+      return {
+        ok: false as const,
+        sent: false,
+      };
+    }
+  } else {
+    const {
+      data: createdLog,
+      error: createError,
+    } = await admin
+      .from("lifecycle_email_log")
+      .insert({
+        user_id: user.id,
+        recipient_email:
+          user.email,
+        email_type:
+          emailType,
+        status: "pending",
+        provider: "resend",
+        idempotency_key:
+          idempotencyKey,
+        attempted_at: now,
+        updated_at: now,
+      })
+      .select("id")
+      .single();
+
+    if (createError) {
+      if (
+        createError.code ===
+        "23505"
+      ) {
+        return {
+          ok: true as const,
+          sent: false,
+        };
+      }
+
+      console.error(
+        "[milestone-email] unable to create delivery record",
+        createError
+      );
+
+      return {
+        ok: false as const,
+        sent: false,
+      };
+    }
+
+    logId =
+      createdLog.id;
+  }
+
+  const dashboardUrl =
+    `${getSiteUrl()}/dashboard`;
+
+  const firstName =
+    getFirstName(
+      user.user_metadata
+    );
+
+  const result =
+    await sendReactEmail({
+      to: user.email,
+      subject:
+        getMilestoneSubject(type),
+      template:
+        MilestoneEmail({
+          type,
+          firstName,
+          dashboardUrl,
+        }),
+      text:
+        renderMilestonePlainText({
+          type,
+          firstName,
+          dashboardUrl,
+        }),
+    });
+
+  if (!result.ok) {
+    await admin
+      .from("lifecycle_email_log")
+      .update({
+        status: "failed",
+        error_message:
+          result.message,
+        updated_at:
+          new Date().toISOString(),
+      })
+      .eq("id", logId);
+
+    console.error(
+      "[milestone-email] delivery failed",
+      {
+        type,
+        userId: user.id,
+        code: result.code,
+      }
+    );
+
+    return {
+      ok: false as const,
+      sent: false,
+    };
+  }
+
+  const sentAt =
+    new Date().toISOString();
+
+  await admin
+    .from("lifecycle_email_log")
+    .update({
+      status: "sent",
+      provider_message_id:
+        result.id,
+      sent_at: sentAt,
+      updated_at: sentAt,
+      error_message: null,
+    })
+    .eq("id", logId);
+
+  return {
+    ok: true as const,
+    sent: true,
+  };
+}
