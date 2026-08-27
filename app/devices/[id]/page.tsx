@@ -730,28 +730,62 @@ export default function DevicePage() {
 
         await loadImages(deviceId);
 
-        const {
-          count,
-          error: documentCountError,
-        } = await supabase
-          .from("device_documents")
-          .select("id", {
-            count: "exact",
-            head: true,
-          })
-          .eq("device_id", deviceId);
+        const [
+          deviceDocumentCountResult,
+          vaultDocumentCountResult,
+        ] = await Promise.all([
+          supabase
+            .from("device_documents")
+            .select("id", {
+              count: "exact",
+              head: true,
+            })
+            .eq(
+              "device_id",
+              deviceId
+            ),
 
-        if (documentCountError) {
+          supabase
+            .from("documents")
+            .select("id", {
+              count: "exact",
+              head: true,
+            })
+            .eq(
+              "device_id",
+              deviceId
+            ),
+        ]);
+
+        if (
+          deviceDocumentCountResult.error ||
+          vaultDocumentCountResult.error
+        ) {
           console.error(
-            "Unable to load document count:",
-            documentCountError
+            "Unable to load complete document count:",
+            {
+              deviceDocuments:
+                deviceDocumentCountResult.error,
+
+              vaultDocuments:
+                vaultDocumentCountResult.error,
+            }
           );
 
           if (mounted) {
             setDocumentCount(null);
           }
         } else if (mounted) {
-          setDocumentCount(count ?? 0);
+          setDocumentCount(
+            (
+              deviceDocumentCountResult.count ??
+              0
+            ) +
+              (
+                vaultDocumentCountResult.count ??
+                0
+              )
+          );
         }
       } catch (error: unknown) {
         console.error(
