@@ -721,8 +721,11 @@ export default function DeviceDocuments({
           {errorMessage}
         </div>
       ) :
-        documents.length === 0 &&
-        !manualUrl ? (
+        filteredDocuments.length === 0 &&
+        !(
+          selectedType === "Manual" &&
+          manualUrl
+        ) ? (
         <div className="mt-6 rounded-3xl border-2 border-dashed border-border-subtle bg-surface-base p-10 text-center">
           <FileText
             size={36}
@@ -742,6 +745,29 @@ export default function DeviceDocuments({
                   ? "Manuals linked to this device will appear here."
                   : `${selectedType} files linked to this device will appear here.`}
           </p>
+
+          {selectedType === "Manual" &&
+          onRerunManual ? (
+            <button
+              type="button"
+              onClick={onRerunManual}
+              disabled={rerunningManual}
+              className="htv-focus-ring mt-5 inline-flex items-center gap-2 rounded-full border border-border-subtle bg-surface-card px-5 py-2.5 text-sm font-semibold text-text-primary shadow-[var(--shadow-sm)] transition hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {rerunningManual ? (
+                <Loader2
+                  size={16}
+                  className="animate-spin"
+                />
+              ) : (
+                <RefreshCw size={16} />
+              )}
+
+              {rerunningManual
+                ? "Searching..."
+                : "Find Manual"}
+            </button>
+          ) : null}
         </div>
       ) : (
         <div
