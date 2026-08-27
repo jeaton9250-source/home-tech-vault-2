@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 
 import {
   Bell,
+  Check,
   CheckCheck,
   Loader2,
 } from "lucide-react";
@@ -40,6 +41,7 @@ export default function NotificationBell({
     loading,
     markAsRead,
     markAllAsRead,
+    dismissNotification,
   } = notificationsState;
 
   const displayUnreadCount =
@@ -150,6 +152,9 @@ export default function NotificationBell({
                 notification={notification}
                 isRead={readIds.has(notification.id)}
                 onClick={() => openNotification(notification)}
+                onComplete={() =>
+                  dismissNotification(notification.id)
+                }
               />
             ))}
           </div>
@@ -180,54 +185,74 @@ function DropdownNotification({
   notification,
   isRead,
   onClick,
+  onComplete,
 }: {
   notification: VaultNotification;
   isRead: boolean;
   onClick: () => void;
+  onComplete: () => void;
 }) {
   const Icon = notification.icon;
 
   return (
-    <button
-      type="button"
-      role="menuitem"
-      tabIndex={-1}
-      onClick={onClick}
-      className={`flex w-full items-start gap-3 border-b border-border-subtle px-5 py-4 text-left transition last:border-b-0 hover:bg-surface-sunken focus-visible:bg-surface-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/25 ${
+    <div
+      className={`flex items-start gap-3 border-b border-border-subtle px-5 py-4 transition last:border-b-0 ${
         isRead
           ? "bg-surface-card"
           : "bg-interaction-soft/50"
       }`}
     >
-      <div
-        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
-          notification.type === "warning"
-            ? "bg-amber-100 text-amber-700"
-            : notification.type === "success"
-              ? "bg-emerald-100 text-emerald-700"
-              : notification.type === "insight"
-                ? "bg-violet-100 text-violet-700"
-                : "bg-interaction-soft text-interaction"
-        }`}
+      <button
+        type="button"
+        role="menuitem"
+        tabIndex={-1}
+        onClick={onClick}
+        className="flex min-w-0 flex-1 items-start gap-3 text-left focus-visible:outline-none"
       >
-        <Icon size={18} />
-      </div>
-
-      <div className="min-w-0 flex-1">
-        <div className="flex items-start gap-2">
-          <p className="line-clamp-2 text-sm font-semibold text-text-primary">
-            {notification.title}
-          </p>
-
-          {!isRead ? (
-            <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-home-health" />
-          ) : null}
+        <div
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+            notification.type === "warning"
+              ? "bg-amber-100 text-amber-700"
+              : notification.type === "success"
+                ? "bg-emerald-100 text-emerald-700"
+                : notification.type === "insight"
+                  ? "bg-violet-100 text-violet-700"
+                  : "bg-interaction-soft text-interaction"
+          }`}
+        >
+          <Icon size={18} />
         </div>
 
-        <p className="mt-1 line-clamp-2 text-xs leading-5 text-text-secondary">
-          {notification.description}
-        </p>
-      </div>
-    </button>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start gap-2">
+            <p className="line-clamp-2 text-sm font-semibold text-text-primary">
+              {notification.title}
+            </p>
+
+            {!isRead ? (
+              <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-home-health" />
+            ) : null}
+          </div>
+
+          <p className="mt-1 line-clamp-2 text-xs leading-5 text-text-secondary">
+            {notification.description}
+          </p>
+        </div>
+      </button>
+
+      <button
+        type="button"
+        onClick={(event) => {
+          event.stopPropagation();
+          onComplete();
+        }}
+        className="htv-focus-ring mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border-subtle bg-surface-card text-text-secondary transition hover:border-home-health/40 hover:bg-home-health-soft hover:text-home-health"
+        aria-label={`Mark ${notification.title} as done`}
+        title="Mark as done"
+      >
+        <Check size={16} />
+      </button>
+    </div>
   );
 }
+
