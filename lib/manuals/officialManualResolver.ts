@@ -2187,11 +2187,6 @@ export async function resolveOfficialManualPdf({
       "samsung.com"
     );
 
-  const isApple =
-    domains.includes(
-      "apple.com"
-    );
-
   const compactPdfEvidence = (
     value: string
   ) =>
@@ -2202,50 +2197,156 @@ export async function resolveOfficialManualPdf({
         ""
       );
 
-  const appleProductWords =
-    deviceName
-      .toLowerCase()
-      .replace(
-        /[^a-z0-9]+/g,
-        " "
+  const brandWords =
+    new Set(
+      cleanBrand
+        .toLowerCase()
+        .replace(
+          /[^a-z0-9]+/g,
+          " "
+        )
+        .split(/\s+/)
+        .filter(Boolean)
+    );
+
+  const productWords =
+    Array.from(
+      new Set(
+        deviceName
+          .toLowerCase()
+          .replace(
+            /[^a-z0-9]+/g,
+            " "
+          )
+          .split(/\s+/)
+          .filter(Boolean)
+          .filter(
+            (word) =>
+              word.length >= 4
+          )
+          .filter(
+            (word) =>
+              !brandWords.has(
+                word
+              )
+          )
+          .filter(
+            (word) =>
+              ![
+                "mini",
+                "plus",
+                "max",
+                "pro",
+                "ultra",
+                "smart",
+                "series",
+                "generation",
+                "wifi",
+                "wireless",
+                "cellular",
+                "model",
+                "device",
+                "edition",
+                "version",
+                "inch",
+              ].includes(word)
+          )
       )
-      .split(/\s+/)
-      .filter(Boolean)
-      .filter(
-        (word) =>
-          word.length >= 4
-      )
-      .filter(
-        (word) =>
-          ![
-            "mini",
-            "plus",
-            "max",
-            "pro",
-            "generation",
-            "wifi",
-            "cellular",
-            "model",
-            "device",
-            "apple",
-          ].includes(word)
-      );
+    );
 
   const modelCompact =
     compactPdfEvidence(
       cleanModel
     );
 
-  function appleCandidateMatchesProduct(
+  const simpleRequestedModel =
+    modelCompact.length >= 4 &&
+    modelCompact.length <= 12 &&
+    /^[a-z]{1,8}\d{2,}[a-z]{0,5}$/.test(
+      modelCompact
+    )
+      ? modelCompact
+      : null;
+
+  function hasConflictingSiblingModel(
+    evidence: string
+  ) {
+    if (!simpleRequestedModel) {
+      return false;
+    }
+
+    const requestedMatch =
+      simpleRequestedModel.match(
+        /^([a-z]+)(\d+)([a-z]*)$/
+      );
+
+    if (!requestedMatch) {
+      return false;
+    }
+
+    const requestedPrefix =
+      requestedMatch[1];
+
+    const requestedDigits =
+      requestedMatch[2];
+
+    const candidateTokens =
+      evidence
+        .toLowerCase()
+        .match(
+          /\b[a-z]{1,8}\d{2,}[a-z]{0,5}\b/g
+        ) ?? [];
+
+    for (
+      const token of
+        candidateTokens
+    ) {
+      const compactToken =
+        compactPdfEvidence(
+          token
+        );
+
+      if (
+        compactToken ===
+        simpleRequestedModel
+      ) {
+        continue;
+      }
+
+      const candidateMatch =
+        compactToken.match(
+          /^([a-z]+)(\d+)([a-z]*)$/
+        );
+
+      if (!candidateMatch) {
+        continue;
+      }
+
+      const candidatePrefix =
+        candidateMatch[1];
+
+      const candidateDigits =
+        candidateMatch[2];
+
+      if (
+        candidatePrefix ===
+          requestedPrefix &&
+        candidateDigits !==
+          requestedDigits
+      ) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  function candidateMatchesProduct(
     candidate: {
       url: string;
       context: string;
     }
   ) {
-    if (!isApple) {
-      return true;
-    }
-
     const evidence =
       (
         candidate.url +
@@ -2258,11 +2359,12 @@ export async function resolveOfficialManualPdf({
         evidence
       );
 
-    if (
-      /personal safety|safety guide|privacy guide|accessibility guide|legal guide|regulatory guide|general safety|for apple devices/.test(
+    const wrongDocument =
+      /personal safety|safety guide|privacy guide|accessibility guide|legal guide|regulatory guide|general safety|quick start|quickstart|quick guide|installation guide|repair manual|service manual|service guide|firmware|software update|brochure|spec sheet|datasheet/.test(
         evidence
-      )
-    ) {
+      );
+
+    if (wrongDocument) {
       return false;
     }
 
@@ -2275,7 +2377,15 @@ export async function resolveOfficialManualPdf({
       return true;
     }
 
-    return appleProductWords.some(
+    if (
+      hasConflictingSiblingModel(
+        evidence
+      )
+    ) {
+      return false;
+    }
+
+    return productWords.some(
       (word) =>
         evidence.includes(
           word
@@ -2298,7 +2408,7 @@ export async function resolveOfficialManualPdf({
           looksLikeUserManual(
             item
           ) &&
-          appleCandidateMatchesProduct(
+          candidateMatchesProduct(
             item
           )
       )
@@ -2327,6 +2437,9 @@ export async function resolveOfficialManualPdf({
       (item) =>
         !looksLikeDownload(
           item.url
+        ) &&
+        candidateMatchesProduct(
+          item
         )
     )
       .slice(
@@ -2498,7 +2611,7 @@ export async function resolveOfficialManualPdf({
             looksLikeUserManual(
               item
             ) &&
-            appleCandidateMatchesProduct(
+            candidateMatchesProduct(
               item
             )
         )
