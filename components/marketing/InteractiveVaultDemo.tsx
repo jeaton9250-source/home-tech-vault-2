@@ -7,8 +7,11 @@ import {
   FileText,
   House,
   Laptop,
+  MapPin,
   Router,
+  Search,
   ShieldCheck,
+  SlidersHorizontal,
   Tv,
   Wifi,
 } from "lucide-react";
@@ -525,55 +528,198 @@ function DevicesTab({
 }: {
   onOpenDevice: (id: string) => void;
 }) {
+  const demoDevices = [
+    {
+      id: "samsung-tv",
+      name: "Samsung QN90D",
+      brandModel: "Samsung · QN90D",
+      location: "Living Room",
+      status: "Online",
+      warranty: "Warranty active",
+      value: "$1,499",
+      icon: "tv" as const,
+      tone: "warm",
+    },
+    {
+      id: "spectrum-router",
+      name: "Spectrum WiFi 6E Router",
+      brandModel: "Spectrum · SAX2V1R",
+      location: "Office",
+      status: "Online",
+      warranty: "Provider managed",
+      value: "Included",
+      icon: "router" as const,
+      tone: "neutral",
+    },
+    {
+      id: "macbook",
+      name: "MacBook Air",
+      brandModel: "Apple · M4",
+      location: "Home Office",
+      status: "Online",
+      warranty: "Warranty active",
+      value: "$999",
+      icon: "laptop" as const,
+      tone: "soft",
+    },
+  ];
+
   return (
     <div className="animate-[fadeIn_250ms_ease-out]">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#718d4f]">
-        Device collection
-      </p>
+      {/* SEARCH */}
+      <div className="flex gap-2">
+        <div className="flex min-w-0 flex-1 items-center gap-2 rounded-[14px] border border-[#183047]/10 bg-white px-3 py-2.5">
+          <Search
+            size={13}
+            className="shrink-0 text-[#89939a]"
+          />
 
-      <h3 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-[#183047]">
-        Your technology, remembered.
-      </h3>
+          <span className="truncate text-[8px] text-[#929ba0]">
+            Search your devices...
+          </span>
+        </div>
 
-      <p className="mt-2 max-w-lg text-sm leading-6 text-[#718087]">
-        Models, rooms, warranties, manuals and
-        purchase records stay connected to each
-        device.
-      </p>
+        <button
+          type="button"
+          aria-label="Filters"
+          className="flex h-[37px] w-[40px] shrink-0 items-center justify-center rounded-[14px] border border-[#183047]/10 bg-white text-[#183047]"
+        >
+          <SlidersHorizontal size={13} />
+        </button>
+      </div>
 
-      <div className="mt-6 space-y-3">
-        {devices.map((device) => (
+      {/* FILTER CHIPS */}
+      <div className="mt-3 flex gap-1.5 overflow-hidden">
+        {[
+          "All",
+          "Appliance",
+          "Computer",
+          "Network",
+          "Smart Home",
+        ].map((category, index) => (
+          <button
+            key={category}
+            type="button"
+            className={[
+              "shrink-0 rounded-full px-3 py-1.5 text-[6px] font-semibold",
+              index === 0
+                ? "bg-[#718d4f] text-white"
+                : "border border-[#183047]/10 bg-white text-[#7f898f]",
+            ].join(" ")}
+          >
+            {category}
+          </button>
+        ))}
+      </div>
+
+      {/* DEVICE GRID */}
+      <div className="mt-4 grid grid-cols-2 gap-3">
+        {demoDevices.map((device) => (
           <button
             key={device.id}
             type="button"
-            onClick={() =>
-              onOpenDevice(device.id)
-            }
-            className="group flex w-full items-center gap-4 rounded-[22px] border border-[#183047]/10 bg-white p-4 text-left shadow-[0_12px_35px_-30px_rgba(24,48,71,0.45)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_42px_-28px_rgba(24,48,71,0.5)]"
+            onClick={() => onOpenDevice(device.id)}
+            className="group overflow-hidden rounded-[20px] border border-[#183047]/10 bg-white text-left shadow-[0_16px_35px_-30px_rgba(24,48,71,0.45)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_22px_45px_-28px_rgba(24,48,71,0.52)]"
           >
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#f3f0e9] text-[#183047]">
-              <DeviceIcon
-                type={device.icon}
-              />
+            {/* COMPACT PRODUCT VISUAL */}
+            <div
+              className={[
+                "relative flex h-[78px] items-center justify-center overflow-hidden",
+                device.tone === "warm"
+                  ? "bg-[linear-gradient(135deg,#ddd3c5_0%,#f0ebe2_55%,#d6ccbd_100%)]"
+                  : "",
+                device.tone === "neutral"
+                  ? "bg-[linear-gradient(135deg,#e1dbd1_0%,#f2eee6_55%,#d2cabf_100%)]"
+                  : "",
+                device.tone === "soft"
+                  ? "bg-[linear-gradient(135deg,#e7e1d7_0%,#f5f1e9_55%,#dad2c7_100%)]"
+                  : "",
+              ].join(" ")}
+            >
+              <div className="absolute inset-x-0 bottom-0 h-[34%] bg-white/25" />
+
+              <div className="relative flex h-[48px] w-[58px] items-center justify-center rounded-[16px] border border-white/60 bg-white/70 text-[#183047] shadow-[0_12px_28px_-18px_rgba(24,48,71,0.38)] backdrop-blur">
+                <DeviceIcon
+                  type={device.icon}
+                />
+              </div>
+
+              <span className="absolute bottom-2 left-2 rounded-full bg-white/75 px-2 py-0.5 text-[5px] font-semibold uppercase tracking-[0.12em] text-[#617c43] backdrop-blur">
+                {device.location}
+              </span>
             </div>
 
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-[#183047]">
-                {device.name}
-              </p>
+            {/* DETAILS */}
+            <div className="p-3">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <h4 className="truncate font-serif text-[13px] leading-4 text-[#17212a]">
+                    {device.name}
+                  </h4>
 
-              <p className="mt-1 text-xs text-[#7a858c]">
-                {device.location} ·{" "}
-                {device.model}
-              </p>
+                  <p className="mt-1 truncate text-[6px] text-[#8a9499]">
+                    {device.brandModel}
+                  </p>
+                </div>
+
+                <ChevronRight
+                  size={12}
+                  className="mt-0.5 shrink-0 text-[#a2aaae] transition group-hover:translate-x-0.5 group-hover:text-[#718d4f]"
+                />
+              </div>
+
+              <div className="mt-2.5 flex flex-wrap gap-x-2 gap-y-1.5">
+                <div className="flex items-center gap-1 text-[5px] text-[#78838a]">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#718d4f]" />
+                  {device.status}
+                </div>
+
+                <div className="flex items-center gap-1 text-[5px] text-[#78838a]">
+                  <MapPin
+                    size={7}
+                    className="text-[#718d4f]"
+                  />
+                  {device.location}
+                </div>
+
+                <div className="flex items-center gap-1 text-[5px] text-[#78838a]">
+                  <ShieldCheck
+                    size={7}
+                    className="text-[#718d4f]"
+                  />
+                  {device.warranty}
+                </div>
+              </div>
+
+              <div className="mt-2.5 flex items-center justify-between border-t border-[#183047]/8 pt-2">
+                <span className="text-[5px] font-semibold uppercase tracking-[0.14em] text-[#a0a7aa]">
+                  Value
+                </span>
+
+                <span className="font-serif text-[11px] text-[#17212a]">
+                  {device.value}
+                </span>
+              </div>
             </div>
-
-            <ChevronRight
-              size={17}
-              className="text-[#a2aaaf] transition group-hover:translate-x-0.5 group-hover:text-[#718d4f]"
-            />
           </button>
         ))}
+
+        {/* FOURTH TILE */}
+        <div className="flex min-h-[168px] items-center justify-center rounded-[20px] border border-dashed border-[#183047]/15 bg-[#f5f1e8]/65 p-4">
+          <div className="text-center">
+            <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-[13px] bg-white text-[#718d4f] shadow-sm">
+              <House size={15} />
+            </div>
+
+            <p className="mt-3 font-serif text-[13px] text-[#183047]">
+              Your whole home.
+            </p>
+
+            <p className="mx-auto mt-1 max-w-[120px] text-[6px] leading-3 text-[#899299]">
+              Appliances and technology organized in one place.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
