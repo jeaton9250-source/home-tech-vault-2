@@ -61,12 +61,17 @@ async function countScopedRows(
 
 export async function buildServerHouseholdQuotaContext(
   admin: SupabaseClient,
-  userId: string
+  userId: string,
+  requestedHouseholdId: string | null = null
 ) {
   const planAccess =
     await buildServerPlanAccessContext(
       admin,
-      userId
+      userId,
+      {
+        householdId:
+          requestedHouseholdId,
+      }
     );
 
   const {
@@ -124,12 +129,14 @@ export async function buildServerHouseholdQuotaContext(
 
 export async function assertCanAddDevice(
   admin: SupabaseClient,
-  userId: string
+  userId: string,
+  requestedHouseholdId: string | null = null
 ) {
   const { quota } =
     await buildServerHouseholdQuotaContext(
       admin,
-      userId
+      userId,
+      requestedHouseholdId
     );
 
   if (quota.limitReason === "viewer_read_only") {
@@ -155,12 +162,14 @@ export async function assertCanAddDevice(
 
 export async function assertCanAddDocument(
   admin: SupabaseClient,
-  userId: string
+  userId: string,
+  requestedHouseholdId: string | null = null
 ) {
   const { quota } =
     await buildServerHouseholdQuotaContext(
       admin,
-      userId
+      userId,
+      requestedHouseholdId
     );
 
   if (quota.limitReason === "viewer_read_only") {

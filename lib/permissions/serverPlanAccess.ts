@@ -37,6 +37,7 @@ export async function buildServerPlanAccessContext(
   userId: string,
   options?: {
     isDemo?: boolean;
+    householdId?: string | null;
   }
 ): Promise<ServerPlanAccessContext> {
   const [
@@ -61,7 +62,8 @@ export async function buildServerPlanAccessContext(
 
     loadHouseholdMembershipForUser(
       admin,
-      userId
+      userId,
+      options?.householdId ?? null
     ),
 
     loadActivePlanGrantForUser(admin, userId),
