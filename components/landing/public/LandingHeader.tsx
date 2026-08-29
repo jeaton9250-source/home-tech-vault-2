@@ -26,6 +26,10 @@ const mainNav = [
     label: "Demo",
     href: "/demo",
   },
+  {
+    label: "For Realtors",
+    href: "/realtors",
+  },
 ];
 
 const resourceGroups = [
@@ -106,13 +110,21 @@ export default function LandingHeader({
   const [resourcesOpen, setResourcesOpen] =
     useState(false);
 
+  const isRealtorMarketing =
+    pathname === "/realtors" ||
+    pathname.startsWith("/realtors/");
+
   const primaryHref = isSignedIn
     ? "/dashboard"
-    : MARKETING_ROUTES.signup;
+    : isRealtorMarketing
+      ? "/realtors/signup"
+      : MARKETING_ROUTES.signup;
 
   const primaryLabel = isSignedIn
     ? "Open My Vault"
-    : "Start Free";
+    : isRealtorMarketing
+      ? "Realtor Sign Up"
+      : "Start Free";
 
   const isActive = (href: string) => {
     if (href === "/") {

@@ -5,6 +5,7 @@ import Logo from "@/components/brand/Logo";
 const footerLinks = [
   { label: "About", href: "/about" },
   { label: "Pricing", href: "/pricing" },
+  { label: "For Realtors", href: "/realtors" },
   { label: "Compare", href: "/compare" },
   { label: "Trust Center", href: "/trust" },
   { label: "Privacy", href: "/privacy" },

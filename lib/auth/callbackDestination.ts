@@ -13,6 +13,7 @@ const ALLOWED_NEXT_PATHS = new Set([
   "/set-password",
   "/onboarding",
   "/dashboard",
+  "/realtors/setup",
 ]);
 
 function isAllowedNextPath(path: string) {
@@ -57,6 +58,12 @@ export function resolveInviteNextPath(
     isAllowedNextPath(requestedNext)
   ) {
     return requestedNext;
+  }
+
+  if (
+    metadata?.onboarding_mode === "realtor"
+  ) {
+    return "/realtors/setup";
   }
 
   if (

@@ -12,6 +12,7 @@ export const MARKETING_ROUTES = {
   signup: "/signup",
   login: "/login",
   newHomeowners: "/new-homeowners",
+  realtors: "/realtors",
 } as const;
 
 export const PUBLIC_AUTH_PATHS = [
@@ -74,6 +75,7 @@ export const PUBLIC_MARKETING_PATHS = [
   "/digital-home-vault",
   "/home-tech-checklist",
   MARKETING_ROUTES.newHomeowners,
+  MARKETING_ROUTES.realtors,
   "/health-check",
   "/knowledge",
   "/guides",
@@ -163,6 +165,7 @@ export const INDEXABLE_MARKETING_PATHS = [
   "/digital-home-vault",
   "/home-tech-checklist",
   MARKETING_ROUTES.newHomeowners,
+  MARKETING_ROUTES.realtors,
   "/knowledge",
   "/guides",
   "/compare",
