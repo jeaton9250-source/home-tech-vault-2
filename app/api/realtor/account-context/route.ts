@@ -57,6 +57,7 @@ export async function GET() {
     const [
       profileResult,
       partnerResult,
+      enrollmentResult,
     ] = await Promise.all([
       admin
         .from("profiles")
@@ -67,6 +68,19 @@ export async function GET() {
       admin
         .from(
           "realtor_partners"
+        )
+        .select(
+          "id, status"
+        )
+        .eq(
+          "user_id",
+          user.id
+        )
+        .maybeSingle(),
+
+      admin
+        .from(
+          "realtor_enrollments"
         )
         .select(
           "id, status"
@@ -90,12 +104,26 @@ export async function GET() {
       throw partnerResult.error;
     }
 
+    if (
+      enrollmentResult.error
+    ) {
+      throw enrollmentResult.error;
+    }
+
     const isPlatformAdmin =
       profileResult.data
         ?.is_admin === true;
 
     const partner =
       partnerResult.data;
+
+    const enrollment =
+      enrollmentResult.data;
+
+    const realtorEnrollmentPending =
+      !partner &&
+      enrollment?.status === "pending" &&
+      !isPlatformAdmin;
 
     /*
      * Platform admins stay unrestricted even if they
@@ -134,6 +162,8 @@ export async function GET() {
         realtorStatus:
           partner?.status ??
           null,
+
+        realtorEnrollmentPending,
 
         isPlatformAdmin,
 

@@ -69,7 +69,9 @@ function isRealtorWorkspacePath(
       "/realtor" ||
     pathname.startsWith(
       "/realtor/"
-    )
+    ) ||
+    pathname ===
+      "/realtors/setup"
   );
 }
 
