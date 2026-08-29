@@ -76,77 +76,86 @@ function isPublicMarketingPath(pathname: string) {
   );
 }
 
-/**
- * Refresh the Supabase auth session on every matched request.
- * Public auth routes (including /auth/confirm) are never redirected away —
- * they must remain reachable without a session.
- */
 export async function middleware(request: NextRequest) {
   const pathname = normalizePathname(request.nextUrl.pathname);
+
   const publicAuth = isPublicAuthPath(pathname);
+  const publicMarketing = isPublicMarketingPath(pathname);
 
   let response = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
+    request,
   });
 
-  try {
-    const supabaseUrl =
-      process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
-    const anonKey = resolveSupabaseAnonKey();
+  // Public marketing pages do not need an auth refresh.
+  if (!publicMarketing) {
+    try {
+      const supabaseUrl =
+        process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
 
-    if (supabaseUrl && anonKey) {
-      const supabase = createServerClient(
-        supabaseUrl,
-        anonKey,
-        {
-          cookies: {
-            getAll() {
-              return request.cookies.getAll();
-            },
+      const anonKey = resolveSupabaseAnonKey();
 
-            setAll(cookiesToSet) {
-              cookiesToSet.forEach(({ name, value }) => {
-                request.cookies.set(name, value);
-              });
+      if (supabaseUrl && anonKey) {
+        const supabase = createServerClient(
+          supabaseUrl,
+          anonKey,
+          {
+            cookies: {
+              getAll() {
+                return request.cookies.getAll();
+              },
 
-              response = NextResponse.next({
-                request: {
-                  headers: request.headers,
-                },
-              });
+              setAll(cookiesToSet, headers) {
+                cookiesToSet.forEach(({ name, value }) => {
+                  request.cookies.set(name, value);
+                });
 
-              cookiesToSet.forEach(
-                ({ name, value, options }) => {
-                  response.cookies.set(name, value, options);
+                response = NextResponse.next({
+                  request,
+                });
+
+                cookiesToSet.forEach(
+                  ({ name, value, options }) => {
+                    response.cookies.set(
+                      name,
+                      value,
+                      options
+                    );
+                  }
+                );
+
+                if (headers) {
+                  Object.entries(headers).forEach(
+                    ([key, value]) => {
+                      response.headers.set(key, value);
+                    }
+                  );
                 }
-              );
+              },
             },
-          },
 
-          ...(anonKeyLooksLikeJwt(anonKey)
-            ? {
-                global: {
-                  headers: {
-                    Authorization: `Bearer ${anonKey}`,
+            ...(anonKeyLooksLikeJwt(anonKey)
+              ? {
+                  global: {
+                    headers: {
+                      Authorization: `Bearer ${anonKey}`,
+                    },
                   },
-                },
-              }
-            : {}),
-        }
-      );
+                }
+              : {}),
+          }
+        );
 
-      // Refresh session cookies.
-      // This does NOT require a user to be signed in.
-      await supabase.auth.getUser();
+        await supabase.auth.getClaims();
+      }
+    } catch (error) {
+      console.error(
+        "Middleware session refresh failed:",
+        error
+      );
     }
-  } catch (error) {
-    console.error("Middleware session refresh failed:", error);
   }
 
-  // Only protected/app routes get private cache headers.
-  if (!publicAuth && !isPublicMarketingPath(pathname)) {
+  if (!publicAuth && !publicMarketing) {
     response.headers.set(
       "Cache-Control",
       "private, no-store"
@@ -158,11 +167,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Run on all paths except static assets and SEO metadata endpoints.
-     * Keeping /sitemap.xml and /robots.txt out of middleware avoids
-     * unnecessary auth cookie work and private cache headers.
-     */
     "/((?!_next/static|_next/image|favicon.ico|robots\\.txt|sitemap\\.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };
