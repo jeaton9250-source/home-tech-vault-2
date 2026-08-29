@@ -227,7 +227,8 @@ async function verifyDocumentQuota(
 }
 
 export async function prepareDocumentUpload(
-  input: DocumentMetadataInput
+  input: DocumentMetadataInput,
+  requestedHouseholdId: string | null = null
 ): Promise<PrepareDocumentUploadResult> {
   const supabase =
     await createClient();
@@ -274,7 +275,8 @@ export async function prepareDocumentUpload(
   const householdId =
     await fetchHouseholdIdForUser(
       user.id,
-      supabase
+      supabase,
+      requestedHouseholdId
     );
 
   const metadata =
@@ -321,7 +323,8 @@ export async function completeDocumentUpload(
   input:
     DocumentMetadataInput & {
       storagePath: string;
-    }
+    },
+  requestedHouseholdId: string | null = null
 ): Promise<CompleteDocumentUploadResult> {
   const supabase =
     await createClient();
@@ -371,7 +374,8 @@ export async function completeDocumentUpload(
   const householdId =
     await fetchHouseholdIdForUser(
       user.id,
-      supabase
+      supabase,
+      requestedHouseholdId
     );
 
   const metadata =

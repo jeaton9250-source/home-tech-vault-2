@@ -46,6 +46,20 @@ import PageTitle from "@/components/ui/PageTitle";
 import PageCard from "@/components/ui/PageCard";
 import Button from "@/components/ui/Button";
 
+function getRequestedHouseholdId() {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  return (
+    new URLSearchParams(
+      window.location.search
+    )
+      .get("householdId")
+      ?.trim() || null
+  );
+}
+
 export default function AddDevicePage() {
   const router = useRouter();
 
@@ -92,8 +106,51 @@ export default function AddDevicePage() {
 
   const quota = useHouseholdLimits();
 
-  const householdId = quota.householdId;
-  const quotaLoading = quota.loading;
+  const [
+    requestedHouseholdId,
+    setRequestedHouseholdId,
+  ] = useState<string | null>(null);
+
+  const [
+    returnTo,
+    setReturnTo,
+  ] = useState<string | null>(null);
+
+  useEffect(() => {
+    const query =
+      new URLSearchParams(
+        window.location.search
+      );
+
+    setRequestedHouseholdId(
+      query
+        .get("householdId")
+        ?.trim() || null
+    );
+
+    setReturnTo(
+      query
+        .get("returnTo")
+        ?.trim() || null
+    );
+  }, []);
+
+  const isClientVault =
+    Boolean(requestedHouseholdId);
+
+  /*
+   * For Realtor preparation, the URL-selected household
+   * is authoritative. Do not replace it with the user's
+   * normal Personal Vault household.
+   */
+  const householdId =
+    requestedHouseholdId ??
+    quota.householdId;
+
+  const quotaLoading =
+    isClientVault
+      ? false
+      : quota.loading;
   const deviceLimitReached =
     quota.deviceLimitReached;
 
@@ -437,7 +494,7 @@ export default function AddDevicePage() {
         location,
         notes,
         productUpc,
-      });
+      }, requestedHouseholdId);
 
       if (!result.success) {
         if (

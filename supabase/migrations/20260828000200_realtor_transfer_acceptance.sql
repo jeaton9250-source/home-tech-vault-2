@@ -1,0 +1,250 @@
+-- ==========================================================
+-- HOME TECH VAULT
+-- Atomic Realtor -> Buyer Household Ownership Transfer
+-- ==========================================================
+
+create or replace function public.accept_realtor_household_transfer(
+  p_token_hash text,
+  p_accepting_user_id uuid,
+  p_accepting_email text
+)
+returns table (
+  household_id uuid,
+  gift_id uuid,
+  previous_owner_id uuid,
+  new_owner_id uuid,
+  gift_plan text,
+  gift_expires_at timestamptz
+)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_transfer public.household_ownership_transfers%rowtype;
+  v_gift public.realtor_vault_gifts%rowtype;
+  v_current_owner uuid;
+  v_email text;
+begin
+  v_email := lower(trim(p_accepting_email));
+
+  if p_accepting_user_id is null then
+    raise exception 'AUTH_REQUIRED';
+  end if;
+
+  if v_email = '' then
+    raise exception 'EMAIL_REQUIRED';
+  end if;
+
+  select *
+  into v_transfer
+  from public.household_ownership_transfers
+  where token_hash = p_token_hash
+  for update;
+
+  if not found then
+    raise exception 'TRANSFER_NOT_FOUND';
+  end if;
+
+  if v_transfer.status <> 'pending' then
+    raise exception 'TRANSFER_NOT_PENDING';
+  end if;
+
+  if v_transfer.expires_at <= now() then
+    update public.household_ownership_transfers
+    set status = 'expired'
+    where id = v_transfer.id;
+
+    raise exception 'TRANSFER_EXPIRED';
+  end if;
+
+  if lower(trim(v_transfer.to_email)) <> v_email then
+    raise exception 'TRANSFER_EMAIL_MISMATCH';
+  end if;
+
+  select owner_id
+  into v_current_owner
+  from public.households
+  where id = v_transfer.household_id
+  for update;
+
+  if not found then
+    raise exception 'HOUSEHOLD_NOT_FOUND';
+  end if;
+
+  if v_current_owner <> v_transfer.from_user_id then
+    raise exception 'OWNER_CHANGED';
+  end if;
+
+  if p_accepting_user_id = v_transfer.from_user_id then
+    raise exception 'CANNOT_TRANSFER_TO_SELF';
+  end if;
+
+  -- --------------------------------------------------------
+  -- Buyer becomes / remains a household member as OWNER
+  -- --------------------------------------------------------
+
+  insert into public.household_members (
+    household_id,
+    user_id,
+    role,
+    invited_by,
+    joined_at,
+    updated_at
+  )
+  values (
+    v_transfer.household_id,
+    p_accepting_user_id,
+    'owner',
+    v_transfer.from_user_id,
+    now(),
+    now()
+  )
+  on conflict (household_id, user_id)
+  do update set
+    role = 'owner',
+    updated_at = now();
+
+  -- --------------------------------------------------------
+  -- Canonical owner pointer
+  -- --------------------------------------------------------
+
+  update public.households
+  set
+    owner_id = p_accepting_user_id,
+    updated_at = now()
+  where id = v_transfer.household_id;
+
+  -- --------------------------------------------------------
+  -- Realtor access after transfer
+  -- --------------------------------------------------------
+
+  if v_transfer.realtor_access_after_transfer = 'viewer' then
+    update public.household_members
+    set
+      role = 'viewer',
+      updated_at = now()
+    where
+      household_id = v_transfer.household_id
+      and user_id = v_transfer.from_user_id;
+  else
+    delete from public.household_members
+    where
+      household_id = v_transfer.household_id
+      and user_id = v_transfer.from_user_id;
+  end if;
+
+  -- --------------------------------------------------------
+  -- Complete transfer
+  -- --------------------------------------------------------
+
+  update public.household_ownership_transfers
+  set
+    accepted_by_user_id = p_accepting_user_id,
+    accepted_at = now(),
+    status = 'accepted',
+    updated_at = now()
+  where id = v_transfer.id;
+
+  -- --------------------------------------------------------
+  -- Complete associated gift
+  -- --------------------------------------------------------
+
+  if v_transfer.gift_id is not null then
+    select *
+    into v_gift
+    from public.realtor_vault_gifts
+    where id = v_transfer.gift_id
+    for update;
+
+    if found then
+      update public.realtor_vault_gifts
+      set
+        claimed_by_user_id = p_accepting_user_id,
+        claimed_at = now(),
+        status = 'claimed',
+        updated_at = now()
+      where id = v_gift.id;
+
+      -- ----------------------------------------------------
+      -- Gifted entitlement
+      -- Only create a grant for paid plans.
+      -- ----------------------------------------------------
+
+      if
+        v_gift.gift_plan in ('pro', 'family')
+        and v_gift.gift_expires_at is not null
+        and v_gift.gift_expires_at > now()
+      then
+        insert into public.platform_plan_grants (
+          user_id,
+          plan,
+          status,
+          starts_at,
+          expires_at,
+          reason,
+          notes,
+          granted_by,
+          created_at,
+          updated_at
+        )
+        values (
+          p_accepting_user_id,
+          v_gift.gift_plan,
+          'active',
+          now(),
+          v_gift.gift_expires_at,
+          'realtor_closing_gift',
+          'Home Tech Vault closing gift transferred with household ownership.',
+          v_transfer.from_user_id,
+          now(),
+          now()
+        );
+      end if;
+    end if;
+  end if;
+
+  return query
+  select
+    v_transfer.household_id,
+    v_transfer.gift_id,
+    v_transfer.from_user_id,
+    p_accepting_user_id,
+    v_gift.gift_plan,
+    v_gift.gift_expires_at;
+end;
+$$;
+
+
+-- This function must never be callable directly by a browser session.
+revoke all
+on function public.accept_realtor_household_transfer(
+  text,
+  uuid,
+  text
+)
+from public;
+
+revoke all
+on function public.accept_realtor_household_transfer(
+  text,
+  uuid,
+  text
+)
+from anon;
+
+revoke all
+on function public.accept_realtor_household_transfer(
+  text,
+  uuid,
+  text
+)
+from authenticated;
+
+grant execute
+on function public.accept_realtor_household_transfer(
+  text,
+  uuid,
+  text
+)
+to service_role;

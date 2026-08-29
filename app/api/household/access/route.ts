@@ -7,6 +7,8 @@
  */
 import { NextResponse } from "next/server";
 
+import { resolveActiveClientVault } from "@/lib/realtor/clientVaultMode";
+
 import { loadHouseholdMembershipForUser } from "@/lib/permissions/householdMembership";
 import { resolveHouseholdOwnerBilling } from "@/lib/permissions/householdOwnerBilling";
 import {
@@ -170,11 +172,24 @@ export async function GET(request: Request) {
 
     const admin = createAdminClient();
 
+    const clientVault =
+      requestedHouseholdId
+        ? null
+        : await resolveActiveClientVault(
+            admin,
+            user.id
+          );
+
+    const effectiveHouseholdId =
+      requestedHouseholdId ??
+      clientVault?.householdId ??
+      null;
+
     const membershipResult =
       await loadHouseholdMembershipForUser(
         admin,
         user.id,
-        requestedHouseholdId
+        effectiveHouseholdId
       );
 
     if (

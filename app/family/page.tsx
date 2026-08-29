@@ -222,6 +222,70 @@ export default function FamilyPage() {
   } = usePermissions();
 
   const [
+    isClientVaultMode,
+    setIsClientVaultMode,
+  ] = useState(false);
+
+  const [
+    clientVaultModeChecked,
+    setClientVaultModeChecked,
+  ] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadClientVaultMode() {
+      try {
+        const response = await fetch(
+          "/api/realtor/vault-mode/status",
+          {
+            cache: "no-store",
+          }
+        );
+
+        const payload =
+          (await response.json()) as {
+            active?: boolean;
+          };
+
+        if (!cancelled) {
+          setIsClientVaultMode(
+            payload.active === true
+          );
+        }
+      } catch {
+        if (!cancelled) {
+          setIsClientVaultMode(false);
+        }
+      } finally {
+        if (!cancelled) {
+          setClientVaultModeChecked(true);
+        }
+      }
+    }
+
+    void loadClientVaultMode();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  /*
+   * Realtor Client Vault Mode allows preparation of
+   * property records, but never household access changes.
+   */
+  const canManageHouseholdAccess =
+    clientVaultModeChecked &&
+    !isClientVaultMode &&
+    canManageHousehold;
+
+  const canInviteHouseholdMember =
+    clientVaultModeChecked &&
+    !isClientVaultMode &&
+    canInvite;
+
+  const [
     household,
     setHousehold,
   ] =
@@ -777,7 +841,15 @@ export default function FamilyPage() {
       return;
     }
 
-    if (!canInvite) {
+    if (isClientVaultMode) {
+      setErrorMessage(
+        "Household invitations are unavailable while preparing a Client Vault."
+      );
+      setShowInviteForm(false);
+      return;
+    }
+
+    if (!canInviteHouseholdMember) {
       console.error(
         "[Family Invite] Stopped: User cannot invite household members",
         {
@@ -1129,8 +1201,14 @@ const {
     }
 
     if (
-      !canManageHousehold
+      isClientVaultMode ||
+      !canManageHouseholdAccess
     ) {
+      setErrorMessage(
+        isClientVaultMode
+          ? "Household roles cannot be changed while preparing a Client Vault."
+          : "You do not have permission to change household roles."
+      );
       return;
     }
 
@@ -1223,9 +1301,14 @@ const {
       return;
     }
 
-    if (!canManageHousehold) {
+    if (
+      isClientVaultMode ||
+      !canManageHouseholdAccess
+    ) {
       setErrorMessage(
-        "Only household admins can remove members."
+        isClientVaultMode
+          ? "Household members cannot be removed while preparing a Client Vault."
+          : "Only household admins can remove members."
       );
       return;
     }
@@ -1413,6 +1496,25 @@ const {
   if (loading) {
     return (
       <PageShell>
+
+      {isClientVaultMode ? (
+        <div className="mb-6 rounded-[22px] border border-[#718d4f]/20 bg-[#718d4f]/[0.07] px-5 py-4">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#617c43]">
+            Client Vault Access
+          </p>
+
+          <p className="mt-2 text-sm font-semibold text-[#183047]">
+            Household access is locked while you prepare this home.
+          </p>
+
+          <p className="mt-1 text-sm leading-6 text-[#68737b]">
+            You can organize the property&apos;s records, but invitations,
+            member roles, removals, and household access changes are reserved
+            for the buyer after handoff.
+          </p>
+        </div>
+      ) : null}
+
         <PageCard className="flex min-h-72 items-center justify-center">
           <div className="flex items-center gap-3 text-[#68737b]">
             <Loader2
@@ -2008,7 +2110,7 @@ const {
                   key={member.id}
                   member={member}
                   currentUserId={user?.id || ""}
-                  canManage={canManageHousehold}
+                  canManage={canManageHouseholdAccess}
                   updating={
                     updatingMemberId === member.id
                   }
@@ -2063,7 +2165,7 @@ const {
                         key={invitation.id}
                         invitation={invitation}
                         canManage={
-                          canManageHousehold
+                          canManageHouseholdAccess
                         }
                         canceling={
                           cancelingInvitationId ===
@@ -2179,7 +2281,9 @@ const {
       )}
 
       {showInviteForm &&
-        household && (
+        household &&
+        canInviteHouseholdMember &&
+        !isClientVaultMode && (
           <InviteModal
             form={inviteForm}
             setForm={

@@ -105,7 +105,7 @@ const PERMISSIONS_CACHE_TTL_MS =
   60_000;
 
 const PERMISSIONS_CACHE_PREFIX =
-  "htv:permissions:v1:";
+  "htv:permissions:v2:";
 
 type CachedPermissionPayload = {
   cachedAt: number;

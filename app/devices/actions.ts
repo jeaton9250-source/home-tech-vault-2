@@ -1564,7 +1564,8 @@ async function saveBestManualForDevice(
 
 
 export async function addDevice(
-  input: AddDeviceInput
+  input: AddDeviceInput,
+  requestedHouseholdId: string | null = null
 ): Promise<AddDeviceResult> {
   const supabase = await createClient();
 
@@ -1584,7 +1585,11 @@ export async function addDevice(
   const admin = createAdminClient();
 
   try {
-    await assertCanAddDevice(admin, user.id);
+    await assertCanAddDevice(
+      admin,
+      user.id,
+      requestedHouseholdId
+    );
   } catch (error) {
     if (error instanceof HouseholdQuotaError) {
       if (error.code === "viewer_read_only") {
@@ -1648,7 +1653,8 @@ export async function addDevice(
   const householdId =
     await fetchHouseholdIdForUser(
       user.id,
-      supabase
+      supabase,
+      requestedHouseholdId
     );
 
   const locationsResult =

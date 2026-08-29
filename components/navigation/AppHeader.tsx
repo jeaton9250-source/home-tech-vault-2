@@ -12,6 +12,7 @@ import ProfileMenu from "@/components/navigation/ProfileMenu";
 import MobileNavSheet from "@/components/navigation/MobileNavSheet";
 
 import { usePermissions } from "@/hooks/usePermissions";
+import { useClientVaultMode } from "@/hooks/useClientVaultMode";
 import { useNotifications } from "@/hooks/useNotifications";
 
 import { isPrimaryNavActive } from "@/lib/navigation/activeGroup";
@@ -21,6 +22,10 @@ import { shouldShowPremiumBadge } from "@/lib/navigation/navVisibility";
 export default function AppHeader() {
   const pathname = usePathname();
   const notificationsState = useNotifications();
+
+  const {
+    active: isClientVaultMode,
+  } = useClientVaultMode();
 
   const {
     canViewFeature,
@@ -102,10 +107,12 @@ export default function AppHeader() {
 
           <div className="flex min-w-0 items-center justify-self-end">
             <div className="flex items-center rounded-full border border-white/10 bg-white/[0.04] p-1 text-[#f5f1e8] shadow-inner [&_button]:text-[#f5f1e8] [&_button:hover]:bg-white/[0.07]">
-              <NotificationBell
-                compact
-                notificationsState={notificationsState}
-              />
+              {!isClientVaultMode ? (
+                <NotificationBell
+                  compact
+                  notificationsState={notificationsState}
+                />
+              ) : null}
 
               <ProfileMenu compact />
             </div>

@@ -15,6 +15,7 @@ import HomeAdvisorPreview from "@/components/advisor/HomeAdvisorPreview";
 import SmartSearch from "@/components/search/SmartSearch";
 import { useHomeAdvisor } from "@/hooks/useHomeAdvisor";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useClientVaultMode } from "@/hooks/useClientVaultMode";
 import { getHomeHealthDisplayMessage } from "@/lib/home-health/display";
 
 import VaultSetupProgress from "@/components/dashboard/VaultSetupProgress";
@@ -39,6 +40,10 @@ export default function HomeHealthDashboard({
     role,
     canCreate,
   } = usePermissions();
+
+  const {
+    active: isClientVaultMode,
+  } = useClientVaultMode();
 
   const {
     advisor,
@@ -129,16 +134,18 @@ export default function HomeHealthDashboard({
         {/* LEFT */}
 
         <div className="space-y-6">
-          <SectionShell
-            eyebrow="Home Advisor"
-            title="What deserves your attention"
-          >
-            <HomeAdvisorPreview
-              advisor={advisor}
-              loading={advisorLoading}
-              error={advisorError}
-            />
-          </SectionShell>
+          {!isClientVaultMode ? (
+            <SectionShell
+              eyebrow="Home Advisor"
+              title="What deserves your attention"
+            >
+              <HomeAdvisorPreview
+                advisor={advisor}
+                loading={advisorLoading}
+                error={advisorError}
+              />
+            </SectionShell>
+          ) : null}
 
           {overviewStats.deviceCount <= 2 &&
           overviewStats.documentCount === 0 ? (
@@ -189,36 +196,38 @@ export default function HomeHealthDashboard({
         <div className="space-y-6">
           {/* SEARCH */}
 
-          <section className="relative overflow-hidden rounded-[26px] border border-[#182533]/10 bg-[#183047] p-6 text-[#f5f1e8] shadow-[0_24px_55px_-40px_rgba(0,0,0,0.7)]">
-            <div className="pointer-events-none absolute -right-20 -top-20 h-52 w-52 rounded-full bg-[#718d4f]/10 blur-3xl" />
+          {!isClientVaultMode ? (
+            <section className="relative overflow-hidden rounded-[26px] border border-[#182533]/10 bg-[#183047] p-6 text-[#f5f1e8] shadow-[0_24px_55px_-40px_rgba(0,0,0,0.7)]">
+              <div className="pointer-events-none absolute -right-20 -top-20 h-52 w-52 rounded-full bg-[#718d4f]/10 blur-3xl" />
 
-            <div className="relative">
-              <div className="flex items-center gap-3">
-                <span className="h-px w-6 bg-[#718d4f]" />
+              <div className="relative">
+                <div className="flex items-center gap-3">
+                  <span className="h-px w-6 bg-[#718d4f]" />
 
-                <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-[#718d4f]">
-                  Ask Your Vault
+                  <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-[#718d4f]">
+                    Ask Your Vault
+                  </p>
+                </div>
+
+                <h2 className="mt-3 font-serif text-2xl font-medium tracking-[-0.03em] text-[#f5f1e8]">
+                  Find anything in your home.
+                </h2>
+
+                <p className="mt-3 text-sm leading-6 text-[#aab4bc]">
+                  Search your devices, warranties,
+                  documents, and household information
+                  from one place.
                 </p>
+
+                <div className="mt-5">
+                  <SmartSearch
+                    mode="dashboard"
+                    variant="hero"
+                  />
+                </div>
               </div>
-
-              <h2 className="mt-3 font-serif text-2xl font-medium tracking-[-0.03em] text-[#f5f1e8]">
-                Find anything in your home.
-              </h2>
-
-              <p className="mt-3 text-sm leading-6 text-[#aab4bc]">
-                Search your devices, warranties,
-                documents, and household information
-                from one place.
-              </p>
-
-              <div className="mt-5">
-                <SmartSearch
-                  mode="dashboard"
-                  variant="hero"
-                />
-              </div>
-            </div>
-          </section>
+            </section>
+          ) : null}
 
           {!isDemo ? (
             <VaultSetupProgress

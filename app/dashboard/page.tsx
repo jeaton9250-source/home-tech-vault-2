@@ -8,6 +8,12 @@ import {
 import {
   createClient,
 } from "@/lib/supabase/server";
+import {
+  createAdminClient,
+} from "@/lib/supabase/admin";
+import {
+  resolveActiveClientVault,
+} from "@/lib/realtor/clientVaultMode";
 
 export const dynamic =
   "force-dynamic";
@@ -41,11 +47,18 @@ export default async function DashboardPage() {
       );
     }
 
+    const activeClientVault =
+      await resolveActiveClientVault(
+        createAdminClient(),
+        user.id
+      );
+
     const householdId =
-      await fetchHouseholdIdForUser(
+      activeClientVault?.householdId ??
+      (await fetchHouseholdIdForUser(
         user.id,
         supabase
-      );
+      ));
 
     const initialMetrics =
       await loadDashboardMetrics(

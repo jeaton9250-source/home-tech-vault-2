@@ -13,6 +13,10 @@ import type {
   AdminInvitationType,
 } from "@/lib/admin/types";
 
+type InviteMode =
+  | AdminInvitationType
+  | "realtor_account";
+
 type HouseholdOption = {
   id: string;
   name: string;
@@ -25,7 +29,7 @@ type InviteUserModalProps = {
 };
 
 const INVITE_TYPE_OPTIONS: Array<{
-  value: AdminInvitationType;
+  value: InviteMode;
   label: string;
   description: string;
 }> = [
@@ -40,6 +44,12 @@ const INVITE_TYPE_OPTIONS: Array<{
     label: "Add to Existing Household",
     description:
       "Invite this person to join an existing household with a household role.",
+  },
+  {
+    value: "realtor_account",
+    label: "Create Realtor Account",
+    description:
+      "Give a Realtor access to the Home Tech Vault real estate workspace without creating a personal household.",
   },
 ];
 
@@ -74,13 +84,19 @@ export default function InviteUserModal({
   onInvited,
 }: InviteUserModalProps) {
   const [invitationType, setInvitationType] =
-    useState<AdminInvitationType>("create_account");
+    useState<InviteMode>("create_account");
   const [email, setEmail] = useState("");
   const [householdId, setHouseholdId] = useState("");
   const [role, setRole] =
     useState<AdminHouseholdInviteRole>("member");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+
+  const [brokerageName, setBrokerageName] =
+    useState("");
+
+  const [licenseState, setLicenseState] =
+    useState("");
   const [households, setHouseholds] = useState<
     HouseholdOption[]
   >([]);
@@ -91,6 +107,9 @@ export default function InviteUserModal({
 
   const isHouseholdInvite =
     invitationType === "join_household";
+
+  const isRealtorInvite =
+    invitationType === "realtor_account";
 
   useEffect(() => {
     if (!open || !isHouseholdInvite) {
@@ -182,6 +201,8 @@ export default function InviteUserModal({
     setRole("member");
     setFirstName("");
     setLastName("");
+    setBrokerageName("");
+    setLicenseState("");
     setError("");
   }
 
@@ -201,21 +222,65 @@ export default function InviteUserModal({
       setSubmitting(true);
       setError("");
 
-      const response = await fetch("/api/admin/users/invite", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          invitationType,
-          email: normalizedEmail,
-          householdId: isHouseholdInvite ? householdId : null,
-          role: isHouseholdInvite ? role : null,
-          firstName: firstName.trim() || null,
-          lastName: lastName.trim() || null,
-          createOwnHousehold: !isHouseholdInvite,
-        }),
-      });
+      const endpoint =
+        isRealtorInvite
+          ? "/api/admin/realtors/invite"
+          : "/api/admin/users/invite";
+
+      const requestBody =
+        isRealtorInvite
+          ? {
+              email:
+                normalizedEmail,
+              firstName:
+                firstName.trim() ||
+                null,
+              lastName:
+                lastName.trim() ||
+                null,
+              brokerageName:
+                brokerageName.trim() ||
+                null,
+              licenseState:
+                licenseState.trim() ||
+                null,
+            }
+          : {
+              invitationType,
+              email:
+                normalizedEmail,
+              householdId:
+                isHouseholdInvite
+                  ? householdId
+                  : null,
+              role:
+                isHouseholdInvite
+                  ? role
+                  : null,
+              firstName:
+                firstName.trim() ||
+                null,
+              lastName:
+                lastName.trim() ||
+                null,
+              createOwnHousehold:
+                !isHouseholdInvite,
+            };
+
+      const response = await fetch(
+        endpoint,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body:
+            JSON.stringify(
+              requestBody
+            ),
+        }
+      );
 
       const payload = (await response.json()) as {
         success?: boolean;
@@ -376,6 +441,47 @@ export default function InviteUserModal({
             </label>
           </div>
 
+          {isRealtorInvite ? (
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="block">
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-text-tertiary">
+                  Brokerage
+                </span>
+
+                <input
+                  type="text"
+                  value={brokerageName}
+                  onChange={(event) =>
+                    setBrokerageName(
+                      event.target.value
+                    )
+                  }
+                  className="mt-2 w-full rounded-[12px] border border-border-subtle bg-surface-sunken px-4 py-3 text-sm text-text-primary outline-none focus:border-interaction"
+                  placeholder="Optional"
+                />
+              </label>
+
+              <label className="block">
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-text-tertiary">
+                  License state
+                </span>
+
+                <input
+                  type="text"
+                  value={licenseState}
+                  onChange={(event) =>
+                    setLicenseState(
+                      event.target.value
+                    )
+                  }
+                  maxLength={40}
+                  className="mt-2 w-full rounded-[12px] border border-border-subtle bg-surface-sunken px-4 py-3 text-sm uppercase text-text-primary outline-none focus:border-interaction"
+                  placeholder="NC"
+                />
+              </label>
+            </div>
+          ) : null}
+
           {isHouseholdInvite ? (
             <>
               <label className="block">
@@ -445,6 +551,13 @@ export default function InviteUserModal({
                 ) : null}
               </fieldset>
             </>
+          ) : isRealtorInvite ? (
+            <p className="rounded-[16px] border border-[#718d4f]/20 bg-[#718d4f]/[0.06] px-4 py-3 text-xs leading-5 text-text-secondary">
+              This person will receive a Realtor-only Home Tech
+              Vault account. No personal household will be created.
+              Their workspace will be used to prepare and hand off
+              Client Vaults for buyers.
+            </p>
           ) : (
             <p className="rounded-[16px] border border-border-subtle bg-surface-sunken px-4 py-3 text-xs leading-5 text-text-secondary">
               This person will create their own household during

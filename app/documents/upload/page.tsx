@@ -47,6 +47,20 @@ type Device = {
   device_name: string;
 };
 
+function getRequestedHouseholdId() {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  return (
+    new URLSearchParams(
+      window.location.search
+    )
+      .get("householdId")
+      ?.trim() || null
+  );
+}
+
 export default function UploadDocumentPage() {
   const router = useRouter();
 
@@ -354,7 +368,7 @@ export default function UploadDocumentPage() {
             file.size,
           browserContentType:
             file.type,
-        });
+        }, getRequestedHouseholdId());
 
       if (!prepared.success) {
         handleDocumentActionFailure(
@@ -394,7 +408,7 @@ export default function UploadDocumentPage() {
             file.type,
           storagePath:
             prepared.storagePath,
-        });
+        }, getRequestedHouseholdId());
 
       if (!completed.success) {
         await supabase.storage

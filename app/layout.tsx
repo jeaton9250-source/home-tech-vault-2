@@ -5,6 +5,7 @@ import "./globals.css";
 
 import ConditionalAppChrome from "@/components/ConditionalAppChrome";
 import ImpersonationBanner from "@/components/admin/ImpersonationBanner";
+import RealtorClientVaultBanner from "@/components/realtor/RealtorClientVaultBanner";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 import InternalAwareVercelAnalytics from "@/components/analytics/InternalAwareVercelAnalytics";
 import { rootSiteMetadata } from "@/lib/marketing/socialMetadata";
@@ -26,6 +27,7 @@ export default function RootLayout({
         <HeyCatchIdentity />
         <GoogleAnalytics />
         <ImpersonationBanner />
+        <RealtorClientVaultBanner />
         <ConditionalAppChrome>{children}</ConditionalAppChrome>
         <InternalAwareVercelAnalytics />
       </body>

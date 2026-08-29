@@ -44,6 +44,11 @@ export default function CreateAccountInviteSetupPage() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+
+  const [
+    isRealtorInvite,
+    setIsRealtorInvite,
+  ] = useState(false);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -73,6 +78,55 @@ export default function CreateAccountInviteSetupPage() {
         passwordSetupCompleted:
           metadata.passwordSetupCompleted,
       });
+
+      const rawMetadata =
+        (user.user_metadata ??
+          {}) as Record<
+          string,
+          unknown
+        >;
+
+      const realtorInvite =
+        rawMetadata.account_role ===
+          "realtor" ||
+        rawMetadata.onboarding_mode ===
+          "realtor";
+
+      if (realtorInvite) {
+        resolved = true;
+
+        setIsRealtorInvite(
+          true
+        );
+
+        setInviteEmail(
+          user.email ?? ""
+        );
+
+        setFirstName(
+          typeof rawMetadata.first_name ===
+            "string"
+            ? rawMetadata.first_name
+            : ""
+        );
+
+        setLastName(
+          typeof rawMetadata.last_name ===
+            "string"
+            ? rawMetadata.last_name
+            : ""
+        );
+
+        setSessionReady(
+          true
+        );
+
+        setCheckingSession(
+          false
+        );
+
+        return;
+      }
 
       if (
         metadata.invitationType ===
@@ -163,7 +217,10 @@ export default function CreateAccountInviteSetupPage() {
   }, [router]);
 
   useEffect(() => {
-    if (!sessionReady) {
+    if (
+      !sessionReady ||
+      isRealtorInvite
+    ) {
       return;
     }
 
@@ -244,7 +301,11 @@ export default function CreateAccountInviteSetupPage() {
     return () => {
       cancelled = true;
     };
-  }, [sessionReady, router]);
+  }, [
+    sessionReady,
+    isRealtorInvite,
+    router,
+  ]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -287,14 +348,37 @@ export default function CreateAccountInviteSetupPage() {
       const { data, error: passwordError } =
         await supabase.auth.updateUser({
           password,
-          data: {
-            first_name: firstName.trim(),
-            last_name: lastName.trim(),
-            full_name: fullName,
-            onboarding_mode: "create_household",
-            invitation_type: "create_account",
-            password_setup_completed: true,
-          },
+          data: isRealtorInvite
+            ? {
+                first_name:
+                  firstName.trim(),
+                last_name:
+                  lastName.trim(),
+                full_name:
+                  fullName,
+                account_role:
+                  "realtor",
+                onboarding_mode:
+                  "realtor",
+                platform_access:
+                  "realtor",
+                password_setup_completed:
+                  true,
+              }
+            : {
+                first_name:
+                  firstName.trim(),
+                last_name:
+                  lastName.trim(),
+                full_name:
+                  fullName,
+                onboarding_mode:
+                  "create_household",
+                invitation_type:
+                  "create_account",
+                password_setup_completed:
+                  true,
+              },
         });
 
       console.info("Invite password update", {
@@ -318,7 +402,54 @@ export default function CreateAccountInviteSetupPage() {
         return;
       }
 
-      router.replace("/onboarding/create-household");
+      if (isRealtorInvite) {
+        const response =
+          await fetch(
+            "/api/invite/realtor/accept",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+              body:
+                JSON.stringify({
+                  firstName:
+                    firstName.trim(),
+                  lastName:
+                    lastName.trim(),
+                }),
+            }
+          );
+
+        const payload =
+          (await response.json()) as {
+            success?: boolean;
+            redirectTo?: string;
+            error?: string;
+          };
+
+        if (
+          !response.ok ||
+          !payload.success
+        ) {
+          throw new Error(
+            payload.error ||
+              "Unable to activate your Realtor account."
+          );
+        }
+
+        window.location.assign(
+          payload.redirectTo ||
+            "/realtor"
+        );
+
+        return;
+      }
+
+      router.replace(
+        "/onboarding/create-household"
+      );
       router.refresh();
     } catch (error) {
       console.error("Create-account setup error:", error);

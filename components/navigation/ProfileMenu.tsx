@@ -24,6 +24,7 @@ import { useAIAdvisor } from "@/hooks/useAIAdvisor";
 import { useDemoMode } from "@/hooks/useDemoMode";
 import { useNavMenu } from "@/hooks/useNavMenu";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useClientVaultMode } from "@/hooks/useClientVaultMode";
 
 import { PROFILE_MENU_ITEMS } from "@/lib/navigation/config";
 import { NAV_MENU_IDS } from "@/lib/navigation/menuIds";
@@ -128,6 +129,11 @@ export default function ProfileMenu({
 
   const { open: openAdvisor } = useAIAdvisor();
 
+  const {
+    active: isClientVaultMode,
+    label: clientVaultLabel,
+  } = useClientVaultMode();
+
   const [displayName, setDisplayName] =
     useState("Account");
 
@@ -177,16 +183,37 @@ export default function ProfileMenu({
     router.push("/login");
   }
 
-  const initials = displayName
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join("");
+  const clientVaultName =
+    clientVaultLabel
+      ?.split(" · ")[0]
+      ?.trim() ||
+    "Client Vault";
 
-  const effectivePlanLabel = isPlatformAdmin
-    ? "Platform Admin"
-    : planDisplayName || "Free";
+  const menuDisplayName =
+    isClientVaultMode
+      ? clientVaultName
+      : displayName;
+
+  const initials =
+    isClientVaultMode
+      ? "CV"
+      : displayName
+          .split(" ")
+          .filter(Boolean)
+          .slice(0, 2)
+          .map(
+            (part) =>
+              part[0]?.toUpperCase()
+          )
+          .join("");
+
+  const effectivePlanLabel =
+    isClientVaultMode
+      ? "Client Vault"
+      : isPlatformAdmin
+        ? "Platform Admin"
+        : planDisplayName ||
+          "Free";
 
   const { adminItems, regularItems } =
     useMemo(() => {
@@ -194,6 +221,13 @@ export default function ProfileMenu({
         [];
       const regular: typeof PROFILE_MENU_ITEMS =
         [];
+
+      if (isClientVaultMode) {
+        return {
+          adminItems: admin,
+          regularItems: regular,
+        };
+      }
 
       for (const item of PROFILE_MENU_ITEMS) {
         if (item.adminOnly) {
@@ -234,6 +268,7 @@ export default function ProfileMenu({
       canViewFeature,
       isVerifiedPlatformAdmin,
       permissionsReady,
+      isClientVaultMode,
     ]);
 
   return (
@@ -265,7 +300,7 @@ export default function ProfileMenu({
           ) : (
             <>
               <span className="hidden max-w-[140px] truncate font-medium text-text-primary xl:inline">
-                {displayName}
+                {menuDisplayName}
               </span>
 
               <ChevronDown
@@ -279,12 +314,17 @@ export default function ProfileMenu({
     >
       <div className="border-b border-border-subtle px-4 py-4">
         <p className="truncate text-sm font-medium text-text-primary">
-          {displayName}
+          {menuDisplayName}
         </p>
 
-        {email ? (
+        {!isClientVaultMode &&
+        email ? (
           <p className="truncate text-xs text-text-secondary">
             {email}
+          </p>
+        ) : isClientVaultMode ? (
+          <p className="truncate text-xs text-text-secondary">
+            Realtor preparation workspace
           </p>
         ) : null}
 
@@ -300,14 +340,16 @@ export default function ProfileMenu({
             {effectivePlanLabel}
           </Badge>
 
-          {vaultContextLabel ? (
+          {!isClientVaultMode &&
+          vaultContextLabel ? (
             <Badge variant="accent">
               {vaultContextLabel}
             </Badge>
           ) : null}
         </div>
 
-        {billingManagedByHousehold &&
+        {!isClientVaultMode &&
+        billingManagedByHousehold &&
           !canManageBilling ? (
             <p className="mt-3 text-xs leading-5 text-text-secondary">
               Managed by your Family Plan Admin
@@ -355,7 +397,8 @@ export default function ProfileMenu({
           );
         })}
 
-        {canViewFeature("aiAdvisor") ? (
+        {!isClientVaultMode &&
+        canViewFeature("aiAdvisor") ? (
           <button
             type="button"
             role="menuitem"
@@ -376,7 +419,58 @@ export default function ProfileMenu({
           </button>
         ) : null}
 
-        {!isDemo && user ? (
+        {isClientVaultMode ? (
+          <button
+            type="button"
+            role="menuitem"
+            tabIndex={-1}
+            onClick={async () => {
+              closeMenu();
+
+              await fetch(
+                "/api/realtor/vault-mode/exit",
+                {
+                  method: "POST",
+                }
+              );
+
+              /*
+               * Permissions are cached in sessionStorage.
+               * Clear both stores before returning to My Home.
+               */
+              [
+                window.sessionStorage,
+                window.localStorage,
+              ].forEach((storage) => {
+                Object.keys(storage).forEach(
+                  (key) => {
+                    if (
+                      key.startsWith(
+                        "htv:permissions:"
+                      )
+                    ) {
+                      storage.removeItem(
+                        key
+                      );
+                    }
+                  }
+                );
+              });
+
+              window.location.assign(
+                "/realtor"
+              );
+            }}
+            className="flex w-full items-center gap-2 rounded-[var(--radius-button)] px-3 py-2.5 text-sm text-text-secondary hover:bg-surface-sunken hover:text-text-primary focus-visible:bg-surface-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/25"
+          >
+            <LogOut size={16} />
+            Exit Client Vault
+          </button>
+        ) : null}
+
+        {!isClientVaultMode &&
+        !isDemo &&
+        user ? (
           <button
             type="button"
             role="menuitem"
