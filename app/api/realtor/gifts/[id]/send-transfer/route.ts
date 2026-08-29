@@ -725,11 +725,6 @@ Home Tech Vault`,
       sentTo:
         gift.buyer_email,
 
-      /*
-       * Useful while we're testing.
-       * We can remove this from the response later.
-       */
-      claimUrl,
     });
   } catch (error) {
     console.error(

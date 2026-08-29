@@ -17,7 +17,6 @@ import Alert from "@/components/ui/Alert";
 import Button from "@/components/ui/Button";
 import FormInput from "@/components/ui/FormInput";
 import PasswordInput from "@/components/auth/PasswordInput";
-import { supabase } from "@/lib/supabase";
 import { clearDemoModeStorage } from "@/lib/demo/demoModeStorage";
 
 const realtorBenefits = [
@@ -100,80 +99,53 @@ export default function RealtorSignupPage() {
       setSubmitting(true);
       clearDemoModeStorage();
 
-      const origin =
-        window.location.origin;
-
-      const {
-        data,
-        error,
-      } = await supabase.auth.signUp({
-        email: normalizedEmail,
-        password,
-        options: {
-          emailRedirectTo:
-            `${origin}/auth/callback?next=${encodeURIComponent(
-              "/realtors/setup"
-            )}`,
-          data: {
-            first_name:
-              cleanFirstName,
-            last_name:
-              cleanLastName,
-            full_name:
-              `${cleanFirstName} ${cleanLastName}`.trim(),
-            brokerage_name:
-              brokerageName.trim() ||
-              undefined,
-            license_state:
-              licenseState
-                .trim()
-                .toUpperCase() ||
-              undefined,
-
-            /*
-             * These values help route the user
-             * through Realtor onboarding.
-             *
-             * Actual Realtor authorization is
-             * created server-side after signup.
-             */
-            account_role:
-              "realtor",
-            onboarding_mode:
-              "realtor",
-            platform_access:
-              "realtor",
-            realtor_public_signup:
-              true,
+      const response = await fetch(
+        "/api/realtor/signup",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
           },
-        },
-      });
+          body: JSON.stringify({
+            firstName:
+              cleanFirstName,
+            lastName:
+              cleanLastName,
+            email:
+              normalizedEmail,
+            password,
+            brokerageName:
+              brokerageName.trim(),
+            licenseState:
+              licenseState.trim(),
+          }),
+        }
+      );
 
-      if (error) {
-        throw error;
-      }
+      const payload =
+        (await response.json()) as {
+          success?: boolean;
+          sessionCreated?: boolean;
+          requiresEmailConfirmation?: boolean;
+          error?: string;
+        };
 
       if (
-        data.user &&
-        (data.user.identities?.length ?? 0) ===
-          0
+        !response.ok ||
+        !payload.success
       ) {
         throw new Error(
-          "An account already exists for this email. Sign in instead."
+          payload.error ||
+            "Unable to create your Realtor account."
         );
       }
 
-      /*
-       * If email verification is disabled,
-       * Supabase may give us a session now.
-       */
-      if (
-        data.user &&
-        data.session
-      ) {
+      if (payload.sessionCreated) {
         window.location.assign(
           "/realtors/setup"
         );
+
         return;
       }
 

@@ -1,6 +1,3 @@
-import {
-  randomBytes,
-} from "node:crypto";
 
 import { NextResponse } from "next/server";
 
@@ -163,35 +160,15 @@ export async function POST(
     }
 
     if (!partner) {
-      const suffix =
-        randomBytes(4)
-          .toString("hex")
-          .toUpperCase();
-
-      const {
-        data: createdPartner,
-        error: createPartnerError,
-      } = await admin
-        .from("realtor_partners")
-        .insert({
-          user_id:
-            user.id,
-          referral_code:
-            `REALTOR-${suffix}`,
-          status:
-            "active",
-        })
-        .select(
-          "id, user_id, referral_code, status"
-        )
-        .single();
-
-      if (createPartnerError) {
-        throw createPartnerError;
-      }
-
-      partner =
-        createdPartner;
+      return NextResponse.json(
+        {
+          error:
+            "A verified Realtor account is required to create Client Vaults.",
+        },
+        {
+          status: 403,
+        }
+      );
     }
 
     if (

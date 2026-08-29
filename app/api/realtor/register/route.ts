@@ -9,6 +9,7 @@ import {
 import {
   createAdminClient,
 } from "@/lib/supabase/admin";
+
 import {
   createClient,
 } from "@/lib/supabase/server";
@@ -20,15 +21,17 @@ function cleanText(
   value: unknown,
   maxLength = 160
 ) {
-  if (
-    typeof value !== "string"
-  ) {
-    return "";
-  }
+  return typeof value === "string"
+    ? value.trim().slice(0, maxLength)
+    : "";
+}
 
+function normalizeEmail(
+  value: string | null | undefined
+) {
   return value
-    .trim()
-    .slice(0, maxLength);
+    ?.trim()
+    .toLowerCase() ?? "";
 }
 
 function buildReferralCode() {
@@ -67,67 +70,80 @@ export async function POST() {
       );
     }
 
-    const metadata =
-      (user.user_metadata ??
-        {}) as Record<
-        string,
-        unknown
-      >;
-
-    /*
-     * Metadata helps confirm that this
-     * account entered through the public
-     * Realtor enrollment flow.
-     *
-     * The realtor_partners row below is
-     * still the actual authorization
-     * source of truth.
-     */
-    const realtorSignup =
-      metadata.realtor_public_signup ===
-        true ||
-      metadata.onboarding_mode ===
-        "realtor" ||
-      metadata.account_role ===
-        "realtor";
-
-    if (!realtorSignup) {
-      return NextResponse.json(
-        {
-          error:
-            "This account was not started through Realtor registration.",
-        },
-        {
-          status: 403,
-        }
-      );
-    }
-
     const admin =
       createAdminClient();
 
-    const {
-      data: profile,
-      error: profileLookupError,
-    } = await admin
-      .from("profiles")
-      .select(
-        "is_admin"
-      )
-      .eq(
-        "id",
-        user.id
-      )
-      .maybeSingle();
+    const [
+      profileResult,
+      partnerResult,
+      enrollmentResult,
+    ] = await Promise.all([
+      admin
+        .from("profiles")
+        .select("is_admin")
+        .eq("id", user.id)
+        .maybeSingle(),
 
-    if (profileLookupError) {
-      throw profileLookupError;
+      admin
+        .from(
+          "realtor_partners"
+        )
+        .select(
+          "id, status"
+        )
+        .eq(
+          "user_id",
+          user.id
+        )
+        .maybeSingle(),
+
+      admin
+        .from(
+          "realtor_enrollments"
+        )
+        .select(
+          `
+            id,
+            user_id,
+            email,
+            first_name,
+            last_name,
+            brokerage_name,
+            license_state,
+            status
+          `
+        )
+        .eq(
+          "user_id",
+          user.id
+        )
+        .maybeSingle(),
+    ]);
+
+    if (profileResult.error) {
+      throw profileResult.error;
     }
 
+    if (partnerResult.error) {
+      throw partnerResult.error;
+    }
+
+    if (enrollmentResult.error) {
+      throw enrollmentResult.error;
+    }
+
+    const profile =
+      profileResult.data;
+
+    const existingPartner =
+      partnerResult.data;
+
+    const enrollment =
+      enrollmentResult.data;
+
     /*
-     * Platform admins keep their normal
-     * account behavior and should never
-     * be converted into Realtor-only.
+     * Platform administrators retain their
+     * normal account model.
      */
     if (
       profile?.is_admin === true
@@ -141,61 +157,6 @@ export async function POST() {
           status: 409,
         }
       );
-    }
-
-    const {
-      data: ownedHouseholds,
-      error: householdError,
-    } = await admin
-      .from("households")
-      .select("id")
-      .eq(
-        "owner_id",
-        user.id
-      )
-      .limit(1);
-
-    if (householdError) {
-      throw householdError;
-    }
-
-    if (
-      (ownedHouseholds ?? [])
-        .length > 0
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            "This account already owns a personal Home Tech Vault household. Use a separate email address for a Realtor-only account.",
-        },
-        {
-          status: 409,
-        }
-      );
-    }
-
-    const {
-      data: existingPartner,
-      error:
-        partnerLookupError,
-    } = await admin
-      .from(
-        "realtor_partners"
-      )
-      .select(
-        `
-          id,
-          status
-        `
-      )
-      .eq(
-        "user_id",
-        user.id
-      )
-      .maybeSingle();
-
-    if (partnerLookupError) {
-      throw partnerLookupError;
     }
 
     if (
@@ -213,39 +174,152 @@ export async function POST() {
       );
     }
 
+    /*
+     * If the account does not already possess
+     * a server-created Realtor partner record,
+     * require server-controlled public Realtor
+     * enrollment evidence.
+     *
+     * user_metadata is NOT authorization.
+     */
+    if (!existingPartner) {
+      if (!enrollment) {
+        return NextResponse.json(
+          {
+            error:
+              "This account does not have a valid Realtor enrollment.",
+          },
+          {
+            status: 403,
+          }
+        );
+      }
+
+      if (
+        !["pending", "completed"].includes(
+          enrollment.status
+        )
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              "This Realtor enrollment is no longer active.",
+          },
+          {
+            status: 403,
+          }
+        );
+      }
+
+      if (
+        normalizeEmail(
+          enrollment.email
+        ) !==
+        normalizeEmail(
+          user.email
+        )
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              "The Realtor enrollment email does not match this account.",
+          },
+          {
+            status: 403,
+          }
+        );
+      }
+
+      /*
+       * Public Realtor accounts must remain
+       * separate from an existing Personal Vault.
+       */
+      const {
+        data: ownedHouseholds,
+        error: householdError,
+      } = await admin
+        .from("households")
+        .select("id")
+        .eq(
+          "owner_id",
+          user.id
+        )
+        .limit(1);
+
+      if (householdError) {
+        throw householdError;
+      }
+
+      if (
+        (ownedHouseholds ?? [])
+          .length > 0
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              "This account already owns a personal Home Tech Vault household. Use a separate email address for a Realtor-only account.",
+          },
+          {
+            status: 409,
+          }
+        );
+      }
+    }
+
+    /*
+     * For public enrollment, profile/business
+     * information comes from the protected
+     * enrollment record.
+     *
+     * Existing server-created Realtor partners
+     * may come from the admin invitation flow,
+     * where user_metadata remains display data,
+     * not authorization.
+     */
+    const metadata =
+      (user.user_metadata ??
+        {}) as Record<
+        string,
+        unknown
+      >;
+
     const firstName =
       cleanText(
-        metadata.first_name,
+        enrollment?.first_name ??
+          metadata.first_name,
         80
       );
 
     const lastName =
       cleanText(
-        metadata.last_name,
+        enrollment?.last_name ??
+          metadata.last_name,
         80
       );
 
     const fullName =
-      cleanText(
-        metadata.full_name,
-        160
-      ) ||
       [firstName, lastName]
         .filter(Boolean)
         .join(" ")
         .trim() ||
+      cleanText(
+        metadata.full_name,
+        160
+      ) ||
       user.email ||
       "Realtor";
 
     const brokerageName =
       cleanText(
-        metadata.brokerage_name,
+        enrollment?.brokerage_name ??
+          metadata.brokerage_name,
         160
       ) || null;
 
     const licenseState =
       cleanText(
-        metadata.license_state,
+        enrollment?.license_state ??
+          metadata.license_state,
         40
       ).toUpperCase() ||
       null;
@@ -277,9 +351,9 @@ export async function POST() {
 
       if (partnerCreateError) {
         /*
-         * A simultaneous setup request may
-         * have created it between our lookup
-         * and insert.
+         * Concurrent setup requests may race.
+         * Unique user_id protection makes the
+         * operation idempotent.
          */
         if (
           partnerCreateError.code !==
@@ -347,9 +421,9 @@ export async function POST() {
     }
 
     /*
-     * Canonicalize account metadata only
-     * after server-side Realtor enrollment
-     * succeeds.
+     * Only the trusted server canonicalizes
+     * Realtor metadata after authorization
+     * has succeeded.
      */
     const {
       error:
@@ -361,6 +435,20 @@ export async function POST() {
           {
             user_metadata: {
               ...metadata,
+              first_name:
+                firstName ||
+                undefined,
+              last_name:
+                lastName ||
+                undefined,
+              full_name:
+                fullName,
+              brokerage_name:
+                brokerageName ??
+                undefined,
+              license_state:
+                licenseState ??
+                undefined,
               account_role:
                 "realtor",
               onboarding_mode:
@@ -368,13 +456,9 @@ export async function POST() {
               platform_access:
                 "realtor",
               realtor_public_signup:
-                true,
-              brokerage_name:
-                brokerageName ??
-                undefined,
-              license_state:
-                licenseState ??
-                undefined,
+                Boolean(
+                  enrollment
+                ),
             },
           }
         );
@@ -384,6 +468,42 @@ export async function POST() {
         "[realtor-register] metadata update failed:",
         authMetadataError
       );
+    }
+
+    if (enrollment) {
+      const {
+        error:
+          enrollmentUpdateError,
+      } = await admin
+        .from(
+          "realtor_enrollments"
+        )
+        .update({
+          status:
+            "completed",
+          completed_at:
+            now,
+          updated_at:
+            now,
+        })
+        .eq(
+          "user_id",
+          user.id
+        );
+
+      if (
+        enrollmentUpdateError
+      ) {
+        /*
+         * realtor_partners is authoritative once
+         * successfully created, so don't break
+         * the account over bookkeeping failure.
+         */
+        console.warn(
+          "[realtor-register] enrollment completion update failed:",
+          enrollmentUpdateError
+        );
+      }
     }
 
     return NextResponse.json({
