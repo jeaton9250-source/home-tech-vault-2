@@ -5,7 +5,6 @@ import {
   Laptop,
   LayoutDashboard,
   Radar,
-  Search,
   Settings,
   ShieldCheck,
   Sparkles,
@@ -21,44 +20,51 @@ import type {
   QuickAddItem,
 } from "@/lib/navigation/types";
 
-/** Homeowner-first primary navigation */
+/**
+ * Home Tech Vault primary navigation.
+ *
+ * Keep the top-level experience focused on the homeowner's
+ * mental model instead of exposing every individual module.
+ */
 export const PRIMARY_NAV_ITEMS: PrimaryNavItem[] = [
   {
     label: "Home",
     href: "/dashboard",
+    icon: LayoutDashboard,
     feature: "dashboard",
     activePrefixes: ["/dashboard"],
   },
-
+  {
+    label: "My Home",
+    href: "/home",
+    icon: User,
+    activePrefixes: ["/home"],
+  },
   {
     label: "Devices",
     href: "/devices",
+    icon: Laptop,
     feature: "devices",
     activePrefixes: ["/devices"],
   },
-
-
   {
-    label: "Search",
+    label: "Records",
+    href: "/documents",
+    icon: Upload,
+    feature: "documents",
+    activePrefixes: [
+      "/documents",
+      "/warranties",
+      "/maintenance",
+      "/subscriptions",
+      "/reports",
+    ],
+  },
+  {
+    label: "Ask Your Vault",
     href: "/smart-search",
-    icon: Search,
+    icon: Sparkles,
     activePrefixes: ["/smart-search"],
-  },
-
-  {
-    label: "Home Wi-Fi",
-    href: "/network",
-    icon: Radar,
-    feature: "network",
-    activePrefixes: ["/network"],
-  },
-
-  {
-    label: "Household",
-    href: "/family",
-    icon: Users,
-    feature: "family",
-    activePrefixes: ["/family"],
   },
 ];
 
@@ -68,8 +74,7 @@ export const PROFILE_MENU_ITEMS: ProfileNavItem[] = [
     label: "Control Center",
     href: "/admin",
     icon: LayoutDashboard,
-    description:
-      "Manage the Home Tech Vault platform",
+    description: "Manage the Home Tech Vault platform",
     adminOnly: true,
   },
 
@@ -99,8 +104,6 @@ export const PROFILE_MENU_ITEMS: ProfileNavItem[] = [
     href: "/faq",
     icon: HelpCircle,
   },
-
-
 ];
 
 /** Additional routes preserved from former dropdowns */
@@ -120,8 +123,7 @@ export const SECONDARY_ROUTE_ITEMS: ProfileNavItem[] = [
   },
 
   {
-    label:
-      "Review Connector Discovery",
+    label: "Review Connector Discovery",
     href: "/network/discovery",
     icon: Radar,
     feature: "networkDiscover",
@@ -140,6 +142,12 @@ export const SECONDARY_ROUTE_ITEMS: ProfileNavItem[] = [
     icon: Wrench,
     feature: "maintenance",
   },
+  {
+    label: "Warranties",
+    href: "/warranties",
+    icon: ShieldCheck,
+    feature: "warranties",
+  },
 
   {
     label: "Documents",
@@ -147,12 +155,24 @@ export const SECONDARY_ROUTE_ITEMS: ProfileNavItem[] = [
     icon: Upload,
     feature: "documents",
   },
+  {
+    label: "Subscriptions",
+    href: "/subscriptions",
+    icon: CreditCard,
+    feature: "subscriptions",
+  },
 
   {
     label: "Home Wi-Fi",
     href: "/network",
     icon: Radar,
     feature: "network",
+  },
+  {
+    label: "Household",
+    href: "/family",
+    icon: Users,
+    feature: "family",
   },
 
   {
@@ -167,8 +187,7 @@ export const QUICK_ADD_ITEMS: QuickAddItem[] = [
     label: "Add Device",
     href: "/devices/add",
     icon: Laptop,
-    description:
-      "Record a new device",
+    description: "Record a new device",
     feature: "devices",
     actionFeature: "devices",
   },
@@ -177,8 +196,7 @@ export const QUICK_ADD_ITEMS: QuickAddItem[] = [
     label: "Upload Document",
     href: "/documents/upload",
     icon: Upload,
-    description:
-      "Attach receipts and files",
+    description: "Attach receipts and files",
     feature: "documents",
     actionFeature: "documents",
   },
@@ -187,8 +205,7 @@ export const QUICK_ADD_ITEMS: QuickAddItem[] = [
     label: "Add Maintenance",
     href: "/maintenance/new",
     icon: Wrench,
-    description:
-      "Schedule service or upkeep",
+    description: "Schedule service or upkeep",
     feature: "maintenance",
     actionFeature: "maintenance",
   },
@@ -197,8 +214,7 @@ export const QUICK_ADD_ITEMS: QuickAddItem[] = [
     label: "Add Warranty",
     href: "/devices/add",
     icon: ShieldCheck,
-    description:
-      "Record warranty coverage",
+    description: "Record warranty coverage",
     feature: "warranties",
     actionFeature: "devices",
   },
@@ -207,11 +223,9 @@ export const QUICK_ADD_ITEMS: QuickAddItem[] = [
     label: "Add Subscription",
     href: "/subscriptions/add",
     icon: CreditCard,
-    description:
-      "Track a recurring service",
+    description: "Track a recurring service",
     feature: "subscriptions",
-    actionFeature:
-      "subscriptions",
+    actionFeature: "subscriptions",
   },
 ];
 
@@ -219,6 +233,6 @@ export const QUICK_ADD_ITEMS: QuickAddItem[] = [
  * Mobile sheet uses the same core
  * navigation as desktop.
  */
-export const MOBILE_NAV_ITEMS: Array<
-  PrimaryNavItem | ProfileNavItem
-> = [...PRIMARY_NAV_ITEMS];
+export const MOBILE_NAV_ITEMS: Array<PrimaryNavItem | ProfileNavItem> = [
+  ...PRIMARY_NAV_ITEMS,
+];

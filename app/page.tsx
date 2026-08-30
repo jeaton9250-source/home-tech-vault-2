@@ -11,10 +11,9 @@ import {
   socialTwitter,
 } from "@/lib/marketing/socialMetadata";
 
-const title =
-  "Home Tech Vault | Your Entire Home. One Organized Vault.";
+const title = "Home Tech Vault | The Digital Memory of Your Home";
 const description =
-  "Organize your devices, appliances, receipts, warranties, manuals, maintenance records, important documents, and home technology in one secure Home Tech Vault.";
+  "Home Tech Vault is the digital memory of your home — connecting appliances, receipts, warranties, manuals, maintenance records, documents, and home technology in one private place.";
 
 export const metadata: Metadata = {
   title,
@@ -35,6 +34,8 @@ export const metadata: Metadata = {
     "device inventory",
     "home technology organizer",
     "digital home vault",
+    "digital home record",
+    "digital home binder",
     "home tech vault",
   ],
   openGraph: {

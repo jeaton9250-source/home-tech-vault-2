@@ -20,8 +20,9 @@ export default function LandingFooter() {
         <div>
           <Logo collapsed />
           <p className="mt-3 max-w-md text-sm leading-6 text-text-muted">
-            The home inventory and warranty tracker built for the technology you
-            rely on every day.
+            The digital memory of your home. Keep appliances, receipts,
+            warranties, manuals, maintenance and the useful history around them
+            connected in one private Vault.
           </p>
         </div>
         <nav className="flex flex-wrap gap-x-5 gap-y-3" aria-label="Footer">

@@ -1,13 +1,8 @@
 "use client";
 
-import {
-  ShieldCheck,
-  Sparkles,
-} from "lucide-react";
+import { ShieldCheck, Sparkles } from "lucide-react";
 
-import {
-  formatDisplayDate,
-} from "@/lib/home-health/greeting";
+import { formatDisplayDate } from "@/lib/home-health/greeting";
 
 import { usePermissions } from "@/hooks/usePermissions";
 import { MORGAN_HOUSEHOLD } from "@/lib/demo/morganHousehold";
@@ -30,9 +25,8 @@ export default function DashboardHero({
   const summary =
     healthSummary?.trim() ||
     (score !== null
-      ? "Your home technology is organized and ready. Important information is easy to find when you need it."
-      : "Add your first device to begin building your Home Tech Vault.");
-
+      ? "Your home record is organized and ready. Important details are easy to find when you need them."
+      : "Add your first device to start building the memory of your home.");
 
   return (
     <section
@@ -60,31 +54,21 @@ export default function DashboardHero({
         <div className="max-w-3xl">
           <div className="flex flex-wrap items-center gap-2">
             <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-white/45">
-              <Sparkles
-                size={12}
-                className="text-[#718d4f]"
-              />
+              <Sparkles size={12} className="text-[#718d4f]" />
 
               {formatDisplayDate()}
             </span>
 
             <span className="inline-flex items-center gap-2 rounded-full border border-[#718d4f]/25 bg-[#718d4f]/10 px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-[#718d4f]">
-              <ShieldCheck
-                size={12}
-              />
-
+              <ShieldCheck size={12} />
               Home Pulse
             </span>
           </div>
 
-
           <h1 className="mt-4 max-w-2xl font-serif text-3xl font-medium leading-[1.03] tracking-[-0.045em] text-[#f5f1e8] sm:text-4xl lg:text-[2.8rem]">
             {firstName}&apos;s home,
             <br />
-
-            <span className="text-[#718d4f]">
-              at a glance.
-            </span>
+            <span className="text-[#718d4f]">remembered.</span>
           </h1>
 
           <p className="mt-5 max-w-2xl text-sm leading-7 text-[#aeb8c1] sm:text-base">
@@ -92,13 +76,10 @@ export default function DashboardHero({
           </p>
 
           <div className="mt-6 flex items-center gap-2 text-xs font-medium text-[#91aa72]">
-            <ShieldCheck
-              size={15}
-              aria-hidden
-            />
+            <ShieldCheck size={15} aria-hidden />
 
             <span>
-              Important details are organized and ready when you need them.
+              The useful history of your home stays connected over time.
             </span>
           </div>
         </div>
@@ -109,7 +90,7 @@ export default function DashboardHero({
           {score !== null ? (
             <div className="relative rounded-[26px] border border-white/10 bg-white/[0.045] p-5 backdrop-blur-sm">
               <p className="mb-4 text-center text-[9px] font-semibold uppercase tracking-[0.16em] text-white/30">
-                Vault Readiness
+                Home Readiness
               </p>
 
               <CircularProgressRing
@@ -132,7 +113,7 @@ export default function DashboardHero({
 
               <div className="mt-4 border-t border-white/10 pt-4 text-center">
                 <p className="text-[10px] leading-5 text-white/35">
-                  Overall home technology readiness
+                  How complete your home record is
                 </p>
               </div>
             </div>
@@ -157,21 +138,11 @@ export default function DashboardHero({
       {/* BOTTOM STATUS STRIP */}
 
       <div className="relative mt-8 grid border-t border-white/10 pt-5 sm:grid-cols-3">
-        <HeroStatus
-          label="Devices"
-          value="Organized"
-        />
+        <HeroStatus label="Devices" value="Organized" />
 
-        <HeroStatus
-          label="Records"
-          value="Available"
-        />
+        <HeroStatus label="Records" value="Available" />
 
-        <HeroStatus
-          label="Home Pulse"
-          value="Ready"
-          last
-        />
+        <HeroStatus label="Home Pulse" value="Ready" last />
       </div>
     </section>
   );
@@ -189,9 +160,7 @@ function HeroStatus({
   return (
     <div
       className={`py-3 sm:px-5 sm:py-0 ${
-        last
-          ? ""
-          : "border-b border-white/10 sm:border-b-0 sm:border-r"
+        last ? "" : "border-b border-white/10 sm:border-b-0 sm:border-r"
       }`}
     >
       <p className="text-[8px] font-semibold uppercase tracking-[0.14em] text-white/25">
@@ -201,9 +170,7 @@ function HeroStatus({
       <div className="mt-1.5 flex items-center gap-2">
         <span className="h-1.5 w-1.5 rounded-full bg-[#718d4f]" />
 
-        <p className="text-xs font-medium text-[#dfe5e8]">
-          {value}
-        </p>
+        <p className="text-xs font-medium text-[#dfe5e8]">{value}</p>
       </div>
     </div>
   );

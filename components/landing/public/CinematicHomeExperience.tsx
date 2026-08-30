@@ -35,38 +35,22 @@ type Props = {
   isSignedIn: boolean;
 };
 
-const ease = [
-  0.22,
-  1,
-  0.36,
-  1,
-] as const;
+const ease = [0.22, 1, 0.36, 1] as const;
 
-export default function CinematicHomeExperience({
-  isSignedIn,
-}: Props) {
-  const reduceMotion =
-    useReducedMotion();
+export default function CinematicHomeExperience({ isSignedIn }: Props) {
+  const reduceMotion = useReducedMotion();
 
-  const {
-    scrollYProgress,
-  } = useScroll();
+  const { scrollYProgress } = useScroll();
 
   const ambientY = useTransform(
     scrollYProgress,
     [0, 1],
-    reduceMotion
-      ? [0, 0]
-      : [0, 260]
+    reduceMotion ? [0, 0] : [0, 260],
   );
 
-  const primaryHref = isSignedIn
-    ? "/dashboard"
-    : MARKETING_ROUTES.signup;
+  const primaryHref = isSignedIn ? "/dashboard" : MARKETING_ROUTES.signup;
 
-  const primaryLabel = isSignedIn
-    ? "Open My Vault"
-    : "Start My Home Vault";
+  const primaryLabel = isSignedIn ? "Open My Vault" : "Start My Home Vault";
 
   return (
     <>
@@ -86,7 +70,6 @@ export default function CinematicHomeExperience({
 
         <div className="mx-auto max-w-[1480px] px-5 pb-24 pt-20 md:px-8 md:pb-32 md:pt-28 lg:px-12 lg:pb-36">
           <div className="grid items-center gap-16 lg:grid-cols-[0.82fr_1.18fr] lg:gap-20 xl:gap-24">
-
             {/* HERO COPY */}
             <motion.div
               initial={{
@@ -98,67 +81,49 @@ export default function CinematicHomeExperience({
                 y: 0,
               }}
               transition={{
-                duration: reduceMotion
-                  ? 0
-                  : 0.85,
+                duration: reduceMotion ? 0 : 0.85,
                 ease,
               }}
               className="text-center lg:text-left"
             >
               <Eyebrow>
                 <Home size={13} />
-                A memory for your home
+                The digital memory of your home
               </Eyebrow>
 
               <h1 className="mx-auto mt-8 max-w-[720px] font-serif text-[clamp(54px,6.2vw,96px)] font-medium leading-[0.91] tracking-[-0.065em] text-[#17212a] lg:mx-0">
-                Your home has
+                Your home,
                 <br />
-                a lot{" "}
-                <span className="text-[#617c43]">
-                  to remember.
-                </span>
+                <span className="text-[#617c43]">remembered.</span>
               </h1>
 
               <p className="mx-auto mt-8 max-w-[600px] text-[18px] leading-[1.75] text-[#707a75] lg:mx-0 lg:text-[19px]">
-                Receipts. Warranties.
-                Manuals. Model numbers.
-                Maintenance. Home Wi-Fi.
-                Keep the details you&apos;ll
-                want later in one thoughtful
-                place.
+                Every appliance. Every warranty. Every receipt. Every manual.
+                Every service date. Keep the useful history of your home
+                connected and ready when you need it.
               </p>
 
               <div className="mt-10 flex flex-wrap justify-center gap-3 lg:justify-start">
-                <PrimaryLink
-                  href={primaryHref}
-                >
+                <PrimaryLink href={primaryHref}>
                   {primaryLabel}
                   <ArrowRight size={16} />
                 </PrimaryLink>
 
-                <SecondaryLink
-                  href={MARKETING_ROUTES.demo}
-                >
-                  Explore the Demo
+                <SecondaryLink href={MARKETING_ROUTES.demo}>
+                  Explore a Home
                 </SecondaryLink>
               </div>
 
               <div className="mt-8 flex flex-wrap justify-center gap-x-5 gap-y-2 text-[12px] text-[#89918d] lg:justify-start">
-                <span>
-                  Free to start
-                </span>
+                <span>Free to start</span>
 
                 <span>•</span>
 
-                <span>
-                  No credit card
-                </span>
+                <span>No credit card</span>
 
                 <span>•</span>
 
-                <span>
-                  8 devices included
-                </span>
+                <span>8 devices included</span>
               </div>
             </motion.div>
 
@@ -175,12 +140,8 @@ export default function CinematicHomeExperience({
                 scale: 1,
               }}
               transition={{
-                duration: reduceMotion
-                  ? 0
-                  : 1,
-                delay: reduceMotion
-                  ? 0
-                  : 0.12,
+                duration: reduceMotion ? 0 : 1,
+                delay: reduceMotion ? 0 : 0.12,
                 ease,
               }}
               className="relative"
@@ -232,21 +193,13 @@ export default function CinematicHomeExperience({
 
       <section className="border-y border-[#17212a]/8 bg-[#fffdf8] px-5 py-6 md:px-8 lg:px-12">
         <div className="mx-auto grid max-w-[1180px] gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <TrustItem>
-            Free to start
-          </TrustItem>
+          <TrustItem>Free to start</TrustItem>
 
-          <TrustItem>
-            Connector included
-          </TrustItem>
+          <TrustItem>Built around your home</TrustItem>
 
-          <TrustItem>
-            Private household Vault
-          </TrustItem>
+          <TrustItem>Private household record</TrustItem>
 
-          <TrustItem>
-            Built for homeowners
-          </TrustItem>
+          <TrustItem>Grows with your home</TrustItem>
         </div>
       </section>
 
@@ -258,21 +211,20 @@ export default function CinematicHomeExperience({
         <div className="mx-auto max-w-[1180px]">
           <Reveal>
             <p className="text-center text-[10px] font-semibold uppercase tracking-[0.22em] text-[#718d4f]">
-              The idea is simple
+              A home creates a lifetime of details
             </p>
 
             <h2 className="mx-auto mt-6 max-w-[1020px] text-center font-serif text-[clamp(48px,6vw,82px)] font-medium leading-[0.97] tracking-[-0.055em] text-[#17212a]">
-              Your home should remember
-              the things you shouldn&apos;t
-              have to.
+              Your house creates thousands of details.
+              <br />
+              You shouldn&apos;t have to remember them.
             </h2>
 
             <p className="mx-auto mt-8 max-w-[680px] text-center text-lg leading-8 text-[#747e79]">
-              When something breaks,
-              expires, needs service or
-              gets replaced, the useful
-              information should already
-              be there.
+              The model number behind the refrigerator. The receipt buried in
+              your inbox. The warranty you forgot was active. The service date
+              nobody wrote down. Home Tech Vault gives those details one place
+              to live.
             </p>
           </Reveal>
 
@@ -280,22 +232,22 @@ export default function CinematicHomeExperience({
             <MomentCard
               icon={Wrench}
               eyebrow="Something breaks"
-              title="Start with the answer, not the search."
-              copy="Model number, receipt, warranty and manual should already belong together."
+              title="The answer should already be there."
+              copy="Model number, receipt, warranty, manual and history stay connected to the thing they belong to."
             />
 
             <MomentCard
               icon={ShieldCheck}
               eyebrow="Something needs service"
-              title="Keep the history with the thing."
+              title="Let your home build a history."
               copy="Service dates, maintenance notes and supporting records stay connected over time."
             />
 
             <MomentCard
               icon={Home}
               eyebrow="Someday you move"
-              title="Your home has a record worth keeping."
-              copy="Instead of rebuilding years of information from memory, the useful pieces are already organized."
+              title="Pass on the home, not the guesswork."
+              copy="Keep the useful history organized so the next chapter does not have to start from scratch."
             />
           </div>
         </div>
@@ -308,45 +260,34 @@ export default function CinematicHomeExperience({
       <section className="bg-[#f2eee5] px-5 py-28 md:px-8 md:py-40 lg:px-12">
         <div className="mx-auto max-w-[1220px]">
           <div className="grid gap-16 lg:grid-cols-[0.78fr_1.22fr] lg:gap-20">
-
             {/* STICKY COPY */}
             <div>
               <div className="lg:sticky lg:top-28">
                 <Reveal>
                   <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#617c43]">
-                    One device.
-                    One complete story.
+                    One thing. Everything around it.
                   </p>
 
                   <h2 className="mt-6 max-w-[550px] font-serif text-[clamp(44px,5vw,68px)] font-medium leading-[0.98] tracking-[-0.05em] text-[#17212a]">
-                    Keep more than
-                    a list of what
-                    you own.
+                    Don&apos;t just store what you own.
+                    <br />
+                    Remember its story.
                   </h2>
 
                   <p className="mt-7 max-w-[540px] text-lg leading-8 text-[#737d78]">
-                    A useful home record
-                    remembers the information
-                    around the object, not just
-                    the object itself.
+                    A useful home record connects the product to its purchase,
+                    protection, documents, service history and the details you
+                    will need later.
                   </p>
 
                   <div className="mt-9 space-y-3">
-                    <CheckLine>
-                      Purchase information
-                    </CheckLine>
+                    <CheckLine>Purchase information</CheckLine>
 
-                    <CheckLine>
-                      Warranty coverage
-                    </CheckLine>
+                    <CheckLine>Warranty coverage</CheckLine>
 
-                    <CheckLine>
-                      Manuals and documents
-                    </CheckLine>
+                    <CheckLine>Manuals and documents</CheckLine>
 
-                    <CheckLine>
-                      Maintenance history
-                    </CheckLine>
+                    <CheckLine>Maintenance history</CheckLine>
                   </div>
                 </Reveal>
               </div>
@@ -404,16 +345,15 @@ export default function CinematicHomeExperience({
             </p>
 
             <h2 className="mt-7 font-serif text-[clamp(54px,7vw,94px)] font-medium leading-[0.92] tracking-[-0.06em]">
-              Less searching.
+              Your home knows
               <br />
-              More knowing.
+              more than you think.
             </h2>
 
             <p className="mx-auto mt-8 max-w-[650px] text-lg leading-8 text-white/55">
-              The best organizer is the
-              one that disappears until
-              the exact moment you need
-              what it remembered.
+              Home Tech Vault turns scattered household information into
+              something far more useful: a living record you can search,
+              understand and build on over time.
             </p>
           </div>
         </Reveal>
@@ -426,7 +366,6 @@ export default function CinematicHomeExperience({
       <section className="bg-[#fffdf8] px-5 py-28 md:px-8 md:py-40 lg:px-12">
         <div className="mx-auto max-w-[1200px]">
           <div className="grid gap-16 lg:grid-cols-[0.88fr_1.12fr] lg:items-center">
-
             {/* COPY */}
             <Reveal>
               <div>
@@ -439,37 +378,23 @@ export default function CinematicHomeExperience({
                 </div>
 
                 <h2 className="mt-7 max-w-[590px] font-serif text-[clamp(44px,5vw,70px)] font-medium leading-[0.99] tracking-[-0.05em] text-[#17212a]">
-                  Your network already
-                  knows what is home.
+                  Your home can help build its own memory.
                 </h2>
 
                 <p className="mt-7 max-w-[560px] text-lg leading-8 text-[#747e79]">
-                  The Home Tech Vault
-                  Connector can help discover
-                  devices already connected to
-                  your home, making setup
-                  dramatically easier.
+                  Home Wi-Fi discovery helps identify technology already living
+                  on your network, reducing setup work and helping your Vault
+                  take shape faster.
                 </p>
 
                 <div className="mt-9 space-y-3">
-                  <CheckLine>
-                    Manual discovery included
-                    on Free
-                  </CheckLine>
+                  <CheckLine>Manual discovery included on Free</CheckLine>
 
-                  <CheckLine>
-                    One Connector included
-                    on Free
-                  </CheckLine>
+                  <CheckLine>One Connector included on Free</CheckLine>
 
-                  <CheckLine>
-                    You choose what gets saved
-                  </CheckLine>
+                  <CheckLine>You choose what gets saved</CheckLine>
 
-                  <CheckLine>
-                    Automatic monitoring on
-                    upgraded plans
-                  </CheckLine>
+                  <CheckLine>Automatic monitoring on upgraded plans</CheckLine>
                 </div>
 
                 <Link
@@ -477,7 +402,6 @@ export default function CinematicHomeExperience({
                   className="group mt-9 inline-flex items-center gap-2 text-sm font-semibold text-[#183047]"
                 >
                   Explore Home Wi-Fi
-
                   <ArrowRight
                     size={15}
                     className="transition-transform duration-300 group-hover:translate-x-1"
@@ -505,7 +429,7 @@ export default function CinematicHomeExperience({
                 <div className="flex items-start justify-between gap-5">
                   <div>
                     <p className="text-[9px] font-semibold uppercase tracking-[0.19em] text-[#718d4f]">
-                      Network discovery
+                      Home discovery
                     </p>
 
                     <h3 className="mt-3 font-serif text-3xl tracking-[-0.04em] text-[#17212a]">
@@ -546,22 +470,16 @@ export default function CinematicHomeExperience({
 
                 <div className="mt-6 rounded-[20px] bg-[#e8eedf] p-5">
                   <div className="flex items-center gap-2">
-                    <Sparkles
-                      size={15}
-                      className="text-[#617c43]"
-                    />
+                    <Sparkles size={15} className="text-[#617c43]" />
 
                     <p className="text-xs font-semibold text-[#4f633b]">
-                      Review. Confirm. Save.
+                      Found. Reviewed. Remembered.
                     </p>
                   </div>
 
                   <p className="mt-2 text-xs leading-5 text-[#6d7769]">
-                    Home Tech Vault can
-                    help identify what is
-                    on your network.
-                    You stay in control
-                    of what enters your Vault.
+                    Home Tech Vault can help identify what is on your network.
+                    You stay in control of what enters your Vault.
                   </p>
                 </div>
               </div>
@@ -585,23 +503,17 @@ export default function CinematicHomeExperience({
 
                 <div>
                   <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-[#718d4f]">
-                    Your home.
-                    Your information.
+                    Your home. Your memory.
                   </p>
 
                   <h2 className="mt-3 max-w-[760px] font-serif text-3xl tracking-[-0.04em] text-[#17212a] sm:text-4xl">
-                    Organization should not
-                    come at the expense
-                    of control.
+                    Your home&apos;s record should stay under your control.
                   </h2>
 
                   <p className="mt-4 max-w-[760px] text-[15px] leading-7 text-[#737d78]">
-                    Home Tech Vault is built
-                    around keeping household
-                    records together while
-                    letting you decide what
-                    belongs in your Vault
-                    and who can access it.
+                    Home Tech Vault keeps household records together while
+                    letting you decide what belongs in your Vault and who gets
+                    access to it.
                   </p>
                 </div>
               </div>
@@ -636,29 +548,21 @@ export default function CinematicHomeExperience({
             <h2 className="mt-8 font-serif text-[clamp(54px,7vw,92px)] font-medium leading-[0.93] tracking-[-0.06em] text-[#17212a]">
               Give your home
               <br />
-              <span className="text-[#617c43]">
-                a memory.
-              </span>
+              <span className="text-[#617c43]">a memory.</span>
             </h2>
 
             <p className="mx-auto mt-8 max-w-[620px] text-lg leading-8 text-[#747e79]">
-              Start with one device.
-              One receipt. One warranty.
-              Your Vault grows naturally
-              with your home.
+              Start with one device. One receipt. One warranty. Your Vault grows
+              naturally with your home.
             </p>
 
-            <PrimaryLink
-              href={primaryHref}
-              className="mt-10"
-            >
+            <PrimaryLink href={primaryHref} className="mt-10">
               {primaryLabel}
               <ArrowRight size={16} />
             </PrimaryLink>
 
             <p className="mt-5 text-xs text-[#949b97]">
-              Free to start ·
-              No credit card required
+              Free to start · No credit card required
             </p>
           </div>
         </Reveal>
@@ -671,21 +575,14 @@ export default function CinematicHomeExperience({
 /* SMALL COMPONENTS */
 /* ====================================================== */
 
-function Reveal({
-  children,
-}: {
-  children: ReactNode;
-}) {
-  const reduceMotion =
-    useReducedMotion();
+function Reveal({ children }: { children: ReactNode }) {
+  const reduceMotion = useReducedMotion();
 
   return (
     <motion.div
       initial={{
         opacity: 0,
-        y: reduceMotion
-          ? 0
-          : 34,
+        y: reduceMotion ? 0 : 34,
       }}
       whileInView={{
         opacity: 1,
@@ -696,9 +593,7 @@ function Reveal({
         amount: 0.18,
       }}
       transition={{
-        duration: reduceMotion
-          ? 0
-          : 0.75,
+        duration: reduceMotion ? 0 : 0.75,
         ease,
       }}
     >
@@ -707,11 +602,7 @@ function Reveal({
   );
 }
 
-function Eyebrow({
-  children,
-}: {
-  children: ReactNode;
-}) {
+function Eyebrow({ children }: { children: ReactNode }) {
   return (
     <div className="inline-flex items-center gap-2 rounded-full border border-[#183047]/10 bg-white/70 px-4 py-2 text-[#617c43] shadow-[0_10px_40px_-26px_rgba(24,48,71,0.35)] backdrop-blur-xl">
       <span className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em]">
@@ -770,17 +661,10 @@ function FlowDivider() {
   );
 }
 
-function TrustItem({
-  children,
-}: {
-  children: ReactNode;
-}) {
+function TrustItem({ children }: { children: ReactNode }) {
   return (
     <div className="flex items-center justify-center gap-2 text-center text-sm font-medium text-[#68726d]">
-      <Check
-        size={14}
-        className="shrink-0 text-[#718d4f]"
-      />
+      <Check size={14} className="shrink-0 text-[#718d4f]" />
 
       {children}
     </div>
@@ -825,13 +709,9 @@ function FloatingInfoCard({
         {eyebrow}
       </p>
 
-      <p className="mt-1 text-sm font-semibold text-[#183047]">
-        {title}
-      </p>
+      <p className="mt-1 text-sm font-semibold text-[#183047]">{title}</p>
 
-      <p className="mt-1 text-xs text-[#8b938f]">
-        {detail}
-      </p>
+      <p className="mt-1 text-xs text-[#8b938f]">{detail}</p>
     </motion.div>
   );
 }
@@ -847,8 +727,7 @@ function MomentCard({
   title: string;
   copy: string;
 }) {
-  const reduceMotion =
-    useReducedMotion();
+  const reduceMotion = useReducedMotion();
 
   return (
     <motion.article
@@ -877,16 +756,13 @@ function MomentCard({
         {title}
       </h3>
 
-      <p className="mt-4 text-[15px] leading-7 text-[#747e79]">
-        {copy}
-      </p>
+      <p className="mt-4 text-[15px] leading-7 text-[#747e79]">{copy}</p>
     </motion.article>
   );
 }
 
 function DeviceRecord() {
-  const reduceMotion =
-    useReducedMotion();
+  const reduceMotion = useReducedMotion();
 
   return (
     <motion.div
@@ -913,9 +789,7 @@ function DeviceRecord() {
             Samsung QN90D
           </h3>
 
-          <p className="mt-2 text-sm text-[#87908b]">
-            Television · Demo Home
-          </p>
+          <p className="mt-2 text-sm text-[#87908b]">Television · Demo Home</p>
         </div>
 
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#edf2e7] text-[#617c43]">
@@ -924,37 +798,19 @@ function DeviceRecord() {
       </div>
 
       <div className="mt-10 grid gap-3 sm:grid-cols-2">
-        <RecordCell
-          label="Model"
-          value="QN90D"
-        />
+        <RecordCell label="Model" value="QN90D" />
 
-        <RecordCell
-          label="Purchased"
-          value="Mar 14, 2026"
-        />
+        <RecordCell label="Purchased" value="Mar 14, 2026" />
 
-        <RecordCell
-          label="Warranty"
-          value="Active"
-        />
+        <RecordCell label="Warranty" value="Active" />
 
-        <RecordCell
-          label="Location"
-          value="Living Room"
-        />
+        <RecordCell label="Location" value="Living Room" />
       </div>
     </motion.div>
   );
 }
 
-function RecordCell({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
+function RecordCell({ label, value }: { label: string; value: string }) {
   return (
     <motion.div
       whileHover={{
@@ -966,9 +822,7 @@ function RecordCell({
         {label}
       </p>
 
-      <p className="mt-1 text-sm font-semibold text-[#183047]">
-        {value}
-      </p>
+      <p className="mt-1 text-sm font-semibold text-[#183047]">{value}</p>
     </motion.div>
   );
 }
@@ -984,16 +838,13 @@ function FloatingRecord({
   title: string;
   copy: string;
 }) {
-  const reduceMotion =
-    useReducedMotion();
+  const reduceMotion = useReducedMotion();
 
   return (
     <motion.div
       initial={{
         opacity: 0,
-        y: reduceMotion
-          ? 0
-          : 28,
+        y: reduceMotion ? 0 : 28,
       }}
       whileInView={{
         opacity: 1,
@@ -1026,46 +877,29 @@ function FloatingRecord({
             {eyebrow}
           </p>
 
-          <p className="mt-2 text-base font-semibold text-[#183047]">
-            {title}
-          </p>
+          <p className="mt-2 text-base font-semibold text-[#183047]">{title}</p>
 
-          <p className="mt-2 text-sm leading-6 text-[#7a847f]">
-            {copy}
-          </p>
+          <p className="mt-2 text-sm leading-6 text-[#7a847f]">{copy}</p>
         </div>
       </div>
     </motion.div>
   );
 }
 
-function CheckLine({
-  children,
-}: {
-  children: ReactNode;
-}) {
+function CheckLine({ children }: { children: ReactNode }) {
   return (
     <div className="flex items-start gap-3">
       <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#718d4f]/10 text-[#617c43]">
         <Check size={12} />
       </div>
 
-      <span className="text-sm leading-6 text-[#68736d]">
-        {children}
-      </span>
+      <span className="text-sm leading-6 text-[#68736d]">{children}</span>
     </div>
   );
 }
 
-function DeviceRow({
-  title,
-  detail,
-}: {
-  title: string;
-  detail: string;
-}) {
-  const reduceMotion =
-    useReducedMotion();
+function DeviceRow({ title, detail }: { title: string; detail: string }) {
+  const reduceMotion = useReducedMotion();
 
   return (
     <motion.div
@@ -1087,19 +921,12 @@ function DeviceRow({
       </div>
 
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold text-[#183047]">
-          {title}
-        </p>
+        <p className="truncate text-sm font-semibold text-[#183047]">{title}</p>
 
-        <p className="mt-0.5 text-xs text-[#89928d]">
-          {detail}
-        </p>
+        <p className="mt-0.5 text-xs text-[#89928d]">{detail}</p>
       </div>
 
-      <Check
-        size={15}
-        className="text-[#718d4f]"
-      />
+      <Check size={15} className="text-[#718d4f]" />
     </motion.div>
   );
 }

@@ -19,13 +19,10 @@ type RoomCardProps = {
   devices: RoomDevice[];
 };
 
-export default function RoomCard({
-  roomName,
-  devices,
-}: RoomCardProps) {
+export default function RoomCard({ roomName, devices }: RoomCardProps) {
   const totalValue = devices.reduce(
     (total, device) => total + Number(device.purchase_price || 0),
-    0
+    0,
   );
 
   return (
@@ -36,7 +33,7 @@ export default function RoomCard({
             <MapPin size={17} />
 
             <p className="text-xs font-semibold uppercase tracking-[0.2em]">
-              Room
+              In your home
             </p>
           </div>
 
@@ -45,11 +42,11 @@ export default function RoomCard({
           </h2>
 
           <p className="mt-1 text-sm text-text-secondary">
-            {devices.length} device{devices.length === 1 ? "" : "s"} ·{" "}
-            ${totalValue.toLocaleString(undefined, {
+            {devices.length} device{devices.length === 1 ? "" : "s"} · $
+            {totalValue.toLocaleString(undefined, {
               maximumFractionDigits: 0,
             })}{" "}
-            protected
+            recorded
           </p>
         </div>
       </div>

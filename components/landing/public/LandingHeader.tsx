@@ -3,12 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  ArrowRight,
-  Menu,
-  ShieldCheck,
-  X,
-} from "lucide-react";
+import { ArrowRight, Menu, ShieldCheck, X } from "lucide-react";
 
 import { MARKETING_ROUTES } from "@/lib/marketing/routes";
 
@@ -18,11 +13,11 @@ type LandingHeaderProps = {
 
 const mainNav = [
   {
-    label: "Features",
+    label: "What It Remembers",
     href: "/features",
   },
   {
-    label: "Demo",
+    label: "Explore",
     href: "/demo",
   },
   {
@@ -36,13 +31,10 @@ export default function LandingHeader({
 }: LandingHeaderProps) {
   const pathname = usePathname();
 
-  const [mobileOpen, setMobileOpen] =
-    useState(false);
-
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const isRealtorMarketing =
-    pathname === "/realtors" ||
-    pathname.startsWith("/realtors/");
+    pathname === "/realtors" || pathname.startsWith("/realtors/");
 
   const primaryHref = isSignedIn
     ? "/dashboard"
@@ -54,17 +46,14 @@ export default function LandingHeader({
     ? "Open My Vault"
     : isRealtorMarketing
       ? "Realtor Sign Up"
-      : "Start Free";
+      : "Start My Home Vault";
 
   const isActive = (href: string) => {
     if (href === "/") {
       return pathname === "/";
     }
 
-    return (
-      pathname === href ||
-      pathname.startsWith(`${href}/`)
-    );
+    return pathname === href || pathname.startsWith(`${href}/`);
   };
 
   return (
@@ -76,11 +65,7 @@ export default function LandingHeader({
           className="flex shrink-0 items-center gap-3"
         >
           <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#718d4f]/40 bg-[#718d4f]/10 text-[#88a761]">
-            <ShieldCheck
-              size={20}
-              strokeWidth={1.7}
-              aria-hidden
-            />
+            <ShieldCheck size={20} strokeWidth={1.7} aria-hidden />
           </div>
 
           <div className="leading-none">
@@ -121,9 +106,7 @@ export default function LandingHeader({
             href={MARKETING_ROUTES.pricing}
             className={[
               "whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-              isActive(
-                MARKETING_ROUTES.pricing
-              )
+              isActive(MARKETING_ROUTES.pricing)
                 ? "bg-white/10 text-white"
                 : "text-[#c4c9cf] hover:bg-white/5 hover:text-white",
             ].join(" ")}
@@ -140,7 +123,7 @@ export default function LandingHeader({
                 : "text-[#c4c9cf] hover:bg-white/5 hover:text-white",
             ].join(" ")}
           >
-            About the Founder
+            Our Story
           </Link>
         </nav>
 
@@ -160,49 +143,32 @@ export default function LandingHeader({
           >
             {primaryLabel}
 
-            <ArrowRight
-              size={15}
-              aria-hidden
-            />
+            <ArrowRight size={15} aria-hidden />
           </Link>
         </div>
 
         <button
           type="button"
-          onClick={() =>
-            setMobileOpen((value) => !value)
-          }
-          aria-label={
-            mobileOpen
-              ? "Close menu"
-              : "Open menu"
-          }
+          onClick={() => setMobileOpen((value) => !value)}
+          aria-label={mobileOpen ? "Close menu" : "Open menu"}
           aria-expanded={mobileOpen}
           className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/15 bg-white/5 text-white md:hidden"
         >
-          {mobileOpen ? (
-            <X size={19} />
-          ) : (
-            <Menu size={19} />
-          )}
+          {mobileOpen ? <X size={19} /> : <Menu size={19} />}
         </button>
       </div>
 
       {mobileOpen ? (
         <div className="max-h-[calc(100vh-72px)] overflow-y-auto border-t border-white/10 bg-[#183047] px-5 pb-8 pt-4 overscroll-contain md:hidden">
           <nav className="mx-auto flex max-w-xl flex-col">
-            <MobileHeading>
-              Explore
-            </MobileHeading>
+            <MobileHeading>Explore</MobileHeading>
 
             {mainNav.map((item) => (
               <MobileLink
                 key={item.label}
                 href={item.href}
                 active={isActive(item.href)}
-                onClick={() =>
-                  setMobileOpen(false)
-                }
+                onClick={() => setMobileOpen(false)}
               >
                 {item.label}
               </MobileLink>
@@ -210,12 +176,8 @@ export default function LandingHeader({
 
             <MobileLink
               href={MARKETING_ROUTES.pricing}
-              active={isActive(
-                MARKETING_ROUTES.pricing
-              )}
-              onClick={() =>
-                setMobileOpen(false)
-              }
+              active={isActive(MARKETING_ROUTES.pricing)}
+              onClick={() => setMobileOpen(false)}
             >
               Pricing
             </MobileLink>
@@ -225,12 +187,8 @@ export default function LandingHeader({
             {!isSignedIn ? (
               <MobileLink
                 href={MARKETING_ROUTES.login}
-                active={isActive(
-                  MARKETING_ROUTES.login
-                )}
-                onClick={() =>
-                  setMobileOpen(false)
-                }
+                active={isActive(MARKETING_ROUTES.login)}
+                onClick={() => setMobileOpen(false)}
               >
                 Sign In
               </MobileLink>
@@ -238,9 +196,7 @@ export default function LandingHeader({
 
             <Link
               href={primaryHref}
-              onClick={() =>
-                setMobileOpen(false)
-              }
+              onClick={() => setMobileOpen(false)}
               className="mt-4 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#617c43] px-6 text-sm font-semibold text-white"
             >
               {primaryLabel}
@@ -250,8 +206,7 @@ export default function LandingHeader({
 
             {!isSignedIn ? (
               <p className="mt-3 text-center text-[11px] text-white/45">
-                Free to start · No credit
-                card required
+                Free to start · No credit card required
               </p>
             ) : null}
           </nav>
@@ -261,11 +216,7 @@ export default function LandingHeader({
   );
 }
 
-function MobileHeading({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function MobileHeading({ children }: { children: React.ReactNode }) {
   return (
     <p className="px-3 pb-2 pt-1 text-[10px] font-semibold uppercase tracking-[0.17em] text-[#88a761]">
       {children}

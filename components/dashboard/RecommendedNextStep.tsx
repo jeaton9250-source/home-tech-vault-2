@@ -17,9 +17,9 @@ export default function RecommendedNextStep({
   }
 
   return (
-    <section aria-label="What should I do next">
+    <section aria-label="Recommended next step">
       <h2 className="text-xs font-semibold uppercase tracking-wider text-text-muted mb-3">
-        What should I do next?
+        Worth your attention
       </h2>
 
       <Link
@@ -44,7 +44,7 @@ export default function RecommendedNextStep({
         </div>
 
         <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-charcoal px-4 py-2 text-xs font-semibold text-white shadow-sm transition group-hover:bg-charcoal-hover">
-          Continue
+          Review
           <ArrowRight size={14} aria-hidden />
         </span>
       </Link>

@@ -9,13 +9,8 @@ type HomePulseAlertsProps = {
   highlights: HomeHealthHighlight[];
 };
 
-export default function HomePulseAlerts({
-  highlights,
-}: HomePulseAlertsProps) {
-  const alerts = highlights.filter(
-    (highlight) =>
-      highlight.tone === "warning"
-  );
+export default function HomePulseAlerts({ highlights }: HomePulseAlertsProps) {
+  const alerts = highlights.filter((highlight) => highlight.tone === "warning");
 
   if (alerts.length === 0) {
     return null;
@@ -23,12 +18,10 @@ export default function HomePulseAlerts({
 
   return (
     <PageCard className="border-warning/20 bg-warning-soft/35">
-      <p className="text-overline text-warning">
-        Important alerts
-      </p>
+      <p className="text-overline text-warning">Home Pulse</p>
 
       <h2 className="text-section-title mt-2 text-text-primary">
-        Needs your attention
+        A few things are worth a look
       </h2>
 
       <ul className="mt-5 space-y-3">

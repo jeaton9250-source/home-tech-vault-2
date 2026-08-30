@@ -20,12 +20,12 @@ export default function TodaysFocus({
   const focusText =
     recommendation ||
     (isHealthy
-      ? "Everything looks great today."
-      : "Take a moment to review your vault health.");
+      ? "Nothing needs your attention right now."
+      : "There are a few things worth reviewing in your home.");
 
   const description = isHealthy
-    ? "Your home technology is well protected and thoughtfully organized. No urgent actions need your attention."
-    : "Personalized guidance based on your current vault health.";
+    ? "Your Home Pulse is clear. Your important records are organized and there are no urgent actions right now."
+    : "Home Pulse brings forward the details that are most useful to review next.";
 
   return (
     <PageCard elevated interactive className="overflow-hidden">
@@ -60,7 +60,7 @@ export default function TodaysFocus({
         </div>
 
         <Button href="/insights" variant="secondary" className="shrink-0">
-          View insights
+          Open Home Pulse
           <ArrowRight size={16} />
         </Button>
       </div>
