@@ -49,6 +49,7 @@ export function buildDemoHomeHealth(): HomeHealthResult {
     })),
     documentCount: demoDocuments.length,
     subscriptionCount: demoSubscriptions.length,
+    monthlySubscriptionSpend: 0,
     networkConfigured: true,
     deviceIdsWithDocuments,
     deviceIdsWithPhotos,

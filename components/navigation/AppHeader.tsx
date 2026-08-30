@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 
-import { ShieldCheck } from "lucide-react";
+import { Search, ShieldCheck } from "lucide-react";
 
 import NotificationBell from "@/components/NotificationBell";
 import { NavLink } from "@/components/navigation/PrimaryNavLink";
@@ -72,6 +72,16 @@ export default function AppHeader() {
             <div className="flex items-center rounded-full border border-white/10 bg-white/[0.04] p-1 shadow-inner [&_a]:text-[#c5cdd3] [&_a:hover]:text-white">
               {PRIMARY_NAV_ITEMS.map(
                 (item) => {
+                  const isActive =
+                    isPrimaryNavActive(
+                      pathname,
+                      item.href
+                    );
+
+                  if (item.href === "/smart-search") {
+                    return null;
+                  }
+
                   const premiumBadge =
                     shouldShowPremiumBadge(
                       item.feature,
@@ -90,10 +100,7 @@ export default function AppHeader() {
                       label={
                         item.label
                       }
-                      isActive={isPrimaryNavActive(
-                        pathname,
-                        item.href
-                      )}
+                      isActive={isActive}
                       badge={badge}
                       compact
                     />
@@ -107,6 +114,27 @@ export default function AppHeader() {
 
           <div className="flex min-w-0 items-center justify-self-end">
             <div className="flex items-center rounded-full border border-white/10 bg-white/[0.04] p-1 text-[#f5f1e8] shadow-inner [&_button]:text-[#f5f1e8] [&_button:hover]:bg-white/[0.07]">
+              <Link
+                href="/smart-search"
+                aria-label="Search your home"
+                title="Search"
+                className={[
+                  "flex h-9 w-9 items-center justify-center rounded-full transition",
+                  pathname.startsWith("/smart-search")
+                    ? "bg-white/[0.12] text-white"
+                    : "text-[#f5f1e8] hover:bg-white/[0.07]",
+                ].join(" ")}
+              >
+                <Search
+                  size={17}
+                  strokeWidth={1.8}
+                  aria-hidden
+                />
+                <span className="sr-only">
+                  Search
+                </span>
+              </Link>
+
               {!isClientVaultMode ? (
                 <NotificationBell
                   compact

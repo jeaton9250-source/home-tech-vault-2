@@ -15,6 +15,12 @@ import {
   type VaultScoreResult,
 } from "@/lib/calculateVaultScore";
 
+type SubscriptionRow = {
+  id: string;
+  monthly_cost: number | null;
+  billing_cycle: string | null;
+};
+
 type DeviceRow = {
   id: string;
   device_name: string | null;
@@ -79,7 +85,7 @@ export async function loadDashboardMetrics(
     maintenanceResult,
     membersResult,
     networkCountResult,
-    subscriptionsCountResult,
+    subscriptionsResult,
   ] = await Promise.all([
     client
       .from("profiles")
@@ -164,10 +170,9 @@ export async function loadDashboardMetrics(
     applyHouseholdScope(
       client
         .from("subscriptions")
-        .select("id", {
-          count: "exact",
-          head: true,
-        }),
+        .select(
+          "id, monthly_cost, billing_cycle"
+        ),
       householdId,
       user.id
     ),
@@ -368,11 +373,54 @@ export async function loadDashboardMetrics(
           0
         ) > 0;
 
+  const subscriptionRows:
+    SubscriptionRow[] =
+      subscriptionsResult.error
+        ? []
+        : (subscriptionsResult.data ??
+            []) as SubscriptionRow[];
+
   const subscriptionCount =
-    subscriptionsCountResult.error
-      ? 0
-      : subscriptionsCountResult.count ||
-        0;
+    subscriptionRows.length;
+
+  const monthlySubscriptionSpend =
+    subscriptionRows.reduce(
+      (total, subscription) => {
+        const amount = Number(
+          subscription.monthly_cost ?? 0
+        );
+
+        if (
+          !Number.isFinite(amount) ||
+          amount < 0
+        ) {
+          return total;
+        }
+
+        const cycle =
+          subscription.billing_cycle
+            ?.trim()
+            .toLowerCase() ?? "";
+
+        if (
+          cycle.includes("annual") ||
+          cycle.includes("year")
+        ) {
+          return total + amount / 12;
+        }
+
+        if (cycle.includes("week")) {
+          return total + (amount * 52) / 12;
+        }
+
+        if (cycle.includes("quarter")) {
+          return total + amount / 3;
+        }
+
+        return total + amount;
+      },
+      0
+    );
 
   const hasRecentActivity =
     !recentActivityResult.error &&
@@ -455,6 +503,7 @@ export async function loadDashboardMetrics(
       documentCount,
 
       subscriptionCount,
+      monthlySubscriptionSpend,
 
       networkConfigured,
 

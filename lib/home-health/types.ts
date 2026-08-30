@@ -77,6 +77,7 @@ export type HomeHealthInput = {
   devices: HomeHealthDevice[];
   documentCount: number;
   subscriptionCount: number;
+  monthlySubscriptionSpend: number;
   networkConfigured: boolean;
   deviceIdsWithDocuments: Set<string>;
   deviceIdsWithPhotos: Set<string>;
@@ -91,6 +92,7 @@ export type HomeHealthInput = {
 export type HomeHealthResult = {
   isEmpty: boolean;
   score: number | null;
+  monthlySubscriptionSpend: number;
   status: HomeHealthStatusLabel | null;
   statusMessage: string | null;
   moduleScores: Record<

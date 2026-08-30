@@ -509,11 +509,7 @@ async function loadHouseholdMetrics(
     admin
       .from("subscriptions")
       .select(
-        "id",
-        {
-          count: "exact",
-          head: true,
-        }
+        "id, monthly_cost, billing_cycle"
       );
 
   subscriptionsQuery =
@@ -723,6 +719,62 @@ async function loadHouseholdMetrics(
         )
     );
 
+  const subscriptionRows =
+    (subscriptionsResult.data ??
+      []) as Array<{
+        id: string;
+        monthly_cost:
+          | number
+          | null;
+        billing_cycle:
+          | string
+          | null;
+      }>;
+
+  const monthlySubscriptionSpend =
+    subscriptionRows.reduce(
+      (total, subscription) => {
+        const amount = Number(
+          subscription.monthly_cost ?? 0
+        );
+
+        if (
+          !Number.isFinite(amount) ||
+          amount < 0
+        ) {
+          return total;
+        }
+
+        const cycle =
+          subscription.billing_cycle
+            ?.trim()
+            .toLowerCase() ?? "";
+
+        if (
+          cycle.includes("annual") ||
+          cycle.includes("year")
+        ) {
+          return total + amount / 12;
+        }
+
+        if (cycle.includes("week")) {
+          return (
+            total +
+            (amount * 52) / 12
+          );
+        }
+
+        if (
+          cycle.includes("quarter")
+        ) {
+          return total + amount / 3;
+        }
+
+        return total + amount;
+      },
+      0
+    );
+
   return {
     documentCount:
       documentsResult.count ??
@@ -746,8 +798,8 @@ async function loadHouseholdMetrics(
       ) > 0,
 
     subscriptionCount:
-      subscriptionsResult.count ??
-      0,
+      subscriptionRows.length,
+    monthlySubscriptionSpend,
 
     familyMemberCount:
       familyResult.error
@@ -859,6 +911,8 @@ async function buildReport(
 
       subscriptionCount:
         metrics.subscriptionCount,
+        monthlySubscriptionSpend:
+          metrics.monthlySubscriptionSpend,
 
       networkConfigured:
         metrics.networkConfigured,

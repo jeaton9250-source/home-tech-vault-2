@@ -618,6 +618,8 @@ export function calculateHomeHealth(
     return {
       isEmpty: true,
       score: null,
+      monthlySubscriptionSpend:
+        input.monthlySubscriptionSpend,
       status: null,
       statusMessage: null,
       moduleScores: {
@@ -684,6 +686,8 @@ export function calculateHomeHealth(
   return {
     isEmpty: false,
     score,
+    monthlySubscriptionSpend:
+      input.monthlySubscriptionSpend,
     status: status.label,
     statusMessage: status.message,
     moduleScores,

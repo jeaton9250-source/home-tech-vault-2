@@ -800,335 +800,405 @@ export default function InsightsPage() {
 
   return (
     <PageShell>
-      <PageHero
-        section="insights"
-        eyebrow="Vault Intelligence"
-        title="Your insights."
-        description="Understand the value, completeness, coverage, and health of your home technology."
-      >
-        {!premiumUnlocked && (
-          <Button href="/upgrade">
-            <Crown size={17} />
-            Unlock Insights
-          </Button>
-        )}
-      </PageHero>
-
-      {isDemo && (
-        <section className="rounded-3xl border border-warning/40 bg-warning-soft p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-achievement">
-            Interactive Demo
-          </p>
-
-          <p className="mt-2 text-sm leading-6 text-text-secondary">
-            These insights are calculated
-            from sample devices,
-            subscriptions, warranties,
-            documents, and maintenance.
-          </p>
-        </section>
-      )}
-
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <SummaryCard
-          icon={WalletCards}
-          label="Protected Value"
-          value={formatCurrency(
-            totalValue
-          )}
-          description="Recorded purchase value"
-        />
-
-        <SummaryCard
-          icon={Laptop}
-          label="Devices"
-          value={devices.length.toLocaleString()}
-          description={`${roomBreakdown.length} locations`}
-        />
-
-        <SummaryCard
-          icon={FileText}
-          label="Documented"
-          value={`${documentationPercentage}%`}
-          description={`${documentedDevices} devices with files`}
-        />
-
-        <SummaryCard
-          icon={BarChart3}
-          label="Average Age"
-          value={
-            averageDeviceAge > 0
-              ? `${averageDeviceAge.toFixed(
-                  1
-                )} yrs`
-              : "—"
-          }
-          description="Based on purchase dates"
-        />
-      </section>
-
-      {!premiumUnlocked ? (
-        <PremiumInsightsLock
-          deviceCount={devices.length}
-          totalValue={totalValue}
-        />
-      ) : (
-        <>
-          <section className="grid gap-6 xl:grid-cols-[0.8fr_1.2fr]">
-            <PageCard className="flex min-h-[360px] flex-col items-center justify-center p-8 text-center">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-secondary">
-                Vault Completeness
+      {/* PREMIUM INSIGHTS HERO */}
+      <section className="overflow-hidden rounded-[32px] bg-[#183047] text-[#f7f4ed] shadow-[0_28px_70px_-45px_rgba(14,30,44,0.72)]">
+        <div className="px-6 py-8 sm:px-10 sm:py-9 lg:px-12">
+          <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-2xl">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#9eb77f]">
+                Vault Insights
               </p>
 
-              <div className="mt-7">
-                <InsightRing
-                  score={
-                    completenessScore
+              <h1 className="mt-4 max-w-xl font-serif text-[42px] font-medium leading-[0.98] tracking-[-0.045em] text-[#f7f4ed] sm:text-[52px]">
+                Your home,
+                <span className="block text-[#8ea864]">
+                  understood.
+                </span>
+              </h1>
+
+              <p className="mt-5 max-w-xl text-[15px] leading-7 text-[#b9c3c9]">
+                See what is protected, what is missing,
+                and what deserves your attention next.
+              </p>
+            </div>
+
+            <div className="grid min-w-[300px] grid-cols-3 gap-6 border-t border-white/10 pt-6 lg:border-l lg:border-t-0 lg:pl-10 lg:pt-0">
+              <HeroMetric
+                label="Protected"
+                value={formatCurrency(totalValue)}
+              />
+
+              <HeroMetric
+                label="Devices"
+                value={devices.length.toLocaleString()}
+              />
+
+              <HeroMetric
+                label="Complete"
+                value={`${completenessScore}%`}
+              />
+            </div>
+          </div>
+
+          {!premiumUnlocked ? (
+            <div className="mt-7 border-t border-white/10 pt-5">
+              <Button
+                href="/upgrade"
+                variant="secondary"
+              >
+                <Crown size={17} />
+                Unlock full insights
+              </Button>
+            </div>
+          ) : null}
+        </div>
+      </section>
+
+      {isDemo ? (
+        <section className="mt-7 rounded-[24px] bg-[#fbf8f2] px-6 py-4 ring-1 ring-[#17212a]/[0.05]">
+          <p className="text-sm text-[#68737b]">
+            Demo mode uses sample home records.
+          </p>
+        </section>
+      ) : null}
+
+      {!premiumUnlocked ? (
+        <div className="mt-7">
+          <PremiumInsightsLock
+            deviceCount={devices.length}
+            totalValue={totalValue}
+          />
+        </div>
+      ) : (
+        <>
+          {/* HOME HEALTH */}
+          <section className="mt-7 rounded-[28px] bg-[#fbf8f2] px-6 py-7 shadow-[0_18px_45px_-38px_rgba(15,25,35,0.3)] ring-1 ring-[#17212a]/[0.05] sm:px-8 sm:py-8">
+            <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#78905b]">
+                  Home health
+                </p>
+
+                <h2 className="mt-3 max-w-md font-serif text-[32px] font-medium leading-tight tracking-[-0.04em] text-[#17212a] sm:text-[38px]">
+                  {completenessScore >= 75
+                    ? "Your vault is in strong shape."
+                    : completenessScore >= 40
+                      ? "Your vault is taking shape."
+                      : "Your vault is just getting started."}
+                </h2>
+
+                <p className="mt-4 max-w-md text-sm leading-6 text-[#748087]">
+                  Completeness is based on documents,
+                  serial numbers, and active warranty coverage.
+                </p>
+
+                <div className="mt-7 flex items-end gap-2">
+                  <span className="text-5xl font-semibold tracking-[-0.05em] text-[#17212a]">
+                    {completenessScore}
+                  </span>
+
+                  <span className="mb-1 text-xl text-[#8b9499]">
+                    %
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-5">
+                <ProgressRow
+                  label="Documents"
+                  value={documentationPercentage}
+                />
+
+                <ProgressRow
+                  label="Serial numbers"
+                  value={serialPercentage}
+                />
+
+                <ProgressRow
+                  label="Warranty coverage"
+                  value={
+                    devices.length === 0
+                      ? 0
+                      : Math.round(
+                          (warrantyStats.active /
+                            devices.length) *
+                            100
+                        )
                   }
                 />
               </div>
-
-              <p className="mt-7 max-w-sm text-sm leading-6 text-text-secondary">
-                Based on documents,
-                serial numbers, and active
-                warranty information.
-              </p>
-            </PageCard>
-
-            <PageCard className="p-7 md:p-9">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-overline text-charcoal-soft">
-                    Recommended Next Steps
-                  </p>
-
-                  <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
-                    Improve your vault
-                  </h2>
-
-                  <p className="mt-2 max-w-2xl text-sm leading-6 text-text-secondary">
-                    A few useful actions
-                    based on your saved
-                    records.
-                  </p>
-                </div>
-
-                <Sparkles
-                  size={21}
-                  className="shrink-0 text-interaction"
-                />
-              </div>
-
-              <div className="mt-7 space-y-3">
-                {recommendations.map(
-                  (recommendation) => (
-                    <Link
-                      key={
-                        recommendation.title
-                      }
-                      href={
-                        recommendation.href
-                      }
-                      className="group flex items-start gap-4 rounded-[22px] bg-surface-sunken p-4 transition hover:bg-[#F1EEE6]"
-                    >
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-border-subtle bg-surface-card text-charcoal shadow-[var(--shadow-sm)]">
-                        <ShieldCheck
-                          size={18}
-                        />
-                      </div>
-
-                      <div className="min-w-0 flex-1">
-                        <p className="font-semibold text-text-primary">
-                          {
-                            recommendation.title
-                          }
-                        </p>
-
-                        <p className="mt-1 text-sm leading-6 text-text-secondary">
-                          {
-                            recommendation.description
-                          }
-                        </p>
-                      </div>
-
-                      <ArrowRight
-                        size={16}
-                        className="mt-1 shrink-0 text-neutral-300 transition group-hover:translate-x-0.5 group-hover:text-text-primary"
-                      />
-                    </Link>
-                  )
-                )}
-              </div>
-            </PageCard>
+            </div>
           </section>
 
-          <section className="grid gap-6 xl:grid-cols-2">
-            <BreakdownCard
-              icon={Building2}
-              eyebrow="Rooms"
-              title="Value by room"
-              items={roomBreakdown}
-              emptyMessage="Add device locations to see room insights."
-            />
+          {/* WHAT NEEDS ATTENTION */}
+          <section className="mt-7 rounded-[28px] bg-white px-6 py-7 shadow-[0_18px_45px_-38px_rgba(15,25,35,0.28)] ring-1 ring-[#17212a]/[0.05] sm:px-8">
+            <div className="flex items-end justify-between gap-6">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#78905b]">
+                  Worth your attention
+                </p>
 
-            <BreakdownCard
-              icon={Laptop}
-              eyebrow="Brands"
-              title="Value by brand"
-              items={brandBreakdown}
-              emptyMessage="Add device brands to see brand insights."
-            />
-          </section>
-
-          <section className="grid gap-6 xl:grid-cols-3">
-            <SimpleInsightCard
-              icon={ShieldCheck}
-              eyebrow="Warranty Health"
-              title={`${warrantyStats.active} covered`}
-              description={`${warrantyStats.expiringSoon} expiring soon, ${warrantyStats.expired} expired, and ${warrantyStats.missing} missing.`}
-              href="/warranties"
-              linkLabel="View warranties"
-            />
-
-            <SimpleInsightCard
-              icon={WalletCards}
-              eyebrow="Subscriptions"
-              title={formatCurrency(
-                monthlySubscriptions
-              )}
-              description={`${formatCurrency(
-                monthlySubscriptions * 12
-              )} estimated per year.`}
-              href="/subscriptions"
-              linkLabel="View subscriptions"
-            />
-
-            <SimpleInsightCard
-              icon={Wrench}
-              eyebrow="Maintenance"
-              title={`${dueMaintenanceCount} due`}
-              description={
-                dueMaintenanceCount > 0
-                  ? "Maintenance tasks currently require attention."
-                  : "No overdue maintenance was found."
-              }
-              href="/maintenance"
-              linkLabel="View maintenance"
-            />
-          </section>
-
-          {(strongestRoom ||
-            strongestBrand) && (
-            <PageCard className="overflow-hidden p-0"><div className="htv-plan-band p-7 text-text-primary md:p-9">
-              <p className="text-overline text-charcoal-soft">
-                What Stands Out
-              </p>
-
-              <div className="mt-6 grid gap-6 md:grid-cols-2">
-                {strongestRoom && (
-                  <HighlightItem
-                    label="Highest-value room"
-                    title={
-                      strongestRoom.label
-                    }
-                    description={`${formatCurrency(
-                      strongestRoom.value
-                    )} across ${
-                      strongestRoom.count
-                    } device${
-                      strongestRoom.count ===
-                      1
-                        ? ""
-                        : "s"
-                    }.`}
-                  />
-                )}
-
-                {strongestBrand && (
-                  <HighlightItem
-                    label="Top brand"
-                    title={
-                      strongestBrand.label
-                    }
-                    description={`${formatCurrency(
-                      strongestBrand.value
-                    )} across ${
-                      strongestBrand.count
-                    } device${
-                      strongestBrand.count ===
-                      1
-                        ? ""
-                        : "s"
-                    }.`}
-                  />
-                )}
+                <h2 className="mt-3 font-serif text-[30px] font-medium tracking-[-0.04em] text-[#17212a]">
+                  What to improve next.
+                </h2>
               </div>
             </div>
-            </PageCard>
-          )}
 
-          {agingDevices.length > 0 && (
-            <PageCard className="p-7 md:p-9">
-              <div className="flex items-start gap-4">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-700">
-                  <AlertTriangle
-                    size={20}
-                  />
-                </div>
+            <div className="mt-6 divide-y divide-[#17212a]/[0.07]">
+              {recommendations.map(
+                (recommendation, index) => (
+                  <Link
+                    key={recommendation.title}
+                    href={recommendation.href}
+                    className="group flex items-start gap-4 py-5 first:pt-0 last:pb-0"
+                  >
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#617c43]/10 text-xs font-semibold text-[#617c43]">
+                      {index + 1}
+                    </span>
 
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-700">
-                    Replacement Planning
-                  </p>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold text-[#17212a]">
+                        {recommendation.title}
+                      </p>
 
-                  <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
-                    Aging devices
-                  </h2>
+                      <p className="mt-1 text-sm leading-6 text-[#748087]">
+                        {recommendation.description}
+                      </p>
+                    </div>
 
-                  <p className="mt-2 text-sm leading-6 text-text-secondary">
-                    Devices recorded as
-                    four years old or older.
-                  </p>
+                    <ArrowRight
+                      size={15}
+                      className="mt-1 shrink-0 text-[#829078] transition-transform group-hover:translate-x-0.5"
+                    />
+                  </Link>
+                )
+              )}
+            </div>
+          </section>
+
+          {/* AT A GLANCE */}
+          <section className="mt-7 rounded-[28px] bg-[#f3efe7] px-6 py-7 sm:px-8">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#78905b]">
+              At a glance
+            </p>
+
+            <div className="mt-6 grid gap-6 sm:grid-cols-3">
+              <GlanceItem
+                href="/warranties"
+                label="Warranty"
+                value={`${warrantyStats.active} covered`}
+                detail={`${warrantyStats.missing} missing`}
+              />
+
+              <GlanceItem
+                href="/subscriptions"
+                label="Subscriptions"
+                value={`${formatCurrency(monthlySubscriptions)}/mo`}
+                detail={`${formatCurrency(
+                  monthlySubscriptions * 12
+                )}/yr`}
+              />
+
+              <GlanceItem
+                href="/maintenance"
+                label="Maintenance"
+                value={`${dueMaintenanceCount} due`}
+                detail={
+                  dueMaintenanceCount > 0
+                    ? "Needs attention"
+                    : "All caught up"
+                }
+              />
+            </div>
+          </section>
+
+          {/* EXPLORE YOUR HOME */}
+          <section className="mt-7 rounded-[28px] bg-[#fbf8f2] px-6 py-7 ring-1 ring-[#17212a]/[0.05] sm:px-8">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#78905b]">
+              Explore your home
+            </p>
+
+            <div className="mt-6 grid gap-8 lg:grid-cols-2">
+              <CompactBreakdown
+                title="By room"
+                items={roomBreakdown}
+              />
+
+              <CompactBreakdown
+                title="By brand"
+                items={brandBreakdown}
+              />
+            </div>
+
+            {agingDevices.length > 0 ? (
+              <div className="mt-8 border-t border-[#17212a]/[0.08] pt-6">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-[#17212a]">
+                      {agingDevices.length} aging{" "}
+                      {agingDevices.length === 1
+                        ? "device"
+                        : "devices"}
+                    </p>
+
+                    <p className="mt-1 text-sm text-[#748087]">
+                      Devices recorded as four years old
+                      or older.
+                    </p>
+                  </div>
+
+                  <Link
+                    href="/devices"
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-[#617c43]"
+                  >
+                    Review devices
+                    <ArrowRight size={14} />
+                  </Link>
                 </div>
               </div>
-
-              <div className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                {agingDevices.map(
-                  (device) => (
-                    <Link
-                      key={device.id}
-                      href={`/devices/${device.id}`}
-                      className="rounded-[24px] bg-surface-sunken p-5 transition hover:bg-[#F1EEE6]"
-                    >
-                      <p className="font-semibold text-text-primary">
-                        {device.device_name ||
-                          "Unnamed Device"}
-                      </p>
-
-                      <p className="mt-1 text-sm text-text-secondary">
-                        {device.brand ||
-                          "Unknown brand"}
-                      </p>
-
-                      <p className="mt-5 text-2xl font-semibold text-amber-700">
-                        {device.ageInYears.toFixed(
-                          1
-                        )}{" "}
-                        years
-                      </p>
-
-                      <p className="mt-1 text-xs text-text-tertiary">
-                        Estimated age
-                      </p>
-                    </Link>
-                  )
-                )}
-              </div>
-            </PageCard>
-          )}
+            ) : null}
+          </section>
         </>
       )}
     </PageShell>
+  );
+
+}
+
+function HeroMetric({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div>
+      <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-[#899aa7]">
+        {label}
+      </p>
+
+      <p className="mt-2 text-xl font-semibold tracking-[-0.03em] text-[#f7f4ed]">
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function ProgressRow({
+  label,
+  value,
+}: {
+  label: string;
+  value: number;
+}) {
+  const normalized = Math.max(
+    0,
+    Math.min(value, 100)
+  );
+
+  return (
+    <div>
+      <div className="flex items-center justify-between gap-4">
+        <p className="text-sm font-medium text-[#17212a]">
+          {label}
+        </p>
+
+        <p className="text-sm font-semibold text-[#17212a]">
+          {normalized}%
+        </p>
+      </div>
+
+      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#ded8cd]">
+        <div
+          className="h-full rounded-full bg-[#617c43]"
+          style={{
+            width: `${normalized}%`,
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function GlanceItem({
+  href,
+  label,
+  value,
+  detail,
+}: {
+  href: string;
+  label: string;
+  value: string;
+  detail: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group"
+    >
+      <p className="text-[10px] font-semibold uppercase tracking-[0.17em] text-[#8a9487]">
+        {label}
+      </p>
+
+      <p className="mt-2 text-xl font-semibold tracking-[-0.03em] text-[#17212a] transition group-hover:text-[#617c43]">
+        {value}
+      </p>
+
+      <p className="mt-1 text-sm text-[#7d878d]">
+        {detail}
+      </p>
+    </Link>
+  );
+}
+
+function CompactBreakdown({
+  title,
+  items,
+}: {
+  title: string;
+  items: BreakdownItem[];
+}) {
+  return (
+    <div>
+      <h3 className="font-serif text-2xl font-medium tracking-[-0.035em] text-[#17212a]">
+        {title}
+      </h3>
+
+      {items.length === 0 ? (
+        <p className="mt-4 text-sm text-[#748087]">
+          Not enough information yet.
+        </p>
+      ) : (
+        <div className="mt-5 divide-y divide-[#17212a]/[0.07]">
+          {items
+            .slice(0, 4)
+            .map((item) => (
+              <div
+                key={item.label}
+                className="flex items-center justify-between gap-5 py-3 first:pt-0"
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-[#17212a]">
+                    {item.label}
+                  </p>
+
+                  <p className="mt-0.5 text-xs text-[#8b9499]">
+                    {item.count}{" "}
+                    {item.count === 1
+                      ? "device"
+                      : "devices"}
+                  </p>
+                </div>
+
+                <p className="shrink-0 text-sm font-semibold text-[#17212a]">
+                  {formatCurrency(item.value)}
+                </p>
+              </div>
+            ))}
+        </div>
+      )}
+    </div>
   );
 }
 
