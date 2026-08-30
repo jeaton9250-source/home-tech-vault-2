@@ -48,7 +48,10 @@ export async function GET(request: Request) {
 
   if (
     !tokenHash ||
-    requestedType !== "invite"
+    (
+      requestedType !== "invite" &&
+      requestedType !== "email"
+    )
   ) {
     return NextResponse.redirect(
       new URL(
@@ -85,7 +88,7 @@ export async function GET(request: Request) {
   const { data, error } =
     await supabase.auth.verifyOtp({
       token_hash: tokenHash,
-      type: "invite",
+      type: otpType,
     });
 
   if (error) {
