@@ -335,6 +335,9 @@ function buildHighlights(
     });
   }
 
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
   const hasOverdue = input.maintenanceTasks.some(
     (task) => {
       if (task.completed || !task.due_date) {
@@ -342,12 +345,13 @@ function buildHighlights(
       }
 
       const due = new Date(
-        `${task.due_date}T23:59:59`
+        `${task.due_date}T00:00:00`
       );
+      due.setHours(0, 0, 0, 0);
 
       return (
         !Number.isNaN(due.getTime()) &&
-        due.getTime() < Date.now()
+        due.getTime() < today.getTime()
       );
     }
   );
@@ -360,7 +364,77 @@ function buildHighlights(
     });
   }
 
-  return highlights.slice(0, 5);
+  let nextMaintenance: {
+    title: string;
+    daysRemaining: number;
+  } | null = null;
+
+  for (const task of input.maintenanceTasks) {
+    if (task.completed || !task.due_date) {
+      continue;
+    }
+
+    const due = new Date(
+      `${task.due_date}T00:00:00`
+    );
+    due.setHours(0, 0, 0, 0);
+
+    if (Number.isNaN(due.getTime())) {
+      continue;
+    }
+
+    const daysRemaining = Math.round(
+      (due.getTime() - today.getTime()) /
+        (1000 * 60 * 60 * 24)
+    );
+
+    if (
+      daysRemaining < 0 ||
+      daysRemaining > 14
+    ) {
+      continue;
+    }
+
+    if (
+      !nextMaintenance ||
+      daysRemaining <
+        nextMaintenance.daysRemaining
+    ) {
+      nextMaintenance = {
+        title:
+          task.title?.trim() ||
+          "Maintenance task",
+        daysRemaining,
+      };
+    }
+  }
+
+  if (nextMaintenance) {
+    highlights.push({
+      id: "maintenance-upcoming",
+      tone: "warning",
+      message:
+        nextMaintenance.daysRemaining === 0
+          ? `${nextMaintenance.title} due today`
+          : `${nextMaintenance.title} due in ${nextMaintenance.daysRemaining} day${
+              nextMaintenance.daysRemaining === 1
+                ? ""
+                : "s"
+            }`,
+    });
+  }
+
+  return highlights
+    .sort((left, right) => {
+      if (left.tone === right.tone) {
+        return 0;
+      }
+
+      return left.tone === "warning"
+        ? -1
+        : 1;
+    })
+    .slice(0, 5);
 }
 
 function buildCategoryCards(

@@ -40,6 +40,7 @@ function getHighlightHref(highlight: HomeHealthHighlight) {
       return "/warranties";
 
     case "maintenance-overdue":
+    case "maintenance-upcoming":
       return "/maintenance";
 
     case "network-missing":
@@ -69,6 +70,9 @@ function getAttentionDescription(id: string) {
 
     case "maintenance-overdue":
       return "A scheduled home task has passed its due date.";
+
+    case "maintenance-upcoming":
+      return "A scheduled home task is coming up soon.";
 
     case "network-missing":
       return "Add your home network so important Wi-Fi details stay organized.";
