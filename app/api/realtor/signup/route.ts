@@ -110,7 +110,7 @@ export async function POST(
       password,
       options: {
         emailRedirectTo:
-          `${origin}/auth/callback?next=${encodeURIComponent(
+          `${origin}/auth/confirm?next=${encodeURIComponent(
             "/realtors/setup"
           )}`,
         data: {

@@ -2,6 +2,7 @@ import type { EmailOtpType } from "@supabase/supabase-js";
 
 const ALLOWED_NEXT_PATHS = new Set([
   "/invite/setup",
+  "/realtors/setup",
   "/onboarding/create-household",
   "/set-password",
   "/onboarding",
