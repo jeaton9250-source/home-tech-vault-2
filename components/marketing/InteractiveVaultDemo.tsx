@@ -15,6 +15,7 @@ import {
   Tv,
   Wifi,
 } from "lucide-react";
+import { getDemoImagePathForDeviceId } from "@/lib/devices/demoDeviceImages";
 
 type DemoTab =
   | "overview"
@@ -299,223 +300,155 @@ function OverviewTab({
 }) {
   return (
     <div className="animate-[fadeIn_250ms_ease-out] space-y-4">
-      {/* HOME AT A GLANCE */}
+      {/* HERO */}
       <div className="rounded-[26px] bg-[#183047] p-5 text-white shadow-[0_24px_55px_-36px_rgba(24,48,71,0.8)] sm:p-6">
-        <div className="grid gap-5 sm:grid-cols-[1fr_auto]">
+        <p className="text-[8px] font-semibold uppercase tracking-[0.18em] text-[#9fbd79]">
+          Home
+        </p>
+
+        <div className="mt-4 grid gap-5 sm:grid-cols-[1fr_auto] sm:items-end">
           <div>
-            <div className="flex flex-wrap gap-2">
-              <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[8px] font-semibold uppercase tracking-[0.15em] text-white/45">
-                Thursday, August 27
-              </span>
-
-              <span className="rounded-full border border-[#718d4f]/30 bg-[#718d4f]/10 px-2.5 py-1 text-[8px] font-semibold uppercase tracking-[0.15em] text-[#b8cd9e]">
-                Home Pulse
-              </span>
-            </div>
-
-            <h3 className="mt-5 font-serif text-[34px] leading-[0.96] tracking-[-0.045em] text-white">
-              Demo&apos;s home,
+            <h3 className="font-serif text-[34px] leading-[0.98] tracking-[-0.045em] text-white">
+              Your home,
               <br />
               <span className="text-[#9fbd79]">
-                at a glance.
+                all in one place.
               </span>
             </h3>
 
             <p className="mt-4 max-w-sm text-[11px] leading-5 text-white/60">
-              Your Home Tech Vault is organized and
+              Everything you need to know about your home,
               ready when you need it.
             </p>
-
-            <div className="mt-4 flex items-center gap-2 text-[9px] font-medium text-[#a9c786]">
-              <ShieldCheck size={13} />
-              Important details are organized and ready.
-            </div>
           </div>
 
-          <div className="flex justify-start sm:justify-end">
-            <div className="rounded-[20px] border border-white/10 bg-white/5 px-4 py-4 text-center">
+          <div className="grid min-w-[180px] grid-cols-2 gap-4 border-white/10 sm:border-l sm:pl-5">
+            <div>
               <p className="text-[7px] font-semibold uppercase tracking-[0.16em] text-white/35">
-                Vault Readiness
+                Organized
               </p>
+              <p className="mt-2 font-serif text-[26px] leading-none text-white">
+                92%
+              </p>
+            </div>
 
-              <div className="relative mx-auto mt-3 flex h-[78px] w-[78px] items-center justify-center rounded-full border-[7px] border-white/15">
-                <div className="absolute inset-[-7px] rounded-full border-[7px] border-transparent border-r-[#718d4f] border-t-[#718d4f]" />
+            <div>
+              <p className="text-[7px] font-semibold uppercase tracking-[0.16em] text-white/35">
+                Attention
+              </p>
+              <p className="mt-2 text-[13px] font-semibold text-white/90">
+                2 items
+              </p>
+            </div>
 
-                <div>
-                  <p className="font-serif text-[21px] text-white">
-                    92%
-                  </p>
-                  <p className="text-[6px] uppercase tracking-[0.12em] text-white/30">
-                    Organized
-                  </p>
-                </div>
-              </div>
+            <div className="col-span-2">
+              <button
+                type="button"
+                className="flex items-center gap-2 text-[9px] font-semibold text-[#9fbd79]"
+              >
+                Review home health
+                <ChevronRight size={12} />
+              </button>
             </div>
           </div>
         </div>
 
-        <div className="mt-5 grid grid-cols-3 border-t border-white/10 pt-4">
-          <div>
-            <p className="text-[7px] uppercase tracking-[0.14em] text-white/30">
-              Devices
-            </p>
-            <p className="mt-1 text-[9px] text-white/75">
-              <span className="text-[#9fbd79]">●</span>{" "}
-              Organized
-            </p>
-          </div>
+        <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-white/10 pt-4 text-[8px] text-white/45">
+          <span>
+            <strong className="mr-1 text-[11px] font-semibold text-white">
+              12
+            </strong>
+            Devices
+          </span>
 
-          <div className="border-l border-white/10 pl-4">
-            <p className="text-[7px] uppercase tracking-[0.14em] text-white/30">
-              Records
-            </p>
-            <p className="mt-1 text-[9px] text-white/75">
-              <span className="text-[#9fbd79]">●</span>{" "}
-              Available
-            </p>
-          </div>
+          <span className="text-white/20">•</span>
 
-          <div className="border-l border-white/10 pl-4">
-            <p className="text-[7px] uppercase tracking-[0.14em] text-white/30">
-              Home Pulse
-            </p>
-            <p className="mt-1 text-[9px] text-white/75">
-              <span className="text-[#9fbd79]">●</span>{" "}
-              Ready
-            </p>
-          </div>
+          <span>
+            <strong className="mr-1 text-[11px] font-semibold text-white">
+              24
+            </strong>
+            Documents
+          </span>
+
+          <span className="text-white/20">•</span>
+
+          <span>
+            <strong className="mr-1 text-[11px] font-semibold text-white">
+              8
+            </strong>
+            Warranties
+          </span>
+
+          <span className="text-white/20">•</span>
+
+          <span>
+            <strong className="mr-1 text-[11px] font-semibold text-white">
+              $35/mo
+            </strong>
+            Subscriptions
+          </span>
         </div>
       </div>
 
-      {/* METRIC STRIP */}
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-        {[
-          ["Devices", "12", "11 online"],
-          ["Active Warranties", "8", "Coverage tracked"],
-          ["Documents", "24", "Stored in your Vault"],
-          ["Household", "3", "Members"],
-          ["Offline Devices", "1", "Worth reviewing"],
-        ].map(([label, value, detail]) => (
-          <div
-            key={label}
-            className="rounded-[15px] border border-[#183047]/10 bg-white px-3 py-3"
-          >
-            <p className="text-[7px] font-semibold text-[#6f7a82]">
-              {label}
-            </p>
+      {/* UP NEXT */}
+      <button
+        type="button"
+        onClick={() => onOpenDevice("samsung-tv")}
+        className="group flex w-full items-center gap-4 rounded-[22px] border border-[#183047]/10 bg-white px-4 py-4 text-left shadow-[0_18px_45px_-38px_rgba(24,48,71,0.6)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_50px_-34px_rgba(24,48,71,0.55)] sm:px-5"
+      >
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#718d4f]/10 text-[#718d4f]">
+          <ShieldCheck size={15} />
+        </div>
 
-            <p className="mt-1 font-serif text-[18px] text-[#183047]">
-              {value}
-            </p>
-
-            <p className="mt-0.5 text-[7px] text-[#9aa2a7]">
-              {detail}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      {/* LOWER DASHBOARD */}
-      <div className="grid gap-3 sm:grid-cols-[1.15fr_0.85fr]">
-        <div className="rounded-[22px] border border-[#183047]/10 bg-white p-4">
-          <p className="text-[8px] font-semibold uppercase tracking-[0.16em] text-[#718d4f]">
-            Home Advisor
+        <div className="min-w-0 flex-1">
+          <p className="text-[8px] font-semibold uppercase tracking-[0.17em] text-[#718d4f]">
+            Up Next
           </p>
-
-          <h4 className="mt-2 font-serif text-[18px] text-[#183047]">
-            What deserves your attention
+          <h4 className="mt-1 font-serif text-[20px] leading-tight text-[#183047]">
+            Review Samsung TV warranty
           </h4>
-
-          <div className="mt-4 space-y-2">
-            <div className="rounded-[14px] bg-[#f5f1e8] p-3">
-              <p className="text-[9px] font-semibold text-[#183047]">
-                What your Vault found
-              </p>
-
-              <p className="mt-1 text-[8px] leading-4 text-[#7a858c]">
-                Start with 2 important issues, then review
-                the remaining recommendations.
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => onOpenDevice("samsung-tv")}
-              className="flex w-full items-center justify-between rounded-[13px] border border-[#183047]/8 px-3 py-2.5 text-left transition hover:bg-[#f8f5ef]"
-            >
-              <div>
-                <p className="text-[9px] font-semibold text-[#183047]">
-                  Warranty expiring soon
-                </p>
-                <p className="mt-1 text-[8px] text-[#7a858c]">
-                  Samsung TV warranty expires in 24 days.
-                </p>
-              </div>
-
-              <ChevronRight
-                size={13}
-                className="text-[#718d4f]"
-              />
-            </button>
-          </div>
+          <p className="mt-1.5 text-[8px] leading-4 text-[#7a858c]">
+            Coverage expires in 24 days. Keep the receipt and
+            warranty details ready.
+          </p>
         </div>
 
-        <div className="space-y-3">
-          <div className="rounded-[22px] bg-[#183047] p-4 text-white">
-            <p className="text-[8px] font-semibold uppercase tracking-[0.16em] text-[#9fbd79]">
-              Ask Your Vault
+        <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-[#183047] px-3 py-2 text-[8px] font-semibold text-white">
+          Take action
+          <ChevronRight size={11} />
+        </span>
+      </button>
+
+      {/* ASK YOUR HOME */}
+      <div className="rounded-[22px] border border-[#183047]/10 bg-white p-4 shadow-[0_18px_45px_-38px_rgba(24,48,71,0.45)] sm:p-5">
+        <div className="grid gap-4 sm:grid-cols-[0.9fr_1.1fr] sm:items-center">
+          <div>
+            <p className="text-[8px] font-semibold uppercase tracking-[0.17em] text-[#718d4f]">
+              Ask Your Home
             </p>
 
-            <h4 className="mt-2 font-serif text-[18px]">
+            <h4 className="mt-2 font-serif text-[22px] leading-tight text-[#183047]">
               Find anything in your home.
             </h4>
 
-            <p className="mt-2 text-[8px] leading-4 text-white/55">
-              Search devices, warranties, documents,
-              and household information from one place.
+            <p className="mt-2 text-[8px] leading-4 text-[#7a858c]">
+              Find a receipt, check a warranty, look up a
+              device, or ask what needs attention.
             </p>
-
-            <div className="mt-4 flex items-center gap-2 rounded-[12px] border border-white/15 bg-white/5 px-3 py-2.5">
-              <span className="flex-1 truncate text-[8px] text-white/55">
-                Ask something about your home...
-              </span>
-
-              <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#718d4f]">
-                <ChevronRight size={12} />
-              </span>
-            </div>
-
-            <div className="mt-3 flex flex-wrap gap-1">
-              {[
-                "Expiring warranties",
-                "Find a receipt",
-                "Offline devices",
-              ].map((item) => (
-                <span
-                  key={item}
-                  className="rounded-full border border-white/10 px-2 py-1 text-[6px] text-white/50"
-                >
-                  {item}
-                </span>
-              ))}
-            </div>
           </div>
 
-          <div className="rounded-[18px] border border-[#183047]/10 bg-white p-4">
-            <p className="text-[7px] font-semibold uppercase tracking-[0.14em] text-[#718d4f]">
-              First milestone complete
-            </p>
+          <div className="flex min-h-[50px] items-center gap-3 rounded-[16px] bg-[#f5f1e8] px-4">
+            <span className="text-[#718d4f]">
+              ⌕
+            </span>
 
-            <p className="mt-2 font-serif text-[15px] leading-5 text-[#183047]">
-              3 devices organized.
-              <br />
-              Protect the paperwork next.
-            </p>
+            <span className="min-w-0 flex-1 truncate text-[8px] text-[#929a9e]">
+              Ask something about your home...
+            </span>
 
-            <p className="mt-2 text-[8px] leading-4 text-[#7a858c]">
-              Save a receipt, warranty, or manual so it
-              is already here when you need it.
-            </p>
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#183047] text-white">
+              <ChevronRight size={12} />
+            </span>
           </div>
         </div>
       </div>
@@ -539,6 +472,7 @@ function DevicesTab({
       value: "$1,499",
       icon: "tv" as const,
       tone: "warm",
+      image: "/demo-devices/samsung-frame-tv.png",
     },
     {
       id: "spectrum-router",
@@ -550,6 +484,7 @@ function DevicesTab({
       value: "Included",
       icon: "router" as const,
       tone: "neutral",
+      image: getDemoImagePathForDeviceId("demo-unifi-router"),
     },
     {
       id: "macbook",
@@ -561,6 +496,7 @@ function DevicesTab({
       value: "$999",
       icon: "laptop" as const,
       tone: "soft",
+      image: getDemoImagePathForDeviceId("demo-macbook"),
     },
   ];
 
@@ -624,7 +560,7 @@ function DevicesTab({
             {/* COMPACT PRODUCT VISUAL */}
             <div
               className={[
-                "relative flex h-[78px] items-center justify-center overflow-hidden",
+                "relative flex h-[92px] items-center justify-center overflow-hidden",
                 device.tone === "warm"
                   ? "bg-[linear-gradient(135deg,#ddd3c5_0%,#f0ebe2_55%,#d6ccbd_100%)]"
                   : "",
@@ -636,15 +572,24 @@ function DevicesTab({
                   : "",
               ].join(" ")}
             >
-              <div className="absolute inset-x-0 bottom-0 h-[34%] bg-white/25" />
+              <div className="absolute inset-x-0 bottom-0 h-[30%] bg-white/25" />
 
-              <div className="relative flex h-[48px] w-[58px] items-center justify-center rounded-[16px] border border-white/60 bg-white/70 text-[#183047] shadow-[0_12px_28px_-18px_rgba(24,48,71,0.38)] backdrop-blur">
-                <DeviceIcon
-                  type={device.icon}
+              {device.image ? (
+                <img
+                  src={device.image}
+                  alt={device.name}
+                  loading="eager"
+                  className="relative z-[1] h-[84px] w-[88%] object-contain drop-shadow-[0_14px_18px_rgba(24,48,71,0.2)] transition duration-500 group-hover:scale-[1.04]"
                 />
-              </div>
+              ) : (
+                <div className="relative flex h-[48px] w-[58px] items-center justify-center rounded-[16px] border border-white/60 bg-white/70 text-[#183047] shadow-[0_12px_28px_-18px_rgba(24,48,71,0.38)] backdrop-blur">
+                  <DeviceIcon
+                    type={device.icon}
+                  />
+                </div>
+              )}
 
-              <span className="absolute bottom-2 left-2 rounded-full bg-white/75 px-2 py-0.5 text-[5px] font-semibold uppercase tracking-[0.12em] text-[#617c43] backdrop-blur">
+              <span className="absolute bottom-2 left-2 z-[2] rounded-full border border-white/60 bg-white/85 px-2 py-0.5 text-[5px] font-semibold uppercase tracking-[0.12em] text-[#617c43] shadow-sm backdrop-blur">
                 {device.location}
               </span>
             </div>

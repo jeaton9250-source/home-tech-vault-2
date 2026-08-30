@@ -205,7 +205,7 @@ export default function CinematicHomeExperience({
               </motion.div>
 
               <FloatingInfoCard
-                className="absolute -left-10 top-[18%] hidden xl:block"
+                className="absolute -left-32 top-[4%] hidden 2xl:block scale-90 origin-top-right"
                 icon={ShieldCheck}
                 eyebrow="Warranty"
                 title="Coverage active"
@@ -213,7 +213,7 @@ export default function CinematicHomeExperience({
               />
 
               <FloatingInfoCard
-                className="absolute -right-7 bottom-[15%] hidden xl:block"
+                className="absolute -right-28 bottom-[2%] hidden 2xl:block scale-90 origin-bottom-left"
                 icon={FileText}
                 eyebrow="Manual"
                 title="Ready to open"
