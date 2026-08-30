@@ -120,6 +120,15 @@ export async function POST(
             `${firstName} ${lastName}`.trim(),
 
           /*
+           * Presentation-only hint used by the
+           * Supabase confirmation email template.
+           *
+           * NEVER use this field for authorization.
+           */
+          signup_experience:
+            "realtor",
+
+          /*
            * Do NOT place Realtor authorization
            * claims in user-controlled metadata.
            *
