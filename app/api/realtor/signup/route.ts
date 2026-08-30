@@ -99,9 +99,6 @@ export async function POST(
     const supabase =
       await createClient();
 
-    const origin =
-      new URL(request.url).origin;
-
     const {
       data,
       error,
@@ -109,10 +106,6 @@ export async function POST(
       email,
       password,
       options: {
-        emailRedirectTo:
-          `${origin}/auth/confirm?next=${encodeURIComponent(
-            "/realtors/setup"
-          )}`,
         data: {
           first_name: firstName,
           last_name: lastName,
