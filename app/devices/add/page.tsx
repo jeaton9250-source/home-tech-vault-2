@@ -56,6 +56,11 @@ function getRequestedHouseholdId() {
   );
 }
 
+type AddDeviceRoomOption = {
+  id: string;
+  name: string;
+};
+
 export default function AddDevicePage() {
   const router = useRouter();
 
@@ -101,6 +106,106 @@ export default function AddDevicePage() {
   }, []);
 
   const isClientVault = Boolean(requestedHouseholdId);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadRoomOptions() {
+      if (!user || isDemo) {
+        if (!cancelled) {
+          setRoomOptions([]);
+        }
+
+        return;
+      }
+
+      setLoadingRoomOptions(true);
+
+      try {
+        /*
+         * DO NOT manually scope this query.
+         *
+         * The rooms table has RLS policies that already return
+         * only rooms this authenticated user can access.
+         *
+         * This allows both:
+         * - household-owned rooms
+         * - legacy/personal user-owned rooms
+         */
+        const { data, error } = await supabase
+          .from("rooms")
+          .select("id, name, household_id, user_id, sort_order")
+          .order("sort_order", {
+            ascending: true,
+          })
+          .order("name", {
+            ascending: true,
+          });
+
+        if (error) {
+          throw error;
+        }
+
+        if (cancelled) {
+          return;
+        }
+
+        const seen = new Set<string>();
+
+        const rooms = (data || [])
+          .filter((room) => {
+            const name = room.name?.trim();
+
+            if (!name) {
+              return false;
+            }
+
+            if (name.toLowerCase() === "network") {
+              return false;
+            }
+
+            /*
+             * Avoid duplicate dropdown entries if a legacy
+             * personal room and household room share a name.
+             */
+            const key = name.toLowerCase();
+
+            if (seen.has(key)) {
+              return false;
+            }
+
+            seen.add(key);
+            return true;
+          })
+          .map((room) => ({
+            id: room.id,
+            name: room.name.trim(),
+          }));
+
+        console.log("HTV Smart Add accessible rooms:", data);
+
+        console.log("HTV Smart Add room options:", rooms);
+
+        setRoomOptions(rooms);
+      } catch (error) {
+        console.error("Room options failed to load:", error);
+
+        if (!cancelled) {
+          setRoomOptions([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoadingRoomOptions(false);
+        }
+      }
+    }
+
+    void loadRoomOptions();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user, isDemo, permissionsLoading, requestedHouseholdId]);
 
   /*
    * For Realtor preparation, the URL-selected household
@@ -229,6 +334,15 @@ export default function AddDevicePage() {
 
   const [location, setLocation] = useState("");
 
+  const [inlineRoomName, setInlineRoomName] = useState("");
+  const [creatingInlineRoom, setCreatingInlineRoom] = useState(false);
+  const [inlineRoomError, setInlineRoomError] = useState("");
+  const [inlineRoomSuccess, setInlineRoomSuccess] = useState("");
+
+  const [roomOptions, setRoomOptions] = useState<AddDeviceRoomOption[]>([]);
+
+  const [loadingRoomOptions, setLoadingRoomOptions] = useState(false);
+
   const [notes, setNotes] = useState("");
 
   /*
@@ -337,6 +451,138 @@ export default function AddDevicePage() {
 
     setProductUpc(device.upc ?? "");
     setDeviceChosenFromLookup(true);
+  }
+
+  async function handleInlineCreateRoom() {
+    if (!user || isDemo || creatingInlineRoom) {
+      return;
+    }
+
+    const name = inlineRoomName.trim();
+
+    if (!name) {
+      setInlineRoomError("Enter a room name.");
+      setInlineRoomSuccess("");
+      return;
+    }
+
+    if (name.length > 80) {
+      setInlineRoomError("Room names must be 80 characters or fewer.");
+      setInlineRoomSuccess("");
+      return;
+    }
+
+    if (name.toLowerCase() === "network") {
+      setInlineRoomError("Network is reserved for Home Systems.");
+      setInlineRoomSuccess("");
+      return;
+    }
+
+    setCreatingInlineRoom(true);
+    setInlineRoomError("");
+    setInlineRoomSuccess("");
+
+    try {
+      /*
+       * First check whether this room already exists.
+       * We scope the lookup exactly the same way as the
+       * rest of HTV:
+       *
+       * Household/client vault -> household_id
+       * Personal vault         -> user_id + household_id null
+       */
+      let existingQuery = supabase
+        .from("rooms")
+        .select("id, name")
+        .ilike("name", name)
+        .limit(1);
+
+      if (requestedHouseholdId) {
+        existingQuery = existingQuery.eq("household_id", requestedHouseholdId);
+      } else {
+        existingQuery = existingQuery
+          .is("household_id", null)
+          .eq("user_id", user.id);
+      }
+
+      const { data: existingRooms, error: existingError } = await existingQuery;
+
+      if (existingError) {
+        throw existingError;
+      }
+
+      const existingRoom = existingRooms?.[0] ?? null;
+
+      /*
+       * If it already exists, just select it.
+       * Do not create a duplicate.
+       */
+      if (existingRoom) {
+        setLocation(existingRoom.name);
+        setInlineRoomName("");
+        setInlineRoomError("");
+        setInlineRoomSuccess(`${existingRoom.name} selected.`);
+        return;
+      }
+
+      const roomPayload = {
+        name,
+        room_type: "other",
+        sort_order: 999,
+        user_id: user.id,
+        household_id: requestedHouseholdId || null,
+      };
+
+      const { data: createdRoom, error: createError } = await supabase
+        .from("rooms")
+        .insert(roomPayload)
+        .select("id, name")
+        .single();
+
+      if (createError) {
+        throw createError;
+      }
+
+      /*
+       * Devices still currently save the room through
+       * their existing `location` field.
+       *
+       * Selecting the new room here means the device
+       * will immediately appear inside My Home.
+       */
+      setRoomOptions((current) => {
+        const alreadyExists = current.some(
+          (room) =>
+            room.id === createdRoom.id ||
+            room.name.toLowerCase() === createdRoom.name.toLowerCase(),
+        );
+
+        if (alreadyExists) {
+          return current;
+        }
+
+        return [
+          ...current,
+          {
+            id: createdRoom.id,
+            name: createdRoom.name,
+          },
+        ].sort((a, b) => a.name.localeCompare(b.name));
+      });
+
+      setLocation(createdRoom.name);
+
+      setInlineRoomName("");
+      setInlineRoomError("");
+      setInlineRoomSuccess(`${createdRoom.name} created and selected.`);
+    } catch (error) {
+      console.error("Inline room creation failed:", error);
+
+      setInlineRoomError("That room could not be created. Please try again.");
+      setInlineRoomSuccess("");
+    } finally {
+      setCreatingInlineRoom(false);
+    }
   }
 
   async function saveDevice(event: FormEvent<HTMLFormElement>) {
@@ -854,15 +1100,138 @@ export default function AddDevicePage() {
                   />
                 </FormField>
 
-                <FormField label="Location">
-                  <input
-                    maxLength={DEVICE_FIELD_LIMITS.location}
-                    value={location}
-                    onChange={(event) => setLocation(event.target.value)}
-                    placeholder="Living Room"
-                    className={inputClassName}
-                  />
+                <FormField label="Room">
+                  <div className="space-y-2">
+                    <div className="relative">
+                      <select
+                        value={location}
+                        onChange={(event) => setLocation(event.target.value)}
+                        disabled={loadingRoomOptions}
+                        className="w-full appearance-none rounded-xl border border-[#20384b]/10 bg-white px-3.5 py-3 pr-10 text-sm text-[#172b3a] outline-none transition focus:border-[#617c43]/45 focus:ring-2 focus:ring-[#617c43]/10 disabled:cursor-wait disabled:opacity-60"
+                      >
+                        <option value="">
+                          {loadingRoomOptions
+                            ? "Loading rooms..."
+                            : "Choose a room"}
+                        </option>
+
+                        {location &&
+                        !roomOptions.some((room) => room.name === location) ? (
+                          <option value={location}>{location}</option>
+                        ) : null}
+
+                        {roomOptions.map((room) => (
+                          <option key={room.id} value={room.name}>
+                            {room.name}
+                          </option>
+                        ))}
+                      </select>
+
+                      <svg
+                        aria-hidden="true"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                        className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#7b858c]"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.51a.75.75 0 0 1-1.08 0l-4.25-4.51a.75.75 0 0 1 .02-1.06Z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-xs text-[#7b858c]">
+                        {roomOptions.length > 0
+                          ? `${roomOptions.length} ${
+                              roomOptions.length === 1 ? "room" : "rooms"
+                            } in your home`
+                          : loadingRoomOptions
+                            ? "Loading your rooms..."
+                            : "No rooms created yet"}
+                      </p>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const input =
+                            document.querySelector<HTMLInputElement>(
+                              '[data-inline-room-name="true"]',
+                            );
+
+                          input?.focus();
+                        }}
+                        className="text-xs font-semibold text-[#617c43] transition hover:text-[#20384b]"
+                      >
+                        + New room
+                      </button>
+                    </div>
+                  </div>
                 </FormField>
+
+                <div className="rounded-[20px] border border-[#20384b]/10 bg-[#f8f5ee] p-4">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                    <div className="min-w-0 flex-1">
+                      <label className="text-xs font-semibold text-[#20384b]">
+                        Create a new room
+                      </label>
+
+                      <input
+                        type="text"
+                        value={inlineRoomName}
+                        maxLength={80}
+                        onChange={(event) => {
+                          setInlineRoomName(event.target.value);
+
+                          if (inlineRoomError) {
+                            setInlineRoomError("");
+                          }
+
+                          if (inlineRoomSuccess) {
+                            setInlineRoomSuccess("");
+                          }
+                        }}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter") {
+                            event.preventDefault();
+                            void handleInlineCreateRoom();
+                          }
+                        }}
+                        placeholder="Example: Kitchen"
+                        className="mt-2 w-full rounded-xl border border-[#20384b]/10 bg-white px-3.5 py-3 text-sm text-[#172b3a] outline-none transition placeholder:text-[#8a9297] focus:border-[#617c43]/45 focus:ring-2 focus:ring-[#617c43]/10"
+                      />
+                    </div>
+
+                    <button
+                      type="button"
+                      disabled={creatingInlineRoom || !inlineRoomName.trim()}
+                      onClick={() => void handleInlineCreateRoom()}
+                      className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-xl bg-[#20384b] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#172b3a] disabled:cursor-not-allowed disabled:opacity-45"
+                    >
+                      {creatingInlineRoom ? "Creating..." : "Create room"}
+                    </button>
+                  </div>
+
+                  {inlineRoomError ? (
+                    <p className="mt-2 text-xs font-medium text-red-600">
+                      {inlineRoomError}
+                    </p>
+                  ) : null}
+
+                  {inlineRoomSuccess ? (
+                    <p className="mt-2 text-xs font-semibold text-[#4f6b36]">
+                      {inlineRoomSuccess}
+                    </p>
+                  ) : null}
+
+                  {!inlineRoomError && !inlineRoomSuccess ? (
+                    <p className="mt-2 text-xs leading-5 text-[#778187]">
+                      Create a room without leaving Smart Add. It will be
+                      selected automatically for this device.
+                    </p>
+                  ) : null}
+                </div>
               </div>
 
               <div className="rounded-2xl border border-border-subtle bg-surface-sunken/45">

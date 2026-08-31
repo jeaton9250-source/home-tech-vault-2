@@ -60,6 +60,14 @@ export const PRIMARY_NAV_ITEMS: PrimaryNavItem[] = [
       "/reports",
     ],
   },
+
+  {
+    label: "Household",
+    href: "/family",
+    icon: Users,
+    feature: "family",
+    activePrefixes: ["/family"],
+  },
   {
     label: "Ask Your Vault",
     href: "/smart-search",

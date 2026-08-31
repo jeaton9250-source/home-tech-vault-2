@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useMemo,
-  useState,
-  type ComponentType,
-} from "react";
+import { useEffect, useMemo, useState, type ComponentType } from "react";
 
 import Link from "next/link";
 
@@ -26,10 +21,7 @@ import {
 import { supabase } from "@/lib/supabase";
 import { applyHouseholdScope } from "@/lib/data/householdScope";
 
-import {
-  demoDevices,
-  demoDocuments,
-} from "@/lib/demoData";
+import { demoDevices, demoDocuments } from "@/lib/demoData";
 
 import { usePermissions } from "@/hooks/usePermissions";
 
@@ -80,35 +72,20 @@ export default function DocumentsPage() {
     loading: permissionsLoading,
   } = usePermissions();
 
-  const [documents, setDocuments] =
-    useState<DocumentRecord[]>([]);
+  const [documents, setDocuments] = useState<DocumentRecord[]>([]);
 
-  const [devices, setDevices] =
-    useState<DeviceRecord[]>([]);
+  const [devices, setDevices] = useState<DeviceRecord[]>([]);
 
-  const [
-    loadingDocuments,
-    setLoadingDocuments,
-  ] = useState(true);
+  const [loadingDocuments, setLoadingDocuments] = useState(true);
 
-  const [
-    errorMessage,
-    setErrorMessage,
-  ] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const [searchTerm, setSearchTerm] =
-    useState("");
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const [
-    selectedType,
-    setSelectedType,
-  ] = useState("All");
+  const [selectedType, setSelectedType] = useState("All");
 
-  const [
-    previewDocument,
-    setPreviewDocument,
-  ] = useState<DocumentRecord | null>(
-    null
+  const [previewDocument, setPreviewDocument] = useState<DocumentRecord | null>(
+    null,
   );
 
   useEffect(() => {
@@ -129,88 +106,54 @@ export default function DocumentsPage() {
          * shared household documents.
          */
         if (isDemo || !user) {
-          const sampleDocuments:
-            DocumentRecord[] =
-            demoDocuments.map(
-              (document) => ({
-                id: document.id,
-                device_id:
-                  document.device_id,
-                file_type:
-                  document.document_type ||
-                  "Document",
-                file_name:
-                  document.file_name,
-                document_name:
-                  document.document_name,
-                file_url: null,
-                created_at:
-                  document.created_at,
-              })
-            );
+          const sampleDocuments: DocumentRecord[] = demoDocuments.map(
+            (document) => ({
+              id: document.id,
+              device_id: document.device_id,
+              file_type: document.document_type || "Document",
+              file_name: document.file_name,
+              document_name: document.document_name,
+              file_url: null,
+              created_at: document.created_at,
+            }),
+          );
 
-          const sampleDevices:
-            DeviceRecord[] =
-            demoDevices.map(
-              (device) => ({
-                id: device.id,
-                device_name:
-                  device.device_name,
-              })
-            );
+          const sampleDevices: DeviceRecord[] = demoDevices.map((device) => ({
+            id: device.id,
+            device_name: device.device_name,
+          }));
 
           if (!mounted) {
             return;
           }
 
-          setDocuments(
-            sampleDocuments
-          );
+          setDocuments(sampleDocuments);
 
-          setDevices(
-            sampleDevices
-          );
+          setDevices(sampleDevices);
 
           return;
         }
 
-        let documentQuery =
-          applyHouseholdScope(
-            supabase
-              .from("documents")
-              .select("*"),
-            householdId,
-            user.id
-          );
+        let documentQuery = applyHouseholdScope(
+          supabase.from("documents").select("*"),
+          householdId,
+          user.id,
+        );
 
-        let deviceQuery =
-          applyHouseholdScope(
-            supabase
-              .from("devices")
-              .select(
-                "id, device_name"
-              ),
-            householdId,
-            user.id
-          );
+        let deviceQuery = applyHouseholdScope(
+          supabase.from("devices").select("id, device_name"),
+          householdId,
+          user.id,
+        );
 
-        const [
-          documentResult,
-          deviceResult,
-        ] = await Promise.all([
-          documentQuery.order(
-            "created_at",
-            {
-              ascending: false,
-            }
-          ),
+        const [documentResult, deviceResult] = await Promise.all([
+          documentQuery.order("created_at", {
+            ascending: false,
+          }),
 
-          deviceQuery.order(
-            "device_name",
-            {
-              ascending: true,
-            }
-          ),
+          deviceQuery.order("device_name", {
+            ascending: true,
+          }),
         ]);
 
         if (documentResult.error) {
@@ -220,7 +163,7 @@ export default function DocumentsPage() {
         if (deviceResult.error) {
           console.error(
             "Unable to load devices for documents:",
-            deviceResult.error
+            deviceResult.error,
           );
         }
 
@@ -228,119 +171,62 @@ export default function DocumentsPage() {
           return;
         }
 
-        const rows =
-          (documentResult.data ??
-            []) as DocumentRecord[];
+        const rows = (documentResult.data ?? []) as DocumentRecord[];
 
-        const storagePaths =
-          Array.from(
-            new Set(
-              rows
-                .map((document) =>
-                  extractDocumentsStoragePath(
-                    document.file_url
-                  )
-                )
-                .filter(
-                  (
-                    value
-                  ): value is string =>
-                    Boolean(value)
-                )
-            )
-          );
+        const storagePaths = Array.from(
+          new Set(
+            rows
+              .map((document) => extractDocumentsStoragePath(document.file_url))
+              .filter((value): value is string => Boolean(value)),
+          ),
+        );
 
-        const signedUrlByPath =
-          new Map<
-            string,
-            string
-          >();
+        const signedUrlByPath = new Map<string, string>();
 
-        if (
-          storagePaths.length > 0
-        ) {
-          const {
-            data:
-              signedDocuments,
-            error:
-              signedDocumentsError,
-          } =
+        if (storagePaths.length > 0) {
+          const { data: signedDocuments, error: signedDocumentsError } =
             await supabase.storage
               .from("documents")
-              .createSignedUrls(
-                storagePaths,
-                3600
-              );
+              .createSignedUrls(storagePaths, 3600);
 
-          if (
-            signedDocumentsError
-          ) {
+          if (signedDocumentsError) {
             console.error(
               "Unable to create document URLs:",
-              signedDocumentsError
+              signedDocumentsError,
             );
           } else {
-            for (
-              const signed of
-              signedDocuments ?? []
-            ) {
-              if (
-                signed.path &&
-                signed.signedUrl
-              ) {
-                signedUrlByPath.set(
-                  signed.path,
-                  signed.signedUrl
-                );
+            for (const signed of signedDocuments ?? []) {
+              if (signed.path && signed.signedUrl) {
+                signedUrlByPath.set(signed.path, signed.signedUrl);
               }
             }
           }
         }
 
-        const documentsWithUrls =
-          rows.map(
-            (document) => {
-              const storagePath =
-                extractDocumentsStoragePath(
-                  document.file_url
-                );
+        const documentsWithUrls = rows.map((document) => {
+          const storagePath = extractDocumentsStoragePath(document.file_url);
 
-              if (
-                !storagePath
-              ) {
-                return document;
-              }
+          if (!storagePath) {
+            return document;
+          }
 
-              const signedUrl =
-                signedUrlByPath.get(
-                  storagePath
-                );
+          const signedUrl = signedUrlByPath.get(storagePath);
 
-              if (
-                !signedUrl
-              ) {
-                return document;
-              }
+          if (!signedUrl) {
+            return document;
+          }
 
-              return {
-                ...document,
-                file_url:
-                  signedUrl,
-              };
-            }
-          );
+          return {
+            ...document,
+            file_url: signedUrl,
+          };
+        });
 
         setDocuments(documentsWithUrls);
 
-        setDevices(
-          (deviceResult.data ??
-            []) as DeviceRecord[]
-        );
+        setDevices((deviceResult.data ?? []) as DeviceRecord[]);
       } catch (error: unknown) {
-        console.error(
-          "Unable to load documents:",
-          error
-        );
+        console.error("Unable to load documents:", error);
 
         if (!mounted) {
           return;
@@ -349,7 +235,7 @@ export default function DocumentsPage() {
         setErrorMessage(
           error instanceof Error
             ? error.message
-            : "Unable to load your documents."
+            : "Unable to load your documents.",
         );
       } finally {
         if (mounted) {
@@ -363,112 +249,57 @@ export default function DocumentsPage() {
     return () => {
       mounted = false;
     };
-  }, [
-    user,
-    isDemo,
-    householdId,
-    permissionsLoading,
-  ]);
+  }, [user, isDemo, householdId, permissionsLoading]);
 
-  const documentTypes =
-    useMemo(() => {
-      const types = documents
-        .map((document) =>
-          document.file_type?.trim()
-        )
-        .filter(
-          (
-            value
-          ): value is string =>
-            Boolean(value)
+  const documentTypes = useMemo(() => {
+    const types = documents
+      .map((document) => document.file_type?.trim())
+      .filter((value): value is string => Boolean(value));
+
+    return ["All", ...Array.from(new Set(types)).sort()];
+  }, [documents]);
+
+  const filteredDocuments = useMemo(() => {
+    const search = searchTerm.trim().toLowerCase();
+
+    return documents.filter((document) => {
+      const deviceName = getDeviceName(document, devices).toLowerCase();
+
+      const matchesSearch =
+        search === "" ||
+        [
+          document.file_name,
+          document.document_name,
+          document.file_type,
+          deviceName,
+        ].some((value) =>
+          String(value ?? "")
+            .toLowerCase()
+            .includes(search),
         );
 
-      return [
-        "All",
-        ...Array.from(
-          new Set(types)
-        ).sort(),
-      ];
-    }, [documents]);
+      const matchesType =
+        selectedType === "All" || document.file_type === selectedType;
 
-  const filteredDocuments =
-    useMemo(() => {
-      const search =
-        searchTerm
-          .trim()
-          .toLowerCase();
+      return matchesSearch && matchesType;
+    });
+  }, [documents, devices, searchTerm, selectedType]);
 
-      return documents.filter(
-        (document) => {
-          const deviceName =
-            getDeviceName(
-              document,
-              devices
-            ).toLowerCase();
+  const connectedDocumentCount = documents.filter((document) =>
+    Boolean(document.device_id),
+  ).length;
 
-          const matchesSearch =
-            search === "" ||
-            [
-              document.file_name,
-              document.document_name,
-              document.file_type,
-              deviceName,
-            ].some((value) =>
-              String(value ?? "")
-                .toLowerCase()
-                .includes(search)
-            );
+  const uniqueTypeCount = new Set(
+    documents.map((document) => document.file_type?.trim()).filter(Boolean),
+  ).size;
 
-          const matchesType =
-            selectedType === "All" ||
-            document.file_type ===
-              selectedType;
+  const recentDocumentCount = documents.filter((document) =>
+    isRecentDate(document.created_at),
+  ).length;
 
-          return (
-            matchesSearch &&
-            matchesType
-          );
-        }
-      );
-    }, [
-      documents,
-      devices,
-      searchTerm,
-      selectedType,
-    ]);
+  const loading = permissionsLoading || loadingDocuments;
 
-  const connectedDocumentCount =
-    documents.filter(
-      (document) =>
-        Boolean(
-          document.device_id
-        )
-    ).length;
-
-  const uniqueTypeCount =
-    new Set(
-      documents
-        .map((document) =>
-          document.file_type?.trim()
-        )
-        .filter(Boolean)
-    ).size;
-
-  const recentDocumentCount =
-    documents.filter(
-      (document) =>
-        isRecentDate(
-          document.created_at
-        )
-    ).length;
-
-  const loading =
-    permissionsLoading ||
-    loadingDocuments;
-
-  const filtersActive =
-    searchTerm.trim() !== "" ||
-    selectedType !== "All";
+  const filtersActive = searchTerm.trim() !== "" || selectedType !== "All";
 
   function clearFilters() {
     setSearchTerm("");
@@ -480,11 +311,7 @@ export default function DocumentsPage() {
       <PageShell>
         <PageCard className="flex min-h-72 items-center justify-center">
           <div className="flex items-center gap-3 text-[#68737b]">
-            <Loader2
-              size={22}
-              className="animate-spin"
-            />
-
+            <Loader2 size={22} className="animate-spin" />
             Loading your documents...
           </div>
         </PageCard>
@@ -496,13 +323,9 @@ export default function DocumentsPage() {
     return (
       <PageShell>
         <PageCard className="border-[#a6584e]/20 bg-[#a6584e]/10 p-6 text-[#984e46]">
-          <h1 className="text-xl font-semibold">
-            Unable to load documents
-          </h1>
+          <h1 className="text-xl font-semibold">Unable to load documents</h1>
 
-          <p className="mt-2 text-sm">
-            {errorMessage}
-          </p>
+          <p className="mt-2 text-sm">{errorMessage}</p>
         </PageCard>
       </PageShell>
     );
@@ -520,6 +343,12 @@ export default function DocumentsPage() {
           href="/documents/upload"
           label="Upload Document"
           variant="primary"
+        />
+
+        <PageAction
+          href="/reports?generate=insurance"
+          label="Insurance Report"
+          variant="secondary"
         />
       </PageHero>
 
@@ -572,11 +401,7 @@ export default function DocumentsPage() {
               <input
                 type="search"
                 value={searchTerm}
-                onChange={(event) =>
-                  setSearchTerm(
-                    event.target.value
-                  )
-                }
+                onChange={(event) => setSearchTerm(event.target.value)}
                 placeholder="Search documents or devices..."
                 className="w-full rounded-xl border border-[#182533]/10 bg-[#eee9df]/60 py-3.5 pl-11 pr-11 text-sm text-[#17212a] outline-none transition placeholder:text-[#8a949b] focus:border-[#617c43]/40 focus:bg-[#f8f5ef] focus:ring-4 focus:ring-[#617c43]/10"
               />
@@ -584,9 +409,7 @@ export default function DocumentsPage() {
               {searchTerm && (
                 <button
                   type="button"
-                  onClick={() =>
-                    setSearchTerm("")
-                  }
+                  onClick={() => setSearchTerm("")}
                   aria-label="Clear search"
                   className="absolute right-4 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-[#8a949b] transition hover:bg-[#182533]/5 hover:text-[#17212a]"
                 >
@@ -596,44 +419,31 @@ export default function DocumentsPage() {
             </div>
 
             <div className="flex gap-2 overflow-x-auto pb-1">
-              {documentTypes.map(
-                (type) => {
-                  const active =
-                    selectedType ===
-                    type;
+              {documentTypes.map((type) => {
+                const active = selectedType === type;
 
-                  return (
-                    <button
-                      key={type}
-                      type="button"
-                      onClick={() =>
-                        setSelectedType(
-                          type
-                        )
-                      }
-                      className={
-                        "shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition " +
-                        (active
-                          ? "bg-[#617c43] text-white shadow-sm"
-                          : "border border-[#182533]/10 bg-[#f8f5ef] text-[#68737b] hover:border-[#617c43]/25 hover:text-[#17212a]")
-                      }
-                    >
-                      {type === "All"
-                        ? "All Documents"
-                        : type}
-                    </button>
-                  );
-                }
-              )}
+                return (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => setSelectedType(type)}
+                    className={
+                      "shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition " +
+                      (active
+                        ? "bg-[#617c43] text-white shadow-sm"
+                        : "border border-[#182533]/10 bg-[#f8f5ef] text-[#68737b] hover:border-[#617c43]/25 hover:text-[#17212a]")
+                    }
+                  >
+                    {type === "All" ? "All Documents" : type}
+                  </button>
+                );
+              })}
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#182533]/10 pt-4">
               <p className="text-sm text-[#68737b]">
                 {filteredDocuments.length}{" "}
-                {filteredDocuments.length ===
-                1
-                  ? "document"
-                  : "documents"}
+                {filteredDocuments.length === 1 ? "document" : "documents"}
               </p>
 
               {filtersActive && (
@@ -653,27 +463,16 @@ export default function DocumentsPage() {
 
       {filteredDocuments.length > 0 ? (
         <section className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-          {filteredDocuments.map(
-            (document) => (
-              <DocumentCard
-                key={document.id}
-                document={document}
-                deviceName={getDeviceName(
-                  document,
-                  devices
-                )}
-                isDemo={
-                  isDemo || !user
-                }
-                canDelete={canDelete}
-                onDemoPreview={() =>
-                  setPreviewDocument(
-                    document
-                  )
-                }
-              />
-            )
-          )}
+          {filteredDocuments.map((document) => (
+            <DocumentCard
+              key={document.id}
+              document={document}
+              deviceName={getDeviceName(document, devices)}
+              isDemo={isDemo || !user}
+              canDelete={canDelete}
+              onDemoPreview={() => setPreviewDocument(document)}
+            />
+          ))}
         </section>
       ) : documents.length > 0 ? (
         <EmptyState
@@ -682,11 +481,7 @@ export default function DocumentsPage() {
           description="Try a different search term or document type."
           section="digitalVault"
         >
-          <Button
-            variant="secondary"
-            className="mt-6"
-            onClick={clearFilters}
-          >
+          <Button variant="secondary" className="mt-6" onClick={clearFilters}>
             Clear filters
           </Button>
         </EmptyState>
@@ -703,18 +498,9 @@ export default function DocumentsPage() {
 
       {previewDocument && (
         <DemoPreviewModal
-          document={
-            previewDocument
-          }
-          deviceName={getDeviceName(
-            previewDocument,
-            devices
-          )}
-          onClose={() =>
-            setPreviewDocument(
-              null
-            )
-          }
+          document={previewDocument}
+          deviceName={getDeviceName(previewDocument, devices)}
+          onClose={() => setPreviewDocument(null)}
         />
       )}
     </PageShell>
@@ -734,35 +520,22 @@ function DocumentCard({
   canDelete: boolean;
   onDemoPreview: () => void;
 }) {
-  const title =
-    getDocumentTitle(document);
+  const title = getDocumentTitle(document);
 
-  const visual =
-    getDocumentVisual(
-      document.file_type
-    );
+  const visual = getDocumentVisual(document.file_type);
 
-  const VisualIcon =
-    visual.icon;
+  const VisualIcon = visual.icon;
 
-  const isImage =
-    isImageDocument(
-      document.file_type,
-      document.file_name
-    );
+  const isImage = isImageDocument(document.file_type, document.file_name);
 
-  const deviceHref =
-    document.device_id
-      ? "/devices/" +
-        document.device_id
-      : "/devices";
+  const deviceHref = document.device_id
+    ? "/devices/" + document.device_id
+    : "/devices";
 
   return (
     <article className="group overflow-hidden rounded-[26px] border border-[#182533]/10 bg-[#f8f5ef] shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] transition duration-300 hover:-translate-y-1 hover:border-[#617c43]/25 hover:shadow-[0_26px_60px_-38px_rgba(15,25,35,0.55)]">
       <div className="relative aspect-[4/3] overflow-hidden bg-[#eee9df]">
-        {isImage &&
-        document.file_url &&
-        !isDemo ? (
+        {isImage && document.file_url && !isDemo ? (
           <img
             src={document.file_url}
             alt={title}
@@ -786,8 +559,7 @@ function DocumentCard({
         )}
 
         <span className="absolute left-4 top-4 rounded-full border border-white/15 bg-[#183047]/85 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#f5f1e8] shadow-sm backdrop-blur">
-          {document.file_type ||
-            "Document"}
+          {document.file_type || "Document"}
         </span>
 
         {isDemo && (
@@ -813,35 +585,21 @@ function DocumentCard({
 
           {document.device_id ? (
             <Link
-              href={
-                isDemo
-                  ? "/devices"
-                  : deviceHref
-              }
+              href={isDemo ? "/devices" : deviceHref}
               className="mt-2 inline-flex max-w-full items-center gap-2 font-semibold text-[#17212a] transition hover:text-[#617c43]"
             >
-              <span className="truncate">
-                {deviceName}
-              </span>
+              <span className="truncate">{deviceName}</span>
 
-              <ExternalLink
-                size={14}
-                className="shrink-0"
-              />
+              <ExternalLink size={14} className="shrink-0" />
             </Link>
           ) : (
-            <p className="mt-2 font-semibold text-[#68737b]">
-              Unassigned
-            </p>
+            <p className="mt-2 font-semibold text-[#68737b]">Unassigned</p>
           )}
         </div>
 
         {document.created_at && (
           <p className="mt-4 text-xs text-[#8a949b]">
-            Added{" "}
-            {formatDate(
-              document.created_at
-            )}
+            Added {formatDate(document.created_at)}
           </p>
         )}
 
@@ -852,25 +610,19 @@ function DocumentCard({
               onClick={onDemoPreview}
               className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-[#617c43] px-4 text-sm font-semibold text-white transition hover:bg-[#718d4f]"
             >
-              <ExternalLink
-                size={16}
-              />
+              <ExternalLink size={16} />
               Preview
             </button>
           ) : (
             <>
               {document.file_url ? (
                 <a
-                  href={
-                    document.file_url
-                  }
+                  href={document.file_url}
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-[#617c43] px-4 text-sm font-semibold text-white transition hover:bg-[#718d4f]"
                 >
-                  <ExternalLink
-                    size={16}
-                  />
+                  <ExternalLink size={16} />
                   Open
                 </a>
               ) : (
@@ -883,13 +635,7 @@ function DocumentCard({
                 </button>
               )}
 
-              {canDelete && (
-                <DeleteDocumentButton
-                  documentId={
-                    document.id
-                  }
-                />
-              )}
+              {canDelete && <DeleteDocumentButton documentId={document.id} />}
             </>
           )}
         </div>
@@ -907,13 +653,9 @@ function DemoPreviewModal({
   deviceName: string;
   onClose: () => void;
 }) {
-  const visual =
-    getDocumentVisual(
-      document.file_type
-    );
+  const visual = getDocumentVisual(document.file_type);
 
-  const VisualIcon =
-    visual.icon;
+  const VisualIcon = visual.icon;
 
   return (
     <div
@@ -922,10 +664,7 @@ function DemoPreviewModal({
       aria-modal="true"
       aria-label="Sample document preview"
       onMouseDown={(event) => {
-        if (
-          event.target ===
-          event.currentTarget
-        ) {
+        if (event.target === event.currentTarget) {
           onClose();
         }
       }}
@@ -933,14 +672,10 @@ function DemoPreviewModal({
       <div className="w-full max-w-lg overflow-hidden rounded-[30px] border border-[#182533]/10 bg-[#f8f5ef] shadow-2xl">
         <div className="flex items-center justify-between border-b border-[#182533]/10 px-5 py-4">
           <div>
-            <p className="text-overline text-section-vault">
-              Sample Preview
-            </p>
+            <p className="text-overline text-section-vault">Sample Preview</p>
 
             <h2 className="mt-1 font-semibold text-text-primary">
-              {getDocumentTitle(
-                document
-              )}
+              {getDocumentTitle(document)}
             </h2>
           </div>
 
@@ -975,28 +710,20 @@ function DemoPreviewModal({
           </div>
 
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            <PreviewDetail
-              label="Connected Device"
-              value={deviceName}
-            />
+            <PreviewDetail label="Connected Device" value={deviceName} />
 
             <PreviewDetail
               label="Date Added"
               value={
                 document.created_at
-                  ? formatDate(
-                      document.created_at
-                    )
+                  ? formatDate(document.created_at)
                   : "Not provided"
               }
             />
           </div>
 
           <div className="mt-6 flex justify-end">
-            <Button
-              variant="secondary"
-              onClick={onClose}
-            >
+            <Button variant="secondary" onClick={onClose}>
               Continue Exploring
             </Button>
           </div>
@@ -1006,13 +733,7 @@ function DemoPreviewModal({
   );
 }
 
-function PreviewDetail({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
+function PreviewDetail({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl border border-[#182533]/8 bg-[#eee9df]/60 p-4">
       <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[#7a858d]">
@@ -1039,9 +760,7 @@ function SummaryCard({
     <PageCard className="border-[#182533]/10 bg-[#f8f5ef] p-5 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] md:p-6">
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-sm text-[#68737b]">
-            {label}
-          </p>
+          <p className="text-sm text-[#68737b]">{label}</p>
 
           <p className="mt-2 truncate font-serif text-2xl font-medium tracking-[-0.03em] text-[#17212a] md:text-3xl">
             {value}
@@ -1056,201 +775,102 @@ function SummaryCard({
   );
 }
 
-function getDocumentVisual(
-  type?: string | null
-): {
+function getDocumentVisual(type?: string | null): {
   icon: DocumentIcon;
   label: string;
   iconClassName: string;
 } {
-  const normalized =
-    type
-      ?.trim()
-      .toLowerCase() || "";
+  const normalized = type?.trim().toLowerCase() || "";
 
-  if (
-    normalized.includes(
-      "warranty"
-    )
-  ) {
+  if (normalized.includes("warranty")) {
     return {
       icon: ShieldCheck,
       label: "Warranty",
-      iconClassName:
-        "text-section-vault",
+      iconClassName: "text-section-vault",
     };
   }
 
-  if (
-    normalized.includes(
-      "receipt"
-    ) ||
-    normalized.includes(
-      "invoice"
-    )
-  ) {
+  if (normalized.includes("receipt") || normalized.includes("invoice")) {
     return {
       icon: ReceiptText,
       label: "Purchase Record",
-      iconClassName:
-        "text-section-vault",
+      iconClassName: "text-section-vault",
     };
   }
 
-  if (
-    normalized.includes(
-      "photo"
-    ) ||
-    normalized.includes(
-      "image"
-    )
-  ) {
+  if (normalized.includes("photo") || normalized.includes("image")) {
     return {
       icon: ImageIcon,
       label: "Image",
-      iconClassName:
-        "text-section-vault",
+      iconClassName: "text-section-vault",
     };
   }
 
-  if (
-    normalized.includes(
-      "manual"
-    ) ||
-    normalized.includes(
-      "guide"
-    )
-  ) {
+  if (normalized.includes("manual") || normalized.includes("guide")) {
     return {
       icon: FileText,
       label: "Manual",
-      iconClassName:
-        "text-section-vault",
+      iconClassName: "text-section-vault",
     };
   }
 
   return {
     icon: File,
     label: "Document",
-    iconClassName:
-      "text-section-vault",
+    iconClassName: "text-section-vault",
   };
 }
 
-function getDocumentTitle(
-  document: DocumentRecord
-) {
+function getDocumentTitle(document: DocumentRecord) {
   return (
-    document.document_name?.trim() ||
-    document.file_name ||
-    "Untitled Document"
+    document.document_name?.trim() || document.file_name || "Untitled Document"
   );
 }
 
-function getDeviceName(
-  document: DocumentRecord,
-  devices: DeviceRecord[]
-) {
-  const device =
-    devices.find(
-      (item) =>
-        item.id ===
-        document.device_id
-    );
+function getDeviceName(document: DocumentRecord, devices: DeviceRecord[]) {
+  const device = devices.find((item) => item.id === document.device_id);
 
-  return (
-    device?.device_name ||
-    "Unassigned Device"
-  );
+  return device?.device_name || "Unassigned Device";
 }
 
-function isImageDocument(
-  type?: string | null,
-  fileName?: string | null
-) {
-  const normalizedType =
-    type
-      ?.trim()
-      .toLowerCase() || "";
+function isImageDocument(type?: string | null, fileName?: string | null) {
+  const normalizedType = type?.trim().toLowerCase() || "";
 
-  if (
-    normalizedType.includes(
-      "photo"
-    ) ||
-    normalizedType.includes(
-      "image"
-    )
-  ) {
+  if (normalizedType.includes("photo") || normalizedType.includes("image")) {
     return true;
   }
 
-  const extension =
-    fileName
-      ?.split(".")
-      .pop()
-      ?.toLowerCase();
+  const extension = fileName?.split(".").pop()?.toLowerCase();
 
-  return [
-    "jpg",
-    "jpeg",
-    "png",
-    "webp",
-    "gif",
-  ].includes(extension || "");
+  return ["jpg", "jpeg", "png", "webp", "gif"].includes(extension || "");
 }
 
-function isRecentDate(
-  value?: string | null
-) {
+function isRecentDate(value?: string | null) {
   if (!value) {
     return false;
   }
 
-  const date =
-    new Date(value);
+  const date = new Date(value);
 
-  if (
-    Number.isNaN(
-      date.getTime()
-    )
-  ) {
+  if (Number.isNaN(date.getTime())) {
     return false;
   }
 
-  const thirtyDaysAgo =
-    Date.now() -
-    30 *
-      24 *
-      60 *
-      60 *
-      1000;
+  const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
 
-  return (
-    date.getTime() >=
-    thirtyDaysAgo
-  );
+  return date.getTime() >= thirtyDaysAgo;
 }
 
-function formatDate(
-  value: string
-) {
-  const date =
-    new Date(value);
+function formatDate(value: string) {
+  const date = new Date(value);
 
-  if (
-    Number.isNaN(
-      date.getTime()
-    )
-  ) {
+  if (Number.isNaN(date.getTime())) {
     return value;
   }
 
-  return date.toLocaleDateString(
-    undefined,
-    {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    }
-  );
+  return date.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
