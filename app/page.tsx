@@ -77,7 +77,6 @@ export default function HomePage() {
   return (
     <main className="min-h-screen bg-[#f7f5f1] text-[#152335]">
       {/* NAVIGATION */}
-
       <header className="sticky top-0 z-50 border-b border-black/[0.05] bg-[#fbfaf7]/95 backdrop-blur-xl">
         <div className="mx-auto flex h-[76px] max-w-[1440px] items-center justify-between px-5 sm:px-6 lg:px-10">
           <Link href="/" className="flex items-center gap-3">
@@ -92,10 +91,17 @@ export default function HomePage() {
 
           <nav className="hidden items-center gap-8 text-sm text-[#435164] lg:flex">
             <Link
-              href="#how-it-works"
+              href="/what-it-remembers"
               className="transition hover:text-[#152335]"
             >
-              How it Works
+              What It Remembers
+            </Link>
+
+            <Link
+              href="/explore"
+              className="transition hover:text-[#152335]"
+            >
+              Explore
             </Link>
 
             <Link
@@ -110,6 +116,13 @@ export default function HomePage() {
               className="transition hover:text-[#152335]"
             >
               Pricing
+            </Link>
+
+            <Link
+              href="/our-story"
+              className="transition hover:text-[#152335]"
+            >
+              Our Story
             </Link>
 
             <Link
@@ -137,7 +150,6 @@ export default function HomePage() {
       </header>
 
       {/* HERO */}
-
       <section className="relative overflow-hidden">
         <div className="absolute inset-0">
           <img
@@ -153,7 +165,6 @@ export default function HomePage() {
           <div className="max-w-[660px]">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#152335]/10 bg-white/65 px-4 py-2 text-sm backdrop-blur-md">
               <Home className="h-4 w-4" />
-
               Built for the place you call home
             </div>
 
@@ -181,7 +192,7 @@ export default function HomePage() {
               </Link>
 
               <Link
-                href="#how-it-works"
+                href="/demo"
                 className="inline-flex items-center justify-center gap-2 px-3 py-4 text-sm font-semibold text-[#152335]"
               >
                 See How It Works
@@ -206,7 +217,6 @@ export default function HomePage() {
       </section>
 
       {/* PAPERWORK */}
-
       <section
         id="how-it-works"
         className="px-5 py-20 sm:px-6 lg:px-10 lg:py-28"
@@ -278,7 +288,6 @@ export default function HomePage() {
       </section>
 
       {/* REAL LIFE MOMENTS */}
-
       <section className="px-5 pb-24 sm:px-6 lg:px-10 lg:pb-32">
         <div className="mx-auto max-w-[1380px]">
           <div className="mb-10 flex flex-col justify-between gap-5 md:flex-row md:items-end">
@@ -328,7 +337,6 @@ export default function HomePage() {
       </section>
 
       {/* HOME RECORD TIMELINE */}
-
       <section className="border-y border-[#152335]/[0.07] bg-[#efede8] px-5 py-24 sm:px-6 lg:px-10 lg:py-28">
         <div className="mx-auto max-w-[1380px]">
           <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
@@ -381,7 +389,6 @@ export default function HomePage() {
       </section>
 
       {/* APPLIANCE STORY */}
-
       <section className="px-5 py-24 sm:px-6 lg:px-10 lg:py-32">
         <div className="mx-auto grid max-w-[1380px] items-center gap-12 lg:grid-cols-[0.7fr_1.3fr]">
           <div>
@@ -454,7 +461,6 @@ export default function HomePage() {
       </section>
 
       {/* ASK YOUR HOME */}
-
       <section className="bg-[#e7edf1] px-5 py-24 sm:px-6 lg:px-10 lg:py-28">
         <div className="mx-auto grid max-w-[1380px] gap-14 lg:grid-cols-[0.75fr_1.25fr] lg:items-center">
           <div>
@@ -526,7 +532,6 @@ export default function HomePage() {
       </section>
 
       {/* DISCOVERY */}
-
       <section className="border-b border-[#152335]/[0.08] bg-[#fbfaf7] px-5 py-14 sm:px-6 lg:px-10">
         <div className="mx-auto flex max-w-[1380px] flex-col justify-between gap-8 md:flex-row md:items-center">
           <div className="flex items-start gap-5">
@@ -558,7 +563,6 @@ export default function HomePage() {
       </section>
 
       {/* REALTOR / BUILDER CTA */}
-
       <section className="relative overflow-hidden">
         <div className="absolute inset-0">
           <img
@@ -599,7 +603,6 @@ export default function HomePage() {
       </section>
 
       {/* FINAL CTA */}
-
       <section className="bg-[#152335] px-5 py-24 text-white sm:px-6 lg:px-10">
         <div className="mx-auto flex max-w-[1000px] flex-col items-center text-center">
           <Home className="h-8 w-8 text-white/60" />
@@ -630,7 +633,6 @@ export default function HomePage() {
       </section>
 
       {/* FOOTER */}
-
       <footer className="bg-[#f7f5f1] px-5 py-14 sm:px-6 lg:px-10">
         <div className="mx-auto max-w-[1380px]">
           <div className="grid gap-10 border-b border-[#152335]/10 pb-12 md:grid-cols-[1.4fr_0.6fr_0.6fr]">
@@ -656,10 +658,17 @@ export default function HomePage() {
 
               <div className="mt-5 flex flex-col gap-3 text-sm text-[#6a7585]">
                 <Link
-                  href="#how-it-works"
+                  href="/what-it-remembers"
                   className="hover:text-[#152335]"
                 >
-                  How it Works
+                  What It Remembers
+                </Link>
+
+                <Link
+                  href="/explore"
+                  className="hover:text-[#152335]"
+                >
+                  Explore
                 </Link>
 
                 <Link
@@ -679,9 +688,16 @@ export default function HomePage() {
             </div>
 
             <div>
-              <p className="font-semibold">Account</p>
+              <p className="font-semibold">Company</p>
 
               <div className="mt-5 flex flex-col gap-3 text-sm text-[#6a7585]">
+                <Link
+                  href="/our-story"
+                  className="hover:text-[#152335]"
+                >
+                  Our Story
+                </Link>
+
                 <Link
                   href="/login"
                   className="hover:text-[#152335]"
