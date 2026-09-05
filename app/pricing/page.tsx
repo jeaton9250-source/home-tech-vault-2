@@ -93,9 +93,8 @@ export default function PricingPage() {
             </h1>
 
             <p className="mt-7 max-w-[610px] text-lg leading-8 text-[#637184] sm:text-xl">
-              Start free, organize what matters, and
-              upgrade only when you want more room for your
-              home&apos;s history.
+              Start free, organize what matters, and upgrade only when
+              you want more room for your home&apos;s history.
             </p>
 
             <div className="mt-9 flex flex-wrap gap-3">
@@ -111,7 +110,7 @@ export default function PricingPage() {
                 href="/what-it-remembers"
                 className="inline-flex items-center justify-center gap-2 rounded-full border border-[#152335]/12 bg-white/60 px-7 py-4 text-sm font-semibold text-[#152335] backdrop-blur transition hover:bg-white"
               >
-                See What HTV Remembers
+                See Your Home Record
               </Link>
             </div>
           </div>
@@ -127,9 +126,9 @@ export default function PricingPage() {
               </h2>
 
               <p className="mt-4 leading-7 text-[#697585]">
-                No complicated setup. No enterprise-style
-                pricing. Just a clearer way to keep your
-                home&apos;s useful information together.
+                No complicated setup. No enterprise-style pricing.
+                Just a clearer way to keep your home&apos;s useful
+                information together.
               </p>
             </div>
           </div>
@@ -151,9 +150,8 @@ export default function PricingPage() {
             </h2>
 
             <p className="mx-auto mt-6 max-w-[650px] text-lg leading-8 text-[#697585]">
-              Every plan is built around the same idea:
-              keeping the useful history of your home in one
-              place.
+              Every plan is built around the same idea: keeping the
+              useful history of your home in one place.
             </p>
           </div>
 
@@ -271,24 +269,24 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* VALUE SECTION */}
+      {/* WHY IT MATTERS */}
       <section className="bg-[#ebe9e3] px-5 py-24 sm:px-6 lg:px-10 lg:py-32">
         <div className="mx-auto grid max-w-[1380px] gap-14 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#788590]">
-              What you&apos;re really buying
+              Why it matters
             </p>
 
             <h2 className="mt-4 font-serif text-4xl leading-[1.04] tracking-[-0.04em] sm:text-5xl lg:text-6xl">
-              Less searching.
+              A little less to remember.
               <br />
-              More knowing.
+              A lot easier to find.
             </h2>
 
             <p className="mt-7 max-w-[560px] text-lg leading-8 text-[#677485]">
-              HTV is not just storage. It gives your home a
-              useful record that gets more valuable the
-              longer you own it.
+              Home Tech Vault gives the useful details of your home
+              a place to stay — so when you need something later,
+              you already know where to look.
             </p>
           </div>
 
@@ -296,23 +294,27 @@ export default function PricingPage() {
             {[
               {
                 icon: ShieldCheck,
-                title: "Know what&apos;s covered",
-                copy: "Keep warranty details beside the items they belong to.",
+                title: "Know what’s still covered",
+                copy:
+                  "Keep warranties and purchase details with the things they belong to.",
               },
               {
                 icon: Home,
-                title: "Know what&apos;s been done",
-                copy: "Remember maintenance, repairs and important home changes.",
+                title: "Remember what’s been done",
+                copy:
+                  "Keep a simple history of repairs, service visits and important home updates.",
               },
               {
                 icon: Users,
-                title: "Share when needed",
-                copy: "Keep everyone in the household on the same page.",
+                title: "Keep the household informed",
+                copy:
+                  "Make it easier for everyone at home to find the same important details.",
               },
               {
                 icon: Sparkles,
-                title: "Build useful history",
-                copy: "Your home record becomes more valuable over time.",
+                title: "Build a record over time",
+                copy:
+                  "Each new receipt, repair and replacement becomes part of your home’s history.",
               },
             ].map((item) => {
               const Icon = item.icon;
@@ -357,19 +359,23 @@ export default function PricingPage() {
             {[
               {
                 q: "Can I start for free?",
-                a: "Yes. The Home plan is designed to let you start organizing your home without entering a credit card.",
+                a:
+                  "Yes. The Home plan lets you start organizing your home without entering a credit card.",
               },
               {
                 q: "Can I upgrade later?",
-                a: "Yes. You can start simple and move to a larger plan when you want more features or household access.",
+                a:
+                  "Yes. You can start simple and move to a larger plan whenever you want more features or household access.",
               },
               {
                 q: "Is this only for smart homes?",
-                a: "No. HTV is designed for the whole home — appliances, documents, warranties, maintenance records and more.",
+                a:
+                  "No. Home Tech Vault is built for the whole home — appliances, documents, warranties, maintenance records and more.",
               },
               {
-                q: "What happens to my home record if I move?",
-                a: "Your home record can become part of the story of the property, and HTV is being built to support useful ownership handoffs.",
+                q: "What happens if I move?",
+                a:
+                  "Your home record can become part of the useful history of the property, helping important details stay connected to the home.",
               },
             ].map((item) => (
               <div
