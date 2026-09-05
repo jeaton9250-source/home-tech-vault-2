@@ -62,9 +62,9 @@ export default function OurStoryPage() {
           <div className="relative mx-auto w-full max-w-[560px]">
             <div className="overflow-hidden rounded-[36px] border border-white/70 bg-white/40 p-3 shadow-[0_30px_90px_rgba(29,47,66,0.15)] backdrop-blur-xl">
               <img
-                src="/image/jason-eaton.jpg"
+                src="/images/jason-eaton.jpg"
                 alt="Jason Eaton, founder of Home Tech Vault"
-                className="aspect-[4/3] w-full rounded-[28px] object-cover"
+                className="aspect-[4/3] w-full rounded-[28px] object-cover object-center"
               />
             </div>
 
@@ -234,9 +234,9 @@ export default function OurStoryPage() {
         <div className="mx-auto grid max-w-[1120px] overflow-hidden rounded-[36px] bg-[#152335] text-white lg:grid-cols-[0.72fr_1.28fr]">
           <div className="min-h-[420px]">
             <img
-              src="/image/jason-eaton.jpg"
+              src="/images/jason-eaton.jpg"
               alt="Jason Eaton, founder of Home Tech Vault"
-              className="h-full w-full object-cover"
+              className="h-full w-full object-cover object-center"
             />
           </div>
 
