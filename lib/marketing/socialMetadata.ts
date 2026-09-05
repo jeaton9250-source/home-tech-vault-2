@@ -32,3 +32,23 @@ export const rootSiteMetadata: Metadata = {
     canonical: "https://www.hometechvault.com",
   },
 };
+
+// -----------------------------------------------------------------------------
+// Legacy social metadata exports
+// Kept for compatibility with lib/marketing/metadata.ts
+// -----------------------------------------------------------------------------
+
+export const SOCIAL_DEFAULT_TITLE =
+  "Home Tech Vault | Your Home's Memory";
+
+export const SOCIAL_OG_TITLE =
+  "Home Tech Vault | Your Home's Memory";
+
+export const SOCIAL_OG_DESCRIPTION =
+  "Keep your home's devices, warranties, documents, maintenance history, and important details organized in one place.";
+
+export const SOCIAL_TWITTER_TITLE =
+  "Home Tech Vault | Your Home's Memory";
+
+export const SOCIAL_TWITTER_DESCRIPTION =
+  "Keep your home's devices, warranties, documents, maintenance history, and important details organized in one place.";
