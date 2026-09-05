@@ -14,6 +14,11 @@ import {
   Wrench,
 } from "lucide-react";
 
+import MarketingHeader from "@/components/marketing/MarketingHeader";
+
+const fallbackMomentImage =
+  "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1200&q=85";
+
 const moments = [
   {
     title: "When something breaks",
@@ -27,7 +32,7 @@ const moments = [
     description:
       "See what was done before and when it was last handled.",
     image:
-      "https://images.unsplash.com/photo-1631545806609-93f5f82e0d8c?auto=format&fit=crop&w=1200&q=85",
+      "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=1200&q=85",
   },
   {
     title: "When you need proof",
@@ -76,78 +81,7 @@ const timeline = [
 export default function HomePage() {
   return (
     <main className="min-h-screen bg-[#f7f5f1] text-[#152335]">
-      {/* NAVIGATION */}
-      <header className="sticky top-0 z-50 border-b border-black/[0.05] bg-[#fbfaf7]/95 backdrop-blur-xl">
-        <div className="mx-auto flex h-[76px] max-w-[1440px] items-center justify-between px-5 sm:px-6 lg:px-10">
-          <Link href="/" className="flex items-center gap-3">
-            <span className="font-serif text-3xl font-semibold tracking-[-0.04em]">
-              HTV
-            </span>
-
-            <span className="hidden text-sm font-medium text-[#263649] sm:block">
-              Home Tech Vault
-            </span>
-          </Link>
-
-          <nav className="hidden items-center gap-8 text-sm text-[#435164] lg:flex">
-            <Link
-              href="/what-it-remembers"
-              className="transition hover:text-[#152335]"
-            >
-              What It Remembers
-            </Link>
-
-            <Link
-              href="/explore"
-              className="transition hover:text-[#152335]"
-            >
-              Explore
-            </Link>
-
-            <Link
-              href="/realtors"
-              className="transition hover:text-[#152335]"
-            >
-              For Realtors
-            </Link>
-
-            <Link
-              href="/pricing"
-              className="transition hover:text-[#152335]"
-            >
-              Pricing
-            </Link>
-
-            <Link
-              href="/our-story"
-              className="transition hover:text-[#152335]"
-            >
-              Our Story
-            </Link>
-
-            <Link
-              href="/login"
-              className="transition hover:text-[#152335]"
-            >
-              Sign In
-            </Link>
-
-            <Link
-              href="/signup"
-              className="rounded-full bg-[#152335] px-6 py-3 font-medium text-white transition hover:bg-[#24374c]"
-            >
-              Start Your Home
-            </Link>
-          </nav>
-
-          <Link
-            href="/signup"
-            className="rounded-full bg-[#152335] px-5 py-2.5 text-sm font-medium text-white lg:hidden"
-          >
-            Start
-          </Link>
-        </div>
-      </header>
+      <MarketingHeader />
 
       {/* HERO */}
       <section className="relative overflow-hidden">
@@ -217,10 +151,7 @@ export default function HomePage() {
       </section>
 
       {/* PAPERWORK */}
-      <section
-        id="how-it-works"
-        className="px-5 py-20 sm:px-6 lg:px-10 lg:py-28"
-      >
+      <section className="px-5 py-20 sm:px-6 lg:px-10 lg:py-28">
         <div className="mx-auto max-w-[1380px] overflow-hidden rounded-[34px] bg-[#ebe5db]">
           <div className="grid lg:grid-cols-2">
             <div className="relative min-h-[400px] lg:min-h-[560px]">
@@ -313,11 +244,16 @@ export default function HomePage() {
                 key={moment.title}
                 className="group overflow-hidden rounded-[26px] bg-[#fffdf9] shadow-[0_12px_40px_rgba(20,35,52,0.06)]"
               >
-                <div className="aspect-[4/3] overflow-hidden">
+                <div className="aspect-[4/3] overflow-hidden bg-[#e9e6df]">
                   <img
                     src={moment.image}
                     alt={moment.title}
                     className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.05]"
+                    onError={(event) => {
+                      event.currentTarget.onerror = null;
+                      event.currentTarget.src =
+                        fallbackMomentImage;
+                    }}
                   />
                 </div>
 
@@ -562,7 +498,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* REALTOR / BUILDER CTA */}
+      {/* REALTOR CTA */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0">
           <img
@@ -657,31 +593,19 @@ export default function HomePage() {
               <p className="font-semibold">Explore</p>
 
               <div className="mt-5 flex flex-col gap-3 text-sm text-[#6a7585]">
-                <Link
-                  href="/what-it-remembers"
-                  className="hover:text-[#152335]"
-                >
+                <Link href="/what-it-remembers">
                   What It Remembers
                 </Link>
 
-                <Link
-                  href="/explore"
-                  className="hover:text-[#152335]"
-                >
+                <Link href="/explore">
                   Explore
                 </Link>
 
-                <Link
-                  href="/pricing"
-                  className="hover:text-[#152335]"
-                >
+                <Link href="/pricing">
                   Pricing
                 </Link>
 
-                <Link
-                  href="/realtors"
-                  className="hover:text-[#152335]"
-                >
+                <Link href="/realtors">
                   For Realtors
                 </Link>
               </div>
@@ -691,24 +615,15 @@ export default function HomePage() {
               <p className="font-semibold">Company</p>
 
               <div className="mt-5 flex flex-col gap-3 text-sm text-[#6a7585]">
-                <Link
-                  href="/our-story"
-                  className="hover:text-[#152335]"
-                >
+                <Link href="/our-story">
                   Our Story
                 </Link>
 
-                <Link
-                  href="/login"
-                  className="hover:text-[#152335]"
-                >
+                <Link href="/login">
                   Sign In
                 </Link>
 
-                <Link
-                  href="/signup"
-                  className="hover:text-[#152335]"
-                >
+                <Link href="/signup">
                   Create Your Home
                 </Link>
               </div>
@@ -722,24 +637,15 @@ export default function HomePage() {
             </p>
 
             <div className="flex gap-5">
-              <Link
-                href="/privacy"
-                className="hover:text-[#152335]"
-              >
+              <Link href="/privacy">
                 Privacy
               </Link>
 
-              <Link
-                href="/terms"
-                className="hover:text-[#152335]"
-              >
+              <Link href="/terms">
                 Terms
               </Link>
 
-              <Link
-                href="/contact"
-                className="hover:text-[#152335]"
-              >
+              <Link href="/contact">
                 Contact
               </Link>
             </div>
