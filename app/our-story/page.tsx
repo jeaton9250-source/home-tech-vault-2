@@ -1,8 +1,8 @@
 import Link from "next/link";
 import {
   ArrowRight,
-  Home,
   Heart,
+  Home,
   Lightbulb,
   ShieldCheck,
 } from "lucide-react";
@@ -21,7 +21,7 @@ export default function OurStoryPage() {
           <div className="absolute right-[-100px] top-20 h-[500px] w-[500px] rounded-full bg-[#dce8eb]/60 blur-[130px]" />
         </div>
 
-        <div className="relative mx-auto grid min-h-[620px] max-w-[1380px] items-center gap-14 px-5 py-20 sm:px-6 lg:grid-cols-[0.95fr_1.05fr] lg:px-10 lg:py-24">
+        <div className="relative mx-auto grid min-h-[640px] max-w-[1380px] items-center gap-14 px-5 py-20 sm:px-6 lg:grid-cols-[0.95fr_1.05fr] lg:px-10 lg:py-24">
           <div className="max-w-[680px]">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#152335]/10 bg-white/60 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#6f7e8d] backdrop-blur">
               <Heart className="h-4 w-4" />
@@ -58,17 +58,30 @@ export default function OurStoryPage() {
             </div>
           </div>
 
-          <div className="overflow-hidden rounded-[36px] shadow-[0_30px_90px_rgba(29,47,66,0.14)]">
-            <img
-              src="https://images.unsplash.com/photo-1600585152915-d208bec867a1?auto=format&fit=crop&w=1400&q=90"
-              alt="A welcoming home"
-              className="aspect-[4/3] w-full object-cover"
-            />
+          {/* FOUNDER IMAGE */}
+          <div className="relative mx-auto w-full max-w-[560px]">
+            <div className="overflow-hidden rounded-[36px] border border-white/70 bg-white/40 p-3 shadow-[0_30px_90px_rgba(29,47,66,0.15)] backdrop-blur-xl">
+              <img
+                src="/image/jason-eaton.jpg"
+                alt="Jason Eaton, founder of Home Tech Vault"
+                className="aspect-[4/3] w-full rounded-[28px] object-cover"
+              />
+            </div>
+
+            <div className="absolute -bottom-6 -left-5 hidden rounded-[20px] bg-[#152335] px-6 py-5 text-white shadow-xl lg:block">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/45">
+                Founder
+              </p>
+
+              <p className="mt-2 font-serif text-2xl">
+                Jason Eaton
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* PERSONAL FOUNDER STORY */}
+      {/* WHERE IT STARTED */}
       <section className="px-5 py-24 sm:px-6 lg:px-10 lg:py-32">
         <div className="mx-auto grid max-w-[1200px] gap-14 lg:grid-cols-[0.7fr_1.3fr]">
           <div>
@@ -138,17 +151,20 @@ export default function OurStoryPage() {
               {
                 icon: Lightbulb,
                 title: "Less searching",
-                copy: "Know where to look when you need a manual, receipt, warranty or service record.",
+                copy:
+                  "Know where to look when you need a manual, receipt, warranty or service record.",
               },
               {
                 icon: ShieldCheck,
                 title: "More confidence",
-                copy: "Keep a clearer record of what your home owns, what was done, and when.",
+                copy:
+                  "Keep a clearer record of what your home owns, what was done, and when.",
               },
               {
                 icon: Home,
                 title: "A history that stays",
-                copy: "Build a useful home record that can grow with the property over time.",
+                copy:
+                  "Build a useful home record that can grow with the property over time.",
               },
             ].map((item) => {
               const Icon = item.icon;
@@ -176,7 +192,7 @@ export default function OurStoryPage() {
         </div>
       </section>
 
-      {/* VISION */}
+      {/* WHERE IT IS GOING */}
       <section className="px-5 py-24 sm:px-6 lg:px-10 lg:py-32">
         <div className="mx-auto grid max-w-[1200px] gap-14 lg:grid-cols-[0.7fr_1.3fr]">
           <div>
@@ -205,9 +221,8 @@ export default function OurStoryPage() {
               </p>
 
               <p>
-                And someday, when that home changes hands, the useful
-                history shouldn&apos;t have to disappear with the
-                previous owner.
+                And when that home changes hands, the useful history
+                should not have to disappear with the previous owner.
               </p>
             </div>
           </div>
@@ -216,25 +231,35 @@ export default function OurStoryPage() {
 
       {/* FOUNDER NOTE */}
       <section className="px-5 pb-24 sm:px-6 lg:px-10 lg:pb-32">
-        <div className="mx-auto max-w-[1000px] rounded-[36px] bg-[#152335] px-8 py-14 text-white sm:px-12 lg:px-16 lg:py-16">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/45">
-            A note from the founder
-          </p>
+        <div className="mx-auto grid max-w-[1120px] overflow-hidden rounded-[36px] bg-[#152335] text-white lg:grid-cols-[0.72fr_1.28fr]">
+          <div className="min-h-[420px]">
+            <img
+              src="/image/jason-eaton.jpg"
+              alt="Jason Eaton, founder of Home Tech Vault"
+              className="h-full w-full object-cover"
+            />
+          </div>
 
-          <p className="mt-7 font-serif text-3xl leading-[1.3] tracking-[-0.02em] sm:text-4xl">
-            “HTV is still growing, but the goal has stayed simple:
-            make the information that comes with owning a home
-            easier to keep, easier to find, and more useful over time.”
-          </p>
-
-          <div className="mt-9 border-t border-white/10 pt-7">
-            <p className="font-semibold">
-              Jason
+          <div className="flex flex-col justify-center px-8 py-12 sm:px-12 lg:px-16">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/45">
+              A note from the founder
             </p>
 
-            <p className="mt-1 text-sm text-white/50">
-              Founder, Home Tech Vault
+            <p className="mt-7 font-serif text-3xl leading-[1.3] tracking-[-0.02em] sm:text-4xl">
+              “HTV is still growing, but the goal has stayed simple:
+              make the information that comes with owning a home
+              easier to keep, easier to find, and more useful over time.”
             </p>
+
+            <div className="mt-9 border-t border-white/10 pt-7">
+              <p className="font-semibold">
+                Jason Eaton
+              </p>
+
+              <p className="mt-1 text-sm text-white/50">
+                Founder, Home Tech Vault
+              </p>
+            </div>
           </div>
         </div>
       </section>
