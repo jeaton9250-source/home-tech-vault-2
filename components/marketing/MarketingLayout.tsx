@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 import LandingFooter from "@/components/landing/public/LandingFooter";
-import LandingHeader from "@/components/landing/public/LandingHeader";
+import MarketingHeader from "@/components/marketing/MarketingHeader";
 import { landingTheme } from "@/components/landing/public/landingTheme";
 import StructuredData from "@/components/marketing/StructuredData";
 import { cn } from "@/lib/design-system/cn";
@@ -27,7 +27,7 @@ export default function MarketingLayout({
         data={createOrganizationJsonLd()}
       />
 
-      <LandingHeader />
+      <MarketingHeader />
 
       <main
         id="main-content"
