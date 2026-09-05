@@ -1,625 +1,363 @@
-import type {
-  Metadata,
-} from "next";
 import Link from "next/link";
 import {
   ArrowRight,
-  CheckCircle2,
+  Check,
   FileText,
   Gift,
   Home,
   KeyRound,
+  PackageCheck,
   ShieldCheck,
-  Sparkles,
-  Users,
-  Wrench,
 } from "lucide-react";
 
-import PublicMarketingShell from "@/components/landing/public/PublicMarketingShell";
+import MarketingHeader from "@/components/marketing/MarketingHeader";
 
-export const metadata: Metadata = {
-  title:
-    "Home Tech Vault for Realtors | A Closing Gift Buyers Actually Use",
-  description:
-    "Give your buyers a digital owner's manual for their new home. Prepare a Home Tech Vault before closing, transfer it securely, and include one year of Pro access.",
-  alternates: {
-    canonical:
-      "https://www.hometechvault.com/realtors",
-  },
-};
+const benefits = [
+  "Free Realtor workspace",
+  "Pay only when you gift a vault",
+  "Buyer receives 1 Year Pro",
+];
 
 const steps = [
   {
     number: "01",
-    title: "Create the Client Vault",
+    icon: Home,
+    title: "Create the home",
     description:
-      "Start a private Home Tech Vault for the property before closing.",
+      "Start a vault for your buyer and add the address before closing.",
   },
   {
     number: "02",
-    title: "Prepare the Home",
+    icon: PackageCheck,
+    title: "Prepare the details",
     description:
-      "Add appliances, warranties, manuals, receipts, maintenance details, documents, and home technology.",
+      "Add appliances, warranties, documents, manuals and useful home information.",
   },
   {
     number: "03",
-    title: "Send the Handoff",
+    icon: Gift,
+    title: "Gift it at closing",
     description:
-      "When closing is ready, securely invite the buyer to take ownership of their new home's vault.",
-  },
-  {
-    number: "04",
-    title: "Buyer Takes Ownership",
-    description:
-      "The buyer receives the prepared vault and one full year of Home Tech Vault Pro.",
-  },
-];
-
-const included = [
-  {
-    icon: Home,
-    title: "A Digital Owner's Manual",
-    description:
-      "Give buyers one organized place for the information that comes with their new home.",
-  },
-  {
-    icon: FileText,
-    title: "Documents That Stay With the Home",
-    description:
-      "Keep receipts, manuals, warranties, service records, and important property documents organized.",
-  },
-  {
-    icon: Wrench,
-    title: "Maintenance History",
-    description:
-      "Start buyers with useful maintenance information instead of a stack of loose papers.",
-  },
-  {
-    icon: KeyRound,
-    title: "Secure Buyer Handoff",
-    description:
-      "Prepare the vault privately, then transfer ownership directly to the buyer.",
-  },
-  {
-    icon: Users,
-    title: "Built for Your Client Experience",
-    description:
-      "Manage Client Vaults from a dedicated Realtor workspace without mixing them with a personal household.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Buyer-Owned After Closing",
-    description:
-      "Once transferred, the homeowner controls the vault. Your access to that Client Vault ends.",
+      "Send the completed Home Tech Vault securely to your buyer when the home changes hands.",
   },
 ];
 
 export default function RealtorsPage() {
   return (
-    <PublicMarketingShell>
-      <main className="overflow-hidden bg-[#f8f5ef] text-[#183047]">
-        <section className="relative isolate overflow-hidden border-b border-[#183047]/10">
-          <div className="absolute inset-0 -z-10">
-            <div className="absolute -right-28 top-4 h-80 w-80 rounded-full bg-[#718d4f]/10 blur-3xl" />
-            <div className="absolute -left-36 bottom-0 h-96 w-96 rounded-full bg-[#183047]/5 blur-3xl" />
-          </div>
+    <main className="min-h-screen bg-[#f7f5f1] text-[#152335]">
+      <MarketingHeader />
 
-          <div className="mx-auto grid max-w-7xl gap-14 px-6 py-20 lg:grid-cols-[1.08fr_.92fr] lg:items-center lg:px-8 lg:py-28">
-            <div>
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#718d4f]/30 bg-white/75 px-4 py-2 text-sm font-medium text-[#617c43] shadow-sm">
-                <Sparkles size={16} />
-                Home Tech Vault for Realtors
-              </div>
+      {/* HERO */}
+      <section className="relative overflow-hidden border-b border-[#152335]/[0.06] bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.95),rgba(232,241,244,0.82)_45%,rgba(247,245,241,1)_82%)]">
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -left-32 top-8 h-[420px] w-[420px] rounded-full bg-white/70 blur-[100px]" />
 
-              <h1 className="max-w-4xl text-5xl font-semibold tracking-[-0.045em] text-[#183047] sm:text-6xl lg:text-7xl">
-                A closing gift they&apos;ll
-                actually use.
-              </h1>
+          <div className="absolute right-[-120px] top-20 h-[500px] w-[500px] rounded-full bg-[#d9e7ea]/60 blur-[120px]" />
+        </div>
 
-              <p className="mt-7 max-w-2xl text-lg leading-8 text-[#183047]/72 sm:text-xl">
-                Give your buyers a digital
-                owner&apos;s manual for their new
-                home. Prepare it before closing,
-                hand it off securely, and include
-                one full year of Home Tech Vault
-                Pro.
-              </p>
-
-              <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-                <Link
-                  href="/realtors/signup"
-                  className="inline-flex items-center justify-center gap-2 rounded-full bg-[#183047] px-7 py-3.5 text-sm font-semibold text-white shadow-lg shadow-[#183047]/15 transition hover:-translate-y-0.5 hover:bg-[#142b40]"
-                >
-                  Create Free Realtor Workspace
-                  <ArrowRight size={17} />
-                </Link>
-
-                <Link
-                  href="#how-it-works"
-                  className="inline-flex items-center justify-center rounded-full border border-[#183047]/15 bg-white/70 px-7 py-3.5 text-sm font-semibold text-[#183047] transition hover:bg-white"
-                >
-                  See How It Works
-                </Link>
-              </div>
-
-              <div className="mt-9 flex flex-wrap gap-x-6 gap-y-3 text-sm text-[#183047]/65">
-                <span className="inline-flex items-center gap-2">
-                  <CheckCircle2
-                    size={16}
-                    className="text-[#617c43]"
-                  />
-                  Free Realtor workspace
-                </span>
-                <span className="inline-flex items-center gap-2">
-                  <CheckCircle2
-                    size={16}
-                    className="text-[#617c43]"
-                  />
-                  Pay only when you gift a vault
-                </span>
-                <span className="inline-flex items-center gap-2">
-                  <CheckCircle2
-                    size={16}
-                    className="text-[#617c43]"
-                  />
-                  Buyer receives 1 Year Pro
-                </span>
-              </div>
+        <div className="relative mx-auto grid min-h-[650px] max-w-[1380px] items-center gap-16 px-5 py-20 sm:px-6 lg:grid-cols-[0.92fr_1.08fr] lg:px-10 lg:py-24">
+          {/* LEFT */}
+          <div className="max-w-[700px]">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#152335]/10 bg-white/55 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#6d7d8d] backdrop-blur">
+              <Gift className="h-4 w-4" />
+              Home Tech Vault for Realtors
             </div>
 
-            <div className="relative">
-              <div className="rounded-[32px] border border-[#183047]/10 bg-white p-5 shadow-[0_32px_90px_rgba(24,48,71,0.12)] sm:p-7">
-                <div className="rounded-[26px] bg-[#183047] p-6 text-white sm:p-8">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/55">
-                        Client Vault
-                      </p>
-                      <h2 className="mt-2 text-2xl font-semibold">
-                        1247 Willow Creek Lane
-                      </h2>
-                      <p className="mt-1 text-sm text-white/60">
-                        Preparing for buyer
-                      </p>
-                    </div>
+            <h1 className="font-serif text-[52px] leading-[0.97] tracking-[-0.05em] text-[#152335] sm:text-[68px] lg:text-[78px]">
+              A closing gift they&apos;ll
+              <br />
+              actually use.
+            </h1>
 
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10">
-                      <Gift size={23} />
-                    </div>
+            <p className="mt-7 max-w-[650px] text-lg leading-8 text-[#637184] sm:text-xl">
+              Give your buyers a digital owner&apos;s manual
+              for their new home. Prepare it before closing,
+              hand it off securely, and include one full year
+              of Home Tech Vault Pro.
+            </p>
+
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <Link
+                href="/realtors/signup"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-[#152335] px-7 py-4 text-sm font-semibold text-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:bg-[#24384c]"
+              >
+                Create Free Realtor Workspace
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+
+              <a
+                href="#how-it-works"
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-[#152335]/12 bg-white/60 px-7 py-4 text-sm font-semibold text-[#152335] backdrop-blur transition hover:bg-white"
+              >
+                See How It Works
+                <ArrowRight className="h-4 w-4" />
+              </a>
+            </div>
+
+            <div className="mt-7 flex flex-col gap-3 text-sm text-[#687486] sm:flex-row sm:flex-wrap sm:gap-6">
+              {benefits.map((benefit) => (
+                <div
+                  key={benefit}
+                  className="flex items-center gap-2"
+                >
+                  <div className="flex h-5 w-5 items-center justify-center rounded-full border border-[#152335]/15 bg-white/60">
+                    <Check className="h-3 w-3" />
                   </div>
 
-                  <div className="mt-7 grid gap-3 sm:grid-cols-2">
-                    {[
-                      "Appliances",
-                      "Home Documents",
-                      "Warranties",
-                      "Maintenance",
-                    ].map((item) => (
+                  {benefit}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* CLIENT VAULT VISUAL */}
+          <div className="relative mx-auto w-full max-w-[570px]">
+            <div className="rounded-[38px] border border-white/80 bg-white/45 p-5 shadow-[0_35px_100px_rgba(20,36,52,0.17)] backdrop-blur-xl sm:p-7">
+              <div className="overflow-hidden rounded-[30px] bg-[#132231] p-7 text-white sm:p-8">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/45">
+                      Client Vault
+                    </p>
+
+                    <h2 className="mt-2 text-xl font-semibold sm:text-2xl">
+                      1247 Willow Creek Lane
+                    </h2>
+
+                    <p className="mt-1 text-sm text-white/45">
+                      Preparing for buyer
+                    </p>
+                  </div>
+
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/[0.07]">
+                    <Gift className="h-5 w-5" />
+                  </div>
+                </div>
+
+                <div className="mt-8 grid grid-cols-2 gap-3">
+                  {[
+                    {
+                      label: "Appliances",
+                      icon: PackageCheck,
+                    },
+                    {
+                      label: "Home Documents",
+                      icon: FileText,
+                    },
+                    {
+                      label: "Warranties",
+                      icon: ShieldCheck,
+                    },
+                    {
+                      label: "Maintenance",
+                      icon: Home,
+                    },
+                  ].map((item) => {
+                    const Icon = item.icon;
+
+                    return (
                       <div
-                        key={item}
-                        className="rounded-2xl border border-white/10 bg-white/[0.06] p-4"
+                        key={item.label}
+                        className="rounded-[18px] border border-white/[0.07] bg-white/[0.035] p-4"
                       >
-                        <CheckCircle2
-                          size={17}
-                          className="text-[#b5c99c]"
-                        />
-                        <p className="mt-3 text-sm font-medium">
-                          {item}
+                        <Icon className="h-4 w-4 text-[#a5aa4a]" />
+
+                        <p className="mt-5 text-sm font-medium">
+                          {item.label}
                         </p>
-                        <p className="mt-1 text-xs text-white/50">
+
+                        <p className="mt-1 text-[11px] text-white/35">
                           Ready for handoff
                         </p>
                       </div>
-                    ))}
-                  </div>
-
-                  <div className="mt-6 rounded-2xl bg-[#f8f5ef] p-5 text-[#183047]">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#617c43]">
-                      Closing Gift
-                    </p>
-                    <div className="mt-2 flex items-end justify-between gap-4">
-                      <div>
-                        <p className="text-xl font-semibold">
-                          1 Year Pro
-                        </p>
-                        <p className="mt-1 text-sm text-[#183047]/60">
-                          Transfers with the home
-                        </p>
-                      </div>
-
-                      <ArrowRight
-                        size={20}
-                        className="mb-1"
-                      />
-                    </div>
-                  </div>
+                    );
+                  })}
                 </div>
-              </div>
 
-              <div className="absolute -bottom-7 -left-7 hidden max-w-56 rounded-2xl border border-[#183047]/10 bg-white p-4 shadow-xl lg:block">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#617c43]">
-                  Buyer experience
-                </p>
-                <p className="mt-2 text-sm leading-6 text-[#183047]/70">
-                  Everything the buyer needs,
-                  organized before they move in.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="border-b border-[#183047]/10 bg-white">
-          <div className="mx-auto grid max-w-7xl divide-y divide-[#183047]/10 px-6 sm:grid-cols-3 sm:divide-x sm:divide-y-0 lg:px-8">
-            <div className="px-4 py-7 text-center">
-              <p className="text-sm font-semibold text-[#183047]">
-                Free Realtor Workspace
-              </p>
-              <p className="mt-1 text-xs text-[#183047]/55">
-                Create and prepare Client Vaults
-              </p>
-            </div>
-
-            <div className="px-4 py-7 text-center">
-              <p className="text-sm font-semibold text-[#183047]">
-                $95.88 Per Closing Gift
-              </p>
-              <p className="mt-1 text-xs text-[#183047]/55">
-                One-time purchase for the property
-              </p>
-            </div>
-
-            <div className="px-4 py-7 text-center">
-              <p className="text-sm font-semibold text-[#183047]">
-                Buyer Owns It After Closing
-              </p>
-              <p className="mt-1 text-xs text-[#183047]/55">
-                Your access ends after secure handoff
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <section className="border-b border-[#183047]/10 bg-white">
-          <div className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
-            <div className="mx-auto max-w-3xl text-center">
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#617c43]">
-                A closing gift with a job to do
-              </p>
-              <h2 className="mt-4 text-3xl font-semibold tracking-[-0.03em] sm:text-5xl">
-                Help your buyers feel organized
-                before move-in day.
-              </h2>
-              <p className="mt-5 text-lg leading-8 text-[#183047]/65">
-                Instead of another item that gets
-                used once, give buyers one organized
-                place for the information they will
-                need throughout homeownership.
-              </p>
-            </div>
-
-            <div className="mt-14 grid gap-5 md:grid-cols-3">
-              {[
-                {
-                  title: "Memorable",
-                  text:
-                    "Stand out with a closing gift buyers are not already expecting.",
-                },
-                {
-                  title: "Practical",
-                  text:
-                    "Help buyers keep important home information organized from day one.",
-                },
-                {
-                  title: "Built to Last",
-                  text:
-                    "The vault stays with the homeowner long after closing day.",
-                },
-              ].map((item) => (
-                <div
-                  key={item.title}
-                  className="rounded-[26px] border border-[#183047]/10 bg-[#f8f5ef] p-7"
-                >
-                  <h3 className="text-xl font-semibold">
-                    {item.title}
-                  </h3>
-                  <p className="mt-3 leading-7 text-[#183047]/65">
-                    {item.text}
+                <div className="mt-4 rounded-[20px] bg-[#f5f4ef] p-5 text-[#152335]">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#7d8793]">
+                    Closing Gift
                   </p>
+
+                  <div className="mt-2 flex items-center justify-between">
+                    <div>
+                      <p className="font-serif text-2xl">
+                        1 Year Pro
+                      </p>
+
+                      <p className="mt-1 text-xs text-[#75808b]">
+                        Included for your buyer
+                      </p>
+                    </div>
+
+                    <ArrowRight className="h-5 w-5" />
+                  </div>
                 </div>
-              ))}
+              </div>
+            </div>
+
+            <div className="absolute -bottom-6 -left-5 hidden max-w-[220px] rounded-[18px] border border-[#152335]/[0.06] bg-white/95 p-5 shadow-xl lg:block">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#87919c]">
+                Buyer Experience
+              </p>
+
+              <p className="mt-2 text-sm leading-6 text-[#526174]">
+                Everything they need, organized before they
+                move in.
+              </p>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <section
-          id="how-it-works"
-          className="bg-[#f8f5ef]"
-        >
-          <div className="mx-auto max-w-7xl px-6 py-20 lg:px-8 lg:py-24">
-            <div className="max-w-3xl">
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#617c43]">
-                How it works
-              </p>
-              <h2 className="mt-4 text-4xl font-semibold tracking-[-0.035em] sm:text-5xl">
-                Prepare the home before they ever
-                log in.
-              </h2>
-            </div>
+      {/* HOW IT WORKS */}
+      <section
+        id="how-it-works"
+        className="scroll-mt-[100px] px-5 py-24 sm:px-6 lg:px-10 lg:py-32"
+      >
+        <div className="mx-auto max-w-[1380px]">
+          <div className="mx-auto max-w-[760px] text-center">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#7b8794]">
+              How It Works
+            </p>
 
-            <div className="mt-14 grid gap-5 lg:grid-cols-4">
-              {steps.map((step) => (
+            <h2 className="mt-4 font-serif text-4xl leading-[1.05] tracking-[-0.04em] sm:text-5xl lg:text-6xl">
+              From listing to closing,
+              <br />
+              in three simple steps.
+            </h2>
+
+            <p className="mx-auto mt-6 max-w-[650px] text-lg leading-8 text-[#687486]">
+              Build the home record while you&apos;re already
+              preparing for closing, then hand it off when
+              your buyer gets the keys.
+            </p>
+          </div>
+
+          <div className="mt-16 grid gap-5 lg:grid-cols-3">
+            {steps.map((step) => {
+              const Icon = step.icon;
+
+              return (
                 <article
                   key={step.number}
-                  className="rounded-[26px] border border-[#183047]/10 bg-white p-7 shadow-sm"
+                  className="relative overflow-hidden rounded-[30px] border border-[#152335]/[0.07] bg-[#fffdf9] p-8 shadow-[0_12px_40px_rgba(20,35,52,0.04)] sm:p-9"
                 >
-                  <p className="text-sm font-semibold text-[#718d4f]">
-                    {step.number}
-                  </p>
-                  <h3 className="mt-8 text-xl font-semibold">
+                  <div className="flex items-center justify-between">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#e9edef]">
+                      <Icon className="h-5 w-5" />
+                    </div>
+
+                    <span className="font-serif text-4xl text-[#152335]/15">
+                      {step.number}
+                    </span>
+                  </div>
+
+                  <h3 className="mt-12 font-serif text-3xl tracking-[-0.025em]">
                     {step.title}
                   </h3>
-                  <p className="mt-3 leading-7 text-[#183047]/64">
+
+                  <p className="mt-4 leading-7 text-[#687486]">
                     {step.description}
                   </p>
                 </article>
-              ))}
-            </div>
+              );
+            })}
           </div>
-        </section>
+        </div>
+      </section>
 
-        <section className="bg-[#183047] text-white">
-          <div className="mx-auto max-w-7xl px-6 py-20 lg:px-8 lg:py-24">
-            <div className="grid gap-12 lg:grid-cols-[.8fr_1.2fr] lg:items-start">
-              <div className="max-w-xl">
-                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#b7cb9e]">
-                  What you can prepare
-                </p>
-                <h2 className="mt-4 text-4xl font-semibold tracking-[-0.035em] sm:text-5xl">
-                  The useful details buyers are
-                  usually left to figure out
-                  themselves.
-                </h2>
-                <p className="mt-5 text-lg leading-8 text-white/62">
-                  Build a cleaner handoff by
-                  organizing the information that
-                  belongs with the property.
-                </p>
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                {included.map((item) => {
-                  const Icon = item.icon;
-
-                  return (
-                    <article
-                      key={item.title}
-                      className="rounded-[24px] border border-white/10 bg-white/[0.06] p-6"
-                    >
-                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 text-[#c2d3ad]">
-                        <Icon size={21} />
-                      </div>
-
-                      <h3 className="mt-5 text-lg font-semibold">
-                        {item.title}
-                      </h3>
-
-                      <p className="mt-2 leading-7 text-white/58">
-                        {item.description}
-                      </p>
-                    </article>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="bg-[#f8f5ef]">
-          <div className="mx-auto max-w-5xl px-6 py-20 lg:px-8 lg:py-24">
-            <div className="overflow-hidden rounded-[34px] border border-[#183047]/10 bg-white shadow-[0_24px_70px_rgba(24,48,71,0.09)]">
-              <div className="grid lg:grid-cols-[1fr_.8fr]">
-                <div className="p-8 sm:p-11">
-                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#617c43]">
-                    The closing gift
-                  </p>
-
-                  <h2 className="mt-4 text-4xl font-semibold tracking-[-0.035em]">
-                    One year of Home Tech Vault
-                    Pro.
-                  </h2>
-
-                  <p className="mt-5 max-w-xl text-lg leading-8 text-[#183047]/65">
-                    Prepare the Client Vault,
-                    transfer it at closing, and
-                    give your buyer a full year
-                    to keep their new home
-                    organized.
-                  </p>
-
-                  <div className="mt-8 grid gap-3 sm:grid-cols-2">
-                    {[
-                      "Device & appliance records",
-                      "Receipts and documents",
-                      "Warranty tracking",
-                      "Maintenance history",
-                      "Home network details",
-                      "Secure ownership transfer",
-                    ].map((item) => (
-                      <div
-                        key={item}
-                        className="flex items-start gap-3 text-sm text-[#183047]/72"
-                      >
-                        <CheckCircle2
-                          size={17}
-                          className="mt-0.5 shrink-0 text-[#617c43]"
-                        />
-                        {item}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex flex-col justify-between bg-[#f1eee6] p-8 sm:p-11">
-                  <div>
-                    <Gift
-                      size={30}
-                      className="text-[#617c43]"
-                    />
-
-                    <p className="mt-8 text-sm font-medium text-[#183047]/55">
-                      Realtor Closing Gift
-                    </p>
-
-                    <div className="mt-3 flex items-end gap-2">
-                      <p className="text-5xl font-semibold tracking-[-0.05em]">
-                        $95.88
-                      </p>
-                    </div>
-
-                    <p className="mt-2 text-sm font-medium text-[#617c43]">
-                      One-time · per property
-                    </p>
-
-                    <p className="mt-5 leading-7 text-[#183047]/60">
-                      Includes a prepared Client Vault
-                      and one full year of Home Tech
-                      Vault Pro for your buyer.
-                    </p>
-
-                    <div className="mt-6 rounded-2xl border border-[#183047]/10 bg-white/70 p-4">
-                      <p className="text-sm font-semibold text-[#183047]">
-                        Your Realtor workspace is free.
-                      </p>
-                      <p className="mt-1 text-xs leading-5 text-[#183047]/55">
-                        You purchase the closing gift
-                        only when you are ready to give
-                        a Client Vault to a buyer.
-                      </p>
-                    </div>
-                  </div>
-
-                  <Link
-                    href="/realtors/signup"
-                    className="mt-10 inline-flex items-center justify-center gap-2 rounded-full bg-[#718d4f] px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-[#617c43]"
-                  >
-                    Start a Realtor Account
-                    <ArrowRight size={17} />
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="border-t border-[#183047]/10 bg-[#f8f5ef]">
-          <div className="mx-auto max-w-5xl px-6 py-20 lg:px-8 lg:py-24">
-            <div className="mx-auto max-w-3xl text-center">
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#617c43]">
-                Realtor FAQ
-              </p>
-
-              <h2 className="mt-4 text-4xl font-semibold tracking-[-0.035em] text-[#183047] sm:text-5xl">
-                Everything you need to know
-                before your first closing.
-              </h2>
-            </div>
-
-            <div className="mt-12 divide-y divide-[#183047]/10 overflow-hidden rounded-[28px] border border-[#183047]/10 bg-white">
-              {[
-                {
-                  question:
-                    "Do I pay for a Realtor account?",
-                  answer:
-                    "No. Your Realtor workspace is free. You only purchase a Home Tech Vault closing gift when you are ready to gift a Client Vault to a buyer.",
-                },
-                {
-                  question:
-                    "What does the buyer receive?",
-                  answer:
-                    "The buyer receives ownership of the prepared Home Tech Vault along with one full year of Home Tech Vault Pro.",
-                },
-                {
-                  question:
-                    "Can I prepare the vault before closing?",
-                  answer:
-                    "Yes. Create the Client Vault in advance and add useful property information such as appliances, warranties, manuals, documents, maintenance details, and home technology.",
-                },
-                {
-                  question:
-                    "Can the buyer see the vault while I am preparing it?",
-                  answer:
-                    "Not until you send the secure handoff. You prepare the Client Vault privately from your Realtor workspace.",
-                },
-                {
-                  question:
-                    "Do I keep access after the buyer accepts it?",
-                  answer:
-                    "No. Once the buyer accepts the ownership transfer, the vault belongs to the homeowner and your access to that Client Vault ends.",
-                },
-                {
-                  question:
-                    "Can I manage more than one closing?",
-                  answer:
-                    "Yes. Your Realtor workspace is designed to manage separate Client Vaults for multiple properties.",
-                },
-              ].map((item) => (
-                <details
-                  key={item.question}
-                  className="group px-6 py-5 sm:px-8"
-                >
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-5 font-semibold text-[#183047]">
-                    {item.question}
-                    <span className="text-xl font-normal text-[#617c43] transition group-open:rotate-45">
-                      +
-                    </span>
-                  </summary>
-
-                  <p className="max-w-3xl pt-4 leading-7 text-[#183047]/62">
-                    {item.answer}
-                  </p>
-                </details>
-              ))}
-            </div>
-
-            <div className="mt-8 text-center">
-              <Link
-                href="/realtors/signup"
-                className="inline-flex items-center gap-2 text-sm font-semibold text-[#617c43] hover:text-[#718d4f]"
-              >
-                Create your free Realtor workspace
-                <ArrowRight size={16} />
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        <section className="border-t border-[#183047]/10 bg-white">
-          <div className="mx-auto max-w-5xl px-6 py-20 text-center lg:px-8">
-            <h2 className="text-4xl font-semibold tracking-[-0.04em] sm:text-5xl">
-              Give your next buyer something
-              built for the home.
-            </h2>
-
-            <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-[#183047]/65">
-              Start your Realtor workspace for
-              free. Create the Client Vault now
-              and purchase the closing gift when
-              you are ready to hand it over.
+      {/* WHY REALTORS */}
+      <section className="bg-[#ebe9e3] px-5 py-24 sm:px-6 lg:px-10 lg:py-32">
+        <div className="mx-auto grid max-w-[1380px] items-center gap-14 lg:grid-cols-2">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#7b8794]">
+              More useful than another basket
             </p>
 
-            <div className="mt-8">
-              <Link
-                href="/realtors/signup"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-[#183047] px-8 py-4 text-sm font-semibold text-white transition hover:bg-[#142b40]"
-              >
-Create Free Realtor Workspace
-                <ArrowRight size={17} />
-              </Link>
-            </div>
+            <h2 className="mt-4 max-w-[610px] font-serif text-4xl leading-[1.04] tracking-[-0.04em] sm:text-5xl lg:text-6xl">
+              Give them something that stays with the home.
+            </h2>
+
+            <p className="mt-7 max-w-[600px] text-lg leading-8 text-[#667486]">
+              Homeownership comes with years of manuals,
+              receipts, warranties, maintenance records and
+              important details. HTV gives all of that a
+              permanent place to live.
+            </p>
           </div>
-        </section>
-      </main>
-    </PublicMarketingShell>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            {[
+              {
+                title: "Useful on day one",
+                copy: "Buyers move in with important information already organized.",
+                icon: KeyRound,
+              },
+              {
+                title: "Your brand stays remembered",
+                copy: "Give buyers something that remains useful long after closing.",
+                icon: Gift,
+              },
+              {
+                title: "Simple handoff",
+                copy: "Transfer the vault securely when the sale is complete.",
+                icon: ArrowRight,
+              },
+              {
+                title: "Built around the home",
+                copy: "The record stays connected to the property, not a paper folder.",
+                icon: Home,
+              },
+            ].map((item) => {
+              const Icon = item.icon;
+
+              return (
+                <div
+                  key={item.title}
+                  className="rounded-[26px] bg-white/65 p-7"
+                >
+                  <Icon className="h-5 w-5 text-[#536679]" />
+
+                  <h3 className="mt-8 font-serif text-2xl">
+                    {item.title}
+                  </h3>
+
+                  <p className="mt-3 leading-7 text-[#687486]">
+                    {item.copy}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* CLOSING CTA */}
+      <section className="bg-[#132231] px-5 py-24 text-white sm:px-6 lg:px-10 lg:py-28">
+        <div className="mx-auto flex max-w-[900px] flex-col items-center text-center">
+          <Gift className="h-8 w-8 text-white/55" />
+
+          <h2 className="mt-6 font-serif text-5xl leading-[1] tracking-[-0.045em] sm:text-6xl">
+            Make your next closing
+            <br />
+            more memorable.
+          </h2>
+
+          <p className="mt-7 max-w-[620px] text-lg leading-8 text-white/60">
+            Create your Realtor workspace for free and build
+            your first buyer vault when you&apos;re ready.
+          </p>
+
+          <Link
+            href="/realtors/signup"
+            className="mt-9 inline-flex items-center gap-2 rounded-full bg-[#a5aa4a] px-8 py-4 text-sm font-semibold text-white transition hover:bg-[#94993f]"
+          >
+            Create Free Realtor Workspace
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+      </section>
+    </main>
   );
 }
