@@ -64,7 +64,7 @@ export default function OurStoryPage() {
               <img
                 src="/images/jason-eaton.jpg"
                 alt="Jason Eaton, founder of Home Tech Vault"
-                className="aspect-[4/3] w-full rounded-[28px] object-cover object-center"
+                className="aspect-[4/3] w-full rounded-[28px] object-cover object-[50%_12%]"
               />
             </div>
 
@@ -231,35 +231,70 @@ export default function OurStoryPage() {
 
       {/* FOUNDER NOTE */}
       <section className="px-5 pb-24 sm:px-6 lg:px-10 lg:pb-32">
-        <div className="mx-auto grid max-w-[1120px] overflow-hidden rounded-[36px] bg-[#152335] text-white lg:grid-cols-[0.72fr_1.28fr]">
-          <div className="min-h-[420px]">
-            <img
-              src="/images/jason-eaton.jpg"
-              alt="Jason Eaton, founder of Home Tech Vault"
-              className="h-full w-full object-cover object-center"
-            />
-          </div>
+        <div className="mx-auto max-w-[1120px] overflow-hidden rounded-[36px] bg-[#152335] text-white shadow-[0_30px_90px_rgba(21,35,53,0.12)]">
+          <div className="grid lg:grid-cols-[0.82fr_1.18fr]">
 
-          <div className="flex flex-col justify-center px-8 py-12 sm:px-12 lg:px-16">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/45">
-              A note from the founder
-            </p>
-
-            <p className="mt-7 font-serif text-3xl leading-[1.3] tracking-[-0.02em] sm:text-4xl">
-              “HTV is still growing, but the goal has stayed simple:
-              make the information that comes with owning a home
-              easier to keep, easier to find, and more useful over time.”
-            </p>
-
-            <div className="mt-9 border-t border-white/10 pt-7">
-              <p className="font-semibold">
-                Jason Eaton
+            {/* PRINCIPLES */}
+            <div className="border-b border-white/10 px-8 py-12 sm:px-12 lg:border-b-0 lg:border-r lg:py-14">
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/40">
+                Why I&apos;m building it
               </p>
 
-              <p className="mt-1 text-sm text-white/50">
-                Founder, Home Tech Vault
-              </p>
+              <div className="mt-10 space-y-9">
+                <div>
+                  <p className="font-serif text-3xl tracking-[-0.03em]">
+                    Keep it.
+                  </p>
+                  <p className="mt-2 max-w-[330px] text-sm leading-6 text-white/55">
+                    Important information about your home should have one
+                    dependable place to live.
+                  </p>
+                </div>
+
+                <div>
+                  <p className="font-serif text-3xl tracking-[-0.03em]">
+                    Find it.
+                  </p>
+                  <p className="mt-2 max-w-[330px] text-sm leading-6 text-white/55">
+                    When something breaks, expires, or needs service, the
+                    answer should be easy to find.
+                  </p>
+                </div>
+
+                <div>
+                  <p className="font-serif text-3xl tracking-[-0.03em]">
+                    Pass it on.
+                  </p>
+                  <p className="mt-2 max-w-[330px] text-sm leading-6 text-white/55">
+                    A home&apos;s useful history should stay with the home
+                    instead of disappearing over time.
+                  </p>
+                </div>
+              </div>
             </div>
+
+            {/* FOUNDER NOTE */}
+            <div className="flex flex-col justify-center px-8 py-12 sm:px-12 lg:px-16 lg:py-16">
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/40">
+                A note from the founder
+              </p>
+
+              <p className="mt-7 max-w-[600px] font-serif text-3xl leading-[1.3] tracking-[-0.03em] sm:text-[40px]">
+                “HTV is still growing, but the goal has stayed simple:
+                make the information that comes with owning a home easier
+                to keep, easier to find, and more useful over time.”
+              </p>
+
+              <div className="mt-10 border-t border-white/10 pt-7">
+                <p className="font-semibold">
+                  Jason Eaton
+                </p>
+                <p className="mt-1 text-sm text-white/45">
+                  Founder, Home Tech Vault
+                </p>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
