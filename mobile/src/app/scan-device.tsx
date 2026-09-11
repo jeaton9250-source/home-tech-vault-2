@@ -29,6 +29,9 @@ type ScanParams = {
   category?: string;
   productUpc?: string;
   room?: string;
+  purchaseDate?: string;
+  warrantyDate?: string;
+  purchasePrice?: string;
 };
 
 export default function ScanDeviceScreen() {
@@ -55,6 +58,9 @@ export default function ScanDeviceScreen() {
         category: extraction?.category || match?.category || params.category || 'Other',
         productUpc: barcode || extraction?.barcode || match?.upc || params.productUpc || '',
         room: params.room || '',
+        purchaseDate: params.purchaseDate || '',
+        warrantyDate: params.warrantyDate || '',
+        purchasePrice: params.purchasePrice || '',
       },
     });
   }

@@ -1,12 +1,14 @@
-import { FileCheck2, FileText, FolderHeart, ReceiptText, Search, ShieldCheck } from 'lucide-react-native';
+import { FileCheck2, FileText, FolderHeart, Plus, ReceiptText, Search, ShieldCheck } from 'lucide-react-native';
+import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { AppScreen, Card, EmptyState, ListRow, LoadingView } from '@/components/ui';
+import { AppScreen, Card, EmptyState, ListRow, LoadingView, PrimaryButton } from '@/components/ui';
 import { useVaultData } from '@/providers/vault-data-provider';
 import { colors, fonts } from '@/theme';
 
 export default function VaultScreen() {
+  const router = useRouter();
   const data = useVaultData();
   const [query, setQuery] = useState('');
   const documents = useMemo(() => {
@@ -22,6 +24,7 @@ export default function VaultScreen() {
         <Count icon={ShieldCheck} value={data.documents.filter((item) => item.type.toLowerCase().includes('warranty')).length} label="warranties" />
       </View>
       <View style={styles.search}><Search size={19} color={colors.muted} /><TextInput value={query} onChangeText={setQuery} placeholder="Find a receipt, manual, or warranty" placeholderTextColor="#9AA3A5" style={styles.input} /></View>
+      <PrimaryButton label="File a new document" icon={Plus} onPress={() => router.push('/add-document')} />
       {documents.length ? <Card>{documents.map((document) => <ListRow key={document.id} icon={document.type === 'Receipt' ? ReceiptText : document.type === 'Warranty' ? ShieldCheck : FileCheck2} title={document.name} detail={`${document.type} · ${document.deviceName}`} meta={document.date.split(',')[0]} />)}</Card> : <EmptyState icon={FolderHeart} title={query ? 'No documents found' : 'A safe place for the paperwork'} body={query ? 'Try another document name, type, or device.' : 'Receipts, manuals, coverage, and insurance records will stay organized here.'} />}
     </AppScreen>
   );

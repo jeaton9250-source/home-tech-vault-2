@@ -33,6 +33,7 @@ type VaultDataContextValue = VaultData & {
   error: string | null;
   refresh: () => Promise<void>;
   rememberSavedDevice: (device: VaultDevice, householdId: string | null) => void;
+  rememberSavedDocument: (document: VaultDocument, householdId: string | null) => void;
 };
 
 const emptyData: VaultData = {
@@ -126,9 +127,9 @@ export function VaultDataProvider({ children }: { children: ReactNode }) {
       ]);
       const scope = householdId ? { column: 'household_id', value: householdId } : { column: 'user_id', value: user.id };
       const [devicesResult, maintenanceResult, documentsResult] = await Promise.all([
-        supabase.from('devices').select('id, device_name, brand, category, location, model_number, purchase_price, warranty_date, online').eq(scope.column, scope.value).order('device_name'),
+        supabase.from('devices').select('id, device_name, brand, manufacturer, category, location, model_number, serial_number, purchase_date, purchase_price, warranty_date, online').eq(scope.column, scope.value).order('device_name'),
         supabase.from('maintenance_tasks').select('id, title, device_id, due_date, completed').eq(scope.column, scope.value).order('due_date').limit(12),
-        supabase.from('documents').select('id, file_name, file_type, created_at, device_id').eq(scope.column, scope.value).order('created_at', { ascending: false }).limit(20),
+        supabase.from('documents').select('id, file_name, file_type, document_name, document_type, created_at, device_id, file_url').eq(scope.column, scope.value).order('created_at', { ascending: false }).limit(20),
       ]);
       const firstError = profileResult.error || devicesResult.error;
       if (firstError) throw firstError;
@@ -139,6 +140,9 @@ export function VaultDataProvider({ children }: { children: ReactNode }) {
         category: device.category || 'Other',
         location: device.location || 'Room not set',
         model: device.model_number || 'Model not recorded',
+        manufacturer: device.manufacturer || device.brand || 'Unknown manufacturer',
+        serialNumber: device.serial_number,
+        purchaseDate: device.purchase_date,
         value: Number(device.purchase_price) || 0,
         warrantyDate: device.warranty_date,
         online: device.online,
@@ -156,10 +160,12 @@ export function VaultDataProvider({ children }: { children: ReactNode }) {
       });
       const documents: VaultDocument[] = (documentsResult.error ? [] : documentsResult.data ?? []).map((document) => ({
         id: document.id,
-        name: document.file_name || 'Home document',
-        type: document.file_type || 'Document',
+        deviceId: document.device_id,
+        name: document.document_name || document.file_name || 'Home document',
+        type: document.document_type || document.file_type || 'Document',
         deviceName: deviceNames.get(document.device_id ?? '') || 'Whole Home',
         date: formatDate(document.created_at),
+        fileUrl: document.file_url,
       }));
       const now = Date.now();
       const notifications: VaultNotification[] = [
@@ -200,6 +206,14 @@ export function VaultDataProvider({ children }: { children: ReactNode }) {
       householdId: householdId ?? current.householdId,
       devices: [device, ...current.devices.filter((item) => item.id !== device.id)]
         .sort((left, right) => left.name.localeCompare(right.name)),
+    }));
+  }, []);
+
+  const rememberSavedDocument = useCallback((document: VaultDocument, householdId: string | null) => {
+    setData((current) => ({
+      ...current,
+      householdId: householdId ?? current.householdId,
+      documents: [document, ...current.documents.filter((item) => item.id !== document.id)],
     }));
   }, []);
 
@@ -246,7 +260,7 @@ export function VaultDataProvider({ children }: { children: ReactNode }) {
   }, [mode, load]);
 
   const visibleData = isDemo ? demoData : data;
-  const value = useMemo(() => ({ ...visibleData, loading: isDemo ? false : loading, refreshing, error, refresh: () => load(true), rememberSavedDevice }), [visibleData, isDemo, loading, refreshing, error, load, rememberSavedDevice]);
+  const value = useMemo(() => ({ ...visibleData, loading: isDemo ? false : loading, refreshing, error, refresh: () => load(true), rememberSavedDevice, rememberSavedDocument }), [visibleData, isDemo, loading, refreshing, error, load, rememberSavedDevice, rememberSavedDocument]);
   return <VaultDataContext.Provider value={value}>{children}</VaultDataContext.Provider>;
 }
 

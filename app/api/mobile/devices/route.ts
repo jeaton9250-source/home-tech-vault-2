@@ -105,7 +105,7 @@ export async function POST(request: Request) {
         manual_checked_at: null,
       })
       .select(
-        "id, device_name, brand, category, location, model_number, purchase_price, warranty_date, online",
+        "id, device_name, brand, manufacturer, category, location, model_number, serial_number, purchase_date, purchase_price, warranty_date, online",
       )
       .single();
 
@@ -133,6 +133,9 @@ export async function POST(request: Request) {
           category: device.category || "Other",
           location: device.location || "Room not set",
           model: device.model_number || "Model not recorded",
+          manufacturer: device.manufacturer || device.brand || "Unknown manufacturer",
+          serialNumber: device.serial_number,
+          purchaseDate: device.purchase_date,
           value: Number(device.purchase_price) || 0,
           warrantyDate: device.warranty_date,
           online: device.online,

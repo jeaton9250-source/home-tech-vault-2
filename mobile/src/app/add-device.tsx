@@ -22,6 +22,9 @@ export default function AddDeviceScreen() {
     category?: string;
     productUpc?: string;
     room?: string;
+    purchaseDate?: string;
+    warrantyDate?: string;
+    purchasePrice?: string;
   }>();
   const auth = useAuth();
   const data = useVaultData();
@@ -33,6 +36,9 @@ export default function AddDeviceScreen() {
   const [category, setCategory] = useState(params.category ?? 'Other');
   const [productUpc, setProductUpc] = useState(params.productUpc ?? '');
   const [room, setRoom] = useState(params.room ?? '');
+  const [purchaseDate, setPurchaseDate] = useState(params.purchaseDate ?? '');
+  const [warrantyDate, setWarrantyDate] = useState(params.warrantyDate ?? '');
+  const [purchasePrice, setPurchasePrice] = useState(params.purchasePrice ?? '');
   const [saving, setSaving] = useState(false);
 
   function openScanner(mode: 'photo' | 'barcode') {
@@ -48,6 +54,9 @@ export default function AddDeviceScreen() {
         category,
         productUpc,
         room,
+        purchaseDate,
+        warrantyDate,
+        purchasePrice,
       },
     });
   }
@@ -67,6 +76,9 @@ export default function AddDeviceScreen() {
         category: category.trim() || 'Other',
         location: room.trim(),
         productUpc: productUpc.trim(),
+        purchaseDate: purchaseDate.trim(),
+        warrantyDate: warrantyDate.trim(),
+        purchasePrice: purchasePrice.trim(),
       }, auth.session.access_token);
       data.rememberSavedDevice(saved.device, saved.householdId);
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -99,6 +111,9 @@ export default function AddDeviceScreen() {
             <Field label="Category" value={category} onChangeText={setCategory} placeholder="TV, appliance, network…" />
             <Field label="Product barcode" value={productUpc} onChangeText={setProductUpc} placeholder="UPC or EAN" />
             <Field label="Room" value={room} onChangeText={setRoom} placeholder="Living Room" />
+            <Field label="Purchase date" value={purchaseDate} onChangeText={setPurchaseDate} placeholder="YYYY-MM-DD" />
+            <Field label="Warranty through" value={warrantyDate} onChangeText={setWarrantyDate} placeholder="YYYY-MM-DD" />
+            <Field label="Purchase price" value={purchasePrice} onChangeText={setPurchasePrice} placeholder="0.00" />
           </View>
           <View style={styles.helper}><Sparkles size={17} color={colors.oliveDark} /><Text style={styles.helperText}>Once saved, Home Tech Vault gives this device a lasting place for its receipt, manual, warranty, and care history.</Text></View>
           <PrimaryButton label={saving ? 'Remembering…' : auth.isDemo ? 'Preview save' : 'Save to my home'} disabled={saving} onPress={save} />

@@ -8,6 +8,9 @@ export type VaultDevice = {
   category: string;
   location: string;
   model: string;
+  manufacturer: string;
+  serialNumber: string | null;
+  purchaseDate: string | null;
   value: number;
   warrantyDate: string | null;
   online: boolean | null;
@@ -24,10 +27,12 @@ export type MaintenanceItem = {
 
 export type VaultDocument = {
   id: string;
+  deviceId: string | null;
   name: string;
   type: string;
   deviceName: string;
   date: string;
+  fileUrl?: string | null;
 };
 
 export type VaultNotification = {
@@ -54,6 +59,9 @@ export const demoDevices: VaultDevice[] = [
     category: 'Entertainment',
     location: 'Living Room',
     model: '65-inch QLED',
+    manufacturer: 'Samsung',
+    serialNumber: '0B3H3CDT800214',
+    purchaseDate: '2024-06-24',
     value: 1899,
     warrantyDate: '2026-10-18',
     online: true,
@@ -66,6 +74,9 @@ export const demoDevices: VaultDevice[] = [
     category: 'Climate',
     location: 'Hallway',
     model: 'Learning Thermostat',
+    manufacturer: 'Google',
+    serialNumber: '09AA01AC4412',
+    purchaseDate: '2023-09-10',
     value: 249,
     warrantyDate: '2027-09-10',
     online: true,
@@ -78,6 +89,9 @@ export const demoDevices: VaultDevice[] = [
     category: 'Appliance',
     location: 'Laundry Room',
     model: 'WM4000HWA',
+    manufacturer: 'LG',
+    serialNumber: '207KWVJ2A918',
+    purchaseDate: '2022-11-05',
     value: 1099,
     warrantyDate: '2027-11-05',
     online: false,
@@ -90,6 +104,9 @@ export const demoDevices: VaultDevice[] = [
     category: 'Security',
     location: 'Front Porch',
     model: 'Video Doorbell Pro',
+    manufacturer: 'Ring',
+    serialNumber: 'RNG-PRO-39281',
+    purchaseDate: '2024-03-22',
     value: 249,
     warrantyDate: '2026-03-22',
     online: true,
@@ -102,6 +119,9 @@ export const demoDevices: VaultDevice[] = [
     category: 'Network',
     location: 'Office',
     model: 'Dream Router',
+    manufacturer: 'Ubiquiti',
+    serialNumber: 'UDR-6F20A9',
+    purchaseDate: '2024-05-15',
     value: 199,
     warrantyDate: '2026-05-15',
     online: true,
@@ -114,6 +134,9 @@ export const demoDevices: VaultDevice[] = [
     category: 'Audio',
     location: 'Living Room',
     model: 'Beam Gen 2',
+    manufacturer: 'Sonos',
+    serialNumber: 'B2-48A1C0',
+    purchaseDate: '2024-07-18',
     value: 499,
     warrantyDate: '2026-07-18',
     online: true,
@@ -129,10 +152,10 @@ export const demoMaintenance: MaintenanceItem[] = [
 ];
 
 export const demoDocuments: VaultDocument[] = [
-  { id: 'd1', name: 'Samsung TV receipt', type: 'Receipt', deviceName: 'Samsung Frame TV', date: 'Jun 24, 2024' },
-  { id: 'd2', name: 'LG washer manual', type: 'Manual', deviceName: 'LG Washer', date: 'Nov 5, 2022' },
-  { id: 'd3', name: 'Ring Protect plan', type: 'Warranty', deviceName: 'Front Doorbell', date: 'Mar 22, 2024' },
-  { id: 'd4', name: 'Home insurance inventory', type: 'Insurance', deviceName: 'Whole Home', date: 'Jul 7, 2026' },
+  { id: 'd1', deviceId: 'demo-frame-tv', name: 'Samsung TV receipt', type: 'Receipt', deviceName: 'Samsung Frame TV', date: 'Jun 24, 2024' },
+  { id: 'd2', deviceId: 'demo-washer', name: 'LG washer manual', type: 'Manual', deviceName: 'LG Washer', date: 'Nov 5, 2022' },
+  { id: 'd3', deviceId: 'demo-doorbell', name: 'Ring Protect plan', type: 'Warranty', deviceName: 'Front Doorbell', date: 'Mar 22, 2024' },
+  { id: 'd4', deviceId: null, name: 'Home insurance inventory', type: 'Insurance', deviceName: 'Whole Home', date: 'Jul 7, 2026' },
 ];
 
 export const demoNotifications: VaultNotification[] = [

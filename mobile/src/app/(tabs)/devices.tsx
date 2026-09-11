@@ -8,6 +8,12 @@ import { AppScreen, EmptyState, LoadingView, PrimaryButton } from '@/components/
 import { useVaultData } from '@/providers/vault-data-provider';
 import { colors, fonts, shadows } from '@/theme';
 
+function shortDate(value: string | null) {
+  if (!value) return 'Not recorded';
+  const date = new Date(`${value.slice(0, 10)}T12:00:00`);
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
 export default function DevicesScreen() {
   const router = useRouter();
   const data = useVaultData();
@@ -30,6 +36,11 @@ export default function DevicesScreen() {
                 <View style={styles.nameRow}><Text numberOfLines={1} style={styles.name}>{device.name}</Text><View style={[styles.dot, { backgroundColor: device.online === false ? colors.amber : device.online === true ? colors.olive : colors.line }]} /></View>
                 <Text style={styles.brand}>{device.brand} · {device.category}</Text>
                 <Text style={styles.room}>{device.location}</Text>
+                <View style={styles.facts}>
+                  <View style={styles.factRow}><Text style={styles.factLabel}>Model</Text><Text numberOfLines={1} style={styles.factValue}>{device.model}</Text></View>
+                  <View style={styles.factRow}><Text style={styles.factLabel}>Serial</Text><Text numberOfLines={1} style={styles.factValue}>{device.serialNumber || 'Not recorded'}</Text></View>
+                  <View style={styles.factRow}><Text style={styles.factLabel}>Purchased</Text><Text numberOfLines={1} style={styles.factValue}>{shortDate(device.purchaseDate)}</Text></View>
+                </View>
               </View>
             </Pressable>
           ))}
@@ -45,5 +56,5 @@ const styles = StyleSheet.create({
   device: { width: '48.2%', borderRadius: 20, overflow: 'hidden', borderWidth: 1, borderColor: colors.line, backgroundColor: colors.paper, ...shadows.card }, image: { width: '100%', height: 120 },
   placeholder: { width: '100%', height: 120, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.sand }, initial: { color: colors.navy, fontFamily: fonts.serif, fontSize: 40 },
   copy: { padding: 13 }, nameRow: { flexDirection: 'row', alignItems: 'center', gap: 7 }, name: { flex: 1, color: colors.ink, fontFamily: fonts.sans, fontSize: 12, fontWeight: '700' }, dot: { width: 7, height: 7, borderRadius: 4 },
-  brand: { marginTop: 4, color: colors.muted, fontFamily: fonts.sans, fontSize: 9 }, room: { marginTop: 8, color: colors.oliveDark, fontFamily: fonts.sans, fontSize: 10, fontWeight: '700' }, pressed: { opacity: 0.68 },
+  brand: { marginTop: 4, color: colors.muted, fontFamily: fonts.sans, fontSize: 9 }, room: { marginTop: 8, color: colors.oliveDark, fontFamily: fonts.sans, fontSize: 10, fontWeight: '700' }, facts: { marginTop: 11, paddingTop: 9, gap: 6, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.line }, factRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 6 }, factLabel: { color: colors.muted, fontFamily: fonts.sans, fontSize: 8, fontWeight: '600' }, factValue: { flex: 1, textAlign: 'right', color: colors.ink, fontFamily: fonts.sans, fontSize: 8, fontWeight: '700' }, pressed: { opacity: 0.68 },
 });
