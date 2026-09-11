@@ -1,7 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { Session, User } from '@supabase/supabase-js';
+import * as AppleAuthentication from 'expo-apple-authentication';
 import * as WebBrowser from 'expo-web-browser';
-import { AppState } from 'react-native';
+import { AppState, Platform } from 'react-native';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
@@ -16,6 +17,7 @@ type AuthContextValue = {
   enterDemo: () => Promise<void>;
   exitDemo: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<string | null>;
+  signInWithApple: () => Promise<{ completed: boolean; error: string | null }>;
   signInWithGoogle: () => Promise<{ completed: boolean; error: string | null }>;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: string | null; needsConfirmation: boolean }>;
   signOut: () => Promise<void>;
@@ -163,6 +165,56 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const signInWithApple = useCallback(async () => {
+    if (!supabase) return { completed: false, error: 'The app connection has not been configured yet.' };
+    if (Platform.OS !== 'ios') return { completed: false, error: 'Sign in with Apple is available on iPhone and iPad.' };
+    try {
+      const available = await AppleAuthentication.isAvailableAsync();
+      if (!available) return { completed: false, error: 'Sign in with Apple is not available on this device.' };
+
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+      if (!credential.identityToken) {
+        return { completed: false, error: "Apple sign-in couldn't return a secure identity token." };
+      }
+
+      const { data, error } = await supabase.auth.signInWithIdToken({
+        provider: 'apple',
+        token: credential.identityToken,
+      });
+      if (error || !data.session) {
+        return { completed: false, error: error?.message || "Apple sign-in couldn't be completed." };
+      }
+
+      const givenName = credential.fullName?.givenName?.trim() || '';
+      const middleName = credential.fullName?.middleName?.trim() || '';
+      const familyName = credential.fullName?.familyName?.trim() || '';
+      const fullName = [givenName, middleName, familyName].filter(Boolean).join(' ');
+      if (fullName) {
+        await supabase.auth.updateUser({
+          data: { full_name: fullName, given_name: givenName || null, family_name: familyName || null },
+        });
+      }
+
+      await AsyncStorage.removeItem(DEMO_MODE_KEY);
+      setSession(data.session);
+      setMode('account');
+      return { completed: true, error: null };
+    } catch (error) {
+      if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'ERR_REQUEST_CANCELED') {
+        return { completed: false, error: null };
+      }
+      return {
+        completed: false,
+        error: error instanceof Error ? error.message : "Apple sign-in couldn't be completed.",
+      };
+    }
+  }, []);
+
   const signUp = useCallback(async (email: string, password: string, fullName: string) => {
     if (!supabase) return { error: 'The app connection has not been configured yet.', needsConfirmation: false };
     try {
@@ -207,10 +259,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     enterDemo,
     exitDemo,
     signIn,
+    signInWithApple,
     signInWithGoogle,
     signUp,
     signOut,
-  }), [mode, session, enterDemo, exitDemo, signIn, signInWithGoogle, signUp, signOut]);
+  }), [mode, session, enterDemo, exitDemo, signIn, signInWithApple, signInWithGoogle, signUp, signOut]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

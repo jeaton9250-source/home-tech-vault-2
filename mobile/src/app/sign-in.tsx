@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Linking, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { AppleAuthButton } from '@/components/apple-auth-button';
 import { AuthField, AuthKeyboard, AuthSubmit, authStyles } from '@/components/auth-form';
 import { AuthDivider, GoogleAuthButton } from '@/components/google-auth-button';
 import { BrandMark } from '@/components/ui';
@@ -10,11 +11,12 @@ import { useAuth } from '@/providers/auth-provider';
 
 export default function SignInScreen() {
   const router = useRouter();
-  const { signIn, signInWithGoogle, configured } = useAuth();
+  const { signIn, signInWithApple, signInWithGoogle, configured } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [appleBusy, setAppleBusy] = useState(false);
   const [googleBusy, setGoogleBusy] = useState(false);
 
   async function submit() {
@@ -36,6 +38,15 @@ export default function SignInScreen() {
     if (result.completed) router.replace('/(tabs)');
   }
 
+  async function continueWithApple() {
+    setAppleBusy(true);
+    setError(null);
+    const result = await signInWithApple();
+    setAppleBusy(false);
+    if (result.error) return setError(result.error);
+    if (result.completed) router.replace('/(tabs)');
+  }
+
   return (
     <AuthKeyboard>
       <SafeAreaView style={authStyles.safe}>
@@ -49,12 +60,13 @@ export default function SignInScreen() {
           <View style={authStyles.form}>
             {!configured ? <Text style={authStyles.error}>Add the public Supabase values to mobile/.env.local to enable real account sign-in. Demo mode is already available.</Text> : null}
             {error ? <Text accessibilityRole="alert" style={authStyles.error}>{error}</Text> : null}
-            <GoogleAuthButton busy={googleBusy} disabled={!configured || busy} onPress={() => void continueWithGoogle()} />
+            <AppleAuthButton busy={appleBusy} disabled={!configured || busy || googleBusy} onPress={() => void continueWithApple()} />
+            <GoogleAuthButton busy={googleBusy} disabled={!configured || busy || appleBusy} onPress={() => void continueWithGoogle()} />
             <AuthDivider />
             <AuthField label="Email address" type="email" value={email} onChangeText={setEmail} placeholder="you@example.com" />
             <AuthField label="Password" type="password" value={password} onChangeText={setPassword} placeholder="Your password" returnKeyType="done" />
             <Pressable onPress={() => void Linking.openURL('https://www.hometechvault.com/forgot-password')}><Text style={[authStyles.footerStrong, { textAlign: 'right' }]}>Forgot password?</Text></Pressable>
-            <AuthSubmit label="Open my home" busy={busy} disabled={googleBusy} onPress={submit} />
+            <AuthSubmit label="Open my home" busy={busy} disabled={appleBusy || googleBusy} onPress={submit} />
           </View>
           <Pressable onPress={() => router.push('/create-account')}><Text style={authStyles.footer}>Need a Home Tech Vault? <Text style={authStyles.footerStrong}>Create your home</Text></Text></Pressable>
           <Pressable onPress={() => router.back()}><Text style={authStyles.note}>Back to welcome</Text></Pressable>
