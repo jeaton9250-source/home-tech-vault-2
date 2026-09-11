@@ -102,7 +102,7 @@ export function SecondaryButton({ label, onPress }: { label: string; onPress: ()
   );
 }
 
-export function ListRow({ icon: Icon, iconColor = colors.oliveDark, title, detail, meta, onPress }: { icon: LucideIcon; iconColor?: string; title: string; detail?: string; meta?: string; onPress?: () => void }) {
+export function ListRow({ icon: Icon, iconColor = colors.oliveDark, title, detail, meta, trailing, onPress }: { icon: LucideIcon; iconColor?: string; title: string; detail?: string; meta?: string; trailing?: ReactNode; onPress?: () => void }) {
   const content = (
     <View style={styles.listRow}>
       <View style={styles.listIcon}><Icon size={18} color={iconColor} strokeWidth={1.8} /></View>
@@ -111,6 +111,7 @@ export function ListRow({ icon: Icon, iconColor = colors.oliveDark, title, detai
         {detail ? <Text style={styles.listDetail}>{detail}</Text> : null}
       </View>
       {meta ? <Text style={styles.listMeta}>{meta}</Text> : null}
+      {trailing}
       {onPress ? <ChevronRight size={17} color="#A3AAA9" /> : null}
     </View>
   );

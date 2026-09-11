@@ -226,6 +226,19 @@ export async function completeMaintenanceTask(taskId: string, accessToken: strin
   }
 }
 
+export async function deleteVaultDocument(documentId: string, accessToken: string) {
+  const response = await authenticatedFetch(`/api/mobile/documents/${encodeURIComponent(documentId)}`, accessToken, {
+    method: 'DELETE',
+  });
+  const payload = await readJsonResponse<{ deleted?: boolean; error?: string }>(
+    response,
+    "We couldn't delete this document. Please try again.",
+  );
+  if (!response.ok || payload.deleted !== true) {
+    throw new Error(payload.error || "We couldn't delete this document. Please try again.");
+  }
+}
+
 const DEVICE_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif']);
 const MAX_DEVICE_IMAGE_BYTES = 6 * 1024 * 1024;
 

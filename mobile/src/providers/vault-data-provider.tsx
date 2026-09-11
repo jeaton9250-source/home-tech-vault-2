@@ -35,6 +35,7 @@ type VaultDataContextValue = VaultData & {
   rememberSavedDevice: (device: VaultDevice, householdId: string | null) => void;
   rememberUpdatedDevice: (device: VaultDevice, householdId: string | null) => void;
   rememberSavedDocument: (document: VaultDocument, householdId: string | null) => void;
+  forgetDocument: (documentId: string) => void;
   rememberCompletedMaintenance: (taskId: string) => void;
 };
 
@@ -255,6 +256,13 @@ export function VaultDataProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
+  const forgetDocument = useCallback((documentId: string) => {
+    setData((current) => ({
+      ...current,
+      documents: current.documents.filter((document) => document.id !== documentId),
+    }));
+  }, []);
+
   const rememberCompletedMaintenance = useCallback((taskId: string) => {
     setData((current) => ({
       ...current,
@@ -316,7 +324,7 @@ export function VaultDataProvider({ children }: { children: ReactNode }) {
   }, [mode, user, load]);
 
   const visibleData = isDemo ? demoData : data;
-  const value = useMemo(() => ({ ...visibleData, loading: isDemo ? false : loading, refreshing, error, refresh, rememberSavedDevice, rememberUpdatedDevice, rememberSavedDocument, rememberCompletedMaintenance }), [visibleData, isDemo, loading, refreshing, error, refresh, rememberSavedDevice, rememberUpdatedDevice, rememberSavedDocument, rememberCompletedMaintenance]);
+  const value = useMemo(() => ({ ...visibleData, loading: isDemo ? false : loading, refreshing, error, refresh, rememberSavedDevice, rememberUpdatedDevice, rememberSavedDocument, forgetDocument, rememberCompletedMaintenance }), [visibleData, isDemo, loading, refreshing, error, refresh, rememberSavedDevice, rememberUpdatedDevice, rememberSavedDocument, forgetDocument, rememberCompletedMaintenance]);
   return <VaultDataContext.Provider value={value}>{children}</VaultDataContext.Provider>;
 }
 
