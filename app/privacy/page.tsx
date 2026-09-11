@@ -41,7 +41,7 @@ const sections = [
   },
   {
     title: "Your choices",
-    body: "You may update account information, manage billing, and request account deletion by contacting us. You can also control cookies through your browser settings.",
+    body: "You may update your account information and notification preferences at any time. Signed-in mobile users can start account deletion directly from Your account. Access is disabled immediately and account and vault data are permanently erased within seven days, subject only to legal retention requirements. You can also control cookies through your browser settings.",
   },
   {
     title: "Contact",
@@ -55,7 +55,7 @@ export default function PrivacyPage() {
       <MarketingPageHero
         eyebrow="Legal"
         title="Privacy Policy"
-        description="Last updated: July 20, 2026"
+        description="Last updated: September 11, 2026"
       />
 
       <MarketingContent className="pt-0">

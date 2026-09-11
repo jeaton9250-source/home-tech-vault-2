@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Linking, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AuthField, AuthKeyboard, AuthSubmit, authStyles } from '@/components/auth-form';
@@ -40,6 +40,7 @@ export default function SignInScreen() {
             {error ? <Text accessibilityRole="alert" style={authStyles.error}>{error}</Text> : null}
             <AuthField label="Email address" type="email" value={email} onChangeText={setEmail} placeholder="you@example.com" />
             <AuthField label="Password" type="password" value={password} onChangeText={setPassword} placeholder="Your password" returnKeyType="done" />
+            <Pressable onPress={() => void Linking.openURL('https://www.hometechvault.com/forgot-password')}><Text style={[authStyles.footerStrong, { textAlign: 'right' }]}>Forgot password?</Text></Pressable>
             <AuthSubmit label="Open my home" busy={busy} onPress={submit} />
           </View>
           <Pressable onPress={() => router.push('/create-account')}><Text style={authStyles.footer}>Need a Home Tech Vault? <Text style={authStyles.footerStrong}>Create your home</Text></Text></Pressable>

@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Pressable, Text, View } from 'react-native';
+import { Alert, Linking, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AuthField, AuthKeyboard, AuthSubmit, authStyles } from '@/components/auth-form';
@@ -67,7 +67,11 @@ export default function CreateAccountScreen() {
             <AuthSubmit label="Create my home" busy={busy} onPress={submit} />
           </View>
           <Pressable onPress={() => router.push('/sign-in')}><Text style={authStyles.footer}>Already have an account? <Text style={authStyles.footerStrong}>Sign in</Text></Text></Pressable>
-          <Text style={authStyles.note}>By continuing, you agree to the Terms and Privacy Policy on hometechvault.com.</Text>
+          <Text style={authStyles.note}>By continuing, you agree to our{' '}
+            <Text accessibilityRole="link" onPress={() => void Linking.openURL('https://www.hometechvault.com/terms')} style={authStyles.footerStrong}>Terms</Text>
+            {' '}and{' '}
+            <Text accessibilityRole="link" onPress={() => void Linking.openURL('https://www.hometechvault.com/privacy')} style={authStyles.footerStrong}>Privacy Policy</Text>.
+          </Text>
         </View>
       </SafeAreaView>
     </AuthKeyboard>

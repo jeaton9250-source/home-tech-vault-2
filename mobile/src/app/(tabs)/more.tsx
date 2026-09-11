@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
-import { Bell, ExternalLink, HelpCircle, LockKeyhole, Shield, Trash2, UsersRound } from 'lucide-react-native';
-import { Alert, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Bell, FileText, HelpCircle, Mail, Shield, Trash2, UsersRound } from 'lucide-react-native';
+import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { AppScreen, Card, ListRow, SecondaryButton } from '@/components/ui';
 import { useAuth } from '@/providers/auth-provider';
@@ -31,18 +31,18 @@ export default function MoreScreen() {
       <Card>
         <ListRow icon={Bell} title="Notifications" detail="Warranty, care, and home updates" onPress={() => router.push('/notifications')} />
         <ListRow icon={UsersRound} title="Household sharing" detail="Family access and roles" onPress={() => void Linking.openURL(`${webUrl}/family`)} />
-        <ListRow icon={Shield} title="Privacy & security" detail="How your home record is protected" onPress={() => void Linking.openURL(`${webUrl}/security`)} />
+        <ListRow icon={Shield} title="Privacy & security" detail="How your home record is protected" onPress={() => void Linking.openURL(`${webUrl}/privacy`)} />
       </Card>
 
       <Text style={styles.sectionLabel}>HELP & ACCOUNT</Text>
       <Card>
-        <ListRow icon={HelpCircle} title="Help center" detail="Answers and practical guides" onPress={() => void Linking.openURL(`${webUrl}/help`)} />
-        <ListRow icon={LockKeyhole} title="Account settings" detail="Profile, plan, and preferences" onPress={() => void Linking.openURL(`${webUrl}/settings`)} />
-        <ListRow icon={ExternalLink} title="Open Home Tech Vault on the web" detail="Advanced reports and home tools" onPress={() => void Linking.openURL(`${webUrl}/dashboard`)} />
+        <ListRow icon={HelpCircle} title="Help center" detail="Answers and practical guides" onPress={() => void Linking.openURL(`${webUrl}/faq`)} />
+        <ListRow icon={Mail} title="Contact support" detail="Get help from Home Tech Vault" onPress={() => void Linking.openURL(`${webUrl}/contact`)} />
+        <ListRow icon={FileText} title="Terms of service" detail="The terms that govern your vault" onPress={() => void Linking.openURL(`${webUrl}/terms`)} />
       </Card>
 
       {!isDemo ? (
-        <Pressable onPress={() => Alert.alert('Delete your account?', 'Account deletion is completed in the secure web settings so household ownership and billing can be reviewed first.', [{ text: 'Cancel', style: 'cancel' }, { text: 'Open settings', style: 'destructive', onPress: () => void Linking.openURL(`${webUrl}/settings`) }])} style={styles.deleteRow}>
+        <Pressable onPress={() => router.push('/delete-account')} style={styles.deleteRow}>
           <Trash2 size={17} color={colors.rust} /><Text style={styles.deleteText}>Delete account</Text>
         </Pressable>
       ) : null}
