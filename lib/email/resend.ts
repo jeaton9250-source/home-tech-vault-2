@@ -3,7 +3,7 @@ import "server-only";
 import { Resend } from "resend";
 
 const DEFAULT_FROM =
-  "Home Tech Vault <hello@hometechvault.com>";
+  "Home Tech Vault <hello@updates.hometechvault.com>";
 
 const DEFAULT_REPLY_TO =
   "support@hometechvault.com";
