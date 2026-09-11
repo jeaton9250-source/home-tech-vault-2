@@ -20,8 +20,8 @@ export function AuthField({ label, value, onChangeText, placeholder, type = 'tex
   );
 }
 
-export function AuthSubmit({ label, busy, onPress }: { label: string; busy: boolean; onPress: () => void }) {
-  return busy ? <View style={styles.busyButton}><ActivityIndicator color={colors.white} /></View> : <PrimaryButton label={label} onPress={onPress} />;
+export function AuthSubmit({ label, busy, disabled = false, onPress }: { label: string; busy: boolean; disabled?: boolean; onPress: () => void }) {
+  return busy ? <View style={styles.busyButton}><ActivityIndicator color={colors.white} /></View> : <PrimaryButton disabled={disabled} label={label} onPress={onPress} />;
 }
 
 export function AuthKeyboard({ children }: { children: ReactNode }) {

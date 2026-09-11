@@ -72,6 +72,12 @@
           "color": "#6B7D3C",
           "defaultChannel": "home-reminders"
         }
+      ],
+      [
+        "expo-web-browser",
+        {
+          "experimentalLauncherActivity": false
+        }
       ]
     ],
     "experiments": {

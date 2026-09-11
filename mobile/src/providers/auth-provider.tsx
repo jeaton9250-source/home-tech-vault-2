@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { Session, User } from '@supabase/supabase-js';
+import * as WebBrowser from 'expo-web-browser';
 import { AppState } from 'react-native';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
@@ -15,13 +16,25 @@ type AuthContextValue = {
   enterDemo: () => Promise<void>;
   exitDemo: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<string | null>;
+  signInWithGoogle: () => Promise<{ completed: boolean; error: string | null }>;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: string | null; needsConfirmation: boolean }>;
   signOut: () => Promise<void>;
 };
 
 const DEMO_MODE_KEY = 'htv:mobile:demo-mode';
 const WEB_URL = process.env.EXPO_PUBLIC_WEB_URL || 'https://www.hometechvault.com';
+const GOOGLE_AUTH_REDIRECT = 'hometechvault://auth/callback';
 const AuthContext = createContext<AuthContextValue | null>(null);
+
+WebBrowser.maybeCompleteAuthSession();
+
+function readOAuthCallback(url: string) {
+  const parsed = new URL(url);
+  const params = new URLSearchParams(parsed.search);
+  const fragment = new URLSearchParams(parsed.hash.startsWith('#') ? parsed.hash.slice(1) : parsed.hash);
+  fragment.forEach((value, key) => params.set(key, value));
+  return params;
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [mode, setMode] = useState<AppMode>('loading');
@@ -104,6 +117,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return null;
   }, []);
 
+  const signInWithGoogle = useCallback(async () => {
+    if (!supabase) return { completed: false, error: 'The app connection has not been configured yet.' };
+    try {
+      await AsyncStorage.removeItem(DEMO_MODE_KEY);
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: GOOGLE_AUTH_REDIRECT,
+          skipBrowserRedirect: true,
+          queryParams: { prompt: 'select_account' },
+        },
+      });
+      if (error) return { completed: false, error: error.message };
+      if (!data.url) return { completed: false, error: "Google sign-in couldn't be opened." };
+
+      const browserResult = await WebBrowser.openAuthSessionAsync(data.url, GOOGLE_AUTH_REDIRECT);
+      if (browserResult.type !== 'success') return { completed: false, error: null };
+
+      const params = readOAuthCallback(browserResult.url);
+      const providerError = params.get('error_description') || params.get('error');
+      if (providerError) return { completed: false, error: providerError.replace(/\+/g, ' ') };
+
+      const accessToken = params.get('access_token');
+      const refreshToken = params.get('refresh_token');
+      if (!accessToken || !refreshToken) {
+        return { completed: false, error: 'Google sign-in returned an incomplete session. Please try again.' };
+      }
+
+      const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken,
+      });
+      if (sessionError || !sessionData.session) {
+        return { completed: false, error: sessionError?.message || "Google sign-in couldn't be completed." };
+      }
+      setSession(sessionData.session);
+      setMode('account');
+      return { completed: true, error: null };
+    } catch (error) {
+      return {
+        completed: false,
+        error: error instanceof Error ? error.message : "Google sign-in couldn't be completed.",
+      };
+    }
+  }, []);
+
   const signUp = useCallback(async (email: string, password: string, fullName: string) => {
     if (!supabase) return { error: 'The app connection has not been configured yet.', needsConfirmation: false };
     try {
@@ -148,9 +207,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     enterDemo,
     exitDemo,
     signIn,
+    signInWithGoogle,
     signUp,
     signOut,
-  }), [mode, session, enterDemo, exitDemo, signIn, signUp, signOut]);
+  }), [mode, session, enterDemo, exitDemo, signIn, signInWithGoogle, signUp, signOut]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

@@ -4,18 +4,20 @@ import { Alert, Linking, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AuthField, AuthKeyboard, AuthSubmit, authStyles } from '@/components/auth-form';
+import { AuthDivider, GoogleAuthButton } from '@/components/google-auth-button';
 import { BrandMark } from '@/components/ui';
 import { useAuth } from '@/providers/auth-provider';
 
 export default function CreateAccountScreen() {
   const router = useRouter();
-  const { signUp } = useAuth();
+  const { signUp, signInWithGoogle, configured } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState<string | null>(null);
   const [isError, setIsError] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [googleBusy, setGoogleBusy] = useState(false);
 
   async function submit() {
     if (!name.trim() || !email.trim() || password.length < 8) {
@@ -49,6 +51,19 @@ export default function CreateAccountScreen() {
     }
   }
 
+  async function continueWithGoogle() {
+    setGoogleBusy(true);
+    setMessage(null);
+    const result = await signInWithGoogle();
+    setGoogleBusy(false);
+    if (result.error) {
+      setIsError(true);
+      setMessage(result.error);
+      return;
+    }
+    if (result.completed) router.replace('/(tabs)');
+  }
+
   return (
     <AuthKeyboard>
       <SafeAreaView style={authStyles.safe}>
@@ -60,11 +75,14 @@ export default function CreateAccountScreen() {
             <Text style={authStyles.body}>Start small. Add what matters. Your vault becomes more useful with every detail.</Text>
           </View>
           <View style={authStyles.form}>
+            {!configured ? <Text style={authStyles.error}>Add the public Supabase values to mobile/.env.local to enable account creation. Demo mode is already available.</Text> : null}
             {message ? <Text accessibilityRole="alert" style={isError ? authStyles.error : authStyles.body}>{message}</Text> : null}
+            <GoogleAuthButton busy={googleBusy} disabled={!configured || busy} onPress={() => void continueWithGoogle()} />
+            <AuthDivider />
             <AuthField label="Your name" value={name} onChangeText={setName} placeholder="Alex Morgan" autoCapitalize="words" />
             <AuthField label="Email address" type="email" value={email} onChangeText={setEmail} placeholder="you@example.com" />
             <AuthField label="Password" type="password" value={password} onChangeText={setPassword} placeholder="At least 8 characters" returnKeyType="done" />
-            <AuthSubmit label="Create my home" busy={busy} onPress={submit} />
+            <AuthSubmit label="Create my home" busy={busy} disabled={googleBusy} onPress={submit} />
           </View>
           <Pressable onPress={() => router.push('/sign-in')}><Text style={authStyles.footer}>Already have an account? <Text style={authStyles.footerStrong}>Sign in</Text></Text></Pressable>
           <Text style={authStyles.note}>By continuing, you agree to our{' '}
