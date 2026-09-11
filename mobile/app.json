@@ -51,6 +51,14 @@
           "faceIDPermission": "Use Face ID to securely open your Home Tech Vault."
         }
       ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Home Tech Vault uses your camera to scan product labels and serial numbers.",
+          "recordAudioAndroid": false,
+          "barcodeScannerEnabled": true
+        }
+      ],
       "expo-image"
     ],
     "experiments": {

@@ -1,5 +1,5 @@
 import * as Haptics from 'expo-haptics';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Camera, ChevronLeft, Keyboard, ScanBarcode, Sparkles } from 'lucide-react-native';
 import { useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -13,18 +13,15 @@ import { colors, fonts } from '@/theme';
 
 export default function AddDeviceScreen() {
   const router = useRouter();
+  const { barcode } = useLocalSearchParams<{ barcode?: string }>();
   const auth = useAuth();
   const data = useVaultData();
   const [name, setName] = useState('');
   const [brand, setBrand] = useState('');
   const [model, setModel] = useState('');
+  const [serial, setSerial] = useState(barcode ?? '');
   const [room, setRoom] = useState('');
   const [saving, setSaving] = useState(false);
-
-  function notReady(label: string) {
-    void Haptics.selectionAsync();
-    Alert.alert(`${label} is next`, 'The first build has the polished capture flow in place. Camera recognition will be connected in the next mobile milestone; manual entry works now.');
-  }
 
   async function save() {
     if (!name.trim()) return Alert.alert('What should your home call it?', 'Add a device name before saving.');
@@ -38,6 +35,7 @@ export default function AddDeviceScreen() {
       device_name: name.trim(),
       brand: brand.trim() || null,
       model_number: model.trim() || null,
+      serial_number: serial.trim() || null,
       location: room.trim() || null,
       category: 'Other',
     });
@@ -56,14 +54,15 @@ export default function AddDeviceScreen() {
           <Text style={styles.title}>How would you like to add it?</Text>
           <Text style={styles.body}>Start with what you know. You can add receipts, photos, and coverage later.</Text>
           <View style={styles.methods}>
-            <Method icon={Camera} label="Camera" detail="Recognize the device" onPress={() => notReady('Camera recognition')} />
-            <Method icon={ScanBarcode} label="Barcode" detail="Scan a label" onPress={() => notReady('Barcode scanning')} />
+            <Method icon={Camera} label="Scan label" detail="Use your camera" onPress={() => router.push('/scan-device')} />
+            <Method icon={ScanBarcode} label="Barcode" detail="Capture a code" onPress={() => router.push('/scan-device')} />
             <Method icon={Keyboard} label="Type it in" detail="Fast and simple" active onPress={() => undefined} />
           </View>
           <View style={styles.form}>
             <Field label="Device name" value={name} onChangeText={setName} placeholder="Living Room TV" />
             <Field label="Brand" value={brand} onChangeText={setBrand} placeholder="Samsung" />
             <Field label="Model" value={model} onChangeText={setModel} placeholder="Optional" />
+            <Field label="Serial number" value={serial} onChangeText={setSerial} placeholder="Scan or type it" />
             <Field label="Room" value={room} onChangeText={setRoom} placeholder="Living Room" />
           </View>
           <View style={styles.helper}><Sparkles size={17} color={colors.oliveDark} /><Text style={styles.helperText}>Once saved, Home Tech Vault gives this device a lasting place for its receipt, manual, warranty, and care history.</Text></View>

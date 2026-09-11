@@ -28,6 +28,7 @@ function RootNavigator() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="notifications" options={{ presentation: 'modal' }} />
         <Stack.Screen name="add-device" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="scan-device" options={{ presentation: 'fullScreenModal' }} />
         <Stack.Screen name="device/[id]" />
       </Stack>
     </>
