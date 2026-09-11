@@ -41,6 +41,7 @@ export type ScannedDevice = {
   hostname?: string | null;
   manufacturer?: string | null;
   model?: string | null;
+  serialNumber?: string | null;
   friendlyName?: string | null;
   deviceType?: string | null;
   discoverySource: string;

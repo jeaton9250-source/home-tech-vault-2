@@ -118,6 +118,10 @@ export function mapScanDevicesForSync(
         device.model ??
         null,
 
+      serialNumber:
+        device.serialNumber ??
+        null,
+
       friendlyName:
         device.friendlyName ??
         null,

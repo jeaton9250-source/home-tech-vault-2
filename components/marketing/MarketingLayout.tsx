@@ -1,12 +1,11 @@
 import type { ReactNode } from "react";
 
-import LandingFooter from "@/components/landing/public/LandingFooter";
-import MarketingHeader from "@/components/marketing/MarketingHeader";
-import { landingTheme } from "@/components/landing/public/landingTheme";
-import StructuredData from "@/components/marketing/StructuredData";
+import MarketingHeaderGate from "@/components/marketing/MarketingHeaderGate";
+import MarketingFooterGate from "@/components/marketing/MarketingFooterGate";
+
 import { cn } from "@/lib/design-system/cn";
+
 import type { PublicFoundingProgramSummary } from "@/lib/founding-members/types";
-import { createOrganizationJsonLd } from "@/lib/marketing/metadata";
 
 type MarketingLayoutProps = {
   children: ReactNode;
@@ -16,34 +15,46 @@ type MarketingLayoutProps = {
   minimalNav?: boolean;
 };
 
+/*
+ * Public marketing shell.
+ *
+ * MarketingHeaderGate / MarketingFooterGate keep the public
+ * navigation off authenticated HTV application routes while
+ * preserving it everywhere else.
+ *
+ * foundingSummary and minimalNav remain in the public API
+ * because older marketing pages still pass those properties.
+ */
 export default function MarketingLayout({
   children,
   className,
   mainClassName,
 }: MarketingLayoutProps) {
   return (
-    <div className={cn(landingTheme.page, className)}>
-      <StructuredData
-        data={createOrganizationJsonLd()}
-      />
+    <div
+      className={cn(
+        "min-h-screen bg-[#fffefa] text-[#17212a] antialiased selection:bg-[#617c43]/20",
+        className
+      )}
+    >
+      <MarketingHeaderGate />
 
-      <MarketingHeader />
-
-      <main
-        id="main-content"
-        className={cn(
-          "min-h-[calc(100vh-72px)] bg-[#f5f1e8] text-[#17212a]",
-          mainClassName
-        )}
-      >
+      <main className={mainClassName}>
         {children}
       </main>
 
-      <LandingFooter />
+      <MarketingFooterGate />
     </div>
   );
 }
 
+/*
+ * Shared wrapper used throughout public marketing,
+ * knowledge, FAQ, comparison, trust and SEO pages.
+ *
+ * This named export existed before the app-shell work
+ * and must remain backwards compatible.
+ */
 export function MarketingContent({
   children,
   className,
@@ -66,6 +77,12 @@ export function MarketingContent({
   );
 }
 
+/*
+ * Shared public page hero.
+ *
+ * Updated to the permanent HTV cream + olive design
+ * instead of restoring the old dark-blue marketing theme.
+ */
 export function MarketingPageHero({
   eyebrow,
   title,
@@ -78,13 +95,13 @@ export function MarketingPageHero({
   children?: ReactNode;
 }) {
   return (
-    <section className="border-b border-[#17212a]/10 bg-[#f5f1e8] px-5 py-20 md:px-8 md:py-28">
+    <section className="border-b border-[#e4e2dc] bg-[#fffefa] px-5 py-16 md:px-8 md:py-20">
       <div className="mx-auto max-w-3xl">
         {eyebrow ? (
           <div className="flex items-center gap-3">
-            <span className="h-px w-7 bg-[#617c43]" />
+            <span className="h-px w-7 bg-[#718d4f]" />
 
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#617c43]">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#718d4f]">
               {eyebrow}
             </p>
           </div>
@@ -92,7 +109,7 @@ export function MarketingPageHero({
 
         <h1
           className={cn(
-            "font-serif text-4xl font-medium leading-[1.04] tracking-[-0.045em] text-[#17212a] md:text-5xl",
+            "text-4xl font-semibold leading-[1.05] tracking-[-0.045em] text-[#17212a] md:text-5xl",
             eyebrow && "mt-5"
           )}
         >
@@ -100,7 +117,7 @@ export function MarketingPageHero({
         </h1>
 
         {description ? (
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-[#68716c]">
+          <p className="mt-6 max-w-2xl text-lg leading-8 text-[#68737b]">
             {description}
           </p>
         ) : null}

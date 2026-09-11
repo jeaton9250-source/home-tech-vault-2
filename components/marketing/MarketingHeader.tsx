@@ -95,10 +95,10 @@ export default function MarketingHeader() {
             </Link>
 
             <Link
-              href="/realtors/signup"
+              href="/signup"
               className="inline-flex items-center gap-2 rounded-full bg-[#a8a842] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#96963a]"
             >
-              Realtor Sign Up
+              Start Free
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -163,13 +163,13 @@ export default function MarketingHeader() {
               </Link>
 
               <Link
-                href="/realtors/signup"
+                href="/signup"
                 onClick={() =>
                   setMobileOpen(false)
                 }
                 className="mt-1 inline-flex items-center justify-center gap-2 rounded-2xl bg-[#a8a842] px-4 py-3 text-sm font-semibold text-white"
               >
-                Realtor Sign Up
+                Start Free
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </div>

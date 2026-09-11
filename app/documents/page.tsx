@@ -29,13 +29,11 @@ import DeleteDocumentButton from "@/components/DeleteDocumentButton";
 
 import PageShell from "@/components/ui/PageShell";
 import PageCard from "@/components/ui/PageCard";
-import PageHero from "@/components/ui/PageHero";
 import Button from "@/components/ui/Button";
 import EmptyState from "@/components/ui/EmptyState";
 
 import {
-  PageAction,
-  PermissionEmptyState,
+    PermissionEmptyState,
   ViewerBanner,
 } from "@/components/ui/PermissionUI";
 import { extractDocumentsStoragePath } from "@/lib/documents/uploadSecurity";
@@ -134,13 +132,13 @@ export default function DocumentsPage() {
           return;
         }
 
-        let documentQuery = applyHouseholdScope(
+        const documentQuery = applyHouseholdScope(
           supabase.from("documents").select("*"),
           householdId,
           user.id,
         );
 
-        let deviceQuery = applyHouseholdScope(
+        const deviceQuery = applyHouseholdScope(
           supabase.from("devices").select("id, device_name"),
           householdId,
           user.id,
@@ -308,7 +306,7 @@ export default function DocumentsPage() {
 
   if (loading) {
     return (
-      <PageShell>
+      <PageShell className="bg-[#f7f6f2]">
         <PageCard className="flex min-h-72 items-center justify-center">
           <div className="flex items-center gap-3 text-[#68737b]">
             <Loader2 size={22} className="animate-spin" />
@@ -321,7 +319,7 @@ export default function DocumentsPage() {
 
   if (errorMessage) {
     return (
-      <PageShell>
+      <PageShell className="bg-[#f7f6f2]">
         <PageCard className="border-[#a6584e]/20 bg-[#a6584e]/10 p-6 text-[#984e46]">
           <h1 className="text-xl font-semibold">Unable to load documents</h1>
 
@@ -332,25 +330,42 @@ export default function DocumentsPage() {
   }
 
   return (
-    <PageShell>
-      <PageHero
-        section="digitalVault"
-        eyebrow="Document Vault"
-        title="Your documents."
-        description="Keep receipts, manuals, warranties, invoices, and important device files together."
-      >
-        <PageAction
-          href="/documents/upload"
-          label="Upload Document"
-          variant="primary"
-        />
+    <PageShell className="bg-[#f7f6f2]">
 
-        <PageAction
-          href="/reports?generate=insurance"
-          label="Insurance Report"
-          variant="secondary"
-        />
-      </PageHero>
+      <section className="flex flex-col gap-6 pb-1 pt-1 lg:flex-row lg:items-end lg:justify-between">
+        <div className="max-w-3xl">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#718d4f]">
+            Document Vault
+          </p>
+
+          <h1 className="mt-3 text-[36px] font-semibold leading-none tracking-[-0.045em] text-[#17212a] sm:text-[42px]">
+            Documents
+          </h1>
+
+          <p className="mt-4 max-w-2xl text-[15px] leading-6 text-[#68737b]">
+            Keep receipts, manuals, warranties, invoices, and important
+            device files together in one organized place.
+          </p>
+
+          {documents.length > 0 ? (
+            <div className="mt-4 flex flex-wrap items-center gap-2 text-[12px] text-[#829078]">
+              <span>{documents.length.toLocaleString()} documents</span>
+              <span className="text-[#c2c8bc]">•</span>
+              <span>{connectedDocumentCount.toLocaleString()} connected</span>
+              <span className="text-[#c2c8bc]">•</span>
+              <span>{uniqueTypeCount.toLocaleString()} file types</span>
+            </div>
+          ) : null}
+        </div>
+
+        <Link
+          href="/documents/upload"
+          className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-[13px] bg-[#617c43] px-5 text-[13px] font-semibold text-white shadow-[0_8px_20px_-12px_rgba(82,107,57,0.75)] transition hover:bg-[#526b39]"
+        >
+          <Upload size={17} />
+          Upload Document
+        </Link>
+      </section>
 
       <ViewerBanner
         show={Boolean(user) && !canCreate}

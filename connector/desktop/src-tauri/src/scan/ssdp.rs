@@ -27,6 +27,7 @@ pub struct SsdpObservation {
     pub friendly_name: Option<String>,
     pub manufacturer: Option<String>,
     pub model: Option<String>,
+    pub serial_number: Option<String>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -35,6 +36,7 @@ struct UpnpDescription {
     manufacturer: Option<String>,
     model_name: Option<String>,
     model_number: Option<String>,
+    serial_number: Option<String>,
     device_type: Option<String>,
 }
 
@@ -110,6 +112,7 @@ pub fn discover_ssdp(timeout: Duration) -> Result<Vec<SsdpObservation>, String> 
                         friendly_name: None,
                         manufacturer: None,
                         model: None,
+                        serial_number: None,
                     });
             }
 
@@ -148,6 +151,10 @@ pub fn discover_ssdp(timeout: Duration) -> Result<Vec<SsdpObservation>, String> 
         }
 
         observation.model = description.model_number.or(description.model_name);
+
+        if description.serial_number.is_some() {
+            observation.serial_number = description.serial_number;
+        }
 
         if observation.device_type.is_none() {
             observation.device_type = description.device_type;
@@ -242,6 +249,10 @@ fn parse_upnp_description(xml: &[u8]) -> Result<UpnpDescription, String> {
 
                     "modelNumber" if result.model_number.is_none() => {
                         result.model_number = Some(sanitized);
+                    }
+
+                    "serialNumber" if result.serial_number.is_none() => {
+                        result.serial_number = Some(sanitized);
                     }
 
                     "deviceType" if result.device_type.is_none() => {
@@ -370,6 +381,7 @@ mod tests {
               <manufacturer>Samsung Electronics</manufacturer>
               <modelName>Smart TV</modelName>
               <modelNumber>QN65Q80</modelNumber>
+              <serialNumber>TV123456789</serialNumber>
             </device>
           </root>
         "#;
@@ -384,5 +396,7 @@ mod tests {
         assert_eq!(result.manufacturer.as_deref(), Some("Samsung Electronics"));
 
         assert_eq!(result.model_number.as_deref(), Some("QN65Q80"));
+
+        assert_eq!(result.serial_number.as_deref(), Some("TV123456789"));
     }
 }

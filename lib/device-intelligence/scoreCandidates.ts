@@ -42,6 +42,86 @@ function serviceMatches(
   );
 }
 
+function normalizedEvidenceValue(
+  value: string | null | undefined
+): string {
+  return (value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "");
+}
+
+function observedManufacturerMatches(
+  manufacturer: string | null,
+  aliases: string[]
+): boolean {
+  if (!manufacturer?.trim()) {
+    return false;
+  }
+
+  const normalized =
+    normalizeVendorName(manufacturer);
+
+  if (!normalized) {
+    return false;
+  }
+
+  return aliases.includes(normalized);
+}
+
+function isGenericDiscoveredModel(
+  model: string | null
+): boolean {
+  const normalized =
+    model?.trim().toLowerCase() ?? "";
+
+  return [
+    "network printer",
+    "google cast device",
+    "airplay device",
+    "homekit accessory",
+    "unknown",
+    "unknown device",
+  ].includes(normalized);
+}
+
+function observedModelMatches(
+  model: string | null,
+  entry: DeviceCatalogEntry
+): boolean {
+  if (
+    !model?.trim() ||
+    isGenericDiscoveredModel(model)
+  ) {
+    return false;
+  }
+
+  const observed =
+    normalizedEvidenceValue(model);
+
+  if (!observed) {
+    return false;
+  }
+
+  const candidates = [
+    entry.family,
+    entry.suggestedName,
+  ]
+    .filter(
+      (value): value is string =>
+        Boolean(value?.trim())
+    )
+    .map(normalizedEvidenceValue)
+    .filter(Boolean);
+
+  return candidates.some(
+    (candidate) =>
+      candidate === observed ||
+      candidate.includes(observed) ||
+      observed.includes(candidate)
+  );
+}
+
 function scoreCatalogEntry(
   observation: NormalizedObservation,
   entry: DeviceCatalogEntry
@@ -56,7 +136,12 @@ function scoreCatalogEntry(
   const aliases = [
     entry.manufacturer,
     ...(entry.vendorAliases ?? []),
-  ].map((name) => normalizeVendorName(name));
+  ]
+    .map((name) => normalizeVendorName(name))
+    .filter(
+      (name): name is string =>
+        Boolean(name)
+    );
 
   if (
     vendor &&
@@ -102,6 +187,90 @@ function scoreCatalogEntry(
         matched: true,
       })
     );
+  }
+
+  /*
+   * Device-reported manufacturer/model metadata can be much
+   * stronger than MAC/OUI evidence.
+   *
+   * Avoid double-counting manufacturer when it is merely the
+   * same OUI vendor we already scored.
+   */
+  const observedManufacturer =
+    observation.manufacturer?.trim()
+      ? normalizeVendorName(
+          observation.manufacturer
+        )
+      : null;
+
+  const manufacturerIsSameAsOui =
+    Boolean(
+      observedManufacturer &&
+      vendor &&
+      observedManufacturer === vendor
+    );
+
+  if (
+    observedManufacturer &&
+    !manufacturerIsSameAsOui &&
+    observedManufacturerMatches(
+      observation.manufacturer,
+      aliases
+    )
+  ) {
+    const item = evidence({
+      type: "upnp_manufacturer",
+      label:
+        `Device reports manufacturer ${observation.manufacturer}`,
+      value: observation.manufacturer,
+      weight:
+        EVIDENCE_WEIGHTS.upnpManufacturer,
+      reliability: "strong",
+    });
+
+    evidenceList.push(item);
+    rawScore += item.weight;
+  } else if (
+    observedManufacturer &&
+    !manufacturerIsSameAsOui &&
+    entry.manufacturer !== "Unknown" &&
+    !aliases.includes(
+      observedManufacturer
+    )
+  ) {
+    conflicts.push(
+      evidence({
+        type: "upnp_manufacturer",
+        label:
+          `Device reports ${observation.manufacturer}, not ${entry.manufacturer}`,
+        value:
+          observation.manufacturer,
+        weight:
+          EVIDENCE_WEIGHTS.upnpManufacturer,
+        reliability: "strong",
+        matched: false,
+      })
+    );
+  }
+
+  if (
+    observedModelMatches(
+      observation.model,
+      entry
+    )
+  ) {
+    const item = evidence({
+      type: "upnp_model",
+      label:
+        `Device-reported model matches ${entry.family}`,
+      value: observation.model,
+      weight:
+        EVIDENCE_WEIGHTS.upnpExactModel,
+      reliability: "strong",
+    });
+
+    evidenceList.push(item);
+    rawScore += item.weight;
   }
 
   const hostname = analyzeHostname(
@@ -209,7 +378,42 @@ function scoreCatalogEntry(
     rawScore = Math.min(rawScore, 30);
   }
 
-  const score = normalizeScoreTo100(rawScore);
+  /*
+   * Positive evidence should not simply overpower contradictory
+   * evidence.
+   *
+   * Conflict evidence already has meaningful weights, so use
+   * those same weights as an explainable penalty rather than
+   * introducing an unrelated hidden number.
+   *
+   * Example:
+   *
+   *   Chromecast hostname       +40
+   *   Google Cast service       +31
+   *   reports Samsung           -45
+   *                              ---
+   *   adjusted score             26
+   *
+   * That remains a suggestion instead of becoming a confident
+   * Google-device match.
+   */
+  const conflictPenalty = Math.min(
+    70,
+    conflicts.reduce(
+      (total, item) =>
+        total + Math.max(0, item.weight),
+      0
+    )
+  );
+
+  const adjustedRawScore = Math.max(
+    0,
+    rawScore - conflictPenalty
+  );
+
+  const score =
+    normalizeScoreTo100(adjustedRawScore);
+
   const confidence = classifyConfidence(
     score,
     evidenceList,

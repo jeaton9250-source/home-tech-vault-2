@@ -1,12 +1,9 @@
 import type { ReactNode } from "react";
 
 import { cn } from "@/lib/design-system/cn";
-
 import { sections } from "@/lib/design-system/tokens";
 
-export type PageHeroSection =
-  | keyof typeof sections
-  | "neutral";
+export type PageHeroSection = keyof typeof sections | "neutral";
 
 type PageHeroProps = {
   section?: PageHeroSection;
@@ -17,8 +14,20 @@ type PageHeroProps = {
   className?: string;
 };
 
+/**
+ * Permanent HTV authenticated-app page header.
+ *
+ * Design rules:
+ * - olive eyebrow
+ * - dark sans-serif title
+ * - restrained description
+ * - actions aligned right
+ * - no marketing-style hero card
+ * - no page-specific theme colors
+ *
+ * `section` remains accepted for backwards compatibility.
+ */
 export default function PageHero({
-  section: _section = "neutral",
   eyebrow,
   title,
   description,
@@ -28,46 +37,38 @@ export default function PageHero({
   return (
     <section
       className={cn(
-        "relative overflow-hidden rounded-[28px] border border-[#182533]/10 bg-[#f8f5ef] p-7 shadow-[0_24px_65px_-45px_rgba(15,25,35,0.4)] md:p-10",
-        className
+        "flex flex-col gap-6 pb-1 pt-1 lg:flex-row lg:items-end lg:justify-between",
+        className,
       )}
     >
-      <div className="pointer-events-none absolute -right-24 -top-24 h-56 w-56 rounded-full bg-[#718d4f]/7 blur-3xl" />
+      <div className="max-w-3xl">
+        {eyebrow ? (
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#718d4f]">
+            {eyebrow}
+          </p>
+        ) : null}
 
-      <div className="relative flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
-        <div className="max-w-3xl">
-          {eyebrow ? (
-            <div className="flex items-center gap-3">
-              <span className="h-px w-7 bg-[#617c43]" />
+        <h1
+          className={cn(
+            "text-[36px] font-semibold leading-none tracking-[-0.045em] text-[#17212a] sm:text-[42px]",
+            eyebrow && "mt-3",
+          )}
+        >
+          {title}
+        </h1>
 
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#617c43]">
-                {eyebrow}
-              </p>
-            </div>
-          ) : null}
-
-          <h1
-            className={cn(
-              "font-serif text-3xl font-medium leading-[1.05] tracking-[-0.04em] text-[#101a22] md:text-4xl lg:text-[2.75rem]",
-              eyebrow && "mt-4"
-            )}
-          >
-            {title}
-          </h1>
-
-          {description ? (
-            <p className="mt-4 max-w-2xl text-base leading-7 text-[#67727a]">
-              {description}
-            </p>
-          ) : null}
-        </div>
-
-        {children ? (
-          <div className="flex shrink-0 flex-wrap items-center gap-3">
-            {children}
-          </div>
+        {description ? (
+          <p className="mt-4 max-w-2xl text-[15px] leading-6 text-[#68737b]">
+            {description}
+          </p>
         ) : null}
       </div>
+
+      {children ? (
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
+          {children}
+        </div>
+      ) : null}
     </section>
   );
 }

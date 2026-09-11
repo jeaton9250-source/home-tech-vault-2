@@ -6,16 +6,10 @@ import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
-function privateJson(
-  body: unknown,
-  init: ResponseInit = {}
-) {
+function privateJson(body: unknown, init: ResponseInit = {}) {
   const headers = new Headers(init.headers);
 
-  headers.set(
-    "Cache-Control",
-    "private, no-store, max-age=0"
-  );
+  headers.set("Cache-Control", "private, no-store, max-age=0");
 
   headers.set("Pragma", "no-cache");
 
@@ -24,7 +18,6 @@ function privateJson(
     headers,
   });
 }
-
 
 export async function GET() {
   try {
@@ -35,38 +28,31 @@ export async function GET() {
       error: userError,
     } = await supabase.auth.getUser();
 
-    if (userError) {
+    if (userError || !user) {
+      const isMissingSession =
+        userError?.name === "AuthSessionMissingError" ||
+        userError?.message?.toLowerCase().includes("auth session missing");
+
+      if (isMissingSession || !user) {
+        return privateJson({ error: "Unauthorized" }, { status: 401 });
+      }
+
       throw userError;
     }
 
-    if (!user) {
-      return privateJson(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
-
-    const grant =
-      await loadActivePlanGrantForUser(
-        supabase,
-        user.id
-      );
+    const grant = await loadActivePlanGrantForUser(supabase, user.id);
 
     return privateJson({
       grant: toSafeGrantSummary(grant),
     });
   } catch (error) {
-    console.error(
-      "Plan grant lookup error:",
-      error
-    );
+    console.error("Plan grant lookup error:", error);
 
     return privateJson(
       {
-        error:
-          "Unable to load plan grant.",
+        error: "Unable to load plan grant.",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

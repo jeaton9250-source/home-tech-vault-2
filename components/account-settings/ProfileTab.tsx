@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useRouter } from "next/navigation";
 
@@ -19,9 +15,7 @@ import {
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
-import {
-  updateProfileSettings,
-} from "@/app/settings/actions";
+import { updateProfileSettings } from "@/app/settings/actions";
 import {
   PROFILE_FIELD_LIMITS,
   validateProfileInput,
@@ -66,27 +60,19 @@ export default function ProfileTab() {
     planDisplayName,
   } = usePermissions();
 
-  const [fullName, setFullName] =
-    useState("");
+  const [fullName, setFullName] = useState("");
 
-  const [householdName, setHouseholdName] =
-    useState("");
+  const [householdName, setHouseholdName] = useState("");
 
   const [city, setCity] = useState("");
   const [phone, setPhone] = useState("");
-  const [avatarUrl, setAvatarUrl] =
-    useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [email, setEmail] = useState("");
-  const [memberSince, setMemberSince] =
-    useState<string | null>(null);
-  const [loading, setLoading] =
-    useState(true);
-  const [saving, setSaving] =
-    useState(false);
-  const [saved, setSaved] =
-    useState(false);
-  const [errorMessage, setErrorMessage] =
-    useState("");
+  const [memberSince, setMemberSince] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     async function loadProfile() {
@@ -99,21 +85,14 @@ export default function ProfileTab() {
         setErrorMessage("");
 
         if (isDemo || !user) {
-          setFullName(
-            demoProfile.full_name || ""
-          );
-          setHouseholdName(
-            demoProfile.household_name || ""
-          );
+          setFullName(demoProfile.full_name || "");
+          setHouseholdName(demoProfile.household_name || "");
           setCity(demoProfile.city || "");
           setPhone(demoProfile.phone || "");
           setAvatarUrl(null);
           setEmail("alex.morgan@example.com");
           setMemberSince(
-            new Date(
-              Date.now() -
-                180 * 24 * 60 * 60 * 1000
-            ).toISOString()
+            new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString(),
           );
           return;
         }
@@ -123,9 +102,7 @@ export default function ProfileTab() {
 
         const { data, error } = await supabase
           .from("profiles")
-          .select(
-            "full_name, household_name, city, phone, avatar_url"
-          )
+          .select("full_name, household_name, city, phone, avatar_url")
           .eq("id", user.id)
           .maybeSingle();
 
@@ -133,28 +110,20 @@ export default function ProfileTab() {
           throw error;
         }
 
-        const profile =
-          data as ProfileRecord | null;
+        const profile = data as ProfileRecord | null;
 
         setFullName(profile?.full_name || "");
-        setHouseholdName(
-          profile?.household_name || ""
-        );
+        setHouseholdName(profile?.household_name || "");
         setCity(profile?.city || "");
         setPhone(profile?.phone || "");
-        setAvatarUrl(
-          profile?.avatar_url || null
-        );
+        setAvatarUrl(profile?.avatar_url || null);
       } catch (error) {
-        console.error(
-          "Profile loading error:",
-          error
-        );
+        console.error("Profile loading error:", error);
 
         setErrorMessage(
           error instanceof Error
             ? error.message
-            : "Unable to load your profile."
+            : "Unable to load your profile.",
         );
       } finally {
         setLoading(false);
@@ -164,10 +133,7 @@ export default function ProfileTab() {
     void loadProfile();
   }, [user, isDemo, permissionsLoading]);
 
-  const displayName =
-    fullName.trim() ||
-    email.split("@")[0] ||
-    "Homeowner";
+  const displayName = fullName.trim() || email.split("@")[0] || "Homeowner";
 
   const initials = useMemo(() => {
     return displayName
@@ -189,18 +155,15 @@ export default function ProfileTab() {
       return;
     }
 
-    const validation =
-      validateProfileInput({
-        fullName,
-        householdName,
-        city,
-        phone,
-      });
+    const validation = validateProfileInput({
+      fullName,
+      householdName,
+      city,
+      phone,
+    });
 
     if (!validation.success) {
-      setErrorMessage(
-        validation.error
-      );
+      setErrorMessage(validation.error);
       return;
     }
 
@@ -209,43 +172,27 @@ export default function ProfileTab() {
       setSaved(false);
       setErrorMessage("");
 
-      const result =
-        await updateProfileSettings({
-          fullName,
-          householdName,
-          city,
-          phone,
-        });
+      const result = await updateProfileSettings({
+        fullName,
+        householdName,
+        city,
+        phone,
+      });
 
       if (!result.success) {
-        if (
-          result.code ===
-          "UNAUTHENTICATED"
-        ) {
+        if (result.code === "UNAUTHENTICATED") {
           router.push("/login");
           return;
         }
 
-        setErrorMessage(
-          result.error
-        );
+        setErrorMessage(result.error);
         return;
       }
 
-      setFullName(
-        validation.data.fullName ||
-          ""
-      );
-      setHouseholdName(
-        validation.data
-          .householdName || ""
-      );
-      setCity(
-        validation.data.city || ""
-      );
-      setPhone(
-        validation.data.phone || ""
-      );
+      setFullName(validation.data.fullName || "");
+      setHouseholdName(validation.data.householdName || "");
+      setCity(validation.data.city || "");
+      setPhone(validation.data.phone || "");
 
       setSaved(true);
 
@@ -255,14 +202,9 @@ export default function ProfileTab() {
 
       router.refresh();
     } catch (error) {
-      console.error(
-        "Profile saving error:",
-        error
-      );
+      console.error("Profile saving error:", error);
 
-      setErrorMessage(
-        "Unable to save your profile."
-      );
+      setErrorMessage("Unable to save your profile.");
     } finally {
       setSaving(false);
     }
@@ -272,10 +214,7 @@ export default function ProfileTab() {
     return (
       <SettingsCard title="Profile">
         <div className="flex items-center gap-3 text-sm text-text-secondary">
-          <Loader2
-            size={18}
-            className="animate-spin"
-          />
+          <Loader2 size={18} className="animate-spin" />
           Loading profile...
         </div>
       </SettingsCard>
@@ -292,8 +231,8 @@ export default function ProfileTab() {
 
       {isDemo ? (
         <div className="rounded-[var(--radius-card)] border border-warning/40 bg-warning-soft px-4 py-3 text-sm text-text-secondary">
-          These are sample profile details. Create
-          an account to personalize your vault.
+          These are sample profile details. Create an account to personalize
+          your vault.
         </div>
       ) : null}
 
@@ -308,13 +247,10 @@ export default function ProfileTab() {
                 void saveProfile();
               }}
               disabled={saving}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-charcoal px-6 text-sm font-semibold text-white transition hover:bg-charcoal-hover disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-[13px] bg-[#617c43] px-6 text-sm font-semibold text-white shadow-[0_8px_20px_-12px_rgba(82,107,57,0.75)] transition hover:bg-[#526b39] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {saving ? (
-                <Loader2
-                  size={16}
-                  className="animate-spin"
-                />
+                <Loader2 size={16} className="animate-spin" />
               ) : saved ? (
                 <CheckCircle2 size={16} />
               ) : (
@@ -355,8 +291,7 @@ export default function ProfileTab() {
               {displayName}
             </p>
             <p className="mt-1 text-sm text-text-secondary">
-              Member since{" "}
-              {formatMemberSince(memberSince)}
+              Member since {formatMemberSince(memberSince)}
             </p>
             <div className="mt-2">
               <FoundingMemberBadge compact />
@@ -371,9 +306,7 @@ export default function ProfileTab() {
             value={fullName}
             placeholder="Your full name"
             onChange={setFullName}
-            maxLength={
-              PROFILE_FIELD_LIMITS.fullName
-            }
+            maxLength={PROFILE_FIELD_LIMITS.fullName}
           />
 
           <FormField
@@ -382,9 +315,7 @@ export default function ProfileTab() {
             value={householdName}
             placeholder="The Morgan Household"
             onChange={setHouseholdName}
-            maxLength={
-              PROFILE_FIELD_LIMITS.householdName
-            }
+            maxLength={PROFILE_FIELD_LIMITS.householdName}
           />
 
           <FormField
@@ -393,9 +324,7 @@ export default function ProfileTab() {
             value={city}
             placeholder="Wilmington, NC"
             onChange={setCity}
-            maxLength={
-              PROFILE_FIELD_LIMITS.city
-            }
+            maxLength={PROFILE_FIELD_LIMITS.city}
           />
 
           <FormField
@@ -405,9 +334,7 @@ export default function ProfileTab() {
             placeholder="(910) 555-1234"
             onChange={setPhone}
             type="tel"
-            maxLength={
-              PROFILE_FIELD_LIMITS.phone
-            }
+            maxLength={PROFILE_FIELD_LIMITS.phone}
           />
 
           <div className="md:col-span-2">
@@ -430,20 +357,14 @@ export default function ProfileTab() {
           <ReadOnlyRow
             label="Current plan"
             value={
-              isPlatformAdmin
-                ? "Platform Admin"
-                : planDisplayName || "Free"
+              isPlatformAdmin ? "Platform Admin" : planDisplayName || "Free"
             }
           />
 
           {roleDisplayName || vaultContextLabel ? (
             <ReadOnlyRow
               label="Household role"
-              value={
-                vaultContextLabel ||
-                roleDisplayName ||
-                "—"
-              }
+              value={vaultContextLabel || roleDisplayName || "—"}
             />
           ) : null}
 

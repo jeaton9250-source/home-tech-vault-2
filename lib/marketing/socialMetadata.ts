@@ -3,10 +3,7 @@ import type { Metadata } from "next";
 export const rootSiteMetadata: Metadata = {
   metadataBase: new URL("https://www.hometechvault.com"),
 
-  title: {
-    default: "Home Tech Vault | Your Home Has a Memory",
-    template: "%s | Home Tech Vault",
-  },
+  title: "Home Tech Vault | Your Home Has a Memory",
 
   description:
     "Home Tech Vault keeps your home's manuals, warranties, receipts, maintenance history and important details together in one place.",

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import MarketingHeader from "@/components/marketing/MarketingHeader";
+import HomeMarketingFooter from "@/components/marketing/HomeMarketingFooter";
 
 const fallbackMomentImage =
   "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1200&q=85";
@@ -568,90 +569,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="bg-[#f7f5f1] px-5 py-14 sm:px-6 lg:px-10">
-        <div className="mx-auto max-w-[1380px]">
-          <div className="grid gap-10 border-b border-[#152335]/10 pb-12 md:grid-cols-[1.4fr_0.6fr_0.6fr]">
-            <div>
-              <div className="flex items-center gap-3">
-                <span className="font-serif text-3xl font-semibold tracking-[-0.04em]">
-                  HTV
-                </span>
-
-                <span className="text-sm font-medium">
-                  Home Tech Vault
-                </span>
-              </div>
-
-              <p className="mt-5 max-w-[400px] leading-7 text-[#6a7585]">
-                Your home remembers more than you think.
-                Keep its useful history in one place.
-              </p>
-            </div>
-
-            <div>
-              <p className="font-semibold">Explore</p>
-
-              <div className="mt-5 flex flex-col gap-3 text-sm text-[#6a7585]">
-                <Link href="/what-it-remembers">
-                  What It Remembers
-                </Link>
-
-                <Link href="/explore">
-                  Explore
-                </Link>
-
-                <Link href="/pricing">
-                  Pricing
-                </Link>
-
-                <Link href="/realtors">
-                  For Realtors
-                </Link>
-              </div>
-            </div>
-
-            <div>
-              <p className="font-semibold">Company</p>
-
-              <div className="mt-5 flex flex-col gap-3 text-sm text-[#6a7585]">
-                <Link href="/our-story">
-                  Our Story
-                </Link>
-
-                <Link href="/login">
-                  Sign In
-                </Link>
-
-                <Link href="/signup">
-                  Create Your Home
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-col justify-between gap-4 pt-8 text-xs text-[#7c8592] sm:flex-row">
-            <p>
-              © {new Date().getFullYear()} Home Tech Vault.
-              All rights reserved.
-            </p>
-
-            <div className="flex gap-5">
-              <Link href="/privacy">
-                Privacy
-              </Link>
-
-              <Link href="/terms">
-                Terms
-              </Link>
-
-              <Link href="/contact">
-                Contact
-              </Link>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <HomeMarketingFooter />
     </main>
   );
 }

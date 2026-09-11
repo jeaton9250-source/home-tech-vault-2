@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 
 import MarketingHeader from "@/components/marketing/MarketingHeader";
+import HomeMarketingFooter from "@/components/marketing/HomeMarketingFooter";
 
 const storyBlocks = [
   {
@@ -390,6 +391,7 @@ export default function WhatItRemembersPage() {
           </div>
         </div>
       </section>
+      <HomeMarketingFooter />
     </main>
   );
 }

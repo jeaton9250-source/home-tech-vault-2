@@ -163,7 +163,7 @@ export type RawDiscoveryObservation = {
 export const RULE_SET_VERSION = "3.0.0-phase3a";
 export const CATALOG_VERSION = "3.0.0-phase3a";
 export const VENDOR_DATASET_VERSION = "seed-2026-07-24";
-export const ANALYSIS_VERSION = "3a.1";
+export const ANALYSIS_VERSION = "3a.2";
 
 /** Baseline evidence weights (not percentages). */
 export const EVIDENCE_WEIGHTS = {

@@ -1,547 +1,415 @@
 import Link from "next/link";
 import {
   ArrowRight,
+  BookOpen,
   Check,
-  FileText,
   Gift,
   Home,
   KeyRound,
-  PackageCheck,
+  ReceiptText,
   ShieldCheck,
   Wrench,
 } from "lucide-react";
 
+import HomeMarketingFooter from "@/components/marketing/HomeMarketingFooter";
 import MarketingHeader from "@/components/marketing/MarketingHeader";
 
-const homeDetails = [
-  "Appliances",
-  "Manuals",
-  "Warranties",
-  "Paint colors",
-  "Service history",
-  "Important documents",
-  "Maintenance information",
-  "Home notes",
-];
+const keepsakeDetails = [
+  {
+    icon: ReceiptText,
+    title: "The things that came with the home",
+    copy: "Appliance details, receipts, paint colors and the information buyers usually inherit in a drawer—or not at all.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "The protection they will want later",
+    copy: "Warranties, manuals and important documents kept beside the part of the home they belong to.",
+  },
+  {
+    icon: Wrench,
+    title: "A thoughtful head start",
+    copy: "Service notes and maintenance history that help a new owner understand how their home has been cared for.",
+  },
+] as const;
 
-const steps = [
+const handoffSteps = [
   {
     number: "01",
-    title: "Start the home",
-    copy: "Add the property before closing and begin building its useful record.",
+    title: "Choose the home",
+    copy: "Create the address and begin its record while the transaction is moving toward closing.",
   },
   {
     number: "02",
-    title: "Add what matters",
-    copy: "Organize appliances, warranties, manuals, documents and the details your buyer will want later.",
+    title: "Add the thoughtful details",
+    copy: "Include what you have from the listing, seller or builder. A few useful details are enough to make the gift feel personal.",
   },
   {
     number: "03",
-    title: "Hand over the keys",
-    copy: "Transfer the completed home record to your buyer when the home changes hands.",
+    title: "Welcome them home",
+    copy: "Present the home record with the keys. Your buyers receive a beautiful starting point that is theirs to keep building.",
   },
-];
-
-const realtorBenefits = [
-  {
-    title: "Useful after closing",
-    copy: "Your gift keeps helping after the boxes are unpacked and closing day is over.",
-  },
-  {
-    title: "Your name stays remembered",
-    copy: "Give clients something connected to one of the biggest purchases they will ever make.",
-  },
-  {
-    title: "No subscription to manage",
-    copy: "Create your Realtor account for free and gift homes when it makes sense for your business.",
-  },
-];
+] as const;
 
 export default function RealtorsPage() {
   return (
     <main className="min-h-screen bg-[#f7f5f0] text-[#152335]">
       <MarketingHeader />
 
-      {/* HERO */}
-      <section className="relative overflow-hidden border-b border-[#152335]/[0.06]">
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute -left-24 top-0 h-[520px] w-[520px] rounded-full bg-white/80 blur-[120px]" />
-          <div className="absolute -right-24 top-16 h-[520px] w-[520px] rounded-full bg-[#dfeaec]/70 blur-[130px]" />
-        </div>
+      <section className="overflow-hidden border-b border-[#152335]/[0.07]">
+        <div className="mx-auto grid max-w-[1440px] lg:min-h-[760px] lg:grid-cols-[0.9fr_1.1fr]">
+          <div className="relative flex items-center px-5 py-20 sm:px-8 sm:py-24 lg:px-12 lg:py-28 xl:px-16">
+            <div className="pointer-events-none absolute -left-40 top-0 h-[540px] w-[540px] rounded-full bg-white/85 blur-[120px]" />
 
-        <div className="relative mx-auto grid max-w-[1380px] items-center gap-16 px-5 py-20 sm:px-6 lg:min-h-[720px] lg:grid-cols-[0.95fr_1.05fr] lg:px-10 lg:py-24">
-          {/* LEFT */}
-          <div className="max-w-[720px]">
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#788594]">
-              Home Tech Vault for Realtors
-            </p>
+            <div className="relative max-w-[650px]">
+              <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#71805f]">
+                <span className="h-px w-8 bg-[#98a267]" />
+                A closing gift for the home
+              </div>
 
-            <h1 className="mt-6 max-w-[720px] font-serif text-[52px] leading-[0.98] tracking-[-0.055em] sm:text-[68px] lg:text-[80px]">
-              Give your buyers
-              <br />
-              something that stays
-              <br />
-              with the home.
-            </h1>
+              <h1 className="mt-7 font-serif text-[54px] leading-[0.94] tracking-[-0.055em] sm:text-[70px] lg:text-[76px] xl:text-[86px]">
+                Give them more
+                <br />
+                than the keys.
+              </h1>
 
-            <p className="mt-8 max-w-[650px] text-lg leading-8 text-[#647284] sm:text-xl">
-              A beautifully organized record of their new home —
-              appliances, warranties, documents, maintenance details
-              and more — ready for them when they get the keys.
-            </p>
+              <p className="mt-8 max-w-[590px] text-lg leading-8 text-[#627081] sm:text-xl">
+                Welcome your buyers with a beautifully prepared record of
+                their new home—useful details, documents and history gathered
+                in one place from the very first day.
+              </p>
 
-            <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-              <Link
-                href="/realtors/signup"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-[#152335] px-7 py-4 text-sm font-semibold text-white transition duration-200 hover:-translate-y-0.5 hover:bg-[#23384c]"
-              >
-                Create a Buyer Home
-                <ArrowRight className="h-4 w-4" />
-              </Link>
+              <p className="mt-6 max-w-[560px] font-serif text-2xl italic leading-9 text-[#384a59]">
+                A thoughtful gift for closing day. A useful gift for every day
+                after.
+              </p>
 
-              <a
-                href="#buyer-experience"
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-[#152335]/10 bg-white/55 px-7 py-4 text-sm font-semibold text-[#152335] backdrop-blur transition hover:bg-white"
-              >
-                See the experience
-                <ArrowRight className="h-4 w-4" />
-              </a>
-            </div>
+              <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
+                <Link
+                  href="/realtors/signup"
+                  className="inline-flex min-h-[54px] items-center justify-center gap-2 rounded-full bg-[#152335] px-8 text-sm font-semibold text-white transition duration-200 hover:-translate-y-0.5 hover:bg-[#24384c]"
+                >
+                  Prepare a home gift
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
 
-            <div className="mt-7 flex flex-wrap gap-x-6 gap-y-3 text-sm text-[#687587]">
-              {[
-                "Free to join",
-                "Pay when you gift",
-                "1 year of Pro included",
-              ].map((item) => (
-                <div key={item} className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-[#66733f]" />
-                  <span>{item}</span>
-                </div>
-              ))}
+                <a
+                  href="#the-gift"
+                  className="inline-flex min-h-[54px] items-center justify-center px-6 text-sm font-semibold text-[#425366] transition hover:text-[#152335]"
+                >
+                  See what they receive
+                </a>
+              </div>
+
+              <p className="mt-5 text-sm text-[#7a8592]">
+                Free Realtor account · Create a gift when the moment is right
+              </p>
             </div>
           </div>
 
-          {/* PREMIUM CLOSING HANDOFF */}
-          <div className="relative mx-auto w-full max-w-[560px]">
-            <div className="absolute -inset-10 rounded-full bg-white/40 blur-3xl" />
+          <div className="relative min-h-[560px] lg:min-h-full">
+            <img
+              src="https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1800&q=90"
+              alt="A warm, welcoming home prepared for its new owners"
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#152335]/45 via-transparent to-transparent" />
 
-            <div className="relative rotate-[1deg] rounded-[34px] border border-white/80 bg-white/75 p-4 shadow-[0_40px_100px_rgba(22,35,53,0.13)] backdrop-blur-xl sm:p-5">
-              <div className="overflow-hidden rounded-[27px] bg-[#162638]">
-                <div className="border-b border-white/[0.08] px-7 py-6 sm:px-9">
+            <div className="absolute inset-x-5 bottom-6 sm:inset-x-auto sm:bottom-9 sm:left-9 sm:w-[430px] lg:-left-7 lg:bottom-12">
+              <div className="rotate-[-1deg] border border-white/70 bg-[#faf7ef]/95 p-3 shadow-[0_30px_80px_rgba(21,35,53,0.24)] backdrop-blur-sm">
+                <div className="border border-[#152335]/12 px-7 py-7 sm:px-9 sm:py-8">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.08]">
-                        <Home className="h-4 w-4 text-white/75" />
-                      </div>
-
-                      <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/45">
-                        Home record
-                      </span>
-                    </div>
-
-                    <span className="rounded-full bg-white/[0.07] px-3 py-1.5 text-[10px] font-medium text-white/55">
-                      Ready for closing
+                    <Home className="h-5 w-5 text-[#768052]" />
+                    <span className="text-[9px] font-semibold uppercase tracking-[0.24em] text-[#89918a]">
+                      Welcome home
                     </span>
                   </div>
-                </div>
 
-                <div className="px-7 py-9 sm:px-9 sm:py-10">
-                  <p className="text-xs text-white/45">Prepared home</p>
+                  <p className="mt-10 font-serif text-[34px] leading-[1.02] tracking-[-0.04em]">
+                    The Collins Home
+                  </p>
+                  <p className="mt-2 text-sm text-[#6d7881]">
+                    24 Hawthorne Lane
+                  </p>
 
-                  <h2 className="mt-2 font-serif text-3xl tracking-[-0.03em] text-white sm:text-[38px]">
-                    1247 Willow Creek Lane
-                  </h2>
-
-                  <div className="mt-9 border-t border-white/[0.08] pt-7">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/35">
-                      Prepared for
+                  <div className="mt-8 border-t border-[#152335]/10 pt-5">
+                    <p className="font-serif text-lg italic text-[#3f4e59]">
+                      May this home hold years of wonderful memories.
                     </p>
-
-                    <p className="mt-2 text-lg font-medium text-white">
-                      Sarah &amp; Michael
+                    <p className="mt-4 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#818a91]">
+                      Prepared with care by your Realtor
                     </p>
-                  </div>
-
-                  <div className="mt-8 grid grid-cols-2 gap-x-8 gap-y-5">
-                    {[
-                      "Appliances",
-                      "Warranties",
-                      "Manuals",
-                      "Documents",
-                    ].map((item) => (
-                      <div
-                        key={item}
-                        className="flex items-center gap-2.5 text-sm text-white/70"
-                      >
-                        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#a5aa4a]/20">
-                          <Check className="h-3 w-3 text-[#c7cb70]" />
-                        </div>
-                        {item}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="bg-[#f1efe8] px-7 py-7 text-[#152335] sm:px-9">
-                  <div className="flex items-end justify-between gap-6">
-                    <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#7b8590]">
-                        A gift from
-                      </p>
-                      <p className="mt-2 font-serif text-2xl">
-                        Your Realtor
-                      </p>
-                      <p className="mt-1 text-xs text-[#77828d]">
-                        Includes 1 year of Home Tech Vault Pro
-                      </p>
-                    </div>
-
-                    <Gift className="h-6 w-6 text-[#556578]" />
                   </div>
                 </div>
               </div>
             </div>
-
-            <div className="absolute -bottom-8 -left-6 hidden rounded-[20px] border border-[#152335]/[0.06] bg-white px-5 py-4 shadow-xl lg:block">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8b949d]">
-                Closing day
-              </p>
-              <p className="mt-1 font-serif text-lg">
-                Ready to hand over.
-              </p>
-            </div>
           </div>
         </div>
       </section>
 
-      {/* MORE THAN A CLOSING GIFT */}
-      <section className="px-5 py-24 sm:px-6 lg:px-10 lg:py-36">
-        <div className="mx-auto grid max-w-[1180px] gap-14 lg:grid-cols-[1.12fr_0.88fr] lg:items-end">
+      <section className="px-5 py-24 sm:px-8 lg:px-12 lg:py-36">
+        <div className="mx-auto grid max-w-[1240px] gap-14 lg:grid-cols-[1.08fr_0.92fr] lg:items-end">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#89939d]">
-              More than a closing gift
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#849086]">
+              A gift with a longer life
             </p>
 
-            <div className="mt-7 font-serif text-[46px] leading-[1.03] tracking-[-0.045em] sm:text-[62px] lg:text-[72px]">
-              <p>Flowers disappear.</p>
-              <p className="text-[#89939d]">Gift baskets get used.</p>
-              <p>The home stays.</p>
-            </div>
+            <h2 className="mt-6 max-w-[760px] font-serif text-[48px] leading-[1] tracking-[-0.045em] sm:text-[64px] lg:text-[74px]">
+              Some gifts celebrate the day.
+              <span className="block text-[#87917d]">
+                This one helps them feel at home.
+              </span>
+            </h2>
           </div>
 
-          <div className="lg:pb-2">
-            <p className="max-w-[480px] text-lg leading-8 text-[#667486]">
-              Home Tech Vault gives your clients something they can
-              keep using long after closing day — a dependable place
-              for the details that come with owning their home.
+          <div className="max-w-[500px] lg:pb-2">
+            <p className="text-lg leading-8 text-[#637183]">
+              Long after the flowers fade and the boxes are unpacked, your
+              buyers will still need the dishwasher manual, the paint color,
+              the HVAC service date or the warranty they forgot they had.
             </p>
 
-            <div className="mt-8 h-px w-full bg-[#152335]/10" />
+            <div className="mt-8 h-px bg-[#152335]/10" />
 
-            <p className="mt-8 max-w-[470px] text-sm leading-7 text-[#7a8592]">
-              Not another piece of software to manage. A useful record
-              that begins with the property and becomes more valuable
-              the longer they own it.
+            <p className="mt-7 font-serif text-2xl italic leading-9 text-[#3b4b59]">
+              Home Tech Vault makes your care part of the home they remember.
             </p>
           </div>
         </div>
       </section>
 
-      {/* BUYER EXPERIENCE */}
       <section
-        id="buyer-experience"
-        className="scroll-mt-[90px] bg-[#ebe9e3] px-5 py-24 sm:px-6 lg:px-10 lg:py-32"
+        id="the-gift"
+        className="scroll-mt-[90px] bg-[#e8e7df] px-5 py-24 sm:px-8 lg:px-12 lg:py-32"
       >
-        <div className="mx-auto grid max-w-[1240px] gap-16 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-          {/* LIST */}
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#7f8b96]">
-              What the buyer gets
+        <div className="mx-auto grid max-w-[1240px] gap-16 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
+          <div className="relative mx-auto w-full max-w-[540px]">
+            <div className="absolute -inset-8 rounded-full bg-white/50 blur-3xl" />
+            <div className="relative rotate-[1deg] bg-[#17283a] p-4 shadow-[0_36px_90px_rgba(21,35,53,0.18)] sm:p-5">
+              <div className="border border-white/10 px-7 py-8 text-white sm:px-10 sm:py-10">
+                <div className="flex items-start justify-between gap-6 border-b border-white/10 pb-8">
+                  <div>
+                    <p className="text-[9px] font-semibold uppercase tracking-[0.24em] text-white/40">
+                      The home book
+                    </p>
+                    <h3 className="mt-3 font-serif text-4xl tracking-[-0.04em]">
+                      24 Hawthorne Lane
+                    </h3>
+                  </div>
+                  <BookOpen className="h-6 w-6 text-[#c6c96d]" />
+                </div>
+
+                <div className="mt-8 space-y-1">
+                  {[
+                    ["Kitchen & appliances", "12 details saved"],
+                    ["Warranties & receipts", "Ready when needed"],
+                    ["Home documents", "Kept safely together"],
+                    ["Care & maintenance", "History started"],
+                  ].map(([title, detail]) => (
+                    <div
+                      key={title}
+                      className="flex items-center justify-between gap-5 border-b border-white/[0.08] py-4"
+                    >
+                      <span className="text-sm text-white/80">{title}</span>
+                      <span className="text-xs text-white/35">{detail}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-9 flex items-center gap-3">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#c0c45f]/15">
+                    <Gift className="h-4 w-4 text-[#d4d678]" />
+                  </span>
+                  <div>
+                    <p className="text-xs font-medium text-white/80">
+                      A housewarming gift from your Realtor
+                    </p>
+                    <p className="mt-1 text-[10px] text-white/35">
+                      Ready for the new owners
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="max-w-[610px]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#7b877e]">
+              What they receive
             </p>
 
-            <h2 className="mt-5 max-w-[580px] font-serif text-5xl leading-[1.04] tracking-[-0.045em] sm:text-6xl">
-              Their home,
-              <br />
-              already organized.
+            <h2 className="mt-6 font-serif text-5xl leading-[1.02] tracking-[-0.045em] sm:text-6xl">
+              A home already cared for.
             </h2>
 
-            <p className="mt-7 max-w-[520px] text-lg leading-8 text-[#657386]">
-              Give your buyer a head start by putting the most useful
-              information about their home in one place.
+            <p className="mt-7 max-w-[560px] text-lg leading-8 text-[#627081]">
+              Not an empty account or another app to figure out. A welcoming
+              home record with useful information already waiting inside.
             </p>
 
-            <div className="mt-10 grid grid-cols-2 gap-x-8">
-              {homeDetails.map((item) => (
-                <div
-                  key={item}
-                  className="flex items-center gap-3 border-t border-[#152335]/10 py-4 text-sm font-medium"
-                >
-                  <Check className="h-4 w-4 text-[#6c7641]" />
-                  {item}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* HOME RECORD VISUAL */}
-          <div className="rounded-[34px] bg-[#152638] p-6 shadow-[0_32px_80px_rgba(20,35,52,0.14)] sm:p-8">
-            <div className="flex items-center justify-between border-b border-white/[0.08] pb-7">
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/35">
-                  1247 Willow Creek Lane
-                </p>
-                <h3 className="mt-2 font-serif text-3xl text-white">
-                  The home at a glance
-                </h3>
-              </div>
-
-              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white/[0.07]">
-                <Home className="h-5 w-5 text-white/70" />
-              </div>
-            </div>
-
-            <div className="mt-8 space-y-2">
-              {[
-                {
-                  icon: PackageCheck,
-                  title: "Kitchen appliances",
-                  detail: "Models, serial numbers & manuals",
-                },
-                {
-                  icon: ShieldCheck,
-                  title: "Warranties",
-                  detail: "Coverage kept with the item",
-                },
-                {
-                  icon: FileText,
-                  title: "Home documents",
-                  detail: "Important files in one place",
-                },
-                {
-                  icon: Wrench,
-                  title: "Maintenance",
-                  detail: "A useful history of the home",
-                },
-              ].map((item) => {
+            <div className="mt-10 border-t border-[#152335]/10">
+              {keepsakeDetails.map((item) => {
                 const Icon = item.icon;
 
                 return (
                   <div
                     key={item.title}
-                    className="flex items-center gap-4 rounded-[18px] border border-white/[0.06] bg-white/[0.035] px-5 py-4"
+                    className="grid gap-4 border-b border-[#152335]/10 py-7 sm:grid-cols-[44px_1fr]"
                   >
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/[0.06]">
-                      <Icon className="h-4 w-4 text-[#c4c971]" />
-                    </div>
-
+                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f7f5ef] text-[#6f7950]">
+                      <Icon className="h-4 w-4" />
+                    </span>
                     <div>
-                      <p className="text-sm font-medium text-white">
+                      <h3 className="font-serif text-2xl tracking-[-0.02em]">
                         {item.title}
-                      </p>
-                      <p className="mt-1 text-xs text-white/40">
-                        {item.detail}
+                      </h3>
+                      <p className="mt-2 max-w-[520px] leading-7 text-[#697687]">
+                        {item.copy}
                       </p>
                     </div>
                   </div>
                 );
               })}
             </div>
+          </div>
+        </div>
+      </section>
 
-            <div className="mt-7 flex items-center justify-between rounded-[20px] bg-[#f3f1eb] px-5 py-5 text-[#152335]">
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#87909a]">
-                  Buyer access
+      <section className="overflow-hidden bg-[#f7f5f0]">
+        <div className="mx-auto grid max-w-[1440px] lg:grid-cols-2">
+          <div className="relative min-h-[480px] lg:min-h-[690px]">
+            <img
+              src="https://images.unsplash.com/photo-1560185007-c5ca9d2c014d?auto=format&fit=crop&w=1600&q=90"
+              alt="Front door and keys ready for a new homeowner"
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#152335]/35 via-transparent to-transparent" />
+          </div>
+
+          <div className="flex items-center px-5 py-20 sm:px-10 lg:px-16 lg:py-24 xl:px-20">
+            <div className="max-w-[590px]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#849086]">
+                Made personal by you
+              </p>
+
+              <h2 className="mt-6 font-serif text-5xl leading-[1.02] tracking-[-0.045em] sm:text-6xl">
+                Your care should be part of the presentation.
+              </h2>
+
+              <p className="mt-7 text-lg leading-8 text-[#637183]">
+                The home record is prepared for the buyer and presented as a
+                gift from their Realtor. It feels considered because it is
+                connected to their address, their move and the details of the
+                home you helped them find.
+              </p>
+
+              <div className="mt-10 border-l-2 border-[#9ba35f] pl-6">
+                <p className="font-serif text-2xl italic leading-9 text-[#3c4b58]">
+                  “May this home hold years of wonderful memories. I hope this
+                  record makes caring for it a little easier.”
                 </p>
-                <p className="mt-1 font-serif text-xl">
-                  Ready when they are.
+                <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#7c878e]">
+                  Your closing note
                 </p>
               </div>
-
-              <KeyRound className="h-5 w-5" />
             </div>
           </div>
         </div>
       </section>
 
-      {/* HOW IT WORKS */}
-      <section
-        id="how-it-works"
-        className="scroll-mt-[90px] px-5 py-24 sm:px-6 lg:px-10 lg:py-36"
-      >
-        <div className="mx-auto max-w-[1120px]">
-          <div className="grid gap-10 border-b border-[#152335]/10 pb-12 lg:grid-cols-2">
+      <section className="bg-white px-5 py-24 sm:px-8 lg:px-12 lg:py-36">
+        <div className="mx-auto max-w-[1180px]">
+          <div className="grid gap-10 border-b border-[#152335]/10 pb-14 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#89939d]">
-                How it works
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#849086]">
+                A simple handoff
               </p>
-
-              <h2 className="mt-5 font-serif text-5xl leading-[1.02] tracking-[-0.045em] sm:text-6xl">
-                From contract
+              <h2 className="mt-6 font-serif text-5xl leading-[1.02] tracking-[-0.045em] sm:text-6xl">
+                From accepted offer
                 <br />
-                to closing.
+                to welcome home.
               </h2>
             </div>
 
-            <p className="max-w-[520px] self-end text-lg leading-8 text-[#667486]">
-              Build the home record while the transaction is moving,
-              then hand it over when your buyer gets the keys.
+            <p className="max-w-[550px] text-lg leading-8 text-[#637183]">
+              Prepare what you know, present it with pride and let the buyer
+              carry the home&apos;s useful story forward.
             </p>
           </div>
 
           <div>
-            {steps.map((step) => (
+            {handoffSteps.map((step) => (
               <div
                 key={step.number}
-                className="grid gap-5 border-b border-[#152335]/10 py-10 sm:grid-cols-[110px_0.8fr_1.2fr] sm:items-start lg:py-12"
+                className="grid gap-4 border-b border-[#152335]/10 py-9 sm:grid-cols-[90px_0.9fr_1.25fr] sm:items-start lg:py-11"
               >
-                <span className="font-serif text-3xl text-[#152335]/25">
+                <span className="font-serif text-3xl text-[#8e9870]">
                   {step.number}
                 </span>
-
-                <h3 className="font-serif text-3xl tracking-[-0.025em]">
+                <h3 className="font-serif text-3xl tracking-[-0.03em]">
                   {step.title}
                 </h3>
-
-                <p className="max-w-[500px] leading-7 text-[#697687]">
+                <p className="max-w-[530px] leading-7 text-[#687687]">
                   {step.copy}
                 </p>
               </div>
             ))}
           </div>
-        </div>
-      </section>
 
-      {/* REALTOR VALUE */}
-      <section className="bg-white px-5 py-24 sm:px-6 lg:px-10 lg:py-32">
-        <div className="mx-auto max-w-[1180px]">
-          <div className="mx-auto max-w-[820px] text-center">
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#8a949f]">
-              After closing
-            </p>
-
-            <h2 className="mt-5 font-serif text-5xl leading-[1.03] tracking-[-0.045em] sm:text-6xl">
-              Be remembered for more
-              <br className="hidden sm:block" />
-              than the transaction.
-            </h2>
-
-            <p className="mx-auto mt-7 max-w-[680px] text-lg leading-8 text-[#667486]">
-              Give buyers something they will reach for when they need
-              the dishwasher model number, an HVAC warranty, a manual
-              or the details that came with their new home.
-            </p>
-          </div>
-
-          <div className="mt-16 grid border-y border-[#152335]/10 lg:grid-cols-3">
-            {realtorBenefits.map((item, index) => (
-              <div
-                key={item.title}
-                className={[
-                  "py-9 lg:px-9 lg:py-11",
-                  index !== 0 ? "border-t border-[#152335]/10 lg:border-l lg:border-t-0" : "",
-                ].join(" ")}
-              >
-                <span className="font-serif text-2xl text-[#152335]/20">
-                  0{index + 1}
-                </span>
-
-                <h3 className="mt-8 font-serif text-2xl tracking-[-0.02em]">
-                  {item.title}
-                </h3>
-
-                <p className="mt-4 max-w-[330px] leading-7 text-[#697687]">
-                  {item.copy}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* HANDOFF EXPERIENCE */}
-      <section className="bg-[#e8eceb] px-5 py-24 sm:px-6 lg:px-10 lg:py-32">
-        <div className="mx-auto grid max-w-[1180px] gap-14 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#7b8893]">
-              The handoff
-            </p>
-
-            <h2 className="mt-5 max-w-[520px] font-serif text-5xl leading-[1.03] tracking-[-0.045em] sm:text-6xl">
-              Make closing day feel considered.
-            </h2>
-
-            <p className="mt-7 max-w-[500px] text-lg leading-8 text-[#657386]">
-              The buyer receives their home record as part of the
-              handoff — prepared, useful and ready to grow with them.
-            </p>
-          </div>
-
-          <div className="rounded-[34px] bg-[#faf8f3] p-5 shadow-[0_30px_80px_rgba(20,35,52,0.08)] sm:p-8">
-            <div className="rounded-[27px] border border-[#152335]/[0.07] bg-white px-7 py-9 sm:px-10 sm:py-11">
-              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#edf0e6]">
-                <KeyRound className="h-5 w-5 text-[#65703e]" />
-              </div>
-
-              <p className="mt-9 text-xs font-semibold uppercase tracking-[0.2em] text-[#8a949f]">
-                Welcome home
-              </p>
-
-              <h3 className="mt-3 font-serif text-4xl leading-[1.08] tracking-[-0.035em]">
-                We organized the details
-                <br />
-                so you don&apos;t have to.
-              </h3>
-
-              <p className="mt-6 max-w-[520px] leading-7 text-[#697687]">
-                Your Home Tech Vault has been prepared for
-                1247 Willow Creek Lane. Everything your Realtor
-                added is waiting for you.
-              </p>
-
-              <div className="mt-9 border-t border-[#152335]/10 pt-6">
-                <p className="text-sm font-semibold">
-                  A housewarming gift from your Realtor
-                </p>
-
-                <p className="mt-1 text-sm text-[#82909b]">
-                  Includes one year of Home Tech Vault Pro.
-                </p>
-              </div>
+          <div className="mt-10 flex flex-wrap items-center justify-between gap-6">
+            <div className="flex flex-wrap gap-x-6 gap-y-3 text-sm text-[#697687]">
+              {["Free to join", "Gift when you choose", "A year of Pro included"].map(
+                (item) => (
+                  <span key={item} className="flex items-center gap-2">
+                    <Check className="h-4 w-4 text-[#77814e]" />
+                    {item}
+                  </span>
+                ),
+              )}
             </div>
+
+            <Link
+              href="/realtors/signup"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-[#152335] underline decoration-[#9ba35f] decoration-2 underline-offset-8"
+            >
+              Create your Realtor account
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* FINAL CTA */}
-      <section className="bg-[#142437] px-5 py-24 text-white sm:px-6 lg:px-10 lg:py-32">
-        <div className="mx-auto flex max-w-[900px] flex-col items-center text-center">
-          <Gift className="h-7 w-7 text-white/45" />
+      <section className="bg-[#17283a] px-5 py-24 text-white sm:px-8 lg:px-12 lg:py-32">
+        <div className="mx-auto flex max-w-[940px] flex-col items-center text-center">
+          <span className="flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-white/[0.04]">
+            <KeyRound className="h-6 w-6 text-[#c9cc72]" />
+          </span>
 
-          <h2 className="mt-7 font-serif text-5xl leading-[1.02] tracking-[-0.045em] sm:text-6xl lg:text-7xl">
-            Make the home part
+          <p className="mt-8 text-[10px] font-semibold uppercase tracking-[0.24em] text-white/40">
+            For the moment the keys change hands
+          </p>
+
+          <h2 className="mt-5 font-serif text-5xl leading-[1] tracking-[-0.045em] sm:text-6xl lg:text-7xl">
+            Give a better
             <br />
-            of the closing gift.
+            welcome home.
           </h2>
 
-          <p className="mt-7 max-w-[620px] text-lg leading-8 text-white/55">
-            Create your Realtor account and prepare your first buyer
-            home when you&apos;re ready.
+          <p className="mt-7 max-w-[620px] text-lg leading-8 text-white/60">
+            Create your free Realtor account and prepare a closing gift your
+            buyers will still value years from now.
           </p>
 
           <Link
             href="/realtors/signup"
-            className="mt-10 inline-flex items-center gap-2 rounded-full bg-[#f3f1e9] px-8 py-4 text-sm font-semibold text-[#152335] transition duration-200 hover:-translate-y-0.5 hover:bg-white"
+            className="mt-10 inline-flex min-h-[54px] items-center gap-2 rounded-full bg-[#f7f5ef] px-8 text-sm font-semibold text-[#152335] transition duration-200 hover:-translate-y-0.5 hover:bg-white"
           >
-            Start for free
+            Prepare your first home gift
             <ArrowRight className="h-4 w-4" />
           </Link>
-
-          <p className="mt-5 text-xs text-white/35">
-            Free to join · Pay when you gift
-          </p>
         </div>
       </section>
+
+      <HomeMarketingFooter />
     </main>
   );
 }

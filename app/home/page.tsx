@@ -51,6 +51,7 @@ type DeviceRow = {
   brand: string | null;
   category: string | null;
   location: string | null;
+  room_id: string | null;
   purchase_price: number | null;
   warranty_date: string | null;
 };
@@ -65,6 +66,7 @@ type HomeDevice = {
   brand: string;
   category: string;
   location: string;
+  roomId?: string | null;
   purchasePrice: number;
   warrantyDate: string;
   demoImage?: string;
@@ -222,7 +224,7 @@ function RoomsContent() {
               error: null,
             });
 
-        let devicesQuery = applyHouseholdScope(
+        const devicesQuery = applyHouseholdScope(
           supabase.from("devices").select(
             `
                 id,
@@ -230,6 +232,7 @@ function RoomsContent() {
                 brand,
                 category,
                 location,
+                room_id,
                 purchase_price,
                 warranty_date
               `,
@@ -321,6 +324,7 @@ function RoomsContent() {
             brand: device.brand || "",
             category: device.category || "",
             location: device.location?.trim() || "Unassigned",
+            roomId: device.room_id || null,
             purchasePrice: Number(device.purchase_price || 0),
             warrantyDate: device.warranty_date || "",
             hasPhoto: deviceIdsWithPhotos.has(device.id),
@@ -417,53 +421,88 @@ function RoomsContent() {
   }, [user, isDemo, householdId, permissionsLoading]);
 
   const rooms = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const roomRecordById = new Map(
+      roomRecords.map((record) => [record.id, record]),
+    );
+
     const groupedRooms = new Map<
       string,
       {
+        record?: RoomRecord;
         name: string;
         devices: HomeDevice[];
       }
     >();
 
+    /*
+     * Every real Room gets a stable UUID-backed group.
+     * This means renaming a room can never disconnect
+     * its devices.
+     */
+    for (const record of roomRecords) {
+      if (record.name.trim().toLowerCase() === "network") {
+        continue;
+      }
+
+      groupedRooms.set(`room:${record.id}`, {
+        record,
+        name: record.name,
+        devices: [],
+      });
+    }
+
     for (const device of devices) {
-      const roomName = device.location.trim() || "Unassigned";
+      if (device.roomId) {
+        const record = roomRecordById.get(device.roomId);
 
-      const key = roomName.toLowerCase();
+        if (record && record.name.trim().toLowerCase() !== "network") {
+          const existing = groupedRooms.get(`room:${record.id}`);
 
-      const existing = groupedRooms.get(key);
+          if (existing) {
+            existing.devices.push(device);
+          }
+
+          continue;
+        }
+      }
+
+      /*
+       * Legacy Home Systems stay outside Rooms.
+       */
+      const legacyLocation = device.location?.trim() || "";
+
+      if (legacyLocation.toLowerCase() === "network") {
+        continue;
+      }
+
+      /*
+       * Old devices without a room_id remain visible
+       * until the homeowner assigns them.
+       */
+      const fallbackName =
+        legacyLocation && legacyLocation.toLowerCase() !== "unassigned"
+          ? legacyLocation
+          : "Needs a Room";
+
+      const fallbackKey = `legacy:${fallbackName.toLowerCase()}`;
+
+      const existing = groupedRooms.get(fallbackKey);
 
       if (existing) {
         existing.devices.push(device);
       } else {
-        groupedRooms.set(key, {
-          name: roomName,
+        groupedRooms.set(fallbackKey, {
+          name: fallbackName,
           devices: [device],
         });
       }
     }
 
-    for (const record of roomRecords) {
-      const key = record.name.trim().toLowerCase();
-
-      if (!groupedRooms.has(key)) {
-        groupedRooms.set(key, {
-          name: record.name,
-          devices: [],
-        });
-      }
-    }
-
-    const roomRecordByName = new Map(
-      roomRecords.map((record) => [record.name.trim().toLowerCase(), record]),
-    );
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
     return Array.from(groupedRooms.values())
-      .map(({ name, devices: roomDevices }) => {
-        const record = roomRecordByName.get(name.trim().toLowerCase());
-
+      .map(({ record, name, devices: roomDevices }): RoomSummary => {
         const photoCount = roomDevices.filter(
           (device) => device.hasPhoto,
         ).length;
@@ -479,76 +518,64 @@ function RoomsContent() {
             ? 0
             : Math.round(((photoCount + documentCount) / possibleItems) * 100);
 
+        const recordedValue = roomDevices.reduce(
+          (total, device) => total + device.purchasePrice,
+          0,
+        );
+
         const expiringWarrantyCount = roomDevices.filter((device) => {
           if (!device.warrantyDate) {
             return false;
           }
 
-          const expiration = new Date(`${device.warrantyDate}T23:59:59`);
+          const expiration = new Date(device.warrantyDate);
 
-          const daysRemaining = Math.ceil(
-            (expiration.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
-          );
+          expiration.setHours(0, 0, 0, 0);
 
-          return daysRemaining >= 0 && daysRemaining <= 90;
+          const difference = expiration.getTime() - today.getTime();
+
+          return difference >= 0 && difference <= 90 * 24 * 60 * 60 * 1000;
         }).length;
 
         return {
           id: record?.id,
-          name: record?.name || name,
+          name,
           roomType: record?.room_type || null,
           coverImagePath: record?.cover_image_path || null,
-          coverImageUrl:
-            record?.coverImageUrl ||
-            (isDemo
-              ? roomDevices.find((device) => Boolean(device.demoImage))
-                  ?.demoImage || null
-              : null),
+          coverImageUrl: record?.coverImageUrl || null,
           devices: roomDevices,
           deviceCount: roomDevices.length,
-          recordedValue: roomDevices.reduce(
-            (total, device) => total + device.purchasePrice,
-            0,
-          ),
+          recordedValue,
           photoCount,
           documentCount,
           completeness,
           expiringWarrantyCount,
-        } satisfies RoomSummary;
+        };
       })
-      .sort((first, second) => {
-        if (first.name === "Unassigned") {
+      .sort((a, b) => {
+        if (a.name === "Needs a Room") {
           return 1;
         }
 
-        if (second.name === "Unassigned") {
+        if (b.name === "Needs a Room") {
           return -1;
         }
 
-        const firstRecord = roomRecords.findIndex(
-          (record) => record.id === first.id,
-        );
+        const aSort = a.id
+          ? (roomRecordById.get(a.id)?.sort_order ?? 9999)
+          : 9999;
 
-        const secondRecord = roomRecords.findIndex(
-          (record) => record.id === second.id,
-        );
+        const bSort = b.id
+          ? (roomRecordById.get(b.id)?.sort_order ?? 9999)
+          : 9999;
 
-        if (firstRecord >= 0 && secondRecord >= 0) {
-          return firstRecord - secondRecord;
+        if (aSort !== bSort) {
+          return aSort - bSort;
         }
 
-        if (firstRecord >= 0) {
-          return -1;
-        }
-
-        if (secondRecord >= 0) {
-          return 1;
-        }
-
-        return second.recordedValue - first.recordedValue;
+        return a.name.localeCompare(b.name);
       });
-  }, [devices, roomRecords, isDemo]);
-
+  }, [devices, roomRecords]);
   const filteredRooms = useMemo(() => {
     const query = searchTerm.trim().toLowerCase();
 

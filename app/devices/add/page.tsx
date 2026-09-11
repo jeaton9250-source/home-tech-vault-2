@@ -333,6 +333,7 @@ export default function AddDevicePage() {
   const [purchasePrice, setPurchasePrice] = useState("");
 
   const [location, setLocation] = useState("");
+  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
 
   const [inlineRoomName, setInlineRoomName] = useState("");
   const [creatingInlineRoom, setCreatingInlineRoom] = useState(false);
@@ -518,6 +519,7 @@ export default function AddDevicePage() {
        * Do not create a duplicate.
        */
       if (existingRoom) {
+        setSelectedRoomId(existingRoom.id);
         setLocation(existingRoom.name);
         setInlineRoomName("");
         setInlineRoomError("");
@@ -570,6 +572,7 @@ export default function AddDevicePage() {
         ].sort((a, b) => a.name.localeCompare(b.name));
       });
 
+      setSelectedRoomId(createdRoom.id);
       setLocation(createdRoom.name);
 
       setInlineRoomName("");
@@ -707,6 +710,31 @@ export default function AddDevicePage() {
       }
 
       if (result.deviceId && smartAddPhotoDataUrl) {
+        if (selectedRoomId) {
+          const { error: roomAssignmentError } = await supabase
+
+            .from("devices")
+
+            .update({
+              room_id: selectedRoomId,
+
+              location:
+                roomOptions.find((room) => room.id === selectedRoomId)?.name ||
+                location ||
+                null,
+            })
+
+            .eq("id", result.deviceId);
+
+          if (roomAssignmentError) {
+            console.warn(
+              "[smart-add] device saved but room_id assignment failed",
+
+              roomAssignmentError,
+            );
+          }
+        }
+
         await persistSmartAddPhoto(result.deviceId);
       }
 
@@ -1104,8 +1132,18 @@ export default function AddDevicePage() {
                   <div className="space-y-2">
                     <div className="relative">
                       <select
-                        value={location}
-                        onChange={(event) => setLocation(event.target.value)}
+                        value={selectedRoomId || ""}
+                        onChange={(event) => {
+                          const roomId = event.target.value || null;
+
+                          setSelectedRoomId(roomId);
+
+                          const selectedRoom = roomOptions.find(
+                            (room) => room.id === roomId,
+                          );
+
+                          setLocation(selectedRoom?.name || "");
+                        }}
                         disabled={loadingRoomOptions}
                         className="w-full appearance-none rounded-xl border border-[#20384b]/10 bg-white px-3.5 py-3 pr-10 text-sm text-[#172b3a] outline-none transition focus:border-[#617c43]/45 focus:ring-2 focus:ring-[#617c43]/10 disabled:cursor-wait disabled:opacity-60"
                       >
@@ -1115,13 +1153,8 @@ export default function AddDevicePage() {
                             : "Choose a room"}
                         </option>
 
-                        {location &&
-                        !roomOptions.some((room) => room.name === location) ? (
-                          <option value={location}>{location}</option>
-                        ) : null}
-
                         {roomOptions.map((room) => (
-                          <option key={room.id} value={room.name}>
+                          <option key={room.id} value={room.id}>
                             {room.name}
                           </option>
                         ))}

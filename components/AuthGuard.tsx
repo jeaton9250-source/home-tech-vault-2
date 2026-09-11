@@ -1,38 +1,20 @@
 "use client";
 
-import type {
-  ReactNode,
-} from "react";
+import type { ReactNode } from "react";
 
-import {
-  useEffect,
-  useState,
-} from "react";
+import { useEffect, useState } from "react";
 
-import {
-  usePathname,
-  useRouter,
-} from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
-import {
-  Loader2,
-} from "lucide-react";
+import { Loader2 } from "lucide-react";
 
-import {
-  useDemoMode,
-} from "@/hooks/useDemoMode";
+import { useDemoMode } from "@/hooks/useDemoMode";
 
-import {
-  enforceActiveAccount,
-} from "@/lib/auth/enforceActiveAccount";
+import { enforceActiveAccount } from "@/lib/auth/enforceActiveAccount";
 
-import {
-  clearDemoModeStorage,
-} from "@/lib/demo/demoModeStorage";
+import { clearDemoModeStorage } from "@/lib/demo/demoModeStorage";
 
-import {
-  isPublicAuthPath,
-} from "@/lib/marketing/routes";
+import { isPublicAuthPath } from "@/lib/marketing/routes";
 
 import {
   isProtectedRoute,
@@ -47,11 +29,7 @@ type AuthGuardProps = {
 type RealtorAccountContext = {
   authenticated?: boolean;
   realtorOnly?: boolean;
-  realtorStatus?:
-    | "active"
-    | "inactive"
-    | "suspended"
-    | null;
+  realtorStatus?: "active" | "inactive" | "suspended" | null;
   isPlatformAdmin?: boolean;
   clientVaultActive?: boolean;
   error?: string;
@@ -61,17 +39,11 @@ type RealtorAccountContext = {
  * Realtor-only accounts always have access to their
  * Realtor workspace.
  */
-function isRealtorWorkspacePath(
-  pathname: string
-) {
+function isRealtorWorkspacePath(pathname: string) {
   return (
-    pathname ===
-      "/realtor" ||
-    pathname.startsWith(
-      "/realtor/"
-    ) ||
-    pathname ===
-      "/realtors/setup"
+    pathname === "/realtor" ||
+    pathname.startsWith("/realtor/") ||
+    pathname === "/realtors/setup"
   );
 }
 
@@ -81,9 +53,7 @@ function isRealtorWorkspacePath(
  * Realtor-only users may enter them only while a valid
  * Client Vault Mode session is active.
  */
-function isClientVaultPreparationPath(
-  pathname: string
-) {
+function isClientVaultPreparationPath(pathname: string) {
   const allowedPrefixes = [
     "/dashboard",
     "/devices",
@@ -95,117 +65,58 @@ function isClientVaultPreparationPath(
   ] as const;
 
   return allowedPrefixes.some(
-    (prefix) =>
-      pathname === prefix ||
-      pathname.startsWith(
-        `${prefix}/`
-      )
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
   );
 }
 
-export default function AuthGuard({
-  children,
-}: AuthGuardProps) {
-  const pathname =
-    usePathname();
+export default function AuthGuard({ children }: AuthGuardProps) {
+  const pathname = usePathname();
 
-  const router =
-    useRouter();
+  const router = useRouter();
 
-  const normalizedPath =
-    normalizePathname(
-      pathname
-    );
+  const normalizedPath = normalizePathname(pathname);
 
-  const {
-    user,
-    isDemo,
-    loading,
-  } = useDemoMode();
+  const { user, isDemo, loading } = useDemoMode();
 
-  const [
-    accountBlockedMessage,
-    setAccountBlockedMessage,
-  ] =
-    useState<
-      string | null
-    >(null);
+  const [accountBlockedMessage, setAccountBlockedMessage] = useState<
+    string | null
+  >(null);
 
-  const [
-    checkingAuth,
-    setCheckingAuth,
-  ] =
-    useState(true);
+  const [checkingAuth, setCheckingAuth] = useState(true);
 
-  const [
-    checkingRealtorAccess,
-    setCheckingRealtorAccess,
-  ] =
-    useState(false);
+  const [checkingRealtorAccess, setCheckingRealtorAccess] = useState(false);
 
-  const [
-    realtorContext,
-    setRealtorContext,
-  ] =
-    useState<
-      RealtorAccountContext | null
-    >(null);
+  const [realtorContext, setRealtorContext] =
+    useState<RealtorAccountContext | null>(null);
 
-  const routeIsPublicAuth =
-    isPublicAuthPath(
-      normalizedPath
-    );
+  const routeIsPublicAuth = isPublicAuthPath(normalizedPath);
 
-  const routeIsPublic =
-    isPublicRoute(
-      normalizedPath
-    );
+  const routeIsPublic = isPublicRoute(normalizedPath);
 
-  const routeIsProtected =
-    isProtectedRoute(
-      normalizedPath
-    );
+  const routeIsProtected = isProtectedRoute(normalizedPath);
 
   useEffect(() => {
-    console.info(
-      "Auth route guard",
-      {
-        pathname:
-          normalizedPath,
+    console.info("Auth route guard", {
+      pathname: normalizedPath,
 
-        publicRoute:
-          routeIsPublicAuth,
+      publicRoute: routeIsPublicAuth,
 
-        hasUser:
-          Boolean(user),
-      }
-    );
-  }, [
-    normalizedPath,
-    routeIsPublicAuth,
-    user,
-  ]);
+      hasUser: Boolean(user),
+    });
+  }, [normalizedPath, routeIsPublicAuth, user]);
 
   /*
    * Standard authentication guard.
    */
   useEffect(() => {
-    if (
-      routeIsPublicAuth
-    ) {
-      setCheckingAuth(
-        false
-      );
+    if (routeIsPublicAuth) {
+      setCheckingAuth(false);
 
       return;
     }
 
-    if (
-      !routeIsProtected
-    ) {
-      setCheckingAuth(
-        false
-      );
+    if (!routeIsProtected) {
+      setCheckingAuth(false);
 
       return;
     }
@@ -214,21 +125,12 @@ export default function AuthGuard({
       return;
     }
 
-    setCheckingAuth(
-      false
-    );
+    setCheckingAuth(false);
 
-    if (
-      !user &&
-      !isDemo
-    ) {
+    if (!user && !isDemo) {
       clearDemoModeStorage();
 
-      router.replace(
-        `/login?next=${encodeURIComponent(
-          normalizedPath
-        )}`
-      );
+      router.replace(`/login?next=${encodeURIComponent(normalizedPath)}`);
     }
   }, [
     user,
@@ -244,48 +146,30 @@ export default function AuthGuard({
    * Existing account lifecycle enforcement.
    */
   useEffect(() => {
-    if (
-      routeIsPublicAuth ||
-      !routeIsProtected ||
-      loading ||
-      isDemo ||
-      !user
-    ) {
-      setAccountBlockedMessage(
-        null
-      );
+    if (routeIsPublicAuth || !routeIsProtected || loading || isDemo || !user) {
+      setAccountBlockedMessage(null);
 
       return;
     }
 
-    let cancelled =
-      false;
+    let cancelled = false;
 
     async function verifyAccountStatus() {
-      const result =
-        await enforceActiveAccount(
-          user!.id
-        );
+      const result = await enforceActiveAccount(user!.id);
 
       if (cancelled) {
         return;
       }
 
       if (!result.ok) {
-        setAccountBlockedMessage(
-          result.message
-        );
+        setAccountBlockedMessage(result.message);
 
-        router.replace(
-          "/login"
-        );
+        router.replace("/login");
 
         return;
       }
 
-      setAccountBlockedMessage(
-        null
-      );
+      setAccountBlockedMessage(null);
     }
 
     void verifyAccountStatus();
@@ -293,14 +177,7 @@ export default function AuthGuard({
     return () => {
       cancelled = true;
     };
-  }, [
-    user,
-    isDemo,
-    loading,
-    routeIsProtected,
-    routeIsPublicAuth,
-    router,
-  ]);
+  }, [user, isDemo, loading, routeIsProtected, routeIsPublicAuth, router]);
 
   /*
    * Realtor-only route enforcement.
@@ -309,54 +186,46 @@ export default function AuthGuard({
    * never user-editable browser metadata.
    */
   useEffect(() => {
-    if (
-      routeIsPublicAuth ||
-      !routeIsProtected ||
-      loading ||
-      isDemo ||
-      !user
-    ) {
-      setCheckingRealtorAccess(
-        false
-      );
+    if (routeIsPublicAuth || !routeIsProtected || loading || isDemo || !user) {
+      setCheckingRealtorAccess(false);
 
-      setRealtorContext(
-        null
-      );
+      setRealtorContext(null);
 
       return;
     }
 
-    let cancelled =
-      false;
+    let cancelled = false;
 
     async function verifyRealtorAccess() {
       try {
-        setCheckingRealtorAccess(
-          true
-        );
+        setCheckingRealtorAccess(true);
 
-        const response =
-          await fetch(
-            "/api/realtor/account-context",
-            {
-              method: "GET",
-              cache: "no-store",
-              credentials:
-                "same-origin",
-            }
-          );
+        const controller = new AbortController();
 
-        const payload =
-          (await response.json()) as RealtorAccountContext;
+        const timeout = window.setTimeout(() => {
+          controller.abort();
+        }, 5000);
+
+        let response: Response;
+
+        try {
+          response = await fetch("/api/realtor/account-context", {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            signal: controller.signal,
+          });
+        } finally {
+          window.clearTimeout(timeout);
+        }
+
+        const payload = (await response.json()) as RealtorAccountContext;
 
         if (cancelled) {
           return;
         }
 
-        if (
-          !response.ok
-        ) {
+        if (!response.ok) {
           /*
            * Do not accidentally lock ordinary users out
            * because the Realtor context endpoint had a
@@ -364,23 +233,17 @@ export default function AuthGuard({
            */
           console.error(
             "Unable to verify Realtor account context:",
-            payload.error
+            payload.error,
           );
 
-          setRealtorContext(
-            null
-          );
+          setRealtorContext(null);
 
           return;
         }
 
-        setRealtorContext(
-          payload
-        );
+        setRealtorContext(payload);
 
-        if (
-          !payload.realtorOnly
-        ) {
+        if (!payload.realtorOnly) {
           return;
         }
 
@@ -388,13 +251,8 @@ export default function AuthGuard({
          * Suspended Realtor-only accounts must not enter
          * the workspace.
          */
-        if (
-          payload.realtorStatus ===
-          "suspended"
-        ) {
-          router.replace(
-            "/login?account=realtor-suspended"
-          );
+        if (payload.realtorStatus === "suspended") {
+          router.replace("/login?account=realtor-suspended");
 
           return;
         }
@@ -403,18 +261,9 @@ export default function AuthGuard({
          * Inactive is primarily used while the invitation
          * is still being completed.
          */
-        if (
-          payload.realtorStatus !==
-          "active"
-        ) {
-          if (
-            !normalizedPath.startsWith(
-              "/invite/"
-            )
-          ) {
-            router.replace(
-              "/invite/setup"
-            );
+        if (payload.realtorStatus !== "active") {
+          if (!normalizedPath.startsWith("/invite/")) {
+            router.replace("/invite/setup");
           }
 
           return;
@@ -423,11 +272,7 @@ export default function AuthGuard({
         /*
          * The Realtor workspace itself is always allowed.
          */
-        if (
-          isRealtorWorkspacePath(
-            normalizedPath
-          )
-        ) {
+        if (isRealtorWorkspacePath(normalizedPath)) {
           return;
         }
 
@@ -437,9 +282,7 @@ export default function AuthGuard({
          */
         if (
           payload.clientVaultActive &&
-          isClientVaultPreparationPath(
-            normalizedPath
-          )
+          isClientVaultPreparationPath(normalizedPath)
         ) {
           return;
         }
@@ -448,25 +291,16 @@ export default function AuthGuard({
          * Everything else belongs to the homeowner
          * experience.
          */
-        router.replace(
-          "/realtor"
-        );
+        router.replace("/realtor");
       } catch (error) {
         if (!cancelled) {
-          console.error(
-            "Realtor route guard failed:",
-            error
-          );
+          console.error("Realtor route guard failed:", error);
 
-          setRealtorContext(
-            null
-          );
+          setRealtorContext(null);
         }
       } finally {
         if (!cancelled) {
-          setCheckingRealtorAccess(
-            false
-          );
+          setCheckingRealtorAccess(false);
         }
       }
     }
@@ -486,52 +320,39 @@ export default function AuthGuard({
     normalizedPath,
   ]);
 
-  if (
-    routeIsPublicAuth ||
-    routeIsPublic
-  ) {
-    return (
-      <>
-        {children}
-      </>
-    );
+  if (routeIsPublicAuth || routeIsPublic) {
+    return <>{children}</>;
   }
 
-  if (
-    loading ||
-    checkingAuth ||
-    checkingRealtorAccess
-  ) {
+  /*
+   * Authentication itself may block rendering.
+   *
+   * Realtor-account verification continues in the
+   * background so a slow optional account-context
+   * request cannot blank the entire homeowner app.
+   * Redirect rules below remain authoritative once
+   * the response resolves.
+   */
+  if (loading || checkingAuth) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-surface-sunken">
         <div className="flex items-center gap-3 text-text-secondary">
-          <Loader2
-            size={22}
-            className="animate-spin"
-          />
-
+          <Loader2 size={22} className="animate-spin" />
           Loading Home Tech Vault...
         </div>
       </div>
     );
   }
 
-  if (
-    !user &&
-    !isDemo
-  ) {
+  if (!user && !isDemo) {
     return null;
   }
 
-  if (
-    accountBlockedMessage
-  ) {
+  if (accountBlockedMessage) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-surface-sunken px-6">
         <p className="max-w-md text-center text-sm text-text-secondary">
-          {
-            accountBlockedMessage
-          }
+          {accountBlockedMessage}
         </p>
       </div>
     );
@@ -543,35 +364,22 @@ export default function AuthGuard({
    */
   if (
     realtorContext?.realtorOnly &&
-    realtorContext.realtorStatus ===
-      "active" &&
-    !isRealtorWorkspacePath(
-      normalizedPath
-    ) &&
+    realtorContext.realtorStatus === "active" &&
+    !isRealtorWorkspacePath(normalizedPath) &&
     !(
       realtorContext.clientVaultActive &&
-      isClientVaultPreparationPath(
-        normalizedPath
-      )
+      isClientVaultPreparationPath(normalizedPath)
     )
   ) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-surface-sunken">
         <div className="flex items-center gap-3 text-text-secondary">
-          <Loader2
-            size={22}
-            className="animate-spin"
-          />
-
+          <Loader2 size={22} className="animate-spin" />
           Opening Realtor workspace...
         </div>
       </div>
     );
   }
 
-  return (
-    <>
-      {children}
-    </>
-  );
+  return <>{children}</>;
 }

@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useState,
-} from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import {
@@ -26,31 +23,22 @@ import NewVaultGettingStarted from "@/components/dashboard/NewVaultGettingStarte
 
 import type { DashboardOverviewStats } from "@/lib/dashboard/types";
 import type { HomeHealthResult } from "@/lib/home-health/types";
-import {
-  demoDashboard,
-  demoDevices,
-} from "@/lib/demoData";
+import type { HomeReadinessResult } from "@/lib/home-health";
+import { demoDashboard, demoDevices } from "@/lib/demoData";
 import { getWarrantyStatus } from "@/lib/home-health/warranty";
 
 function buildDemoOverviewStats(): DashboardOverviewStats {
   const onlineDeviceCount = demoDevices.filter(
-    (device) => device.online
+    (device) => device.online,
   ).length;
   const offlineDeviceCount = demoDevices.filter(
-    (device) => !device.online
+    (device) => !device.online,
   ).length;
-  const activeWarrantyCount = demoDevices.filter(
-    (device) => {
-      const status = getWarrantyStatus(
-        device.warranty_date || null
-      );
+  const activeWarrantyCount = demoDevices.filter((device) => {
+    const status = getWarrantyStatus(device.warranty_date || null);
 
-      return (
-        status === "active" ||
-        status === "expiring"
-      );
-    }
-  ).length;
+    return status === "active" || status === "expiring";
+  }).length;
 
   return {
     deviceCount: demoDashboard.deviceCount,
@@ -63,14 +51,11 @@ function buildDemoOverviewStats(): DashboardOverviewStats {
 }
 
 type DashboardPageClientProps = {
-  initialMetrics:
-    DashboardMetrics | null;
+  initialMetrics: DashboardMetrics | null;
 
-  initialMetricsUserId:
-    string | null;
+  initialMetricsUserId: string | null;
 
-  initialHouseholdId:
-    string | null;
+  initialHouseholdId: string | null;
 };
 
 export default function DashboardPageClient({
@@ -89,42 +74,28 @@ export default function DashboardPageClient({
     canCreate,
   } = usePermissions();
 
-  const [firstName, setFirstName] =
-    useState(
-      initialMetrics?.firstName ??
-        "Homeowner"
-    );
+  const [firstName, setFirstName] = useState(
+    initialMetrics?.firstName ?? "Homeowner",
+  );
 
-  const [homeHealth, setHomeHealth] =
-    useState<HomeHealthResult | null>(
-      initialMetrics?.homeHealth ??
-        null
-    );
+  const [homeHealth, setHomeHealth] = useState<HomeHealthResult | null>(
+    initialMetrics?.homeHealth ?? null,
+  );
+
+  const [homeReadiness, setHomeReadiness] =
+    useState<HomeReadinessResult | null>(initialMetrics?.homeReadiness ?? null);
 
   const [overviewStats, setOverviewStats] =
     useState<DashboardOverviewStats | null>(
-      initialMetrics
-        ?.overviewStats ??
-        null
+      initialMetrics?.overviewStats ?? null,
     );
 
-  const [
-    loadingDashboard,
-    setLoadingDashboard,
-  ] = useState(
-    !initialMetrics
-  );
+  const [loadingDashboard, setLoadingDashboard] = useState(!initialMetrics);
 
-  const [errorMessage, setErrorMessage] =
-    useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    if (
-      !permissionsReady ||
-      isDemo ||
-      !user ||
-      isVerifiedPlatformAdmin
-    ) {
+    if (!permissionsReady || isDemo || !user || isVerifiedPlatformAdmin) {
       return;
     }
 
@@ -139,9 +110,7 @@ export default function DashboardPageClient({
 
       const hasHousehold = householdId
         ? true
-        : await userHasHouseholdMembership(
-            activeUser.id
-          );
+        : await userHasHouseholdMembership(activeUser.id);
 
       if (cancelled) {
         return;
@@ -159,12 +128,8 @@ export default function DashboardPageClient({
 
       console.info("Invite onboarding route", {
         userId: activeUser.id,
-        invitationType:
-          activeUser.user_metadata?.invitation_type ??
-          null,
-        onboardingMode:
-          activeUser.user_metadata?.onboarding_mode ??
-          null,
+        invitationType: activeUser.user_metadata?.invitation_type ?? null,
+        onboardingMode: activeUser.user_metadata?.onboarding_mode ?? null,
         hasHousehold,
         destination: invitePath,
       });
@@ -196,66 +161,36 @@ export default function DashboardPageClient({
 
       if (isDemo || !user) {
         if (!cancelled) {
-          setFirstName(
-            demoDashboard.firstName
-          );
+          setFirstName(demoDashboard.firstName);
 
-          setHomeHealth(
-            buildDemoHomeHealth()
-          );
+          setHomeHealth(buildDemoHomeHealth());
 
-          setOverviewStats(
-            buildDemoOverviewStats()
-          );
+          setOverviewStats(buildDemoOverviewStats());
 
           setErrorMessage("");
 
-          setLoadingDashboard(
-            false
-          );
+          setLoadingDashboard(false);
         }
 
         return;
       }
 
       const initialMetricsMatch =
-        Boolean(
-          initialMetrics
-        ) &&
-        initialMetricsUserId ===
-          user.id &&
-        (
-          initialHouseholdId ??
-          null
-        ) ===
-          (
-            householdId ??
-            null
-          );
+        Boolean(initialMetrics) &&
+        initialMetricsUserId === user.id &&
+        (initialHouseholdId ?? null) === (householdId ?? null);
 
-      if (
-        initialMetricsMatch &&
-        initialMetrics
-      ) {
+      if (initialMetricsMatch && initialMetrics) {
         if (!cancelled) {
-          setFirstName(
-            initialMetrics.firstName
-          );
+          setFirstName(initialMetrics.firstName);
 
-          setHomeHealth(
-            initialMetrics.homeHealth
-          );
+          setHomeHealth(initialMetrics.homeHealth);
 
-          setOverviewStats(
-            initialMetrics
-              .overviewStats
-          );
+          setOverviewStats(initialMetrics.overviewStats);
 
           setErrorMessage("");
 
-          setLoadingDashboard(
-            false
-          );
+          setLoadingDashboard(false);
         }
 
         return;
@@ -267,12 +202,7 @@ export default function DashboardPageClient({
           setErrorMessage("");
         }
 
-        const metrics =
-          await loadDashboardMetrics(
-            user,
-            householdId,
-            supabase
-          );
+        const metrics = await loadDashboardMetrics(user, householdId, supabase);
 
         if (cancelled) {
           return;
@@ -280,14 +210,10 @@ export default function DashboardPageClient({
 
         setFirstName(metrics.firstName);
         setHomeHealth(metrics.homeHealth);
-        setOverviewStats(
-          metrics.overviewStats
-        );
+        setHomeReadiness(metrics.homeReadiness);
+        setOverviewStats(metrics.overviewStats);
       } catch (error: unknown) {
-        console.error(
-          "Unable to load dashboard:",
-          error
-        );
+        console.error("Unable to load dashboard:", error);
 
         if (!cancelled) {
           setHomeHealth(null);
@@ -295,7 +221,7 @@ export default function DashboardPageClient({
           setErrorMessage(
             error instanceof Error
               ? error.message
-              : "Unable to load your Home Pulse dashboard."
+              : "Unable to load your Home Pulse dashboard.",
           );
         }
       } finally {
@@ -320,24 +246,14 @@ export default function DashboardPageClient({
     initialHouseholdId,
   ]);
 
-  const hasDashboardData =
-    Boolean(
-      homeHealth &&
-      overviewStats
-    );
+  const hasDashboardData = Boolean(homeHealth && overviewStats);
 
   /*
    * When server metrics are already available,
    * permission verification can continue quietly
    * without replacing Home Pulse with a skeleton.
    */
-  if (
-    (
-      permissionsLoading ||
-      loadingDashboard
-    ) &&
-    !hasDashboardData
-  ) {
+  if ((permissionsLoading || loadingDashboard) && !hasDashboardData) {
     return (
       <PageShell>
         <DashboardSkeleton />
@@ -345,19 +261,12 @@ export default function DashboardPageClient({
     );
   }
 
-  if (
-    errorMessage &&
-    !hasDashboardData
-  ) {
+  if (errorMessage && !hasDashboardData) {
     return (
       <PageShell>
         <PageCard className="border-danger/30 bg-danger-soft text-danger">
-          <h1 className="text-section-title">
-            Unable to load Home Pulse
-          </h1>
-          <p className="mt-2 text-sm">
-            {errorMessage}
-          </p>
+          <h1 className="text-section-title">Unable to load Home Pulse</h1>
+          <p className="mt-2 text-sm">{errorMessage}</p>
         </PageCard>
       </PageShell>
     );
@@ -373,8 +282,6 @@ export default function DashboardPageClient({
 
   return (
     <PageShell className="!pt-4 md:!pt-5">
-      
-
       <NewVaultGettingStarted
         deviceCount={overviewStats?.deviceCount ?? 0}
         documentCount={overviewStats?.documentCount ?? 0}
@@ -383,9 +290,11 @@ export default function DashboardPageClient({
       <HomeHealthDashboard
         firstName={firstName}
         homeHealth={homeHealth}
+        homeReadiness={homeReadiness}
         overviewStats={overviewStats}
-              hasHousehold={Boolean(householdId)}
-/>
+        hasHousehold={Boolean(householdId)}
+        canCreate={canCreate}
+      />
     </PageShell>
   );
 }

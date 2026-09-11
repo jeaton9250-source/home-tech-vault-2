@@ -194,7 +194,7 @@ export default function SignupPage() {
             Terms
           </Link>
           <Link
-            href="/security"
+            href="/trust"
             className="hover:text-[#183047]"
           >
             Security

@@ -126,18 +126,35 @@ export function AdminMobileCard({
   selected?: boolean;
 }) {
   return (
-    <button
-      type="button"
+    <div
       onClick={onClick}
+      onKeyDown={(event) => {
+        if (!onClick) {
+          return;
+        }
+
+        if (
+          event.key === "Enter" ||
+          event.key === " "
+        ) {
+          event.preventDefault();
+          onClick();
+        }
+      }}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
       className={cn(
         "rounded-[20px] border bg-surface-card p-4 text-left shadow-[var(--shadow-sm)] transition hover:border-border-strong",
+        onClick
+          ? "cursor-pointer"
+          : "",
         selected
           ? "border-charcoal ring-1 ring-charcoal/10"
           : "border-border-subtle"
       )}
     >
       {children}
-    </button>
+    </div>
   );
 }
 

@@ -1290,7 +1290,7 @@ async function createNewAccountInvitation(input: {
     };
   }
 
-  let deliveryWarning: string | null =
+  const deliveryWarning: string | null =
     deliveryResult.deliveryWarning ?? null;
   const delivery = deliveryResult.delivery;
 

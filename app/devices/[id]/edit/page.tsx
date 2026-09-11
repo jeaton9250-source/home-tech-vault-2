@@ -2,32 +2,32 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import {
-  ArrowLeft,
-  Loader2,
-  Save,
-} from "lucide-react";
+import { ArrowLeft, Loader2, Save } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
-import {
-  updateDevice,
-} from "@/app/devices/actions";
+import { updateDevice } from "@/app/devices/actions";
 import {
   DEVICE_FIELD_LIMITS,
   MAX_DEVICE_PURCHASE_PRICE,
   validateDeviceInput,
 } from "@/lib/devices/deviceInputValidation";
-import {
-  applyHouseholdScope,
-} from "@/lib/data/householdScope";
+import { applyHouseholdScope } from "@/lib/data/householdScope";
 import { usePermissions } from "@/hooks/usePermissions";
-import { getEditAccess, getEditAccessMessage } from "@/lib/permissions/editAccess";
+import {
+  getEditAccess,
+  getEditAccessMessage,
+} from "@/lib/permissions/editAccess";
 import { isDevelopmentEnvironment } from "@/lib/permissions/developmentAccess";
 
 import PageShell from "@/components/ui/PageShell";
 import PageTitle from "@/components/ui/PageTitle";
 import PageCard from "@/components/ui/PageCard";
 import Button from "@/components/ui/Button";
+
+type EditRoomOption = {
+  id: string;
+  name: string;
+};
 
 type DeviceForm = {
   device_name: string;
@@ -39,6 +39,7 @@ type DeviceForm = {
   warranty_date: string;
   purchase_price: string;
   location: string;
+  room_id: string;
   notes: string;
 };
 
@@ -52,6 +53,7 @@ const emptyForm: DeviceForm = {
   warranty_date: "",
   purchase_price: "",
   location: "",
+  room_id: "",
   notes: "",
 };
 
@@ -74,6 +76,8 @@ export default function EditDevicePage() {
   } = usePermissions();
 
   const [form, setForm] = useState<DeviceForm>(emptyForm);
+  const [roomOptions, setRoomOptions] = useState<EditRoomOption[]>([]);
+  const [loadingRoomOptions, setLoadingRoomOptions] = useState(true);
   const [loadingDevice, setLoadingDevice] = useState(true);
   const [saving, setSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -100,15 +104,11 @@ export default function EditDevicePage() {
           return;
         }
 
-        const { data, error } =
-          await applyHouseholdScope(
-            supabase
-              .from("devices")
-              .select("*")
-              .eq("id", deviceId),
-            householdId,
-            user.id
-          ).maybeSingle();
+        const { data, error } = await applyHouseholdScope(
+          supabase.from("devices").select("*").eq("id", deviceId),
+          householdId,
+          user.id,
+        ).maybeSingle();
 
         if (error) {
           throw error;
@@ -127,11 +127,11 @@ export default function EditDevicePage() {
           purchase_date: data.purchase_date || "",
           warranty_date: data.warranty_date || "",
           purchase_price:
-            data.purchase_price !== null &&
-            data.purchase_price !== undefined
+            data.purchase_price !== null && data.purchase_price !== undefined
               ? String(data.purchase_price)
               : "",
           location: data.location || "",
+          room_id: data.room_id || "",
           notes: data.notes || "",
         });
       } catch (error) {
@@ -140,7 +140,7 @@ export default function EditDevicePage() {
         setErrorMessage(
           error instanceof Error
             ? error.message
-            : "Unable to load this device."
+            : "Unable to load this device.",
         );
       } finally {
         setLoadingDevice(false);
@@ -148,27 +148,57 @@ export default function EditDevicePage() {
     }
 
     void loadDevice();
-  }, [
-    params.id,
-    router,
-    user,
-    householdId,
-    permissionsLoading,
-  ]);
+  }, [params.id, router, user, householdId, permissionsLoading]);
 
-  function updateField(
-    field: keyof DeviceForm,
-    value: string
-  ) {
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadRoomOptions() {
+      if (permissionsLoading || !user) {
+        return;
+      }
+
+      try {
+        setLoadingRoomOptions(true);
+
+        const { data, error } = await supabase
+          .from("rooms")
+          .select("id, name")
+          .order("name", {
+            ascending: true,
+          });
+
+        if (error) {
+          throw error;
+        }
+
+        if (!cancelled) {
+          setRoomOptions((data || []) as EditRoomOption[]);
+        }
+      } catch (error) {
+        console.error("Unable to load rooms for device edit:", error);
+      } finally {
+        if (!cancelled) {
+          setLoadingRoomOptions(false);
+        }
+      }
+    }
+
+    void loadRoomOptions();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [permissionsLoading, user, householdId]);
+
+  function updateField(field: keyof DeviceForm, value: string) {
     setForm((current) => ({
       ...current,
       [field]: value,
     }));
   }
 
-  async function handleSubmit(
-    event: FormEvent<HTMLFormElement>
-  ) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     setSubmitError("");
@@ -184,104 +214,80 @@ export default function EditDevicePage() {
      * The server action performs this same
      * validation again before writing.
      */
-    const validation =
-      validateDeviceInput({
-        deviceName:
-          form.device_name,
-        category:
-          form.category,
-        brand:
-          form.brand,
-        manufacturer: "",
-        modelNumber:
-          form.model_number,
-        serialNumber:
-          form.serial_number,
-        purchaseDate:
-          form.purchase_date,
-        warrantyDate:
-          form.warranty_date,
-        purchasePrice:
-          form.purchase_price,
-        location:
-          form.location,
-        notes:
-          form.notes,
-      });
+    const validation = validateDeviceInput({
+      deviceName: form.device_name,
+      category: form.category,
+      brand: form.brand,
+      manufacturer: "",
+      modelNumber: form.model_number,
+      serialNumber: form.serial_number,
+      purchaseDate: form.purchase_date,
+      warrantyDate: form.warranty_date,
+      purchasePrice: form.purchase_price,
+      location: form.location,
+      notes: form.notes,
+    });
 
     if (!validation.success) {
-      setSubmitError(
-        validation.error
-      );
+      setSubmitError(validation.error);
       return;
     }
 
     try {
       setSaving(true);
 
-      const result =
-        await updateDevice({
-          deviceId: params.id,
-          deviceName:
-            form.device_name,
-          category:
-            form.category,
-          brand:
-            form.brand,
-          modelNumber:
-            form.model_number,
-          serialNumber:
-            form.serial_number,
-          purchaseDate:
-            form.purchase_date,
-          warrantyDate:
-            form.warranty_date,
-          purchasePrice:
-            form.purchase_price,
-          location:
-            form.location,
-          notes:
-            form.notes,
-        });
+      const result = await updateDevice({
+        deviceId: params.id,
+        deviceName: form.device_name,
+        category: form.category,
+        brand: form.brand,
+        modelNumber: form.model_number,
+        serialNumber: form.serial_number,
+        purchaseDate: form.purchase_date,
+        warrantyDate: form.warranty_date,
+        purchasePrice: form.purchase_price,
+        location: form.location,
+        notes: form.notes,
+      });
 
       if (!result.success) {
-        if (
-          result.code ===
-          "UNAUTHENTICATED"
-        ) {
+        if (result.code === "UNAUTHENTICATED") {
           router.push("/login");
           return;
         }
 
-        setSubmitError(
-          result.error ||
-            "Unable to update this device."
-        );
+        setSubmitError(result.error || "Unable to update this device.");
         return;
       }
 
-      router.push(
-        `/devices/${result.deviceId}`
-      );
+      const selectedRoom = roomOptions.find((room) => room.id === form.room_id);
+
+      const { error: roomAssignmentError } = await supabase
+        .from("devices")
+        .update({
+          room_id: form.room_id || null,
+          location: selectedRoom?.name || form.location || null,
+        })
+        .eq("id", result.deviceId);
+
+      if (roomAssignmentError) {
+        throw roomAssignmentError;
+      }
+
+      router.push(`/devices/${result.deviceId}`);
       router.refresh();
     } catch (error) {
-      console.error(
-        "Unable to update device:",
-        error
-      );
+      console.error("Unable to update device:", error);
 
       setSubmitError(
-        error instanceof Error
-          ? error.message
-          : "Unable to update the device."
+        error instanceof Error ? error.message : "Unable to update the device.",
       );
     } finally {
       setSaving(false);
     }
   }
 
-  const pageLoading =
-    permissionsLoading || loadingDevice;
+  const pageLoading = permissionsLoading || loadingDevice;
 
   const editAccess = getEditAccess({
     loading: permissionsLoading,
@@ -295,13 +301,9 @@ export default function EditDevicePage() {
     canUseFamilySharing: canUsePremiumFeatures,
   });
 
-  const editAccessMessage = getEditAccessMessage(
-    editAccess.reason
-  );
+  const editAccessMessage = getEditAccessMessage(editAccess.reason);
 
-  const showEditDebug =
-    isDevelopmentEnvironment() ||
-    isVerifiedPlatformAdmin;
+  const showEditDebug = isDevelopmentEnvironment() || isVerifiedPlatformAdmin;
 
   if (pageLoading) {
     return (
@@ -339,10 +341,7 @@ export default function EditDevicePage() {
               Upgrade Household
             </Button>
           ) : (
-            <Button
-              href={`/devices/${params.id}`}
-              className="mt-6"
-            >
+            <Button href={`/devices/${params.id}`} className="mt-6">
               Back to Device
             </Button>
           )}
@@ -355,16 +354,11 @@ export default function EditDevicePage() {
     return (
       <PageShell>
         <PageCard className="border-red-200 bg-red-50 text-red-700">
-          <h1 className="text-2xl font-bold">
-            Unable to edit device
-          </h1>
+          <h1 className="text-2xl font-bold">Unable to edit device</h1>
 
           <p className="mt-3">{errorMessage}</p>
 
-          <Button
-            className="mt-6"
-            onClick={() => router.push("/devices")}
-          >
+          <Button className="mt-6" onClick={() => router.push("/devices")}>
             Back to Devices
           </Button>
         </PageCard>
@@ -376,9 +370,7 @@ export default function EditDevicePage() {
     <PageShell>
       {showEditDebug ? (
         <PageCard className="mb-4 border-dashed p-4 text-xs">
-          <p className="font-semibold text-text-primary">
-            Edit access debug
-          </p>
+          <p className="font-semibold text-text-primary">Edit access debug</p>
           <dl className="mt-2 grid gap-1 font-mono text-text-secondary">
             <div>householdId: {householdId ?? "—"}</div>
             <div>role: {rawHouseholdRole ?? "—"}</div>
@@ -399,9 +391,7 @@ export default function EditDevicePage() {
         action={
           <Button
             variant="secondary"
-            onClick={() =>
-              router.push(`/devices/${params.id}`)
-            }
+            onClick={() => router.push(`/devices/${params.id}`)}
           >
             <ArrowLeft size={17} />
             Cancel
@@ -410,10 +400,7 @@ export default function EditDevicePage() {
       />
 
       <PageCard>
-        <form
-          onSubmit={handleSubmit}
-          className="grid gap-6 md:grid-cols-2"
-        >
+        <form onSubmit={handleSubmit} className="grid gap-6 md:grid-cols-2">
           {submitError ? (
             <div
               role="alert"
@@ -425,9 +412,7 @@ export default function EditDevicePage() {
           <FormInput
             label="Device Name"
             value={form.device_name}
-            onChange={(value) =>
-              updateField("device_name", value)
-            }
+            onChange={(value) => updateField("device_name", value)}
             placeholder="MacBook Pro"
             required
             maxLength={DEVICE_FIELD_LIMITS.deviceName}
@@ -436,9 +421,7 @@ export default function EditDevicePage() {
           <FormInput
             label="Category"
             value={form.category}
-            onChange={(value) =>
-              updateField("category", value)
-            }
+            onChange={(value) => updateField("category", value)}
             placeholder="Computer"
             maxLength={DEVICE_FIELD_LIMITS.category}
           />
@@ -446,9 +429,7 @@ export default function EditDevicePage() {
           <FormInput
             label="Brand"
             value={form.brand}
-            onChange={(value) =>
-              updateField("brand", value)
-            }
+            onChange={(value) => updateField("brand", value)}
             placeholder="Apple"
             maxLength={DEVICE_FIELD_LIMITS.brand}
           />
@@ -456,9 +437,7 @@ export default function EditDevicePage() {
           <FormInput
             label="Model Number"
             value={form.model_number}
-            onChange={(value) =>
-              updateField("model_number", value)
-            }
+            onChange={(value) => updateField("model_number", value)}
             placeholder="M3 Pro"
             maxLength={DEVICE_FIELD_LIMITS.modelNumber}
           />
@@ -466,48 +445,70 @@ export default function EditDevicePage() {
           <FormInput
             label="Serial Number"
             value={form.serial_number}
-            onChange={(value) =>
-              updateField("serial_number", value)
-            }
+            onChange={(value) => updateField("serial_number", value)}
             placeholder="Serial number"
             maxLength={DEVICE_FIELD_LIMITS.serialNumber}
           />
 
-          <FormInput
-            label="Location"
-            value={form.location}
-            onChange={(value) =>
-              updateField("location", value)
-            }
-            placeholder="Home Office"
-            maxLength={DEVICE_FIELD_LIMITS.location}
-          />
+          <label className="block">
+            <span className="mb-2 block text-sm font-semibold text-text-primary">
+              Room
+            </span>
+
+            <select
+              value={form.room_id}
+              disabled={loadingRoomOptions}
+              onChange={(event) => {
+                const roomId = event.target.value;
+
+                const selectedRoom = roomOptions.find(
+                  (room) => room.id === roomId,
+                );
+
+                setForm((current) => ({
+                  ...current,
+                  room_id: roomId,
+                  location: selectedRoom?.name || "",
+                }));
+              }}
+              className="w-full rounded-xl border border-border-subtle bg-white px-4 py-3 text-text-primary outline-none focus:border-interaction focus:ring-2 focus:ring-interaction/15"
+            >
+              <option value="">Needs a Room</option>
+
+              {roomOptions.map((room) => (
+                <option key={room.id} value={room.id}>
+                  {room.name}
+                </option>
+              ))}
+            </select>
+
+            {form.location.trim().toLowerCase() === "network" &&
+            !form.room_id ? (
+              <p className="mt-2 text-xs text-text-secondary">
+                Network is a Home System and remains outside room assignments.
+              </p>
+            ) : null}
+          </label>
 
           <FormInput
             label="Purchase Date"
             type="date"
             value={form.purchase_date}
-            onChange={(value) =>
-              updateField("purchase_date", value)
-            }
+            onChange={(value) => updateField("purchase_date", value)}
           />
 
           <FormInput
             label="Warranty Expiration"
             type="date"
             value={form.warranty_date}
-            onChange={(value) =>
-              updateField("warranty_date", value)
-            }
+            onChange={(value) => updateField("warranty_date", value)}
           />
 
           <FormInput
             label="Purchase Price"
             type="number"
             value={form.purchase_price}
-            onChange={(value) =>
-              updateField("purchase_price", value)
-            }
+            onChange={(value) => updateField("purchase_price", value)}
             placeholder="1999.00"
             step="0.01"
             min="0"
@@ -522,9 +523,7 @@ export default function EditDevicePage() {
 
               <textarea
                 value={form.notes}
-                onChange={(event) =>
-                  updateField("notes", event.target.value)
-                }
+                onChange={(event) => updateField("notes", event.target.value)}
                 placeholder="Add notes about this device..."
                 maxLength={DEVICE_FIELD_LIMITS.notes}
                 className="min-h-32 w-full resize-y rounded-xl border border-border-subtle bg-white px-4 py-3 text-text-primary outline-none focus:border-interaction focus:ring-2 focus:ring-interaction/15"
@@ -533,15 +532,9 @@ export default function EditDevicePage() {
           </div>
 
           <div className="flex flex-wrap gap-3 border-t border-border-subtle pt-6 md:col-span-2">
-            <Button
-              type="submit"
-              disabled={saving}
-            >
+            <Button type="submit" disabled={saving}>
               {saving ? (
-                <Loader2
-                  size={18}
-                  className="animate-spin"
-                />
+                <Loader2 size={18} className="animate-spin" />
               ) : (
                 <Save size={18} />
               )}
@@ -551,9 +544,7 @@ export default function EditDevicePage() {
 
             <Button
               variant="secondary"
-              onClick={() =>
-                router.push(`/devices/${params.id}`)
-              }
+              onClick={() => router.push(`/devices/${params.id}`)}
             >
               Cancel
             </Button>
@@ -603,9 +594,7 @@ function FormInput({
         min={min}
         max={max}
         maxLength={maxLength}
-        onChange={(event) =>
-          onChange(event.target.value)
-        }
+        onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
         className="w-full rounded-xl border border-border-subtle bg-white px-4 py-3 text-text-primary outline-none focus:border-interaction focus:ring-2 focus:ring-interaction/15"
       />

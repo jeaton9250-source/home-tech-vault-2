@@ -50,12 +50,7 @@ import { cn } from "@/lib/design-system/cn";
 import type { DiscoveredDeviceSummary } from "@/lib/connector/discoveryTypes";
 import type { NetworkPageData } from "@/hooks/useNetworkPageData";
 
-type NetworkStatusFilter =
-  | "all"
-  | "online"
-  | "offline"
-  | "new"
-  | "unlinked";
+type NetworkStatusFilter = "all" | "online" | "offline" | "new" | "unlinked";
 
 type NetworkLinkFilter = "all" | "linked" | "unlinked";
 
@@ -118,31 +113,27 @@ export default function NetworkOverviewTab({
   const { summary, devices, stats } = data;
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] =
-    useState<NetworkStatusFilter>("all");
-  const [linkFilter, setLinkFilter] =
-    useState<NetworkLinkFilter>("all");
-  const [manufacturerFilter, setManufacturerFilter] =
-    useState("all");
-  const [sortOption, setSortOption] =
-    useState<NetworkSort>("last-seen-newest");
+  const [statusFilter, setStatusFilter] = useState<NetworkStatusFilter>("all");
+  const [linkFilter, setLinkFilter] = useState<NetworkLinkFilter>("all");
+  const [manufacturerFilter, setManufacturerFilter] = useState("all");
+  const [sortOption, setSortOption] = useState<NetworkSort>("last-seen-newest");
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
 
   const onlineDevices = useMemo(
     () => devices.filter(isOnlineDevice),
-    [devices]
+    [devices],
   );
   const offlineDevices = useMemo(
     () => devices.filter(isOfflineDevice),
-    [devices]
+    [devices],
   );
   const newDevices = useMemo(
     () => devices.filter(isNewlyDiscovered),
-    [devices]
+    [devices],
   );
   const unlinkedDevices = useMemo(
     () => devices.filter(isUnlinkedDevice),
-    [devices]
+    [devices],
   );
 
   const manufacturerOptions = useMemo(() => {
@@ -193,27 +184,23 @@ export default function NetworkOverviewTab({
         .map((value) => String(value ?? "").toLowerCase())
         .join(" ");
 
-      const matchesSearch =
-        query === "" || searchableText.includes(query);
+      const matchesSearch = query === "" || searchableText.includes(query);
 
       return (
-        matchesStatus &&
-        matchesLink &&
-        matchesManufacturer &&
-        matchesSearch
+        matchesStatus && matchesLink && matchesManufacturer && matchesSearch
       );
     });
 
     return [...filtered].sort((first, second) => {
       if (sortOption === "name-asc") {
         return discoveryDeviceTitle(first).localeCompare(
-          discoveryDeviceTitle(second)
+          discoveryDeviceTitle(second),
         );
       }
 
       if (sortOption === "manufacturer-asc") {
         return (first.manufacturer ?? "").localeCompare(
-          second.manufacturer ?? ""
+          second.manufacturer ?? "",
         );
       }
 
@@ -330,7 +317,7 @@ export default function NetworkOverviewTab({
       />
 
       {summary.hasConnector || devices.length > 0 ? (
-        <PageCard className="overflow-hidden border-[#182533]/10 bg-[#f8f5ef] p-0 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.4)]">
+        <PageCard className="overflow-hidden border-[#182533]/10 bg-[#fffefa] p-0 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.4)]">
           <div className="p-6 md:p-7">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div>
@@ -338,11 +325,8 @@ export default function NetworkOverviewTab({
                   Your network
                 </p>
 
-                <h2 className="mt-2 font-serif text-2xl font-medium tracking-[-0.035em] text-[#17212a]">
-                  {devices.length}{" "}
-                  {devices.length === 1
-                    ? "device"
-                    : "devices"}{" "}
+                <h2 className="mt-2 font-sans text-2xl font-medium tracking-[-0.035em] text-[#17212a]">
+                  {devices.length} {devices.length === 1 ? "device" : "devices"}{" "}
                   found
                 </h2>
 
@@ -351,10 +335,7 @@ export default function NetworkOverviewTab({
                 </p>
               </div>
 
-              <Button
-                href="/network?tab=discovery"
-                variant="secondary"
-              >
+              <Button href="/network?tab=discovery" variant="secondary">
                 View Devices
                 <ChevronRight size={16} />
               </Button>
@@ -362,7 +343,7 @@ export default function NetworkOverviewTab({
 
             <div className="mt-7 grid grid-cols-3 divide-x divide-[#182533]/10 border-t border-[#182533]/10 pt-6">
               <div className="pr-4">
-                <p className="font-serif text-3xl font-medium tracking-[-0.04em] text-[#17212a]">
+                <p className="text-[22px] font-semibold tracking-[-0.03em] text-[#17212a]">
                   {onlineDevices.length}
                 </p>
 
@@ -372,17 +353,15 @@ export default function NetworkOverviewTab({
               </div>
 
               <div className="px-4">
-                <p className="font-serif text-3xl font-medium tracking-[-0.04em] text-[#17212a]">
+                <p className="text-[22px] font-semibold tracking-[-0.03em] text-[#17212a]">
                   {newDevices.length}
                 </p>
 
-                <p className="mt-1 text-xs font-medium text-[#68737b]">
-                  New
-                </p>
+                <p className="mt-1 text-xs font-medium text-[#68737b]">New</p>
               </div>
 
               <div className="pl-4">
-                <p className="font-serif text-3xl font-medium tracking-[-0.04em] text-[#17212a]">
+                <p className="text-[22px] font-semibold tracking-[-0.03em] text-[#17212a]">
                   {unlinkedDevices.length}
                 </p>
 
@@ -415,7 +394,7 @@ function ConnectorStatusPanel({
 }) {
   if (!summary.hasConnector || !summary.primaryConnector) {
     return (
-      <PageCard className="border-[#182533]/10 bg-[#f8f5ef] p-6 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.4)]">
+      <PageCard className="border-[#182533]/10 bg-[#fffefa] p-6 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.4)]">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#182533]/5 text-[#68737b]">
@@ -423,28 +402,24 @@ function ConnectorStatusPanel({
             </div>
 
             <div>
-              <p className="font-serif text-lg font-medium text-[#17212a]">
+              <p className="font-sans text-lg font-medium text-[#17212a]">
                 Connect your home
               </p>
 
               <p className="mt-1 text-sm leading-6 text-[#68737b]">
-                Connect the desktop app to automatically find devices on your Wi-Fi.
+                Connect the desktop app to automatically find devices on your
+                Wi-Fi.
               </p>
             </div>
           </div>
 
           {canManage || isDemo ? (
             isDemo ? (
-              <Button
-                type="button"
-                onClick={onDemoAction}
-              >
+              <Button type="button" onClick={onDemoAction}>
                 Connect Home Wi-Fi
               </Button>
             ) : (
-              <Button href="/network/connect">
-                Connect Home Wi-Fi
-              </Button>
+              <Button href="/network/connect">Connect Home Wi-Fi</Button>
             )
           ) : null}
         </div>
@@ -466,19 +441,18 @@ function ConnectorStatusPanel({
   const presenceTone =
     connectorPresence === "online"
       ? "bg-[#617c43]/10 text-[#617c43]"
-      : connectorPresence === "recently_seen" ||
-          connectorPresence === "pending"
+      : connectorPresence === "recently_seen" || connectorPresence === "pending"
         ? "bg-[#b58a42]/10 text-[#916c31]"
         : "bg-[#a6584e]/10 text-[#984e46]";
 
   return (
-    <PageCard className="border-[#182533]/10 bg-[#f8f5ef] p-6 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.4)] md:p-7">
+    <PageCard className="border-[#182533]/10 bg-[#fffefa] p-6 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.4)] md:p-7">
       <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-center gap-4">
           <div
             className={cn(
               "flex h-12 w-12 shrink-0 items-center justify-center rounded-full",
-              presenceTone
+              presenceTone,
             )}
           >
             <Router size={20} />
@@ -486,14 +460,14 @@ function ConnectorStatusPanel({
 
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <h2 className="truncate font-serif text-xl font-medium tracking-[-0.03em] text-[#17212a]">
+              <h2 className="truncate font-sans text-xl font-medium tracking-[-0.03em] text-[#17212a]">
                 {connector.name}
               </h2>
 
               <span
                 className={cn(
                   "rounded-full px-2.5 py-1 text-[10px] font-semibold",
-                  presenceTone
+                  presenceTone,
                 )}
               >
                 {presenceLabel}
@@ -517,9 +491,7 @@ function ConnectorStatusPanel({
           <span
             className={cn(
               "h-2 w-2 rounded-full",
-              connectorPresence === "online"
-                ? "bg-[#718d4f]"
-                : "bg-[#b58a42]"
+              connectorPresence === "online" ? "bg-[#718d4f]" : "bg-[#b58a42]",
             )}
           />
 
@@ -545,9 +517,7 @@ function ConnectorMeta({
         {label}
       </p>
       <p className="mt-1 text-sm font-semibold text-[#17212a]">{value}</p>
-      {detail ? (
-        <p className="mt-1 text-xs text-[#8a949b]">{detail}</p>
-      ) : null}
+      {detail ? <p className="mt-1 text-xs text-[#8a949b]">{detail}</p> : null}
     </div>
   );
 }
@@ -569,7 +539,7 @@ function ScanMetadataCard({
 }) {
   if (!summary.lastScan) {
     return (
-      <PageCard className="border-[#182533]/10 bg-[#f8f5ef] p-5 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] md:p-6">
+      <PageCard className="border-[#182533]/10 bg-[#fffefa] p-5 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] md:p-6">
         <div className="flex items-start gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-button)] bg-[#182533]/5 text-[#68737b]">
             <Clock3 size={18} />
@@ -586,7 +556,7 @@ function ScanMetadataCard({
   }
 
   return (
-    <PageCard className="border-[#182533]/10 bg-[#f8f5ef] p-5 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] md:p-6">
+    <PageCard className="border-[#182533]/10 bg-[#fffefa] p-5 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] md:p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-[#7a858d]">
@@ -599,7 +569,7 @@ function ScanMetadataCard({
             {formatConnectorTimestamp(summary.lastScan)}
           </p>
         </div>
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-sunken px-3 py-1.5 text-xs font-semibold text-text-secondary">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f4f1ea] px-3 py-1.5 text-xs font-semibold text-text-secondary">
           <Radar size={13} />
           {summary.monitoringLabel} monitoring
         </span>
@@ -766,11 +736,11 @@ function NetworkDeviceCard({
         : WifiOff;
 
   return (
-    <article className="rounded-[22px] border border-[#182533]/10 bg-[#f8f5ef] p-4 shadow-[0_16px_40px_-34px_rgba(15,25,35,0.45)] transition hover:-translate-y-0.5 hover:border-[#617c43]/20 md:p-5">
+    <article className="rounded-[22px] border border-[#182533]/10 bg-[#fffefa] p-4 shadow-[0_16px_40px_-34px_rgba(15,25,35,0.45)] transition hover:-translate-y-0.5 hover:border-[#617c43]/20 md:p-5">
       <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(0,1.5fr)_10rem_9rem_minmax(0,1fr)_8rem_auto] lg:items-center lg:gap-4">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="font-serif text-lg font-medium tracking-[-0.03em] text-[#17212a]">
+            <h3 className="font-sans text-lg font-medium tracking-[-0.03em] text-[#17212a]">
               {title}
             </h3>
             {isNew ? (
@@ -781,7 +751,7 @@ function NetworkDeviceCard({
             <span
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold lg:hidden",
-                statusTone
+                statusTone,
               )}
             >
               <StatusIcon size={13} />
@@ -856,7 +826,7 @@ function NetworkDeviceCard({
         <span
           className={cn(
             "hidden w-fit items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold lg:inline-flex",
-            statusTone
+            statusTone,
           )}
         >
           <StatusIcon size={13} />
@@ -910,14 +880,14 @@ function NetworkDeviceCard({
             {menuOpen ? (
               <div
                 role="menu"
-                className="absolute right-0 top-full z-20 mt-2 w-52 overflow-hidden rounded-[var(--radius-dialog)] border border-border-subtle bg-surface-card shadow-lg"
+                className="absolute right-0 top-full z-20 mt-2 w-52 overflow-hidden rounded-[var(--radius-dialog)] border border-[#e4e2dc] bg-[#fffefa] shadow-lg"
               >
                 <Link
                   href={
                     "/network/discovery?focus=" + encodeURIComponent(device.id)
                   }
                   role="menuitem"
-                  className="htv-focus-ring flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-medium text-text-primary transition hover:bg-surface-sunken"
+                  className="htv-focus-ring flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-medium text-text-primary transition hover:bg-[#f4f1ea]"
                   onClick={() => onMenuOpenChange(false)}
                 >
                   <Radar size={15} />
@@ -928,7 +898,7 @@ function NetworkDeviceCard({
                   <Link
                     href={"/devices/" + device.importedDeviceId}
                     role="menuitem"
-                    className="htv-focus-ring flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-medium text-text-primary transition hover:bg-surface-sunken"
+                    className="htv-focus-ring flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-medium text-text-primary transition hover:bg-[#f4f1ea]"
                     onClick={() => onMenuOpenChange(false)}
                   >
                     <Laptop size={15} />
@@ -940,7 +910,7 @@ function NetworkDeviceCard({
                     <button
                       type="button"
                       role="menuitem"
-                      className="htv-focus-ring flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-medium text-text-primary transition hover:bg-surface-sunken"
+                      className="htv-focus-ring flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-medium text-text-primary transition hover:bg-[#f4f1ea]"
                       onClick={() => {
                         onMenuOpenChange(false);
                         onDemoAction?.();
@@ -956,7 +926,7 @@ function NetworkDeviceCard({
                         encodeURIComponent(device.id)
                       }
                       role="menuitem"
-                      className="htv-focus-ring flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-medium text-text-primary transition hover:bg-surface-sunken"
+                      className="htv-focus-ring flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-medium text-text-primary transition hover:bg-[#f4f1ea]"
                       onClick={() => onMenuOpenChange(false)}
                     >
                       <Link2 size={15} />

@@ -33,21 +33,13 @@ import {
   resolveUsageLimits,
 } from "@/lib/permissions/effectivePlan";
 
-import type {
-  RawHouseholdRole,
-} from "@/lib/permissions/effectivePlan";
+import type { RawHouseholdRole } from "@/lib/permissions/effectivePlan";
 
-import type {
-  HouseholdRole,
-} from "@/lib/permissions/types";
+import type { HouseholdRole } from "@/lib/permissions/types";
 
-import type {
-  SafePlanGrantSummary,
-} from "@/lib/plan-grants/types";
+import type { SafePlanGrantSummary } from "@/lib/plan-grants/types";
 
-import type {
-  SubscriptionPlan,
-} from "@/hooks/useSubscription";
+import type { SubscriptionPlan } from "@/hooks/useSubscription";
 
 import { supabase } from "@/lib/supabase";
 import {
@@ -61,9 +53,7 @@ export type {
   UpgradeReasonCode,
 } from "@/lib/permissions/types";
 
-export type {
-  RawHouseholdRole,
-} from "@/lib/permissions/effectivePlan";
+export type { RawHouseholdRole } from "@/lib/permissions/effectivePlan";
 
 export {
   FREE_DEVICE_LIMIT,
@@ -93,19 +83,14 @@ type HouseholdAccessPayload =
       ownerStatus: string | null;
       ownerCurrentPeriodEnd: string | null;
       ownerName: string | null;
-      ownerPlanSource?:
-        | "subscription"
-        | "admin_grant"
-        | "none";
+      ownerPlanSource?: "subscription" | "admin_grant" | "none";
       effectivePlan?: SubscriptionPlan;
       canUseProFeatures?: boolean;
     };
 
-const PERMISSIONS_CACHE_TTL_MS =
-  60_000;
+const PERMISSIONS_CACHE_TTL_MS = 60_000;
 
-const PERMISSIONS_CACHE_PREFIX =
-  "htv:permissions:v2:";
+const PERMISSIONS_CACHE_PREFIX = "htv:permissions:v2:";
 
 type CachedPermissionPayload = {
   cachedAt: number;
@@ -113,43 +98,27 @@ type CachedPermissionPayload = {
   grant: SafePlanGrantSummary | null;
 };
 
-function readPermissionCache(
-  userId: string
-): CachedPermissionPayload | null {
-  if (
-    typeof window === "undefined"
-  ) {
+function readPermissionCache(userId: string): CachedPermissionPayload | null {
+  if (typeof window === "undefined") {
     return null;
   }
 
   try {
-    const key =
-      PERMISSIONS_CACHE_PREFIX +
-      userId;
+    const key = PERMISSIONS_CACHE_PREFIX + userId;
 
-    const raw =
-      window.sessionStorage.getItem(
-        key
-      );
+    const raw = window.sessionStorage.getItem(key);
 
     if (!raw) {
       return null;
     }
 
-    const cached =
-      JSON.parse(
-        raw
-      ) as CachedPermissionPayload;
+    const cached = JSON.parse(raw) as CachedPermissionPayload;
 
     if (
       !cached?.cachedAt ||
-      Date.now() -
-        cached.cachedAt >
-        PERMISSIONS_CACHE_TTL_MS
+      Date.now() - cached.cachedAt > PERMISSIONS_CACHE_TTL_MS
     ) {
-      window.sessionStorage.removeItem(
-        key
-      );
+      window.sessionStorage.removeItem(key);
 
       return null;
     }
@@ -160,39 +129,26 @@ function readPermissionCache(
   }
 }
 
-function writePermissionCache(
-  userId: string,
-  value: CachedPermissionPayload
-) {
-  if (
-    typeof window === "undefined"
-  ) {
+function writePermissionCache(userId: string, value: CachedPermissionPayload) {
+  if (typeof window === "undefined") {
     return;
   }
 
   try {
     window.sessionStorage.setItem(
-      PERMISSIONS_CACHE_PREFIX +
-        userId,
-      JSON.stringify(value)
+      PERMISSIONS_CACHE_PREFIX + userId,
+      JSON.stringify(value),
     );
   } catch {
     // Cache failure must never affect access.
   }
 }
 
-type PermissionsContextValue = ReturnType<
-  typeof usePermissionsState
->;
+type PermissionsContextValue = ReturnType<typeof usePermissionsState>;
 
-const PermissionsContext =
-  createContext<PermissionsContextValue | null>(
-    null
-  );
+const PermissionsContext = createContext<PermissionsContextValue | null>(null);
 
-function normalizeRawHouseholdRoleValue(
-  value: string | null | undefined
-) {
+function normalizeRawHouseholdRoleValue(value: string | null | undefined) {
   return normalizeRawHouseholdRole(value);
 }
 
@@ -201,9 +157,7 @@ function normalizeRawHouseholdRoleValue(
  * Returns null while membership is unknown so UI does not flash Viewer Access.
  * Treats both `admin` and `family_admin` as admin.
  */
-function normalizeRole(
-  value: string | null | undefined
-): HouseholdRole | null {
+function normalizeRole(value: string | null | undefined): HouseholdRole | null {
   if (value == null || value.trim() === "") {
     return null;
   }
@@ -235,10 +189,9 @@ function normalizeRole(
 }
 
 function normalizeSubscriptionPlan(
-  value: string | null | undefined
+  value: string | null | undefined,
 ): SubscriptionPlan {
-  const normalized =
-    value?.trim().toLowerCase();
+  const normalized = value?.trim().toLowerCase();
 
   if (normalized === "family") {
     return "family";
@@ -253,25 +206,13 @@ function normalizeSubscriptionPlan(
 
 function clearHouseholdState(setters: {
   setRole: (role: HouseholdRole | null) => void;
-  setRawHouseholdRole: (
-    role: RawHouseholdRole | null
-  ) => void;
+  setRawHouseholdRole: (role: RawHouseholdRole | null) => void;
   setHouseholdId: (id: string | null) => void;
-  setHouseholdOwnerId: (
-    id: string | null
-  ) => void;
-  setHouseholdOwnerPlan: (
-    plan: SubscriptionPlan | null
-  ) => void;
-  setHouseholdOwnerStatus: (
-    status: string | null
-  ) => void;
-  setHouseholdOwnerCurrentPeriodEnd: (
-    value: string | null
-  ) => void;
-  setHouseholdOwnerName: (
-    name: string | null
-  ) => void;
+  setHouseholdOwnerId: (id: string | null) => void;
+  setHouseholdOwnerPlan: (plan: SubscriptionPlan | null) => void;
+  setHouseholdOwnerStatus: (status: string | null) => void;
+  setHouseholdOwnerCurrentPeriodEnd: (value: string | null) => void;
+  setHouseholdOwnerName: (name: string | null) => void;
 }) {
   setters.setRole(null);
   setters.setRawHouseholdRole(null);
@@ -279,95 +220,54 @@ function clearHouseholdState(setters: {
   setters.setHouseholdOwnerId(null);
   setters.setHouseholdOwnerPlan(null);
   setters.setHouseholdOwnerStatus(null);
-  setters.setHouseholdOwnerCurrentPeriodEnd(
-    null
-  );
+  setters.setHouseholdOwnerCurrentPeriodEnd(null);
   setters.setHouseholdOwnerName(null);
 }
 
 function applyHouseholdAccess(
-  accessData: Exclude<
-    HouseholdAccessPayload,
-    { membership: null }
-  >,
+  accessData: Exclude<HouseholdAccessPayload, { membership: null }>,
   setters: {
     setRole: (role: HouseholdRole | null) => void;
-    setRawHouseholdRole: (
-      role: RawHouseholdRole | null
-    ) => void;
+    setRawHouseholdRole: (role: RawHouseholdRole | null) => void;
     setHouseholdId: (id: string | null) => void;
-    setHouseholdOwnerId: (
-      id: string | null
-    ) => void;
-    setHouseholdOwnerPlan: (
-      plan: SubscriptionPlan | null
-    ) => void;
-    setHouseholdOwnerStatus: (
-      status: string | null
-    ) => void;
-    setHouseholdOwnerCurrentPeriodEnd: (
-      value: string | null
-    ) => void;
-    setHouseholdOwnerName: (
-      name: string | null
-    ) => void;
-  }
+    setHouseholdOwnerId: (id: string | null) => void;
+    setHouseholdOwnerPlan: (plan: SubscriptionPlan | null) => void;
+    setHouseholdOwnerStatus: (status: string | null) => void;
+    setHouseholdOwnerCurrentPeriodEnd: (value: string | null) => void;
+    setHouseholdOwnerName: (name: string | null) => void;
+  },
 ) {
-  const resolvedRawRole =
-    normalizeRawHouseholdRoleValue(
-      accessData.rawHouseholdRole
-    );
-
-  setters.setRawHouseholdRole(
-    resolvedRawRole
+  const resolvedRawRole = normalizeRawHouseholdRoleValue(
+    accessData.rawHouseholdRole,
   );
 
-  setters.setRole(
-    normalizeRole(
-      accessData.rawHouseholdRole
-    )
-  );
+  setters.setRawHouseholdRole(resolvedRawRole);
 
-  setters.setHouseholdId(
-    accessData.householdId
-  );
+  setters.setRole(normalizeRole(accessData.rawHouseholdRole));
 
-  setters.setHouseholdOwnerId(
-    accessData.householdOwnerId
-  );
+  setters.setHouseholdId(accessData.householdId);
+
+  setters.setHouseholdOwnerId(accessData.householdOwnerId);
 
   setters.setHouseholdOwnerPlan(
     accessData.ownerPlan
-      ? normalizeSubscriptionPlan(
-          accessData.ownerPlan
-        )
-      : null
+      ? normalizeSubscriptionPlan(accessData.ownerPlan)
+      : null,
   );
 
-  setters.setHouseholdOwnerStatus(
-    accessData.ownerStatus
-  );
+  setters.setHouseholdOwnerStatus(accessData.ownerStatus);
 
-  setters.setHouseholdOwnerCurrentPeriodEnd(
-    accessData.ownerCurrentPeriodEnd
-  );
+  setters.setHouseholdOwnerCurrentPeriodEnd(accessData.ownerCurrentPeriodEnd);
 
-  setters.setHouseholdOwnerName(
-    accessData.ownerName
-  );
+  setters.setHouseholdOwnerName(accessData.ownerName);
 }
 
 function usePermissionsState() {
-  const {
-    user,
-    isDemo,
-    loading: demoLoading,
-  } = useDemoMode();
+  const { user, isDemo, loading: demoLoading } = useDemoMode();
 
   const {
     profile: developmentAccessProfile,
-    isOverrideActive:
-      isDevelopmentAccessOverrideActive,
+    isOverrideActive: isDevelopmentAccessOverrideActive,
   } = useDevelopmentAccess();
 
   const {
@@ -381,67 +281,38 @@ function usePermissionsState() {
     refreshSubscription,
   } = useSubscription();
 
-  const [role, setRole] =
-    useState<HouseholdRole | null>(null);
+  const [role, setRole] = useState<HouseholdRole | null>(null);
 
-  const [
-    rawHouseholdRole,
-    setRawHouseholdRole,
-  ] = useState<RawHouseholdRole | null>(
-    null
-  );
+  const [rawHouseholdRole, setRawHouseholdRole] =
+    useState<RawHouseholdRole | null>(null);
 
-  const [householdId, setHouseholdId] =
+  const [householdId, setHouseholdId] = useState<string | null>(null);
+
+  const [householdOwnerId, setHouseholdOwnerId] = useState<string | null>(null);
+
+  const [householdOwnerPlan, setHouseholdOwnerPlan] =
+    useState<SubscriptionPlan | null>(null);
+
+  const [householdOwnerStatus, setHouseholdOwnerStatus] = useState<
+    string | null
+  >(null);
+
+  const [householdOwnerCurrentPeriodEnd, setHouseholdOwnerCurrentPeriodEnd] =
     useState<string | null>(null);
 
-  const [
-    householdOwnerId,
-    setHouseholdOwnerId,
-  ] = useState<string | null>(null);
-
-  const [
-    householdOwnerPlan,
-    setHouseholdOwnerPlan,
-  ] = useState<SubscriptionPlan | null>(
-    null
+  const [householdOwnerName, setHouseholdOwnerName] = useState<string | null>(
+    null,
   );
 
-  const [
-    householdOwnerStatus,
-    setHouseholdOwnerStatus,
-  ] = useState<string | null>(null);
-
-  const [
-    householdOwnerCurrentPeriodEnd,
-    setHouseholdOwnerCurrentPeriodEnd,
-  ] = useState<string | null>(null);
-
-  const [
-    householdOwnerName,
-    setHouseholdOwnerName,
-  ] = useState<string | null>(null);
-
-  const [
-    adminGrant,
-    setAdminGrant,
-  ] = useState<SafePlanGrantSummary | null>(
-    null
+  const [adminGrant, setAdminGrant] = useState<SafePlanGrantSummary | null>(
+    null,
   );
 
-  const [
-    roleLoading,
-    setRoleLoading,
-  ] = useState(true);
+  const [roleLoading, setRoleLoading] = useState(true);
 
-  const [
-    roleError,
-    setRoleError,
-  ] = useState<string | null>(null);
+  const [roleError, setRoleError] = useState<string | null>(null);
 
-  const [
-    householdContextLoaded,
-    setHouseholdContextLoaded,
-  ] = useState(false);
+  const [householdContextLoaded, setHouseholdContextLoaded] = useState(false);
 
   /*
    * Once permissions have been resolved for the current user,
@@ -450,21 +321,19 @@ function usePermissionsState() {
    * This prevents tab focus, realtime membership events, and
    * manual permission refreshes from blanking the entire app.
    */
-  const householdContextLoadedRef =
-    useRef(false);
+  const householdContextLoadedRef = useRef(false);
 
-  const loadedPermissionUserRef =
-    useRef<string | null>(null);
+  const loadedPermissionUserRef = useRef<string | null>(null);
 
-  const [
-    apiEntitlementSnapshot,
-    setApiEntitlementSnapshot,
-  ] = useState<{
-    ownerPlanSource:
-      | "subscription"
-      | "admin_grant"
-      | "none"
-      | null;
+  /*
+   * Prevent the initial loader, realtime subscription and
+   * window-focus refresh from starting duplicate permission
+   * requests for the same user at the same time.
+   */
+  const permissionRequestInFlightRef = useRef<string | null>(null);
+
+  const [apiEntitlementSnapshot, setApiEntitlementSnapshot] = useState<{
+    ownerPlanSource: "subscription" | "admin_grant" | "none" | null;
     effectivePlan: SubscriptionPlan | null;
     canUseProFeatures: boolean | null;
   }>({
@@ -484,284 +353,44 @@ function usePermissionsState() {
     setHouseholdOwnerName,
   };
 
-  const loadHouseholdContext =
-    useCallback(async () => {
-      if (demoLoading) {
-        return;
+  const loadHouseholdContext = useCallback(async () => {
+    if (demoLoading) {
+      return;
+    }
+
+    const currentUserId = user?.id ?? null;
+
+    if (
+      currentUserId &&
+      permissionRequestInFlightRef.current === currentUserId
+    ) {
+      return;
+    }
+
+    if (currentUserId) {
+      permissionRequestInFlightRef.current = currentUserId;
+    }
+
+    const isBackgroundRefresh =
+      householdContextLoadedRef.current &&
+      loadedPermissionUserRef.current === currentUserId;
+
+    try {
+      /*
+       * Only the first permission resolution for a user should
+       * block page rendering.
+       *
+       * Subsequent checks quietly refresh the existing state.
+       */
+      if (!isBackgroundRefresh) {
+        setRoleLoading(true);
+        setHouseholdContextLoaded(false);
       }
 
-      const currentUserId =
-        user?.id ?? null;
+      setRoleError(null);
 
-      const isBackgroundRefresh =
-        householdContextLoadedRef.current &&
-        loadedPermissionUserRef.current ===
-          currentUserId;
-
-      try {
-        /*
-         * Only the first permission resolution for a user should
-         * block page rendering.
-         *
-         * Subsequent checks quietly refresh the existing state.
-         */
-        if (!isBackgroundRefresh) {
-          setRoleLoading(true);
-          setHouseholdContextLoaded(false);
-        }
-
-        setRoleError(null);
-
-        if (isDemo || !user) {
-          clearHouseholdState(
-            householdSetters
-          );
-          setAdminGrant(null);
-          setApiEntitlementSnapshot({
-            ownerPlanSource: null,
-            effectivePlan: null,
-            canUseProFeatures: null,
-          });
-          setHouseholdContextLoaded(true);
-          return;
-        }
-
-        const cachedPermissions =
-          readPermissionCache(
-            user.id
-          );
-
-        if (
-          cachedPermissions &&
-          !isBackgroundRefresh
-        ) {
-          const cachedAccess =
-            cachedPermissions.accessData;
-
-          setAdminGrant(
-            cachedPermissions.grant
-          );
-
-          if (
-            "membership" in
-              cachedAccess &&
-            cachedAccess.membership ===
-              null
-          ) {
-            clearHouseholdState(
-              householdSetters
-            );
-
-            setApiEntitlementSnapshot({
-              ownerPlanSource: null,
-              effectivePlan: null,
-              canUseProFeatures: null,
-            });
-          } else if (
-            "householdId" in
-            cachedAccess
-          ) {
-            applyHouseholdAccess(
-              cachedAccess,
-              householdSetters
-            );
-
-            setApiEntitlementSnapshot({
-              ownerPlanSource:
-                cachedAccess
-                  .ownerPlanSource ??
-                null,
-
-              effectivePlan:
-                cachedAccess
-                  .effectivePlan ??
-                null,
-
-              canUseProFeatures:
-                cachedAccess
-                  .canUseProFeatures ??
-                null,
-            });
-          }
-
-          householdContextLoadedRef.current =
-            true;
-
-          loadedPermissionUserRef.current =
-            user.id;
-
-          setHouseholdContextLoaded(
-            true
-          );
-
-          /*
-           * This snapshot is fresh for only 60 seconds.
-           * Use it as a true fast path instead of
-           * immediately repeating both permission API
-           * requests during normal navigation.
-           *
-           * Realtime membership events and the existing
-           * window-focus refresh will still revalidate
-           * permissions when needed.
-           */
-          setRoleLoading(false);
-          return;
-        }
-
-        const [
-          accessResponse,
-          grantResponse,
-        ] = await Promise.all([
-          fetch("/api/household/access", {
-            method: "GET",
-            credentials: "include",
-            cache: "no-store",
-          }),
-          fetch("/api/user/plan-grant", {
-            method: "GET",
-            credentials: "include",
-            cache: "no-store",
-          }),
-        ]);
-
-        if (!accessResponse.ok) {
-          console.error(
-            "Household access API failed:",
-            accessResponse.status
-          );
-
-          clearHouseholdState(
-            householdSetters
-          );
-          setAdminGrant(null);
-          setApiEntitlementSnapshot({
-            ownerPlanSource: null,
-            effectivePlan: null,
-            canUseProFeatures: null,
-          });
-          setHouseholdContextLoaded(true);
-
-          setRoleError(
-            "Unable to verify household access."
-          );
-
-          return;
-        }
-
-        let resolvedGrant:
-          | SafePlanGrantSummary
-          | null = null;
-
-        if (grantResponse.ok) {
-          const grantData =
-            (await grantResponse.json()) as PlanGrantPayload;
-
-          resolvedGrant =
-            grantData.grant ?? null;
-
-          setAdminGrant(
-            resolvedGrant
-          );
-        } else {
-          setAdminGrant(null);
-        }
-
-        const accessData =
-          (await accessResponse.json()) as HouseholdAccessPayload;
-
-        /*
-         * Only cache a fully successful access
-         * verification. A temporary grant API
-         * failure should not overwrite a good
-         * permission snapshot.
-         */
-        if (grantResponse.ok) {
-          writePermissionCache(
-            user.id,
-            {
-              cachedAt:
-                Date.now(),
-
-              accessData,
-
-              grant:
-                resolvedGrant,
-            }
-          );
-        }
-
-        if (
-          "membership" in accessData &&
-          accessData.membership === null
-        ) {
-          /*
-           * No household membership does NOT mean
-           * the user is Free.
-           *
-           * A personal-vault user may still have:
-           * - a paid Pro subscription
-           * - a complimentary Pro admin grant
-           * - a complimentary Family admin grant
-           *
-           * Leave the API entitlement snapshot
-           * unset here so resolveEffectivePlan()
-           * remains authoritative for personal
-           * subscription + admin-grant access.
-           */
-          clearHouseholdState(
-            householdSetters
-          );
-
-          setApiEntitlementSnapshot({
-            ownerPlanSource: null,
-            effectivePlan: null,
-            canUseProFeatures: null,
-          });
-
-          setHouseholdContextLoaded(true);
-
-          return;
-        }
-
-        if ("householdId" in accessData) {
-          applyHouseholdAccess(
-            accessData,
-            householdSetters
-          );
-
-          setApiEntitlementSnapshot({
-            ownerPlanSource:
-              accessData.ownerPlanSource ??
-              null,
-            effectivePlan:
-              accessData.effectivePlan ??
-              null,
-            canUseProFeatures:
-              accessData.canUseProFeatures ??
-              null,
-          });
-          setHouseholdContextLoaded(true);
-        } else {
-          clearHouseholdState(
-            householdSetters
-          );
-          setHouseholdContextLoaded(true);
-        }
-      } catch (caughtError) {
-        const message =
-          caughtError instanceof Error
-            ? caughtError.message
-            : "Unable to load permissions.";
-
-        console.error(
-          "Permission loading error:",
-          caughtError
-        );
-
-        setRoleError(message);
-        clearHouseholdState(
-          householdSetters
-        );
+      if (isDemo || !user) {
+        clearHouseholdState(householdSetters);
         setAdminGrant(null);
         setApiEntitlementSnapshot({
           ownerPlanSource: null,
@@ -769,24 +398,206 @@ function usePermissionsState() {
           canUseProFeatures: null,
         });
         setHouseholdContextLoaded(true);
-      } finally {
-        householdContextLoadedRef.current =
-          true;
+        return;
+      }
 
-        loadedPermissionUserRef.current =
-          currentUserId;
+      const cachedPermissions = readPermissionCache(user.id);
+
+      if (cachedPermissions && !isBackgroundRefresh) {
+        const cachedAccess = cachedPermissions.accessData;
+
+        setAdminGrant(cachedPermissions.grant);
+
+        if ("membership" in cachedAccess && cachedAccess.membership === null) {
+          clearHouseholdState(householdSetters);
+
+          setApiEntitlementSnapshot({
+            ownerPlanSource: null,
+            effectivePlan: null,
+            canUseProFeatures: null,
+          });
+        } else if ("householdId" in cachedAccess) {
+          applyHouseholdAccess(cachedAccess, householdSetters);
+
+          setApiEntitlementSnapshot({
+            ownerPlanSource: cachedAccess.ownerPlanSource ?? null,
+
+            effectivePlan: cachedAccess.effectivePlan ?? null,
+
+            canUseProFeatures: cachedAccess.canUseProFeatures ?? null,
+          });
+        }
+
+        householdContextLoadedRef.current = true;
+
+        loadedPermissionUserRef.current = user.id;
 
         setHouseholdContextLoaded(true);
 
-        if (!isBackgroundRefresh) {
-          setRoleLoading(false);
-        }
+        /*
+         * This snapshot is fresh for only 60 seconds.
+         * Use it as a true fast path instead of
+         * immediately repeating both permission API
+         * requests during normal navigation.
+         *
+         * Realtime membership events and the existing
+         * window-focus refresh will still revalidate
+         * permissions when needed.
+         */
+        setRoleLoading(false);
+        return;
       }
-    }, [
-      demoLoading,
-      isDemo,
-      user,
-    ]);
+
+      const permissionController = new AbortController();
+
+      const permissionTimeout = window.setTimeout(() => {
+        permissionController.abort();
+      }, 8000);
+
+      let accessResponse: Response;
+      let grantResponse: Response;
+
+      try {
+        [accessResponse, grantResponse] = await Promise.all([
+          fetch("/api/household/access", {
+            method: "GET",
+            credentials: "include",
+            cache: "no-store",
+            signal: permissionController.signal,
+          }),
+          fetch("/api/user/plan-grant", {
+            method: "GET",
+            credentials: "include",
+            cache: "no-store",
+            signal: permissionController.signal,
+          }),
+        ]);
+      } finally {
+        window.clearTimeout(permissionTimeout);
+      }
+
+      if (!accessResponse.ok) {
+        console.error("Household access API failed:", accessResponse.status);
+
+        clearHouseholdState(householdSetters);
+        setAdminGrant(null);
+        setApiEntitlementSnapshot({
+          ownerPlanSource: null,
+          effectivePlan: null,
+          canUseProFeatures: null,
+        });
+        setHouseholdContextLoaded(true);
+
+        setRoleError("Unable to verify household access.");
+
+        return;
+      }
+
+      let resolvedGrant: SafePlanGrantSummary | null = null;
+
+      if (grantResponse.ok) {
+        const grantData = (await grantResponse.json()) as PlanGrantPayload;
+
+        resolvedGrant = grantData.grant ?? null;
+
+        setAdminGrant(resolvedGrant);
+      } else {
+        setAdminGrant(null);
+      }
+
+      const accessData =
+        (await accessResponse.json()) as HouseholdAccessPayload;
+
+      /*
+       * Only cache a fully successful access
+       * verification. A temporary grant API
+       * failure should not overwrite a good
+       * permission snapshot.
+       */
+      if (grantResponse.ok) {
+        writePermissionCache(user.id, {
+          cachedAt: Date.now(),
+
+          accessData,
+
+          grant: resolvedGrant,
+        });
+      }
+
+      if ("membership" in accessData && accessData.membership === null) {
+        /*
+         * No household membership does NOT mean
+         * the user is Free.
+         *
+         * A personal-vault user may still have:
+         * - a paid Pro subscription
+         * - a complimentary Pro admin grant
+         * - a complimentary Family admin grant
+         *
+         * Leave the API entitlement snapshot
+         * unset here so resolveEffectivePlan()
+         * remains authoritative for personal
+         * subscription + admin-grant access.
+         */
+        clearHouseholdState(householdSetters);
+
+        setApiEntitlementSnapshot({
+          ownerPlanSource: null,
+          effectivePlan: null,
+          canUseProFeatures: null,
+        });
+
+        setHouseholdContextLoaded(true);
+
+        return;
+      }
+
+      if ("householdId" in accessData) {
+        applyHouseholdAccess(accessData, householdSetters);
+
+        setApiEntitlementSnapshot({
+          ownerPlanSource: accessData.ownerPlanSource ?? null,
+          effectivePlan: accessData.effectivePlan ?? null,
+          canUseProFeatures: accessData.canUseProFeatures ?? null,
+        });
+        setHouseholdContextLoaded(true);
+      } else {
+        clearHouseholdState(householdSetters);
+        setHouseholdContextLoaded(true);
+      }
+    } catch (caughtError) {
+      const message =
+        caughtError instanceof Error
+          ? caughtError.message
+          : "Unable to load permissions.";
+
+      console.error("Permission loading error:", caughtError);
+
+      setRoleError(message);
+      clearHouseholdState(householdSetters);
+      setAdminGrant(null);
+      setApiEntitlementSnapshot({
+        ownerPlanSource: null,
+        effectivePlan: null,
+        canUseProFeatures: null,
+      });
+      setHouseholdContextLoaded(true);
+    } finally {
+      if (permissionRequestInFlightRef.current === currentUserId) {
+        permissionRequestInFlightRef.current = null;
+      }
+
+      householdContextLoadedRef.current = true;
+
+      loadedPermissionUserRef.current = currentUserId;
+
+      setHouseholdContextLoaded(true);
+
+      if (!isBackgroundRefresh) {
+        setRoleLoading(false);
+      }
+    }
+  }, [demoLoading, isDemo, user]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -805,43 +616,33 @@ function usePermissionsState() {
 
     if (!isSafeUuid(user.id)) {
       console.warn(
-        "Skipping household membership realtime subscription because the user identifier is invalid."
+        "Skipping household membership realtime subscription because the user identifier is invalid.",
       );
       return;
     }
 
     const channel = supabase
-      .channel(
-        `household-membership-${user.id}`
-      )
+      .channel(`household-membership-${user.id}`)
       .on(
         "postgres_changes",
         {
           event: "*",
           schema: "public",
           table: "household_members",
-          filter: buildUuidRealtimeFilter(
-            "user_id",
-            user.id
-          ),
+          filter: buildUuidRealtimeFilter("user_id", user.id),
         },
         () => {
           void loadHouseholdContext();
-        }
+        },
       )
       .subscribe();
 
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [
-    user?.id,
-    isDemo,
-    loadHouseholdContext,
-  ]);
+  }, [user?.id, isDemo, loadHouseholdContext]);
 
-  const lastFocusRefreshRef =
-    useRef(0);
+  const lastFocusRefreshRef = useRef(0);
 
   useEffect(() => {
     if (!user?.id || isDemo) {
@@ -851,10 +652,7 @@ function usePermissionsState() {
     function handleWindowFocus() {
       const now = Date.now();
 
-      if (
-        now - lastFocusRefreshRef.current <
-        60000
-      ) {
+      if (now - lastFocusRefreshRef.current < 60000) {
         return;
       }
 
@@ -862,30 +660,18 @@ function usePermissionsState() {
       void loadHouseholdContext();
     }
 
-    window.addEventListener(
-      "focus",
-      handleWindowFocus
-    );
+    window.addEventListener("focus", handleWindowFocus);
 
     return () => {
-      window.removeEventListener(
-        "focus",
-        handleWindowFocus
-      );
+      window.removeEventListener("focus", handleWindowFocus);
     };
-  }, [
-    user?.id,
-    isDemo,
-    loadHouseholdContext,
-  ]);
+  }, [user?.id, isDemo, loadHouseholdContext]);
 
   const loading =
     demoLoading ||
     subscriptionLoading ||
     roleLoading ||
-    (Boolean(user) &&
-      !isDemo &&
-      !householdContextLoaded);
+    (Boolean(user) && !isDemo && !householdContextLoaded);
 
   const permissionsReady = !loading;
 
@@ -898,8 +684,7 @@ function usePermissionsState() {
       userId: user?.id ?? null,
       personalPlan,
       personalStatus,
-      personalCurrentPeriodEnd:
-        currentPeriodEnd,
+      personalCurrentPeriodEnd: currentPeriodEnd,
       hasPersonalStripeCustomer,
       householdId,
       householdOwnerId,
@@ -935,56 +720,36 @@ function usePermissionsState() {
       householdOwnerName,
       rawHouseholdRole,
       adminGrant,
-    ]
+    ],
   );
 
-  const developmentPlanInput = useMemo(
-    () => {
-      if (
-        !isDevelopmentEnvironment() ||
-        developmentAccessProfile ===
-          "real"
-      ) {
-        return basePlanInput;
-      }
+  const developmentPlanInput = useMemo(() => {
+    if (!isDevelopmentEnvironment() || developmentAccessProfile === "real") {
+      return basePlanInput;
+    }
 
-      return buildDevelopmentPlanInput(
-        developmentAccessProfile,
-        basePlanInput
-      );
-    },
-    [
-      basePlanInput,
-      developmentAccessProfile,
-    ]
-  );
+    return buildDevelopmentPlanInput(developmentAccessProfile, basePlanInput);
+  }, [basePlanInput, developmentAccessProfile]);
 
   const effectiveAccess = useMemo(
-    () =>
-      resolveEffectivePlan(
-        developmentPlanInput
-      ),
-    [developmentPlanInput]
+    () => resolveEffectivePlan(developmentPlanInput),
+    [developmentPlanInput],
   );
 
-  const effectiveIsDemo =
-    isDevelopmentAccessOverrideActive
-      ? developmentPlanInput.isDemo
-      : isDemo;
+  const effectiveIsDemo = isDevelopmentAccessOverrideActive
+    ? developmentPlanInput.isDemo
+    : isDemo;
 
-  const effectiveIsPlatformAdmin =
-    isDevelopmentAccessOverrideActive
-      ? developmentPlanInput.isPlatformAdmin
-      : isPlatformAdmin;
+  const effectiveIsPlatformAdmin = isDevelopmentAccessOverrideActive
+    ? developmentPlanInput.isPlatformAdmin
+    : isPlatformAdmin;
 
   const effectiveRole = useMemo(() => {
     if (
       isDevelopmentAccessOverrideActive &&
       developmentPlanInput.rawHouseholdRole
     ) {
-      return normalizeHouseholdRole(
-        developmentPlanInput.rawHouseholdRole
-      );
+      return normalizeHouseholdRole(developmentPlanInput.rawHouseholdRole);
     }
 
     return role;
@@ -995,15 +760,13 @@ function usePermissionsState() {
   ]);
 
   const effectiveRawHouseholdRole =
-    isDevelopmentAccessOverrideActive &&
-    developmentPlanInput.rawHouseholdRole
+    isDevelopmentAccessOverrideActive && developmentPlanInput.rawHouseholdRole
       ? developmentPlanInput.rawHouseholdRole
       : rawHouseholdRole;
 
-  const permissionHouseholdId =
-    isDevelopmentAccessOverrideActive
-      ? developmentPlanInput.householdId
-      : householdId;
+  const permissionHouseholdId = isDevelopmentAccessOverrideActive
+    ? developmentPlanInput.householdId
+    : householdId;
 
   const {
     effectivePlan,
@@ -1033,26 +796,20 @@ function usePermissionsState() {
     featureAccess,
   } = effectiveAccess;
 
-  const authoritativeEntitlement =
-    useMemo(() => {
-      const apiCanUsePro =
-        apiEntitlementSnapshot.canUseProFeatures;
-      const apiPlan =
-        apiEntitlementSnapshot.effectivePlan;
+  const authoritativeEntitlement = useMemo(() => {
+    const apiCanUsePro = apiEntitlementSnapshot.canUseProFeatures;
+    const apiPlan = apiEntitlementSnapshot.effectivePlan;
 
-      return {
-        canUseProFeatures:
-          apiCanUsePro ??
-          canUseProFeatures,
-        effectivePlan:
-          apiPlan ?? effectivePlan,
-      };
-    }, [
-      apiEntitlementSnapshot.canUseProFeatures,
-      apiEntitlementSnapshot.effectivePlan,
-      canUseProFeatures,
-      effectivePlan,
-    ]);
+    return {
+      canUseProFeatures: apiCanUsePro ?? canUseProFeatures,
+      effectivePlan: apiPlan ?? effectivePlan,
+    };
+  }, [
+    apiEntitlementSnapshot.canUseProFeatures,
+    apiEntitlementSnapshot.effectivePlan,
+    canUseProFeatures,
+    effectivePlan,
+  ]);
 
   const usageLimits = useMemo(
     () =>
@@ -1060,10 +817,8 @@ function usePermissionsState() {
         authoritativeEntitlement.effectivePlan,
         effectiveIsPlatformAdmin,
         hasFamilyFeatureAccess ||
-          authoritativeEntitlement.effectivePlan ===
-            "family",
-        authoritativeEntitlement.canUseProFeatures ||
-          hasPremiumFeatureAccess
+          authoritativeEntitlement.effectivePlan === "family",
+        authoritativeEntitlement.canUseProFeatures || hasPremiumFeatureAccess,
       ),
     [
       authoritativeEntitlement.effectivePlan,
@@ -1071,88 +826,63 @@ function usePermissionsState() {
       effectiveIsPlatformAdmin,
       hasFamilyFeatureAccess,
       hasPremiumFeatureAccess,
-    ]
+    ],
   );
 
   const isActive =
-    isActiveSubscriptionStatus(
-      effectiveStatus
-    ) ||
+    isActiveSubscriptionStatus(effectiveStatus) ||
     hasFamilyFeatureAccess ||
     hasPremiumFeatureAccess;
 
   const isPro =
-    authoritativeEntitlement.effectivePlan ===
-      "pro" &&
+    authoritativeEntitlement.effectivePlan === "pro" &&
     authoritativeEntitlement.canUseProFeatures;
 
-  const isFamily =
-    hasFamilyFeatureAccess;
+  const isFamily = hasFamilyFeatureAccess;
 
   const isFree =
-    !effectiveIsPlatformAdmin &&
-    !authoritativeEntitlement.canUseProFeatures;
+    !effectiveIsPlatformAdmin && !authoritativeEntitlement.canUseProFeatures;
 
-  const isTrial =
-    effectiveStatus === "trialing";
+  const isTrial = effectiveStatus === "trialing";
 
   const canUsePremiumFeatures =
-    effectiveIsPlatformAdmin ||
-    authoritativeEntitlement.canUseProFeatures;
+    effectiveIsPlatformAdmin || authoritativeEntitlement.canUseProFeatures;
 
   const canUseFamilySharing =
-    effectiveIsPlatformAdmin ||
-    hasFamilyFeatureAccess;
+    effectiveIsPlatformAdmin || hasFamilyFeatureAccess;
 
-  const mergedFeatureAccess = useMemo(
-    () => {
-      if (
-        !authoritativeEntitlement.canUseProFeatures
-      ) {
-        return featureAccess;
-      }
+  const mergedFeatureAccess = useMemo(() => {
+    if (!authoritativeEntitlement.canUseProFeatures) {
+      return featureAccess;
+    }
 
-      const planForFeatures =
-        authoritativeEntitlement.effectivePlan ===
-        "family"
-          ? "family"
-          : "pro";
+    const planForFeatures =
+      authoritativeEntitlement.effectivePlan === "family" ? "family" : "pro";
 
-      return buildPlanFeatureAccess(
-        planForFeatures,
-        effectiveIsPlatformAdmin
-      );
-    },
-    [
-      authoritativeEntitlement.canUseProFeatures,
-      authoritativeEntitlement.effectivePlan,
-      featureAccess,
-      effectiveIsPlatformAdmin,
-    ]
-  );
+    return buildPlanFeatureAccess(planForFeatures, effectiveIsPlatformAdmin);
+  }, [
+    authoritativeEntitlement.canUseProFeatures,
+    authoritativeEntitlement.effectivePlan,
+    featureAccess,
+    effectiveIsPlatformAdmin,
+  ]);
 
   const mergedInheritsProPlan =
-    apiEntitlementSnapshot.canUseProFeatures ===
-      true &&
+    apiEntitlementSnapshot.canUseProFeatures === true &&
     apiEntitlementSnapshot.effectivePlan === "pro"
       ? true
       : inheritsProPlan;
 
   const mergedInheritsFamilyPlan =
-    apiEntitlementSnapshot.canUseProFeatures ===
-      true &&
-    apiEntitlementSnapshot.effectivePlan ===
-      "family"
+    apiEntitlementSnapshot.canUseProFeatures === true &&
+    apiEntitlementSnapshot.effectivePlan === "family"
       ? true
       : inheritsFamilyPlan;
 
   const mergedInheritsHouseholdPlan =
-    apiEntitlementSnapshot.canUseProFeatures ===
-      true &&
-    (apiEntitlementSnapshot.effectivePlan ===
-      "pro" ||
-      apiEntitlementSnapshot.effectivePlan ===
-        "family")
+    apiEntitlementSnapshot.canUseProFeatures === true &&
+    (apiEntitlementSnapshot.effectivePlan === "pro" ||
+      apiEntitlementSnapshot.effectivePlan === "family")
       ? true
       : inheritsHouseholdPlan;
 
@@ -1164,32 +894,22 @@ function usePermissionsState() {
         user,
         isDemo: effectiveIsDemo,
         role: effectiveRole,
-        rawHouseholdRole:
-          effectiveRawHouseholdRole,
-        householdId:
-          permissionHouseholdId,
+        rawHouseholdRole: effectiveRawHouseholdRole,
+        householdId: permissionHouseholdId,
         plan: authoritativeEntitlement.effectivePlan,
-        isPlatformAdmin:
-          effectiveIsPlatformAdmin,
+        isPlatformAdmin: effectiveIsPlatformAdmin,
         canUsePremiumFeatures,
         canUseFamilySharing,
         hasFamilyFeatureAccess,
         billingManagedByHousehold,
-        inheritsFamilyPlan:
-          mergedInheritsFamilyPlan,
-        inheritsProPlan:
-          mergedInheritsProPlan,
-        inheritsHouseholdPlan:
-          mergedInheritsHouseholdPlan,
-        featureAccess:
-          mergedFeatureAccess,
-        hasUnlimitedDevices:
-          limits.maxDevices === null,
-        hasUnlimitedDocuments:
-          limits.maxDocuments === null,
+        inheritsFamilyPlan: mergedInheritsFamilyPlan,
+        inheritsProPlan: mergedInheritsProPlan,
+        inheritsHouseholdPlan: mergedInheritsHouseholdPlan,
+        featureAccess: mergedFeatureAccess,
+        hasUnlimitedDevices: limits.maxDevices === null,
+        hasUnlimitedDocuments: limits.maxDocuments === null,
         deviceLimit: limits.maxDevices,
-        documentLimit:
-          limits.maxDocuments,
+        documentLimit: limits.maxDocuments,
         canManageBilling,
       }),
     [
@@ -1211,32 +931,26 @@ function usePermissionsState() {
       limits.maxDevices,
       limits.maxDocuments,
       canManageBilling,
-    ]
+    ],
   );
 
-  const refreshPermissions =
-    useCallback(async () => {
-      await refreshSubscription();
-      await loadHouseholdContext();
-    }, [
-      refreshSubscription,
-      loadHouseholdContext,
-    ]);
+  const refreshPermissions = useCallback(async () => {
+    await refreshSubscription();
+    await loadHouseholdContext();
+  }, [refreshSubscription, loadHouseholdContext]);
 
-  const vaultContextLabel =
-    effectiveIsDemo
-      ? null
-      : permissions.isPersonalVault
-        ? "Personal Vault"
-        : roleDisplayName;
+  const vaultContextLabel = effectiveIsDemo
+    ? null
+    : permissions.isPersonalVault
+      ? "Personal Vault"
+      : roleDisplayName;
 
   return {
     user,
     isDemo: effectiveIsDemo,
     role: effectiveRole,
     vaultContextLabel,
-    rawHouseholdRole:
-      effectiveRawHouseholdRole,
+    rawHouseholdRole: effectiveRawHouseholdRole,
     householdId: realHouseholdId,
     realHouseholdId,
     householdOwnerId,
@@ -1253,8 +967,7 @@ function usePermissionsState() {
 
     personalPlan,
     plan: authoritativeEntitlement.effectivePlan,
-    effectivePlan:
-      authoritativeEntitlement.effectivePlan,
+    effectivePlan: authoritativeEntitlement.effectivePlan,
     householdPlan,
     planDisplayName,
     roleDisplayName,
@@ -1271,8 +984,7 @@ function usePermissionsState() {
     inheritsProPlan,
     inheritsHouseholdPlan,
     householdSubscriptionOwnerId,
-    canUseProFeatures:
-      authoritativeEntitlement.canUseProFeatures,
+    canUseProFeatures: authoritativeEntitlement.canUseProFeatures,
     effectivePlanSource,
     adminGrantPlan,
     adminGrantExpiresAt,
@@ -1294,17 +1006,13 @@ function usePermissionsState() {
         ? householdOwnerCurrentPeriodEnd
         : currentPeriodEnd
       : null,
-    isPlatformAdmin:
-      effectiveIsPlatformAdmin,
+    isPlatformAdmin: effectiveIsPlatformAdmin,
     /** Real `profiles.is_admin` only — never development-access simulation. */
-    isVerifiedPlatformAdmin:
-      isPlatformAdmin,
+    isVerifiedPlatformAdmin: isPlatformAdmin,
     canUsePremiumFeatures,
     canUseFamilySharing,
-    hasUnlimitedDevices:
-      limits.maxDevices === null,
-    hasUnlimitedDocuments:
-      limits.maxDocuments === null,
+    hasUnlimitedDevices: limits.maxDevices === null,
+    hasUnlimitedDocuments: limits.maxDocuments === null,
     deviceLimit: limits.maxDevices,
     documentLimit: limits.maxDocuments,
     familyMemberLimit,
@@ -1316,30 +1024,22 @@ function usePermissionsState() {
   };
 }
 
-export function PermissionsProvider({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export function PermissionsProvider({ children }: { children: ReactNode }) {
   const value = usePermissionsState();
 
   return (
-    <PermissionsContext.Provider
-      value={value}
-    >
+    <PermissionsContext.Provider value={value}>
       {children}
     </PermissionsContext.Provider>
   );
 }
 
 export function usePermissions() {
-  const context = useContext(
-    PermissionsContext
-  );
+  const context = useContext(PermissionsContext);
 
   if (!context) {
     throw new Error(
-      "usePermissions must be used within a PermissionsProvider."
+      "usePermissions must be used within a PermissionsProvider.",
     );
   }
 

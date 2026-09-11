@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import {
   CalendarClock,
@@ -54,30 +50,15 @@ export default function SubscriptionsPage() {
     canDelete,
   } = usePermissions();
 
-  const [
-    subscriptions,
-    setSubscriptions,
-  ] = useState<Subscription[]>([]);
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
 
-  const [
-    loadingSubscriptions,
-    setLoadingSubscriptions,
-  ] = useState(true);
+  const [loadingSubscriptions, setLoadingSubscriptions] = useState(true);
 
-  const [
-    errorMessage,
-    setErrorMessage,
-  ] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const [
-    searchTerm,
-    setSearchTerm,
-  ] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const [
-    selectedCategory,
-    setSelectedCategory,
-  ] = useState("All");
+  const [selectedCategory, setSelectedCategory] = useState("All");
 
   useEffect(() => {
     let mounted = true;
@@ -91,11 +72,7 @@ export default function SubscriptionsPage() {
         setLoadingSubscriptions(true);
         setErrorMessage("");
 
-        const data =
-          await getSubscriptions(
-            user,
-            householdId
-          );
+        const data = await getSubscriptions(user, householdId);
 
         if (!mounted) {
           return;
@@ -103,10 +80,7 @@ export default function SubscriptionsPage() {
 
         setSubscriptions(data ?? []);
       } catch (error: unknown) {
-        console.error(
-          "Subscription loading error:",
-          error
-        );
+        console.error("Subscription loading error:", error);
 
         if (!mounted) {
           return;
@@ -115,7 +89,7 @@ export default function SubscriptionsPage() {
         setErrorMessage(
           error instanceof Error
             ? error.message
-            : "Unable to load subscriptions."
+            : "Unable to load subscriptions.",
         );
       } finally {
         if (mounted) {
@@ -129,133 +103,71 @@ export default function SubscriptionsPage() {
     return () => {
       mounted = false;
     };
-  }, [
-    user,
-    permissionsLoading,
-    householdId,
-  ]);
+  }, [user, permissionsLoading, householdId]);
 
   const categories = useMemo(() => {
     const values = subscriptions
-      .map((subscription) =>
-        subscription.category?.trim()
-      )
-      .filter(
-        (
-          value
-        ): value is string =>
-          Boolean(value)
-      );
+      .map((subscription) => subscription.category?.trim())
+      .filter((value): value is string => Boolean(value));
 
-    return [
-      "All",
-      ...Array.from(
-        new Set(values)
-      ).sort(),
-    ];
+    return ["All", ...Array.from(new Set(values)).sort()];
   }, [subscriptions]);
 
-  const filteredSubscriptions =
-    useMemo(() => {
-      const query =
-        searchTerm
-          .trim()
-          .toLowerCase();
+  const filteredSubscriptions = useMemo(() => {
+    const query = searchTerm.trim().toLowerCase();
 
-      return subscriptions
-        .filter((subscription) => {
-          const serviceName =
-            subscription.service_name ||
-            subscription.name ||
-            "";
+    return subscriptions
+      .filter((subscription) => {
+        const serviceName =
+          subscription.service_name || subscription.name || "";
 
-          const searchableText = [
-            serviceName,
-            subscription.category,
-            subscription.billing_cycle,
-            subscription.notes,
-          ]
-            .map((value) =>
-              String(value ?? "")
-                .toLowerCase()
-            )
-            .join(" ");
+        const searchableText = [
+          serviceName,
+          subscription.category,
+          subscription.billing_cycle,
+          subscription.notes,
+        ]
+          .map((value) => String(value ?? "").toLowerCase())
+          .join(" ");
 
-          const matchesSearch =
-            query === "" ||
-            searchableText.includes(
-              query
-            );
+        const matchesSearch = query === "" || searchableText.includes(query);
 
-          const matchesCategory =
-            selectedCategory === "All" ||
-            subscription.category ===
-              selectedCategory;
+        const matchesCategory =
+          selectedCategory === "All" ||
+          subscription.category === selectedCategory;
 
-          return (
-            matchesSearch &&
-            matchesCategory
-          );
-        })
-        .sort((first, second) => {
-          const firstDate =
-            first.renewal_date
-              ? new Date(
-                  first.renewal_date +
-                    "T00:00:00"
-                ).getTime()
-              : Number.MAX_SAFE_INTEGER;
+        return matchesSearch && matchesCategory;
+      })
+      .sort((first, second) => {
+        const firstDate = first.renewal_date
+          ? new Date(first.renewal_date + "T00:00:00").getTime()
+          : Number.MAX_SAFE_INTEGER;
 
-          const secondDate =
-            second.renewal_date
-              ? new Date(
-                  second.renewal_date +
-                    "T00:00:00"
-                ).getTime()
-              : Number.MAX_SAFE_INTEGER;
+        const secondDate = second.renewal_date
+          ? new Date(second.renewal_date + "T00:00:00").getTime()
+          : Number.MAX_SAFE_INTEGER;
 
-          return firstDate - secondDate;
-        });
-    }, [
-      subscriptions,
-      searchTerm,
-      selectedCategory,
-    ]);
+        return firstDate - secondDate;
+      });
+  }, [subscriptions, searchTerm, selectedCategory]);
 
-  const monthlyTotal =
-    subscriptions.reduce(
-      (sum, subscription) =>
-        sum +
-        getMonthlyEquivalent(
-          subscription
-        ),
-      0
-    );
+  const monthlyTotal = subscriptions.reduce(
+    (sum, subscription) => sum + getMonthlyEquivalent(subscription),
+    0,
+  );
 
-  const yearlyTotal =
-    monthlyTotal * 12;
+  const yearlyTotal = monthlyTotal * 12;
 
-  const upcomingRenewals =
-    subscriptions.filter(
-      (subscription) =>
-        isRenewingSoon(
-          subscription.renewal_date
-        )
-    ).length;
+  const upcomingRenewals = subscriptions.filter((subscription) =>
+    isRenewingSoon(subscription.renewal_date),
+  ).length;
 
   const averageMonthlyCost =
-    subscriptions.length === 0
-      ? 0
-      : monthlyTotal /
-        subscriptions.length;
+    subscriptions.length === 0 ? 0 : monthlyTotal / subscriptions.length;
 
-  const loading =
-    permissionsLoading ||
-    loadingSubscriptions;
+  const loading = permissionsLoading || loadingSubscriptions;
 
-  const filtersActive =
-    searchTerm.trim() !== "" ||
-    selectedCategory !== "All";
+  const filtersActive = searchTerm.trim() !== "" || selectedCategory !== "All";
 
   function clearFilters() {
     setSearchTerm("");
@@ -264,14 +176,10 @@ export default function SubscriptionsPage() {
 
   if (loading) {
     return (
-      <PageShell>
+      <PageShell className="bg-[#f7f6f2]">
         <PageCard className="flex min-h-72 items-center justify-center">
           <div className="flex items-center gap-3 text-text-secondary">
-            <Loader2
-              className="animate-spin"
-              size={22}
-            />
-
+            <Loader2 className="animate-spin" size={22} />
             Loading subscriptions...
           </div>
         </PageCard>
@@ -281,26 +189,24 @@ export default function SubscriptionsPage() {
 
   if (errorMessage) {
     return (
-      <PageShell>
+      <PageShell className="bg-[#f7f6f2]">
         <PageCard className="border-red-200 bg-red-50 p-6 text-red-700">
           <h1 className="text-xl font-semibold">
             Unable to load subscriptions
           </h1>
 
-          <p className="mt-2 text-sm">
-            {errorMessage}
-          </p>
+          <p className="mt-2 text-sm">{errorMessage}</p>
         </PageCard>
       </PageShell>
     );
   }
 
   return (
-    <PageShell>
+    <PageShell className="bg-[#f7f6f2]">
       <PageHero
         section="technology"
         eyebrow="Recurring Services"
-        title="Your subscriptions."
+        title="Subscriptions"
         description="Track recurring technology expenses, renewal dates, and yearly costs in one place."
       >
         <PageAction
@@ -326,18 +232,14 @@ export default function SubscriptionsPage() {
         <SummaryCard
           icon={WalletCards}
           label="Monthly Spend"
-          value={formatCurrency(
-            monthlyTotal
-          )}
+          value={formatCurrency(monthlyTotal)}
           description="Estimated per month"
         />
 
         <SummaryCard
           icon={WalletCards}
           label="Yearly Spend"
-          value={formatCurrency(
-            yearlyTotal
-          )}
+          value={formatCurrency(yearlyTotal)}
           description="Estimated annually"
         />
 
@@ -352,62 +254,47 @@ export default function SubscriptionsPage() {
       {subscriptions.length > 0 && (
         <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
           <PageCard className="p-7 md:p-9">
-            <p className="text-overline text-charcoal-soft">
-              At a Glance
-            </p>
+            <p className="text-overline text-charcoal-soft">At a Glance</p>
 
             <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-text-primary">
               Recurring technology costs
             </h2>
 
             <p className="mt-2 max-w-2xl text-sm leading-6 text-text-secondary">
-              A simple view of what your
-              subscriptions cost over time.
+              A simple view of what your subscriptions cost over time.
             </p>
 
             <div className="mt-7 grid gap-4 sm:grid-cols-3">
-              <CostTile
-                label="Monthly"
-                value={formatCurrency(
-                  monthlyTotal
-                )}
-              />
+              <CostTile label="Monthly" value={formatCurrency(monthlyTotal)} />
 
-              <CostTile
-                label="Yearly"
-                value={formatCurrency(
-                  yearlyTotal
-                )}
-              />
+              <CostTile label="Yearly" value={formatCurrency(yearlyTotal)} />
 
               <CostTile
                 label="Average"
-                value={formatCurrency(
-                  averageMonthlyCost
-                )}
+                value={formatCurrency(averageMonthlyCost)}
               />
             </div>
           </PageCard>
 
-          <PageCard className="overflow-hidden p-0"><div className="htv-plan-band p-7 text-text-primary md:p-9">
-            <p className="text-overline text-charcoal-soft">
-              Subscription Insight
-            </p>
+          <PageCard className="overflow-hidden p-0">
+            <div className="htv-plan-band p-7 text-text-primary md:p-9">
+              <p className="text-overline text-charcoal-soft">
+                Subscription Insight
+              </p>
 
-            <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em]">
-              {getSubscriptionInsight(
-                subscriptions,
-                monthlyTotal,
-                upcomingRenewals
-              )}
-            </h2>
+              <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em]">
+                {getSubscriptionInsight(
+                  subscriptions,
+                  monthlyTotal,
+                  upcomingRenewals,
+                )}
+              </h2>
 
-            <p className="mt-4 text-sm leading-6 text-text-secondary">
-              Review recurring services
-              regularly to make sure each
-              one still provides value.
-            </p>
-          </div>
+              <p className="mt-4 text-sm leading-6 text-text-secondary">
+                Review recurring services regularly to make sure each one still
+                provides value.
+              </p>
+            </div>
           </PageCard>
         </section>
       )}
@@ -424,23 +311,17 @@ export default function SubscriptionsPage() {
               <input
                 type="search"
                 value={searchTerm}
-                onChange={(event) =>
-                  setSearchTerm(
-                    event.target.value
-                  )
-                }
+                onChange={(event) => setSearchTerm(event.target.value)}
                 placeholder="Search subscriptions..."
-                className="w-full rounded-2xl border border-border-subtle bg-[#FAFAF8] py-3.5 pl-11 pr-11 text-sm text-text-primary outline-none transition placeholder:text-text-tertiary focus:border-interaction focus:bg-white focus:ring-4 focus:ring-interaction/10"
+                className="w-full rounded-[14px] border border-[#e4e2dc] bg-[#f8f6f0] py-3.5 pl-11 pr-11 text-sm text-[#17212a] outline-none transition placeholder:text-[#9aa2a7] focus:border-[#718d4f]/45 focus:bg-[#fffefa] focus:ring-4 focus:ring-[#617c43]/10"
               />
 
               {searchTerm && (
                 <button
                   type="button"
-                  onClick={() =>
-                    setSearchTerm("")
-                  }
+                  onClick={() => setSearchTerm("")}
                   aria-label="Clear search"
-                  className="absolute right-4 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-text-tertiary transition hover:bg-white hover:text-text-primary"
+                  className="absolute right-4 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-text-tertiary transition hover:bg-[#fffefa] hover:text-[#526b39]"
                 >
                   <X size={15} />
                 </button>
@@ -448,42 +329,31 @@ export default function SubscriptionsPage() {
             </div>
 
             <div className="flex gap-2 overflow-x-auto pb-1">
-              {categories.map(
-                (category) => {
-                  const active =
-                    selectedCategory ===
-                    category;
+              {categories.map((category) => {
+                const active = selectedCategory === category;
 
-                  return (
-                    <button
-                      key={category}
-                      type="button"
-                      onClick={() =>
-                        setSelectedCategory(
-                          category
-                        )
-                      }
-                      className={
-                        "shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition " +
-                        (active
-                          ? "bg-charcoal text-surface-card"
-                          : "border border-border-subtle bg-white text-text-secondary hover:border-border-strong hover:text-text-primary")
-                      }
-                    >
-                      {category === "All"
-                        ? "All Subscriptions"
-                        : category}
-                    </button>
-                  );
-                }
-              )}
+                return (
+                  <button
+                    key={category}
+                    type="button"
+                    onClick={() => setSelectedCategory(category)}
+                    className={
+                      "shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition " +
+                      (active
+                        ? "bg-[#617c43] text-white shadow-[0_5px_14px_-8px_rgba(82,107,57,0.85)]"
+                        : "border border-[#e4e2dc] bg-[#f4f1ea] text-[#687466] hover:border-[#718d4f]/30 hover:text-[#526b39]")
+                    }
+                  >
+                    {category === "All" ? "All Subscriptions" : category}
+                  </button>
+                );
+              })}
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border-subtle pt-4">
               <p className="text-sm text-text-secondary">
                 {filteredSubscriptions.length}{" "}
-                {filteredSubscriptions.length ===
-                1
+                {filteredSubscriptions.length === 1
                   ? "subscription"
                   : "subscriptions"}
               </p>
@@ -492,7 +362,7 @@ export default function SubscriptionsPage() {
                 <button
                   type="button"
                   onClick={clearFilters}
-                  className="inline-flex items-center gap-2 text-sm font-semibold text-text-primary transition hover:text-achievement"
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-text-primary transition hover:text-[#617c43]"
                 >
                   <X size={15} />
                   Clear filters
@@ -512,41 +382,28 @@ export default function SubscriptionsPage() {
           href="/subscriptions/add"
           buttonLabel="Add Your First Subscription"
         />
-      ) : filteredSubscriptions.length >
-        0 ? (
+      ) : filteredSubscriptions.length > 0 ? (
         <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {filteredSubscriptions.map(
-            (subscription) => (
-              <SubscriptionCard
-                key={subscription.id}
-                subscription={{
-                  id: subscription.id,
-                  service_name:
-                    subscription.service_name ||
-                    subscription.name ||
-                    "Unnamed Subscription",
-                  category:
-                    subscription.category ||
-                    undefined,
-                  monthly_cost:
-                    subscription.monthly_cost ??
-                    undefined,
-                  renewal_date:
-                    subscription.renewal_date ||
-                    undefined,
-                  billing_cycle:
-                    subscription.billing_cycle ||
-                    undefined,
-                  notes:
-                    subscription.notes ||
-                    undefined,
-                }}
-                canEdit={canEdit}
-                canDelete={canDelete}
-                isViewer={isViewer}
-              />
-            )
-          )}
+          {filteredSubscriptions.map((subscription) => (
+            <SubscriptionCard
+              key={subscription.id}
+              subscription={{
+                id: subscription.id,
+                service_name:
+                  subscription.service_name ||
+                  subscription.name ||
+                  "Unnamed Subscription",
+                category: subscription.category || undefined,
+                monthly_cost: subscription.monthly_cost ?? undefined,
+                renewal_date: subscription.renewal_date || undefined,
+                billing_cycle: subscription.billing_cycle || undefined,
+                notes: subscription.notes || undefined,
+              }}
+              canEdit={canEdit}
+              canDelete={canDelete}
+              isViewer={isViewer}
+            />
+          ))}
         </section>
       ) : (
         <EmptyState
@@ -555,11 +412,7 @@ export default function SubscriptionsPage() {
           description="Try changing your search or subscription category."
           section="insights"
         >
-          <Button
-            variant="secondary"
-            className="mt-6"
-            onClick={clearFilters}
-          >
+          <Button variant="secondary" className="mt-6" onClick={clearFilters}>
             Clear filters
           </Button>
         </EmptyState>
@@ -583,17 +436,13 @@ function SummaryCard({
     <PageCard className="p-5 md:p-6">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-sm text-text-secondary">
-            {label}
-          </p>
+          <p className="text-sm text-text-secondary">{label}</p>
 
           <p className="mt-2 truncate text-2xl font-semibold tracking-[-0.03em] text-text-primary md:text-3xl">
             {value}
           </p>
 
-          <p className="mt-2 text-xs text-text-tertiary">
-            {description}
-          </p>
+          <p className="mt-2 text-xs text-text-tertiary">{description}</p>
         </div>
 
         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal shadow-[var(--shadow-inset)]">
@@ -604,13 +453,7 @@ function SummaryCard({
   );
 }
 
-function CostTile({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
+function CostTile({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-[22px] bg-surface-sunken p-5">
       <p className="text-xs font-semibold uppercase tracking-[0.14em] text-text-tertiary">
@@ -624,93 +467,54 @@ function CostTile({
   );
 }
 
-function getMonthlyEquivalent(
-  subscription: Subscription
-) {
-  const amount = Number(
-    subscription.monthly_cost ?? 0
-  );
+function getMonthlyEquivalent(subscription: Subscription) {
+  const amount = Number(subscription.monthly_cost ?? 0);
 
-  const cycle =
-    subscription.billing_cycle
-      ?.trim()
-      .toLowerCase() ?? "";
+  const cycle = subscription.billing_cycle?.trim().toLowerCase() ?? "";
 
-  if (
-    cycle.includes("annual") ||
-    cycle.includes("year")
-  ) {
+  if (cycle.includes("annual") || cycle.includes("year")) {
     return amount / 12;
   }
 
   if (cycle.includes("week")) {
-    return (
-      amount * 52
-    ) / 12;
+    return (amount * 52) / 12;
   }
 
-  if (
-    cycle.includes("quarter")
-  ) {
+  if (cycle.includes("quarter")) {
     return amount / 3;
   }
 
   return amount;
 }
 
-function isRenewingSoon(
-  value?: string | null
-) {
+function isRenewingSoon(value?: string | null) {
   if (!value) {
     return false;
   }
 
-  const renewalDate =
-    new Date(
-      value + "T23:59:59"
-    );
+  const renewalDate = new Date(value + "T23:59:59");
 
-  if (
-    Number.isNaN(
-      renewalDate.getTime()
-    )
-  ) {
+  if (Number.isNaN(renewalDate.getTime())) {
     return false;
   }
 
   const today = new Date();
 
-  today.setHours(
-    0,
-    0,
-    0,
-    0
+  today.setHours(0, 0, 0, 0);
+
+  const difference = Math.ceil(
+    (renewalDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
   );
 
-  const difference =
-    Math.ceil(
-      (renewalDate.getTime() -
-        today.getTime()) /
-        (1000 *
-          60 *
-          60 *
-          24)
-    );
-
-  return (
-    difference >= 0 &&
-    difference <= 30
-  );
+  return difference >= 0 && difference <= 30;
 }
 
 function getSubscriptionInsight(
   subscriptions: Subscription[],
   monthlyTotal: number,
-  upcomingRenewals: number
+  upcomingRenewals: number,
 ) {
-  if (
-    subscriptions.length === 0
-  ) {
+  if (subscriptions.length === 0) {
     return "Add your first subscription to begin tracking recurring costs.";
   }
 
@@ -718,9 +522,7 @@ function getSubscriptionInsight(
     return (
       String(upcomingRenewals) +
       " " +
-      (upcomingRenewals === 1
-        ? "subscription renews"
-        : "subscriptions renew") +
+      (upcomingRenewals === 1 ? "subscription renews" : "subscriptions renew") +
       " within the next 30 days."
     );
   }
@@ -732,16 +534,11 @@ function getSubscriptionInsight(
   );
 }
 
-function formatCurrency(
-  value: number
-) {
-  return value.toLocaleString(
-    undefined,
-    {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }
-  );
+function formatCurrency(value: number) {
+  return value.toLocaleString(undefined, {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 }

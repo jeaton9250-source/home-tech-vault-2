@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import {
   ArrowRight,
   Check,
@@ -9,6 +10,13 @@ import {
 } from "lucide-react";
 
 import MarketingHeader from "@/components/marketing/MarketingHeader";
+import HomeMarketingFooter from "@/components/marketing/HomeMarketingFooter";
+
+export const metadata: Metadata = {
+  title: "Pricing | Home Tech Vault",
+  description:
+    "Start Home Tech Vault for free, then choose Home Plus or Household when you need more storage, smarter tools, or shared access.",
+};
 
 const plans = [
   {
@@ -418,6 +426,7 @@ export default function PricingPage() {
           </Link>
         </div>
       </section>
+      <HomeMarketingFooter />
     </main>
   );
 }

@@ -32,6 +32,7 @@ const PUBLIC_MARKETING_PREFIXES = [
   "/trust",
   "/security",
   "/demo",
+  "/dashboard-preview",
   "/new-homeowners",
   "/knowledge",
   "/guides",
@@ -76,7 +77,7 @@ function isPublicMarketingPath(pathname: string) {
   );
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const pathname = normalizePathname(request.nextUrl.pathname);
 
   const publicAuth = isPublicAuthPath(pathname);
@@ -149,7 +150,7 @@ export async function middleware(request: NextRequest) {
       }
     } catch (error) {
       console.error(
-        "Middleware session refresh failed:",
+        "Proxy session refresh failed:",
         error
       );
     }

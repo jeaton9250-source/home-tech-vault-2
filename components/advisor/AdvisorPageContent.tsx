@@ -124,12 +124,15 @@ export default function AdvisorPageContent() {
 
   return (
     <div className="space-y-10">
-      <header className="space-y-3">
-        <h1 className="text-[clamp(2rem,4vw,2.75rem)] font-medium tracking-[-0.04em] text-text-primary">
-          🏡 Home Advisor
+      <header className="space-y-3 border-b border-[#ded7ca] pb-8">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#718d4f]">
+          Thoughtful guidance
+        </p>
+        <h1 className="font-serif text-[clamp(2.4rem,5vw,3.5rem)] font-medium tracking-[-0.045em] text-[#17283a]">
+          Home Advisor
         </h1>
         <p className="max-w-2xl text-base leading-7 text-text-secondary">
-          Your AI-powered technology assistant.
+          Practical next steps drawn from what your home remembers.
         </p>
 
         {advisor.summary ? (

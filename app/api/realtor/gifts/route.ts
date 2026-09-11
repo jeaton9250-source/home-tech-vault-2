@@ -141,7 +141,7 @@ export async function POST(
     // Ensure Realtor Partner
     // ------------------------------------------------------
 
-    let {
+    const {
       data: partner,
       error: partnerError,
     } = await admin

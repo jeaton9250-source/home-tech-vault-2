@@ -10,7 +10,6 @@ import {
   ShieldCheck,
   Wrench,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 
 import MarketingLayout, {
   MarketingContent,
@@ -68,12 +67,17 @@ const moments = [
 ];
 
 export default function DemoPage() {
-  const router = useRouter();
   const { startDemo } = useDemoMode();
 
   function enterDemo() {
     startDemo();
-    router.push("/dashboard");
+
+    /*
+     * Demo mode is stored in the browser. A full navigation lets every
+     * provider and route guard read that flag before the protected
+     * dashboard renders, avoiding a race that can send visitors to login.
+     */
+    window.location.assign("/dashboard");
   }
 
   return (

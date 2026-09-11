@@ -253,3 +253,64 @@ describe("identifyDevice", () => {
     assert.equal(confidenceLabel("unknown"), "Unknown device");
   });
 });
+
+
+describe("multi-signal device evidence", () => {
+  it("uses device-reported manufacturer with mDNS evidence", () => {
+    const result = identifyDevice({
+      manufacturer: "Sonos",
+      mdnsServices: [
+        "_sonos._tcp.local",
+        "_spotify-connect._tcp.local",
+      ],
+      hostname: "living-room-speaker.local",
+      ipAddress: "192.168.1.80",
+    });
+
+    assert.ok(result.bestCandidate);
+
+    assert.equal(
+      result.bestCandidate?.manufacturer,
+      "Sonos"
+    );
+
+    assert.ok(
+      ["medium", "high", "exact"].includes(
+        result.confidence
+      )
+    );
+
+    assert.notEqual(
+      result.confidence,
+      "exact"
+    );
+  });
+
+  it("does not promote a generic service-derived model to exact product evidence", () => {
+    const result = identifyDevice({
+      model: "Google Cast Device",
+      mdnsServices: [
+        "_googlecast._tcp.local",
+      ],
+      ipAddress: "192.168.1.81",
+    });
+
+    assert.ok(result.bestCandidate);
+
+    const modelEvidence =
+      result.bestCandidate?.evidence.filter(
+        (item) =>
+          item.type === "upnp_model"
+      ) ?? [];
+
+    assert.equal(
+      modelEvidence.length,
+      0
+    );
+
+    assert.notEqual(
+      result.confidence,
+      "exact"
+    );
+  });
+});

@@ -38,6 +38,7 @@ pub struct ScannedDevice {
     pub hostname: Option<String>,
     pub manufacturer: Option<String>,
     pub model: Option<String>,
+    pub serial_number: Option<String>,
     pub friendly_name: Option<String>,
     pub device_type: Option<String>,
     pub discovery_source: String,

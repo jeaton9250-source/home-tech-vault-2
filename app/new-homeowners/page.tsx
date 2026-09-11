@@ -353,7 +353,7 @@ export default function NewHomeownerPage() {
               Privacy
             </Link>
 
-            <Link href="/security" className="hover:text-[#17212a]">
+            <Link href="/trust" className="hover:text-[#17212a]">
               Security
             </Link>
 

@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 
 import MarketingHeader from "@/components/marketing/MarketingHeader";
+import HomeMarketingFooter from "@/components/marketing/HomeMarketingFooter";
 
 export default function OurStoryPage() {
   return (
@@ -321,6 +322,7 @@ export default function OurStoryPage() {
           </Link>
         </div>
       </section>
+      <HomeMarketingFooter />
     </main>
   );
 }

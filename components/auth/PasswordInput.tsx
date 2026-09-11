@@ -19,6 +19,7 @@ type PasswordInputProps = {
   error?: string;
   required?: boolean;
   className?: string;
+  inputClassName?: string;
 };
 
 export default function PasswordInput({
@@ -34,6 +35,7 @@ export default function PasswordInput({
   error,
   required = false,
   className,
+  inputClassName,
 }: PasswordInputProps) {
   const generatedId = useId();
   const fieldId = id ?? generatedId;
@@ -76,7 +78,7 @@ export default function PasswordInput({
           aria-invalid={Boolean(error)}
           aria-describedby={describedBy}
           hasError={Boolean(error)}
-          className="pr-12"
+          className={cn("pr-12", inputClassName)}
         />
 
         <button

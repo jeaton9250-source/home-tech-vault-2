@@ -5,6 +5,7 @@ import { ArrowRight, Search, Sparkles } from "lucide-react";
 
 import { useClientVaultMode } from "@/hooks/useClientVaultMode";
 import type { HomeHealthResult } from "@/lib/home-health/types";
+import type { HomeReadinessResult } from "@/lib/home-health";
 
 type OverviewStats = {
   deviceCount: number;
@@ -18,8 +19,10 @@ type OverviewStats = {
 type Props = {
   firstName: string | null;
   homeHealth: HomeHealthResult;
+  homeReadiness: HomeReadinessResult | null;
   overviewStats: OverviewStats;
   hasHousehold: boolean;
+  canCreate: boolean;
 };
 
 function formatRecommendationTitle(title: string) {
@@ -29,7 +32,9 @@ function formatRecommendationTitle(title: string) {
 export default function HomeHealthDashboard({
   firstName,
   homeHealth,
+  homeReadiness,
   overviewStats,
+  canCreate,
 }: Props) {
   const { active: isClientVaultMode } = useClientVaultMode();
 
@@ -40,6 +45,14 @@ export default function HomeHealthDashboard({
   const attentionCount = attentionItems.length;
 
   const displayName = firstName?.trim() || "Your";
+
+  const readinessScore = homeReadiness?.score ?? homeHealth.score ?? 0;
+
+  const readinessMessage =
+    homeReadiness?.rememberedLabel ??
+    "Your home record gets stronger as you add useful details.";
+
+  const readinessActions = homeReadiness?.actions ?? [];
 
   const subscriptionSpend = homeHealth.monthlySubscriptionSpend.toLocaleString(
     "en-US",
@@ -82,7 +95,7 @@ export default function HomeHealthDashboard({
                   </p>
 
                   <p className="mt-2 text-4xl font-semibold tracking-[-0.04em] text-white">
-                    {homeHealth.score}%
+                    {readinessScore}%
                   </p>
                 </div>
 
@@ -100,6 +113,12 @@ export default function HomeHealthDashboard({
                   </p>
                 </div>
               </div>
+
+              {homeReadiness ? (
+                <p className="mt-5 max-w-[280px] text-xs leading-5 text-[#9caab4]">
+                  {readinessMessage}
+                </p>
+              ) : null}
 
               <Link
                 href="/insights"
@@ -146,6 +165,103 @@ export default function HomeHealthDashboard({
           </div>
         </div>
       </section>
+
+      {/* NEXT BEST READINESS ACTIONS */}
+      {readinessActions.length > 0 ? (
+        <section className="mt-7 overflow-hidden rounded-[28px] bg-[#fbf8f2] shadow-[0_18px_45px_-38px_rgba(15,25,35,0.3)] ring-1 ring-[#17212a]/[0.05]">
+          <div className="border-b border-[#17212a]/[0.07] px-6 py-6 sm:px-7">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#78905b]">
+                  Home Readiness
+                </p>
+
+                <h2 className="mt-2 font-serif text-[28px] font-medium tracking-[-0.04em] text-[#17212a] sm:text-[32px]">
+                  Remember more of your home.
+                </h2>
+
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-[#748087]">
+                  Small details make your Vault more useful over time. Start
+                  with the highest-value gaps.
+                </p>
+              </div>
+
+              {homeReadiness ? (
+                <div className="shrink-0 rounded-full bg-[#617c43]/10 px-4 py-2 text-xs font-semibold text-[#617c43]">
+                  {homeReadiness.completedItems} of{" "}
+                  {homeReadiness.possibleItems} details remembered
+                </div>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="divide-y divide-[#17212a]/[0.06]">
+            {readinessActions.slice(0, 4).map((action, index) => {
+              const actionHref = canCreate
+                ? action.href
+                : `/devices/${action.deviceId}`;
+
+              return (
+                <div
+                  key={action.id}
+                  className="flex flex-col gap-4 px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-7"
+                >
+                  <div className="flex min-w-0 items-start gap-4">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#183047]/[0.06] text-xs font-semibold text-[#617c43]">
+                      {index + 1}
+                    </div>
+
+                    <div className="min-w-0">
+                      <h3 className="text-sm font-semibold text-[#17212a]">
+                        {action.title}
+                      </h3>
+
+                      <p className="mt-1 max-w-2xl text-xs leading-5 text-[#7a858b]">
+                        {action.description}
+                      </p>
+                    </div>
+                  </div>
+
+                  <Link
+                    href={actionHref}
+                    className="inline-flex shrink-0 items-center gap-2 self-start text-xs font-semibold text-[#617c43] transition hover:text-[#4f6936] sm:self-auto"
+                  >
+                    {canCreate ? "Improve" : "Review"}
+
+                    <ArrowRight size={13} aria-hidden />
+                  </Link>
+                </div>
+              );
+            })}
+          </div>
+
+          {readinessActions.length > 4 ? (
+            <div className="border-t border-[#17212a]/[0.06] px-6 py-4 text-center sm:px-7">
+              <Link
+                href="/home"
+                className="text-xs font-semibold text-[#617c43] transition hover:text-[#4f6936]"
+              >
+                Review your home record
+              </Link>
+            </div>
+          ) : null}
+        </section>
+      ) : homeReadiness && homeReadiness.deviceCount > 0 ? (
+        <section className="mt-7 rounded-[28px] bg-[#eef3e8] px-6 py-6 ring-1 ring-[#617c43]/10 sm:px-7">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#617c43]">
+            Home Readiness
+          </p>
+
+          <h2 className="mt-2 font-serif text-[28px] font-medium tracking-[-0.04em] text-[#17212a]">
+            Your core home record is complete.
+          </h2>
+
+          <p className="mt-2 text-sm leading-6 text-[#65716f]">
+            Home Tech Vault has the key details it checks for across your
+            documented devices.
+          </p>
+        </section>
+      ) : null}
 
       {/* NEXT BEST ACTION */}
       {homeHealth.recommendation ? (

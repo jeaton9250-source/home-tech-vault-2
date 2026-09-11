@@ -210,6 +210,7 @@ export function auditInternalLinks(): {
     "/home-tech-checklist",
     "/homeowner-tech-management",
     "/home-tech-inventory",
+    "/health-check",
   ]);
 
   const broken: LinkAuditIssue[] = [];
@@ -281,6 +282,9 @@ export function auditInternalLinks(): {
     "/privacy",
     "/terms",
     "/trust",
+    "/how-it-works",
+    "/new-homeowners",
+    "/realtors",
     ...SEO_LANDING_PATHS,
   ]);
 

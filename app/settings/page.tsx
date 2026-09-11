@@ -10,6 +10,7 @@ import PreferencesTab from "@/components/account-settings/PreferencesTab";
 import ProfileTab from "@/components/account-settings/ProfileTab";
 import SecurityTab from "@/components/account-settings/SecurityTab";
 import PageShell from "@/components/ui/PageShell";
+import PageHero from "@/components/ui/PageHero";
 
 import {
   resolveAccountSettingsTab,
@@ -18,15 +19,11 @@ import {
 
 function AccountSettingsContent() {
   const searchParams = useSearchParams();
-  const activeTab = resolveAccountSettingsTab(
-    searchParams.get("tab")
-  );
+  const activeTab = resolveAccountSettingsTab(searchParams.get("tab"));
 
   return (
     <>
-      <AccountSettingsTabs
-        activeTab={activeTab}
-      />
+      <AccountSettingsTabs activeTab={activeTab} />
 
       <div
         id={`account-settings-panel-${activeTab}`}
@@ -39,11 +36,7 @@ function AccountSettingsContent() {
   );
 }
 
-function TabPanel({
-  tab,
-}: {
-  tab: AccountSettingsTabId;
-}) {
+function TabPanel({ tab }: { tab: AccountSettingsTabId }) {
   switch (tab) {
     case "preferences":
       return <PreferencesTab />;
@@ -59,21 +52,12 @@ function TabPanel({
 
 export default function AccountSettingsPage() {
   return (
-    <PageShell>
-      <header className="mb-8">
-        <p className="text-overline text-text-secondary">
-          Account
-        </p>
-
-        <h1 className="mt-2 text-3xl font-semibold tracking-[-0.03em] text-text-primary md:text-4xl">
-          Account & Settings
-        </h1>
-
-        <p className="mt-3 max-w-2xl text-sm leading-7 text-text-secondary md:text-base">
-          Manage your profile, preferences, security,
-          and subscription.
-        </p>
-      </header>
+    <PageShell className="bg-[#f7f6f2]">
+      <PageHero
+        eyebrow="Account"
+        title="Settings"
+        description="Manage your profile, preferences, security, and subscription."
+      />
 
       <Suspense
         fallback={

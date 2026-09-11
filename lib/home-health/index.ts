@@ -28,3 +28,15 @@ export {
   getWarrantyStatus,
 } from "@/lib/home-health/warranty";
 export type { WarrantyStatus } from "@/lib/home-health/warranty";
+
+export { calculateHomeReadiness, isHomeSystemDevice } from "./homeReadiness";
+
+export type {
+  HomeReadinessAction,
+  HomeReadinessActionType,
+  HomeReadinessCategory,
+  HomeReadinessCategoryId,
+  HomeReadinessDevice,
+  HomeReadinessResult,
+  HomeReadinessRoom,
+} from "./homeReadiness";

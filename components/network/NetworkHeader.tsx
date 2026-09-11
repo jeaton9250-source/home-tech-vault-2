@@ -1,16 +1,11 @@
 "use client";
 
-import Link from "next/link";
-import {
-  Activity,
-  RefreshCw,
-  Router,
-  Settings,
-  Wifi,
-} from "lucide-react";
+import { RefreshCw, Router, Wifi } from "lucide-react";
 
 import Button from "@/components/ui/Button";
 import PageCard from "@/components/ui/PageCard";
+import PageHero from "@/components/ui/PageHero";
+
 import type { NetworkSummary } from "@/lib/network/summary";
 
 type NetworkHeaderProps = {
@@ -38,11 +33,9 @@ export default function NetworkHeader({
   onRefresh,
   onDemoAction,
 }: NetworkHeaderProps) {
-  const hasConnector =
-    Boolean(summary?.hasConnector);
+  const hasConnector = Boolean(summary?.hasConnector);
 
-  const reviewCount =
-    summary?.reviewCount ?? 0;
+  const reviewCount = summary?.reviewCount ?? 0;
 
   function handleDemoAction() {
     onDemoAction?.();
@@ -50,31 +43,20 @@ export default function NetworkHeader({
 
   return (
     <div className="space-y-4">
-      <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div className="min-w-0">
-          <p className="text-overline text-[#718d4f]">
-            Home Wi-Fi
-          </p>
-
-          <h1 className="mt-1 font-serif text-3xl font-medium tracking-[-0.04em] text-[#17212a] md:text-4xl">
-            Your Home Wi-Fi
-          </h1>
-
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-[#68737b] md:text-base">
-            See what&apos;s connected to your home and anything that needs attention.
-          </p>
-        </div>
-
+      <PageHero
+        eyebrow="Home Wi-Fi"
+        title="Home Wi-Fi"
+        description="See what's connected to your home and anything that needs attention."
+      >
         {!loading ? (
-          <div className="flex flex-wrap gap-2">
+          <>
             {hasConnector ? (
               <>
                 {isDemo ? (
                   <Button
                     type="button"
-                    onClick={
-                      handleDemoAction
-                    }
+                    onClick={handleDemoAction}
+                    className="border-[#617c43] bg-[#617c43] text-white hover:border-[#526b39] hover:bg-[#526b39]"
                   >
                     Review Devices
                     {reviewCount > 0 ? (
@@ -84,7 +66,10 @@ export default function NetworkHeader({
                     ) : null}
                   </Button>
                 ) : (
-                  <Button href="/network/discovery">
+                  <Button
+                    href="/network/discovery"
+                    className="border-[#617c43] bg-[#617c43] text-white hover:border-[#526b39] hover:bg-[#526b39]"
+                  >
                     Review Devices
                     {reviewCount > 0 ? (
                       <span className="ml-1 rounded-full bg-white/15 px-2 py-0.5 text-xs font-semibold">
@@ -106,12 +91,10 @@ export default function NetworkHeader({
 
                       onRefresh?.();
                     }}
-                    disabled={
-                      refreshing ||
-                      loading
-                    }
+                    disabled={refreshing || loading}
                     loading={refreshing}
                     loadingLabel="Refreshing..."
+                    className="border-[#e4e2dc] bg-[#fffefa] text-[#52606a] hover:border-[#718d4f]/30 hover:bg-[#f8f6f0] hover:text-[#526b39]"
                   >
                     <RefreshCw size={16} />
                     Refresh
@@ -121,34 +104,42 @@ export default function NetworkHeader({
             ) : isDemo ? (
               <Button
                 type="button"
-                onClick={
-                  handleDemoAction
-                }
+                onClick={handleDemoAction}
+                className="border-[#617c43] bg-[#617c43] text-white hover:border-[#526b39] hover:bg-[#526b39]"
               >
                 <Router size={16} />
                 Connect Desktop App
               </Button>
             ) : (
-              <Button href="/network/connect">
+              <Button
+                href="/network/connect"
+                className="border-[#617c43] bg-[#617c43] text-white hover:border-[#526b39] hover:bg-[#526b39]"
+              >
                 <Router size={16} />
                 Connect Desktop App
               </Button>
             )}
-          </div>
+          </>
         ) : null}
-      </header>
+      </PageHero>
+
+      {!loading && headerSummary ? (
+        <p className="text-[12px] font-medium text-[#829078]">
+          {headerSummary}
+        </p>
+      ) : null}
 
       {isViewer ? (
-        <div className="rounded-[var(--radius-button)] border border-border-subtle bg-surface-card px-4 py-3 text-sm text-[#68737b]">
+        <div className="rounded-[14px] border border-[#e4e2dc] bg-[#fffefa] px-4 py-3 text-sm text-[#68737b]">
           Viewer access · Read only
         </div>
       ) : null}
 
       {!loading && !hasConnector ? (
-        <PageCard className="border-[#182533]/10 bg-[#f8f5ef] p-4 shadow-[0_16px_40px_-34px_rgba(15,25,35,0.4)] md:p-5">
+        <PageCard className="border-[#e4e2dc] bg-[#fffefa] p-5 shadow-[0_1px_2px_rgba(23,33,42,0.025)]">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex min-w-0 items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-button)] bg-surface-sunken text-[#17212a]">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[13px] bg-[#eef2e8] text-[#617c43]">
                 <Wifi size={17} />
               </div>
 
@@ -157,10 +148,9 @@ export default function NetworkHeader({
                   Automatic device discovery
                 </h2>
 
-                <p className="mt-1 text-sm leading-6 text-[#68737b]">
-                  Connect the desktop app to scan
-                  your local network and sync Home
-                  Assistant devices.
+                <p className="mt-1 max-w-2xl text-sm leading-6 text-[#68737b]">
+                  Connect the desktop app to find devices on your home network
+                  and keep Home Wi-Fi information updated.
                 </p>
               </div>
             </div>
@@ -169,6 +159,7 @@ export default function NetworkHeader({
               <Button
                 href="/network/connect"
                 variant="secondary"
+                className="border-[#e4e2dc] bg-[#fffefa] text-[#52606a] hover:border-[#718d4f]/30 hover:bg-[#f8f6f0] hover:text-[#526b39]"
               >
                 Set Up Connector
               </Button>
@@ -176,32 +167,6 @@ export default function NetworkHeader({
           </div>
         </PageCard>
       ) : null}
-
-      <div className="flex flex-wrap gap-x-5 gap-y-2 border-t border-[#182533]/10 pt-4 text-sm">
-        <Link
-          href="/network?tab=connector"
-          className="inline-flex items-center gap-2 font-medium text-[#68737b] transition hover:text-[#17212a]"
-        >
-          <Router size={15} />
-          Connector
-        </Link>
-
-        <Link
-          href="/network/diagnostics"
-          className="inline-flex items-center gap-2 font-medium text-[#68737b] transition hover:text-[#17212a]"
-        >
-          <Activity size={15} />
-          Diagnostics
-        </Link>
-
-        <Link
-          href="/network/edit"
-          className="inline-flex items-center gap-2 font-medium text-[#68737b] transition hover:text-[#17212a]"
-        >
-          <Settings size={15} />
-          Home Wi-Fi
-        </Link>
-      </div>
     </div>
   );
 }

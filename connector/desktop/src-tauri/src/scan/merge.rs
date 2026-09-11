@@ -40,6 +40,7 @@ pub fn merge_scan_observations(
                 hostname: entry.hostname,
                 manufacturer,
                 model: None,
+                serial_number: None,
                 friendly_name: None,
                 device_type: None,
                 discovery_source: "ARP".into(),
@@ -97,6 +98,7 @@ pub fn merge_scan_observations(
             hostname,
             manufacturer: observation.manufacturer.clone().or(manufacturer),
             model: observation.model.clone(),
+            serial_number: None,
             friendly_name: observation.friendly_name.clone(),
             device_type: None,
             discovery_source: "mDNS".into(),
@@ -138,6 +140,7 @@ pub fn merge_scan_observations(
                     hostname: observation.friendly_name.clone(),
                     manufacturer: observation.manufacturer.clone(),
                     model: observation.model.clone(),
+                    serial_number: observation.serial_number.clone(),
                     friendly_name: observation.friendly_name.clone(),
                     device_type: None,
                     discovery_source: "SSDP".into(),
@@ -208,6 +211,10 @@ fn enrich_from_ssdp(device: &mut ScannedDevice, observation: &SsdpObservation) {
 
     if device.model.is_none() {
         device.model = observation.model.clone();
+    }
+
+    if device.serial_number.is_none() {
+        device.serial_number = observation.serial_number.clone();
     }
 
     if !device.discovery_sources.contains(&"SSDP".to_string()) {

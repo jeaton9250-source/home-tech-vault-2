@@ -38,7 +38,7 @@ export default function CreateHouseholdOnboardingPage() {
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    let mounted = true;
+    const mounted = true;
 
     async function loadSession() {
       try {

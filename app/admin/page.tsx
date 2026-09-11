@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import {
   Activity,
   ArrowRight,
@@ -421,13 +423,13 @@ export default async function AdminDashboardPage() {
                     waiting in the support queue.
                   </p>
 
-                  <a
+                  <Link
                     href="/admin/support"
                     className="mt-auto inline-flex w-fit items-center gap-2 pt-7 text-sm font-semibold text-[#c0d0ac] transition hover:text-white"
                   >
                     Review support
                     <ArrowRight size={15} />
-                  </a>
+                  </Link>
                 </>
               ) : attentionItems.length > 0 ? (
                 <>

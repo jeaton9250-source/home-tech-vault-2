@@ -29,6 +29,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      data-scroll-behavior="smooth"
       className={`${GeistSans.className} ${cormorant.variable}`}
     >
       <body className="bg-surface-base text-text-primary antialiased">

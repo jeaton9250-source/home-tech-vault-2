@@ -12,7 +12,6 @@ import {
 } from "next/navigation";
 import {
   ArrowRight,
-  Check,
   ChevronDown,
   Filter,
   Inbox,
@@ -23,7 +22,6 @@ import {
   Radar,
   Search,
   ShieldCheck,
-  Sparkles,
   SlidersHorizontal,
   X,
 } from "lucide-react";
@@ -45,16 +43,13 @@ import { withDemoDevicePhoto } from "@/lib/devices/getDeviceImage";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useHouseholdLimits } from "@/hooks/useHouseholdLimits";
 
-import PageShell from "@/components/ui/PageShell";
-import PageCard from "@/components/ui/PageCard";
-import PageHero from "@/components/ui/PageHero";
 import Button from "@/components/ui/Button";
 import EmptyState from "@/components/ui/EmptyState";
 import {
   ViewerBanner,
 } from "@/components/ui/PermissionUI";
 import { useDemoReadOnlyAction } from "@/components/demo/DemoExperienceProvider";
-import { formatDevicePresenceListLine, getDevicePresence } from "@/lib/devices/devicePresence";
+import { getDevicePresence } from "@/lib/devices/devicePresence";
 import { normalizeMacAddress } from "@/lib/connector/network";
 import {
   mergePresenceFromDiscovery,
@@ -470,11 +465,11 @@ export default function DevicesPage() {
         )
         .filter(Boolean);
 
-      let discoveryByDeviceId = new Map<
+      const discoveryByDeviceId = new Map<
         string,
         DiscoveryPresenceRow[]
       >();
-      let discoveryByMac = new Map<
+      const discoveryByMac = new Map<
         string,
         DiscoveryPresenceRow[]
       >();
@@ -968,102 +963,99 @@ export default function DevicesPage() {
   }
 
   return (
-    <PageShell>
+    <main className="mx-auto w-full max-w-[1600px] px-4 py-6 sm:px-6 lg:px-7 lg:py-8 xl:px-8">
       <div data-tour="devices">
-      <PageHero
-        section="technology"
-        eyebrow={
-          isDemo
-            ? "Interactive Demo"
-            : "Your Home Inventory"
-        }
-        title={
-          isDemo
-            ? "Morgan Household devices."
-            : "Your devices."
-        }
-        description={
-          isDemo
-            ? "23 devices organized with photos, warranties, receipts, and notes."
-            : "Everything you own, thoughtfully organized in one place."
-        }
-      >
-        {showAddDeviceAction ||
-        (permissionsLoading &&
-          Boolean(user) &&
-          !isDemo) ? (
-          <>
-            <Button
-              type="button"
-              onClick={
-                handleAddDevice
-              }
-              disabled={loading}
-            >
-              {loading ? (
-                <Loader2
-                  size={17}
-                  className="animate-spin"
-                />
-              ) : (
-                <Plus
-                  size={17}
-                />
-              )}
+        <section className="mb-7">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-3xl">
+              <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                {isDemo ? "Interactive Demo" : "Home inventory"}
+              </p>
 
-              {getAddDeviceButtonLabel()}
-            </Button>
+              <h1 className="mt-2 text-[34px] font-semibold tracking-[-0.045em] text-slate-950 sm:text-[38px]">
+                {isDemo ? "Morgan Household devices" : "Devices"}
+              </h1>
 
-            {!loading &&
-            role !== "viewer" ? (
-              <button
-                type="button"
-                onClick={
-                  handleSmartImport
-                }
-                className="inline-flex items-center gap-2 px-2 py-2 text-sm font-semibold text-[#52606a] transition hover:text-[#617c43]"
-              >
-                <Inbox
-                  size={16}
-                />
+              <p className="mt-2 max-w-2xl text-[15px] leading-6 text-slate-500">
+                {isDemo
+                  ? "23 devices organized with photos, warranties, receipts, and notes."
+                  : "Everything you own, organized in one calm place."}
+              </p>
 
-                Smart Import
+              {!loading && devices.length > 0 ? (
+                <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] font-medium text-slate-400">
+                  <span>{devices.length.toLocaleString()} devices</span>
+                  <span aria-hidden="true">•</span>
+                  <span>{formatCurrency(protectedValue)} protected</span>
+                  <span aria-hidden="true">•</span>
+                  <span>{activeWarrantyCount.toLocaleString()} active warranties</span>
+                </div>
+              ) : null}
+            </div>
 
-                <ArrowRight
-                  size={14}
-                />
-              </button>
-            ) : null}
-          </>
-        ) : isDemo ? (
-          <Button
-            type="button"
-            onClick={
-              handleAddDevice
-            }
-          >
-            <Plus
-              size={17}
-            />
+            <div className="flex flex-wrap items-center gap-2">
+              {!loading && role !== "viewer" ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={handleSmartImport}
+                    className="inline-flex h-10 items-center gap-2 rounded-[12px] border border-[#e4e2dc] bg-[#fffefa] px-4 text-[13px] font-semibold text-slate-600 shadow-sm transition hover:border-[#718d4f]/35 hover:bg-[#f8f6f0] hover:text-[#526b39]"
+                  >
+                    <Inbox size={16} />
+                    Smart Import
+                  </button>
 
-            Add Device
-          </Button>
-        ) : !user ? (
-          <Button
-            href="/signup"
-          >
-            <Plus
-              size={17}
-            />
+                  <button
+                    type="button"
+                    onClick={handleWifiDiscovery}
+                    className="inline-flex h-10 items-center gap-2 rounded-[12px] border border-[#e4e2dc] bg-[#fffefa] px-4 text-[13px] font-semibold text-slate-600 shadow-sm transition hover:border-[#718d4f]/35 hover:bg-[#f8f6f0] hover:text-[#526b39]"
+                  >
+                    <Radar size={16} />
+                    Home Wi-Fi
+                  </button>
+                </>
+              ) : null}
 
-            Create Your Vault
-          </Button>
-        ) : showViewerAccess ? (
-          <div className="rounded-xl border border-[#182533]/10 bg-[#f8f5ef] px-4 py-3 text-sm font-medium text-[#68737b] shadow-sm">
-            Viewer Access · Read Only
+              {showAddDeviceAction ||
+              (permissionsLoading && Boolean(user) && !isDemo) ? (
+                <button
+                  type="button"
+                  onClick={handleAddDevice}
+                  disabled={loading}
+                  className="inline-flex h-10 items-center gap-2 rounded-[12px] bg-[#617c43] px-4 text-[13px] font-semibold text-white shadow-sm transition hover:bg-[#526b39] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {loading ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <Plus size={16} />
+                  )}
+                  {getAddDeviceButtonLabel()}
+                </button>
+              ) : isDemo ? (
+                <button
+                  type="button"
+                  onClick={handleAddDevice}
+                  className="inline-flex h-10 items-center gap-2 rounded-[12px] bg-[#617c43] px-4 text-[13px] font-semibold text-white shadow-sm transition hover:bg-[#526b39]"
+                >
+                  <Plus size={16} />
+                  Add Device
+                </button>
+              ) : !user ? (
+                <Link
+                  href="/signup"
+                  className="inline-flex h-10 items-center gap-2 rounded-[12px] bg-[#617c43] px-4 text-[13px] font-semibold text-white shadow-sm transition hover:bg-[#526b39]"
+                >
+                  <Plus size={16} />
+                  Create Your Vault
+                </Link>
+              ) : showViewerAccess ? (
+                <div className="inline-flex h-10 items-center rounded-[12px] border border-[#e4e2dc] bg-[#fffefa] px-4 text-[13px] font-medium text-slate-500">
+                  Viewer · Read Only
+                </div>
+              ) : null}
+            </div>
           </div>
-        ) : null}
-      </PageHero>
+        </section>
       </div>
 
       {showViewerAccess ? (
@@ -1073,326 +1065,158 @@ export default function DevicesPage() {
         />
       ) : null}
 
-      {errorMessage && (
-        <PageCard className="border-danger/30 bg-danger-soft text-danger">
+      {errorMessage ? (
+        <div className="mb-5 rounded-[18px] border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
           {errorMessage}
-        </PageCard>
-      )}
+        </div>
+      ) : null}
 
-
-
-      {!loading &&
-        devices.length > 0 &&
-        !showViewerAccess && (
-          <div className="mt-8 flex flex-col gap-3 border-b border-[#182533]/8 pb-5 md:mt-10 md:flex-row md:items-center md:justify-between">
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-            <button
-              type="button"
-              onClick={handleAddDevice}
-              className="group inline-flex items-center gap-2 text-sm font-semibold text-[#52606a] transition hover:text-[#617c43]"
-            >
-              <Sparkles
-                size={14}
-                className="text-[#718d4f]"
+      {!loading && devices.length > 0 ? (
+        <section className="rounded-[22px] border border-[#e4e2dc] bg-[#fffefa] p-4 shadow-[0_1px_2px_rgba(15,23,42,0.025)] sm:p-5">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center">
+            <div className="relative flex-1">
+              <Search
+                size={18}
+                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
               />
 
-              Quick Search
-
-              <ArrowRight
-                size={12}
-                className="opacity-0 transition group-hover:translate-x-0.5 group-hover:opacity-100"
-              />
-            </button>
-
-            <button
-              type="button"
-              onClick={handleSmartImport}
-              className="group inline-flex items-center gap-2 text-sm font-semibold text-[#52606a] transition hover:text-[#617c43]"
-            >
-              <Inbox
-                size={14}
-                className="text-[#718d4f]"
+              <input
+                type="search"
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                placeholder="Search your devices..."
+                className="h-11 w-full rounded-[13px] border border-[#e4e2dc] bg-[#f8f6f0]/80 pl-11 pr-11 text-[13px] text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-[#b8c9a6] focus:bg-[#fffefa] focus:ring-4 focus:ring-[#617c43]/10"
               />
 
-              Smart Import
-
-              <ArrowRight
-                size={12}
-                className="opacity-0 transition group-hover:translate-x-0.5 group-hover:opacity-100"
-              />
-            </button>
-
-            <button
-              type="button"
-              onClick={handleWifiDiscovery}
-              className="group inline-flex items-center gap-2 text-sm font-semibold text-[#52606a] transition hover:text-[#617c43]"
-            >
-              <Radar
-                size={14}
-                className="text-[#718d4f]"
-              />
-
-              Home Wi-Fi
-
-              <ArrowRight
-                size={12}
-                className="opacity-0 transition group-hover:translate-x-0.5 group-hover:opacity-100"
-              />
-            </button>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-[#7b858c]">
-              <span>
-                {devices.length.toLocaleString()} devices
-              </span>
-
-              <span
-                aria-hidden="true"
-                className="text-[#b9beb9]"
-              >
-                •
-              </span>
-
-              <span>
-                {formatCurrency(protectedValue)} protected
-              </span>
-
-              <span
-                aria-hidden="true"
-                className="text-[#b9beb9]"
-              >
-                •
-              </span>
-
-              <span>
-                {activeWarrantyCount.toLocaleString()} active warranties
-              </span>
-            </div>
-          </div>
-        )}
-
-      {!loading &&
-        devices.length > 0 && (
-          <PageCard className="mt-6 border-0 bg-transparent p-0 shadow-none">
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-3 md:flex-row md:items-center">
-                <div className="relative flex-1">
-                  <Search
-                    size={19}
-                    className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#8a949b]"
-                  />
-
-                  <input
-                    type="search"
-                    value={searchTerm}
-                    onChange={(event) =>
-                      setSearchTerm(
-                        event.target.value
-                      )
-                    }
-                    placeholder="Search your devices..."
-                    className="w-full rounded-[16px] border border-[#182533]/8 bg-[#f4f1ea]/65 py-3.5 pl-11 pr-11 text-sm text-[#17212a] outline-none transition placeholder:text-[#9aa2a7] focus:border-[#617c43]/30 focus:bg-white focus:ring-4 focus:ring-[#617c43]/8"
-                  />
-
-                  {searchTerm && (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setSearchTerm("")
-                      }
-                      aria-label="Clear search"
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8a949b] transition hover:text-[#17212a]"
-                    >
-                      <X size={18} />
-                    </button>
-                  )}
-                </div>
-
+              {searchTerm ? (
                 <button
                   type="button"
-                  onClick={() =>
-                    setShowFilters(
-                      (current) =>
-                        !current
-                    )
-                  }
-                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[16px] border border-[#182533]/8 bg-white/70 px-5 text-sm font-semibold text-[#52606a] transition hover:border-[#617c43]/20 hover:bg-white hover:text-[#17212a]"
+                  onClick={() => setSearchTerm("")}
+                  aria-label="Clear search"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[#98a78d] transition hover:text-slate-700"
                 >
-                  <SlidersHorizontal
-                    size={17}
-                  />
-
-                  Filters
-
-                  {filtersActive && (
-                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#617c43] px-1.5 text-[10px] text-white">
-                      {
-                        [
-                          selectedCategory !==
-                            "All",
-                          selectedLocation !==
-                            "All",
-                          sortOption !==
-                            "name",
-                        ].filter(Boolean)
-                          .length
-                      }
-                    </span>
-                  )}
-
-                  <ChevronDown
-                    size={16}
-                    className={
-                      "transition " +
-                      (showFilters
-                        ? "rotate-180"
-                        : "")
-                    }
-                  />
+                  <X size={17} />
                 </button>
-              </div>
-
-              <div className="flex gap-2 overflow-x-auto pb-1">
-                {categories.map(
-                  (category) => {
-                    const active =
-                      selectedCategory ===
-                      category;
-
-                    return (
-                      <button
-                        key={category}
-                        type="button"
-                        onClick={() =>
-                          setSelectedCategory(
-                            category
-                          )
-                        }
-                        className={
-                          "shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition " +
-                          (active
-                            ? "bg-[#617c43] text-white shadow-sm"
-                            : "border border-[#182533]/10 bg-[#f8f5ef] text-[#68737b] hover:border-[#617c43]/30 hover:text-[#17212a]")
-                        }
-                      >
-                        {category === "All"
-                    ? "All"
-                    : formatDeviceCategoryLabel(
-                        category
-                      )}
-                      </button>
-                    );
-                  }
-                )}
-              </div>
-
-              {showFilters && (
-                <div className="grid gap-3 border-t border-[#182533]/10 pt-5 sm:grid-cols-2">
-                  <label className="block">
-                    <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.16em] text-[#617c43]">
-                      Location
-                    </span>
-
-                    <select
-                      value={
-                        selectedLocation
-                      }
-                      onChange={(event) =>
-                        setSelectedLocation(
-                          event.target.value
-                        )
-                      }
-                      className="w-full rounded-xl border border-[#182533]/10 bg-[#f8f5ef] px-4 py-3 text-sm text-[#17212a] outline-none transition focus:border-[#617c43]/40"
-                    >
-                      {locations.map(
-                        (location) => (
-                          <option
-                            key={location}
-                            value={location}
-                          >
-                            {location ===
-                            "All"
-                              ? "All Locations"
-                              : location}
-                          </option>
-                        )
-                      )}
-                    </select>
-                  </label>
-
-                  <label className="block">
-                    <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.16em] text-[#617c43]">
-                      Sort By
-                    </span>
-
-                    <select
-                      value={sortOption}
-                      onChange={(event) =>
-                        setSortOption(
-                          event.target
-                            .value as SortOption
-                        )
-                      }
-                      className="w-full rounded-xl border border-[#182533]/10 bg-[#f8f5ef] px-4 py-3 text-sm text-[#17212a] outline-none transition focus:border-[#617c43]/40"
-                    >
-                      <option value="name">
-                        Device Name
-                      </option>
-
-                      <option value="value-high">
-                        Highest Value
-                      </option>
-
-                      <option value="value-low">
-                        Lowest Value
-                      </option>
-
-                      <option value="warranty-soon">
-                        Warranty Expiring
-                      </option>
-                    </select>
-                  </label>
-                </div>
-              )}
-
-              {filtersActive && (
-                <div className="flex justify-end border-t border-[#182533]/10 pt-4">
-                  <button
-                    type="button"
-                    onClick={clearFilters}
-                    className="inline-flex items-center gap-2 text-sm font-semibold text-[#617c43] transition hover:text-[#718d4f]"
-                  >
-                    <X size={15} />
-                    Clear filters
-                  </button>
-                </div>
-              )}
+              ) : null}
             </div>
-          </PageCard>
-        )}
+
+            <button
+              type="button"
+              onClick={() => setShowFilters((current) => !current)}
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-[13px] border border-[#e4e2dc] bg-[#fffefa] px-4 text-[13px] font-semibold text-slate-600 shadow-sm transition hover:border-[#718d4f]/35 hover:bg-[#f8f6f0]"
+            >
+              <SlidersHorizontal size={16} />
+              Filters
+
+              {filtersActive ? (
+                <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#617c43] px-1.5 text-[10px] text-white">
+                  {[
+                    selectedCategory !== "All",
+                    selectedLocation !== "All",
+                    sortOption !== "name",
+                  ].filter(Boolean).length}
+                </span>
+              ) : null}
+
+              <ChevronDown
+                size={15}
+                className={"transition " + (showFilters ? "rotate-180" : "")}
+              />
+            </button>
+          </div>
+
+          <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
+            {categories.map((category) => {
+              const active = selectedCategory === category;
+
+              return (
+                <button
+                  key={category}
+                  type="button"
+                  onClick={() => setSelectedCategory(category)}
+                  className={
+                    "shrink-0 rounded-full px-3.5 py-2 text-[12px] font-semibold transition " +
+                    (active
+                      ? "bg-[#617c43] text-white shadow-[0_5px_14px_-8px_rgba(82,107,57,0.85)]"
+                      : "bg-[#f4f1ea] text-[#687466] hover:bg-slate-200 hover:text-slate-800")
+                  }
+                >
+                  {category === "All"
+                    ? "All"
+                    : formatDeviceCategoryLabel(category)}
+                </button>
+              );
+            })}
+          </div>
+
+          {showFilters ? (
+            <div className="mt-4 grid gap-3 border-t border-slate-100 pt-4 sm:grid-cols-2">
+              <label className="block">
+                <span className="mb-2 block text-[11px] font-semibold text-slate-500">
+                  Location
+                </span>
+
+                <select
+                  value={selectedLocation}
+                  onChange={(event) => setSelectedLocation(event.target.value)}
+                  className="h-11 w-full rounded-[12px] border border-[#e4e2dc] bg-[#fffefa] px-3 text-[13px] text-slate-700 outline-none focus:border-[#b8c9a6] focus:ring-4 focus:ring-[#617c43]/10"
+                >
+                  {locations.map((location) => (
+                    <option key={location} value={location}>
+                      {location === "All" ? "All Locations" : location}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="block">
+                <span className="mb-2 block text-[11px] font-semibold text-slate-500">
+                  Sort By
+                </span>
+
+                <select
+                  value={sortOption}
+                  onChange={(event) =>
+                    setSortOption(event.target.value as SortOption)
+                  }
+                  className="h-11 w-full rounded-[12px] border border-[#e4e2dc] bg-[#fffefa] px-3 text-[13px] text-slate-700 outline-none focus:border-[#b8c9a6] focus:ring-4 focus:ring-[#617c43]/10"
+                >
+                  <option value="name">Device Name</option>
+                  <option value="value-high">Highest Value</option>
+                  <option value="value-low">Lowest Value</option>
+                  <option value="warranty-soon">Warranty Expiring</option>
+                </select>
+              </label>
+            </div>
+          ) : null}
+
+          {filtersActive ? (
+            <div className="mt-4 flex justify-end border-t border-slate-100 pt-4">
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="inline-flex items-center gap-2 text-[12px] font-semibold text-[#617c43] transition hover:text-[#526b39]"
+              >
+                <X size={14} />
+                Clear filters
+              </button>
+            </div>
+          ) : null}
+        </section>
+      ) : null}
 
       {loading ? (
-        <PageCard className="flex min-h-72 items-center justify-center">
-          <div className="flex items-center gap-3 text-[#68737b]">
-            <Loader2
-              className="animate-spin"
-              size={22}
-            />
-
+        <div className="mt-4 flex min-h-72 items-center justify-center rounded-[22px] border border-[#e4e2dc] bg-[#fffefa]">
+          <div className="flex items-center gap-3 text-sm text-slate-500">
+            <Loader2 className="animate-spin" size={21} />
             Loading your devices...
           </div>
-        </PageCard>
+        </div>
       ) : filteredDevices.length > 0 ? (
-        <section className="mt-4 grid gap-8 sm:grid-cols-2 xl:grid-cols-3">
-          {filteredDevices.map(
-            (device) => (
-              <ModernDeviceCard
-                key={device.id}
-                device={device}
-                isDemo={isDemo}
-              />
-            )
-          )}
+        <section className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {filteredDevices.map((device) => (
+            <ModernDeviceCard key={device.id} device={device} isDemo={isDemo} />
+          ))}
         </section>
       ) : devices.length > 0 ? (
         <EmptyState
@@ -1433,87 +1257,70 @@ export default function DevicesPage() {
                   : "Add your first device"}
             </Button>
           ) : isDemo ? (
-            <Button
-              type="button"
-              onClick={handleAddDevice}
-              className="mt-6"
-            >
+            <Button type="button" onClick={handleAddDevice} className="mt-6">
               <Plus size={17} aria-hidden />
               Add your first device
             </Button>
           ) : !user ? (
-            <Button
-              href="/signup"
-              className="mt-6"
-            >
+            <Button href="/signup" className="mt-6">
               <Plus size={17} aria-hidden />
               Create your vault
             </Button>
           ) : showViewerAccess ? (
-            <div className="mx-auto mt-6 max-w-md rounded-xl border border-[#182533]/10 bg-[#eee9df]/60 px-5 py-4 text-sm text-[#68737b]">
-              You have viewer access. You can view
-              shared devices, but you cannot add or
-              change them.
+            <div className="mx-auto mt-6 max-w-md rounded-xl border border-[#e4e2dc] bg-[#fffefa] px-5 py-4 text-sm text-slate-500">
+              You have viewer access. You can view shared devices, but you cannot add or change them.
             </div>
           ) : null}
         </EmptyState>
       )}
 
       {!isDemo &&
-        !loading &&
-        canCreate &&
-        quota.limits.maxDevices !== null && (
-          <PageCard className="border-[#182533]/10 bg-[#f8f5ef] p-5 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] md:p-6">
-            <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-[#617c43]">
-                  Household Allowance
-                </p>
+      !loading &&
+      canCreate &&
+      quota.limits.maxDevices !== null ? (
+        <section className="mt-4 rounded-[22px] border border-[#e4e2dc] bg-[#fffefa] p-5 shadow-[0_1px_2px_rgba(15,23,42,0.025)] md:p-6">
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+                Household allowance
+              </p>
 
-                <p className="mt-2 font-serif text-xl font-medium text-[#17212a]">
-                  {deviceCount} of{" "}
-                  {quota.limits.maxDevices} devices
-                  used
-                </p>
+              <p className="mt-2 text-[18px] font-semibold tracking-[-0.02em] text-slate-900">
+                {deviceCount} of {quota.limits.maxDevices} devices used
+              </p>
 
-                <p className="mt-1 text-sm text-[#68737b]">
-                  {quota.canUseProFeatures
-                    ? "This household is on a Pro plan."
-                    : "Upgrade the household for unlimited device tracking."}
-                </p>
-              </div>
-
-              {!quota.canUseProFeatures &&
-                quota.canManageBilling && (
-                  <Button
-                    href="/upgrade?reason=device-limit"
-                    variant="secondary"
-                  >
-                    Upgrade Household
-                    <ArrowRight size={16} />
-                  </Button>
-                )}
+              <p className="mt-1 text-[13px] text-slate-500">
+                {quota.canUseProFeatures
+                  ? "This household is on a Pro plan."
+                  : "Upgrade the household for unlimited device tracking."}
+              </p>
             </div>
 
-            <div className="mt-5 h-2 overflow-hidden rounded-full bg-[#182533]/8">
-              <div
-                className="h-full rounded-full bg-[#617c43] transition-all"
-                style={{
-                  width:
-                    String(
-                      Math.min(
-                        (deviceCount /
-                          quota.limits.maxDevices) *
-                          100,
-                        100
-                      )
-                    ) + "%",
-                }}
-              />
-            </div>
-          </PageCard>
-        )}
-    </PageShell>
+            {!quota.canUseProFeatures && quota.canManageBilling ? (
+              <Button href="/upgrade?reason=device-limit" variant="secondary">
+                Upgrade Household
+                <ArrowRight size={16} />
+              </Button>
+            ) : null}
+          </div>
+
+          <div className="mt-5 h-2 overflow-hidden rounded-full bg-[#f4f1ea]">
+            <div
+              className="h-full rounded-full bg-[#617c43] transition-all"
+              style={{
+                width:
+                  String(
+                    Math.min(
+                      (deviceCount / quota.limits.maxDevices) * 100,
+                      100
+                    )
+                  ) + "%",
+              }}
+            />
+          </div>
+        </section>
+      ) : null}
+    </main>
   );
 }
 
@@ -1588,138 +1395,90 @@ function ModernDeviceCard({
   device: DeviceRecord;
   isDemo?: boolean;
 }) {
-  const warranty =
-    getWarrantyStatus(
-      device.warranty_date
-    );
+  const warranty = getWarrantyStatus(device.warranty_date);
+
+  const presenceLine = isDemo
+    ? formatDemoDevicePresenceListLine({
+        online: device.online,
+        lastSeenAt: device.last_seen_at,
+        firstSeenAt: device.first_seen_at,
+        networkUpdatedAt: device.network_updated_at,
+      })
+    : getDevicePresence({
+        online: device.online,
+        lastSeenAt: device.last_seen_at,
+        firstSeenAt: device.first_seen_at,
+        networkUpdatedAt: device.network_updated_at,
+      }).listLine;
 
   return (
     <Link
-      href={
-        "/devices/" +
-        device.id
-      }
-      className="group overflow-hidden rounded-[32px] border border-[#182533]/[0.06] bg-[#fffefa] shadow-[0_24px_60px_-48px_rgba(15,25,35,0.34)] transition duration-300 hover:-translate-y-1 hover:border-[#182533]/10 hover:shadow-[0_34px_80px_-52px_rgba(15,25,35,0.46)]"
+      href={"/devices/" + device.id}
+      className="group overflow-hidden rounded-[22px] border border-[#e4e2dc] bg-[#fffefa] shadow-[0_1px_2px_rgba(15,23,42,0.025)] transition duration-200 hover:-translate-y-0.5 hover:border-[#718d4f]/35 hover:shadow-[0_10px_30px_rgba(15,23,42,0.06)]"
     >
-      <div className="relative overflow-hidden">
+      <div className="h-[160px] overflow-hidden bg-[#f8f6f0]">
         <DeviceImageDisplay
           device={device}
           variant="card"
-          className="transition duration-500 group-hover:scale-[1.015]"
+          className="h-full w-full transition duration-500 group-hover:scale-[1.015]"
         />
       </div>
 
-      <div className="px-6 pb-6 pt-7">
-        <div className="flex items-start justify-between gap-5">
+      <div className="p-5">
+        <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
-            <h2 className="truncate font-serif text-[22px] font-medium tracking-[-0.035em] text-[#17212a]">
-              {device.device_name ||
-                "Unnamed Device"}
+            <h2 className="truncate text-[17px] font-semibold tracking-[-0.02em] text-slate-900">
+              {device.device_name || "Unnamed Device"}
             </h2>
 
-            <p className="mt-1.5 truncate text-[13px] text-[#7b858c]">
-              {[
-                device.brand,
-                device.model_number,
-              ]
-                .filter(Boolean)
-                .join(" · ") ||
-                "Device details"}
+            <p className="mt-1 truncate text-[12px] text-slate-400">
+              {[device.brand, device.model_number].filter(Boolean).join(" · ") ||
+                formatDeviceCategoryLabel(device.category)}
             </p>
           </div>
 
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#9aa2a7] transition group-hover:translate-x-0.5 group-hover:text-[#617c43]">
-            <ArrowRight size={18} />
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#a5b19a] transition group-hover:translate-x-0.5 group-hover:bg-[#f8f6f0] group-hover:text-[#617c43]">
+            <ArrowRight size={16} />
           </div>
         </div>
 
-        <div className="mt-4">
-          <p className="text-[13px] leading-5 text-[#68737b]">
-            {isDemo
-              ? formatDemoDevicePresenceListLine({
-                  online: device.online,
-                  lastSeenAt: device.last_seen_at,
-                  firstSeenAt: device.first_seen_at,
-                  networkUpdatedAt: device.network_updated_at,
-                })
-              : getDevicePresence({
-                  online: device.online,
-                  lastSeenAt: device.last_seen_at,
-                  firstSeenAt: device.first_seen_at,
-                  networkUpdatedAt: device.network_updated_at,
-                }).listLine}
-          </p>
+        <div className="mt-4 flex items-start gap-2 text-[12px] leading-5 text-slate-500">
+          <span
+            className={
+              "mt-[6px] h-2 w-2 shrink-0 rounded-full " +
+              (device.online === true ? "bg-emerald-500" : "bg-slate-300")
+            }
+          />
+          <span>{presenceLine}</span>
         </div>
 
-        <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-[12px] text-[#7b858c]">
-          {device.location && (
-            <span className="inline-flex items-center gap-1.5">
-              <MapPin
-                size={12}
-                className="text-[#718d4f]"
-              />
-
+        <div className="mt-4 flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
+          {device.location ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f8f6f0] px-2.5 py-1.5">
+              <MapPin size={11} className="text-[#829373]" />
               {device.location}
             </span>
-          )}
+          ) : null}
 
-          <span className="inline-flex items-center gap-1.5">
-            <ShieldCheck
-              size={12}
-              className="text-[#718d4f]"
-            />
-
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f8f6f0] px-2.5 py-1.5">
+            <ShieldCheck size={11} className="text-[#829373]" />
             {warranty.label}
           </span>
         </div>
 
-        <div className="mt-5 flex items-center justify-between border-t border-[#182533]/6 pt-4">
-          <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#a0a7ab]">
+        <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-4">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
             Value
           </span>
 
-          <span className="font-serif text-[15px] font-medium text-[#17212a]">
+          <span className="text-[13px] font-semibold text-slate-700">
             {device.purchase_price
-              ? formatCurrency(
-                  Number(
-                    device.purchase_price
-                  )
-                )
+              ? formatCurrency(Number(device.purchase_price))
               : "—"}
           </span>
         </div>
       </div>
     </Link>
-  );
-}
-
-function SummaryCard({
-  label,
-  value,
-  icon: Icon,
-}: {
-  label: string;
-  value: string;
-  icon: typeof Laptop;
-}) {
-  return (
-    <PageCard className="border-[#182533]/10 bg-[#f8f5ef] p-5 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] md:p-6">
-      <div className="flex items-center justify-between gap-4">
-        <div className="min-w-0">
-          <p className="text-sm text-[#68737b]">
-            {label}
-          </p>
-
-          <p className="mt-2 truncate font-serif text-2xl font-medium tracking-[-0.03em] text-[#17212a] md:text-3xl">
-            {value}
-          </p>
-        </div>
-
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#617c43]/15 bg-[#617c43]/10 text-[#617c43]">
-          <Icon size={20} />
-        </div>
-      </div>
-    </PageCard>
   );
 }
 

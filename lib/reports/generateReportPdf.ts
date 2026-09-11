@@ -20,6 +20,7 @@ export type ReportPdfDevice = {
   warrantyDate?: string;
   hasPhoto?: boolean;
   hasDocument?: boolean;
+  imageDataUrl?: string;
 };
 
 export type ReportPdfNetwork = {
@@ -53,7 +54,7 @@ type GenerateReportPdfOptions = {
 const reportTitles: Record<ReportPdfType, string> = {
   household: "Household Summary",
   devices: "Device Inventory",
-  insurance: "Insurance Inventory",
+  insurance: "Insurance Readiness Report",
   warranties: "Warranty Report",
   network: "Network Report",
   maintenance: "Maintenance History",
@@ -289,56 +290,542 @@ function buildInsuranceReport(
     0,
   );
 
-  const missingSerials = devices.filter(
-    (device) => !device.serialNumber,
+  const withSerial = devices.filter((device) =>
+    Boolean(device.serialNumber?.trim()),
   ).length;
 
-  const missingDocuments = devices.filter(
-    (device) => !device.hasDocument,
+  const withPhotos = devices.filter((device) =>
+    Boolean(device.hasPhoto),
   ).length;
 
-  const missingPhotos = devices.filter((device) => !device.hasPhoto).length;
+  const withDocuments = devices.filter((device) =>
+    Boolean(device.hasDocument),
+  ).length;
+
+  const withPurchaseDates = devices.filter((device) =>
+    Boolean(device.purchaseDate?.trim()),
+  ).length;
+
+  const withRecordedValue = devices.filter(
+    (device) => Number(device.purchasePrice || 0) > 0,
+  ).length;
+
+  const evidenceItems = devices.length * 5;
+
+  const completedEvidence =
+    withSerial +
+    withPhotos +
+    withDocuments +
+    withPurchaseDates +
+    withRecordedValue;
+
+  const readinessScore =
+    evidenceItems === 0
+      ? 0
+      : Math.round((completedEvidence / evidenceItems) * 100);
+
+  const normalizedLocation = (device: ReportPdfDevice) => {
+    const value = device.location?.trim() || "";
+
+    if (value.toLowerCase() === "network") {
+      return "Home Network";
+    }
+
+    if (
+      !value ||
+      value.toLowerCase() === "unassigned" ||
+      value.toLowerCase() === "needs a room"
+    ) {
+      return "Needs a Room";
+    }
+
+    return value;
+  };
+
+  const roomNames = new Set(
+    devices
+      .map((device) => normalizedLocation(device))
+      .filter((value) => value !== "Home Network" && value !== "Needs a Room"),
+  );
+
+  const formatRecordedValue = (device: ReportPdfDevice) => {
+    const value = Number(device.purchasePrice || 0);
+
+    return value > 0 ? formatCurrency(value) : "Not recorded";
+  };
+
+  /*
+   * CLAIM PREP OVERVIEW
+   */
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(15);
+  pdf.setTextColor(17, 24, 39);
+  pdf.text("Claim-prep overview", 40, startY);
+
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(9.5);
+  pdf.setTextColor(90, 97, 105);
+
+  const intro =
+    "This report organizes the household technology and supporting information currently saved in Home Tech Vault. Your readiness score reflects five core record types for each device: serial number, photo evidence, supporting record, purchase date, and recorded value.";
+
+  const introLines = pdf.splitTextToSize(intro, 525);
+
+  pdf.text(introLines, 40, startY + 18);
+
+  const metricStartY = startY + 18 + introLines.length * 11 + 15;
 
   autoTable(pdf, {
-    startY,
+    startY: metricStartY,
     theme: "grid",
-    head: [["Insurance Metric", "Value"]],
+    head: [["Insurance Readiness", "Recorded"]],
     body: [
-      ["Total Recorded Value", formatCurrency(totalValue)],
-      ["Total Devices", devices.length.toString()],
-      ["Missing Serial Numbers", missingSerials.toString()],
-      ["Missing Documents", missingDocuments.toString()],
-      ["Missing Photos", missingPhotos.toString()],
+      ["Readiness Score", `${readinessScore}%`],
+      ["Devices Documented", devices.length.toString()],
+      ["Rooms Represented", roomNames.size.toString()],
+      [
+        "Total Recorded Value",
+        totalValue > 0 ? formatCurrency(totalValue) : "Not recorded",
+      ],
+      ["Photo Evidence", `${withPhotos} of ${devices.length}`],
+      ["Supporting Records", `${withDocuments} of ${devices.length}`],
+      ["Serial Numbers", `${withSerial} of ${devices.length}`],
     ],
     styles: {
-      fontSize: 10,
-      cellPadding: 8,
+      fontSize: 9,
+      cellPadding: 7,
     },
     headStyles: {
       fillColor: [17, 24, 39],
+      textColor: [255, 255, 255],
+    },
+    columnStyles: {
+      1: {
+        halign: "right",
+      },
     },
   });
 
+  /*
+   * COMPACT INVENTORY
+   */
+  const inventoryY = getLastTableY(pdf) + 28;
+
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(13);
+  pdf.setTextColor(17, 24, 39);
+  pdf.text("Documented property", 40, inventoryY);
+
   autoTable(pdf, {
-    startY: getLastTableY(pdf) + 24,
+    startY: inventoryY + 10,
     theme: "striped",
-    head: [["Device", "Serial", "Document", "Photo", "Value"]],
-    body: devices.map((device) => [
-      device.name,
-      device.serialNumber || "Missing",
-      device.hasDocument ? "Saved" : "Missing",
-      device.hasPhoto ? "Saved" : "Missing",
-      formatCurrency(Number(device.purchasePrice || 0)),
-    ]),
+    head: [["Device", "Location", "Serial", "Evidence", "Value"]],
+    body: devices.map((device) => {
+      const identity = [device.brand, device.model].filter(Boolean).join(" ");
+
+      return [
+        identity ? `${device.name}\n${identity}` : device.name,
+        normalizedLocation(device),
+        device.serialNumber || "Missing",
+        [
+          device.hasPhoto ? "Photo saved" : "No photo",
+          device.hasDocument ? "Record saved" : "No record",
+        ].join("\n"),
+        formatRecordedValue(device),
+      ];
+    }),
     styles: {
-      fontSize: 8,
-      cellPadding: 6,
+      fontSize: 7.5,
+      cellPadding: 5,
+      overflow: "linebreak",
+      valign: "top",
     },
     headStyles: {
       fillColor: [200, 169, 106],
       textColor: [17, 24, 39],
     },
+    columnStyles: {
+      0: {
+        cellWidth: 145,
+      },
+      1: {
+        cellWidth: 90,
+      },
+      2: {
+        cellWidth: 105,
+      },
+      3: {
+        cellWidth: 82,
+      },
+      4: {
+        cellWidth: 77,
+        halign: "right",
+      },
+    },
+    margin: {
+      left: 40,
+      right: 40,
+      bottom: 38,
+    },
   });
+
+  /*
+   * COMPACT DEVICE CARDS
+   */
+  pdf.addPage();
+
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(16);
+  pdf.setTextColor(17, 24, 39);
+  pdf.text("Property details", 40, 52);
+
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(9);
+  pdf.setTextColor(100, 105, 112);
+  pdf.text("Individual records currently stored in your Vault.", 40, 68);
+
+  let cardY = 90;
+
+  devices.forEach((device, index) => {
+    const cardHeight = 178;
+
+    if (cardY + cardHeight > 730) {
+      pdf.addPage();
+      cardY = 52;
+    }
+
+    const identity = [device.brand, device.model].filter(Boolean).join(" ");
+
+    pdf.setFillColor(248, 247, 244);
+    pdf.setDrawColor(222, 222, 218);
+
+    pdf.roundedRect(40, cardY, 532, cardHeight, 8, 8, "FD");
+
+    /*
+     * Card header.
+     */
+    pdf.setFillColor(24, 48, 71);
+
+    pdf.roundedRect(40, cardY, 532, 40, 8, 8, "F");
+
+    pdf.rect(40, cardY + 28, 532, 12, "F");
+
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(11);
+    pdf.setTextColor(255, 255, 255);
+
+    const titleLines = pdf.splitTextToSize(device.name, 325);
+
+    pdf.text(titleLines.slice(0, 2), 54, cardY + 18);
+
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(8);
+    pdf.setTextColor(206, 214, 220);
+
+    pdf.text(identity || "Brand / model not recorded", 558, cardY + 20, {
+      align: "right",
+    });
+
+    /*
+     * Two-column details.
+     */
+    const hasEmbeddedImage = Boolean(device.imageDataUrl);
+
+    const photoX = 56;
+    const photoY = cardY + 56;
+    const photoWidth = 112;
+    const photoHeight = 88;
+
+    const leftX = hasEmbeddedImage ? 188 : 56;
+
+    const rightX = hasEmbeddedImage ? 374 : 314;
+
+    let leftY = cardY + 62;
+
+    let rightY = cardY + 62;
+
+    if (hasEmbeddedImage && device.imageDataUrl) {
+      pdf.setFillColor(238, 238, 234);
+
+      pdf.roundedRect(photoX, photoY, photoWidth, photoHeight, 6, 6, "F");
+
+      try {
+        const imageProperties = pdf.getImageProperties(device.imageDataUrl);
+
+        const sourceWidth = Number(imageProperties.width || 1);
+
+        const sourceHeight = Number(imageProperties.height || 1);
+
+        const scale = Math.min(
+          photoWidth / sourceWidth,
+          photoHeight / sourceHeight,
+        );
+
+        const renderedWidth = sourceWidth * scale;
+
+        const renderedHeight = sourceHeight * scale;
+
+        const renderedX = photoX + (photoWidth - renderedWidth) / 2;
+
+        const renderedY = photoY + (photoHeight - renderedHeight) / 2;
+
+        pdf.addImage(
+          device.imageDataUrl,
+          "JPEG",
+          renderedX,
+          renderedY,
+          renderedWidth,
+          renderedHeight,
+          undefined,
+          "FAST",
+        );
+
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(6.5);
+        pdf.setTextColor(97, 124, 67);
+
+        pdf.text("PHOTO EVIDENCE", photoX, photoY + photoHeight + 12);
+      } catch (error) {
+        console.warn(
+          "[insurance-report] Unable to render device photo:",
+          device.name,
+          error,
+        );
+
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(8);
+        pdf.setTextColor(110, 116, 122);
+
+        pdf.text(
+          "Photo saved",
+          photoX + photoWidth / 2,
+          photoY + photoHeight / 2,
+          {
+            align: "center",
+          },
+        );
+      }
+    }
+
+    const drawField = (x: number, y: number, label: string, value: string) => {
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(7.5);
+      pdf.setTextColor(108, 116, 122);
+      pdf.text(label.toUpperCase(), x, y);
+
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(9);
+      pdf.setTextColor(28, 39, 48);
+      pdf.text(value, x, y + 13);
+    };
+
+    drawField(
+      leftX,
+      leftY,
+      normalizedLocation(device) === "Home Network" ? "Location" : "Room",
+      normalizedLocation(device),
+    );
+
+    leftY += 38;
+
+    drawField(
+      leftX,
+      leftY,
+      "Serial Number",
+      device.serialNumber || "Not recorded",
+    );
+
+    leftY += 38;
+
+    drawField(
+      leftX,
+      leftY,
+      "Purchase Date",
+      device.purchaseDate ? formatDate(device.purchaseDate) : "Not recorded",
+    );
+
+    drawField(rightX, rightY, "Recorded Value", formatRecordedValue(device));
+
+    rightY += 38;
+
+    drawField(
+      rightX,
+      rightY,
+      "Warranty",
+      device.warrantyDate
+        ? `${formatDate(device.warrantyDate)} · ${getWarrantyStatus(
+            device.warrantyDate,
+          )}`
+        : "Not recorded",
+    );
+
+    rightY += 38;
+
+    drawField(
+      rightX,
+      rightY,
+      "Evidence",
+      `${device.hasPhoto ? "Photo saved" : "Photo missing"} · ${
+        device.hasDocument ? "Record saved" : "Record missing"
+      }`,
+    );
+
+    /*
+     * Progress indicator.
+     */
+    const completenessFields = [
+      Boolean(device.serialNumber?.trim()),
+      Boolean(device.purchaseDate?.trim()),
+      Number(device.purchasePrice || 0) > 0,
+      Boolean(device.hasPhoto),
+      Boolean(device.hasDocument),
+    ];
+
+    const completed = completenessFields.filter(Boolean).length;
+
+    const itemScore = Math.round((completed / 5) * 100);
+
+    pdf.setDrawColor(228, 228, 224);
+
+    pdf.line(56, cardY + 151, 556, cardY + 151);
+
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(7.5);
+    pdf.setTextColor(97, 124, 67);
+
+    pdf.text(`${itemScore}% documented`, 56, cardY + 166);
+
+    pdf.setFont("helvetica", "normal");
+    pdf.setTextColor(120, 125, 130);
+
+    pdf.text(`Item ${index + 1} of ${devices.length}`, 556, cardY + 166, {
+      align: "right",
+    });
+
+    cardY += cardHeight + 18;
+  });
+
+  /*
+   * MISSING INFORMATION APPENDIX
+   */
+  const missingRows = devices
+    .map((device) => {
+      const missing: string[] = [];
+
+      if (!device.serialNumber?.trim()) {
+        missing.push("serial number");
+      }
+
+      if (!device.hasPhoto) {
+        missing.push("photo evidence");
+      }
+
+      if (!device.hasDocument) {
+        missing.push("supporting record");
+      }
+
+      if (!device.purchaseDate?.trim()) {
+        missing.push("purchase date");
+      }
+
+      if (Number(device.purchasePrice || 0) <= 0) {
+        missing.push("recorded value");
+      }
+
+      if (normalizedLocation(device) === "Needs a Room") {
+        missing.push("room");
+      }
+
+      return {
+        name: device.name,
+        missing,
+      };
+    })
+    .filter((entry) => entry.missing.length > 0);
+
+  pdf.addPage();
+
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(16);
+  pdf.setTextColor(17, 24, 39);
+  pdf.text("Missing Information", 40, 54);
+
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(9);
+  pdf.setTextColor(100, 105, 112);
+
+  const appendixIntro =
+    missingRows.length === 0
+      ? "Every documented device currently includes the core information checked by this report."
+      : "Adding the information below can strengthen your household records and improve insurance readiness.";
+
+  pdf.text(pdf.splitTextToSize(appendixIntro, 520), 40, 72);
+
+  if (missingRows.length === 0) {
+    pdf.setFillColor(238, 244, 232);
+
+    pdf.roundedRect(40, 105, 532, 62, 8, 8, "F");
+
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(12);
+    pdf.setTextColor(82, 107, 57);
+
+    pdf.text("Core records complete", 58, 132);
+
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(9);
+
+    pdf.text("No missing core fields were identified.", 58, 150);
+  } else {
+    autoTable(pdf, {
+      startY: 105,
+      theme: "striped",
+      head: [["Device", "Recommended additions"]],
+      body: missingRows.map((entry) => [entry.name, entry.missing.join(", ")]),
+      styles: {
+        fontSize: 8,
+        cellPadding: 6,
+        overflow: "linebreak",
+      },
+      headStyles: {
+        fillColor: [200, 169, 106],
+        textColor: [17, 24, 39],
+      },
+      columnStyles: {
+        0: {
+          cellWidth: 175,
+        },
+        1: {
+          cellWidth: 325,
+        },
+      },
+      margin: {
+        left: 40,
+        right: 40,
+        bottom: 55,
+      },
+    });
+  }
+
+  /*
+   * DISCLAIMER
+   */
+  const disclaimerY = missingRows.length
+    ? Math.min(720, getLastTableY(pdf) + 28)
+    : 195;
+
+  pdf.setDrawColor(218, 220, 222);
+
+  pdf.line(40, disclaimerY, 572, disclaimerY);
+
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(7.5);
+  pdf.setTextColor(120, 124, 130);
+
+  const disclaimer =
+    "Home Tech Vault organizes information supplied by the account holder. This report is not proof of ownership, valuation, coverage, or claim acceptance. Keep original receipts, photographs, invoices, and other supporting records when available.";
+
+  pdf.text(pdf.splitTextToSize(disclaimer, 525), 40, disclaimerY + 15);
 }
 
 function buildWarrantyReport(

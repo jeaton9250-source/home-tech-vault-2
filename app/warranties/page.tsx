@@ -30,7 +30,6 @@ import { cn } from "@/lib/design-system/cn";
 
 import PageShell from "@/components/ui/PageShell";
 import PageCard from "@/components/ui/PageCard";
-import PageHero from "@/components/ui/PageHero";
 import Button from "@/components/ui/Button";
 import EmptyState from "@/components/ui/EmptyState";
 import { ViewerBanner } from "@/components/ui/PermissionUI";
@@ -956,16 +955,29 @@ export default function WarrantiesPage() {
     permissionsLoading || loading;
 
   return (
-    <PageShell>
-      <PageHero
-        section="homeHealth"
-        title="Warranties"
-        description="Track coverage, upcoming expirations, and missing warranty information across your household devices."
-      >
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+    <PageShell className="bg-[#f7f6f2]">
+
+      <section className="flex flex-col gap-6 pb-1 pt-1 lg:flex-row lg:items-end lg:justify-between">
+        <div className="max-w-3xl">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#718d4f]">
+            Home Protection
+          </p>
+
+          <h1 className="mt-3 text-[36px] font-semibold leading-none tracking-[-0.045em] text-[#17212a] sm:text-[42px]">
+            Warranties
+          </h1>
+
+          <p className="mt-4 max-w-2xl text-[15px] leading-6 text-[#68737b]">
+            Know what is covered, what is expiring, and which devices
+            still need warranty information.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             href="/devices"
             variant="secondary"
+            className="border-[#e4e2dc] bg-[#fffefa] text-[#52606a] hover:border-[#718d4f]/30 hover:bg-[#f8f6f0] hover:text-[#526b39]"
           >
             <Laptop size={17} />
             Devices
@@ -981,12 +993,13 @@ export default function WarrantiesPage() {
             }
             loading={exporting}
             loadingLabel="Exporting..."
+            className="border-[#617c43] bg-[#617c43] text-white hover:border-[#526b39] hover:bg-[#526b39]"
           >
             <Download size={17} />
             Export CSV
           </Button>
         </div>
-      </PageHero>
+      </section>
 
       {showViewerAccess ? (
         <ViewerBanner

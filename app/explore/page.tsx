@@ -1,4 +1,5 @@
 import MarketingPageShell from "@/components/marketing/MarketingPageShell";
+import HomeMarketingFooter from "@/components/marketing/HomeMarketingFooter";
 import {
   PrimaryMarketingButton,
   SecondaryMarketingButton,
@@ -96,6 +97,7 @@ export default function ExplorePage() {
           </div>
         </div>
       </section>
+      <HomeMarketingFooter />
     </MarketingPageShell>
   );
 }

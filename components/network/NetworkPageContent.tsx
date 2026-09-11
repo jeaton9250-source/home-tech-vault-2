@@ -50,23 +50,19 @@ function NetworkPageInner() {
   const monitoringEnabled = canViewFeature("connectorMonitoring");
 
   const showViewerAccess =
-    !permissionsLoading &&
-    !isDemo &&
-    Boolean(user) &&
-    role === "viewer";
+    !permissionsLoading && !isDemo && Boolean(user) && role === "viewer";
 
-const canManageConnector =
-  !permissionsLoading &&
-  monitoringEnabled &&
-  isAdmin &&
-  !isDemo &&
-  Boolean(householdId);
+  const canManageConnector =
+    !permissionsLoading &&
+    monitoringEnabled &&
+    isAdmin &&
+    !isDemo &&
+    Boolean(householdId);
 
   const canLinkDevices =
     !permissionsLoading && canEdit && !isDemo && Boolean(user);
 
-  const canRefresh =
-    !permissionsLoading && !isDemo && Boolean(householdId);
+  const canRefresh = !permissionsLoading && !isDemo && Boolean(householdId);
 
   const data = useNetworkPageData({
     householdId,
@@ -139,7 +135,7 @@ const canManageConnector =
   const loading = permissionsLoading || data.loading;
 
   return (
-    <PageShell>
+    <PageShell className="bg-[#f7f6f2]">
       <NetworkHeader
         summary={loading ? null : data.summary}
         headerSummary={data.headerSummary}
@@ -166,9 +162,7 @@ const canManageConnector =
               <Wifi size={18} />
             </div>
             <div>
-              <p className="text-sm font-semibold text-[#17212a]">
-                Demo Mode
-              </p>
+              <p className="text-sm font-semibold text-[#17212a]">Demo Mode</p>
               <p className="mt-1 text-sm leading-6 text-[#68737b]">
                 You are exploring simulated connector and discovery data. No
                 real network is being scanned.
@@ -212,11 +206,7 @@ const canManageConnector =
 
       <NetworkTabs activeTab={activeTab} />
 
-      <div
-        id={`network-panel-${activeTab}`}
-        role="tabpanel"
-        className="mt-5"
-      >
+      <div id={`network-panel-${activeTab}`} role="tabpanel" className="mt-5">
         {loading ? (
           <NetworkPageSkeleton />
         ) : data.error && data.devices.length === 0 ? null : (
@@ -274,7 +264,7 @@ export default function NetworkPageContent() {
   return (
     <Suspense
       fallback={
-        <PageShell>
+        <PageShell className="bg-[#f7f6f2]">
           <NetworkPageSkeleton />
         </PageShell>
       }

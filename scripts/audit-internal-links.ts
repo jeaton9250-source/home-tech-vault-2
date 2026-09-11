@@ -35,6 +35,7 @@ async function main() {
     "/home-document-organizer",
     "/network-documentation",
     "/pricing",
+    "/health-check",
     "/knowledge",
   ]);
 

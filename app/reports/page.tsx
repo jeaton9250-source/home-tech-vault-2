@@ -57,10 +57,14 @@ type PreviewReport = {
 type DeviceRow = {
   id: string;
   device_name: string | null;
+  brand: string | null;
+  model_number: string | null;
+  purchase_date: string | null;
   purchase_price: number | null;
   warranty_date: string | null;
   serial_number: string | null;
   location: string | null;
+  room_id: string | null;
 };
 
 type ReportCoverage = {
@@ -133,6 +137,15 @@ export default function ReportsPage() {
   const showReadOnlyModal = useDemoReadOnlyAction();
 
   const [devices, setDevices] = useState<DeviceRow[]>([]);
+  const [documentDeviceIdsForReport, setDocumentDeviceIdsForReport] = useState<
+    Set<string>
+  >(() => new Set());
+  const [photoDeviceIdsForReport, setPhotoDeviceIdsForReport] = useState<
+    Set<string>
+  >(() => new Set());
+  const [roomNamesById, setRoomNamesById] = useState<Record<string, string>>(
+    {},
+  );
 
   const [deviceCount, setDeviceCount] = useState(0);
 
@@ -205,7 +218,11 @@ export default function ReportsPage() {
             `
                 id,
                 device_name,
+                brand,
+                model_number,
+                purchase_date,
                 location,
+                room_id,
                 warranty_date,
                 serial_number,
                 purchase_price
@@ -220,6 +237,33 @@ export default function ReportsPage() {
         }
 
         const loadedDevices = (devicesResult.data || []) as DeviceRow[];
+
+        const roomRecordsResult = user
+          ? await (householdId
+              ? supabase
+                  .from("rooms")
+                  .select("id, name")
+                  .eq("household_id", householdId)
+              : supabase
+                  .from("rooms")
+                  .select("id, name")
+                  .is("household_id", null)
+                  .eq("user_id", user.id))
+          : {
+              data: [],
+              error: null,
+            };
+
+        if (roomRecordsResult.error) {
+          console.error(
+            "Unable to load report rooms:",
+            roomRecordsResult.error,
+          );
+        }
+
+        const nextRoomNamesById = Object.fromEntries(
+          (roomRecordsResult.data || []).map((room) => [room.id, room.name]),
+        );
 
         const deviceIds = loadedDevices.map((device) => device.id);
 
@@ -288,8 +332,20 @@ export default function ReportsPage() {
 
         const rooms = new Set(
           loadedDevices
-            .map((device) => device.location?.trim())
-            .filter(Boolean),
+            .map((device) => {
+              if (device.room_id && nextRoomNamesById[device.room_id]) {
+                return nextRoomNamesById[device.room_id];
+              }
+
+              const legacyLocation = device.location?.trim();
+
+              if (legacyLocation?.toLowerCase() === "network") {
+                return null;
+              }
+
+              return legacyLocation || null;
+            })
+            .filter((value): value is string => Boolean(value)),
         );
 
         function calculateCoverage(value: number) {
@@ -539,6 +595,148 @@ export default function ReportsPage() {
     setPreviewReport(getPreviewReport(selectedReportType));
   }
 
+  async function imageBlobToJpegDataUrl(blob: Blob): Promise<string | null> {
+    const objectUrl = URL.createObjectURL(blob);
+
+    try {
+      const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const element = new Image();
+
+        element.onload = () => resolve(element);
+
+        element.onerror = () =>
+          reject(new Error("Unable to decode device photo"));
+
+        element.src = objectUrl;
+      });
+
+      const maxDimension = 1200;
+
+      let width = image.naturalWidth;
+
+      let height = image.naturalHeight;
+
+      if (width > maxDimension || height > maxDimension) {
+        const scale = Math.min(maxDimension / width, maxDimension / height);
+
+        width = Math.round(width * scale);
+
+        height = Math.round(height * scale);
+      }
+
+      const canvas = document.createElement("canvas");
+
+      canvas.width = Math.max(1, width);
+
+      canvas.height = Math.max(1, height);
+
+      const context = canvas.getContext("2d");
+
+      if (!context) {
+        throw new Error("Canvas context unavailable");
+      }
+
+      context.fillStyle = "#ffffff";
+
+      context.fillRect(0, 0, canvas.width, canvas.height);
+
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+      return canvas.toDataURL("image/jpeg", 0.86);
+    } catch (error) {
+      console.error("[insurance-report] Blob -> JPEG failed:", error);
+
+      return null;
+    } finally {
+      URL.revokeObjectURL(objectUrl);
+    }
+  }
+
+  async function imageUrlToDataUrl(url: string): Promise<string | null> {
+    try {
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new Error(`Image request failed: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+
+      /*
+       * Normalize all report photos to JPEG.
+       *
+       * Device uploads may be WebP, HEIC-converted WebP,
+       * PNG, or JPEG. jsPDF is most reliable when it
+       * receives a standard JPEG data URL.
+       */
+      const objectUrl = URL.createObjectURL(blob);
+
+      try {
+        const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+          const element = new Image();
+
+          element.onload = () => resolve(element);
+
+          element.onerror = () =>
+            reject(new Error("Unable to decode device image"));
+
+          element.src = objectUrl;
+        });
+
+        /*
+         * Keep reports reasonably small while retaining
+         * enough resolution for insurance documentation.
+         */
+        const maxDimension = 1200;
+
+        let width = image.naturalWidth;
+
+        let height = image.naturalHeight;
+
+        if (width > maxDimension || height > maxDimension) {
+          const scale = Math.min(maxDimension / width, maxDimension / height);
+
+          width = Math.round(width * scale);
+
+          height = Math.round(height * scale);
+        }
+
+        const canvas = document.createElement("canvas");
+
+        canvas.width = Math.max(1, width);
+
+        canvas.height = Math.max(1, height);
+
+        const context = canvas.getContext("2d");
+
+        if (!context) {
+          throw new Error("Canvas context unavailable");
+        }
+
+        /*
+         * JPEG has no alpha channel. Give transparent
+         * images a clean white background.
+         */
+        context.fillStyle = "#ffffff";
+
+        context.fillRect(0, 0, canvas.width, canvas.height);
+
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+        return canvas.toDataURL("image/jpeg", 0.86);
+      } finally {
+        URL.revokeObjectURL(objectUrl);
+      }
+    } catch (error) {
+      console.warn(
+        "[insurance-report] Unable to convert device image to JPEG",
+        error,
+      );
+
+      return null;
+    }
+  }
+
   async function handlePdfRequest(type: ReportPdfType) {
     if (permissionsLoading) {
       return;
@@ -557,13 +755,159 @@ export default function ReportsPage() {
     setGeneratingReport(type);
 
     try {
-      const reportDevices: ReportPdfDevice[] = devices.map((device) => ({
-        name: device.device_name || "Unnamed Device",
-        purchasePrice: device.purchase_price || 0,
-        location: device.location || "",
-        serialNumber: device.serial_number || "",
-        warrantyDate: device.warranty_date || "",
-      }));
+      /*
+       * Always refresh supporting evidence immediately
+       * before generating a PDF.
+       *
+       * This prevents a newly-added photo or document
+       * from being missed because the Reports page was
+       * already mounted with older overview state.
+       */
+      const currentDeviceIds = devices.map((device) => device.id);
+
+      const [latestPhotosResult, latestDocumentsResult] = await Promise.all([
+        currentDeviceIds.length > 0
+          ? supabase
+              .from("device_images")
+              .select("device_id, image_url, created_at")
+              .in("device_id", currentDeviceIds)
+              .order("created_at", {
+                ascending: true,
+              })
+          : Promise.resolve({
+              data: [],
+              error: null,
+            }),
+
+        currentDeviceIds.length > 0
+          ? supabase
+              .from("device_documents")
+              .select("device_id")
+              .in("device_id", currentDeviceIds)
+          : Promise.resolve({
+              data: [],
+              error: null,
+            }),
+      ]);
+
+      if (latestPhotosResult.error) {
+        console.error(
+          "[insurance-report] Unable to refresh device photos:",
+          latestPhotosResult.error,
+        );
+      }
+
+      if (latestDocumentsResult.error) {
+        console.error(
+          "[insurance-report] Unable to refresh device documents:",
+          latestDocumentsResult.error,
+        );
+      }
+
+      const latestPhotoIds = new Set(
+        (latestPhotosResult.data || []).map((row) => row.device_id),
+      );
+
+      const latestDocumentIds = new Set(
+        (latestDocumentsResult.data || []).map((row) => row.device_id),
+      );
+
+      const latestImagePathById: Record<string, string> = {};
+
+      for (const image of latestPhotosResult.data || []) {
+        if (
+          image.device_id &&
+          image.image_url &&
+          !latestImagePathById[image.device_id]
+        ) {
+          latestImagePathById[image.device_id] = image.image_url;
+        }
+      }
+
+      async function loadFreshReportImage(
+        deviceId: string,
+      ): Promise<string | null> {
+        const imagePath = latestImagePathById[deviceId];
+
+        if (!imagePath) {
+          return null;
+        }
+
+        try {
+          /*
+           * Download the private object directly through
+           * the authenticated Supabase Storage client.
+           *
+           * This avoids signed-URL fetch/CORS issues and
+           * gives us the actual image Blob immediately.
+           */
+          const { data: imageBlob, error } = await supabase.storage
+            .from("device-images")
+            .download(imagePath);
+
+          if (error || !imageBlob) {
+            console.error("[insurance-report] Device image download failed:", {
+              deviceId,
+              imagePath,
+              error,
+            });
+
+            return null;
+          }
+
+          const dataUrl = await imageBlobToJpegDataUrl(imageBlob);
+
+          if (!dataUrl) {
+            console.error(
+              "[insurance-report] Device photo conversion returned empty data",
+              {
+                deviceId,
+                imagePath,
+              },
+            );
+          }
+
+          return dataUrl;
+        } catch (error) {
+          console.error("[insurance-report] Device photo preparation failed:", {
+            deviceId,
+            imagePath,
+            error,
+          });
+
+          return null;
+        }
+      }
+
+      const reportDevices: ReportPdfDevice[] = await Promise.all(
+        devices.map(async (device) => {
+          const roomName =
+            (device.room_id ? roomNamesById[device.room_id] : "") ||
+            device.location ||
+            "";
+
+          const hasPhoto = latestPhotoIds.has(device.id);
+
+          const imageDataUrl =
+            type === "insurance" && hasPhoto
+              ? await loadFreshReportImage(device.id)
+              : null;
+
+          return {
+            name: device.device_name || "Unnamed Device",
+            brand: device.brand || "",
+            model: device.model_number || "",
+            purchaseDate: device.purchase_date || "",
+            purchasePrice: device.purchase_price || 0,
+            location: roomName,
+            serialNumber: device.serial_number || "",
+            warrantyDate: device.warranty_date || "",
+            hasDocument: latestDocumentIds.has(device.id),
+            hasPhoto,
+            imageDataUrl: imageDataUrl || undefined,
+          };
+        }),
+      );
 
       generateReportPdf({
         type,
@@ -615,7 +959,7 @@ export default function ReportsPage() {
 
   if (loading) {
     return (
-      <PageShell>
+      <PageShell className="bg-[#f7f6f2]">
         <PageCard className="flex min-h-72 items-center justify-center">
           <div className="flex items-center gap-3 text-text-secondary">
             <Loader2 size={22} className="animate-spin" />
@@ -628,7 +972,7 @@ export default function ReportsPage() {
 
   if (errorMessage) {
     return (
-      <PageShell>
+      <PageShell className="bg-[#f7f6f2]">
         <PageCard className="border-red-200 bg-red-50 text-red-700">
           <h1 className="text-xl font-semibold">Unable to load reports</h1>
 
@@ -639,83 +983,41 @@ export default function ReportsPage() {
   }
 
   return (
-    <PageShell>
-      {/* REPORTS HERO */}
-      <section className="overflow-hidden rounded-[32px] bg-[#183047] text-[#f8f5ef] shadow-[0_28px_70px_-48px_rgba(15,25,35,0.65)]">
-        <div className="grid gap-8 px-7 py-9 md:px-10 md:py-11 lg:grid-cols-[1fr_auto] lg:items-center">
-          <div className="max-w-2xl">
-            <div className="flex items-center gap-3">
-              <span className="h-px w-7 bg-[#718d4f]" />
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#9db47e]">
-                Home Reports
-              </p>
-            </div>
+    <PageShell className="bg-[#f7f6f2]">
+      {/* STANDARD APP HEADER */}
+      <PageHero
+        eyebrow="Home Reports"
+        title="Reports"
+        description="Create insurance-ready inventories, warranty summaries, and household records from everything saved in your Vault."
+      >
+        <Button
+          variant="secondary"
+          onClick={() => {
+            setSelectedReportType("insurance");
+            setPreviewReport(getPreviewReport("insurance"));
+          }}
+          className="border-[#e4e2dc] bg-[#fffefa] text-[#52606a] hover:border-[#718d4f]/30 hover:bg-[#f8f6f0] hover:text-[#526b39]"
+        >
+          <Eye size={17} />
+          Preview Report
+        </Button>
 
-            <h1 className="mt-5 font-serif text-4xl font-medium tracking-[-0.045em] text-[#f8f5ef] md:text-5xl">
-              Your home, documented.
-            </h1>
+        <Button
+          onClick={() => void handlePdfRequest("insurance")}
+          disabled={generatingReport === "insurance"}
+          className="border-[#617c43] bg-[#617c43] text-white hover:border-[#526b39] hover:bg-[#526b39]"
+        >
+          {generatingReport === "insurance" ? (
+            <Loader2 size={17} className="animate-spin" />
+          ) : (
+            <Download size={17} />
+          )}
 
-            <p className="mt-5 max-w-xl text-base leading-7 text-[#c2cbd1]">
-              Create insurance-ready inventories, warranty summaries, and
-              household records from everything remembered in your Vault.
-            </p>
-
-            <div className="mt-7 flex flex-wrap gap-x-5 gap-y-3 text-sm text-[#d6dcd9]">
-              <span>
-                {deviceCount.toLocaleString()}{" "}
-                {deviceCount === 1 ? "item" : "items"} documented
-              </span>
-
-              <span
-                aria-hidden="true"
-                className="my-auto h-1 w-1 rounded-full bg-[#718d4f]"
-              />
-
-              <span>{formatCurrency(protectedValue)} recorded</span>
-
-              <span
-                aria-hidden="true"
-                className="my-auto h-1 w-1 rounded-full bg-[#718d4f]"
-              />
-
-              <span>
-                {documentCount.toLocaleString()} supporting{" "}
-                {documentCount === 1 ? "record" : "records"}
-              </span>
-            </div>
-          </div>
-
-          <div className="min-w-[190px] rounded-[24px] border border-white/10 bg-white/[0.07] p-5 backdrop-blur-sm">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.17em] text-[#9db47e]">
-              Insurance readiness
-            </p>
-
-            <div className="mt-3 flex items-end gap-2">
-              <span className="font-serif text-4xl font-medium tracking-[-0.04em] text-white">
-                {readinessScore}%
-              </span>
-
-              <span className="pb-1 text-xs text-[#c2cbd1]">ready</span>
-            </div>
-
-            <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/10">
-              <div
-                className="h-full rounded-full bg-[#9db47e] transition-all duration-500"
-                style={{
-                  width: `${Math.max(2, Math.min(100, readinessScore))}%`,
-                }}
-              />
-            </div>
-
-            <a
-              href="/documents"
-              className="mt-4 inline-flex text-xs font-semibold text-[#dfe8d2] transition hover:text-white"
-            >
-              Improve my records →
-            </a>
-          </div>
-        </div>
-      </section>
+          {generatingReport === "insurance"
+            ? "Creating PDF..."
+            : "Download Report"}
+        </Button>
+      </PageHero>
 
       {/* QUICK STATS */}
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
