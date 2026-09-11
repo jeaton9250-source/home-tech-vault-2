@@ -29,18 +29,14 @@ async function prepareAndroidChannel() {
   });
 }
 
-function reminderDate(value: string | null | undefined, daysBefore: number) {
+function reminderDate(value: string | null | undefined, dayOffset: number) {
   if (!value) return null;
-  const source = new Date(`${value.slice(0, 10)}T09:00:00`);
+  const parts = value.slice(0, 10).split('-').map(Number);
+  if (parts.length !== 3 || parts.some((part) => !Number.isInteger(part))) return null;
+  const [year, month, day] = parts;
+  const source = new Date(year, month - 1, day + dayOffset, 9, 0, 0, 0);
   if (Number.isNaN(source.getTime())) return null;
-  source.setDate(source.getDate() - daysBefore);
-  if (source.getTime() <= Date.now()) {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(9, 0, 0, 0);
-    return tomorrow;
-  }
-  return source;
+  return source.getTime() > Date.now() ? source : null;
 }
 
 async function clearHomeTechVaultReminders() {
@@ -78,16 +74,38 @@ export async function syncHomeNotifications(
       })),
     ...maintenance
       .filter((item) => item.status !== 'Completed' && item.dueDateIso)
-      .map((item) => ({
-        date: reminderDate(item.dueDateIso, 1),
-        title: 'A little home care is due',
+      .flatMap((item) => [
+        {
+          date: reminderDate(item.dueDateIso, -2),
+          title: 'Home care due in 2 days',
+          reminderKind: 'due_48h',
+        },
+        {
+          date: reminderDate(item.dueDateIso, -1),
+          title: 'Home care due tomorrow',
+          reminderKind: 'due_24h',
+        },
+        {
+          date: reminderDate(item.dueDateIso, 1),
+          title: 'Home care is overdue',
+          reminderKind: 'overdue',
+        },
+      ].map((reminder) => ({
+        date: reminder.date,
+        title: reminder.title,
         body: `${item.title} · ${item.deviceName}`,
-        data: { source: SOURCE, kind: 'maintenance', maintenanceId: item.id },
-      })),
+        data: {
+          source: SOURCE,
+          kind: 'maintenance',
+          reminderKind: reminder.reminderKind,
+          maintenanceId: item.id,
+          url: '/(tabs)/care',
+        },
+      }))),
   ]
     .filter((item): item is typeof item & { date: Date } => Boolean(item.date))
     .sort((left, right) => left.date.getTime() - right.date.getTime())
-    .slice(0, 32);
+    .slice(0, 48);
 
   await Promise.all(reminders.map((reminder) => Notifications.scheduleNotificationAsync({
     content: {
@@ -119,6 +137,24 @@ async function connectRemotePush(accessToken: string) {
     deviceId: Device.modelId,
   }, accessToken);
   return true;
+}
+
+export async function syncEnabledHomeNotifications(input: {
+  devices: VaultDevice[];
+  maintenance: MaintenanceItem[];
+  accessToken: string;
+}) {
+  const scheduled = await syncHomeNotifications(input.devices, input.maintenance);
+  const permission = await Notifications.getPermissionsAsync();
+  if (permission.status !== 'granted') return { scheduled, remote: false };
+
+  let remote = false;
+  try {
+    remote = await connectRemotePush(input.accessToken);
+  } catch {
+    // The on-device reminders remain active while remote registration retries later.
+  }
+  return { scheduled, remote };
 }
 
 export async function enableHomeNotifications(input: {

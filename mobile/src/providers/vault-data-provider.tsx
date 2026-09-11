@@ -68,6 +68,15 @@ function formatDate(value: string | null) {
   return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
+function calendarDaysUntil(value: string | null | undefined) {
+  if (!value) return null;
+  const target = new Date(`${value.slice(0, 10)}T12:00:00`);
+  const today = new Date();
+  today.setHours(12, 0, 0, 0);
+  if (Number.isNaN(target.getTime())) return null;
+  return Math.round((target.getTime() - today.getTime()) / 86_400_000);
+}
+
 async function resolveHomeHouseholdId(userId: string) {
   if (!supabase) return null;
 
@@ -177,14 +186,14 @@ export function VaultDataProvider({ children }: { children: ReactNode }) {
       }
       const deviceNames = new Map(devices.map((device) => [device.id, device.name]));
       const maintenance: MaintenanceItem[] = (maintenanceResult.error ? [] : maintenanceResult.data ?? []).map((item) => {
-        const isPast = item.due_date ? new Date(item.due_date).getTime() < Date.now() : false;
+        const daysRemaining = calendarDaysUntil(item.due_date);
         return {
           id: item.id,
           title: item.title || 'Home care task',
           deviceName: deviceNames.get(item.device_id ?? '') || 'Whole Home',
           dueDate: formatDate(item.due_date),
           dueDateIso: item.due_date,
-          status: item.completed ? 'Completed' : isPast ? 'Overdue' : 'Upcoming',
+          status: item.completed ? 'Completed' : daysRemaining !== null && daysRemaining < 0 ? 'Overdue' : 'Upcoming',
         };
       });
       const documents: VaultDocument[] = (documentsResult.error ? [] : documentsResult.data ?? []).map((document) => ({
@@ -199,8 +208,22 @@ export function VaultDataProvider({ children }: { children: ReactNode }) {
       const now = Date.now();
       const notifications: VaultNotification[] = [
         ...maintenance
-          .filter((item) => item.status === 'Overdue')
-          .map((item) => ({ id: `maintenance-${item.id}`, title: 'Home care is overdue', body: `${item.title} · ${item.deviceName}`, time: item.dueDate, unread: true, kind: 'maintenance' as const })),
+          .map((item) => ({ item, daysRemaining: calendarDaysUntil(item.dueDateIso) }))
+          .filter(({ item, daysRemaining }) => item.status !== 'Completed' && daysRemaining !== null && daysRemaining <= 2)
+          .map(({ item, daysRemaining }) => ({
+            id: `maintenance-${item.id}-${daysRemaining! < 0 ? 'overdue' : daysRemaining}`,
+            title: daysRemaining! < 0
+              ? 'Home care is overdue'
+              : daysRemaining === 0
+                ? 'Home care is due today'
+                : daysRemaining === 1
+                  ? 'Home care is due tomorrow'
+                  : 'Home care is due in 2 days',
+            body: `${item.title} · ${item.deviceName}`,
+            time: item.dueDate,
+            unread: true,
+            kind: 'maintenance' as const,
+          })),
         ...devices
           .filter((device) => {
             if (!device.warrantyDate) return false;

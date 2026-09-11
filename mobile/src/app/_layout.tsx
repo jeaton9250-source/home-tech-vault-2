@@ -1,4 +1,5 @@
-import { Stack } from 'expo-router';
+import { router, Stack } from 'expo-router';
+import * as Notifications from 'expo-notifications';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
@@ -6,7 +7,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AuthProvider, useAuth } from '@/providers/auth-provider';
-import { syncHomeNotifications } from '@/lib/device-notifications';
+import { syncEnabledHomeNotifications } from '@/lib/device-notifications';
 import { VaultDataProvider, useVaultData } from '@/providers/vault-data-provider';
 import { colors } from '@/theme';
 
@@ -43,9 +44,34 @@ function NotificationScheduler() {
   const data = useVaultData();
 
   useEffect(() => {
-    if (auth.mode !== 'account' || data.loading) return;
-    void syncHomeNotifications(data.devices, data.maintenance).catch(() => undefined);
-  }, [auth.mode, data.loading, data.devices, data.maintenance]);
+    const accessToken = auth.session?.access_token;
+    if (auth.mode !== 'account' || data.loading || !accessToken) return;
+    void syncEnabledHomeNotifications({
+      devices: data.devices,
+      maintenance: data.maintenance,
+      accessToken,
+    }).catch(() => undefined);
+  }, [auth.mode, auth.session?.access_token, data.loading, data.devices, data.maintenance]);
+
+  return null;
+}
+
+function NotificationNavigation() {
+  useEffect(() => {
+    function openMaintenanceReminder(notification: Notifications.Notification) {
+      const data = notification.request.content.data;
+      if (data?.source === 'home-tech-vault' && data?.kind === 'maintenance') {
+        router.push('/(tabs)/care');
+      }
+    }
+
+    const lastResponse = Notifications.getLastNotificationResponse();
+    if (lastResponse?.notification) openMaintenanceReminder(lastResponse.notification);
+    const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
+      openMaintenanceReminder(response.notification);
+    });
+    return () => subscription.remove();
+  }, []);
 
   return null;
 }
@@ -57,6 +83,7 @@ export default function RootLayout() {
         <AuthProvider>
           <VaultDataProvider>
             <NotificationScheduler />
+            <NotificationNavigation />
             <RootNavigator />
           </VaultDataProvider>
         </AuthProvider>
