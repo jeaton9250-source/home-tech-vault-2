@@ -39,6 +39,7 @@
     "node_modules",
     "supabase/functions",
     "emails",
-    "connector/desktop"
+    "connector/desktop",
+    "mobile"
   ]
 }

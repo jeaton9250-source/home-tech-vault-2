@@ -1,0 +1,61 @@
+{
+  "expo": {
+    "name": "Home Tech Vault",
+    "slug": "home-tech-vault",
+    "description": "A private, lasting record of the technology that makes your home work.",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/htv-icon.png",
+    "scheme": "hometechvault",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#F5F1E8",
+    "ios": {
+      "icon": "./assets/images/htv-icon.png",
+      "bundleIdentifier": "com.hometechvault.app",
+      "buildNumber": "1",
+      "supportsTablet": true,
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "infoPlist": {
+        "NSCameraUsageDescription": "Home Tech Vault uses your camera to scan receipts, serial numbers, and home documents.",
+        "NSPhotoLibraryUsageDescription": "Home Tech Vault lets you attach photos and documents to your private home record."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#14283B",
+        "foregroundImage": "./assets/images/htv-mark.png"
+      },
+      "package": "com.hometechvault.app",
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#14283B",
+          "image": "./assets/images/htv-mark.png",
+          "imageWidth": 112
+        }
+      ],
+      [
+        "expo-secure-store",
+        {
+          "configureAndroidBackup": true,
+          "faceIDPermission": "Use Face ID to securely open your Home Tech Vault."
+        }
+      ],
+      "expo-image"
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}

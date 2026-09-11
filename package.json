@@ -18,7 +18,11 @@
     "generate:knowledge-heroes": "node --import tsx scripts/download-knowledge-heroes.ts",
     "audit:links": "node --import tsx scripts/audit-internal-links.ts",
     "email:dev": "email dev --dir emails/templates --port 3001",
-    "test:account-deletion": "tsx --test lib/account-admin/deletionHelpers.test.ts"
+    "test:account-deletion": "tsx --test lib/account-admin/deletionHelpers.test.ts",
+    "mobile:setup": "npm --prefix mobile run setup",
+    "mobile:start": "npm --prefix mobile run start",
+    "mobile:ios": "npm --prefix mobile run ios",
+    "mobile:check": "npm --prefix mobile run check"
   },
   "dependencies": {
     "@heycatch/sdk": "^0.7.0",
