@@ -1,6 +1,6 @@
 import { FileCheck2, FileText, FolderHeart, Plus, ReceiptText, Search, ShieldCheck } from 'lucide-react-native';
-import { useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useMemo, useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { AppScreen, Card, EmptyState, ListRow, LoadingView, PrimaryButton } from '@/components/ui';
@@ -10,7 +10,11 @@ import { colors, fonts } from '@/theme';
 export default function VaultScreen() {
   const router = useRouter();
   const data = useVaultData();
+  const { loading, refresh } = data;
   const [query, setQuery] = useState('');
+  useFocusEffect(useCallback(() => {
+    if (!loading) void refresh();
+  }, [loading, refresh]));
   const documents = useMemo(() => {
     const needle = query.trim().toLowerCase();
     return needle ? data.documents.filter((document) => [document.name, document.type, document.deviceName].some((value) => value.toLowerCase().includes(needle))) : data.documents;

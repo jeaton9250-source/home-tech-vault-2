@@ -51,6 +51,18 @@ async function authenticatedFetch(path: string, accessToken: string, init?: Requ
   });
 }
 
+async function readJsonResponse<T>(response: Response, fallbackMessage: string): Promise<T> {
+  const body = await response.text();
+  if (!body) throw new Error(fallbackMessage);
+  try {
+    return JSON.parse(body) as T;
+  } catch {
+    throw new Error(response.ok
+      ? fallbackMessage
+      : `Home Tech Vault is temporarily unavailable (${response.status}). Please try again.`);
+  }
+}
+
 async function readLookup(path: string, accessToken: string) {
   const response = await authenticatedFetch(path, accessToken, { method: 'GET' });
 
@@ -132,21 +144,86 @@ export async function updateDevice(
   input: CreateDeviceInput,
   accessToken: string,
 ) {
-  const response = await authenticatedFetch(`/api/mobile/devices/${encodeURIComponent(deviceId)}`, accessToken, {
-    method: 'PATCH',
-    body: JSON.stringify({ ...input, notes: input.notes ?? '' }),
-  });
-  const payload = await response.json() as {
-    householdId?: string | null;
-    device?: VaultDevice;
-    error?: string;
-  };
+  let response: Response;
+  let payload: { householdId?: string | null; device?: VaultDevice; error?: string };
+
+  try {
+    response = await authenticatedFetch(`/api/mobile/devices/${encodeURIComponent(deviceId)}`, accessToken, {
+      method: 'PATCH',
+      body: JSON.stringify({ ...input, notes: input.notes ?? '' }),
+    });
+    payload = await readJsonResponse(response, "We couldn't update this device. Please try again.");
+  } catch (error) {
+    if (!supabase) throw error;
+    const { data: device, error: updateError } = await supabase
+      .from('devices')
+      .update({
+        device_name: input.deviceName.trim(),
+        category: input.category.trim() || null,
+        brand: input.brand.trim() || null,
+        manufacturer: input.manufacturer.trim() || null,
+        model_number: input.modelNumber.trim() || null,
+        serial_number: input.serialNumber.trim() || null,
+        purchase_date: input.purchaseDate.trim() || null,
+        warranty_date: input.warrantyDate.trim() || null,
+        purchase_price: input.purchasePrice.trim() ? Number(input.purchasePrice) : null,
+        location: input.location.trim() || null,
+        notes: input.notes?.trim() || null,
+      })
+      .eq('id', deviceId)
+      .select('id, device_name, brand, manufacturer, category, location, model_number, serial_number, purchase_date, purchase_price, warranty_date, online, notes')
+      .maybeSingle();
+    if (updateError || !device) throw updateError ?? error;
+    return {
+      householdId: null,
+      device: {
+        id: device.id,
+        name: device.device_name || 'Unnamed device',
+        brand: device.brand || 'Unknown brand',
+        category: device.category || 'Other',
+        location: device.location || 'Room not set',
+        model: device.model_number || 'Model not recorded',
+        manufacturer: device.manufacturer || device.brand || 'Unknown manufacturer',
+        serialNumber: device.serial_number,
+        purchaseDate: device.purchase_date,
+        value: Number(device.purchase_price) || 0,
+        warrantyDate: device.warranty_date,
+        online: device.online,
+        notes: device.notes || '',
+      },
+    };
+  }
 
   if (!response.ok || !payload.device) {
     throw new Error(payload.error || "We couldn't update this device. Please try again.");
   }
 
   return { device: payload.device, householdId: payload.householdId ?? null };
+}
+
+export async function completeMaintenanceTask(taskId: string, accessToken: string) {
+  try {
+    const response = await authenticatedFetch(`/api/mobile/maintenance/${encodeURIComponent(taskId)}`, accessToken, {
+      method: 'PATCH',
+      body: JSON.stringify({ completed: true }),
+    });
+    const payload = await readJsonResponse<{ completed?: boolean; error?: string }>(
+      response,
+      "We couldn't complete this care item. Please try again.",
+    );
+    if (!response.ok || payload.completed !== true) {
+      throw new Error(payload.error || "We couldn't complete this care item. Please try again.");
+    }
+  } catch (error) {
+    if (!supabase) throw error;
+    const { data, error: updateError } = await supabase
+      .from('maintenance_tasks')
+      .update({ completed: true, completed_at: new Date().toISOString() })
+      .eq('id', taskId)
+      .select('id, completed')
+      .maybeSingle();
+    if (updateError || !data?.completed) throw updateError ?? error;
+  }
 }
 
 const DEVICE_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif']);

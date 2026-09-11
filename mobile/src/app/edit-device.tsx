@@ -74,7 +74,7 @@ export default function EditDeviceScreen() {
           fileName: photo.fileName,
           deviceId: device.id,
           userId: auth.user.id,
-          householdId: saved.householdId,
+          householdId: saved.householdId ?? data.householdId,
         });
       }
 

@@ -106,21 +106,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = useCallback(async (email: string, password: string, fullName: string) => {
     if (!supabase) return { error: 'The app connection has not been configured yet.', needsConfirmation: false };
-    await AsyncStorage.removeItem(DEMO_MODE_KEY);
-    const { data, error } = await supabase.auth.signUp({
-      email: email.trim(),
-      password,
-      options: {
-        data: { full_name: fullName.trim() },
-        emailRedirectTo: `${WEB_URL}/auth/callback?next=${encodeURIComponent('/dashboard')}`,
-      },
-    });
-    if (error) return { error: error.message, needsConfirmation: false };
-    if (data.session) {
-      setSession(data.session);
-      setMode('account');
+    try {
+      await AsyncStorage.removeItem(DEMO_MODE_KEY);
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim().toLowerCase(),
+        password,
+        options: {
+          data: { full_name: fullName.trim() },
+          emailRedirectTo: `${WEB_URL}/auth/callback?next=${encodeURIComponent('/dashboard')}`,
+        },
+      });
+      if (error) return { error: error.message, needsConfirmation: false };
+      if (data.session) {
+        setSession(data.session);
+        setMode('account');
+      }
+      return { error: null, needsConfirmation: !data.session };
+    } catch (error) {
+      return {
+        error: error instanceof Error
+          ? error.message
+          : "We couldn't create your vault. Check your connection and try again.",
+        needsConfirmation: false,
+      };
     }
-    return { error: null, needsConfirmation: !data.session };
   }, []);
 
   const signOut = useCallback(async () => {

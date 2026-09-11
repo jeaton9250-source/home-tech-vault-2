@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Alert, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AuthField, AuthKeyboard, AuthSubmit, authStyles } from '@/components/auth-form';
@@ -23,21 +23,30 @@ export default function CreateAccountScreen() {
       setMessage('Add your name, a valid email, and a password of at least 8 characters.');
       return;
     }
-    setBusy(true);
-    setMessage(null);
-    const result = await signUp(email, password, name);
-    setBusy(false);
-    if (result.error) {
+    try {
+      setBusy(true);
+      setMessage(null);
+      const result = await signUp(email, password, name);
+      if (result.error) {
+        setIsError(true);
+        setMessage(result.error);
+        return;
+      }
+      if (result.needsConfirmation) {
+        Alert.alert(
+          'Check your email',
+          'We sent a confirmation link. Confirm your email, then return to sign in to your new Home Tech Vault.',
+          [{ text: 'Go to sign in', onPress: () => router.replace('/sign-in') }],
+        );
+        return;
+      }
+      router.replace('/(tabs)');
+    } catch (error) {
       setIsError(true);
-      setMessage(result.error);
-      return;
+      setMessage(error instanceof Error ? error.message : "We couldn't create your vault. Please try again.");
+    } finally {
+      setBusy(false);
     }
-    if (result.needsConfirmation) {
-      setIsError(false);
-      setMessage('Check your email to confirm your new Home Tech Vault, then sign in.');
-      return;
-    }
-    router.replace('/(tabs)');
   }
 
   return (

@@ -35,6 +35,7 @@ type VaultDataContextValue = VaultData & {
   rememberSavedDevice: (device: VaultDevice, householdId: string | null) => void;
   rememberUpdatedDevice: (device: VaultDevice, householdId: string | null) => void;
   rememberSavedDocument: (document: VaultDocument, householdId: string | null) => void;
+  rememberCompletedMaintenance: (taskId: string) => void;
 };
 
 const emptyData: VaultData = {
@@ -103,7 +104,7 @@ export function VaultDataProvider({ children }: { children: ReactNode }) {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async (refresh = false) => {
+  const load = useCallback(async (loadMode: 'initial' | 'refresh' | 'silent' = 'initial') => {
     if (mode === 'loading') return;
     if (isDemo) {
       setData(demoData);
@@ -118,8 +119,8 @@ export function VaultDataProvider({ children }: { children: ReactNode }) {
       setRefreshing(false);
       return;
     }
-    if (refresh) setRefreshing(true);
-    else setLoading(true);
+    if (loadMode === 'refresh') setRefreshing(true);
+    else if (loadMode === 'initial') setLoading(true);
     setError(null);
     try {
       const [profileResult, householdId] = await Promise.all([
@@ -254,6 +255,17 @@ export function VaultDataProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
+  const rememberCompletedMaintenance = useCallback((taskId: string) => {
+    setData((current) => ({
+      ...current,
+      maintenance: current.maintenance.map((item) => item.id === taskId
+        ? { ...item, status: 'Completed' as const }
+        : item),
+    }));
+  }, []);
+
+  const refresh = useCallback(() => load('refresh'), [load]);
+
   useEffect(() => {
     const timeout = setTimeout(() => void load(), 0);
     return () => clearTimeout(timeout);
@@ -269,7 +281,7 @@ export function VaultDataProvider({ children }: { children: ReactNode }) {
 
     const scheduleRefresh = () => {
       if (refreshTimer) clearTimeout(refreshTimer);
-      refreshTimer = setTimeout(() => void load(), 250);
+      refreshTimer = setTimeout(() => void load('silent'), 250);
     };
 
     const channel = supabase
@@ -291,14 +303,20 @@ export function VaultDataProvider({ children }: { children: ReactNode }) {
     if (mode !== 'account') return;
 
     const subscription = AppState.addEventListener('change', (state) => {
-      if (state === 'active') void load();
+      if (state === 'active') void load('silent');
     });
 
     return () => subscription.remove();
   }, [mode, load]);
 
+  useEffect(() => {
+    if (mode !== 'account' || !user) return;
+    const interval = setInterval(() => void load('silent'), 20_000);
+    return () => clearInterval(interval);
+  }, [mode, user, load]);
+
   const visibleData = isDemo ? demoData : data;
-  const value = useMemo(() => ({ ...visibleData, loading: isDemo ? false : loading, refreshing, error, refresh: () => load(true), rememberSavedDevice, rememberUpdatedDevice, rememberSavedDocument }), [visibleData, isDemo, loading, refreshing, error, load, rememberSavedDevice, rememberUpdatedDevice, rememberSavedDocument]);
+  const value = useMemo(() => ({ ...visibleData, loading: isDemo ? false : loading, refreshing, error, refresh, rememberSavedDevice, rememberUpdatedDevice, rememberSavedDocument, rememberCompletedMaintenance }), [visibleData, isDemo, loading, refreshing, error, refresh, rememberSavedDevice, rememberUpdatedDevice, rememberSavedDocument, rememberCompletedMaintenance]);
   return <VaultDataContext.Provider value={value}>{children}</VaultDataContext.Provider>;
 }
 
