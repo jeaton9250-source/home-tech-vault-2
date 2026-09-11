@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { createClient } from "@/lib/supabase/server";
+import { authenticateRequest } from "@/lib/supabase/server";
 import { getSupportAdminClient } from "@/lib/support/adminClient";
 import {
   buildSupportTicketInsertPayload,
@@ -85,11 +85,13 @@ export async function POST(request: Request) {
     }
 
     const admin = adminResult.admin;
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const { user, error: authError } = await authenticateRequest(request);
+    if (request.headers.has("authorization") && (authError || !user)) {
+      return NextResponse.json(
+        { error: "Please sign in again before sending feedback." },
+        { status: 401 }
+      );
+    }
 
     const submitterIpHash =
       getSubmitterIpHash(request);

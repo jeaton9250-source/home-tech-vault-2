@@ -5,12 +5,12 @@
     "description": "A private, lasting record of the technology that makes your home work.",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/htv-icon.png",
+    "icon": "./assets/images/htv-vault-icon.png",
     "scheme": "hometechvault",
     "userInterfaceStyle": "light",
     "backgroundColor": "#F5F1E8",
     "ios": {
-      "icon": "./assets/images/htv-icon.png",
+      "icon": "./assets/images/htv-vault-icon.png",
       "bundleIdentifier": "com.hometechvault.app",
       "buildNumber": "1",
       "supportsTablet": false,
@@ -25,14 +25,14 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#14283B",
-        "foregroundImage": "./assets/images/htv-mark.png"
+        "foregroundImage": "./assets/images/htv-vault-icon.png"
       },
       "package": "com.hometechvault.app",
       "predictiveBackGestureEnabled": false
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/htv-vault-icon.png"
     },
     "plugins": [
       "expo-router",
@@ -40,7 +40,7 @@
         "expo-splash-screen",
         {
           "backgroundColor": "#14283B",
-          "image": "./assets/images/htv-mark.png",
+          "image": "./assets/images/htv-vault-icon.png",
           "imageWidth": 112
         }
       ],
@@ -77,6 +77,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "667d7adf-c913-4cd5-a7e0-ea3daeca1d53"
+      }
+    },
+    "owner": "jeaton9250"
   }
 }

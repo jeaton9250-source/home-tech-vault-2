@@ -31,6 +31,8 @@ type VaultDataContextValue = VaultData & {
   loading: boolean;
   refreshing: boolean;
   error: string | null;
+  syncStatus: 'idle' | 'syncing' | 'synced' | 'error';
+  lastSyncedAt: number | null;
   refresh: () => Promise<void>;
   rememberSavedDevice: (device: VaultDevice, householdId: string | null) => void;
   rememberUpdatedDevice: (device: VaultDevice, householdId: string | null) => void;
@@ -113,6 +115,8 @@ export function VaultDataProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'synced' | 'error'>('idle');
+  const [lastSyncedAt, setLastSyncedAt] = useState<number | null>(null);
 
   const load = useCallback(async (loadMode: 'initial' | 'refresh' | 'silent' = 'initial') => {
     if (mode === 'loading') return;
@@ -121,15 +125,20 @@ export function VaultDataProvider({ children }: { children: ReactNode }) {
       setLoading(false);
       setRefreshing(false);
       setError(null);
+      setSyncStatus('idle');
       return;
     }
     if (mode !== 'account' || !user || !supabase) {
       setData(emptyData);
       setLoading(false);
       setRefreshing(false);
+      setSyncStatus('idle');
       return;
     }
-    if (loadMode === 'refresh') setRefreshing(true);
+    if (loadMode === 'refresh') {
+      setRefreshing(true);
+      setSyncStatus('syncing');
+    }
     else if (loadMode === 'initial') setLoading(true);
     setError(null);
     try {
@@ -244,8 +253,14 @@ export function VaultDataProvider({ children }: { children: ReactNode }) {
         documents,
         notifications,
       });
+      setLastSyncedAt(Date.now());
+      setSyncStatus(loadMode === 'refresh' ? 'synced' : 'idle');
+      if (loadMode === 'refresh') {
+        setTimeout(() => setSyncStatus((current) => current === 'synced' ? 'idle' : current), 2400);
+      }
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Your home record could not be refreshed.');
+      setSyncStatus('error');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -347,7 +362,7 @@ export function VaultDataProvider({ children }: { children: ReactNode }) {
   }, [mode, user, load]);
 
   const visibleData = isDemo ? demoData : data;
-  const value = useMemo(() => ({ ...visibleData, loading: isDemo ? false : loading, refreshing, error, refresh, rememberSavedDevice, rememberUpdatedDevice, rememberSavedDocument, forgetDocument, rememberCompletedMaintenance }), [visibleData, isDemo, loading, refreshing, error, refresh, rememberSavedDevice, rememberUpdatedDevice, rememberSavedDocument, forgetDocument, rememberCompletedMaintenance]);
+  const value = useMemo(() => ({ ...visibleData, loading: isDemo ? false : loading, refreshing, error, syncStatus, lastSyncedAt, refresh, rememberSavedDevice, rememberUpdatedDevice, rememberSavedDocument, forgetDocument, rememberCompletedMaintenance }), [visibleData, isDemo, loading, refreshing, error, syncStatus, lastSyncedAt, refresh, rememberSavedDevice, rememberUpdatedDevice, rememberSavedDocument, forgetDocument, rememberCompletedMaintenance]);
   return <VaultDataContext.Provider value={value}>{children}</VaultDataContext.Provider>;
 }
 

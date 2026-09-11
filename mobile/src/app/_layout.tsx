@@ -28,6 +28,7 @@ function RootNavigator() {
         <Stack.Screen name="sign-in" />
         <Stack.Screen name="create-account" />
         <Stack.Screen name="delete-account" />
+        <Stack.Screen name="feedback" options={{ presentation: 'modal' }} />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="notifications" options={{ presentation: 'modal' }} />
         <Stack.Screen name="add-device" options={{ presentation: 'modal' }} />

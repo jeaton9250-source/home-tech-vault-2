@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { Bell, FileText, HelpCircle, Mail, Shield, Trash2, UsersRound } from 'lucide-react-native';
+import { Bell, FileText, HelpCircle, Mail, MessageSquareText, Shield, Trash2, UsersRound } from 'lucide-react-native';
 import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { AppScreen, Card, ListRow, SecondaryButton } from '@/components/ui';
@@ -38,6 +38,7 @@ export default function MoreScreen() {
       <Card>
         <ListRow icon={HelpCircle} title="Help center" detail="Answers and practical guides" onPress={() => void Linking.openURL(`${webUrl}/faq`)} />
         <ListRow icon={Mail} title="Contact support" detail="Get help from Home Tech Vault" onPress={() => void Linking.openURL(`${webUrl}/contact`)} />
+        {!isDemo ? <ListRow icon={MessageSquareText} title="Send feedback" detail="Share an idea or report a problem" onPress={() => router.push('/feedback')} /> : null}
         <ListRow icon={FileText} title="Terms of service" detail="The terms that govern your vault" onPress={() => void Linking.openURL(`${webUrl}/terms`)} />
       </Card>
 

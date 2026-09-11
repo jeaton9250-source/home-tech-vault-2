@@ -1,5 +1,6 @@
 import type { LucideIcon } from 'lucide-react-native';
-import { Bell, ChevronRight, Home, X } from 'lucide-react-native';
+import { Bell, CheckCircle2, ChevronRight, Cloud, RefreshCw, WifiOff, X, Home } from 'lucide-react-native';
+import { useNetworkState } from 'expo-network';
 import { useRouter } from 'expo-router';
 import { useState, type ReactNode } from 'react';
 import { ActivityIndicator, Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -41,10 +42,33 @@ export function AppScreen({
         showsVerticalScrollIndicator={false}
         refreshControl={onRefresh ? <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.olive} /> : undefined}
       >
+        <SyncStatusNotice />
         {children}
       </ScrollView>
     </SafeAreaView>
   );
+}
+
+function SyncStatusNotice() {
+  const network = useNetworkState();
+  const data = useVaultData();
+  const { isDemo } = useAuth();
+  const offline = network.isConnected === false || network.isInternetReachable === false;
+
+  if (isDemo) return null;
+  if (offline) {
+    return <View accessibilityRole="alert" style={[styles.syncNotice, styles.syncOffline]}><WifiOff size={16} color={colors.rust} /><View style={styles.syncCopy}><Text style={styles.syncTitle}>You’re offline</Text><Text style={styles.syncBody}>Reconnect before adding or changing your home record.</Text></View></View>;
+  }
+  if (data.syncStatus === 'error') {
+    return <Pressable accessibilityRole="button" onPress={() => void data.refresh()} style={[styles.syncNotice, styles.syncError]}><Cloud size={16} color={colors.rust} /><View style={styles.syncCopy}><Text style={styles.syncTitle}>Sync paused</Text><Text style={styles.syncBody}>Tap to try refreshing your home again.</Text></View><RefreshCw size={16} color={colors.rust} /></Pressable>;
+  }
+  if (data.syncStatus === 'syncing') {
+    return <View accessibilityLiveRegion="polite" style={styles.syncNotice}><RefreshCw size={16} color={colors.oliveDark} /><Text style={styles.syncTitle}>Syncing your home…</Text></View>;
+  }
+  if (data.syncStatus === 'synced') {
+    return <View accessibilityLiveRegion="polite" style={[styles.syncNotice, styles.syncSuccess]}><CheckCircle2 size={16} color={colors.oliveDark} /><Text style={styles.syncTitle}>Everything is up to date</Text></View>;
+  }
+  return null;
 }
 
 export function AppHeader({ title, subtitle }: { title?: string; subtitle?: string }) {
@@ -157,6 +181,13 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.cream },
   screen: { flex: 1, backgroundColor: colors.cream },
   screenContent: { paddingHorizontal: 20, paddingTop: 14, paddingBottom: 120, gap: 18 },
+  syncNotice: { minHeight: 48, paddingHorizontal: 14, paddingVertical: 10, flexDirection: 'row', alignItems: 'center', gap: 10, borderRadius: 15, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.oliveWash },
+  syncOffline: { borderColor: '#E9CFC9', backgroundColor: '#F8EAE7' },
+  syncError: { borderColor: '#E9CFC9', backgroundColor: '#FFF8F5' },
+  syncSuccess: { backgroundColor: '#F3F5EB' },
+  syncCopy: { flex: 1 },
+  syncTitle: { color: colors.ink, fontFamily: fonts.sans, fontSize: 11, fontWeight: '700' },
+  syncBody: { marginTop: 2, color: colors.muted, fontFamily: fonts.sans, fontSize: 9, lineHeight: 13 },
   header: { height: 72, paddingHorizontal: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: colors.cream, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.line },
   headerIdentity: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 11 },
   headerCopy: { flex: 1 },
