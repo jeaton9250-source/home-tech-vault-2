@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { createClient } from "@/lib/supabase/server";
+import { authenticateRequest } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -158,12 +158,10 @@ function buildSearchQuery(extraction: VisionExtraction) {
 
 export async function POST(request: Request) {
   try {
-    const supabase = await createClient();
-
     const {
-      data: { user },
+      user,
       error: userError,
-    } = await supabase.auth.getUser();
+    } = await authenticateRequest(request);
 
     if (userError || !user) {
       return NextResponse.json(

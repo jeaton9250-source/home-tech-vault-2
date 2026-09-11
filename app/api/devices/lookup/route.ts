@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { createClient } from "@/lib/supabase/server";
+import { authenticateRequest } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -1147,14 +1147,10 @@ async function searchIcecat(
 export async function GET(
   request: Request
 ) {
-  const supabase =
-    await createClient();
-
   const {
-    data: { user },
+    user,
     error: userError,
-  } =
-    await supabase.auth.getUser();
+  } = await authenticateRequest(request);
 
   if (
     userError ||

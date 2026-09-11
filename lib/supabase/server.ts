@@ -60,6 +60,71 @@ export async function createClient() {
   );
 }
 
+function readBearerToken(request: Request) {
+  const authorization = request.headers.get("authorization")?.trim();
+
+  if (!authorization) {
+    return {
+      present: false,
+      token: null,
+    };
+  }
+
+  const match = authorization.match(/^Bearer\s+([^\s]+)$/i);
+
+  return {
+    present: true,
+    token: match?.[1] ?? null,
+  };
+}
+
+/**
+ * Authenticate either a normal browser-cookie request or a native-app request
+ * carrying its Supabase access token. The returned client keeps the same user
+ * token on database calls, so existing RLS remains the authorization boundary.
+ */
+export async function authenticateRequest(request: Request) {
+  const cookieStore = await cookies();
+  const bearer = readBearerToken(request);
+  const globalHeaders: Record<string, string> = {};
+
+  if (bearer.token) {
+    globalHeaders.Authorization = `Bearer ${bearer.token}`;
+  }
+
+  const client = createServerClient(
+    getSupabaseUrl(),
+    resolveSupabaseAnonKey(),
+    {
+      cookies: createCookieHandlers(cookieStore),
+      global: {
+        headers: globalHeaders,
+      },
+    }
+  );
+
+  if (bearer.present && !bearer.token) {
+    return {
+      client,
+      user: null,
+      error: new Error("Invalid Authorization header."),
+    };
+  }
+
+  const {
+    data: { user },
+    error,
+  } = bearer.token
+    ? await client.auth.getUser(bearer.token)
+    : await client.auth.getUser();
+
+  return {
+    client,
+    user,
+    error,
+  };
+}
+
 /**
  * OTP verification must not inherit a stale browser session JWT as
  * Authorization Bearer. Pin the anon/publishable key for verify calls

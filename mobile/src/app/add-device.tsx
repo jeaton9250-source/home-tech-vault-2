@@ -6,44 +6,76 @@ import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleShee
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { PrimaryButton } from '@/components/ui';
-import { supabase } from '@/lib/supabase';
+import { createDevice } from '@/lib/home-tech-vault-api';
 import { useAuth } from '@/providers/auth-provider';
 import { useVaultData } from '@/providers/vault-data-provider';
 import { colors, fonts } from '@/theme';
 
 export default function AddDeviceScreen() {
   const router = useRouter();
-  const { barcode } = useLocalSearchParams<{ barcode?: string }>();
+  const params = useLocalSearchParams<{
+    name?: string;
+    brand?: string;
+    manufacturer?: string;
+    model?: string;
+    serial?: string;
+    category?: string;
+    productUpc?: string;
+    room?: string;
+  }>();
   const auth = useAuth();
   const data = useVaultData();
-  const [name, setName] = useState('');
-  const [brand, setBrand] = useState('');
-  const [model, setModel] = useState('');
-  const [serial, setSerial] = useState(barcode ?? '');
-  const [room, setRoom] = useState('');
+  const [name, setName] = useState(params.name ?? '');
+  const [brand, setBrand] = useState(params.brand ?? '');
+  const [manufacturer] = useState(params.manufacturer ?? params.brand ?? '');
+  const [model, setModel] = useState(params.model ?? '');
+  const [serial, setSerial] = useState(params.serial ?? '');
+  const [category, setCategory] = useState(params.category ?? 'Other');
+  const [productUpc, setProductUpc] = useState(params.productUpc ?? '');
+  const [room, setRoom] = useState(params.room ?? '');
   const [saving, setSaving] = useState(false);
+
+  function openScanner(mode: 'photo' | 'barcode') {
+    router.push({
+      pathname: '/scan-device',
+      params: {
+        mode,
+        name,
+        brand,
+        manufacturer,
+        model,
+        serial,
+        category,
+        productUpc,
+        room,
+      },
+    });
+  }
 
   async function save() {
     if (!name.trim()) return Alert.alert('What should your home call it?', 'Add a device name before saving.');
     if (auth.isDemo) return Alert.alert('This is a sample home', 'The Morgan Household is read-only. Sign in to remember devices in your own home.');
-    if (!auth.user || !supabase) return Alert.alert('Sign in required', 'Open your account before adding a device.');
+    if (!auth.user || !auth.session?.access_token) return Alert.alert('Sign in required', 'Open your account before adding a device.');
     setSaving(true);
-    const { data: membership } = await supabase.from('household_members').select('household_id').eq('user_id', auth.user.id).limit(1).maybeSingle();
-    const { error } = await supabase.from('devices').insert({
-      user_id: auth.user.id,
-      household_id: membership?.household_id ?? null,
-      device_name: name.trim(),
-      brand: brand.trim() || null,
-      model_number: model.trim() || null,
-      serial_number: serial.trim() || null,
-      location: room.trim() || null,
-      category: 'Other',
-    });
-    setSaving(false);
-    if (error) return Alert.alert('Could not save this device', error.message);
-    await data.refresh();
-    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    router.replace('/(tabs)/devices');
+    try {
+      await createDevice({
+        deviceName: name.trim(),
+        brand: brand.trim(),
+        manufacturer: manufacturer.trim() || brand.trim(),
+        modelNumber: model.trim(),
+        serialNumber: serial.trim(),
+        category: category.trim() || 'Other',
+        location: room.trim(),
+        productUpc: productUpc.trim(),
+      }, auth.session.access_token);
+      await data.refresh();
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      router.replace('/(tabs)/devices');
+    } catch (error) {
+      Alert.alert('Could not save this device', error instanceof Error ? error.message : 'Please try again.');
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -52,10 +84,10 @@ export default function AddDeviceScreen() {
         <View style={styles.header}><Pressable onPress={() => router.back()} style={styles.back}><ChevronLeft size={23} color={colors.ink} /></Pressable><View style={styles.headerCopy}><Text style={styles.eyebrow}>ADD TO YOUR HOME</Text><Text style={styles.headerTitle}>Remember a device</Text></View><View style={styles.spacer} /></View>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           <Text style={styles.title}>How would you like to add it?</Text>
-          <Text style={styles.body}>Start with what you know. You can add receipts, photos, and coverage later.</Text>
+          <Text style={styles.body}>{productUpc ? 'We found a product code and filled in everything we could. Review the details before saving.' : 'Start with what you know. You can add receipts, photos, and coverage later.'}</Text>
           <View style={styles.methods}>
-            <Method icon={Camera} label="Scan label" detail="Use your camera" onPress={() => router.push('/scan-device')} />
-            <Method icon={ScanBarcode} label="Barcode" detail="Capture a code" onPress={() => router.push('/scan-device')} />
+            <Method icon={Camera} label="Scan label" detail="Read model & serial" onPress={() => openScanner('photo')} />
+            <Method icon={ScanBarcode} label="Barcode" detail="Find the product" onPress={() => openScanner('barcode')} />
             <Method icon={Keyboard} label="Type it in" detail="Fast and simple" active onPress={() => undefined} />
           </View>
           <View style={styles.form}>
@@ -63,6 +95,8 @@ export default function AddDeviceScreen() {
             <Field label="Brand" value={brand} onChangeText={setBrand} placeholder="Samsung" />
             <Field label="Model" value={model} onChangeText={setModel} placeholder="Optional" />
             <Field label="Serial number" value={serial} onChangeText={setSerial} placeholder="Scan or type it" />
+            <Field label="Category" value={category} onChangeText={setCategory} placeholder="TV, appliance, network…" />
+            <Field label="Product barcode" value={productUpc} onChangeText={setProductUpc} placeholder="UPC or EAN" />
             <Field label="Room" value={room} onChangeText={setRoom} placeholder="Living Room" />
           </View>
           <View style={styles.helper}><Sparkles size={17} color={colors.oliveDark} /><Text style={styles.helperText}>Once saved, Home Tech Vault gives this device a lasting place for its receipt, manual, warranty, and care history.</Text></View>

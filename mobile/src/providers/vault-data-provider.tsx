@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { AppState } from 'react-native';
 
 import {
   demoDevices,
@@ -15,6 +16,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/providers/auth-provider';
 
 type VaultData = {
+  householdId: string | null;
   firstName: string;
   fullName: string;
   email: string;
@@ -33,6 +35,7 @@ type VaultDataContextValue = VaultData & {
 };
 
 const emptyData: VaultData = {
+  householdId: null,
   firstName: 'Homeowner',
   fullName: 'Homeowner',
   email: '',
@@ -44,6 +47,7 @@ const emptyData: VaultData = {
 };
 
 const demoData: VaultData = {
+  householdId: null,
   ...demoHousehold,
   devices: demoDevices,
   maintenance: demoMaintenance,
@@ -57,6 +61,36 @@ function formatDate(value: string | null) {
   if (!value) return 'No date';
   const date = new Date(`${value.slice(0, 10)}T12:00:00`);
   return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+async function resolveHomeHouseholdId(userId: string) {
+  if (!supabase) return null;
+
+  const [membershipsResult, realtorVaultsResult] = await Promise.all([
+    supabase
+      .from('household_members')
+      .select('household_id, joined_at')
+      .eq('user_id', userId)
+      .order('joined_at', { ascending: false }),
+    supabase
+      .from('realtor_vault_gifts')
+      .select('household_id')
+      .eq('realtor_user_id', userId)
+      .not('household_id', 'is', null),
+  ]);
+
+  if (membershipsResult.error) throw membershipsResult.error;
+  if (realtorVaultsResult.error) throw realtorVaultsResult.error;
+
+  const clientVaultIds = new Set(
+    (realtorVaultsResult.data ?? [])
+      .map((gift) => gift.household_id)
+      .filter((value): value is string => typeof value === 'string' && value.length > 0),
+  );
+
+  return (membershipsResult.data ?? [])
+    .find((membership) => !clientVaultIds.has(membership.household_id))
+    ?.household_id ?? null;
 }
 
 export function VaultDataProvider({ children }: { children: ReactNode }) {
@@ -85,18 +119,17 @@ export function VaultDataProvider({ children }: { children: ReactNode }) {
     else setLoading(true);
     setError(null);
     try {
-      const [profileResult, membershipResult] = await Promise.all([
+      const [profileResult, householdId] = await Promise.all([
         supabase.from('profiles').select('full_name, household_name').eq('id', user.id).maybeSingle(),
-        supabase.from('household_members').select('household_id').eq('user_id', user.id).limit(1).maybeSingle(),
+        resolveHomeHouseholdId(user.id),
       ]);
-      const householdId = membershipResult.data?.household_id ?? null;
       const scope = householdId ? { column: 'household_id', value: householdId } : { column: 'user_id', value: user.id };
       const [devicesResult, maintenanceResult, documentsResult] = await Promise.all([
         supabase.from('devices').select('id, device_name, brand, category, location, model_number, purchase_price, warranty_date, online').eq(scope.column, scope.value).order('device_name'),
         supabase.from('maintenance_tasks').select('id, title, device_id, due_date, completed').eq(scope.column, scope.value).order('due_date').limit(12),
         supabase.from('documents').select('id, document_name, document_type, created_at, device_id').eq(scope.column, scope.value).order('created_at', { ascending: false }).limit(20),
       ]);
-      const firstError = profileResult.error || membershipResult.error || devicesResult.error || maintenanceResult.error || documentsResult.error;
+      const firstError = profileResult.error || devicesResult.error || maintenanceResult.error || documentsResult.error;
       if (firstError) throw firstError;
       const devices: VaultDevice[] = (devicesResult.data ?? []).map((device) => ({
         id: device.id,
@@ -142,6 +175,7 @@ export function VaultDataProvider({ children }: { children: ReactNode }) {
       ].slice(0, 10);
       const fullName = profileResult.data?.full_name?.trim() || user.email?.split('@')[0] || 'Homeowner';
       setData({
+        householdId,
         firstName: fullName.split(' ')[0],
         fullName,
         email: user.email || '',
@@ -163,6 +197,43 @@ export function VaultDataProvider({ children }: { children: ReactNode }) {
     const timeout = setTimeout(() => void load(), 0);
     return () => clearTimeout(timeout);
   }, [load]);
+
+  useEffect(() => {
+    if (mode !== 'account' || !user || !supabase || loading) return;
+
+    const scopeColumn = data.householdId ? 'household_id' : 'user_id';
+    const scopeValue = data.householdId ?? user.id;
+    const filter = `${scopeColumn}=eq.${scopeValue}`;
+    let refreshTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const scheduleRefresh = () => {
+      if (refreshTimer) clearTimeout(refreshTimer);
+      refreshTimer = setTimeout(() => void load(), 250);
+    };
+
+    const channel = supabase
+      .channel(`mobile-vault-sync-${user.id}-${scopeValue}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'devices', filter }, scheduleRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'maintenance_tasks', filter }, scheduleRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'documents', filter }, scheduleRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'household_members', filter: `user_id=eq.${user.id}` }, scheduleRefresh)
+      .subscribe();
+
+    return () => {
+      if (refreshTimer) clearTimeout(refreshTimer);
+      void supabase?.removeChannel(channel);
+    };
+  }, [mode, user, loading, data.householdId, load]);
+
+  useEffect(() => {
+    if (mode !== 'account') return;
+
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') void load();
+    });
+
+    return () => subscription.remove();
+  }, [mode, load]);
 
   const visibleData = isDemo ? demoData : data;
   const value = useMemo(() => ({ ...visibleData, loading: isDemo ? false : loading, refreshing, error, refresh: () => load(true) }), [visibleData, isDemo, loading, refreshing, error, load]);
