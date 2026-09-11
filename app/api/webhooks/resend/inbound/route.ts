@@ -4,10 +4,6 @@ import { createClient } from "@supabase/supabase-js";
 
 import { parseOrderItems } from "@/lib/import/parseOrderItems";
 
-const resend = new Resend(
-  process.env.RESEND_API_KEY!
-);
-
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -29,6 +25,33 @@ export async function POST(
   request: NextRequest
 ) {
   try {
+    const resendApiKey =
+      process.env.RESEND_API_KEY?.trim();
+    const webhookSecret =
+      process.env.RESEND_WEBHOOK_SECRET?.trim();
+
+    if (!resendApiKey || !webhookSecret) {
+      console.error(
+        "Resend inbound webhook is not configured."
+      );
+
+      return NextResponse.json(
+        {
+          error:
+            "Email import is temporarily unavailable.",
+        },
+        {
+          status: 503,
+        }
+      );
+    }
+
+    /*
+      Initialize Resend only while handling a webhook. This keeps builds and
+      non-email environments from requiring a live API key at module load.
+    */
+    const resend = new Resend(resendApiKey);
+
     /*
       Resend webhook verification must use
       the original raw request body.
@@ -80,9 +103,7 @@ export async function POST(
               svixSignature,
           },
 
-          webhookSecret:
-            process.env
-              .RESEND_WEBHOOK_SECRET!,
+          webhookSecret,
         }) as ResendReceivedEvent;
     } catch (error) {
       console.error(
@@ -262,7 +283,7 @@ export async function POST(
           {
             headers: {
               Authorization:
-                `Bearer ${process.env.RESEND_API_KEY!}`,
+                `Bearer ${resendApiKey}`,
             },
             signal:
               AbortSignal.timeout(
