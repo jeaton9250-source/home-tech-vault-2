@@ -58,7 +58,7 @@ export default function AddDeviceScreen() {
     if (!auth.user || !auth.session?.access_token) return Alert.alert('Sign in required', 'Open your account before adding a device.');
     setSaving(true);
     try {
-      await createDevice({
+      const saved = await createDevice({
         deviceName: name.trim(),
         brand: brand.trim(),
         manufacturer: manufacturer.trim() || brand.trim(),
@@ -68,9 +68,10 @@ export default function AddDeviceScreen() {
         location: room.trim(),
         productUpc: productUpc.trim(),
       }, auth.session.access_token);
-      await data.refresh();
+      data.rememberSavedDevice(saved.device, saved.householdId);
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.replace('/(tabs)/devices');
+      void data.refresh();
     } catch (error) {
       Alert.alert('Could not save this device', error instanceof Error ? error.message : 'Please try again.');
     } finally {

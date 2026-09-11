@@ -32,6 +32,7 @@ type VaultDataContextValue = VaultData & {
   refreshing: boolean;
   error: string | null;
   refresh: () => Promise<void>;
+  rememberSavedDevice: (device: VaultDevice, householdId: string | null) => void;
 };
 
 const emptyData: VaultData = {
@@ -127,9 +128,9 @@ export function VaultDataProvider({ children }: { children: ReactNode }) {
       const [devicesResult, maintenanceResult, documentsResult] = await Promise.all([
         supabase.from('devices').select('id, device_name, brand, category, location, model_number, purchase_price, warranty_date, online').eq(scope.column, scope.value).order('device_name'),
         supabase.from('maintenance_tasks').select('id, title, device_id, due_date, completed').eq(scope.column, scope.value).order('due_date').limit(12),
-        supabase.from('documents').select('id, document_name, document_type, created_at, device_id').eq(scope.column, scope.value).order('created_at', { ascending: false }).limit(20),
+        supabase.from('documents').select('id, file_name, file_type, created_at, device_id').eq(scope.column, scope.value).order('created_at', { ascending: false }).limit(20),
       ]);
-      const firstError = profileResult.error || devicesResult.error || maintenanceResult.error || documentsResult.error;
+      const firstError = profileResult.error || devicesResult.error;
       if (firstError) throw firstError;
       const devices: VaultDevice[] = (devicesResult.data ?? []).map((device) => ({
         id: device.id,
@@ -143,7 +144,7 @@ export function VaultDataProvider({ children }: { children: ReactNode }) {
         online: device.online,
       }));
       const deviceNames = new Map(devices.map((device) => [device.id, device.name]));
-      const maintenance: MaintenanceItem[] = (maintenanceResult.data ?? []).map((item) => {
+      const maintenance: MaintenanceItem[] = (maintenanceResult.error ? [] : maintenanceResult.data ?? []).map((item) => {
         const isPast = item.due_date ? new Date(item.due_date).getTime() < Date.now() : false;
         return {
           id: item.id,
@@ -153,10 +154,10 @@ export function VaultDataProvider({ children }: { children: ReactNode }) {
           status: item.completed ? 'Completed' : isPast ? 'Overdue' : 'Upcoming',
         };
       });
-      const documents: VaultDocument[] = (documentsResult.data ?? []).map((document) => ({
+      const documents: VaultDocument[] = (documentsResult.error ? [] : documentsResult.data ?? []).map((document) => ({
         id: document.id,
-        name: document.document_name || 'Home document',
-        type: document.document_type || 'Document',
+        name: document.file_name || 'Home document',
+        type: document.file_type || 'Document',
         deviceName: deviceNames.get(document.device_id ?? '') || 'Whole Home',
         date: formatDate(document.created_at),
       }));
@@ -192,6 +193,15 @@ export function VaultDataProvider({ children }: { children: ReactNode }) {
       setRefreshing(false);
     }
   }, [mode, user, isDemo]);
+
+  const rememberSavedDevice = useCallback((device: VaultDevice, householdId: string | null) => {
+    setData((current) => ({
+      ...current,
+      householdId: householdId ?? current.householdId,
+      devices: [device, ...current.devices.filter((item) => item.id !== device.id)]
+        .sort((left, right) => left.name.localeCompare(right.name)),
+    }));
+  }, []);
 
   useEffect(() => {
     const timeout = setTimeout(() => void load(), 0);
@@ -236,7 +246,7 @@ export function VaultDataProvider({ children }: { children: ReactNode }) {
   }, [mode, load]);
 
   const visibleData = isDemo ? demoData : data;
-  const value = useMemo(() => ({ ...visibleData, loading: isDemo ? false : loading, refreshing, error, refresh: () => load(true) }), [visibleData, isDemo, loading, refreshing, error, load]);
+  const value = useMemo(() => ({ ...visibleData, loading: isDemo ? false : loading, refreshing, error, refresh: () => load(true), rememberSavedDevice }), [visibleData, isDemo, loading, refreshing, error, load, rememberSavedDevice]);
   return <VaultDataContext.Provider value={value}>{children}</VaultDataContext.Provider>;
 }
 

@@ -104,7 +104,9 @@ export async function POST(request: Request) {
         manual_status: shouldEnrich ? "pending" : null,
         manual_checked_at: null,
       })
-      .select("id")
+      .select(
+        "id, device_name, brand, category, location, model_number, purchase_price, warranty_date, online",
+      )
       .single();
 
     if (insertError || !device) {
@@ -121,7 +123,21 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json(
-      { deviceId: device.id, householdId },
+      {
+        deviceId: device.id,
+        householdId,
+        device: {
+          id: device.id,
+          name: device.device_name || "Unnamed device",
+          brand: device.brand || "Unknown brand",
+          category: device.category || "Other",
+          location: device.location || "Room not set",
+          model: device.model_number || "Model not recorded",
+          value: Number(device.purchase_price) || 0,
+          warrantyDate: device.warranty_date,
+          online: device.online,
+        },
+      },
       { status: 201, headers: { "Cache-Control": "private, no-store" } },
     );
   } catch (error) {

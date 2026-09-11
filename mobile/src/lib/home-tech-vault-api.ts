@@ -1,3 +1,5 @@
+import type { VaultDevice } from '@/lib/demo-data';
+
 const WEB_URL = process.env.EXPO_PUBLIC_WEB_URL || 'https://www.hometechvault.com';
 
 export type DeviceLookupMatch = {
@@ -105,13 +107,18 @@ export async function createDevice(input: CreateDeviceInput, accessToken: string
   });
   const payload = await response.json() as {
     deviceId?: string;
+    householdId?: string | null;
+    device?: VaultDevice;
     error?: string;
     code?: string;
   };
 
-  if (!response.ok || !payload.deviceId) {
+  if (!response.ok || !payload.deviceId || !payload.device) {
     throw new Error(payload.error || "We couldn't save this device. Please try again.");
   }
 
-  return payload.deviceId;
+  return {
+    device: payload.device,
+    householdId: payload.householdId ?? null,
+  };
 }
