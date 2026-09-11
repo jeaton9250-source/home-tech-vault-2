@@ -59,7 +59,20 @@
           "barcodeScannerEnabled": true
         }
       ],
-      "expo-image"
+      "expo-image",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Home Tech Vault lets you add a photo to the private record for each device."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#6B7D3C",
+          "defaultChannel": "home-reminders"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

@@ -98,6 +98,7 @@ export type CreateDeviceInput = {
   purchaseDate: string;
   warrantyDate: string;
   purchasePrice: string;
+  notes?: string;
 };
 
 export async function createDevice(input: CreateDeviceInput, accessToken: string) {
@@ -105,7 +106,7 @@ export async function createDevice(input: CreateDeviceInput, accessToken: string
     method: 'POST',
     body: JSON.stringify({
       ...input,
-      notes: '',
+      notes: input.notes ?? '',
     }),
   });
   const payload = await response.json() as {
@@ -124,6 +125,97 @@ export async function createDevice(input: CreateDeviceInput, accessToken: string
     device: payload.device,
     householdId: payload.householdId ?? null,
   };
+}
+
+export async function updateDevice(
+  deviceId: string,
+  input: CreateDeviceInput,
+  accessToken: string,
+) {
+  const response = await authenticatedFetch(`/api/mobile/devices/${encodeURIComponent(deviceId)}`, accessToken, {
+    method: 'PATCH',
+    body: JSON.stringify({ ...input, notes: input.notes ?? '' }),
+  });
+  const payload = await response.json() as {
+    householdId?: string | null;
+    device?: VaultDevice;
+    error?: string;
+  };
+
+  if (!response.ok || !payload.device) {
+    throw new Error(payload.error || "We couldn't update this device. Please try again.");
+  }
+
+  return { device: payload.device, householdId: payload.householdId ?? null };
+}
+
+const DEVICE_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif']);
+const MAX_DEVICE_IMAGE_BYTES = 6 * 1024 * 1024;
+
+export async function uploadDeviceImage(input: {
+  uri: string;
+  mimeType?: string | null;
+  fileSize?: number | null;
+  fileName?: string | null;
+  deviceId: string;
+  userId: string;
+  householdId: string | null;
+}) {
+  if (!supabase) throw new Error('The secure vault connection is unavailable.');
+
+  const localFile = new File(input.uri);
+  const mimeType = (input.mimeType || localFile.type || 'image/jpeg').toLowerCase();
+  const fileSize = input.fileSize || localFile.size;
+  if (!DEVICE_IMAGE_TYPES.has(mimeType)) throw new Error('Choose a JPG, PNG, WebP, HEIC, or HEIF image.');
+  if (fileSize > MAX_DEVICE_IMAGE_BYTES) throw new Error('Choose an image smaller than 6 MB.');
+
+  const extensionByType: Record<string, string> = {
+    'image/jpeg': 'jpg',
+    'image/png': 'png',
+    'image/webp': 'webp',
+    'image/heic': 'heic',
+    'image/heif': 'heif',
+  };
+  const extension = input.fileName?.split('.').pop()?.replace(/[^a-z0-9]/gi, '').toLowerCase()
+    || extensionByType[mimeType]
+    || 'jpg';
+  const storagePath = `${input.userId}/${input.deviceId}/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${extension}`;
+  const bytes = await localFile.arrayBuffer();
+  const { error: uploadError } = await supabase.storage.from('device-images').upload(storagePath, bytes, {
+    contentType: mimeType,
+    upsert: false,
+  });
+  if (uploadError) throw uploadError;
+
+  const { error: rowError } = await supabase.from('device_images').insert({
+    device_id: input.deviceId,
+    user_id: input.userId,
+    household_id: input.householdId,
+    image_url: storagePath,
+  });
+  if (rowError) {
+    await supabase.storage.from('device-images').remove([storagePath]);
+    throw rowError;
+  }
+
+  const { data, error: signedError } = await supabase.storage.from('device-images').createSignedUrl(storagePath, 3600);
+  if (signedError || !data?.signedUrl) throw signedError ?? new Error("The device photo couldn't be opened.");
+  return { uri: data.signedUrl };
+}
+
+export async function registerPushToken(input: {
+  token: string;
+  platform: 'ios' | 'android';
+  deviceId?: string | null;
+}, accessToken: string) {
+  const response = await authenticatedFetch('/api/mobile/push/register', accessToken, {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+  const payload = await response.json() as { registered?: boolean; error?: string };
+  if (!response.ok || !payload.registered) {
+    throw new Error(payload.error || "Notifications couldn't be connected.");
+  }
 }
 
 export const DOCUMENT_TYPES = ['Receipt', 'Manual', 'Warranty', 'Invoice', 'Photo', 'Other'] as const;

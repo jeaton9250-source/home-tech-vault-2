@@ -33,6 +33,7 @@ type VaultDataContextValue = VaultData & {
   error: string | null;
   refresh: () => Promise<void>;
   rememberSavedDevice: (device: VaultDevice, householdId: string | null) => void;
+  rememberUpdatedDevice: (device: VaultDevice, householdId: string | null) => void;
   rememberSavedDocument: (document: VaultDocument, householdId: string | null) => void;
 };
 
@@ -127,13 +128,13 @@ export function VaultDataProvider({ children }: { children: ReactNode }) {
       ]);
       const scope = householdId ? { column: 'household_id', value: householdId } : { column: 'user_id', value: user.id };
       const [devicesResult, maintenanceResult, documentsResult] = await Promise.all([
-        supabase.from('devices').select('id, device_name, brand, manufacturer, category, location, model_number, serial_number, purchase_date, purchase_price, warranty_date, online').eq(scope.column, scope.value).order('device_name'),
+        supabase.from('devices').select('id, device_name, brand, manufacturer, category, location, model_number, serial_number, purchase_date, purchase_price, warranty_date, online, notes').eq(scope.column, scope.value).order('device_name'),
         supabase.from('maintenance_tasks').select('id, title, device_id, due_date, completed').eq(scope.column, scope.value).order('due_date').limit(12),
         supabase.from('documents').select('id, file_name, file_type, document_name, document_type, created_at, device_id, file_url').eq(scope.column, scope.value).order('created_at', { ascending: false }).limit(20),
       ]);
       const firstError = profileResult.error || devicesResult.error;
       if (firstError) throw firstError;
-      const devices: VaultDevice[] = (devicesResult.data ?? []).map((device) => ({
+      let devices: VaultDevice[] = (devicesResult.data ?? []).map((device) => ({
         id: device.id,
         name: device.device_name || 'Unnamed device',
         brand: device.brand || 'Unknown brand',
@@ -146,7 +147,32 @@ export function VaultDataProvider({ children }: { children: ReactNode }) {
         value: Number(device.purchase_price) || 0,
         warrantyDate: device.warranty_date,
         online: device.online,
+        notes: device.notes || '',
       }));
+
+      if (devices.length) {
+        const { data: imageRows } = await supabase
+          .from('device_images')
+          .select('device_id, image_url, created_at')
+          .in('device_id', devices.map((device) => device.id))
+          .order('created_at', { ascending: false });
+        const latestPathByDevice = new Map<string, string>();
+        for (const row of imageRows ?? []) {
+          if (row.device_id && row.image_url && !latestPathByDevice.has(row.device_id)) {
+            latestPathByDevice.set(row.device_id, row.image_url);
+          }
+        }
+        const signedUrls = new Map<string, string>();
+        const imageStorage = supabase.storage.from('device-images');
+        await Promise.all([...latestPathByDevice.entries()].map(async ([deviceId, path]) => {
+          const { data: signed } = await imageStorage.createSignedUrl(path, 3600);
+          if (signed?.signedUrl) signedUrls.set(deviceId, signed.signedUrl);
+        }));
+        devices = devices.map((device) => {
+          const uri = signedUrls.get(device.id);
+          return uri ? { ...device, image: { uri } } : device;
+        });
+      }
       const deviceNames = new Map(devices.map((device) => [device.id, device.name]));
       const maintenance: MaintenanceItem[] = (maintenanceResult.error ? [] : maintenanceResult.data ?? []).map((item) => {
         const isPast = item.due_date ? new Date(item.due_date).getTime() < Date.now() : false;
@@ -155,6 +181,7 @@ export function VaultDataProvider({ children }: { children: ReactNode }) {
           title: item.title || 'Home care task',
           deviceName: deviceNames.get(item.device_id ?? '') || 'Whole Home',
           dueDate: formatDate(item.due_date),
+          dueDateIso: item.due_date,
           status: item.completed ? 'Completed' : isPast ? 'Overdue' : 'Upcoming',
         };
       });
@@ -209,6 +236,16 @@ export function VaultDataProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
+  const rememberUpdatedDevice = useCallback((device: VaultDevice, householdId: string | null) => {
+    setData((current) => ({
+      ...current,
+      householdId: householdId ?? current.householdId,
+      devices: current.devices
+        .map((item) => item.id === device.id ? device : item)
+        .sort((left, right) => left.name.localeCompare(right.name)),
+    }));
+  }, []);
+
   const rememberSavedDocument = useCallback((document: VaultDocument, householdId: string | null) => {
     setData((current) => ({
       ...current,
@@ -240,6 +277,7 @@ export function VaultDataProvider({ children }: { children: ReactNode }) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'devices', filter }, scheduleRefresh)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'maintenance_tasks', filter }, scheduleRefresh)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'documents', filter }, scheduleRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'device_images', filter }, scheduleRefresh)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'household_members', filter: `user_id=eq.${user.id}` }, scheduleRefresh)
       .subscribe();
 
@@ -260,7 +298,7 @@ export function VaultDataProvider({ children }: { children: ReactNode }) {
   }, [mode, load]);
 
   const visibleData = isDemo ? demoData : data;
-  const value = useMemo(() => ({ ...visibleData, loading: isDemo ? false : loading, refreshing, error, refresh: () => load(true), rememberSavedDevice, rememberSavedDocument }), [visibleData, isDemo, loading, refreshing, error, load, rememberSavedDevice, rememberSavedDocument]);
+  const value = useMemo(() => ({ ...visibleData, loading: isDemo ? false : loading, refreshing, error, refresh: () => load(true), rememberSavedDevice, rememberUpdatedDevice, rememberSavedDocument }), [visibleData, isDemo, loading, refreshing, error, load, rememberSavedDevice, rememberUpdatedDevice, rememberSavedDocument]);
   return <VaultDataContext.Provider value={value}>{children}</VaultDataContext.Provider>;
 }
 

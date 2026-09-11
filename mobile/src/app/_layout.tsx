@@ -6,7 +6,8 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AuthProvider, useAuth } from '@/providers/auth-provider';
-import { VaultDataProvider } from '@/providers/vault-data-provider';
+import { syncHomeNotifications } from '@/lib/device-notifications';
+import { VaultDataProvider, useVaultData } from '@/providers/vault-data-provider';
 import { colors } from '@/theme';
 
 void SplashScreen.preventAutoHideAsync();
@@ -29,11 +30,24 @@ function RootNavigator() {
         <Stack.Screen name="notifications" options={{ presentation: 'modal' }} />
         <Stack.Screen name="add-device" options={{ presentation: 'modal' }} />
         <Stack.Screen name="add-document" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="edit-device" options={{ presentation: 'modal' }} />
         <Stack.Screen name="scan-device" options={{ presentation: 'fullScreenModal' }} />
         <Stack.Screen name="device/[id]" />
       </Stack>
     </>
   );
+}
+
+function NotificationScheduler() {
+  const auth = useAuth();
+  const data = useVaultData();
+
+  useEffect(() => {
+    if (auth.mode !== 'account' || data.loading) return;
+    void syncHomeNotifications(data.devices, data.maintenance).catch(() => undefined);
+  }, [auth.mode, data.loading, data.devices, data.maintenance]);
+
+  return null;
 }
 
 export default function RootLayout() {
@@ -42,6 +56,7 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <AuthProvider>
           <VaultDataProvider>
+            <NotificationScheduler />
             <RootNavigator />
           </VaultDataProvider>
         </AuthProvider>

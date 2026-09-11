@@ -14,6 +14,7 @@ export type VaultDevice = {
   value: number;
   warrantyDate: string | null;
   online: boolean | null;
+  notes?: string;
   image?: ImageSourcePropType;
 };
 
@@ -22,6 +23,7 @@ export type MaintenanceItem = {
   title: string;
   deviceName: string;
   dueDate: string;
+  dueDateIso?: string | null;
   status: 'Overdue' | 'Due soon' | 'Upcoming' | 'Completed';
 };
 
