@@ -1,10 +1,13 @@
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { BadgeDollarSign, Building2, CalendarDays, ChevronLeft, FileText, Hash, MapPin, Pencil, ShieldCheck, Upload, Wifi, WifiOff, Wrench } from 'lucide-react-native';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Card, EmptyState, ListRow, PrimaryButton } from '@/components/ui';
+import type { VaultDocument } from '@/lib/demo-data';
+import { viewVaultDocument } from '@/lib/document-viewer';
 import { useVaultData } from '@/providers/vault-data-provider';
 import { colors, fonts } from '@/theme';
 
@@ -12,10 +15,27 @@ export default function DeviceDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const data = useVaultData();
+  const [openingId, setOpeningId] = useState<string | null>(null);
   const device = data.devices.find((item) => item.id === id);
   if (!device) return <SafeAreaView style={styles.safe}><View style={styles.missing}><EmptyState icon={WifiOff} title="Device not found" body="This device may have been removed or belongs to another household." /><Pressable onPress={() => router.back()}><Text style={styles.link}>Back to your devices</Text></Pressable></View></SafeAreaView>;
   const documents = data.documents.filter((item) => item.deviceId === device.id);
   const maintenance = data.maintenance.filter((item) => item.deviceName === device.name);
+  async function openDocument(document: VaultDocument) {
+    if (openingId) return;
+    setOpeningId(document.id);
+    try {
+      await viewVaultDocument(document);
+    } catch (error) {
+      Alert.alert(
+        document.fileUrl ? 'Could not open this document' : 'Sample document',
+        document.fileUrl
+          ? error instanceof Error ? error.message : 'Please try again.'
+          : 'In your own vault, tapping a document opens the securely stored file here.',
+      );
+    } finally {
+      setOpeningId(null);
+    }
+  }
   return (
     <SafeAreaView edges={['top']} style={styles.safe}>
       <View style={styles.header}><Pressable onPress={() => router.back()} style={styles.back}><ChevronLeft size={23} color={colors.ink} /></Pressable><Text numberOfLines={1} style={styles.headerTitle}>{device.name}</Text><Pressable accessibilityLabel="Edit device" onPress={() => router.push({ pathname: '/edit-device', params: { id: device.id } })} style={styles.back}><Pencil size={18} color={colors.ink} /></Pressable></View>
@@ -36,7 +56,7 @@ export default function DeviceDetailScreen() {
           {device.notes ? <ListRow icon={FileText} title="Notes" detail={device.notes} /> : null}
         </Card>
         <PrimaryButton label="Add a document to this device" icon={Upload} onPress={() => router.push({ pathname: '/add-document', params: { deviceId: device.id } })} />
-        {documents.length ? <Card>{documents.map((document) => <ListRow key={document.id} icon={FileText} title={document.name} detail={document.type} meta={document.date.split(',')[0]} />)}</Card> : null}
+        {documents.length ? <Card>{documents.map((document) => <ListRow key={document.id} icon={FileText} title={openingId === document.id ? 'Opening…' : document.name} detail={`${document.type} · Tap to view`} meta={document.date.split(',')[0]} onPress={() => void openDocument(document)} />)}</Card> : null}
       </ScrollView>
     </SafeAreaView>
   );

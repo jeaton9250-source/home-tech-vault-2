@@ -239,6 +239,45 @@ export async function deleteVaultDocument(documentId: string, accessToken: strin
   }
 }
 
+function extractDocumentStoragePath(fileUrl: string) {
+  const value = fileUrl.trim();
+  if (!value) return null;
+  if (!/^https?:\/\//i.test(value)) return value.replace(/^\/+/, '');
+
+  const markers = [
+    '/storage/v1/object/sign/documents/',
+    '/storage/v1/object/public/documents/',
+    '/storage/v1/object/authenticated/documents/',
+  ];
+  const marker = markers.find((candidate) => value.includes(candidate));
+  if (!marker) return null;
+
+  try {
+    return decodeURIComponent(value.slice(value.indexOf(marker) + marker.length).split('?')[0] || '');
+  } catch {
+    return null;
+  }
+}
+
+export async function createVaultDocumentViewUrl(fileUrl: string | null | undefined) {
+  if (!supabase) throw new Error('The secure vault connection is unavailable.');
+  if (!fileUrl) throw new Error('This document does not have a viewable file yet.');
+
+  const storagePath = extractDocumentStoragePath(fileUrl);
+  if (!storagePath || storagePath.includes('..') || storagePath.includes('\\')) {
+    throw new Error('This document does not have a valid file location.');
+  }
+
+  const { data, error } = await supabase.storage
+    .from('documents')
+    .createSignedUrl(storagePath, 5 * 60);
+  if (error || !data?.signedUrl) {
+    throw error ?? new Error("This document couldn't be opened.");
+  }
+
+  return data.signedUrl;
+}
+
 const DEVICE_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif']);
 const MAX_DEVICE_IMAGE_BYTES = 6 * 1024 * 1024;
 

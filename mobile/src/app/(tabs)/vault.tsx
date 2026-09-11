@@ -6,6 +6,7 @@ import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-nativ
 
 import { AppScreen, Card, EmptyState, ListRow, LoadingView, PrimaryButton } from '@/components/ui';
 import type { VaultDocument } from '@/lib/demo-data';
+import { viewVaultDocument } from '@/lib/document-viewer';
 import { deleteVaultDocument } from '@/lib/home-tech-vault-api';
 import { useAuth } from '@/providers/auth-provider';
 import { useVaultData } from '@/providers/vault-data-provider';
@@ -18,6 +19,7 @@ export default function VaultScreen() {
   const { loading, refresh } = data;
   const [query, setQuery] = useState('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [openingId, setOpeningId] = useState<string | null>(null);
   useFocusEffect(useCallback(() => {
     if (!loading) void refresh();
   }, [loading, refresh]));
@@ -25,6 +27,23 @@ export default function VaultScreen() {
     const needle = query.trim().toLowerCase();
     return needle ? data.documents.filter((document) => [document.name, document.type, document.deviceName].some((value) => value.toLowerCase().includes(needle))) : data.documents;
   }, [data.documents, query]);
+
+  async function openDocument(document: VaultDocument) {
+    if (deletingId || openingId) return;
+    if (auth.isDemo) {
+      Alert.alert('Sample document', 'In your own vault, tapping a document opens the securely stored file here.');
+      return;
+    }
+
+    setOpeningId(document.id);
+    try {
+      await viewVaultDocument(document);
+    } catch (error) {
+      Alert.alert('Could not open this document', error instanceof Error ? error.message : 'Please try again.');
+    } finally {
+      setOpeningId(null);
+    }
+  }
 
   function confirmDelete(document: VaultDocument) {
     if (deletingId || auth.isDemo) return;
@@ -69,7 +88,7 @@ export default function VaultScreen() {
       </View>
       <View style={styles.search}><Search size={19} color={colors.muted} /><TextInput value={query} onChangeText={setQuery} placeholder="Find a receipt, manual, or warranty" placeholderTextColor="#9AA3A5" style={styles.input} /></View>
       <PrimaryButton label="File a new document" icon={Plus} onPress={() => router.push('/add-document')} />
-      {documents.length ? <Card>{documents.map((document) => <ListRow key={document.id} icon={document.type === 'Receipt' ? ReceiptText : document.type === 'Warranty' ? ShieldCheck : FileCheck2} title={deletingId === document.id ? 'Deleting…' : document.name} detail={`${document.type} · ${document.deviceName}`} meta={document.date.split(',')[0]} trailing={!auth.isDemo ? <Pressable accessibilityLabel={`Delete ${document.name}`} accessibilityRole="button" disabled={Boolean(deletingId)} hitSlop={10} onPress={() => confirmDelete(document)} style={({ pressed }) => [styles.deleteButton, pressed && styles.deletePressed]}><Trash2 size={17} color={colors.rust} /></Pressable> : undefined} />)}</Card> : <EmptyState icon={FolderHeart} title={query ? 'No documents found' : 'A safe place for the paperwork'} body={query ? 'Try another document name, type, or device.' : 'Receipts, manuals, coverage, and insurance records will stay organized here.'} />}
+      {documents.length ? <Card>{documents.map((document) => <ListRow key={document.id} icon={document.type === 'Receipt' ? ReceiptText : document.type === 'Warranty' ? ShieldCheck : FileCheck2} title={deletingId === document.id ? 'Deleting…' : openingId === document.id ? 'Opening…' : document.name} detail={`${document.type} · ${document.deviceName}`} meta={document.date.split(',')[0]} onPress={() => void openDocument(document)} trailing={!auth.isDemo ? <Pressable accessibilityLabel={`Delete ${document.name}`} accessibilityRole="button" disabled={Boolean(deletingId || openingId)} hitSlop={10} onPress={(event) => { event.stopPropagation(); confirmDelete(document); }} style={({ pressed }) => [styles.deleteButton, pressed && styles.deletePressed]}><Trash2 size={17} color={colors.rust} /></Pressable> : undefined} />)}</Card> : <EmptyState icon={FolderHeart} title={query ? 'No documents found' : 'A safe place for the paperwork'} body={query ? 'Try another document name, type, or device.' : 'Receipts, manuals, coverage, and insurance records will stay organized here.'} />}
     </AppScreen>
   );
 }
