@@ -171,19 +171,21 @@ export async function POST(request: Request) {
 
       document = created;
 
-      await client.from("device_events").insert({
-        device_id: metadata.deviceId || null,
-        user_id: user.id,
-        event_type: metadata.fileType === "Receipt" ? "Receipt Uploaded" : "Document Uploaded",
-        title: getDefaultActivityTitle(
-          metadata.fileType === "Receipt" ? "receipt.uploaded" : "document.uploaded",
-          metadata.documentName,
-        ),
-        description: metadata.deviceId
-          ? "Document linked to a device from the Home Tech Vault app."
-          : "Document saved to the household vault from the Home Tech Vault app.",
-        event_date: new Date().toISOString(),
-      });
+      // device_events is intentionally device-scoped. Whole-home documents are
+      // represented by a null device_id on documents and must not create one.
+      if (metadata.deviceId) {
+        await client.from("device_events").insert({
+          device_id: metadata.deviceId,
+          user_id: user.id,
+          event_type: metadata.fileType === "Receipt" ? "Receipt Uploaded" : "Document Uploaded",
+          title: getDefaultActivityTitle(
+            metadata.fileType === "Receipt" ? "receipt.uploaded" : "document.uploaded",
+            metadata.documentName,
+          ),
+          description: "Document linked to a device from the Home Tech Vault app.",
+          event_date: new Date().toISOString(),
+        });
+      }
     }
 
     return NextResponse.json({

@@ -7,7 +7,6 @@ import {
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
-  FileText,
   Loader2,
   Upload,
 } from "lucide-react";
@@ -576,7 +575,7 @@ export default function UploadDocumentPage() {
               }
             >
               <option value="">
-                No connected device
+                Whole Home (not linked to a device)
               </option>
 
               {devices.map(
