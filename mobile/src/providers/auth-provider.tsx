@@ -169,9 +169,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!supabase) return { completed: false, error: 'The app connection has not been configured yet.' };
     if (Platform.OS !== 'ios') return { completed: false, error: 'Sign in with Apple is available on iPhone and iPad.' };
     try {
-      const available = await AppleAuthentication.isAvailableAsync();
-      if (!available) return { completed: false, error: 'Sign in with Apple is not available on this device.' };
-
       const credential = await AppleAuthentication.signInAsync({
         requestedScopes: [
           AppleAuthentication.AppleAuthenticationScope.FULL_NAME,

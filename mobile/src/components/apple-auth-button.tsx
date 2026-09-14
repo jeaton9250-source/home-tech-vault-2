@@ -1,22 +1,10 @@
 import * as AppleAuthentication from 'expo-apple-authentication';
-import { useEffect, useState } from 'react';
 import { ActivityIndicator, Platform, StyleSheet, View } from 'react-native';
 
 import { colors } from '@/theme';
 
 export function AppleAuthButton({ busy, disabled = false, onPress }: { busy: boolean; disabled?: boolean; onPress: () => void }) {
-  const [available, setAvailable] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-    if (Platform.OS !== 'ios') return () => { active = false; };
-    void AppleAuthentication.isAvailableAsync().then((isAvailable) => {
-      if (active) setAvailable(isAvailable);
-    });
-    return () => { active = false; };
-  }, []);
-
-  if (!available) return null;
+  if (Platform.OS !== 'ios') return null;
 
   return (
     <View pointerEvents={busy || disabled ? 'none' : 'auto'} style={[styles.wrapper, disabled && styles.disabled]}>
