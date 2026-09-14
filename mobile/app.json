@@ -39,6 +39,12 @@
       "expo-router",
       "expo-apple-authentication",
       [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Use Face ID to privately unlock your Home Tech Vault."
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "backgroundColor": "#14283B",

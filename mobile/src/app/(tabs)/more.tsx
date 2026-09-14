@@ -1,10 +1,12 @@
 import { useRouter } from 'expo-router';
 import { Bell, FileText, HelpCircle, Mail, MessageSquareText, Shield, Trash2, UsersRound } from 'lucide-react-native';
-import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { Alert, Linking, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 
 import { AppScreen, Card, ListRow, SecondaryButton } from '@/components/ui';
 import { useAuth } from '@/providers/auth-provider';
 import { useVaultData } from '@/providers/vault-data-provider';
+import { useVaultLock } from '@/providers/vault-lock-provider';
 import { colors, fonts } from '@/theme';
 
 const webUrl = process.env.EXPO_PUBLIC_WEB_URL || 'https://www.hometechvault.com';
@@ -13,6 +15,19 @@ export default function MoreScreen() {
   const router = useRouter();
   const { isDemo, exitDemo, signOut } = useAuth();
   const data = useVaultData();
+  const vaultLock = useVaultLock();
+  const [changingVaultLock, setChangingVaultLock] = useState(false);
+
+  async function changeVaultLock(enabled: boolean) {
+    if (changingVaultLock) return;
+    setChangingVaultLock(true);
+    try {
+      const error = await vaultLock.setLockEnabled(enabled);
+      if (error) Alert.alert('Vault Lock', error);
+    } finally {
+      setChangingVaultLock(false);
+    }
+  }
 
   async function leave() {
     if (isDemo) await exitDemo(); else await signOut();
@@ -31,6 +46,14 @@ export default function MoreScreen() {
       <Card>
         <ListRow icon={Bell} title="Notifications" detail="Warranty, care, and home updates" onPress={() => router.push('/notifications')} />
         <ListRow icon={UsersRound} title="Household sharing" detail="Family access and roles" onPress={() => void Linking.openURL(`${webUrl}/family`)} />
+        {!isDemo ? (
+          <ListRow
+            icon={Shield}
+            title={`${vaultLock.biometricLabel} Vault Lock`}
+            detail={vaultLock.available ? 'Locks after the app has been away for 30 seconds' : `Set up ${vaultLock.biometricLabel} in device settings`}
+            trailing={<Switch accessibilityLabel={`${vaultLock.biometricLabel} Vault Lock`} disabled={!vaultLock.available || changingVaultLock} onValueChange={(enabled) => void changeVaultLock(enabled)} trackColor={{ false: '#D7D7CF', true: colors.olive }} value={vaultLock.enabled} />}
+          />
+        ) : null}
         <ListRow icon={Shield} title="Privacy & security" detail="How your home record is protected" onPress={() => void Linking.openURL(`${webUrl}/privacy`)} />
       </Card>
 

@@ -9,6 +9,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from '@/providers/auth-provider';
 import { syncEnabledHomeNotifications } from '@/lib/device-notifications';
 import { VaultDataProvider, useVaultData } from '@/providers/vault-data-provider';
+import { VaultLockProvider } from '@/providers/vault-lock-provider';
 import { colors } from '@/theme';
 
 void SplashScreen.preventAutoHideAsync();
@@ -83,11 +84,13 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <AuthProvider>
-          <VaultDataProvider>
-            <NotificationScheduler />
-            <NotificationNavigation />
-            <RootNavigator />
-          </VaultDataProvider>
+          <VaultLockProvider>
+            <VaultDataProvider>
+              <NotificationScheduler />
+              <NotificationNavigation />
+              <RootNavigator />
+            </VaultDataProvider>
+          </VaultLockProvider>
         </AuthProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
