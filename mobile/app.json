@@ -13,8 +13,12 @@
       "icon": "./assets/images/htv-vault-icon.png",
       "bundleIdentifier": "com.hometechvault.app",
       "buildNumber": "1",
-      "usesAppleSignIn": true,
       "supportsTablet": false,
+      "entitlements": {
+        "com.apple.developer.applesignin": [
+          "Default"
+        ]
+      },
       "config": {
         "usesNonExemptEncryption": false
       },
@@ -37,7 +41,6 @@
     },
     "plugins": [
       "expo-router",
-      "expo-apple-authentication",
       [
         "expo-local-authentication",
         {

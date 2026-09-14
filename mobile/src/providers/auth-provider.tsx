@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { appleAuth } from '@invertase/react-native-apple-authentication';
 import type { Session, User } from '@supabase/supabase-js';
-import * as AppleAuthentication from 'expo-apple-authentication';
 import * as WebBrowser from 'expo-web-browser';
 import { AppState, Platform } from 'react-native';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
@@ -169,10 +169,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!supabase) return { completed: false, error: 'The app connection has not been configured yet.' };
     if (Platform.OS !== 'ios') return { completed: false, error: 'Sign in with Apple is available on iPhone and iPad.' };
     try {
-      const credential = await AppleAuthentication.signInAsync({
+      if (!appleAuth.isSupported) {
+        return { completed: false, error: 'Sign in with Apple is not available in this app build.' };
+      }
+
+      const credential = await appleAuth.performRequest({
+        requestedOperation: appleAuth.Operation.LOGIN,
         requestedScopes: [
-          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
-          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+          appleAuth.Scope.FULL_NAME,
+          appleAuth.Scope.EMAIL,
         ],
       });
       if (!credential.identityToken) {
@@ -182,6 +187,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { data, error } = await supabase.auth.signInWithIdToken({
         provider: 'apple',
         token: credential.identityToken,
+        nonce: credential.nonce,
+        access_token: credential.authorizationCode || undefined,
       });
       if (error || !data.session) {
         return { completed: false, error: error?.message || "Apple sign-in couldn't be completed." };
@@ -202,7 +209,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setMode('account');
       return { completed: true, error: null };
     } catch (error) {
-      if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'ERR_REQUEST_CANCELED') {
+      if (typeof error === 'object' && error !== null && 'code' in error && String(error.code) === appleAuth.Error.CANCELED) {
         return { completed: false, error: null };
       }
       return {

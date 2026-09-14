@@ -1,16 +1,16 @@
-import * as AppleAuthentication from 'expo-apple-authentication';
+import { AppleButton, appleAuth } from '@invertase/react-native-apple-authentication';
 import { ActivityIndicator, Platform, StyleSheet, View } from 'react-native';
 
 import { colors } from '@/theme';
 
 export function AppleAuthButton({ busy, disabled = false, onPress }: { busy: boolean; disabled?: boolean; onPress: () => void }) {
-  if (Platform.OS !== 'ios') return null;
+  if (Platform.OS !== 'ios' || !appleAuth.isSupported) return null;
 
   return (
     <View pointerEvents={busy || disabled ? 'none' : 'auto'} style={[styles.wrapper, disabled && styles.disabled]}>
-      <AppleAuthentication.AppleAuthenticationButton
-        buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
-        buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
+      <AppleButton
+        buttonStyle={AppleButton.Style.BLACK}
+        buttonType={AppleButton.Type.CONTINUE}
         cornerRadius={16}
         onPress={onPress}
         style={styles.button}
