@@ -1,10 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { appleAuth } from '@invertase/react-native-apple-authentication';
 import type { Session, User } from '@supabase/supabase-js';
 import * as WebBrowser from 'expo-web-browser';
-import { AppState, Platform } from 'react-native';
+import { AppState } from 'react-native';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
+import { appleSignInAvailable, isAppleSignInCanceled, requestAppleSignIn } from '@/lib/apple-auth';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 
 type AppMode = 'loading' | 'guest' | 'demo' | 'account';
@@ -167,19 +167,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithApple = useCallback(async () => {
     if (!supabase) return { completed: false, error: 'The app connection has not been configured yet.' };
-    if (Platform.OS !== 'ios') return { completed: false, error: 'Sign in with Apple is available on iPhone and iPad.' };
     try {
-      if (!appleAuth.isSupported) {
+      if (!appleSignInAvailable) {
         return { completed: false, error: 'Sign in with Apple is not available in this app build.' };
       }
 
-      const credential = await appleAuth.performRequest({
-        requestedOperation: appleAuth.Operation.LOGIN,
-        requestedScopes: [
-          appleAuth.Scope.FULL_NAME,
-          appleAuth.Scope.EMAIL,
-        ],
-      });
+      const credential = await requestAppleSignIn();
       if (!credential.identityToken) {
         return { completed: false, error: "Apple sign-in couldn't return a secure identity token." };
       }
@@ -209,7 +202,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setMode('account');
       return { completed: true, error: null };
     } catch (error) {
-      if (typeof error === 'object' && error !== null && 'code' in error && String(error.code) === appleAuth.Error.CANCELED) {
+      if (isAppleSignInCanceled(error)) {
         return { completed: false, error: null };
       }
       return {

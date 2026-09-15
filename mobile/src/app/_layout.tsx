@@ -3,6 +3,7 @@ import * as Notifications from 'expo-notifications';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
+import { Platform } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -61,6 +62,9 @@ function NotificationScheduler() {
 
 function NotificationNavigation() {
   useEffect(() => {
+    // expo-notifications does not expose notification-response APIs on web.
+    if (Platform.OS === 'web') return;
+
     function openMaintenanceReminder(notification: Notifications.Notification) {
       const data = notification.request.content.data;
       if (data?.source === 'home-tech-vault' && data?.kind === 'maintenance') {
