@@ -38,6 +38,7 @@ type VaultDataContextValue = VaultData & {
   rememberUpdatedDevice: (device: VaultDevice, householdId: string | null) => void;
   rememberSavedDocument: (document: VaultDocument, householdId: string | null) => void;
   forgetDocument: (documentId: string) => void;
+  rememberSavedMaintenance: (task: MaintenanceItem, householdId: string | null) => void;
   rememberCompletedMaintenance: (taskId: string) => void;
 };
 
@@ -147,10 +148,11 @@ export function VaultDataProvider({ children }: { children: ReactNode }) {
         resolveHomeHouseholdId(user.id),
       ]);
       const scope = householdId ? { column: 'household_id', value: householdId } : { column: 'user_id', value: user.id };
-      const [devicesResult, maintenanceResult, documentsResult] = await Promise.all([
-        supabase.from('devices').select('id, device_name, brand, manufacturer, category, location, model_number, serial_number, purchase_date, purchase_price, warranty_date, online, notes').eq(scope.column, scope.value).order('device_name'),
+      const [devicesResult, maintenanceResult, documentsResult, deviceDocumentsResult] = await Promise.all([
+        supabase.from('devices').select('id, device_name, brand, manufacturer, category, location, model_number, serial_number, purchase_date, purchase_price, warranty_date, online, notes, manual_url, manual_checked_at').eq(scope.column, scope.value).order('device_name'),
         supabase.from('maintenance_tasks').select('id, title, device_id, due_date, completed').eq(scope.column, scope.value).order('due_date').limit(12),
         supabase.from('documents').select('id, file_name, file_type, document_name, document_type, created_at, device_id, file_url').eq(scope.column, scope.value).order('created_at', { ascending: false }).limit(20),
+        supabase.from('device_documents').select('id, device_id, document_name, document_type, file_path, created_at').eq(scope.column, scope.value).order('created_at', { ascending: false }).limit(20),
       ]);
       const firstError = profileResult.error || devicesResult.error;
       if (firstError) throw firstError;
@@ -199,13 +201,14 @@ export function VaultDataProvider({ children }: { children: ReactNode }) {
         return {
           id: item.id,
           title: item.title || 'Home care task',
+          deviceId: item.device_id,
           deviceName: deviceNames.get(item.device_id ?? '') || 'Whole Home',
           dueDate: formatDate(item.due_date),
           dueDateIso: item.due_date,
           status: item.completed ? 'Completed' : daysRemaining !== null && daysRemaining < 0 ? 'Overdue' : 'Upcoming',
         };
       });
-      const documents: VaultDocument[] = (documentsResult.error ? [] : documentsResult.data ?? []).map((document) => ({
+      const standardDocuments: VaultDocument[] = (documentsResult.error ? [] : documentsResult.data ?? []).map((document) => ({
         id: document.id,
         deviceId: document.device_id,
         name: document.document_name || document.file_name || 'Home document',
@@ -213,7 +216,39 @@ export function VaultDataProvider({ children }: { children: ReactNode }) {
         deviceName: deviceNames.get(document.device_id ?? '') || 'Whole Home',
         date: formatDate(document.created_at),
         fileUrl: document.file_url,
+        source: 'documents',
       }));
+
+      const deviceDocuments: VaultDocument[] = (deviceDocumentsResult.error ? [] : deviceDocumentsResult.data ?? []).map((document) => ({
+        id: `device-document-${document.id}`,
+        deviceId: document.device_id,
+        name: document.document_name || 'Device document',
+        type: document.document_type || 'Document',
+        deviceName: deviceNames.get(document.device_id ?? '') || 'Whole Home',
+        date: formatDate(document.created_at),
+        fileUrl: null,
+        source: 'device_documents',
+        storagePath: document.file_path,
+      }));
+
+      const officialManuals: VaultDocument[] = (devicesResult.data ?? [])
+        .filter((device) => Boolean(device.manual_url))
+        .map((device) => ({
+          id: `official-manual-${device.id}`,
+          deviceId: device.id,
+          name: 'Official User Guide',
+          type: 'Manual',
+          deviceName: deviceNames.get(device.id) || device.device_name || 'Device',
+          date: formatDate(device.manual_checked_at),
+          fileUrl: device.manual_url,
+          source: 'official_manual',
+        }));
+
+      const documents: VaultDocument[] = [
+        ...officialManuals,
+        ...deviceDocuments,
+        ...standardDocuments,
+      ];
       const now = Date.now();
       const notifications: VaultNotification[] = [
         ...maintenance
@@ -310,6 +345,15 @@ export function VaultDataProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
+  const rememberSavedMaintenance = useCallback((task: MaintenanceItem, householdId: string | null) => {
+    setData((current) => ({
+      ...current,
+      householdId: householdId ?? current.householdId,
+      maintenance: [task, ...current.maintenance.filter((item) => item.id !== task.id)]
+        .sort((left, right) => (left.dueDateIso || '9999-12-31').localeCompare(right.dueDateIso || '9999-12-31')),
+    }));
+  }, []);
+
   const refresh = useCallback(() => load('refresh'), [load]);
 
   useEffect(() => {
@@ -335,6 +379,7 @@ export function VaultDataProvider({ children }: { children: ReactNode }) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'devices', filter }, scheduleRefresh)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'maintenance_tasks', filter }, scheduleRefresh)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'documents', filter }, scheduleRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'device_documents', filter }, scheduleRefresh)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'device_images', filter }, scheduleRefresh)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'household_members', filter: `user_id=eq.${user.id}` }, scheduleRefresh)
       .subscribe();
@@ -362,7 +407,7 @@ export function VaultDataProvider({ children }: { children: ReactNode }) {
   }, [mode, user, load]);
 
   const visibleData = isDemo ? demoData : data;
-  const value = useMemo(() => ({ ...visibleData, loading: isDemo ? false : loading, refreshing, error, syncStatus, lastSyncedAt, refresh, rememberSavedDevice, rememberUpdatedDevice, rememberSavedDocument, forgetDocument, rememberCompletedMaintenance }), [visibleData, isDemo, loading, refreshing, error, syncStatus, lastSyncedAt, refresh, rememberSavedDevice, rememberUpdatedDevice, rememberSavedDocument, forgetDocument, rememberCompletedMaintenance]);
+  const value = useMemo(() => ({ ...visibleData, loading: isDemo ? false : loading, refreshing, error, syncStatus, lastSyncedAt, refresh, rememberSavedDevice, rememberUpdatedDevice, rememberSavedDocument, forgetDocument, rememberSavedMaintenance, rememberCompletedMaintenance }), [visibleData, isDemo, loading, refreshing, error, syncStatus, lastSyncedAt, refresh, rememberSavedDevice, rememberUpdatedDevice, rememberSavedDocument, forgetDocument, rememberSavedMaintenance, rememberCompletedMaintenance]);
   return <VaultDataContext.Provider value={value}>{children}</VaultDataContext.Provider>;
 }
 

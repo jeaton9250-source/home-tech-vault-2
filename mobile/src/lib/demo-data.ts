@@ -21,6 +21,7 @@ export type VaultDevice = {
 export type MaintenanceItem = {
   id: string;
   title: string;
+  deviceId?: string | null;
   deviceName: string;
   dueDate: string;
   dueDateIso?: string | null;
@@ -35,6 +36,8 @@ export type VaultDocument = {
   deviceName: string;
   date: string;
   fileUrl?: string | null;
+  source?: 'documents' | 'device_documents' | 'official_manual';
+  storagePath?: string | null;
 };
 
 export type VaultNotification = {
@@ -147,7 +150,7 @@ export const demoDevices: VaultDevice[] = [
 ];
 
 export const demoMaintenance: MaintenanceItem[] = [
-  { id: 'm1', title: 'Update router firmware', deviceName: 'Wi-Fi Router', dueDate: 'Today', status: 'Due soon' },
+  { id: 'm1', title: 'Update router firmware', deviceId: 'demo-router', deviceName: 'Wi-Fi Router', dueDate: 'Today', status: 'Due soon' },
   { id: 'm2', title: 'Clean dryer vent', deviceName: 'LG Dryer', dueDate: 'Sep 14', status: 'Upcoming' },
   { id: 'm3', title: 'Replace air purifier filter', deviceName: 'Dyson Purifier', dueDate: 'Sep 18', status: 'Upcoming' },
   { id: 'm4', title: 'Test smoke & CO detectors', deviceName: 'Whole Home', dueDate: 'Sep 22', status: 'Upcoming' },

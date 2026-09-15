@@ -1,6 +1,6 @@
 import { File } from 'expo-file-system';
 
-import type { VaultDevice, VaultDocument } from '@/lib/demo-data';
+import type { MaintenanceItem, VaultDevice, VaultDocument } from '@/lib/demo-data';
 import { supabase } from '@/lib/supabase';
 
 const WEB_URL = process.env.EXPO_PUBLIC_WEB_URL || 'https://www.hometechvault.com';
@@ -226,6 +226,82 @@ export async function completeMaintenanceTask(taskId: string, accessToken: strin
   }
 }
 
+export const MAINTENANCE_TASK_TYPES = [
+  'Maintenance',
+  'Cleaning',
+  'Software Update',
+  'Backup',
+  'Inspection',
+  'Repair',
+  'Battery Replacement',
+] as const;
+
+export const MAINTENANCE_INTERVALS = [
+  'None',
+  'Weekly',
+  'Monthly',
+  'Every 3 Months',
+  'Every 6 Months',
+  'Yearly',
+  'As needed',
+] as const;
+
+export type MobileMaintenanceTaskType = (typeof MAINTENANCE_TASK_TYPES)[number];
+export type MobileMaintenanceInterval = (typeof MAINTENANCE_INTERVALS)[number];
+
+export type CreateMaintenanceTaskInput = {
+  title: string;
+  deviceId: string;
+  taskType: MobileMaintenanceTaskType;
+  dueDate: string;
+  recurringInterval: MobileMaintenanceInterval;
+  description: string;
+};
+
+function formatMaintenanceDate(value: string | null) {
+  if (!value) return 'No due date';
+  const date = new Date(`${value.slice(0, 10)}T12:00:00`);
+  return Number.isNaN(date.getTime())
+    ? value
+    : date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+export async function createMaintenanceTask(input: CreateMaintenanceTaskInput, accessToken: string) {
+  const response = await authenticatedFetch('/api/mobile/maintenance', accessToken, {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+  const payload = await readJsonResponse<{
+    householdId?: string | null;
+    task?: {
+      id: string;
+      title: string;
+      deviceId: string | null;
+      deviceName: string;
+      dueDate: string | null;
+    };
+    error?: string;
+  }>(response, "We couldn't schedule this care task. Please try again.");
+
+  if (!response.ok || !payload.task?.id) {
+    throw new Error(payload.error || "We couldn't schedule this care task. Please try again.");
+  }
+
+  const task: MaintenanceItem = {
+    id: payload.task.id,
+    title: payload.task.title,
+    deviceId: payload.task.deviceId,
+    deviceName: payload.task.deviceName || 'Whole Home',
+    dueDate: formatMaintenanceDate(payload.task.dueDate),
+    dueDateIso: payload.task.dueDate,
+    status: payload.task.dueDate && payload.task.dueDate < new Date().toISOString().slice(0, 10)
+      ? 'Overdue'
+      : 'Upcoming',
+  };
+
+  return { task, householdId: payload.householdId ?? null };
+}
+
 export async function deleteVaultDocument(documentId: string, accessToken: string) {
   const response = await authenticatedFetch(`/api/mobile/documents/${encodeURIComponent(documentId)}`, accessToken, {
     method: 'DELETE',
@@ -259,18 +335,59 @@ function extractDocumentStoragePath(fileUrl: string) {
   }
 }
 
-export async function createVaultDocumentViewUrl(fileUrl: string | null | undefined) {
+export async function createVaultDocumentViewUrl(document: VaultDocument) {
   if (!supabase) throw new Error('The secure vault connection is unavailable.');
-  if (!fileUrl) throw new Error('This document does not have a viewable file yet.');
 
-  const storagePath = extractDocumentStoragePath(fileUrl);
-  if (!storagePath || storagePath.includes('..') || storagePath.includes('\\')) {
+  if (document.source === 'official_manual') {
+    const manualUrl = document.fileUrl?.trim();
+
+    if (!manualUrl || !/^https?:\/\//i.test(manualUrl)) {
+      throw new Error('This manual does not have a valid web address.');
+    }
+
+    return manualUrl;
+  }
+
+  if (document.source === 'device_documents') {
+    const storagePath = document.storagePath?.trim();
+
+    if (
+      !storagePath ||
+      storagePath.includes('..') ||
+      storagePath.includes('\\')
+    ) {
+      throw new Error('This document does not have a valid file location.');
+    }
+
+    const { data, error } = await supabase.storage
+      .from('device-documents')
+      .createSignedUrl(storagePath, 5 * 60);
+
+    if (error || !data?.signedUrl) {
+      throw error ?? new Error("This document couldn't be opened.");
+    }
+
+    return data.signedUrl;
+  }
+
+  if (!document.fileUrl) {
+    throw new Error('This document does not have a viewable file yet.');
+  }
+
+  const storagePath = extractDocumentStoragePath(document.fileUrl);
+
+  if (
+    !storagePath ||
+    storagePath.includes('..') ||
+    storagePath.includes('\\')
+  ) {
     throw new Error('This document does not have a valid file location.');
   }
 
   const { data, error } = await supabase.storage
     .from('documents')
     .createSignedUrl(storagePath, 5 * 60);
+
   if (error || !data?.signedUrl) {
     throw error ?? new Error("This document couldn't be opened.");
   }

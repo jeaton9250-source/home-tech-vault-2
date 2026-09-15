@@ -6,7 +6,7 @@ import { createVaultDocumentViewUrl } from '@/lib/home-tech-vault-api';
 import { colors } from '@/theme';
 
 export async function viewVaultDocument(document: VaultDocument) {
-  const signedUrl = await createVaultDocumentViewUrl(document.fileUrl);
+  const signedUrl = await createVaultDocumentViewUrl(document);
   void Haptics.selectionAsync();
   await WebBrowser.openBrowserAsync(signedUrl, {
     dismissButtonStyle: 'close',
