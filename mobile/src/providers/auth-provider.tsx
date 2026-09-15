@@ -45,32 +45,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let active = true;
     async function restore() {
-      const demoEnabled = (await AsyncStorage.getItem(DEMO_MODE_KEY)) === 'true';
-      if (!active) return;
-      if (demoEnabled) {
+      try {
+        const demoEnabled = (await AsyncStorage.getItem(DEMO_MODE_KEY)) === 'true';
+        if (!active) return;
+        if (demoEnabled) {
+          setSession(null);
+          setMode('demo');
+          return;
+        }
+        if (!supabase) {
+          setMode('guest');
+          return;
+        }
+        const { data: claimsData } = await supabase.auth.getClaims();
+        if (!claimsData?.claims) {
+          setSession(null);
+          setMode('guest');
+          return;
+        }
+        const { data, error } = await supabase.auth.getSession();
+        if (!active) return;
+        if (error || !data.session) {
+          setSession(null);
+          setMode('guest');
+          return;
+        }
+        setSession(data.session);
+        setMode('account');
+      } catch {
+        if (!active) return;
         setSession(null);
-        setMode('demo');
-        return;
-      }
-      if (!supabase) {
         setMode('guest');
-        return;
       }
-      const { data: claimsData } = await supabase.auth.getClaims();
-      if (!claimsData?.claims) {
-        setSession(null);
-        setMode('guest');
-        return;
-      }
-      const { data, error } = await supabase.auth.getSession();
-      if (!active) return;
-      if (error || !data.session) {
-        setSession(null);
-        setMode('guest');
-        return;
-      }
-      setSession(data.session);
-      setMode('account');
     }
     void restore();
     return () => {
