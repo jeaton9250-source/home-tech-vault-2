@@ -31,6 +31,7 @@ import { supabase } from "@/lib/supabase";
 import DeviceImageDisplay from "@/components/devices/DeviceImageDisplay";
 import DemoRoomCard from "@/components/home/DemoRoomCard";
 import RealRoomCard from "@/components/home/RealRoomCard";
+import { groupHomeRooms } from "@/lib/home/roomGrouping";
 import { applyHouseholdScope } from "@/lib/data/householdScope";
 import { usePermissions } from "@/hooks/usePermissions";
 
@@ -428,80 +429,9 @@ function RoomsContent() {
       roomRecords.map((record) => [record.id, record]),
     );
 
-    const groupedRooms = new Map<
-      string,
-      {
-        record?: RoomRecord;
-        name: string;
-        devices: HomeDevice[];
-      }
-    >();
+    const groupedRooms = groupHomeRooms(roomRecords, devices);
 
-    /*
-     * Every real Room gets a stable UUID-backed group.
-     * This means renaming a room can never disconnect
-     * its devices.
-     */
-    for (const record of roomRecords) {
-      if (record.name.trim().toLowerCase() === "network") {
-        continue;
-      }
-
-      groupedRooms.set(`room:${record.id}`, {
-        record,
-        name: record.name,
-        devices: [],
-      });
-    }
-
-    for (const device of devices) {
-      if (device.roomId) {
-        const record = roomRecordById.get(device.roomId);
-
-        if (record && record.name.trim().toLowerCase() !== "network") {
-          const existing = groupedRooms.get(`room:${record.id}`);
-
-          if (existing) {
-            existing.devices.push(device);
-          }
-
-          continue;
-        }
-      }
-
-      /*
-       * Legacy Home Systems stay outside Rooms.
-       */
-      const legacyLocation = device.location?.trim() || "";
-
-      if (legacyLocation.toLowerCase() === "network") {
-        continue;
-      }
-
-      /*
-       * Old devices without a room_id remain visible
-       * until the homeowner assigns them.
-       */
-      const fallbackName =
-        legacyLocation && legacyLocation.toLowerCase() !== "unassigned"
-          ? legacyLocation
-          : "Needs a Room";
-
-      const fallbackKey = `legacy:${fallbackName.toLowerCase()}`;
-
-      const existing = groupedRooms.get(fallbackKey);
-
-      if (existing) {
-        existing.devices.push(device);
-      } else {
-        groupedRooms.set(fallbackKey, {
-          name: fallbackName,
-          devices: [device],
-        });
-      }
-    }
-
-    return Array.from(groupedRooms.values())
+    return groupedRooms
       .map(({ record, name, devices: roomDevices }): RoomSummary => {
         const photoCount = roomDevices.filter(
           (device) => device.hasPhoto,
