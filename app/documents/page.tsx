@@ -48,11 +48,28 @@ type DocumentRecord = {
   file_name: string;
   document_name?: string | null;
   created_at?: string | null;
+  source?: "documents" | "device_documents" | "official_manual";
 };
 
 type DeviceRecord = {
   id: string;
   device_name: string | null;
+  manual_url?: string | null;
+  manual_status?: string | null;
+  manual_checked_at?: string | null;
+};
+
+type DeviceDocumentRecord = {
+  id: string;
+  device_id: string;
+  user_id: string;
+  household_id?: string | null;
+  document_name: string;
+  document_type: string;
+  file_path: string;
+  file_size?: number | null;
+  mime_type?: string | null;
+  created_at?: string | null;
 };
 
 type DocumentIcon = ComponentType<{
@@ -139,18 +156,40 @@ export default function DocumentsPage() {
         );
 
         const deviceQuery = applyHouseholdScope(
-          supabase.from("devices").select("id, device_name"),
+          supabase
+            .from("devices")
+            .select(
+              "id, device_name, manual_url, manual_status, manual_checked_at",
+            ),
           householdId,
           user.id,
         );
 
-        const [documentResult, deviceResult] = await Promise.all([
+        const deviceDocumentQuery = applyHouseholdScope(
+          supabase
+            .from("device_documents")
+            .select(
+              "id, device_id, user_id, household_id, document_name, document_type, file_path, file_size, mime_type, created_at",
+            ),
+          householdId,
+          user.id,
+        );
+
+        const [
+          documentResult,
+          deviceResult,
+          deviceDocumentResult,
+        ] = await Promise.all([
           documentQuery.order("created_at", {
             ascending: false,
           }),
 
           deviceQuery.order("device_name", {
             ascending: true,
+          }),
+
+          deviceDocumentQuery.order("created_at", {
+            ascending: false,
           }),
         ]);
 
@@ -162,6 +201,13 @@ export default function DocumentsPage() {
           console.error(
             "Unable to load devices for documents:",
             deviceResult.error,
+          );
+        }
+
+        if (deviceDocumentResult.error) {
+          console.error(
+            "Unable to load device documents:",
+            deviceDocumentResult.error,
           );
         }
 
@@ -201,28 +247,146 @@ export default function DocumentsPage() {
           }
         }
 
-        const documentsWithUrls = rows.map((document) => {
+        const documentsWithUrls: DocumentRecord[] = rows.map((document) => {
           const storagePath = extractDocumentsStoragePath(document.file_url);
 
           if (!storagePath) {
-            return document;
+            return {
+              ...document,
+              source: "documents",
+            };
           }
 
           const signedUrl = signedUrlByPath.get(storagePath);
 
           if (!signedUrl) {
-            return document;
+            return {
+              ...document,
+              source: "documents",
+            };
           }
 
           return {
             ...document,
             file_url: signedUrl,
+            source: "documents",
           };
         });
 
-        setDocuments(documentsWithUrls);
+        const loadedDevices =
+          (deviceResult.data ?? []) as DeviceRecord[];
 
-        setDevices((deviceResult.data ?? []) as DeviceRecord[]);
+        /*
+         * Official manufacturer web guides live directly
+         * on device records rather than in the documents
+         * table. Represent them as virtual documents so
+         * they appear in the whole-home Document Vault.
+         */
+        const officialManuals: DocumentRecord[] =
+          loadedDevices
+            .filter(
+              (device) =>
+                Boolean(device.manual_url),
+            )
+            .map((device) => ({
+              id: `official-manual-${device.id}`,
+              device_id: device.id,
+              file_type: "Manual",
+              file_url: device.manual_url ?? null,
+              file_name: "Official manufacturer web guide",
+              document_name: "Official User Guide",
+              created_at: device.manual_checked_at ?? null,
+              source: "official_manual",
+            }));
+
+        const deviceDocumentRows =
+          (deviceDocumentResult.data ?? []) as DeviceDocumentRecord[];
+
+        const deviceDocumentPaths = Array.from(
+          new Set(
+            deviceDocumentRows
+              .map((document) => document.file_path)
+              .filter(Boolean),
+          ),
+        );
+
+        const signedDeviceDocumentUrlByPath =
+          new Map<string, string>();
+
+        if (deviceDocumentPaths.length > 0) {
+          const {
+            data: signedDeviceDocuments,
+            error: signedDeviceDocumentsError,
+          } = await supabase.storage
+            .from("device-documents")
+            .createSignedUrls(
+              deviceDocumentPaths,
+              3600,
+            );
+
+          if (signedDeviceDocumentsError) {
+            console.error(
+              "Unable to create device document URLs:",
+              signedDeviceDocumentsError,
+            );
+          } else {
+            for (
+              const signed of signedDeviceDocuments ?? []
+            ) {
+              if (
+                signed.path &&
+                signed.signedUrl
+              ) {
+                signedDeviceDocumentUrlByPath.set(
+                  signed.path,
+                  signed.signedUrl,
+                );
+              }
+            }
+          }
+        }
+
+        const deviceDocuments: DocumentRecord[] =
+          deviceDocumentRows.map((document) => ({
+            id: document.id,
+            user_id: document.user_id,
+            household_id:
+              document.household_id ?? null,
+            device_id: document.device_id,
+            file_type:
+              document.document_type || "Document",
+            file_url:
+              signedDeviceDocumentUrlByPath.get(
+                document.file_path,
+              ) ?? null,
+            file_name:
+              document.document_name || "Document",
+            document_name:
+              document.document_name || "Document",
+            created_at:
+              document.created_at ?? null,
+            source: "device_documents",
+          }));
+
+        const allDocuments = [
+          ...officialManuals,
+          ...deviceDocuments,
+          ...documentsWithUrls,
+        ].sort((a, b) => {
+          const aTime = a.created_at
+            ? new Date(a.created_at).getTime()
+            : 0;
+
+          const bTime = b.created_at
+            ? new Date(b.created_at).getTime()
+            : 0;
+
+          return bTime - aTime;
+        });
+
+        setDocuments(allDocuments);
+
+        setDevices(loadedDevices);
       } catch (error: unknown) {
         console.error("Unable to load documents:", error);
 
@@ -650,7 +814,9 @@ function DocumentCard({
                 </button>
               )}
 
-              {canDelete && <DeleteDocumentButton documentId={document.id} />}
+              {canDelete && document.source === "documents" && (
+                <DeleteDocumentButton documentId={document.id} />
+              )}
             </>
           )}
         </div>

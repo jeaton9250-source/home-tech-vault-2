@@ -794,9 +794,14 @@ export default function DevicePage() {
           return;
         }
 
-        setDevice(
-          deviceData as Device
-        );
+        const normalizedDevice = {
+          ...deviceData,
+          manual_status: deviceData.manual_url
+            ? "found"
+            : deviceData.manual_status,
+        } as Device;
+
+        setDevice(normalizedDevice);
 
         await loadImages(deviceId);
 
@@ -847,14 +852,9 @@ export default function DevicePage() {
           }
         } else if (mounted) {
           setDocumentCount(
-            (
-              deviceDocumentCountResult.count ??
-              0
-            ) +
-              (
-                vaultDocumentCountResult.count ??
-                0
-              )
+            (deviceDocumentCountResult.count ?? 0) +
+              (vaultDocumentCountResult.count ?? 0) +
+              (deviceData.manual_url ? 1 : 0)
           );
         }
       } catch (error: unknown) {
