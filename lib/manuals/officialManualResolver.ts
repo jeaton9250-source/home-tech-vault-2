@@ -1,5 +1,7 @@
 import "server-only";
 
+import { unzipSync } from "fflate";
+
 const OPENAI_RESPONSES_URL =
   "https://api.openai.com/v1/responses";
 
@@ -716,7 +718,7 @@ function extractLgStructuredManuals(
       )
     ) {
       const url =
-        `https://gscs-b2c.lge.com/downloadFile?fileId=${encodeURIComponent(
+        `https://gscs-b2c.lge.com/open/downloadFile?fileId=${encodeURIComponent(
           fileName
         )}`;
 
@@ -1373,9 +1375,244 @@ async function fetchTrusted(
   return null;
 }
 
+function hasPdfSignature(
+  bytes: Uint8Array
+) {
+  if (bytes.byteLength < 5) {
+    return false;
+  }
+
+  return (
+    bytes[0] === 0x25 &&
+    bytes[1] === 0x50 &&
+    bytes[2] === 0x44 &&
+    bytes[3] === 0x46 &&
+    bytes[4] === 0x2d
+  );
+}
+
+function hasZipSignature(
+  bytes: Uint8Array
+) {
+  return (
+    bytes.byteLength >= 4 &&
+    bytes[0] === 0x50 &&
+    bytes[1] === 0x4b &&
+    (
+      (
+        bytes[2] === 0x03 &&
+        bytes[3] === 0x04
+      ) ||
+      (
+        bytes[2] === 0x05 &&
+        bytes[3] === 0x06
+      ) ||
+      (
+        bytes[2] === 0x07 &&
+        bytes[3] === 0x08
+      )
+    )
+  );
+}
+
+function extractBestLgPdfFromZip(
+  archiveBytes: Uint8Array
+): Uint8Array | null {
+  /*
+   * LG sometimes labels an official manual download
+   * as application/pdf even though the actual payload
+   * is a ZIP containing one or more PDFs.
+   *
+   * Never trust the MIME type. Inspect the bytes,
+   * decompress with a strict output-size ceiling,
+   * and verify the selected entry is really a PDF.
+   */
+  let files:
+    Record<string, Uint8Array>;
+
+  try {
+    files =
+      unzipSync(
+        archiveBytes,
+        {
+          filter(file) {
+            /*
+             * Ignore non-PDF entries before inflation.
+             */
+            if (
+              !/\.pdf$/i.test(
+                file.name
+              )
+            ) {
+              return false;
+            }
+
+            /*
+             * Prevent a single decompressed entry from
+             * exceeding HTV's existing manual limit.
+             */
+            if (
+              file.originalSize >
+              MAX_MANUAL_BYTES
+            ) {
+              return false;
+            }
+
+            return true;
+          },
+        }
+      );
+  } catch (error) {
+    console.warn(
+      "[manual-openai] unable to unpack LG manual ZIP",
+      error instanceof Error
+        ? error.message
+        : "unknown"
+    );
+
+    return null;
+  }
+
+  const candidates =
+    Object.entries(files)
+      .filter(
+        ([name, bytes]) =>
+          /\.pdf$/i.test(name) &&
+          bytes.byteLength <=
+            MAX_MANUAL_BYTES &&
+          hasPdfSignature(bytes)
+      )
+      .map(
+        ([name, bytes]) => {
+          const normalized =
+            name
+              .toLowerCase()
+              .replace(
+                /[^a-z0-9]+/g,
+                " "
+              );
+
+          let score = 0;
+
+          /*
+           * Prefer explicitly English / US manuals.
+           *
+           * Example from LG:
+           * ENG_US.pdf
+           */
+          if (
+            /(^|[^a-z])eng([^a-z]|$)/i.test(
+              name
+            )
+          ) {
+            score += 120;
+          }
+
+          if (
+            /(^|[^a-z])en([^a-z]|$)/i.test(
+              name
+            )
+          ) {
+            score += 80;
+          }
+
+          if (
+            /(^|[^a-z])us([^a-z]|$)/i.test(
+              name
+            )
+          ) {
+            score += 60;
+          }
+
+          if (
+            /english/.test(
+              normalized
+            )
+          ) {
+            score += 120;
+          }
+
+          if (
+            /owner|user|manual/.test(
+              normalized
+            )
+          ) {
+            score += 50;
+          }
+
+          /*
+           * LG archives may contain secondary
+           * engineering / service / DDC documents.
+           * Strongly demote those.
+           */
+          if (
+            /service|repair|firmware|software|driver|installation|install|quick|ddc|esd/.test(
+              normalized
+            )
+          ) {
+            score -= 300;
+          }
+
+          return {
+            name,
+            bytes,
+            score,
+          };
+        }
+      )
+      .sort(
+        (a, b) =>
+          b.score - a.score
+      );
+
+  const best =
+    candidates[0];
+
+  if (!best) {
+    console.info(
+      "[manual-openai] LG ZIP contained no verified PDF manual"
+    );
+
+    return null;
+  }
+
+  /*
+   * When an archive contains multiple PDFs, require
+   * positive evidence instead of blindly choosing
+   * the first file.
+   */
+  if (
+    candidates.length > 1 &&
+    best.score <= 0
+  ) {
+    console.info(
+      "[manual-openai] LG ZIP contained multiple PDFs but no safe preferred manual"
+    );
+
+    return null;
+  }
+
+  console.info(
+    "[manual-openai] selected verified PDF from LG ZIP",
+    {
+      name:
+        best.name,
+      score:
+        best.score,
+      candidates:
+        candidates.length,
+    }
+  );
+
+  return best.bytes;
+}
+
 async function downloadPdf(
   inputUrl: string,
-  domains: string[]
+  domains: string[],
+  options?: {
+    allowLgZip?: boolean;
+  }
 ): Promise<
   Uint8Array |
   null
@@ -1384,7 +1621,7 @@ async function downloadPdf(
     await fetchTrusted(
       inputUrl,
       domains,
-      "application/pdf,application/octet-stream;q=0.9,*/*;q=0.5",
+      "application/pdf,application/zip,application/octet-stream;q=0.9,*/*;q=0.5",
       15_000
     );
 
@@ -1405,7 +1642,7 @@ async function downloadPdf(
   if (
     !buffer ||
     buffer.byteLength <
-      5
+      4
   ) {
     return null;
   }
@@ -1415,18 +1652,38 @@ async function downloadPdf(
       buffer
     );
 
-  const signature =
-    String.fromCharCode(
-      ...bytes.slice(
-        0,
-        5
+  /*
+   * Always prefer a real PDF.
+   */
+  if (
+    hasPdfSignature(
+      bytes
+    )
+  ) {
+    return bytes;
+  }
+
+  /*
+   * LG sometimes sends ZIP bytes while declaring
+   * Content-Type: application/pdf.
+   *
+   * ZIP support is opt-in so other manufacturers
+   * keep the existing strict PDF-only behavior.
+   */
+  if (
+    options?.allowLgZip &&
+    hasZipSignature(
+      bytes
+    )
+  ) {
+    return (
+      extractBestLgPdfFromZip(
+        bytes
       )
     );
+  }
 
-  return signature ===
-    "%PDF-"
-    ? bytes
-    : null;
+  return null;
 }
 
 async function searchWithOpenAI({
@@ -2527,7 +2784,11 @@ export async function resolveOfficialManualPdf({
         const pdf =
           await downloadPdf(
             manual.url,
-            domains
+            domains,
+            {
+              allowLgZip:
+                true,
+            }
           );
 
         if (pdf) {
