@@ -76,6 +76,36 @@ export type AddDeviceResult =
 const PRODUCT_IMAGE_MAX_BYTES =
   6 * 1024 * 1024;
 
+const PRODUCT_IMAGE_MIN_BYTES =
+  8 * 1024;
+
+const PRODUCT_IMAGE_MAX_CANDIDATES =
+  4;
+
+const PRODUCT_IMAGE_REJECTED_URL_TERMS = [
+  "placeholder",
+  "no-image",
+  "noimage",
+  "no_image",
+  "image-not-found",
+  "imagenotfound",
+  "missing-image",
+  "default-image",
+  "default_image",
+  "download-icon",
+  "download_icon",
+  "pdf-icon",
+  "pdf_icon",
+  "file-icon",
+  "file_icon",
+  "document-icon",
+  "document_icon",
+  "spinner",
+  "loading",
+  "blank.gif",
+  "transparent.gif",
+];
+
 const UPCITEMDB_LOOKUP_URL =
   "https://api.upcitemdb.com/prod/trial/lookup";
 
@@ -191,6 +221,37 @@ function isSafeProductImageUrl(
   }
 }
 
+
+function looksLikeProductImageUrl(
+  value: string
+) {
+  if (
+    !isSafeProductImageUrl(
+      value
+    )
+  ) {
+    return false;
+  }
+
+  try {
+    const url =
+      new URL(value);
+
+    const searchable =
+      `${url.hostname}${url.pathname}${url.search}`
+        .toLowerCase();
+
+    return !PRODUCT_IMAGE_REJECTED_URL_TERMS.some(
+      (term) =>
+        searchable.includes(
+          term
+        )
+    );
+  } catch {
+    return false;
+  }
+}
+
 async function downloadMatchedProductImage(
   productUpc: string
 ): Promise<ProductImageDownload | null> {
@@ -206,8 +267,8 @@ async function downloadMatchedProductImage(
   /*
    * Re-resolve the UPC server-side.
    *
-   * We intentionally do not trust an arbitrary
-   * image URL submitted from the browser.
+   * Never trust an image URL supplied by
+   * the browser.
    */
   const lookupUrl =
     new URL(
@@ -219,30 +280,39 @@ async function downloadMatchedProductImage(
     barcode
   );
 
-  const lookupResponse =
-    await fetch(
-      lookupUrl,
-      {
-        method: "GET",
+  let lookupResponse: Response;
 
-        headers: {
-          Accept:
-            "application/json",
-        },
+  try {
+    lookupResponse =
+      await fetch(
+        lookupUrl,
+        {
+          method: "GET",
 
-        cache:
-          "no-store",
+          headers: {
+            Accept:
+              "application/json",
+          },
 
-        signal:
-          AbortSignal.timeout(
-            5_000
-          ),
-      }
+          cache:
+            "no-store",
+
+          signal:
+            AbortSignal.timeout(
+              5_000
+            ),
+        }
+      );
+  } catch (error) {
+    console.warn(
+      "Product image UPC lookup failed:",
+      error
     );
 
-  if (
-    !lookupResponse.ok
-  ) {
+    return null;
+  }
+
+  if (!lookupResponse.ok) {
     console.warn(
       "Product image UPC lookup failed:",
       lookupResponse.status
@@ -255,133 +325,233 @@ async function downloadMatchedProductImage(
     (await lookupResponse.json()) as
       UpcItemDbLookupResponse;
 
-  const imageUrl =
-    lookupData.items?.[0]?.images?.find(
-      (candidate) =>
-        typeof candidate ===
-          "string" &&
-        isSafeProductImageUrl(
-          candidate
-        )
-    );
-
-  if (!imageUrl) {
-    return null;
-  }
-
   /*
-   * Do not follow redirects automatically.
-   * This keeps the server from unexpectedly
-   * fetching a different destination.
+   * UPCitemdb can return several images.
+   *
+   * Previously HTV trusted the first HTTPS
+   * image. That can result in placeholders,
+   * download icons, or other non-product
+   * artwork being stored in the vault.
+   *
+   * Instead, validate several candidates and
+   * save the first one that behaves like a
+   * real product image.
    */
-  const imageResponse =
-    await fetch(
-      imageUrl,
-      {
-        method: "GET",
+  const imageCandidates =
+    Array.from(
+      new Set(
+        (
+          lookupData
+            .items?.[0]
+            ?.images ??
+          []
+        ).filter(
+          (
+            candidate
+          ): candidate is string =>
+            typeof candidate ===
+              "string" &&
+            looksLikeProductImageUrl(
+              candidate
+            )
+        )
+      )
+    ).slice(
+      0,
+      PRODUCT_IMAGE_MAX_CANDIDATES
+    );
 
-        headers: {
-          Accept:
-            "image/avif,image/webp,image/png,image/jpeg,image/gif,image/*",
+  if (
+    imageCandidates.length ===
+    0
+  ) {
+    console.info(
+      "[product-image] No safe image candidates found."
+    );
 
-          "User-Agent":
-            "HomeTechVault/1.0",
-        },
+    return null;
+  }
 
-        redirect:
-          "error",
+  for (
+    const imageUrl of
+    imageCandidates
+  ) {
+    try {
+      /*
+       * Do not follow redirects automatically.
+       */
+      const imageResponse =
+        await fetch(
+          imageUrl,
+          {
+            method:
+              "GET",
 
-        cache:
-          "no-store",
+            headers: {
+              Accept:
+                "image/avif,image/webp,image/png,image/jpeg,image/gif,image/*",
 
-        signal:
-          AbortSignal.timeout(
-            7_000
-          ),
+              "User-Agent":
+                "HomeTechVault/1.0",
+            },
+
+            redirect:
+              "error",
+
+            cache:
+              "no-store",
+
+            signal:
+              AbortSignal.timeout(
+                7_000
+              ),
+          }
+        );
+
+      if (
+        !imageResponse.ok
+      ) {
+        console.info(
+          "[product-image] Candidate rejected by HTTP status:",
+          imageResponse.status
+        );
+
+        continue;
       }
-    );
 
-  if (
-    !imageResponse.ok
-  ) {
-    console.warn(
-      "Product image download failed:",
-      imageResponse.status
-    );
+      const rawContentType =
+        imageResponse.headers.get(
+          "content-type"
+        ) ?? "";
 
-    return null;
+      const contentType =
+        rawContentType
+          .split(";")[0]
+          .trim()
+          .toLowerCase();
+
+      const extension =
+        getProductImageExtension(
+          contentType
+        );
+
+      if (!extension) {
+        console.info(
+          "[product-image] Candidate rejected because MIME type is unsupported:",
+          contentType
+        );
+
+        continue;
+      }
+
+      const declaredLength =
+        Number(
+          imageResponse.headers.get(
+            "content-length"
+          ) ?? "0"
+        );
+
+      if (
+        Number.isFinite(
+          declaredLength
+        ) &&
+        declaredLength >
+          PRODUCT_IMAGE_MAX_BYTES
+      ) {
+        console.info(
+          "[product-image] Candidate rejected because it is too large."
+        );
+
+        continue;
+      }
+
+      if (
+        Number.isFinite(
+          declaredLength
+        ) &&
+        declaredLength >
+          0 &&
+        declaredLength <
+          PRODUCT_IMAGE_MIN_BYTES
+      ) {
+        console.info(
+          "[product-image] Candidate rejected because it is too small."
+        );
+
+        continue;
+      }
+
+      const arrayBuffer =
+        await imageResponse
+          .arrayBuffer();
+
+      if (
+        arrayBuffer.byteLength >
+        PRODUCT_IMAGE_MAX_BYTES
+      ) {
+        console.info(
+          "[product-image] Downloaded candidate is too large."
+        );
+
+        continue;
+      }
+
+      if (
+        arrayBuffer.byteLength <
+        PRODUCT_IMAGE_MIN_BYTES
+      ) {
+        console.info(
+          "[product-image] Downloaded candidate is too small to trust as a product photo."
+        );
+
+        continue;
+      }
+
+      console.info(
+        "[product-image] ✓ Accepted product image",
+        {
+          hostname:
+            new URL(
+              imageUrl
+            ).hostname,
+
+          contentType,
+
+          bytes:
+            arrayBuffer
+              .byteLength,
+        }
+      );
+
+      return {
+        bytes:
+          new Uint8Array(
+            arrayBuffer
+          ),
+
+        contentType,
+
+        extension,
+      };
+    } catch (error) {
+      /*
+       * One broken candidate should not prevent
+       * HTV from trying the next image.
+       */
+      console.info(
+        "[product-image] Candidate failed; trying next image.",
+        error instanceof Error
+          ? error.message
+          : "Unknown error"
+      );
+    }
   }
 
-  const rawContentType =
-    imageResponse.headers.get(
-      "content-type"
-    ) ?? "";
+  console.info(
+    "[product-image] No trustworthy product image found. Device will use its normal HTV placeholder."
+  );
 
-  const contentType =
-    rawContentType
-      .split(";")[0]
-      .trim()
-      .toLowerCase();
-
-  const extension =
-    getProductImageExtension(
-      contentType
-    );
-
-  if (!extension) {
-    console.warn(
-      "Unsupported product image type:",
-      contentType
-    );
-
-    return null;
-  }
-
-  const declaredLength =
-    Number(
-      imageResponse.headers.get(
-        "content-length"
-      ) ?? "0"
-    );
-
-  if (
-    Number.isFinite(
-      declaredLength
-    ) &&
-    declaredLength >
-      PRODUCT_IMAGE_MAX_BYTES
-  ) {
-    console.warn(
-      "Product image is too large."
-    );
-
-    return null;
-  }
-
-  const arrayBuffer =
-    await imageResponse.arrayBuffer();
-
-  if (
-    arrayBuffer.byteLength >
-    PRODUCT_IMAGE_MAX_BYTES
-  ) {
-    console.warn(
-      "Downloaded product image is too large."
-    );
-
-    return null;
-  }
-
-  return {
-    bytes:
-      new Uint8Array(
-        arrayBuffer
-      ),
-
-    contentType,
-
-    extension,
-  };
+  return null;
 }
 
 async function saveMatchedProductImage({
