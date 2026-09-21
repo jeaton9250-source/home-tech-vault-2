@@ -3,6 +3,7 @@
 import {
   revalidatePath,
 } from "next/cache";
+import { after } from "next/server";
 
 import {
   recordActivity,
@@ -25,6 +26,9 @@ import {
 import {
   createAdminClient,
 } from "@/lib/supabase/admin";
+import {
+  syncNotionOnboardingProgress,
+} from "@/lib/notion/syncOnboardingProgress";
 import {
   createClient,
 } from "@/lib/supabase/server";
@@ -569,6 +573,12 @@ export async function completeDocumentUpload(
       code: "UNKNOWN",
     };
   }
+
+  after(async () => {
+    await syncNotionOnboardingProgress(
+      user.id
+    );
+  });
 
   await recordActivity({
     activityType:

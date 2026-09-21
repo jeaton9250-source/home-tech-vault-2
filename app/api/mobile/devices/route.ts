@@ -11,6 +11,7 @@ import {
   HouseholdQuotaError,
 } from "@/lib/permissions/serverQuota";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { syncNotionOnboardingProgress } from "@/lib/notion/syncOnboardingProgress";
 import { authenticateRequest } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -113,14 +114,30 @@ export async function POST(request: Request) {
       throw insertError ?? new Error("The device was not returned after saving.");
     }
 
-    await client.from("device_events").insert({
-      device_id: device.id,
-      user_id: user.id,
-      event_type: "Added",
-      title: getDefaultActivityTitle("device.added", input.deviceName),
-      description: "Device saved to your vault from the Home Tech Vault app.",
-      event_date: new Date().toISOString(),
-    });
+    const { error: activityError } =
+      await client.from("device_events").insert({
+        device_id: device.id,
+        user_id: user.id,
+        event_type: "Added",
+        title: getDefaultActivityTitle(
+          "device.added",
+          input.deviceName
+        ),
+        description:
+          "Device saved to your vault from the Home Tech Vault app.",
+        event_date: new Date().toISOString(),
+      });
+
+    if (activityError) {
+      console.warn(
+        "[mobile-device-create] activity failed",
+        activityError.message
+      );
+    }
+
+    await syncNotionOnboardingProgress(
+      user.id
+    );
 
     return NextResponse.json(
       {

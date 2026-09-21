@@ -27,6 +27,7 @@ import {
   HouseholdQuotaError,
 } from "@/lib/permissions/serverQuota";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { syncNotionOnboardingProgress } from "@/lib/notion/syncOnboardingProgress";
 import {
   getDefaultActivityTitle,
   recordActivity,
@@ -1961,6 +1962,10 @@ export async function addDevice(
      * the action response is released.
      */
     after(async () => {
+      await syncNotionOnboardingProgress(
+        user.id
+      );
+
       /*
        * A database-matched product image is a convenience,
        * not a requirement for creating the device.

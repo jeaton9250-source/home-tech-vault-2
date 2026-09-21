@@ -5,6 +5,7 @@ import {
   getResendClient,
 } from "@/lib/email/resend";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createOnboardingCustomer } from "@/lib/notion/onboarding";
 
 export const runtime = "nodejs";
 
@@ -86,6 +87,27 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { error: "Signup notification window expired." },
         { status: 409 }
+      );
+    }
+
+    // Keep Notion onboarding independent from founder email delivery.
+    // A Notion failure must never prevent the customer from signing up.
+    try {
+      await createOnboardingCustomer({
+        userId: user.id,
+        email: verifiedEmail,
+        name:
+          typeof user.user_metadata?.full_name === "string"
+            ? user.user_metadata.full_name
+            : null,
+        source: "HTV Web",
+        accountUrl: `${process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || "https://www.hometechvault.com"}/dashboard`,
+        signupDate: user.created_at,
+      });
+    } catch (notionError) {
+      console.error(
+        "Unable to create Notion onboarding customer:",
+        notionError
       );
     }
 

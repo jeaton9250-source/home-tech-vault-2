@@ -4,6 +4,7 @@ import type {
   SupabaseClient,
 } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 
 import {
   getDefaultActivityTitle,
@@ -19,6 +20,7 @@ import {
   type MaintenanceInputForValidation,
   type ValidatedMaintenanceInput,
 } from "@/lib/maintenance/maintenanceInputValidation";
+import { syncNotionOnboardingProgress } from "@/lib/notion/syncOnboardingProgress";
 import { createClient } from "@/lib/supabase/server";
 
 export type MaintenanceTaskInput = {
@@ -838,6 +840,12 @@ export async function createMaintenanceTask(
       `/devices/${deviceId}`
     );
   }
+
+  after(async () => {
+    await syncNotionOnboardingProgress(
+      user.id
+    );
+  });
 
   revalidatePath("/maintenance");
   revalidatePath("/dashboard");

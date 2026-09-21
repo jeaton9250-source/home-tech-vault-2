@@ -16,6 +16,7 @@ import {
   HouseholdQuotaError,
 } from "@/lib/permissions/serverQuota";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { syncNotionOnboardingProgress } from "@/lib/notion/syncOnboardingProgress";
 import { authenticateRequest } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -148,6 +149,7 @@ export async function POST(request: Request) {
     if (existingError) throw existingError;
 
     let document = existing;
+    let createdNewDocument = false;
 
     if (!document) {
       const { data: created, error: insertError } = await client
@@ -170,6 +172,7 @@ export async function POST(request: Request) {
       }
 
       document = created;
+      createdNewDocument = true;
 
       // device_events is intentionally device-scoped. Whole-home documents are
       // represented by a null device_id on documents and must not create one.
@@ -186,6 +189,12 @@ export async function POST(request: Request) {
           event_date: new Date().toISOString(),
         });
       }
+    }
+
+    if (createdNewDocument) {
+      await syncNotionOnboardingProgress(
+        user.id
+      );
     }
 
     return NextResponse.json({
