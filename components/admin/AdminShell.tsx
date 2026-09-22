@@ -1,35 +1,32 @@
+"use client";
+
+import { usePathname } from "next/navigation";
 import Link from "next/link";
-import {
-  ArrowUpRight,
-  ShieldCheck,
-} from "lucide-react";
+import { ArrowUpRight, ShieldCheck } from "lucide-react";
 
 import AdminControlCenterHeader from "@/components/admin/AdminControlCenterHeader";
 import AdminMobileNav from "@/components/admin/AdminMobileNav";
 import AdminNav from "@/components/admin/AdminNav";
 
-import {
-  ADMIN_APP_HOME_HREF,
-} from "@/lib/admin/navigation";
+import { ADMIN_APP_HOME_HREF } from "@/lib/admin/navigation";
 
 type AdminShellProps = {
   children: React.ReactNode;
 };
 
-export default function AdminShell({
-  children,
-}: AdminShellProps) {
+export default function AdminShell({ children }: AdminShellProps) {
+  const isOverview = usePathname() === "/admin";
+
   return (
-    <div className="min-h-screen bg-[#f7f3ec]">
+    <div
+      className={`min-h-screen ${isOverview ? "bg-[#0e1b27]" : "bg-[#f7f3ec]"}`}
+    >
       <AdminMobileNav />
 
       {/* DESKTOP SIDEBAR */}
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-[272px] flex-col border-r border-white/[0.06] bg-[#142b40] shadow-[18px_0_60px_-48px_rgba(5,15,25,0.85)] lg:flex">
         <div className="border-b border-white/[0.06] px-6 py-6">
-          <Link
-            href="/admin"
-            className="block"
-          >
+          <Link href="/admin" className="block">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-[14px] border border-[#8da66e]/25 bg-[#8da66e]/10 text-[#b9caa4] shadow-inner">
                 <ShieldCheck size={17} />
@@ -55,15 +52,19 @@ export default function AdminShell({
         <div className="border-t border-white/[0.06] p-4">
           <div className="rounded-[18px] border border-white/[0.07] bg-white/[0.035] p-4">
             <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-[#8da66e] shadow-[0_0_0_4px_rgba(141,166,110,0.10)]" />
+              <ShieldCheck
+                size={13}
+                className="text-white/50"
+                aria-hidden="true"
+              />
 
               <p className="text-xs font-medium text-white/65">
-                Platform operational
+                Platform administration
               </p>
             </div>
 
             <p className="mt-1.5 text-[11px] leading-5 text-white/30">
-              Production systems are live
+              View connectivity in System Health
             </p>
           </div>
 
@@ -82,9 +83,7 @@ export default function AdminShell({
         <AdminControlCenterHeader />
 
         <main className="mx-auto w-full max-w-[1720px] px-4 py-6 sm:px-6 lg:px-8 lg:py-9 xl:px-10">
-          <div className="space-y-10">
-            {children}
-          </div>
+          <div className="space-y-10">{children}</div>
         </main>
       </div>
     </div>

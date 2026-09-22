@@ -1,928 +1,640 @@
 import Link from "next/link";
-
+import type { ReactNode } from "react";
 import {
   Activity,
-  ArrowRight,
-  BarChart3,
-  CheckCircle2,
-  ClipboardCheck,
-  CreditCard,
-  Eye,
+  ArrowUpRight,
+  Check,
+  ChevronRight,
+  CircleAlert,
+  Cpu,
   FileText,
-  HardDrive,
   Home,
   LifeBuoy,
-  MousePointerClick,
-  Share2,
-  UserPlus,
+  Mail,
+  Plug,
+  ShieldCheck,
   Users,
+  Wallet,
 } from "lucide-react";
+import { loadAdminControlCenter } from "@/lib/admin/data/controlCenter";
+import RefreshDashboard from "@/components/admin/RefreshDashboard";
+import styles from "./control-center.module.css";
 
-import { createClient } from "@/lib/supabase/server";
+export const metadata = { title: "Control Center — Home Tech Vault Admin" };
+const number = (value: number | null) =>
+  value === null ? "Unavailable" : value.toLocaleString();
+const date = (value: string) =>
+  new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: "UTC",
+  }).format(new Date(value));
 
-import {
-  loadAdminAnalytics,
-  loadAdminSystemHealth,
-} from "@/lib/admin/data/loaders";
-
-import {
-  loadAdminDashboardMetrics,
-} from "@/lib/admin/data/dashboard";
-
-import {
-  loadAdminVercelAnalytics,
-} from "@/lib/admin/data/vercelAnalytics";
-
-import {
-  loadFoundingMembersDashboardMetrics,
-} from "@/lib/admin/data/foundingMembers";
-
-import {
-  loadAdminHealthCheckMetrics,
-} from "@/lib/admin/data/healthCheck";
-
-import {
-  buildNeedsAttention,
-  buildPlatformActivity,
-  getFounderFirstName,
-} from "@/lib/admin/founderControlCenter";
-
-import FounderHeader, {
-  FounderLinkAction,
-  FounderSection,
-} from "@/components/admin/founder-control-center/FounderHeader";
-
-import {
-  FounderActivityTimeline,
-  FounderRecentSignups,
-} from "@/components/admin/founder-control-center/FounderLists";
-
-import {
-  FounderAttentionList,
-} from "@/components/admin/founder-control-center/FounderPriorities";
-
-export const metadata = {
-  title:
-    "Founder Control Center — Home Tech Vault Admin",
-};
-
-function percentage(
-  value: number,
-  total: number
-) {
-  if (total <= 0) {
-    return 0;
-  }
-
-  return Math.min(
-    100,
-    Math.round(
-      (value / total) * 100
-    )
-  );
-}
-
-function startOfToday() {
-  const now = new Date();
-
-  return new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate()
-  ).getTime();
-}
-
-function OperationalMetric({
-  label,
-  value,
-  hint,
-  icon,
-  tone = "default",
+function Panel({
+  title,
+  eyebrow,
+  href,
+  children,
 }: {
-  label: string;
-  value: number | string;
-  hint: string;
-  icon: React.ReactNode;
-  tone?: "default" | "positive" | "warning";
+  title: string;
+  eyebrow: string;
+  href: string;
+  children: ReactNode;
 }) {
-  const iconClass =
-    tone === "positive"
-      ? "border-[#718d4f]/20 bg-[#718d4f]/10 text-[#617c43]"
-      : tone === "warning"
-        ? "border-[#c89b48]/20 bg-[#c89b48]/10 text-[#9a7027]"
-        : "border-[#e3ddd3] bg-[#f5f1e9] text-[#66717a]";
-
   return (
-    <div className="rounded-[24px] border border-[#182533]/[0.07] bg-[#fffdf9] px-6 py-5 shadow-[0_22px_55px_-48px_rgba(20,32,45,0.52)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_30px_65px_-50px_rgba(20,32,45,0.58)]">
-      <div className="flex items-start justify-between gap-4">
+    <section className={styles.panel}>
+      <div className={styles.panelHeading}>
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.17em] text-[#777168]">
-            {label}
-          </p>
-
-          <p className="mt-3 font-serif text-[38px] font-semibold leading-none tracking-[-0.05em] text-[#18202b]">
-            {typeof value === "number"
-              ? value.toLocaleString()
-              : value}
-          </p>
-
-          <p className="mt-2.5 text-[13px] text-[#706b64]">
-            {hint}
-          </p>
+          <p className={styles.eyebrow}>{eyebrow}</p>
+          <h2>{title}</h2>
         </div>
-
-        <div
-          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border ${iconClass}`}
+        <Link
+          className={styles.iconLink}
+          href={href}
+          aria-label={`Open ${title}`}
         >
-          {icon}
-        </div>
+          <ArrowUpRight size={18} />
+        </Link>
       </div>
-    </div>
+      {children}
+    </section>
   );
 }
 
-function FunnelStage({
+function Status({
   label,
-  value,
   detail,
-  icon,
+  status,
+  href,
 }: {
   label: string;
-  value: number;
   detail: string;
-  icon: React.ReactNode;
+  status: "Connected" | "Configured" | "Missing" | "Unavailable";
+  href: string;
 }) {
   return (
-    <div className="min-w-0 flex-1">
-      <div className="flex items-center gap-2 text-[#c0cbb8]">
-        {icon}
-
-        <p className="text-xs font-semibold uppercase tracking-[0.12em]">
-          {label}
-        </p>
+    <Link href={href} className={styles.statusRow}>
+      <div>
+        <strong>{label}</strong>
+        <p>{detail}</p>
       </div>
-
-      <p className="mt-3 font-serif text-[40px] font-semibold leading-none tracking-[-0.05em] text-[#f8f5ef]">
-        {value.toLocaleString()}
-      </p>
-
-      <p className="mt-1 text-sm leading-5 text-white/60">
-        {detail}
-      </p>
-    </div>
-  );
-}
-
-function FunnelArrow({
-  rate,
-}: {
-  rate: number | null;
-}) {
-  return (
-    <div className="hidden shrink-0 items-center gap-2 px-2 xl:flex">
-      {rate !== null ? (
-        <span className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-1 text-xs font-semibold text-white/70">
-          {rate}%
-        </span>
-      ) : null}
-
-      <ArrowRight
-        size={17}
-        className="text-white/20"
-        aria-hidden="true"
-      />
-    </div>
-  );
-}
-
-function AcquisitionCard({
-  label,
-  value,
-  hint,
-  icon,
-}: {
-  label: string;
-  value: number | string;
-  hint: string;
-  icon: React.ReactNode;
-}) {
-  return (
-    <div className="rounded-[24px] border border-[#182533]/[0.07] bg-[#fffdf9] px-6 py-5 shadow-[0_18px_45px_-45px_rgba(20,32,45,0.48)]">
-      <div className="flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#e4ded4] bg-[#f6f2ea] text-[#66717a]">
-          {icon}
-        </div>
-
-        <div className="min-w-0">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.17em] text-[#777168]">
-            {label}
-          </p>
-
-          <p className="mt-1 text-2xl font-semibold tracking-[-0.035em] text-[#18202b]">
-            {typeof value === "number"
-              ? value.toLocaleString()
-              : value}
-          </p>
-        </div>
-      </div>
-
-      <p className="mt-3 truncate text-sm text-[#5f5b55]">
-        {hint}
-      </p>
-    </div>
+      <span
+        className={`${styles.badge} ${status === "Connected" || status === "Configured" ? styles.good : styles.warning}`}
+      >
+        {status}
+      </span>
+    </Link>
   );
 }
 
 export default async function AdminDashboardPage() {
-  const [
-    metrics,
-    analytics,
-    health,
-    foundingMetricsResult,
-    traffic,
-    healthCheckMetrics,
-  ] = await Promise.all([
-    loadAdminDashboardMetrics(),
-    loadAdminAnalytics(),
-    loadAdminSystemHealth(),
-
-    loadFoundingMembersDashboardMetrics().catch(
-      () => null
-    ),
-
-    loadAdminVercelAnalytics(),
-
-    loadAdminHealthCheckMetrics(),
-  ]);
-
-  const supabase =
-    await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  let adminFullName:
-    | string
-    | null = null;
-
-  if (user) {
-    const {
-      data: profile,
-    } = await supabase
-      .from("profiles")
-      .select("full_name")
-      .eq("id", user.id)
-      .maybeSingle();
-
-    adminFullName =
-      profile?.full_name ?? null;
-  }
-
-  const firstName =
-    getFounderFirstName(
-      adminFullName,
-      user?.email ?? null
-    );
-
-  const priorityIds =
-    new Set<string>();
-
-  const attentionItems =
-    buildNeedsAttention(
-      metrics,
-      health,
-      foundingMetricsResult,
-      priorityIds
-    );
-
-  const activity =
-    buildPlatformActivity(
-      metrics.recentSignups,
-      metrics.recentUpgrades,
-      metrics.recentSupportActivity
-    );
-
-  const paidMembers =
-    metrics.proUsers +
-    metrics.familyUsers;
-
-  const todayStart =
-    startOfToday();
-
-  const upgradesToday =
-    metrics.recentUpgrades.filter(
-      (upgrade) => {
-        if (!upgrade.updatedAt) {
-          return false;
-        }
-
-        return (
-          new Date(
-            upgrade.updatedAt
-          ).getTime() >= todayStart
-        );
-      }
-    ).length;
-
-  const visitors =
-    traffic.available
-      ? traffic.visitors
-      : 0;
-
-  const pageviews =
-    traffic.available
-      ? traffic.pageviews
-      : 0;
-
-  const totalChecks =
-    healthCheckMetrics.totalCompleted;
-
-  /*
-   * Funnel percentages are intentionally
-   * presented as directional snapshot ratios.
-   *
-   * Traffic is a rolling 30-day metric while
-   * Health Check/user totals can have different
-   * collection windows. We do not call these
-   * strict conversion rates yet.
-   */
-  const visitorToCheck =
-    visitors > 0
-      ? percentage(
-          totalChecks,
-          visitors
-        )
-      : null;
-
-  const totalUsers =
-    analytics.totalUsers;
-
-  const checksToUsers =
-    totalChecks > 0
-      ? percentage(
-          Math.min(
-            totalUsers,
-            totalChecks
-          ),
-          totalChecks
-        )
-      : null;
-
-  const usersToPaid =
-    totalUsers > 0
-      ? percentage(
-          paidMembers,
-          totalUsers
-        )
-      : null;
+  const d = await loadAdminControlCenter();
+  const configurationIssues =
+    d.health?.checks.filter(
+      (check) => check.status === "missing" || check.status === "warning",
+    ) ?? [];
+  const unavailable = [
+    d.users,
+    d.devices,
+    d.households,
+    d.documents,
+    d.newUsers,
+    d.paid,
+    d.support,
+    d.completed,
+    d.skipped,
+    d.incomplete,
+    d.emailSent,
+    d.emailFailed,
+    d.imports,
+    d.connectors,
+    d.staleConnectors,
+    d.checks,
+    d.checksToday,
+    d.redditChecks,
+  ].filter((value) => value === null).length;
+  const alerts: { title: string; detail: string; href: string }[] = [];
+  if (d.support !== null && d.support > 0)
+    alerts.push({
+      title: `${number(d.support)} open support tickets`,
+      detail: "Review new, active, and waiting-on-customer conversations.",
+      href: "/admin/support",
+    });
+  if (d.emailFailed !== null && d.emailFailed > 0)
+    alerts.push({
+      title: `${number(d.emailFailed)} lifecycle emails failed`,
+      detail:
+        "Attempts recorded in the last 7 days. Review email configuration and delivery logs.",
+      href: "/admin/emails",
+    });
+  if (d.staleConnectors !== null && d.staleConnectors > 0)
+    alerts.push({
+      title: `${number(d.staleConnectors)} connectors need a check-in`,
+      detail:
+        "Active installations with no heartbeat or none within the last hour.",
+      href: "/admin/connectors",
+    });
+  if (!d.health?.supabaseConnected)
+    alerts.push({
+      title: "Database check needs review",
+      detail: "The database read check did not confirm connectivity.",
+      href: "/admin/system",
+    });
+  if (configurationIssues.length)
+    alerts.push({
+      title: `${configurationIssues.length} configuration items to review`,
+      detail: configurationIssues.map((check) => check.label).join(" · "),
+      href: "/admin/system",
+    });
+  if (unavailable || d.signups === null || d.tickets === null)
+    alerts.push({
+      title: "Some overview data is unavailable",
+      detail:
+        "A source could not be read. Refresh or inspect system configuration; unavailable does not mean zero.",
+      href: "/admin/system",
+    });
+  const events = [
+    ...(d.signups ?? []).map((row) => ({
+      id: `user-${row.id}`,
+      title: "Account created",
+      detail: row.full_name || "New HTV customer",
+      at: row.created_at as string | null,
+      href: `/admin/users?selected=${row.id}`,
+      kind: "Customer",
+    })),
+    ...(d.tickets ?? []).map((row) => ({
+      id: `ticket-${row.id}`,
+      title: row.subject || "Support ticket created",
+      detail: row.status.replaceAll("_", " "),
+      at: row.created_at as string | null,
+      href: "/admin/support",
+      kind: "Support",
+    })),
+  ]
+    .filter((event) => event.at && Number.isFinite(Date.parse(event.at)))
+    .sort((a, b) => Date.parse(b.at!) - Date.parse(a.at!))
+    .slice(0, 6);
+  const metrics = [
+    {
+      label: "Total users",
+      value: d.users,
+      hint: `${number(d.newUsers)} joined today · UTC`,
+      href: "/admin/users",
+      icon: Users,
+    },
+    {
+      label: "Devices in vaults",
+      value: d.devices,
+      hint: `${number(d.households)} households`,
+      href: "/admin/devices",
+      icon: Cpu,
+    },
+    {
+      label: "Documents saved",
+      value: d.documents,
+      hint: "Platform document records",
+      href: "/admin/analytics",
+      icon: FileText,
+    },
+    {
+      label: "Paid-plan subscriptions",
+      value: d.paid,
+      hint: "Pro + Family · active or trialing",
+      href: "/admin/subscriptions",
+      icon: Wallet,
+    },
+  ];
+  const onboarding = [
+    {
+      label: "Setup completed",
+      value: d.completed,
+      detail: "Completion recorded",
+      color: "#b3c98c",
+    },
+    {
+      label: "Setup skipped",
+      value: d.skipped,
+      detail: "Skipped without completion",
+      color: "#d5b57e",
+    },
+    {
+      label: "No completion recorded",
+      value: d.incomplete,
+      detail: "Includes new and legacy accounts",
+      color: "#8298b4",
+    },
+  ];
 
   return (
-    <>
-      <FounderHeader
-        firstName={firstName}
-      />
-
-      {/* TODAY */}
-      <FounderSection
-        id="founder-today-heading"
-        title="Today"
-        subtitle="Your operating brief for the day."
-      >
-        <div className="grid gap-5 xl:grid-cols-[1.05fr_1.45fr]">
-          {/* FOUNDER BRIEF */}
-          <div className="relative overflow-hidden rounded-[28px] bg-[#142b40] p-6 text-[#f8f5ef] shadow-[0_28px_70px_-50px_rgba(8,20,32,0.85)] md:p-7">
-            <div
-              aria-hidden="true"
-              className="absolute -right-14 -top-16 h-48 w-48 rounded-full bg-[#718d4f]/10 blur-3xl"
-            />
-
-            <div className="relative flex h-full min-h-[220px] flex-col">
-              <div className="flex items-center justify-between gap-4">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#a9bc90]">
-                  Founder brief
-                </p>
-
-                <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/60">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#8da66e]" />
-                  Live
-                </span>
-              </div>
-
-              {metrics.openSupportTickets > 0 ? (
-                <>
-                  <p className="mt-7 max-w-md font-serif text-[30px] font-semibold leading-[1.02] tracking-[-0.04em] md:text-[36px]">
-                    Support needs your attention.
-                  </p>
-
-                  <p className="mt-4 max-w-lg text-sm leading-6 text-white/60">
-                    {metrics.openSupportTickets.toLocaleString()} open{" "}
-                    {metrics.openSupportTickets === 1
-                      ? "ticket is"
-                      : "tickets are"}{" "}
-                    waiting in the support queue.
-                  </p>
-
-                  <Link
-                    href="/admin/support"
-                    className="mt-auto inline-flex w-fit items-center gap-2 pt-7 text-sm font-semibold text-[#c0d0ac] transition hover:text-white"
-                  >
-                    Review support
-                    <ArrowRight size={15} />
-                  </Link>
-                </>
-              ) : attentionItems.length > 0 ? (
-                <>
-                  <p className="mt-7 max-w-md font-serif text-[30px] font-semibold leading-[1.02] tracking-[-0.04em] md:text-[36px]">
-                    {attentionItems.length} platform{" "}
-                    {attentionItems.length === 1
-                      ? "item needs"
-                      : "items need"}{" "}
-                    review.
-                  </p>
-
-                  <p className="mt-4 max-w-lg text-sm leading-6 text-white/60">
-                    Nothing urgent is blocking the platform, but there are
-                    items worth reviewing before you move on.
-                  </p>
-
-                  <a
-                    href="/admin/system"
-                    className="mt-auto inline-flex w-fit items-center gap-2 pt-7 text-sm font-semibold text-[#c0d0ac] transition hover:text-white"
-                  >
-                    Review platform
-                    <ArrowRight size={15} />
-                  </a>
-                </>
-              ) : (
-                <>
-                  <p className="mt-7 max-w-md font-serif text-[30px] font-semibold leading-[1.02] tracking-[-0.04em] md:text-[36px]">
-                    Everything looks clear.
-                  </p>
-
-                  <p className="mt-4 max-w-lg text-sm leading-6 text-white/60">
-                    No support or platform issues currently need your
-                    attention. You can focus on growth and customer activity.
-                  </p>
-
-                  <a
-                    href="/admin/activity"
-                    className="mt-auto inline-flex w-fit items-center gap-2 pt-7 text-sm font-semibold text-[#c0d0ac] transition hover:text-white"
-                  >
-                    View live activity
-                    <ArrowRight size={15} />
-                  </a>
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* TODAY METRICS */}
-          <div className="grid gap-4 sm:grid-cols-2">
-            <OperationalMetric
-              label="New Users"
-              value={metrics.newUsersToday}
-              hint="Joined today"
-              tone="positive"
-              icon={
-                <UserPlus
-                  size={17}
-                  aria-hidden="true"
-                />
-              }
-            />
-
-            <OperationalMetric
-              label="Health Checks"
-              value={
-                healthCheckMetrics.completedToday
-              }
-              hint="Completed today"
-              tone="positive"
-              icon={
-                <ClipboardCheck
-                  size={17}
-                  aria-hidden="true"
-                />
-              }
-            />
-
-            <OperationalMetric
-              label="New Paid"
-              value={upgradesToday}
-              hint="Upgrades today"
-              icon={
-                <CreditCard
-                  size={17}
-                  aria-hidden="true"
-                />
-              }
-            />
-
-            <OperationalMetric
-              label="Open Support"
-              value={
-                metrics.openSupportTickets
-              }
-              hint={
-                metrics.openSupportTickets > 0
-                  ? "Needs attention"
-                  : "Inbox clear"
-              }
-              tone={
-                metrics.openSupportTickets > 0
-                  ? "warning"
-                  : "positive"
-              }
-              icon={
-                <LifeBuoy
-                  size={17}
-                  aria-hidden="true"
-                />
-              }
-            />
-          </div>
+    <div className={styles.dashboard}>
+      <header className={styles.hero}>
+        <div>
+          <p className={styles.eyebrow}>
+            <ShieldCheck size={14} /> HOME TECH VAULT / ADMIN
+          </p>
+          <h1>
+            Everything in <span>control.</span>
+          </h1>
+          <p className={styles.intro}>
+            Welcome back, {d.firstName}. Your platform, customers, and next
+            moves in one place.
+          </p>
         </div>
-      </FounderSection>
-
-      {/* FUNNEL */}
-      <FounderSection
-        id="founder-funnel-heading"
-        title="Growth Funnel"
-        subtitle="A directional view of acquisition through paid membership."
-        action={
-          <FounderLinkAction
-            href="/admin/analytics"
-            label="Open analytics"
-          />
-        }
-      >
-        <div className="overflow-hidden rounded-[30px] border border-white/[0.04] bg-[#142b40] shadow-[0_34px_80px_-50px_rgba(7,18,29,0.85)]">
-          <div className="border-b border-white/[0.07] px-6 py-5 md:px-7">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="text-xs font-semibold text-[#f5f1e8]">
-                  Acquisition snapshot
-                </p>
-
-                <p className="mt-1 text-sm text-white/55">
-                  Traffic uses the last 30 days.
-                  Other stages use currently
-                  available platform totals.
-                </p>
-              </div>
-
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-[#718d4f]/25 bg-[#718d4f]/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.13em] text-[#a9bc90]">
-                <CheckCircle2
-                  size={12}
-                />
-                Live Data
-              </span>
-            </div>
-          </div>
-
-          <div className="grid gap-7 p-6 sm:grid-cols-2 md:p-7 xl:flex xl:items-center">
-            <FunnelStage
-              label="Visitors"
-              value={visitors}
-              detail="Production visitors · 30 days"
-              icon={
-                <Eye size={15} />
-              }
-            />
-
-            <FunnelArrow
-              rate={visitorToCheck}
-            />
-
-            <FunnelStage
-              label="Health Checks"
-              value={totalChecks}
-              detail={`${healthCheckMetrics.completedToday} completed today`}
-              icon={
-                <ClipboardCheck
-                  size={15}
-                />
-              }
-            />
-
-            <FunnelArrow
-              rate={checksToUsers}
-            />
-
-            <FunnelStage
-              label="Users"
-              value={totalUsers}
-              detail={`${metrics.newUsersThisWeek} joined this week`}
-              icon={
-                <Users size={15} />
-              }
-            />
-
-            <FunnelArrow
-              rate={usersToPaid}
-            />
-
-            <FunnelStage
-              label="Paid"
-              value={paidMembers}
-              detail={`${metrics.proUsers} Pro · ${metrics.familyUsers} Family`}
-              icon={
-                <CreditCard
-                  size={15}
-                />
-              }
-            />
-          </div>
+        <div className={styles.refresh}>
+          <RefreshDashboard />
+          <p>Snapshot {date(d.capturedAt)} UTC</p>
         </div>
-      </FounderSection>
+      </header>
 
-      {/* ACQUISITION + HEALTH CHECK */}
-      <FounderSection
-        id="founder-growth-intelligence-heading"
-        title="Growth Intelligence"
-        subtitle="Traffic, acquisition, and Health Check performance in one operating view."
-        action={
-          <FounderLinkAction
-            href="/admin/analytics"
-            label="Open analytics"
-          />
-        }
-      >
-        <div className="overflow-hidden rounded-[30px] border border-[#182533]/10 bg-[#fffdf9] shadow-[0_28px_70px_-55px_rgba(18,32,45,0.58)]">
-          <div className="grid xl:grid-cols-[1.15fr_0.85fr]">
-            <section className="p-6 md:p-7 xl:border-r xl:border-[#182533]/10">
-              <div className="mb-6 flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#617c43]">
-                    Acquisition
-                  </p>
+      <div className={styles.brief}>
+        <div className={styles.briefIcon}>
+          {alerts.length ? <CircleAlert size={21} /> : <Check size={21} />}
+        </div>
+        <div>
+          <strong>
+            {alerts.length
+              ? `${alerts.length} areas need your attention`
+              : "No alerts from the available checks"}
+          </strong>
+          <p>
+            {alerts.length
+              ? "Your review queue is ready below. Start with the items that affect customers."
+              : "Keep an eye on customer progress and recent activity. Configuration checks are not uptime monitoring."}
+          </p>
+        </div>
+        <a href="#attention">
+          Review queue <ChevronRight size={16} />
+        </a>
+      </div>
 
-                  <h3 className="mt-2 font-serif text-[24px] font-semibold tracking-[-0.035em] text-[#18202b]">
-                    Audience & discovery
-                  </h3>
-
-                  <p className="mt-2 max-w-xl text-[14px] leading-6 text-[#706b64]">
-                    Where visitors are coming from and how they are finding Home Tech Vault.
-                  </p>
-                </div>
-
-                <div className="hidden rounded-full border border-[#718d4f]/20 bg-[#718d4f]/10 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#617c43] sm:block">
-                  30 day view
-                </div>
-              </div>
-
-<div className="grid gap-3 sm:grid-cols-2">
-            <AcquisitionCard
-              label="Visitors"
-              value={visitors}
-              hint="Unique visitors · last 30 days"
-              icon={
-                <Eye size={16} />
-              }
-            />
-
-            <AcquisitionCard
-              label="Pageviews"
-              value={pageviews}
-              hint="Production pageviews · last 30 days"
-              icon={
-                <MousePointerClick
-                  size={16}
-                />
-              }
-            />
-
-            <AcquisitionCard
-              label="Top Referral"
-              value={
-                traffic.available
-                  ? traffic.topReferrers[0]
-                      ?.visitors ?? 0
-                  : 0
-              }
-              hint={
-                traffic.available
-                  ? traffic.topReferrers[0]
-                      ?.label ??
-                    "No referral data"
-                  : "Traffic unavailable"
-              }
-              icon={
-                <Share2 size={16} />
-              }
-            />
-
-            <AcquisitionCard
-              label="Reddit Checks"
-              value={
-                healthCheckMetrics.redditCompleted
-              }
-              hint="Health Checks with utm_source=reddit"
-              icon={
-                <BarChart3
-                  size={16}
-                />
-              }
-            />
-          </div>
-            </section>
-
-            <section className="border-t border-[#182533]/10 p-6 md:p-7 xl:border-t-0">
-              <div className="mb-6 flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#617c43]">
-                    Health Check
-                  </p>
-
-                  <h3 className="mt-2 font-serif text-[24px] font-semibold tracking-[-0.035em] text-[#18202b]">
-                    Diagnostic performance
-                  </h3>
-
-                  <p className="mt-2 text-[14px] leading-6 text-[#706b64]">
-                    Completion volume, scoring, and attribution from the public diagnostic.
-                  </p>
-                </div>
-
-                <a
-                  href="/health-check"
-                  className="shrink-0 text-sm font-medium text-[#617c43] transition hover:text-[#4e6636]"
-                >
-                  Open tool ↗
-                </a>
-              </div>
-
-          <div className="rounded-[22px] border border-[#dcd6cc] bg-[#fffdf9] p-5">
-            <div className="grid grid-cols-2 gap-5">
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.17em] text-[#777168]">
-                  Completed
-                </p>
-
-                <p className="mt-2 text-3xl font-semibold tracking-[-0.05em] text-[#18202b]">
-                  {healthCheckMetrics.totalCompleted}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.17em] text-[#777168]">
-                  Average Score
-                </p>
-
-                <p className="mt-2 text-3xl font-semibold tracking-[-0.05em] text-[#18202b]">
-                  {healthCheckMetrics.averageScore}
-                </p>
-              </div>
+      <section aria-label="Platform overview" className={styles.metrics}>
+        {metrics.map(({ label, value, hint, href, icon: Icon }) => (
+          <Link href={href} className={styles.metric} key={label}>
+            <div>
+              <span>{label}</span>
+              <Icon size={19} />
             </div>
-
-            <div className="mt-5 h-px bg-[#e5dfd5]" />
-
-            <div className="mt-5 flex items-center justify-between gap-4">
-              <div>
-                <p className="text-sm font-medium text-[#18202b]">
-                  Reddit attribution
-                </p>
-
-                <p className="mt-1 text-sm text-[#5f5b55]">
-                  Completions carrying the
-                  Reddit UTM source.
-                </p>
-              </div>
-
-              <div className="rounded-xl border border-[#718d4f]/20 bg-[#718d4f]/8 px-3 py-2 text-lg font-semibold text-[#617c43]">
-                {
-                  healthCheckMetrics.redditCompleted
-                }
-              </div>
-            </div>
-          </div>
-            </section>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-between gap-4 border-t border-[#182533]/10 bg-[#f7f3ec] px-6 py-4 md:px-7">
-            <p className="text-[12px] text-[#777168]">
-              Growth Intelligence combines production traffic with currently available platform and Health Check data.
+            <strong className={value === null ? styles.unknownValue : ""}>
+              {number(value)}
+            </strong>
+            <p>
+              {hint}
+              <ArrowUpRight size={14} />
             </p>
+          </Link>
+        ))}
+      </section>
 
-            <div className="flex items-center gap-4">
-              <a
-                href="/admin/analytics"
-                className="text-[12px] font-semibold text-[#617c43] transition hover:text-[#4e6636]"
-              >
-                View analytics →
-              </a>
-
-              <a
-                href="/admin/activity"
-                className="text-[12px] font-semibold text-[#617c43] transition hover:text-[#4e6636]"
-              >
-                View activity →
-              </a>
+      <div className={styles.mainGrid}>
+        <Panel
+          title="Customer progress"
+          eyebrow="BUILDING THEIR VAULT"
+          href="/admin/users"
+        >
+          <div className={styles.progressSummary}>
+            <div>
+              <strong>{number(d.completed)}</strong>
+              <p>accounts with setup completed</p>
             </div>
+            <Home size={37} strokeWidth={1} />
+          </div>
+          <div className={styles.progressBar} aria-hidden="true">
+            {onboarding.map((stage) => (
+              <span
+                key={stage.label}
+                style={{
+                  width: `${d.users && stage.value !== null ? (stage.value / d.users) * 100 : 0}%`,
+                  background: stage.color,
+                }}
+              />
+            ))}
+          </div>
+          <div className={styles.stages}>
+            {onboarding.map((stage) => (
+              <Link href="/admin/users" key={stage.label}>
+                <span
+                  className={styles.dot}
+                  style={{ background: stage.color }}
+                />
+                <div>
+                  <strong>{stage.label}</strong>
+                  <p>{stage.detail}</p>
+                </div>
+                <b>{number(stage.value)}</b>
+              </Link>
+            ))}
+          </div>
+          <p className={styles.note}>
+            Based on saved account setup fields. These are not Notion activation
+            milestones or a conversion funnel.
+          </p>
+        </Panel>
+        <div id="attention" className={styles.anchor}>
+          <Panel
+            title="Needs attention"
+            eyebrow="YOUR NEXT MOVES"
+            href="/admin/system"
+          >
+            {alerts.length ? (
+              <div className={styles.alerts}>
+                {alerts.map((alert, index) => (
+                  <Link href={alert.href} key={alert.title}>
+                    <span className={styles.alertNumber}>
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <div>
+                      <strong>{alert.title}</strong>
+                      <p>{alert.detail}</p>
+                    </div>
+                    <ChevronRight size={16} />
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className={styles.empty}>
+                <ShieldCheck size={32} />
+                <strong>Your review queue is clear</strong>
+                <p>
+                  No support, lifecycle email, connector, or configuration
+                  alerts were returned by these checks.
+                </p>
+              </div>
+            )}
+          </Panel>
+        </div>
+      </div>
+
+      <div className={styles.mainGrid}>
+        <Panel
+          title="Recent activity"
+          eyebrow="ACROSS THE PLATFORM"
+          href="/admin/activity"
+        >
+          <p className={styles.note}>
+            Latest account creations and support tickets · UTC
+          </p>
+          {d.signups === null || d.tickets === null ? (
+            <p className={styles.inlineWarning}>
+              Activity is incomplete: one or more sources could not be loaded.
+            </p>
+          ) : null}
+          <div className={styles.timeline}>
+            {events.map((event) => (
+              <Link key={event.id} href={event.href}>
+                <span className={styles.eventIcon}>
+                  {event.kind === "Customer" ? (
+                    <Users size={16} />
+                  ) : (
+                    <LifeBuoy size={16} />
+                  )}
+                </span>
+                <div>
+                  <strong>{event.title}</strong>
+                  <p>{event.detail}</p>
+                </div>
+                <time dateTime={event.at!}>{date(event.at!)}</time>
+              </Link>
+            ))}
+          </div>
+          {!events.length && (
+            <p className={styles.note}>
+              No activity available in these sources.
+            </p>
+          )}
+          <Link className={styles.textLink} href="/admin/activity">
+            Explore all activity <ArrowUpRight size={15} />
+          </Link>
+        </Panel>
+        <Panel
+          title="Systems & integrations"
+          eyebrow="CONFIGURATION AND CONNECTIVITY"
+          href="/admin/system"
+        >
+          <Status
+            label="Database"
+            detail="Read check against account records"
+            status={
+              d.health
+                ? d.health.supabaseConnected
+                  ? "Connected"
+                  : "Unavailable"
+                : "Unavailable"
+            }
+            href="/admin/system"
+          />
+          <Status
+            label="Transactional email"
+            detail="Resend configuration · not delivery confirmation"
+            status={
+              d.health
+                ? d.health.resendConfigured
+                  ? "Configured"
+                  : "Missing"
+                : "Unavailable"
+            }
+            href="/admin/emails"
+          />
+          <Status
+            label="Billing"
+            detail="Stripe configuration · not a service probe"
+            status={
+              d.health
+                ? d.health.stripeConfigured
+                  ? "Configured"
+                  : "Missing"
+                : "Unavailable"
+            }
+            href="/admin/subscriptions"
+          />
+          <Status
+            label="Notion onboarding"
+            detail="Token and data source · sync health not tracked here"
+            status={d.notionConfigured ? "Configured" : "Missing"}
+            href="/admin/system"
+          />
+          <Status
+            label="Receipt email ingestion"
+            detail="Resend key and inbound webhook secret"
+            status={d.inboundConfigured ? "Configured" : "Missing"}
+            href="/admin/system"
+          />
+          <p className={styles.note}>
+            Checked when this page loads. No uptime or latency claims.
+          </p>
+        </Panel>
+      </div>
+
+      <section aria-labelledby="automation-heading">
+        <div className={styles.sectionHeading}>
+          <div>
+            <p className={styles.eyebrow}>WORKING BEHIND THE SCENES</p>
+            <h2 id="automation-heading">Automation & discovery</h2>
           </div>
         </div>
-      </FounderSection>
-
-      {/* PLATFORM */}
-      <FounderSection
-        id="founder-platform-heading"
-        title="Platform"
-        subtitle="Core inventory currently stored across Home Tech Vault."
-      >
-        <div className="grid overflow-hidden rounded-[20px] border border-[#e1dbd1] bg-[#fffdf9] sm:grid-cols-2 xl:grid-cols-4">
-          {[
-            {
-              label: "Users",
-              value:
-                analytics.totalUsers,
-              icon: Users,
-            },
-            {
-              label: "Households",
-              value:
-                analytics.totalHouseholds,
-              icon: Home,
-            },
-            {
-              label: "Devices",
-              value:
-                analytics.totalDevices,
-              icon: HardDrive,
-            },
-            {
-              label: "Documents",
-              value:
-                analytics.totalDocuments,
-              icon: FileText,
-            },
-          ].map(
-            ({
-              label,
-              value,
-              icon: Icon,
-            }, index) => (
-              <div
-                key={label}
-                className={[
-                  "px-5 py-5",
-                  index > 0
-                    ? "border-t border-[#e6e0d6] sm:border-t-0"
-                    : "",
-                  index % 2 !== 0
-                    ? "sm:border-l sm:border-[#e6e0d6]"
-                    : "",
-                  index >= 2
-                    ? "xl:border-l xl:border-[#e6e0d6]"
-                    : "",
-                ].join(" ")}
-              >
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.17em] text-[#777168]">
-                      {label}
-                    </p>
-
-                    <p className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-[#18202b]">
-                      {value.toLocaleString()}
-                    </p>
-                  </div>
-
-                  <Icon
-                    size={17}
-                    className="text-[#8d958f]"
-                  />
-                </div>
-              </div>
-            )
-          )}
+        <div className={styles.automation}>
+          <Link href="/admin/emails">
+            <Mail size={21} />
+            <h3>Lifecycle email</h3>
+            <strong>{number(d.emailSent)}</strong>
+            <p>Marked sent in the last 7 days</p>
+            <span>
+              {number(d.emailFailed)} failed attempts <ArrowUpRight size={15} />
+            </span>
+            <small>Provider acceptance, not inbox delivery.</small>
+          </Link>
+          <Link href="/admin/connectors">
+            <Plug size={21} />
+            <h3>Network discovery</h3>
+            <strong>{number(d.connectors)}</strong>
+            <p>Active, non-revoked installations</p>
+            <span>
+              {number(d.staleConnectors)} without a recent heartbeat{" "}
+              <ArrowUpRight size={15} />
+            </span>
+            <small>Review scan history in Connectors.</small>
+          </Link>
+          <div>
+            <FileText size={21} />
+            <h3>Receipt imports</h3>
+            <strong>{number(d.imports)}</strong>
+            <p>Pending customer review</p>
+            <span>Customers approve imports in their vaults</span>
+            <small>No platform-wide import review screen exists.</small>
+          </div>
         </div>
-      </FounderSection>
+      </section>
 
-      {/* OPERATIONS */}
-      <div className="grid gap-7 xl:grid-cols-2">
-        <FounderActivityTimeline
-          events={activity}
-        />
-
-        <FounderAttentionList
-          items={attentionItems}
-        />
+      <div className={styles.mainGrid}>
+        <Panel
+          title="Audience & acquisition"
+          eyebrow="TRAFFIC · LAST 30 DAYS"
+          href="/admin/analytics"
+        >
+          <div className={styles.smallMetrics}>
+            <div>
+              <strong>
+                {number(d.traffic.available ? d.traffic.visitors : null)}
+              </strong>
+              <p>Unique visitors</p>
+            </div>
+            <div>
+              <strong>
+                {number(d.traffic.available ? d.traffic.pageviews : null)}
+              </strong>
+              <p>Pageviews</p>
+            </div>
+          </div>
+          <div className={styles.referral}>
+            <span>Top referral</span>
+            <strong>
+              {d.traffic.available
+                ? d.traffic.topReferrers[0]?.label || "No referral data"
+                : "Unavailable"}
+            </strong>
+          </div>
+          <p className={styles.note}>
+            {d.traffic.available
+              ? "Production traffic from Vercel Analytics. Separate from all-time platform totals."
+              : d.traffic.configured
+                ? "Vercel Analytics could not be reached. Refresh to retry."
+                : "Vercel Analytics credentials are not configured in this environment."}
+          </p>
+          <Link className={styles.textLink} href="/admin/analytics">
+            Open growth analytics <ArrowUpRight size={15} />
+          </Link>
+        </Panel>
+        <Panel
+          title="Public Health Check"
+          eyebrow="DIAGNOSTIC ACTIVITY"
+          href="/health-check"
+        >
+          <div className={styles.smallMetrics}>
+            <div>
+              <strong>{number(d.checks)}</strong>
+              <p>All-time completions</p>
+            </div>
+            <div>
+              <strong>{number(d.checksToday)}</strong>
+              <p>Completed today · UTC</p>
+            </div>
+          </div>
+          <div className={styles.referral}>
+            <span>Reddit-attributed completions</span>
+            <strong>{number(d.redditChecks)}</strong>
+          </div>
+          <p className={styles.note}>
+            Recorded completions, not platform health or customer activation.
+          </p>
+          <Link className={styles.textLink} href="/health-check">
+            Open diagnostic <ArrowUpRight size={15} />
+          </Link>
+        </Panel>
       </div>
 
-      {/* RECENT CUSTOMERS */}
-      <FounderRecentSignups
-        signups={metrics.recentSignups}
-      />
+      <Panel
+        title="Latest customers"
+        eyebrow="RECENT SIGNUPS"
+        href="/admin/users"
+      >
+        <div className={styles.customers}>
+          {d.signups?.map((row) => (
+            <Link key={row.id} href={`/admin/users?selected=${row.id}`}>
+              <span className={styles.avatar}>
+                {(row.full_name || "HTV").slice(0, 2).toUpperCase()}
+              </span>
+              <div>
+                <strong>{row.full_name || "Unnamed account"}</strong>
+                <p>
+                  {row.created_at
+                    ? `${date(row.created_at)} UTC`
+                    : "Signup date unavailable"}
+                </p>
+              </div>
+              <span className={styles.badge}>
+                {row.onboarding_completed_at
+                  ? "Setup complete"
+                  : row.onboarding_skipped_at
+                    ? "Setup skipped"
+                    : "Setup not completed"}
+              </span>
+              <ChevronRight size={16} />
+            </Link>
+          ))}
+        </div>
+        {!d.signups?.length && (
+          <p className={styles.note}>
+            {d.signups === null
+              ? "Customer records are unavailable."
+              : "No customer accounts yet."}
+          </p>
+        )}
+      </Panel>
 
-      <div className="flex items-center gap-2 border-t border-[#ded8ce] pt-5 text-xs text-[#8a867f]">
-        <Activity
-          size={14}
-          aria-hidden="true"
-        />
-
-        Founder Control Center uses live
-        production data where available.
-      </div>
-    </>
+      <nav aria-label="Quick actions" className={styles.quickActions}>
+        <span>Quick actions</span>
+        {[
+          { href: "/admin/users", label: "Manage users", icon: Users },
+          { href: "/admin/support", label: "Open support", icon: LifeBuoy },
+          {
+            href: "/admin/founding-members",
+            label: "Founding members",
+            icon: ShieldCheck,
+          },
+          { href: "/admin/platform", label: "Platform tools", icon: Activity },
+        ].map(({ href, label, icon: Icon }) => (
+          <Link key={href} href={href}>
+            <Icon size={16} />
+            {label}
+            <ArrowUpRight size={14} />
+          </Link>
+        ))}
+      </nav>
+      <footer className={styles.footer}>
+        <ShieldCheck size={14} /> Admin access protected · Read-only overview ·
+        Refresh for the latest snapshot
+      </footer>
+    </div>
   );
 }
