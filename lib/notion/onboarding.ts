@@ -112,6 +112,10 @@ export async function createOnboardingCustomer({
       checkbox: false,
     },
 
+    "Activation Sent": {
+      checkbox: false,
+    },
+
     "Progress Sent": {
       checkbox: false,
     },

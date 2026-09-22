@@ -8,6 +8,7 @@ import { sendReactEmail } from "@/lib/email/sendEmail";
 import { getSiteUrl } from "@/lib/marketing/site";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { updateOnboardingEmailState } from "@/lib/notion/updateOnboardingEmailState";
 
 const WELCOME_EMAIL_TYPE = "welcome";
 const MAX_ACCOUNT_AGE_MS =
@@ -78,6 +79,36 @@ export async function sendWelcomeEmailForCurrentUser() {
   const admin =
     createAdminClient();
 
+  const {
+    data: emailPreferences,
+    error: emailPreferencesError,
+  } = await admin
+    .from("lifecycle_email_preferences")
+    .select("onboarding_enabled")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (emailPreferencesError) {
+    console.error(
+      "[welcome-email] unable to read email preferences",
+      emailPreferencesError
+    );
+
+    return {
+      ok: false as const,
+      sent: false,
+    };
+  }
+
+  if (
+    emailPreferences?.onboarding_enabled === false
+  ) {
+    return {
+      ok: true as const,
+      sent: false,
+    };
+  }
+
   const idempotencyKey =
     `${user.id}:${WELCOME_EMAIL_TYPE}`;
 
@@ -110,6 +141,11 @@ export async function sendWelcomeEmailForCurrentUser() {
   if (
     existing?.status === "sent"
   ) {
+    await updateOnboardingEmailState(
+      user.id,
+      "Welcome Sent"
+    );
+
     return {
       ok: true as const,
       sent: false,
@@ -279,6 +315,11 @@ export async function sendWelcomeEmailForCurrentUser() {
       error_message: null,
     })
     .eq("id", logId);
+
+  await updateOnboardingEmailState(
+    user.id,
+    "Welcome Sent"
+  );
 
   return {
     ok: true as const,

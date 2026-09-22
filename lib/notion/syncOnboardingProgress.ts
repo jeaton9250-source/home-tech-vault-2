@@ -7,6 +7,10 @@ import {
   fetchHouseholdIdForUser,
 } from "@/lib/data/householdScope";
 import { createAdminClient } from "@/lib/supabase/admin";
+import {
+  sendOnboardingMilestoneEmail,
+  type AutomaticOnboardingMilestone,
+} from "@/lib/lifecycle/sendOnboardingMilestoneEmail";
 
 const notion = new Client({
   auth: process.env.NOTION_TOKEN,
@@ -243,6 +247,15 @@ export async function syncNotionOnboardingProgress(
     const hadMaintenanceAdded =
       pageProperties["Maintenance Added"]?.checkbox === true;
 
+    const hadProgressSent =
+      pageProperties["Progress Sent"]?.checkbox === true;
+
+    const hadCoreSetupSent =
+      pageProperties["Core Setup Sent"]?.checkbox === true;
+
+    const hadActivationSent =
+      pageProperties["Activation Sent"]?.checkbox === true;
+
     const permanentDeviceAdded =
       hadDeviceAdded || deviceAdded;
 
@@ -319,6 +332,81 @@ export async function syncNotionOnboardingProgress(
     console.log(
       `Notion onboarding synced for ${user.email ?? userId}: ${currentStatus} → ${nextStatus}`
     );
+
+    let milestone:
+      AutomaticOnboardingMilestone | null =
+      null;
+
+    let sentProperty:
+      | "Progress Sent"
+      | "Core Setup Sent"
+      | "Activation Sent"
+      | null = null;
+
+    if (
+      nextStatus === "Activated" &&
+      permanentMaintenanceAdded &&
+      permanentDocumentOrWarrantyAdded &&
+      permanentDeviceAdded &&
+      !hadActivationSent
+    ) {
+      milestone = "activated";
+      sentProperty = "Activation Sent";
+    } else if (
+      nextStatus === "Core Setup" &&
+      permanentDocumentOrWarrantyAdded &&
+      permanentDeviceAdded &&
+      !hadCoreSetupSent
+    ) {
+      milestone = "core_setup";
+      sentProperty = "Core Setup Sent";
+    } else if (
+      nextStatus === "Started" &&
+      permanentDeviceAdded &&
+      !hadProgressSent
+    ) {
+      milestone = "first_device";
+      sentProperty = "Progress Sent";
+    }
+
+    if (milestone && sentProperty) {
+      const emailResult =
+        await sendOnboardingMilestoneEmail(
+          userId,
+          milestone
+        );
+
+      const deliveryRecorded =
+        emailResult.ok &&
+        (
+          emailResult.sent === true ||
+          (
+            "skipped" in emailResult &&
+            emailResult.skipped ===
+              "already_sent"
+          )
+        );
+
+      if (deliveryRecorded) {
+        await notion.pages.update({
+          page_id: page.id,
+          properties: {
+            [sentProperty]: {
+              checkbox: true,
+            },
+          },
+        });
+
+        console.log(
+          `Notion onboarding email recorded for ${user.email ?? userId}: ${milestone}`
+        );
+      } else if (!emailResult.ok) {
+        console.error(
+          `Notion onboarding milestone email failed for ${user.email ?? userId}:`,
+          emailResult.error
+        );
+      }
+    }
   } catch (error) {
     // Notion must never be able to break an HTV customer action.
     console.error(
