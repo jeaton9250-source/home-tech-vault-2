@@ -11,6 +11,7 @@ import {
   Router,
   Search,
   Sparkles,
+  Smartphone,
   Wrench,
 } from "lucide-react";
 
@@ -135,9 +136,29 @@ export default function HomePage() {
               </Link>
             </div>
 
-            <p className="mt-4 text-sm text-[#657184]">
-              Free to start. No credit card required.
-            </p>
+            <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <p className="text-sm text-[#657184]">
+                Free to start. No credit card required.
+              </p>
+
+              <div
+                className="inline-flex w-fit items-center gap-3 rounded-2xl border border-[#152335]/15 bg-white/75 px-4 py-3 shadow-sm backdrop-blur-md"
+                aria-label="Home Tech Vault iPhone app coming soon to the App Store"
+              >
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#152335] text-white">
+                  <Smartphone className="h-4 w-4" aria-hidden />
+                </div>
+
+                <div className="leading-tight">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#7a8695]">
+                    iPhone app
+                  </div>
+                  <div className="mt-1 text-sm font-semibold text-[#152335]">
+                    Coming soon to the App Store
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="hidden justify-end lg:flex">
