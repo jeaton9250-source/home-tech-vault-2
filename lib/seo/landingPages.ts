@@ -1166,6 +1166,425 @@ export const SEO_LANDING_PAGES: Record<
       "Start free and give your household technology records a private home.",
   },
 
+  "new-homeowner-checklist": {
+    slug: "new-homeowner-checklist",
+    path: "/new-homeowner-checklist",
+    navLabel: "New homeowner checklist",
+    metaTitle: "New Homeowner Checklist: First 30 Days",
+    metaDescription:
+      "Use this new homeowner checklist to organize manuals, warranties, appliance details, maintenance records, utilities, and smart-home handoff after closing.",
+    keywords: [
+      "new homeowner checklist",
+      "first time homeowner checklist",
+      "what to do after buying a house",
+      "new house checklist after closing",
+      "homeowner documents checklist",
+    ],
+    heroEyebrow: "New homeowner checklist",
+    heroTitle: "The first 30 days in a new home are easier when the house has a record.",
+    heroDescription:
+      "Use this practical checklist to capture the manuals, warranties, model numbers, maintenance history, utilities, and smart-home details that are easiest to lose right after closing.",
+    heroPrimaryLabel: "Start your home record free",
+    heroPrimaryHref: MARKETING_ROUTES.signup,
+    heroSecondaryLabel: "See the demo",
+    heroSecondaryHref: MARKETING_ROUTES.demo,
+    benefitsTitle: "What to organize right after closing",
+    benefits: [
+      {
+        title: "Collect what came with the house",
+        description:
+          "Gather appliance manuals, warranty paperwork, service records, paint notes, garage remotes, and other handoff information before it disappears into moving boxes.",
+      },
+      {
+        title: "Record the equipment you inherited",
+        description:
+          "Save model and serial numbers for appliances, HVAC equipment, routers, cameras, thermostats, and other systems you may need serviced later.",
+      },
+      {
+        title: "Create a maintenance starting point",
+        description:
+          "Write down filter sizes, recent service dates, recurring tasks, and the contractors or providers tied to the home.",
+      },
+    ],
+    screenshotsTitle: "Turn move-in information into a lasting record",
+    screenshots: [
+      {
+        title: "Home overview",
+        caption: "Keep the devices and systems that came with the property in one household record.",
+        src: "/seo/screenshots/home-tech-overview.png",
+        alt: "Home Tech Vault home overview with household device and maintenance information",
+      },
+      {
+        title: "Device details",
+        caption: "Save appliance model numbers, serials, purchase details, and linked documents.",
+        src: "/seo/screenshots/device-detail.png",
+        alt: "Home Tech Vault device profile with model number, serial number, warranty, and documents",
+      },
+      {
+        title: "Document vault",
+        caption: "Keep manuals, receipts, warranties, and home records searchable after move-in.",
+        src: "/seo/screenshots/documents-library.png",
+        alt: "Home Tech Vault document library with household manuals and warranty records",
+      },
+    ],
+    featuresTitle: "A first-time homeowner checklist that stays useful",
+    featuresDescription:
+      "The goal is not another one-time moving checklist. It is a home record you can keep updating after the boxes are gone.",
+    features: [
+      {
+        title: "Appliance and system records",
+        description:
+          "Document major equipment with brand, model, serial number, room, and notes.",
+      },
+      {
+        title: "Manuals and warranties",
+        description:
+          "Attach the paperwork you will need when something breaks or needs service.",
+      },
+      {
+        title: "Maintenance history",
+        description:
+          "Start a timeline for filters, repairs, service visits, and recurring home-care tasks.",
+      },
+      {
+        title: "Household handoff details",
+        description:
+          "Keep useful non-secret context for smart-home devices, network equipment, and shared systems.",
+      },
+    ],
+    faqTitle: "New homeowner checklist FAQ",
+    faqDescription:
+      "Common questions about what to document and organize after buying a home.",
+    faqItems: [
+      {
+        question: "What documents should a new homeowner keep?",
+        answer:
+          "Keep closing and insurance records in the appropriate secure place, plus appliance manuals, warranty documents, receipts, service history, contractor information, and equipment details you may need for repairs or claims.",
+      },
+      {
+        question: "What appliance information should I save after closing?",
+        answer:
+          "Record the brand, model number, serial number, approximate age or install date when known, warranty information, and a photo of the product label for major appliances and home systems.",
+      },
+      {
+        question: "Should I document smart-home devices left by the seller?",
+        answer:
+          "Yes. Confirm ownership has been transferred or reset, then record the device name, location, model, and the household account responsible for it without storing passwords in plain text.",
+      },
+      {
+        question: "Do I have to finish the whole checklist at once?",
+        answer:
+          "No. Start with HVAC, water heating, kitchen appliances, security, networking, and other expensive or frequently serviced equipment, then expand room by room.",
+      },
+    ],
+    relatedTitle: "Next steps for your home record",
+    related: related([
+      {
+        slug: "home-document-organizer",
+        title: "Organize home documents",
+        description: "Give manuals, warranties, and receipts a permanent searchable home.",
+      },
+      {
+        slug: "warranty-tracker",
+        title: "Track appliance warranties",
+        description: "Keep coverage dates and proof attached to each device.",
+      },
+      {
+        slug: "home-maintenance-checklist",
+        title: "Home maintenance checklist",
+        description: "Build a realistic monthly and seasonal maintenance rhythm.",
+      },
+    ]),
+    ctaTitle: "Give your new home a memory from day one",
+    ctaDescription:
+      "Start free and build the household record you will wish you had the first time something breaks.",
+  },
+
+  "appliance-model-serial-number": {
+    slug: "appliance-model-serial-number",
+    path: "/appliance-model-serial-number",
+    navLabel: "Appliance model & serial numbers",
+    metaTitle: "How to Find Appliance Model & Serial Numbers",
+    metaDescription:
+      "Find the model and serial number on refrigerators, dishwashers, washers, dryers, ranges, and other home appliances, then save them for repairs and warranties.",
+    keywords: [
+      "how to find appliance model number",
+      "where is appliance serial number",
+      "refrigerator model number location",
+      "dishwasher serial number location",
+      "washer model number",
+      "appliance model and serial number",
+    ],
+    heroEyebrow: "Appliance model numbers",
+    heroTitle: "Find the model and serial number before you need a repair.",
+    heroDescription:
+      "Appliance labels are easy to ignore until a technician, parts site, warranty claim, or manual asks for the exact model. Use this guide to know where to look and what to save.",
+    heroPrimaryLabel: "Save your appliance details free",
+    heroPrimaryHref: MARKETING_ROUTES.signup,
+    heroSecondaryLabel: "See device inventory",
+    heroSecondaryHref: "/device-inventory",
+    benefitsTitle: "Why model and serial numbers matter",
+    benefits: [
+      {
+        title: "Order the right parts",
+        description:
+          "The marketing name is often not specific enough. The model number identifies the exact product configuration a parts lookup or technician needs.",
+      },
+      {
+        title: "Speed up warranty and service calls",
+        description:
+          "Support teams commonly ask for both model and serial number before confirming coverage, parts, recalls, or service options.",
+      },
+      {
+        title: "Find the correct manual",
+        description:
+          "The exact model is the fastest path to the right installation, care, troubleshooting, and owner documentation.",
+      },
+    ],
+    screenshotsTitle: "Save the label once, use it for years",
+    screenshots: [
+      {
+        title: "Device profile",
+        caption: "Store model and serial numbers on the appliance record instead of relying on the label forever.",
+        src: "/seo/screenshots/device-detail.png",
+        alt: "Home Tech Vault device profile showing model and serial number fields",
+      },
+      {
+        title: "Linked documents",
+        caption: "Attach the correct manual, receipt, and warranty to the exact appliance.",
+        src: "/seo/screenshots/device-documents.png",
+        alt: "Home Tech Vault device documents with appliance receipt and manual",
+      },
+      {
+        title: "Searchable inventory",
+        caption: "Find the appliance record quickly when a technician or parts site asks for it.",
+        src: "/seo/screenshots/device-directory.png",
+        alt: "Searchable Home Tech Vault device directory for household appliances",
+      },
+    ],
+    featuresTitle: "Where to look on common appliances",
+    featuresDescription:
+      "Manufacturers vary, but rating plates and product labels tend to appear in predictable places. Check the label before moving or disconnecting an appliance.",
+    features: [
+      {
+        title: "Refrigerator",
+        description:
+          "Look inside the fresh-food compartment, along a side wall, near the crisper drawers, around the door frame, or behind the lower kick plate.",
+      },
+      {
+        title: "Dishwasher",
+        description:
+          "Open the door and inspect the inner door edge, frame, or side of the tub near the opening.",
+      },
+      {
+        title: "Washer and dryer",
+        description:
+          "Check the door or lid opening, rear panel, control-console area, or inside the door jamb.",
+      },
+      {
+        title: "Range, oven, and cooktop",
+        description:
+          "Look around the oven door frame, storage drawer opening, rear panel, or underside of a removable cooktop area when the manufacturer directs it.",
+      },
+      {
+        title: "Water heater and HVAC",
+        description:
+          "The data plate is usually on the equipment cabinet or tank. Photograph it while access is clear and include install or service notes when known.",
+      },
+    ],
+    faqTitle: "Appliance model and serial number FAQ",
+    faqDescription:
+      "What to capture when you locate an appliance product label.",
+    faqItems: [
+      {
+        question: "Is the model number the same as the serial number?",
+        answer:
+          "No. The model identifies the product type or configuration, while the serial number identifies the individual unit. Service and warranty teams may ask for both.",
+      },
+      {
+        question: "What should I do if the appliance label is faded?",
+        answer:
+          "Check purchase records, retailer order history, manufacturer apps, old service invoices, or documentation left with the home. Photograph any readable portion before it gets worse.",
+      },
+      {
+        question: "Should I save a photo of the appliance label?",
+        answer:
+          "Yes. A clear label photo gives you the exact spelling and punctuation of the model and serial and can help when manually typed records contain an error.",
+      },
+      {
+        question: "Why does the exact model number matter for manuals?",
+        answer:
+          "Appliance families often have several similar versions with different parts, controls, or installation requirements. The exact model helps you select the correct documentation.",
+      },
+    ],
+    relatedTitle: "Keep the information useful",
+    related: related([
+      {
+        slug: "device-inventory",
+        title: "Home device inventory",
+        description: "Keep model and serial numbers in the broader household inventory.",
+      },
+      {
+        slug: "warranty-tracker",
+        title: "Warranty tracker",
+        description: "Pair serials with coverage dates and proof of purchase.",
+      },
+      {
+        slug: "home-document-organizer",
+        title: "Manual and receipt organizer",
+        description: "Attach the correct paperwork to each appliance record.",
+      },
+    ]),
+    ctaTitle: "Stop crawling behind appliances twice",
+    ctaDescription:
+      "Save the label, model, serial, manual, and warranty in Home Tech Vault while you can reach them.",
+  },
+
+  "home-maintenance-checklist": {
+    slug: "home-maintenance-checklist",
+    path: "/home-maintenance-checklist",
+    navLabel: "Home maintenance checklist",
+    metaTitle: "Home Maintenance Checklist by Month & Season",
+    metaDescription:
+      "A practical home maintenance checklist organized by monthly, seasonal, and annual tasks, with a simple way to keep service history and reminders together.",
+    keywords: [
+      "home maintenance checklist",
+      "monthly home maintenance checklist",
+      "seasonal home maintenance checklist",
+      "annual home maintenance checklist",
+      "home maintenance schedule",
+      "homeowner maintenance checklist",
+    ],
+    heroEyebrow: "Home maintenance checklist",
+    heroTitle: "A home maintenance checklist you can actually keep up with.",
+    heroDescription:
+      "Separate quick recurring checks from seasonal and annual work, record what was done, and follow the manufacturer instructions and professional guidance that apply to your home.",
+    heroPrimaryLabel: "Track maintenance free",
+    heroPrimaryHref: MARKETING_ROUTES.signup,
+    heroSecondaryLabel: "Browse maintenance guides",
+    heroSecondaryHref: "/knowledge/maintenance",
+    benefitsTitle: "Build a maintenance rhythm instead of a giant to-do list",
+    benefits: [
+      {
+        title: "Monthly: inspect the basics",
+        description:
+          "Check visible leaks or moisture, review the HVAC filter condition, test safety devices according to their instructions, and notice anything that changed.",
+      },
+      {
+        title: "Seasonally: prepare for weather",
+        description:
+          "Review HVAC needs, exterior drainage, weather-sensitive equipment, outdoor devices, and other tasks that change with your climate and home.",
+      },
+      {
+        title: "Annually: review the big systems",
+        description:
+          "Revisit service history, manufacturer maintenance schedules, recurring professional inspections, warranties, and equipment nearing replacement age.",
+      },
+    ],
+    screenshotsTitle: "Make maintenance part of the home record",
+    screenshots: [
+      {
+        title: "Maintenance dashboard",
+        caption: "Keep recurring home-care tasks visible instead of rebuilding a checklist each year.",
+        src: "/seo/screenshots/home-dashboard.png",
+        alt: "Home Tech Vault dashboard with household maintenance tasks and reminders",
+      },
+      {
+        title: "Service history",
+        caption: "Record what was done, when it happened, and which device or home system it belongs to.",
+        src: "/seo/screenshots/device-activity.png",
+        alt: "Home Tech Vault device activity timeline with maintenance and service history",
+      },
+      {
+        title: "Equipment records",
+        caption: "Keep filter sizes, model numbers, manuals, and warranty information next to the maintained equipment.",
+        src: "/seo/screenshots/device-detail.png",
+        alt: "Home Tech Vault equipment profile with model, warranty, and maintenance context",
+      },
+    ],
+    featuresTitle: "A simple maintenance schedule",
+    featuresDescription:
+      "Use this as a planning framework, not a substitute for the manual, local requirements, or a qualified professional. Your home may not contain every system listed.",
+    features: [
+      {
+        title: "Every month",
+        description:
+          "Walk the home for visible leaks or moisture, inspect frequently used filters and vents, check drains, and test safety equipment on the schedule required by its manufacturer.",
+      },
+      {
+        title: "Spring",
+        description:
+          "Review cooling equipment, drainage, exterior water management, outdoor devices, screens, and weather-related wear before heavier warm-season use.",
+      },
+      {
+        title: "Summer",
+        description:
+          "Watch cooling performance, condensation and drainage, outdoor equipment, irrigation, and heat-sensitive electronics or networking gear.",
+      },
+      {
+        title: "Fall",
+        description:
+          "Prepare heating equipment, replace or inspect filters as needed, review exterior drainage, winterize appropriate outdoor systems, and document any service.",
+      },
+      {
+        title: "Winter",
+        description:
+          "Watch for moisture, freezing risk, heating issues, indoor air problems, and equipment that is working harder during cold weather.",
+      },
+      {
+        title: "Once a year",
+        description:
+          "Review the service history for HVAC, water heating, appliances, alarms, electrical or plumbing concerns, and any manufacturer-specified maintenance you may have missed.",
+      },
+    ],
+    faqTitle: "Home maintenance checklist FAQ",
+    faqDescription:
+      "How to make a recurring home maintenance schedule manageable.",
+    faqItems: [
+      {
+        question: "What home maintenance should I do every month?",
+        answer:
+          "A short monthly inspection can include looking for leaks or moisture, checking filter condition, making sure drains and vents are functioning normally, and testing safety equipment according to the product instructions. Use your equipment manuals for exact service intervals.",
+      },
+      {
+        question: "Should I replace my HVAC filter every month?",
+        answer:
+          "Not automatically. Filter type, system use, pets, air quality, and manufacturer guidance affect replacement frequency. Inspect it regularly and follow the HVAC and filter manufacturer's recommendations.",
+      },
+      {
+        question: "How should I keep home maintenance records?",
+        answer:
+          "For each major system or appliance, keep the service date, what was done, provider or DIY notes, receipts when relevant, and the model or serial number tied to that work.",
+      },
+      {
+        question: "What is the easiest way to keep a maintenance checklist current?",
+        answer:
+          "Use recurring tasks and a service history tied to the actual equipment. That is easier to maintain than a static printable checklist that starts over every year.",
+      },
+    ],
+    relatedTitle: "Build the rest of your home record",
+    related: related([
+      {
+        slug: "new-homeowner-checklist",
+        title: "New homeowner checklist",
+        description: "Create the baseline record for a home you just bought.",
+      },
+      {
+        slug: "device-inventory",
+        title: "Device inventory",
+        description: "Tie maintenance to the appliances and equipment it belongs to.",
+      },
+      {
+        slug: "home-document-organizer",
+        title: "Home document organizer",
+        description: "Keep service invoices, manuals, and warranty paperwork searchable.",
+      },
+    ]),
+    ctaTitle: "Make the checklist remember what you already did",
+    ctaDescription:
+      "Track recurring tasks and service history inside the same record as your home equipment and documents.",
+  },
+
   "home-tech-checklist": {
     slug: "home-tech-checklist",
     path: "/home-tech-checklist",
