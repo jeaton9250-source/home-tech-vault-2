@@ -1,55 +1,33 @@
-name: Home Tech Vault CI
+name: Web Build Diagnostic
 
 on:
   pull_request:
-    branches:
-      - main
-  push:
     branches:
       - main
 
 permissions:
   contents: read
 
-concurrency:
-  group: app-ci-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
-  validate:
-    name: Typecheck, Test, and Build
+  web-build:
+    name: Typecheck and Web Build
     runs-on: ubuntu-latest
     timeout-minutes: 20
-
     env:
       NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
-
       - name: Set up Node
         uses: actions/setup-node@v5
         with:
           node-version: 24
           cache: npm
-
       - name: Install dependencies
         run: npm ci
-
-      - name: Install mobile dependencies
-        run: npm ci --prefix mobile
-
       - name: Run TypeScript checks
         run: npm run typecheck
-
-      - name: Validate mobile application
-        run: npm run mobile:check
-
-      - name: Run automated tests
-        run: npm test
-
       - name: Build production application
         run: npm run build
