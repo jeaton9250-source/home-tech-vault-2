@@ -75,6 +75,9 @@ export const PUBLIC_MARKETING_PATHS = [
   "/home-inventory-software",
   "/digital-home-vault",
   "/home-tech-checklist",
+  "/new-homeowner-checklist",
+  "/appliance-model-serial-number",
+  "/home-maintenance-checklist",
   "/health-check",
   MARKETING_ROUTES.newHomeowners,
   MARKETING_ROUTES.realtors,
@@ -186,6 +189,12 @@ export const SEO_LANDING_PATHS = [
   "/home-inventory-software",
   "/digital-home-vault",
   "/home-tech-checklist",
+  "/new-homeowner-checklist",
+  "/appliance-model-serial-number",
+  "/home-maintenance-checklist",
+  "/new-homeowner-checklist",
+  "/appliance-model-serial-number",
+  "/home-maintenance-checklist",
 ] as const;
 
 function normalizePathname(
