@@ -141,9 +141,10 @@ export default function HomePage() {
                 Free to start. No credit card required.
               </p>
 
-              <div
-                className="inline-flex w-fit items-center gap-3 rounded-2xl border border-[#152335]/15 bg-white/75 px-4 py-3 shadow-sm backdrop-blur-md"
-                aria-label="Home Tech Vault iPhone app coming soon to the App Store"
+              <a
+                href="https://apps.apple.com/us/app/home-tech-vault/id6812090967"
+                className="inline-flex w-fit items-center gap-3 rounded-2xl border border-[#152335]/15 bg-white/75 px-4 py-3 shadow-sm backdrop-blur-md transition-colors hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#152335]"
+                aria-label="Download Home Tech Vault on the App Store"
               >
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#152335] text-white">
                   <Smartphone className="h-4 w-4" aria-hidden />
@@ -154,10 +155,10 @@ export default function HomePage() {
                     iPhone app
                   </div>
                   <div className="mt-1 text-sm font-semibold text-[#152335]">
-                    Coming soon to the App Store
+                    Download on the App Store
                   </div>
                 </div>
-              </div>
+              </a>
             </div>
           </div>
 
