@@ -62,7 +62,14 @@ export function isOnboardingFinished(
     | "onboarding_step"
   > | null
 ): boolean {
-  return hasSeenOnboarding(profile);
+  if (!profile) {
+    return false;
+  }
+
+  return Boolean(
+    profile.onboarding_completed_at ||
+      profile.onboarding_skipped_at
+  );
 }
 
 export function shouldShowOnboarding(
@@ -73,11 +80,7 @@ export function shouldShowOnboarding(
     | "onboarding_step"
   > | null
 ): boolean {
-  if (!profile) {
-    return true;
-  }
-
-  return !hasSeenOnboarding(profile);
+  return !isOnboardingFinished(profile);
 }
 
 function mergeWithLocalOnboardingState(
