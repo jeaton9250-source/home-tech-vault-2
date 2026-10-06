@@ -743,25 +743,6 @@ function OnboardingFlow() {
       return;
     }
 
-    if (!category.trim()) {
-      setErrorMessage(
-        "Choose a category."
-      );
-      return;
-    }
-
-    if (!brand.trim()) {
-      setErrorMessage("Enter a brand.");
-      return;
-    }
-
-    if (!location.trim()) {
-      setErrorMessage(
-        "Enter a room or location."
-      );
-      return;
-    }
-
     try {
       setSubmitting(true);
 
@@ -777,8 +758,9 @@ function OnboardingFlow() {
             device_name:
               deviceName.trim(),
             category:
-              category.trim(),
-            brand: brand.trim(),
+              category.trim() || "Other",
+            brand:
+              brand.trim() || null,
             model_number:
               modelNumber.trim() || null,
             purchase_date:
@@ -786,7 +768,7 @@ function OnboardingFlow() {
             warranty_date:
               warrantyDate || null,
             location:
-              location.trim(),
+              location.trim() || "Unassigned",
           })
           .select("id, device_name")
           .single();
@@ -846,7 +828,7 @@ function OnboardingFlow() {
       trackOnboardingStepCompleted(
         "device"
       );
-      await persistStep("document");
+      await persistStep("complete");
     } catch (error) {
       setErrorMessage(
         getErrorMessage(
@@ -995,7 +977,7 @@ function OnboardingFlow() {
       trackOnboardingStepCompleted(
         "document"
       );
-      await persistStep("network");
+      await persistStep("complete");
     } catch (error) {
       setErrorMessage(
         getErrorMessage(
@@ -1400,10 +1382,11 @@ function OnboardingFlow() {
           </OnboardingTitle>
 
           <OnboardingDescription>
-            Pick something important — a
-            laptop, TV, router, or
-            appliance. You can add more
-            later.
+            Start with one thing you would
+            want details for during a repair,
+            return, or warranty claim. Only
+            the name is required — you can
+            fill in the rest later.
           </OnboardingDescription>
 
           {deviceLimitReached && (
@@ -1434,9 +1417,8 @@ function OnboardingFlow() {
             </OnboardingField>
 
             <OnboardingField
-              label="Category"
+              label="Category (optional)"
               htmlFor="device-category"
-              required
             >
               <input
                 id="device-category"
@@ -1452,9 +1434,8 @@ function OnboardingFlow() {
             </OnboardingField>
 
             <OnboardingField
-              label="Brand"
+              label="Brand (optional)"
               htmlFor="device-brand"
-              required
             >
               <input
                 id="device-brand"
@@ -1470,9 +1451,8 @@ function OnboardingFlow() {
             </OnboardingField>
 
             <OnboardingField
-              label="Room or location"
+              label="Room or location (optional)"
               htmlFor="device-location"
-              required
             >
               <input
                 id="device-location"
@@ -1570,7 +1550,7 @@ function OnboardingFlow() {
                 deviceLimitReached
               }
             >
-              Save device
+              Remember this device
             </Button>
           </OnboardingActions>
         </form>
@@ -1850,12 +1830,13 @@ function OnboardingFlow() {
           </OnboardingEyebrow>
 
           <OnboardingTitle>
-            Your first home record is in.
+            Your home has started remembering.
           </OnboardingTitle>
 
           <OnboardingDescription>
-            That&apos;s all you need to get started. Keep building your vault
-            whenever something is worth remembering.
+            Your first useful record is saved. You do not need to organize
+            the whole house today — add things whenever they become worth
+            remembering.
           </OnboardingDescription>
 
           <ul className="mt-8 space-y-3">
