@@ -10,7 +10,7 @@ export async function PUT(request: Request) {
     if (!parsed?.success) return Response.json({error: parsed?.error.issues[0]?.message ?? "Invalid content type."}, {status: 400});
     const db = createAdminClient();
     const {error} = body.kind === "homepage"
-      ? await db.from("website_content").upsert({key: "homepage", content: parsed.data, updated_by: session.userId, updated_at: new Date().toISOString()})
+      ? await db.from(body.draft === true ? "website_drafts" : "website_content").upsert({key: "homepage", content: parsed.data, updated_by: session.userId, updated_at: new Date().toISOString()})
       : body.create === true
         ? await db.from("website_articles").insert({...parsed.data, updated_by: session.userId, updated_at: new Date().toISOString()})
         : await db.from("website_articles").update({...parsed.data, updated_by: session.userId, updated_at: new Date().toISOString()}).eq("slug", body.content.slug);

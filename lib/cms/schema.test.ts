@@ -13,3 +13,12 @@ test("articles require safe slugs and real booleans",()=> {
   assert.equal(articleSchema.safeParse({...article,slug:"../admin"}).success,false);
   assert.equal(articleSchema.safeParse({...article,published:"false"}).success,false);
 });
+import { imageFormat, MAX_IMAGE_BYTES } from "./imageValidation";
+test("image types are checked using file bytes, not claimed MIME",()=>{
+  assert.equal(imageFormat(new TextEncoder().encode('<svg onload="alert(1)"></svg>')),null);
+  assert.equal(imageFormat(new TextEncoder().encode('<html>fake PNG</html>')),null);
+  assert.equal(imageFormat(new Uint8Array([137,80,78,71,13,10,26,10]))?.type,"image/png");
+  assert.equal(imageFormat(new Uint8Array([255,216,255,224]))?.type,"image/jpeg");
+  assert.equal(imageFormat(new TextEncoder().encode('RIFF0000WEBP'))?.type,"image/webp");
+  assert.equal(MAX_IMAGE_BYTES,3145728);
+});

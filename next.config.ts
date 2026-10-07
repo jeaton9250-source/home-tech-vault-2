@@ -123,6 +123,7 @@ const nextConfig: NextConfig = {
         source: "/:path*",
         headers: securityHeaders,
       },
+      {source: "/website-preview", headers: securityHeaders.map(header => header.key === "X-Frame-Options" ? {...header,value:"SAMEORIGIN"} : header.key === "Content-Security-Policy" ? {...header,value:header.value.replace("frame-ancestors 'none'", "frame-ancestors 'self'")} : header).concat([{key:"X-Robots-Tag",value:"noindex, nofollow"},{key:"Cache-Control",value:"private, no-store"}])},
       ...privateNoIndexSources.map((source) => ({
         source,
         headers: noIndexHeaders,
