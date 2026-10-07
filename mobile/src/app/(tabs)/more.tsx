@@ -1,3 +1,4 @@
+import { CrossPromoPlacement, PromoCard } from '@crosspromo/react-native';
 import { useRouter } from 'expo-router';
 import { Bell, FileText, HelpCircle, Mail, MessageSquareText, Shield, Trash2, UsersRound } from 'lucide-react-native';
 import { useState } from 'react';
@@ -64,6 +65,8 @@ export default function MoreScreen() {
         {!isDemo ? <ListRow icon={MessageSquareText} title="Send feedback" detail="Share an idea or report a problem" onPress={() => router.push('/feedback')} /> : null}
         <ListRow icon={FileText} title="Terms of service" detail="The terms that govern your vault" onPress={() => void Linking.openURL(`${webUrl}/terms`)} />
       </Card>
+
+      <PromoCard placement={CrossPromoPlacement.Settings} />
 
       {!isDemo ? (
         <Pressable onPress={() => router.push('/delete-account')} style={styles.deleteRow}>
