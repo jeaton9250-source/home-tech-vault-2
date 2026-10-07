@@ -1,4 +1,5 @@
-"use client";
+import { loadHomepage } from "@/lib/cms/server";
+export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import {
@@ -15,11 +16,9 @@ import {
   Wrench,
 } from "lucide-react";
 
+import MomentImage from "@/components/marketing/MomentImage";
 import MarketingHeader from "@/components/marketing/MarketingHeader";
 import HomeMarketingFooter from "@/components/marketing/HomeMarketingFooter";
-
-const fallbackMomentImage =
-  "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1200&q=85";
 
 const moments = [
   {
@@ -80,16 +79,18 @@ const timeline = [
   },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const content = await loadHomepage();
   return (
     <main className="min-h-screen bg-[#f7f5f1] text-[#152335]">
       <MarketingHeader />
+      {content.announcement ? <div className="bg-[#152335] px-5 py-3 text-center text-sm text-white">{content.announcement}</div> : null}
 
       {/* HERO */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0">
           <img
-            src="https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=2200&q=90"
+            src={content.heroImage}
             alt="Modern home interior"
             className="h-full w-full object-cover"
           />
@@ -101,37 +102,31 @@ export default function HomePage() {
           <div className="max-w-[660px]">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#152335]/10 bg-white/65 px-4 py-2 text-sm backdrop-blur-md">
               <Home className="h-4 w-4" />
-              Built for the place you call home
+              {content.eyebrow}
             </div>
 
             <h1 className="font-serif text-[56px] leading-[0.95] tracking-[-0.05em] sm:text-[76px] lg:text-[92px]">
-              Your home
-              <br />
-              has a memory.
+              {content.headline.split("\n").map((line, index) => <span key={index} className="block">{line}</span>)}
             </h1>
 
             <p className="mt-7 max-w-[600px] text-lg leading-8 text-[#37475a] sm:text-xl">
-              Manuals get lost. Receipts disappear.
-              Warranties expire. Service dates get
-              forgotten. Home Tech Vault keeps the useful
-              history of your home together for the years
-              ahead.
+              {content.description}
             </p>
 
             <div className="mt-9 flex flex-col gap-4 sm:flex-row sm:items-center">
               <Link
-                href="/signup"
+                href={content.primaryLink}
                 className="inline-flex items-center justify-center gap-2 rounded-full bg-[#152335] px-7 py-4 text-sm font-semibold text-white shadow-sm transition duration-300 hover:-translate-y-0.5 hover:bg-[#24374c]"
               >
-                Start Your Home
+                {content.primaryLabel}
                 <ArrowRight className="h-4 w-4" />
               </Link>
 
               <Link
-                href="/demo"
+                href={content.secondaryLink}
                 className="inline-flex items-center justify-center gap-2 px-3 py-4 text-sm font-semibold text-[#152335]"
               >
-                See How It Works
+                {content.secondaryLabel}
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
@@ -141,8 +136,8 @@ export default function HomePage() {
                 Free to start. No credit card required.
               </p>
 
-              <a
-                href="https://apps.apple.com/us/app/home-tech-vault/id6812090967"
+              {content.showAppStore ? <a
+                href={content.appStoreLink}
                 className="inline-flex w-fit items-center gap-3 rounded-2xl border border-[#152335]/15 bg-white/75 px-4 py-3 shadow-sm backdrop-blur-md transition-colors hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#152335]"
                 aria-label="Download Home Tech Vault on the App Store"
               >
@@ -158,7 +153,7 @@ export default function HomePage() {
                     Download on the App Store
                   </div>
                 </div>
-              </a>
+              </a> : null}
             </div>
           </div>
 
@@ -268,16 +263,7 @@ export default function HomePage() {
                 className="group overflow-hidden rounded-[26px] bg-[#fffdf9] shadow-[0_12px_40px_rgba(20,35,52,0.06)]"
               >
                 <div className="aspect-[4/3] overflow-hidden bg-[#e9e6df]">
-                  <img
-                    src={moment.image}
-                    alt={moment.title}
-                    className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.05]"
-                    onError={(event) => {
-                      event.currentTarget.onerror = null;
-                      event.currentTarget.src =
-                        fallbackMomentImage;
-                    }}
-                  />
+                  <MomentImage src={moment.image} alt={moment.title} />
                 </div>
 
                 <div className="p-7">
@@ -512,10 +498,10 @@ export default function HomePage() {
           </div>
 
           <Link
-            href="/signup"
+            href={content.primaryLink}
             className="inline-flex shrink-0 items-center gap-2 font-semibold"
           >
-            Start Your Home
+            {content.primaryLabel}
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
@@ -567,21 +553,18 @@ export default function HomePage() {
           <Home className="h-8 w-8 text-white/60" />
 
           <h2 className="mt-6 font-serif text-5xl leading-[1] tracking-[-0.045em] sm:text-6xl lg:text-7xl">
-            Give your home
-            <br />
-            a place to remember.
+            {content.finalHeadline.split("\n").map((line, index) => <span key={index} className="block">{line}</span>)}
           </h2>
 
           <p className="mt-7 max-w-[600px] text-lg leading-8 text-white/65">
-            Manuals, warranties, receipts, maintenance and
-            the history of your home — together at last.
+            {content.finalDescription}
           </p>
 
           <Link
-            href="/signup"
+            href={content.primaryLink}
             className="mt-9 inline-flex items-center gap-2 rounded-full bg-white px-8 py-4 text-sm font-semibold text-[#152335] transition hover:bg-[#f1f3f5]"
           >
-            Start Your Home
+            {content.primaryLabel}
             <ArrowRight className="h-4 w-4" />
           </Link>
 

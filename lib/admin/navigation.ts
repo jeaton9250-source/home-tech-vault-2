@@ -1,5 +1,6 @@
 import {
   Activity,
+  FileText,
   BarChart3,
   Cpu,
   CreditCard,
@@ -49,6 +50,7 @@ export function isAdminNavItemActive(
 }
 
 export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
+  {id: "website", label: "Website", description: "Content and publishing", items: [{id: "website", href: "/admin/website", label: "Website Editor", icon: FileText, description: "Homepage and resource articles"}]},
   {
     id: "overview",
     label: "Overview",
