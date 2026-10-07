@@ -1,0 +1,79 @@
+name: CrossPromo iOS Verification
+
+on:
+  push:
+    branches:
+      - feature/crosspromo-sdk
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'mobile/**'
+
+permissions:
+  contents: read
+
+jobs:
+  ios-release:
+    runs-on: macos-15
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: mobile
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run formatter
+        run: npx --yes prettier@3.6.2 --check package.json app.json src/app/_layout.tsx "src/app/(tabs)/more.tsx" "src/app/(tabs)/vault.tsx" "src/app/(tabs)/index.tsx"
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Verify omitted environment resolves to production
+        run: |
+          node <<'NODE'
+          const { CrossPromoClient } = require('./node_modules/@crosspromo/react-native/packages/crosspromo-react-native/lib/client.js');
+          const requests = [];
+          const platform = {
+            getAppContext: async () => ({ platform: 'ios', bundle_id: 'com.hometechvault.app', version: '1.0.0', build_number: '1' }),
+            generateEvidence: async () => ({ provider: 'none', app_transaction_jws: null }),
+            openUrl: async () => {},
+          };
+          const fetcher = async (_url, init) => {
+            requests.push(JSON.parse(init.body));
+            if (requests.length === 1) return { ok: true, status: 200, text: async () => JSON.stringify({ session_id: 's', challenge_base64: 'c', integrity_mode: 'none' }) };
+            return { ok: true, status: 200, text: async () => JSON.stringify({ access_token: 'a', publisher_app_id: 'p', counts_enabled: false, reason: null, expires_at: new Date(Date.now() + 60000).toISOString() }) };
+          };
+          const client = new CrossPromoClient({ appKey: 'cp_live_a0e75aa066752b2b3e9d85cad0daa7db' }, platform, fetcher);
+          client.sessionStatus().then(() => {
+            if (requests[0].environment !== 'production') throw new Error('Expected omitted environment to resolve to production');
+            console.log('Release/default CrossPromo environment:', requests[0].environment);
+          }).catch((error) => { console.error(error); process.exit(1); });
+          NODE
+
+      - name: Generate iOS project
+        run: npx expo prebuild --platform ios --clean --no-install
+
+      - name: Install CocoaPods
+        run: pod install --project-directory=ios
+
+      - name: Build unsigned iOS Release
+        run: |
+          WORKSPACE=$(find ios -maxdepth 1 -name '*.xcworkspace' | head -1)
+          SCHEME=$(xcodebuild -list -json -workspace "$WORKSPACE" | python3 -c "import json,sys; print(json.load(sys.stdin)['workspace']['schemes'][0])")
+          xcodebuild -workspace "$WORKSPACE" -scheme "$SCHEME" -configuration Release -sdk iphoneos -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO build
