@@ -84,6 +84,7 @@ export const PUBLIC_MARKETING_PATHS = [
   MARKETING_ROUTES.realtors,
   "/health-check",
   "/knowledge",
+  "/resources",
   "/guides",
   "/compare",
 ] as const;
