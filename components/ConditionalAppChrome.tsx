@@ -18,6 +18,8 @@ const MARKETING_ROUTES = [
   "/",
   "/what-it-remembers",
   "/explore",
+  "/resources",
+  "/website-preview",
   "/realtors",
   "/pricing",
   "/our-story",

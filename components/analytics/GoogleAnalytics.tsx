@@ -38,6 +38,7 @@ function useInternalAnalyticsStatus() {
      * Never count Control Center traffic.
      */
     if (
+      pathname === "/website-preview" ||
       pathname === "/admin" ||
       pathname.startsWith("/admin/")
     ) {
