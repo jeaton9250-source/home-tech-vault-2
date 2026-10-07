@@ -25,7 +25,8 @@
       "infoPlist": {
         "NSCameraUsageDescription": "Home Tech Vault uses your camera to scan receipts, serial numbers, and home documents.",
         "NSPhotoLibraryUsageDescription": "Home Tech Vault lets you attach photos and documents to your private home record."
-      }
+      },
+      "deploymentTarget": "16.4"
     },
     "android": {
       "adaptiveIcon": {
