@@ -1,3 +1,4 @@
+import { CrossPromo } from '@crosspromo/react-native';
 import { router, Stack } from 'expo-router';
 import * as Notifications from 'expo-notifications';
 import * as SplashScreen from 'expo-splash-screen';
@@ -12,6 +13,8 @@ import { syncEnabledHomeNotifications } from '@/lib/device-notifications';
 import { VaultDataProvider, useVaultData } from '@/providers/vault-data-provider';
 import { VaultLockProvider } from '@/providers/vault-lock-provider';
 import { colors } from '@/theme';
+
+CrossPromo.configure({ appKey: 'cp_live_a0e75aa066752b2b3e9d85cad0daa7db' });
 
 void SplashScreen.preventAutoHideAsync();
 
