@@ -10,6 +10,8 @@ import { INDEXABLE_MARKETING_PATHS } from "@/lib/marketing/routes";
 import { getSiteUrl } from "@/lib/marketing/site";
 import { comparisonSitemapEntries } from "@/lib/seo/comparisons/pages";
 
+import { loadArticles } from "@/lib/cms/server";
+
 const siteUrl = getSiteUrl();
 
 /**
@@ -29,7 +31,8 @@ export const revalidate = 3600;
  * Programmatic guides and individual SEO FAQ pages can be added
  * back gradually once the domain has stronger crawl/index coverage.
  */
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const resources = await loadArticles();
   const now = new Date();
 
   const marketingEntries: MetadataRoute.Sitemap =
@@ -91,6 +94,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     comparisonSitemapEntries(siteUrl);
 
   return [
+    ...resources.map(article => ({url: `${siteUrl}/resources/${article.slug}`, changeFrequency: "monthly" as const, priority: 0.7})),
+    {url: `${siteUrl}/resources`, changeFrequency: "weekly", priority: 0.7},
     ...marketingEntries,
     ...categoryEntries,
     ...articleEntries,

@@ -3,6 +3,7 @@ import Link from "next/link";
 const exploreLinks = [
   { label: "What It Remembers", href: "/what-it-remembers" },
   { label: "Explore", href: "/explore" },
+  { label: "Resources", href: "/resources" },
   { label: "Pricing", href: "/pricing" },
   { label: "For Realtors", href: "/realtors" },
 ] as const;

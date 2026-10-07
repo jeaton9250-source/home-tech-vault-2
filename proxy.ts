@@ -35,6 +35,7 @@ const PUBLIC_MARKETING_PREFIXES = [
   "/dashboard-preview",
   "/new-homeowners",
   "/knowledge",
+  "/resources",
   "/guides",
   "/compare",
 ];
