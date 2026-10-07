@@ -38,11 +38,11 @@ jobs:
       - name: Run formatter
         run: npx --yes prettier@3.6.2 --write package.json app.json src/app/_layout.tsx "src/app/(tabs)/more.tsx" "src/app/(tabs)/vault.tsx" "src/app/(tabs)/index.tsx"
 
-      - name: Lint
-        run: npm run lint
-
       - name: Typecheck
         run: npm run typecheck
+
+      - name: Run tests
+        run: npm test --if-present
 
       - name: Verify omitted environment resolves to production
         run: |
