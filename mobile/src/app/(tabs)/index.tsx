@@ -1,3 +1,4 @@
+import { CrossPromoPlacement, PromoCard } from '@crosspromo/react-native';
 import { Image } from 'expo-image';
 import * as Haptics from 'expo-haptics';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -95,7 +96,7 @@ export default function HomeScreen() {
             </Pressable>
           ))}
         </ScrollView>
-      ) : <EmptyState icon={Plus} title="Begin with one device" body="Add the first thing you would want details for during a repair, return, or warranty claim." />}
+      ) : <><EmptyState icon={Plus} title="Begin with one device" body="Add the first thing you would want details for during a repair, return, or warranty claim." /><PromoCard placement={CrossPromoPlacement.EmptyState} /></>}
 
       <SectionTitle title="Coming up at home" action="View care" onAction={() => router.push('/(tabs)/care')} />
       {data.maintenance.length ? <Card>
