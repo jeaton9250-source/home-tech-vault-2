@@ -1,6 +1,10 @@
 import "server-only";
 
 import { Client } from "@notionhq/client";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { getSiteUrl } from "@/lib/marketing/site";
+import { createOnboardingCustomer } from "./onboarding";
+import { loadOnboardingSnapshot } from "./onboardingSnapshot";
 
 const notion = new Client({
   auth: process.env.NOTION_TOKEN,
@@ -53,14 +57,17 @@ export async function updateOnboardingEmailState(
         page_size: 1,
       });
 
-    const page =
+    let page =
       existing.results[0];
 
     if (!page) {
-      console.warn(
-        `Notion email state skipped: no onboarding record for ${userId}.`
-      );
-      return false;
+      const { data, error } = await createAdminClient().auth.admin.getUserById(userId);
+      if (error || !data.user) return false;
+      const snapshot = await loadOnboardingSnapshot(data.user);
+      if (!snapshot) return false;
+      page = await createOnboardingCustomer({ userId, email: data.user.email!, name: snapshot.name,
+        plan: snapshot.plan, source: snapshot.source, signupDate: data.user.created_at,
+        accountUrl: `${getSiteUrl()}/dashboard` });
     }
 
     await notion.pages.update({

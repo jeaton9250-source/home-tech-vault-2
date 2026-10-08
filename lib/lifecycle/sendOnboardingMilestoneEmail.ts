@@ -1,4 +1,5 @@
 import "server-only";
+import { onboardingDeliveryAllowed } from "./onboardingDeliveryGuard";
 
 import MilestoneEmail, {
   getMilestoneSubject,
@@ -165,6 +166,10 @@ export async function sendOnboardingMilestoneEmail(
       }
     }
 
+    if (!(await onboardingDeliveryAllowed(user, type))) {
+      return { ok: true as const, sent: false, skipped: "policy" as const };
+    }
+
     const now =
       new Date().toISOString();
 
@@ -243,6 +248,7 @@ export async function sendOnboardingMilestoneEmail(
 
     const result =
       await sendReactEmail({
+        idempotencyKey,
         to: user.email,
         subject:
           getMilestoneSubject(
