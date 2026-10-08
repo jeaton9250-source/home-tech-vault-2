@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { BadgeDollarSign, Building2, CalendarDays, ChevronLeft, FileText, Hash, MapPin, Pencil, ShieldCheck, Upload, Wifi, WifiOff, Wrench } from 'lucide-react-native';
-import { useState } from 'react';
+import { BadgeDollarSign, Building2, CalendarDays, ChevronLeft, FileText, Hash, MapPin, Pencil, ShieldCheck, Trash2, Upload, Wifi, WifiOff, Wrench } from 'lucide-react-native';
+import { useRef, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -10,11 +10,16 @@ import type { VaultDocument } from '@/lib/demo-data';
 import { viewVaultDocument } from '@/lib/document-viewer';
 import { useVaultData } from '@/providers/vault-data-provider';
 import { colors, fonts } from '@/theme';
+import { useAuth } from '@/providers/auth-provider';
+import { deleteVaultDevice } from '@/lib/home-tech-vault-api';
 
 export default function DeviceDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const data = useVaultData();
+  const auth = useAuth();
+  const deletionInFlight = useRef(false);
+  const [deleting, setDeleting] = useState(false);
   const [openingId, setOpeningId] = useState<string | null>(null);
   const device = data.devices.find((item) => item.id === id);
   if (!device) return <SafeAreaView style={styles.safe}><View style={styles.missing}><EmptyState icon={WifiOff} title="Device not found" body="This device may have been removed or belongs to another household." /><Pressable onPress={() => router.back()}><Text style={styles.link}>Back to your devices</Text></Pressable></View></SafeAreaView>;
@@ -35,6 +40,32 @@ export default function DeviceDetailScreen() {
     } finally {
       setOpeningId(null);
     }
+  }
+  function confirmDelete() {
+    if (deletionInFlight.current || !device) return;
+    const accessToken = auth.session?.access_token;
+    if (!accessToken) {
+      Alert.alert('Sign in required', 'Sign in to your account to delete a device.');
+      return;
+    }
+    Alert.alert('Delete this device?', `Remove ${device.name}, its photos, device attachments, and care reminders? Saved vault documents will remain. This cannot be undone.`, [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Delete device', style: 'destructive', onPress: () => {
+        if (deletionInFlight.current) return;
+        deletionInFlight.current = true;
+        setDeleting(true);
+        void deleteVaultDevice(device.id, accessToken).then(() => {
+          router.replace('/(tabs)/devices');
+          data.forgetDevice(device.id);
+          void data.refresh();
+        }).catch((error: unknown) => {
+          Alert.alert('Could not delete device', error instanceof Error ? error.message : 'Please try again.');
+        }).finally(() => {
+          deletionInFlight.current = false;
+          setDeleting(false);
+        });
+      } },
+    ]);
   }
   return (
     <SafeAreaView edges={['top']} style={styles.safe}>
@@ -57,11 +88,13 @@ export default function DeviceDetailScreen() {
         </Card>
         <PrimaryButton label="Add a document to this device" icon={Upload} onPress={() => router.push({ pathname: '/add-document', params: { deviceId: device.id } })} />
         {documents.length ? <Card>{documents.map((document) => <ListRow key={document.id} icon={FileText} title={openingId === document.id ? 'Opening…' : document.name} detail={`${document.type} · Tap to view`} meta={document.date.split(',')[0]} onPress={() => void openDocument(document)} />)}</Card> : null}
+        {!auth.isDemo ? <Pressable accessibilityRole="button" accessibilityLabel="Delete device" accessibilityState={{ disabled: deleting, busy: deleting }} disabled={deleting} onPress={confirmDelete} style={({ pressed }) => [styles.deleteButton, pressed && { opacity: 0.7 }, deleting && { opacity: 0.5 }]}><Trash2 size={18} color={colors.rust} /><Text style={styles.deleteText}>{deleting ? 'Deleting…' : 'Delete device'}</Text></Pressable> : null}
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  deleteButton: { minHeight: 48, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8, padding: 12 }, deleteText: { color: colors.rust, fontFamily: fonts.sans, fontSize: 14, fontWeight: '600' },
   safe: { flex: 1, backgroundColor: colors.cream }, header: { height: 70, paddingHorizontal: 18, flexDirection: 'row', alignItems: 'center', borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.line }, back: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.paper, borderWidth: 1, borderColor: colors.line }, headerTitle: { flex: 1, marginHorizontal: 12, textAlign: 'center', color: colors.navy, fontFamily: fonts.serif, fontSize: 20 }, content: { padding: 20, gap: 17 }, hero: { width: '100%', height: 235 }, placeholder: { width: '100%', height: 235, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.sand }, initial: { color: colors.navy, fontFamily: fonts.serif, fontSize: 60 }, deviceCopy: { padding: 20 }, eyebrow: { color: colors.oliveDark, fontFamily: fonts.sans, fontSize: 9, fontWeight: '800', letterSpacing: 1.5 }, title: { marginTop: 7, color: colors.navy, fontFamily: fonts.serif, fontSize: 29 }, model: { marginTop: 5, color: colors.muted, fontFamily: fonts.sans, fontSize: 12 }, chips: { marginTop: 16, flexDirection: 'row', gap: 8 }, chip: { paddingHorizontal: 10, paddingVertical: 7, flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 999, backgroundColor: colors.oliveWash }, chipText: { color: colors.oliveDark, fontFamily: fonts.sans, fontSize: 9, fontWeight: '700' }, section: { marginLeft: 4, color: colors.muted, fontFamily: fonts.sans, fontSize: 9, fontWeight: '800', letterSpacing: 1.4 }, missing: { flex: 1, padding: 22, justifyContent: 'center', gap: 16 }, link: { textAlign: 'center', color: colors.oliveDark, fontFamily: fonts.sans, fontSize: 13, fontWeight: '700' },
 });

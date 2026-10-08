@@ -13,6 +13,7 @@ import {
   type VaultNotification,
 } from '@/lib/demo-data';
 import { supabase } from '@/lib/supabase';
+import { removeDeletedDevice } from '@/lib/device-deletion-state';
 import { useAuth } from '@/providers/auth-provider';
 
 type VaultData = {
@@ -38,6 +39,7 @@ type VaultDataContextValue = VaultData & {
   rememberUpdatedDevice: (device: VaultDevice, householdId: string | null) => void;
   rememberSavedDocument: (document: VaultDocument, householdId: string | null) => void;
   forgetDocument: (documentId: string) => void;
+  forgetDevice: (deviceId: string) => void;
   rememberSavedMaintenance: (task: MaintenanceItem, householdId: string | null) => void;
   rememberCompletedMaintenance: (taskId: string) => void;
 };
@@ -329,6 +331,13 @@ export function VaultDataProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
+  const forgetDevice = useCallback((deviceId: string) => {
+    setData((current) => ({
+      ...current,
+      ...removeDeletedDevice(current, deviceId),
+    }));
+  }, []);
+
   const forgetDocument = useCallback((documentId: string) => {
     setData((current) => ({
       ...current,
@@ -407,7 +416,7 @@ export function VaultDataProvider({ children }: { children: ReactNode }) {
   }, [mode, user, load]);
 
   const visibleData = isDemo ? demoData : data;
-  const value = useMemo(() => ({ ...visibleData, loading: isDemo ? false : loading, refreshing, error, syncStatus, lastSyncedAt, refresh, rememberSavedDevice, rememberUpdatedDevice, rememberSavedDocument, forgetDocument, rememberSavedMaintenance, rememberCompletedMaintenance }), [visibleData, isDemo, loading, refreshing, error, syncStatus, lastSyncedAt, refresh, rememberSavedDevice, rememberUpdatedDevice, rememberSavedDocument, forgetDocument, rememberSavedMaintenance, rememberCompletedMaintenance]);
+  const value = useMemo(() => ({ ...visibleData, loading: isDemo ? false : loading, refreshing, error, syncStatus, lastSyncedAt, refresh, rememberSavedDevice, rememberUpdatedDevice, rememberSavedDocument, forgetDocument, forgetDevice, rememberSavedMaintenance, rememberCompletedMaintenance }), [visibleData, isDemo, loading, refreshing, error, syncStatus, lastSyncedAt, refresh, rememberSavedDevice, rememberUpdatedDevice, rememberSavedDocument, forgetDocument, forgetDevice, rememberSavedMaintenance, rememberCompletedMaintenance]);
   return <VaultDataContext.Provider value={value}>{children}</VaultDataContext.Provider>;
 }
 

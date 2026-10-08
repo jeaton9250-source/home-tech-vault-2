@@ -565,3 +565,9 @@ export async function uploadDocument(input: {
     throw error;
   }
 }
+
+export async function deleteVaultDevice(deviceId: string, accessToken: string) {
+  const response = await authenticatedFetch(`/api/mobile/devices/${encodeURIComponent(deviceId)}`, accessToken, { method: 'DELETE' });
+  const payload = await readJsonResponse<{ deleted?: boolean; error?: string }>(response, "We couldn't delete this device. Please try again.");
+  if (!response.ok || payload.deleted !== true) throw new Error(payload.error || "We couldn't delete this device. Please try again.");
+}
