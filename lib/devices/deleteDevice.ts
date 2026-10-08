@@ -4,7 +4,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { loadHouseholdMembershipForUser } from "@/lib/permissions/householdMembership";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, authenticateRequest } from "@/lib/supabase/server";
 
 export class DeviceDeleteError extends Error {
   readonly status: number;
@@ -185,13 +185,17 @@ async function nullDeviceIdReferences(
  * Does not depend on optional SQL RPCs.
  */
 export async function deleteDeviceForViewer(
-  deviceId: string
+  deviceId: string,
+  request?: Request
 ): Promise<{ id: string; deviceName: string | null }> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
+  const authentication = request
+    ? await authenticateRequest(request)
+    : await (async () => {
+        const client = await createClient();
+        const { data: { user }, error } = await client.auth.getUser();
+        return { user, error };
+      })();
+  const { user, error: userError } = authentication;
 
   if (userError || !user) {
     throw new DeviceDeleteError(

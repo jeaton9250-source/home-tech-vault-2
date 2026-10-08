@@ -3,7 +3,7 @@
     "name": "Home Tech Vault",
     "slug": "home-tech-vault",
     "description": "A private, lasting record of the technology that makes your home work.",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/htv-vault-icon.png",
     "scheme": "hometechvault",

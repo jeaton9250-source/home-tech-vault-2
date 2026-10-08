@@ -1,3 +1,4 @@
+import { deleteDeviceForViewer, DeviceDeleteError } from "@/lib/devices/deleteDevice";
 import { NextResponse } from "next/server";
 
 import { getDefaultActivityTitle } from "@/lib/activity";
@@ -149,5 +150,20 @@ export async function PATCH(
       { error: "We couldn't update this device. Please try again.", code: "UNKNOWN" },
       { status: 500 },
     );
+  }
+}
+
+export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params;
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) {
+    return NextResponse.json({ error: "That device could not be found." }, { status: 404 });
+  }
+  try {
+    const deleted = await deleteDeviceForViewer(id, request);
+    return NextResponse.json({ deleted: true, deviceId: deleted.id }, { headers: { "Cache-Control": "private, no-store" } });
+  } catch (error) {
+    if (error instanceof DeviceDeleteError) return NextResponse.json({ error: error.message }, { status: error.status });
+    console.error("[mobile-device-delete] failed", error instanceof Error ? error.message : "unknown");
+    return NextResponse.json({ error: "We couldn't delete this device. Please try again." }, { status: 500 });
   }
 }
