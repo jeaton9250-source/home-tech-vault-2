@@ -4,6 +4,7 @@ import { Cormorant_Garamond } from "next/font/google";
 
 import "./globals.css";
 
+import LeadPopup from "@/components/popup/LeadPopup";
 import ConditionalAppChrome from "@/components/ConditionalAppChrome";
 import ImpersonationBanner from "@/components/admin/ImpersonationBanner";
 import RealtorClientVaultBanner from "@/components/realtor/RealtorClientVaultBanner";
@@ -42,6 +43,7 @@ export default function RootLayout({
           {children}
         </ConditionalAppChrome>
 
+        <LeadPopup />
         <InternalAwareVercelAnalytics />
       </body>
     </html>

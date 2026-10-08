@@ -50,7 +50,7 @@ export function isAdminNavItemActive(
 }
 
 export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
-  {id: "website", label: "Website", description: "Content and publishing", items: [{id: "website", href: "/admin/website", label: "Website Editor", icon: FileText, description: "Homepage and resource articles"}]},
+  {id: "website", label: "Website", description: "Content and publishing", items: [{id: "website", href: "/admin/website", label: "Website Editor", icon: FileText, description: "Homepage and resource articles"}, {id:"popup",href:"/admin/popup",label:"Popup",icon:Mail,description:"Visitor form and collected entries"}]},
   {
     id: "overview",
     label: "Overview",
