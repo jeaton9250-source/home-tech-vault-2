@@ -1,5 +1,6 @@
 
 export type LifecycleEmailType =
+  | "onboarding_reminder"
   | "no_device_24h"
   | "no_device_3d"
   | "no_device_7d"
@@ -231,8 +232,18 @@ export function createLifecycleEmail({
 
   const warrantiesUrl =
     `${appUrl}/warranties`;
+  const dashboardUrl = `${appUrl}/dashboard`;
 
   switch (type) {
+    case "onboarding_reminder": {
+      const subject = "A quick HTV setup tip";
+      const message = "You don't need to finish your whole home at once. If you have two minutes, add just one important device or one piece of paperwork today. That's enough to keep building a useful home record.";
+      return {
+        subject,
+        html: layout({ preview: subject, heading: subject, body: `<p>${greeting}</p><p>${escapeHtml(message)}</p>`, buttonLabel: "Continue your vault", buttonHref: dashboardUrl, unsubscribeUrl }),
+        text: `${greeting}\n\n${message}\n\nContinue here: ${dashboardUrl}\n\nStop onboarding emails: ${unsubscribeUrl}`,
+      };
+    }
     case "no_device_24h": {
       const subject =
         "Start your vault with one device";

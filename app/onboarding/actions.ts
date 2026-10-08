@@ -1,5 +1,7 @@
 "use server";
 
+import { onboardingDeliveryAllowed } from "@/lib/lifecycle/onboardingDeliveryGuard";
+
 import WelcomeEmail, {
   renderWelcomePlainText,
   welcomeSubject,
@@ -172,6 +174,13 @@ export async function sendWelcomeEmailForCurrentUser() {
     }
   }
 
+  try {
+    if (!(await onboardingDeliveryAllowed(user, "welcome"))) return { ok: true as const, sent: false };
+  } catch (error) {
+    console.error("[welcome-email] delivery guard blocked", error);
+    return { ok: false as const, sent: false };
+  }
+
   const now =
     new Date().toISOString();
 
@@ -262,6 +271,7 @@ export async function sendWelcomeEmailForCurrentUser() {
 
   const result =
     await sendReactEmail({
+      idempotencyKey,
       to: user.email,
       subject: welcomeSubject,
       template: WelcomeEmail({
@@ -459,6 +469,13 @@ export async function sendMilestoneEmailForCurrentUser(
     }
   }
 
+  try {
+    if (!(await onboardingDeliveryAllowed(user, type))) return { ok: true as const, sent: false };
+  } catch (error) {
+    console.error("[milestone-email] delivery guard blocked", error);
+    return { ok: false as const, sent: false };
+  }
+
   const now =
     new Date().toISOString();
 
@@ -549,6 +566,7 @@ export async function sendMilestoneEmailForCurrentUser(
 
   const result =
     await sendReactEmail({
+      idempotencyKey,
       to: user.email,
       subject:
         getMilestoneSubject(type),

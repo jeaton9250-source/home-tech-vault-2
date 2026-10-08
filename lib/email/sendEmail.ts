@@ -66,7 +66,7 @@ export async function sendEmail(
       text: input.text,
       replyTo: input.replyTo ?? getEmailReplyToAddress(),
       tags: input.tags,
-    });
+    }, input.idempotencyKey ? { idempotencyKey: input.idempotencyKey } : undefined);
 
     if (result.error) {
       logSendFailure(result.error);
@@ -104,6 +104,7 @@ export async function sendReactEmail(
 
   return sendEmail({
     to: input.to,
+    idempotencyKey: input.idempotencyKey,
     subject: input.subject,
     html,
     text: input.text ?? text,

@@ -9,6 +9,7 @@ export type EmailTag = {
 
 export type SendEmailInput = {
   to: EmailRecipient;
+  idempotencyKey?: string;
   subject: string;
   html: string;
   text: string;
@@ -37,6 +38,7 @@ export type SendEmailResult =
 
 export type SendReactEmailInput = {
   to: EmailRecipient;
+  idempotencyKey?: string;
   subject: string;
   template: ReactElement;
   text?: string;
