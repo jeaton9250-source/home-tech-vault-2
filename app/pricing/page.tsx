@@ -58,10 +58,10 @@ export default function PricingPage() {
     <SitePage
       visual={
         <MarketingImg
-          src="/images/home-tech-vault-hero.png"
-          alt="Bright modern home interior with a curved staircase and large windows"
-          width={1366}
-          height={768}
+          src="/images/pricing-living-room.jpg"
+          alt="Sunlit living room with neutral chairs, a brown sofa, and indoor plants"
+          width={1200}
+          height={900}
           fetchPriority="high"
           className="aspect-[4/3] w-full object-cover lg:aspect-[4/5]"
           scope="app/pricing/page.tsx"
