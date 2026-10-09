@@ -9,14 +9,14 @@ import { emailTheme } from "@/emails/styles/emailTheme";
 
 export type ComplimentaryAccessExpiredEmailProps = {
   firstName: string;
-  planLabel: "Pro" | "Family";
+  planLabel: "Home Plus" | "Household";
   accountUrl: string;
   expiredAtLabel: string;
   retainsPremiumAccess: boolean;
 };
 
 export const complimentaryAccessExpiredSubject = (
-  planLabel: "Pro" | "Family"
+  planLabel: "Home Plus" | "Household"
 ) =>
   `Your complimentary ${planLabel} access has ended`;
 
@@ -85,7 +85,7 @@ export default function ComplimentaryAccessExpiredEmail({
 
 ComplimentaryAccessExpiredEmail.PreviewProps = {
   firstName: "Alex",
-  planLabel: "Family",
+  planLabel: "Household",
   accountUrl: "https://www.hometechvault.com/account",
   expiredAtLabel: "July 21, 2026",
   retainsPremiumAccess: false,

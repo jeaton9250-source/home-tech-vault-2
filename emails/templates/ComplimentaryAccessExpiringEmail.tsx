@@ -9,13 +9,13 @@ import { emailTheme } from "@/emails/styles/emailTheme";
 
 export type ComplimentaryAccessExpiringEmailProps = {
   firstName: string;
-  planLabel: "Pro" | "Family";
+  planLabel: "Home Plus" | "Household";
   expiresAtLabel: string;
   accountUrl: string;
 };
 
 export const complimentaryAccessExpiringSubject = (
-  planLabel: "Pro" | "Family"
+  planLabel: "Home Plus" | "Household"
 ) =>
   `Your complimentary ${planLabel} access expires soon`;
 
@@ -76,7 +76,7 @@ export default function ComplimentaryAccessExpiringEmail({
 
 ComplimentaryAccessExpiringEmail.PreviewProps = {
   firstName: "Alex",
-  planLabel: "Family",
+  planLabel: "Household",
   expiresAtLabel: "August 20, 2026",
   accountUrl: "https://www.hometechvault.com/account",
 } satisfies ComplimentaryAccessExpiringEmailProps;

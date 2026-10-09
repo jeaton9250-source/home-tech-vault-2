@@ -31,7 +31,7 @@ const sections = [
   },
   {
     title: "Household sharing",
-    body: "If you use Family plan features, information you add to a shared household may be visible to other members according to their assigned role. You control invitations and can manage access from household settings.",
+    body: "If you use Household plan features, information you add to a shared household may be visible to other members according to their assigned role. You control invitations and can manage access from household settings.",
   },
   {
     title: "Analytics",

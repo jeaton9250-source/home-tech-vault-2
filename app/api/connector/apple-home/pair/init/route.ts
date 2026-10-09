@@ -67,7 +67,7 @@ export async function POST(
       })
     ) {
       return connectorErrorResponse(
-        "Apple Home integration requires a Pro or Family plan.",
+        "Apple Home integration requires a Home Plus or Household plan.",
         403
       );
     }

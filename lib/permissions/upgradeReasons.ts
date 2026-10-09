@@ -41,14 +41,14 @@ function planLabel(
   plan: FeaturePlanRequirement
 ): string {
   if (plan === "family") {
-    return "Family";
+    return "Household";
   }
 
   if (plan === "pro") {
-    return "Pro";
+    return "Home Plus";
   }
 
-  return "Free";
+  return "Home";
 }
 
 export function buildUpgradeReasonMessage(
@@ -93,7 +93,7 @@ export function buildUpgradeReasonMessage(
         return "This household has reached its device limit.";
       }
 
-      return `This household has reached the Free plan limit of ${FREE_DEVICE_LIMIT} devices. Upgrade the household to add more.`;
+      return `This household has reached the Home plan limit of ${FREE_DEVICE_LIMIT} devices. Upgrade the household to add more.`;
 
     case "document_limit_reached":
       if (
@@ -104,7 +104,7 @@ export function buildUpgradeReasonMessage(
         return "This household has reached its document limit.";
       }
 
-      return `This household has reached the Free plan limit of ${FREE_DOCUMENT_LIMIT} documents. Upgrade the household to upload more.`;
+      return `This household has reached the Home plan limit of ${FREE_DOCUMENT_LIMIT} documents. Upgrade the household to upload more.`;
 
     case "unauthenticated":
       return "Sign in to access this feature.";

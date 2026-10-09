@@ -221,7 +221,7 @@ export const landingPricingPlans = [
     highlighted: true,
     badge: "Best Value",
     features: [
-      "Everything in Pro",
+      "Everything in Home Plus",
       "Shared households",
       "Roles",
       "Permissions",

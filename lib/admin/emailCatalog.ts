@@ -57,7 +57,7 @@ export const ADMIN_EMAIL_TEMPLATES: AdminEmailTemplateEntry[] =
     },
     {
       id: "pro-activated",
-      name: "Pro activated",
+      name: "Home Plus activated",
       category: "application",
       live: true,
       previewPath:
@@ -65,7 +65,7 @@ export const ADMIN_EMAIL_TEMPLATES: AdminEmailTemplateEntry[] =
     },
     {
       id: "family-activated",
-      name: "Family activated",
+      name: "Household activated",
       category: "application",
       live: true,
       previewPath:

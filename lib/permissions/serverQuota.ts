@@ -153,7 +153,7 @@ export async function assertCanAddDevice(
         : "free_device_limit",
       quota.canUseProFeatures
         ? "This household has reached its device limit."
-        : "This household has reached the Free plan device limit."
+        : "This household has reached the Home plan device limit."
     );
   }
 
@@ -186,7 +186,7 @@ export async function assertCanAddDocument(
         : "free_document_limit",
       quota.canUseProFeatures
         ? "This household has reached its document limit."
-        : "This household has reached the Free plan document limit."
+        : "This household has reached the Home plan document limit."
     );
   }
 

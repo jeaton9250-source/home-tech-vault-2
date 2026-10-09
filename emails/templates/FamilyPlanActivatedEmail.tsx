@@ -11,13 +11,13 @@ export type FamilyPlanActivatedEmailProps = {
 };
 
 export const familyPlanActivatedSubject =
-  "Your Family plan is active";
+  "Your Household plan is active";
 
 export default function FamilyPlanActivatedEmail({
   billingUrl,
 }: FamilyPlanActivatedEmailProps) {
   return (
-    <EmailLayout preview="Your Family plan is active.">
+    <EmailLayout preview="Your Household plan is active.">
       <EmailHeader
         headline="Family is active."
         subheading="Share your vault with the people who help run your home."
@@ -25,7 +25,7 @@ export default function FamilyPlanActivatedEmail({
 
       <EmailCard>
         <EmailParagraph>
-          Your household now includes everything in Pro plus
+          Your household now includes everything in Home Plus plus
           shared access, invitations, and role-based permissions.
         </EmailParagraph>
 

@@ -54,12 +54,12 @@ export function describeConnectorAccess(
   access: ConnectorAccessContext
 ): string {
   if (access.maxConnectors === null) {
-    return "Unlimited connectors on Family";
+    return "Unlimited connectors on Household";
   }
 
   if (access.maxConnectors === 1) {
     return "1 connector on Free · manual scans and discovery included";
   }
 
-  return `Up to ${access.maxConnectors} connectors on Pro`;
+  return `Up to ${access.maxConnectors} connectors on Home Plus`;
 }

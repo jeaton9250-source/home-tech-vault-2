@@ -244,7 +244,7 @@ export async function POST(
 ) {
   try {
     /*
-     * Server-side Pro / Family entitlement.
+     * Server-side Home Plus / Household entitlement.
      * Client gating is not trusted.
      */
     const access =

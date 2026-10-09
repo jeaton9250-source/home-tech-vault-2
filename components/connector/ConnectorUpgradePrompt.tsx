@@ -32,7 +32,7 @@ export default function ConnectorUpgradePrompt({
       description={
         CONNECTOR_UPGRADE_MESSAGE
       }
-      actionLabel="View Pro and Family plans"
+      actionLabel="View Home Plus and Household plans"
       href="/upgrade"
       className={className}
     />

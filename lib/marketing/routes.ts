@@ -12,7 +12,7 @@ export const MARKETING_ROUTES = {
   signup: "/signup",
   login: "/login",
   newHomeowners: "/new-homeowners",
-  realtors: "/realtors",
+  realtors: "/for-realtors",
 } as const;
 
 export const PUBLIC_AUTH_PATHS = [
@@ -87,6 +87,7 @@ export const PUBLIC_MARKETING_PATHS = [
   "/resources",
   "/guides",
   "/compare",
+  "/compare/centriq-alternative",
 ] as const;
 
 export const PUBLIC_MARKETING_PATH_SET = new Set<string>(
@@ -180,6 +181,7 @@ export const INDEXABLE_MARKETING_PATHS = [
   "/knowledge",
   "/guides",
   "/compare",
+  "/compare/centriq-alternative",
 ] as const;
 
 /** SEO landing page paths (subset of indexable marketing URLs). */

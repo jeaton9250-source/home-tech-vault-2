@@ -145,7 +145,7 @@ export default function NetworkConnectorTab({
         <p className="mt-3 max-w-2xl text-sm leading-7 text-[#68737b]">
           The Connector needs a home Vault to keep discovered
           devices organized. This is included with your Free
-          account and does not require a Family plan.
+          account and does not require a Household plan.
         </p>
 
         <div className="mt-6">

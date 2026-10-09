@@ -115,9 +115,9 @@ export default function PlanAccessSummary({
                 ? "Vault"
                 : billingManagedByHousehold ||
                     planDisplayName ===
-                      "Family" ||
+                      "Household" ||
                     planDisplayName ===
-                      "Complimentary Family"
+                      "Complimentary Household"
                   ? "Role"
                   : "Household Role"
             }
@@ -172,13 +172,13 @@ export default function PlanAccessSummary({
 
             <div>
               <p className="text-sm font-semibold text-text-primary">
-                Managed by your Family Plan Admin
+                Managed by your Household Plan Admin
               </p>
 
               <p className="mt-1 text-sm leading-6 text-text-secondary">
                 {billingOwnerName
                   ? `${billingOwnerName} manages billing for this household.`
-                  : "Billing for this household is managed by your Family Plan Admin."}
+                  : "Billing for this household is managed by your Household Plan Admin."}
               </p>
 
               {!canManageBilling && (

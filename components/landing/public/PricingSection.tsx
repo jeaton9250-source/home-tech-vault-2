@@ -18,7 +18,7 @@ type PricingSectionProps = {
 
 const plans = [
   {
-    name: "Free",
+    name: "Home",
     eyebrow: "Start here",
     price: "$0",
     billing: "forever",
@@ -36,7 +36,7 @@ const plans = [
     ],
   },
   {
-    name: "Pro",
+    name: "Home Plus",
     eyebrow: "For most homeowners",
     price: "$7.99",
     billing: "/month",
@@ -53,7 +53,7 @@ const plans = [
     ],
   },
   {
-    name: "Family",
+    name: "Household",
     eyebrow: "For shared households",
     price: "$14.99",
     billing: "/month",
@@ -111,7 +111,7 @@ export default function PricingSection({
 
           <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-[#68716c] sm:text-lg">
             You do not need to pay to find out whether Home Tech Vault works
-            for your home. Start with the Free plan and move up only when you
+            for your home. Start with the Home plan and move up only when you
             need more space or household sharing.
           </p>
 
@@ -124,12 +124,12 @@ export default function PricingSection({
           {plans.map((plan) => {
             const Icon = plan.icon;
             const href =
-              plan.name === "Free"
+              plan.name === "Home"
                 ? freeHref
                 : paidHref;
 
             const buttonLabel =
-              plan.name === "Free"
+              plan.name === "Home"
                 ? isSignedIn
                   ? "Open My Vault"
                   : "Start Free"
@@ -222,7 +222,7 @@ export default function PricingSection({
                   <ArrowRight size={15} aria-hidden />
                 </Link>
 
-                {plan.name !== "Free" && !isSignedIn ? (
+                {plan.name !== "Home" && !isSignedIn ? (
                   <p className="mt-3 text-center text-xs leading-5 text-[#8e9690]">
                     Sign up first, then upgrade securely.
                   </p>

@@ -1337,7 +1337,7 @@ function OnboardingFlow() {
             <div className="mt-6 rounded-2xl border border-warning/40 bg-warning-soft p-4 text-sm text-text-secondary">
               {quota.canUseProFeatures
                 ? "This household has reached its device limit. Skip this step for now or contact a household admin."
-                : "This household has reached the Free plan device limit. Upgrade the household for unlimited devices, or skip this step for now."}
+                : "This household has reached the Home plan device limit. Upgrade the household for unlimited devices, or skip this step for now."}
             </div>
           )}
 
@@ -1534,7 +1534,7 @@ function OnboardingFlow() {
             <div className="mt-6 rounded-2xl border border-warning/40 bg-warning-soft p-4 text-sm text-text-secondary">
               {quota.canUseProFeatures
                 ? "This household has reached its document limit. Skip this step for now or contact a household admin."
-                : "This household has reached the Free plan document limit. Upgrade the household for unlimited uploads, or skip this step for now."}
+                : "This household has reached the Home plan document limit. Upgrade the household for unlimited uploads, or skip this step for now."}
             </div>
           )}
 

@@ -195,7 +195,7 @@ export default function FoundingMembersAdminClient({
           value={metrics.activeCount}
         />
         <AdminSummaryCard
-          label="Linked Pro grants"
+          label="Linked Home Plus grants"
           value={metrics.linkedGrantCount}
         />
         <AdminSummaryCard

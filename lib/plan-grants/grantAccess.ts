@@ -61,8 +61,8 @@ export function getGrantDisplayLabel(
   plan: AdminGrantPlan
 ) {
   return plan === "family"
-    ? "Complimentary Family access"
-    : "Complimentary Pro access";
+    ? "Complimentary Household access"
+    : "Complimentary Home Plus access";
 }
 
 export function computeExpirationFromDuration(options: {

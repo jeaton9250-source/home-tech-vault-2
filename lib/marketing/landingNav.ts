@@ -58,7 +58,7 @@ export const LANDING_SUPPORT_QUESTIONS = [
   {
     question: "Can I share with household members?",
     answer:
-      "Yes. The Family plan lets you invite household members with viewer, member, or admin roles.",
+      "Yes. The Household plan lets you invite household members with viewer, member, or admin roles.",
     href: MARKETING_ROUTES.faq,
     linkLabel: "Learn about sharing",
   },

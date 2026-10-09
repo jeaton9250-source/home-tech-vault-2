@@ -155,7 +155,7 @@ export const LANDING_FAMILY = {
   ],
   members: [
     { name: "Alex", role: "Owner" },
-    { name: "Jordan", role: "Family Member" },
+    { name: "Jordan", role: "Household Member" },
     { name: "Sam", role: "Viewer" },
   ],
 } as const;
@@ -189,7 +189,7 @@ export const LANDING_PRICING_PLANS = [
     id: "family" as const,
     price: "$14.99",
     period: "per month",
-    note: "Everything in Pro with shared household access.",
+    note: "Everything in Home Plus with shared household access.",
     highlighted: true,
     badge: "Best Value",
   },
@@ -218,12 +218,12 @@ export const LANDING_FAQ_ITEMS = [
   },
   {
     question: "Is it free to get started?",
-    answer: `Yes. The Free plan includes up to ${FREE_DEVICE_LIMIT} devices and ${FREE_DOCUMENT_LIMIT} documents with no credit card required.`,
+    answer: `Yes. The Home plan includes up to ${FREE_DEVICE_LIMIT} devices and ${FREE_DOCUMENT_LIMIT} documents with no credit card required.`,
   },
   {
     question: "Can other household members use it?",
     answer:
-      "Yes. The Family plan lets you invite household members with viewer, member, or admin roles so everyone shares the same home view.",
+      "Yes. The Household plan lets you invite household members with viewer, member, or admin roles so everyone shares the same home view.",
   },
 ] as const;
 

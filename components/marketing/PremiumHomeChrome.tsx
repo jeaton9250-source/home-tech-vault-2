@@ -6,7 +6,7 @@ import { useState } from "react";
 const links = [
   ["Features", "remember"],
   ["How it works", "explore"],
-  ["For Realtors", "/realtors"],
+  ["For Realtors", "/for-realtors"],
   ["Pricing", "/pricing"],
 ];
 export function Header({ signupLink }: { signupLink: string }) {
@@ -125,7 +125,7 @@ export function Footer() {
               {"How it works"}
             </MarketingText>
           </a>
-          <a href="/realtors">
+          <a href="/for-realtors">
             <MarketingText scope="components/marketing/PremiumHomeChrome.tsx">
               {"For Realtors"}
             </MarketingText>

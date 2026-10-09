@@ -9,11 +9,11 @@ export function planBadgeLabel(
     FEATURE_REQUIREMENTS[feature];
 
   if (required === "pro") {
-    return "Pro";
+    return "Home Plus";
   }
 
   if (required === "family") {
-    return "Family";
+    return "Household";
   }
 
   return null;

@@ -41,7 +41,7 @@ const plans = [
 
 const pricingFaqCategories: FaqCategory[] = [
   "Billing",
-  "Family",
+  "Household",
   "Accounts",
 ];
 

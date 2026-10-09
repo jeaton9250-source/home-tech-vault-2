@@ -35,7 +35,7 @@ const sections = [
   },
   {
     title: "Household sharing",
-    body: "Family plan administrators are responsible for invitations and permissions granted to household members. Shared data remains subject to these terms for all members of the household.",
+    body: "Household plan administrators are responsible for invitations and permissions granted to household members. Shared data remains subject to these terms for all members of the household.",
   },
   {
     title: "Disclaimer",

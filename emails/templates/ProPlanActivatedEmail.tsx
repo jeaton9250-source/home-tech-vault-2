@@ -11,13 +11,13 @@ export type ProPlanActivatedEmailProps = {
 };
 
 export const proPlanActivatedSubject =
-  "Your Pro plan is active";
+  "Your Home Plus plan is active";
 
 export default function ProPlanActivatedEmail({
   billingUrl,
 }: ProPlanActivatedEmailProps) {
   return (
-    <EmailLayout preview="Your Pro plan is active.">
+    <EmailLayout preview="Your Home Plus plan is active.">
       <EmailHeader
         headline="Pro is active."
         subheading="Unlimited inventory and premium intelligence are now unlocked."

@@ -80,7 +80,7 @@ export function buildHomePulseConnectorSignals(input: {
       id: "connector-monitoring",
       title: "Automatic monitoring available",
       message:
-        "Upgrade to Pro for background scans, presence monitoring, and live Home Pulse updates.",
+        "Upgrade to Home Plus for background scans, presence monitoring, and live Home Pulse updates.",
       href: "/upgrade",
       priority: 60,
       tone: "neutral",

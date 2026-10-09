@@ -1291,7 +1291,7 @@ export default function DevicesPage() {
 
               <p className="mt-1 text-[13px] text-slate-500">
                 {quota.canUseProFeatures
-                  ? "This household is on a Pro plan."
+                  ? "This household is on a Home Plus plan."
                   : "Upgrade the household for unlimited device tracking."}
               </p>
             </div>

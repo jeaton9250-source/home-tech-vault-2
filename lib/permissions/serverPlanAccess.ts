@@ -216,6 +216,6 @@ export function formatEffectivePlanSourceLabel(
     case "demo":
       return "Demo";
     default:
-      return "Free";
+      return "Home";
   }
 }

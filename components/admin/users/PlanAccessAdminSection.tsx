@@ -482,8 +482,8 @@ export default function PlanAccessAdminSection({
               {dialogMode === "replace"
                 ? "Replace plan grant"
                 : dialogPlan === "family"
-                  ? "Grant Family access"
-                  : "Grant Pro access"}
+                  ? "Grant Household access"
+                  : "Grant Home Plus access"}
             </h3>
 
             <p className="mt-2 text-sm leading-6 text-warning">
@@ -619,8 +619,8 @@ export default function PlanAccessAdminSection({
                 <span>
                   I confirm granting{" "}
                   {dialogPlan === "family"
-                    ? "Family"
-                    : "Pro"}{" "}
+                    ? "Household"
+                    : "Home Plus"}{" "}
                   access to this user without changing
                   Stripe billing.
                 </span>

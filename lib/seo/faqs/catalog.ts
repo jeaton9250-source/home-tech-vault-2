@@ -11,7 +11,7 @@ export type SeoFaqCategory =
   | "Smart Home"
   | "Warranties"
   | "Maintenance"
-  | "Family"
+  | "Household"
   | "Security"
   | "Billing"
   | "Inventory";
@@ -37,9 +37,9 @@ export const SEO_FAQ_ENTRIES: SeoFaqEntry[] = [
   },
   {
     slug: "can-families-share-devices",
-    category: "Family",
+    category: "Household",
     question: "Can families share devices?",
-    answer: "Yes on the Family plan. Invite household members with viewer, member, or admin roles so everyone works from the same inventory without emailing spreadsheets. Owners stay in control of billing and membership.",
+    answer: "Yes on the Household plan. Invite household members with viewer, member, or admin roles so everyone works from the same inventory without emailing spreadsheets. Owners stay in control of billing and membership.",
     related: related("familySharing", "pricing", "features", "digitalVault"),
   },
   {
@@ -88,7 +88,7 @@ export const SEO_FAQ_ENTRIES: SeoFaqEntry[] = [
     slug: "how-many-devices-can-i-track",
     category: "Devices",
     question: "How many devices can I track?",
-    answer: "The Free plan includes up to 8 devices. Pro and Family plans include unlimited devices so growing households are not forced into another spreadsheet.",
+    answer: "The Home plan includes up to 8 devices. Home Plus and Household plans include unlimited devices so growing households are not forced into another spreadsheet.",
     related: related("pricing", "deviceInventory", "inventoryGuide", "features"),
   },
   {
@@ -109,14 +109,14 @@ export const SEO_FAQ_ENTRIES: SeoFaqEntry[] = [
     slug: "is-there-a-free-plan",
     category: "Billing",
     question: "Is there a free plan?",
-    answer: "Yes. Free includes up to 8 devices and 25 documents with no credit card required. Upgrade to Pro or Family when you need unlimited capacity or household sharing.",
+    answer: "Yes. Home includes up to 8 devices and 25 documents with no credit card required. Upgrade to Home Plus or Household when you need unlimited capacity or household sharing.",
     related: related("pricing", "signup", "features", "bestInventory"),
   },
   {
     slug: "what-is-the-difference-between-free-pro-and-family",
     category: "Billing",
-    question: "What is the difference between Free, Pro, and Family?",
-    answer: "Free is for getting started with limited devices and documents. Pro unlocks unlimited inventory and advanced capabilities. Family includes Pro features plus household sharing with roles.",
+    question: "What is the difference between Home, Home Plus, and Household?",
+    answer: "Home is for getting started with limited devices and documents. Home Plus unlocks unlimited inventory and advanced capabilities. Household includes Home Plus features plus household sharing with roles.",
     related: related("pricing", "features", "familySharing", "signup"),
   },
   {
@@ -130,26 +130,26 @@ export const SEO_FAQ_ENTRIES: SeoFaqEntry[] = [
     slug: "can-i-switch-plans-later",
     category: "Billing",
     question: "Can I switch plans later?",
-    answer: "Yes. Start on Free and upgrade to Pro or Family whenever capacity or sharing needs change. Downgrades and billing changes are handled from account settings.",
+    answer: "Yes. Start on Home and upgrade to Home Plus or Household whenever capacity or sharing needs change. Downgrades and billing changes are handled from account settings.",
     related: related("pricing", "features", "familySharing", "signup"),
   },
   {
     slug: "who-can-see-my-information",
     category: "Security",
     question: "Who can see my information?",
-    answer: "Only you and household members you explicitly invite on Family plans. Role-based permissions control who can view or edit records.",
+    answer: "Only you and household members you explicitly invite on Household plans. Role-based permissions control who can view or edit records.",
     related: related("familySharing", "trust", "privateRecords", "pricing"),
   },
   {
     slug: "can-i-invite-viewers",
-    category: "Family",
+    category: "Household",
     question: "Can I invite viewers?",
-    answer: "Yes on Family. Viewer roles can read inventory without creating, editing, or deleting records—useful for partners or helpers who need visibility only.",
+    answer: "Yes on Household. Viewer roles can read inventory without creating, editing, or deleting records—useful for partners or helpers who need visibility only.",
     related: related("familySharing", "pricing", "features", "digitalVault"),
   },
   {
     slug: "what-household-roles-are-available",
-    category: "Family",
+    category: "Household",
     question: "What household roles are available?",
     answer: "Viewer, member, and admin roles let you control who can see inventory, add devices, upload documents, or manage household settings.",
     related: related("familySharing", "pricing", "features", "trust"),
@@ -179,7 +179,7 @@ export const SEO_FAQ_ENTRIES: SeoFaqEntry[] = [
     slug: "is-network-monitoring-on-every-plan",
     category: "Network",
     question: "Is network monitoring included on every plan?",
-    answer: "Basic network documentation is available across plans. Advanced network monitoring capabilities are included with Pro and Family.",
+    answer: "Basic network documentation is available across plans. Advanced network monitoring capabilities are included with Home Plus and Household.",
     related: related("pricing", "networkDocs", "features", "networkGuide"),
   },
   {
@@ -310,21 +310,21 @@ export const SEO_FAQ_ENTRIES: SeoFaqEntry[] = [
   },
   {
     slug: "can-house-sitters-get-access",
-    category: "Family",
+    category: "Household",
     question: "Can house sitters get access?",
-    answer: "On Family plans you can share limited access appropriate to the situation. Prefer viewer-style visibility and guest Wi-Fi notes over full admin rights.",
+    answer: "On Household plans you can share limited access appropriate to the situation. Prefer viewer-style visibility and guest Wi-Fi notes over full admin rights.",
     related: related("familySharing", "wifiGuide", "privateRecords", "pricing"),
   },
   {
     slug: "can-multiple-people-edit",
-    category: "Family",
+    category: "Household",
     question: "Can multiple people edit the inventory?",
-    answer: "Yes on Family with member or admin roles. Viewers remain read-only. That keeps one living inventory instead of conflicting spreadsheet copies.",
+    answer: "Yes on Household with member or admin roles. Viewers remain read-only. That keeps one living inventory instead of conflicting spreadsheet copies.",
     related: related("familySharing", "pricing", "vsSheets", "deviceInventory"),
   },
   {
     slug: "what-happens-when-someone-leaves",
-    category: "Family",
+    category: "Household",
     question: "What happens when a household member leaves?",
     answer: "Remove their membership so they no longer access the vault. Rotate shared network secrets in your password manager if they had admin credentials.",
     related: related("familySharing", "privateRecords", "routerPasswordsGuide", "trust"),
@@ -499,14 +499,14 @@ export const SEO_FAQ_ENTRIES: SeoFaqEntry[] = [
   },
   {
     slug: "can-guests-see-my-vault",
-    category: "Family",
+    category: "Household",
     question: "Can guests see my vault?",
     answer: "Only people you invite into the household. Prefer guest Wi-Fi sharing for visitors rather than vault access, unless a sitter truly needs records.",
     related: related("familySharing", "wifiGuide", "privateRecords", "trust"),
   },
   {
     slug: "can-kids-have-accounts",
-    category: "Family",
+    category: "Household",
     question: "Can kids have accounts?",
     answer: "Household sharing is designed for family members you trust with inventory visibility. Use viewer roles for limited access and keep billing with an adult.",
     related: related("familySharing", "pricing", "privateRecords", "features"),
@@ -515,13 +515,13 @@ export const SEO_FAQ_ENTRIES: SeoFaqEntry[] = [
     slug: "does-free-include-document-uploads",
     category: "Billing",
     question: "Does Free include document uploads?",
-    answer: "Yes within Free plan document limits (25 documents). Pro and Family increase capacity for growing archives of receipts and manuals.",
+    answer: "Yes within Home plan document limits (25 documents). Home Plus and Household increase capacity for growing archives of receipts and manuals.",
     related: related("pricing", "documentOrganizer", "features", "signup"),
   },
   {
     slug: "do-i-need-a-credit-card-for-free",
     category: "Billing",
-    question: "Do I need a credit card for the Free plan?",
+    question: "Do I need a credit card for the Home plan?",
     answer: "No. You can start Free without a credit card and upgrade later if you need unlimited inventory or family sharing.",
     related: related("pricing", "signup", "features", "demo"),
   },
@@ -604,7 +604,7 @@ export const SEO_FAQ_ENTRIES: SeoFaqEntry[] = [
   },
   {
     slug: "can-multiple-homes-be-managed",
-    category: "Family",
+    category: "Household",
     question: "Can I manage more than one home?",
     answer: "Home Tech Vault is centered on household inventory. If you manage multiple properties, keep room naming clear and document which physical address each set of devices belongs to.",
     related: related("familySharing", "inventoryGuide", "smartHomeKnowledge", "deviceInventory"),
@@ -697,7 +697,7 @@ export const SEO_FAQ_ENTRIES: SeoFaqEntry[] = [
     slug: "how-do-i-get-started-quickly",
     category: "Accounts",
     question: "How do I get started quickly?",
-    answer: "Create a free account, add five high-value devices, attach one receipt or serial photo each, and invite a partner if you are on Family. Momentum beats a perfect weekend project.",
+    answer: "Create a free account, add five high-value devices, attach one receipt or serial photo each, and invite a partner if you are on Household. Momentum beats a perfect weekend project.",
     related: related("signup", "inventoryGuide", "unbox", "demo"),
   },
   {
@@ -716,7 +716,7 @@ export const SEO_FAQ_ENTRIES: SeoFaqEntry[] = [
   },
   {
     slug: "can-i-change-household-owner",
-    category: "Family",
+    category: "Household",
     question: "Can the household owner change?",
     answer: "Ownership and billing are tied to the account that manages the household subscription. Contact support if you need help with ownership transfers after major household changes.",
     related: related("familySharing", "pricing", "trust", "features"),
@@ -775,7 +775,7 @@ export const SEO_FAQ_CATEGORIES: SeoFaqCategory[] = [
   "Smart Home",
   "Warranties",
   "Maintenance",
-  "Family",
+  "Household",
   "Security",
   "Billing",
   "Inventory",

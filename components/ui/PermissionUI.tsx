@@ -487,8 +487,8 @@ export function UpgradeLock({
 
   const planLabel =
     access.requiredPlan === "family"
-      ? "Family"
-      : "Pro";
+      ? "Household"
+      : "Home Plus";
 
   return (
     <section className="rounded-[var(--radius-card)] border border-border-subtle bg-surface-card p-8 text-center shadow-sm">

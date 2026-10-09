@@ -213,7 +213,7 @@ export default function ProfileMenu({
       : isPlatformAdmin
         ? "Platform Admin"
         : planDisplayName ||
-          "Free";
+          "Home";
 
   const { adminItems, regularItems } =
     useMemo(() => {
@@ -332,7 +332,7 @@ export default function ProfileMenu({
           <Badge
             variant={
               isPlatformAdmin ||
-              planDisplayName !== "Free"
+              planDisplayName !== "Home"
                 ? "premium"
                 : "neutral"
             }
@@ -352,7 +352,7 @@ export default function ProfileMenu({
         billingManagedByHousehold &&
           !canManageBilling ? (
             <p className="mt-3 text-xs leading-5 text-text-secondary">
-              Managed by your Family Plan Admin
+              Managed by your Household Plan Admin
               {billingOwnerName
                 ? ` (${billingOwnerName})`
                 : ""}

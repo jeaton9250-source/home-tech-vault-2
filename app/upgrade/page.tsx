@@ -140,7 +140,7 @@ export default function UpgradePage() {
 
       <section className="grid gap-6 xl:grid-cols-3">
         <PlanCard
-          name="Free"
+          name="Home"
           price="$0"
           description="For getting started with your home technology inventory."
           icon={ShieldCheck}
@@ -148,13 +148,13 @@ export default function UpgradePage() {
           buttonText={
             isFree && !isPlatformAdmin
               ? "Current Plan"
-              : "Free Plan"
+              : "Home Plan"
           }
           disabled
         />
 
         <PlanCard
-          name="Pro"
+          name="Home Plus"
           price="$7.99"
           billingText="/month"
           description="For homeowners who want automation, reporting, and advanced tools."
@@ -164,7 +164,7 @@ export default function UpgradePage() {
           buttonText={
             plan === "pro"
               ? "Current Plan"
-              : "Upgrade to Pro"
+              : "Upgrade to Home Plus"
           }
           loading={loadingPlan === "pro"}
           disabled={
@@ -180,7 +180,7 @@ export default function UpgradePage() {
         />
 
         <PlanCard
-          name="Family"
+          name="Household"
           price="$14.99"
           billingText="/month"
           description="For households that want shared access and multiple users."
@@ -189,7 +189,7 @@ export default function UpgradePage() {
           buttonText={
             plan === "family"
               ? "Current Plan"
-              : "Choose Family"
+              : "Choose Household"
           }
           loading={loadingPlan === "family"}
           disabled={

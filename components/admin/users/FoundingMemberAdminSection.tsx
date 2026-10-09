@@ -360,7 +360,7 @@ export default function FoundingMemberAdminSection({
                 <p className="rounded-[16px] border border-warning/30 bg-warning/5 px-4 py-3 text-warning">
                   This enrolls the user as a
                   Founding Member and grants
-                  complimentary Pro access when
+                  complimentary Home Plus access when
                   needed. No payment will be
                   collected and no Stripe
                   subscription will be created.

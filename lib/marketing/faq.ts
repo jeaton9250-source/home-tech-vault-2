@@ -7,7 +7,7 @@ export type FaqCategory =
   | "Internet & Wi-Fi"
   | "Privacy"
   | "Billing"
-  | "Family";
+  | "Household";
 
 export type FaqItem = {
   question: string;
@@ -22,7 +22,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
   "Internet & Wi-Fi",
   "Privacy",
   "Billing",
-  "Family",
+  "Household",
 ];
 
 export const FAQ_ITEMS: FaqItem[] = [
@@ -36,13 +36,13 @@ export const FAQ_ITEMS: FaqItem[] = [
     category: "Accounts",
     question: "Can I switch plans later?",
     answer:
-      "Yes. Start on Free and upgrade to Pro or Family whenever your household needs more capacity or sharing. Billing changes are managed from your account settings.",
+      "Yes. Start on Home and upgrade to Home Plus or Household whenever your household needs more capacity or sharing. Billing changes are managed from your account settings.",
   },
   {
     category: "Devices",
     question: "How many devices can I track?",
     answer:
-      `Free includes up to ${FREE_DEVICE_LIMIT} devices. Pro and Family plans include unlimited devices, warranties, and maintenance records.`,
+      `Home includes up to ${FREE_DEVICE_LIMIT} devices. Home Plus and Household plans include unlimited devices, warranties, and maintenance records.`,
   },
   {
     category: "Devices",
@@ -72,7 +72,7 @@ export const FAQ_ITEMS: FaqItem[] = [
     category: "Internet & Wi-Fi",
     question: "Is network monitoring included on every plan?",
     answer:
-      "Basic home Wi-Fi information is available on all plans. Advanced connectivity features are included with Pro and Family.",
+      "Basic home Wi-Fi information is available on all plans. Advanced connectivity features are included with Home Plus and Household.",
   },
   {
     category: "Privacy",
@@ -84,13 +84,13 @@ export const FAQ_ITEMS: FaqItem[] = [
     category: "Privacy",
     question: "Who can see my information?",
     answer:
-      "Only you — and household members you explicitly invite on Family plans. Role-based permissions control who can view or edit records.",
+      "Only you — and household members you explicitly invite on Household plans. Role-based permissions control who can view or edit records.",
   },
   {
     category: "Billing",
-    question: "What's the difference between Free, Pro, and Family?",
+    question: "What's the difference between Home, Home Plus, and Household?",
     answer:
-      `Free is perfect for getting started with up to ${FREE_DEVICE_LIMIT} devices and 25 documents. Pro unlocks unlimited inventory, AI guidance, and advanced reports. Family includes everything in Pro plus household sharing.`,
+      `Home is perfect for getting started with up to ${FREE_DEVICE_LIMIT} devices and 25 documents. Home Plus unlocks unlimited inventory, AI guidance, and advanced reports. Household includes everything in Home Plus plus household sharing.`,
   },
   {
     category: "Billing",
@@ -99,13 +99,13 @@ export const FAQ_ITEMS: FaqItem[] = [
       "Yes. Paid subscriptions can be managed from billing settings. Your data remains accessible according to your plan limits.",
   },
   {
-    category: "Family",
+    category: "Household",
     question: "Can I share with family members?",
     answer:
-      "Yes. The Family plan lets you invite household members as viewers, members, or admins so everyone works from the same trusted record.",
+      "Yes. The Household plan lets you invite household members as viewers, members, or admins so everyone works from the same trusted record.",
   },
   {
-    category: "Family",
+    category: "Household",
     question: "What roles are available?",
     answer:
       "Viewer, Member, and Admin roles let you control who can see inventory, add devices, or manage household settings.",

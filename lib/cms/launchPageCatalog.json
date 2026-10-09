@@ -1,0 +1,785 @@
+{
+  "definitions": {
+    "text_d3gpfj": {
+      "id": "text_d3gpfj",
+      "kind": "text",
+      "value": "This is a manual transfer guide, not an automatic import template. Export headings can vary; match the meaning of each field. A spreadsheet does not necessarily contain the files linked from it.",
+      "section": "Centriq Alternative"
+    },
+    "text_1e5bv08": {
+      "id": "text_1e5bv08",
+      "kind": "text",
+      "value": "Looking for a Centriq alternative?",
+      "section": "Centriq Alternative"
+    },
+    "text_3spu67": {
+      "id": "text_3spu67",
+      "kind": "text",
+      "value": "HTV",
+      "section": "HomeMarketingFooter"
+    },
+    "text_xl3fg5": {
+      "id": "text_xl3fg5",
+      "kind": "text",
+      "value": "HTV cannot recover documents or data from Centriq. Upload copies you already saved.",
+      "section": "Centriq Alternative"
+    },
+    "text_187e3cv": {
+      "id": "text_187e3cv",
+      "kind": "text",
+      "value": "Appliance models and serial numbers",
+      "section": "For Realtors & Builders"
+    },
+    "text_11g0nq0": {
+      "id": "text_11g0nq0",
+      "kind": "text",
+      "value": "What the buyer gets",
+      "section": "For Realtors & Builders"
+    },
+    "text_ftg0t1": {
+      "id": "text_ftg0t1",
+      "kind": "text",
+      "value": "Hand your buyers a record they can keep using after the boxes are unpacked. The useful details of their home, together from the start.",
+      "section": "For Realtors & Builders"
+    },
+    "text_k084uf": {
+      "id": "text_k084uf",
+      "kind": "text",
+      "value": "Prefer to begin yourself?",
+      "section": "For Realtors & Builders"
+    },
+    "text_40rb1q": {
+      "id": "text_40rb1q",
+      "kind": "text",
+      "value": "A HOME RECORD AT CLOSING",
+      "section": "For Realtors & Builders"
+    },
+    "text_njb9yi": {
+      "id": "text_njb9yi",
+      "kind": "text",
+      "value": "Home is $0 forever, with up to 8 devices and 25 documents. Home Plus is $7.99/month for expanded tools and unlimited devices and documents. Household is $14.99/month and adds shared household access.",
+      "section": "Centriq Alternative"
+    },
+    "text_1lmaw7b": {
+      "id": "text_1lmaw7b",
+      "kind": "text",
+      "value": "Attach your saved manuals, receipts and photos, then check purchase dates and warranty coverage against the original documents.",
+      "section": "Centriq Alternative"
+    },
+    "text_1i4mr7y": {
+      "id": "text_1i4mr7y",
+      "kind": "text",
+      "value": "Keep installation and service details you can verify.",
+      "section": "Centriq Alternative"
+    },
+    "text_139zvv4": {
+      "id": "text_139zvv4",
+      "kind": "text",
+      "value": "centriq replacement app",
+      "section": "Centriq Alternative"
+    },
+    "text_167vqr1": {
+      "id": "text_167vqr1",
+      "kind": "text",
+      "value": "Copy exactly, including letters, hyphens and leading zeros.",
+      "section": "Centriq Alternative"
+    },
+    "text_1excako": {
+      "id": "text_1excako",
+      "kind": "text",
+      "value": "Where to put it in HTV",
+      "section": "Centriq Alternative"
+    },
+    "text_zg45bn": {
+      "id": "text_zg45bn",
+      "kind": "text",
+      "value": "A NEW HOME FOR YOUR RECORDS",
+      "section": "Centriq Alternative"
+    },
+    "text_18jyspo": {
+      "id": "text_18jyspo",
+      "kind": "text",
+      "value": "centriq alternative",
+      "section": "Centriq Alternative"
+    },
+    "text_wu504b": {
+      "id": "text_wu504b",
+      "kind": "text",
+      "value": "The closing folder, with somewhere to live.",
+      "section": "For Realtors & Builders"
+    },
+    "text_14rrcof": {
+      "id": "text_14rrcof",
+      "kind": "text",
+      "value": "Contact",
+      "section": "HomeMarketingFooter"
+    },
+    "text_1njseie": {
+      "id": "text_1njseie",
+      "kind": "text",
+      "value": "Open a working copy and start with your five most important appliances. Use the field guide below to add each device in HTV.",
+      "section": "Centriq Alternative"
+    },
+    "text_1ruzii3": {
+      "id": "text_1ruzii3",
+      "kind": "text",
+      "value": "Privacy",
+      "section": "HomeMarketingFooter"
+    },
+    "text_148yur1": {
+      "id": "text_148yur1",
+      "kind": "text",
+      "value": "Compare the plans",
+      "section": "Centriq Alternative"
+    },
+    "text_ganemh": {
+      "id": "text_ganemh",
+      "kind": "text",
+      "value": "Keep models, serial numbers, purchase dates and rooms together.",
+      "section": "Centriq Alternative"
+    },
+    "text_czi1ji": {
+      "id": "text_czi1ji",
+      "kind": "text",
+      "value": "Explore the demo",
+      "section": "For Realtors & Builders"
+    },
+    "text_vm9tv8": {
+      "id": "text_vm9tv8",
+      "kind": "text",
+      "value": "Group equipment where you use it.",
+      "section": "Centriq Alternative"
+    },
+    "text_192lf3t": {
+      "id": "text_192lf3t",
+      "kind": "text",
+      "value": "Start with one device today. A small, accurate record is already useful.",
+      "section": "Centriq Alternative"
+    },
+    "text_18dk4eh": {
+      "id": "text_18dk4eh",
+      "kind": "text",
+      "value": "Information in your export",
+      "section": "Centriq Alternative"
+    },
+    "text_mzy4av": {
+      "id": "text_mzy4av",
+      "kind": "text",
+      "value": "Start with one device.",
+      "section": "Centriq Alternative"
+    },
+    "text_7tladg": {
+      "id": "text_7tladg",
+      "kind": "text",
+      "value": "Export information → HTV device fields",
+      "section": "Centriq Alternative"
+    },
+    "text_1sn64ly": {
+      "id": "text_1sn64ly",
+      "kind": "text",
+      "value": "Record coverage dates and maintenance history; capabilities depend on plan.",
+      "section": "Centriq Alternative"
+    },
+    "text_r7ufmu": {
+      "id": "text_r7ufmu",
+      "kind": "text",
+      "value": "What to check",
+      "section": "Centriq Alternative"
+    },
+    "text_1b57ygy": {
+      "id": "text_1b57ygy",
+      "kind": "text",
+      "value": "Manuals, receipts and warranty documents",
+      "section": "For Realtors & Builders"
+    },
+    "text_3vx234": {
+      "id": "text_3vx234",
+      "kind": "text",
+      "value": "apps like centriq",
+      "section": "Centriq Alternative"
+    },
+    "text_1cxjm9k": {
+      "id": "text_1cxjm9k",
+      "kind": "text",
+      "value": "Household adds shared access with member roles.",
+      "section": "Centriq Alternative"
+    },
+    "text_neo7ks": {
+      "id": "text_neo7ks",
+      "kind": "text",
+      "value": "Purchase date",
+      "section": "Centriq Alternative"
+    },
+    "text_415y60": {
+      "id": "text_415y60",
+      "kind": "text",
+      "value": "app/for-realtors/page.tsx",
+      "section": "For Realtors & Builders"
+    },
+    "text_cgbwao": {
+      "id": "text_cgbwao",
+      "kind": "text",
+      "value": "Attach saved manuals, receipts and warranty documents to their devices.",
+      "section": "Centriq Alternative"
+    },
+    "text_1mrne59": {
+      "id": "text_1mrne59",
+      "kind": "text",
+      "value": "Do not assume Centriq's parts matching or recall services carry over. Check the manufacturer for these details.",
+      "section": "Centriq Alternative"
+    },
+    "text_66yi3f": {
+      "id": "text_66yi3f",
+      "kind": "text",
+      "value": "Keep the manufacturer separate from the model.",
+      "section": "Centriq Alternative"
+    },
+    "text_1rccqam": {
+      "id": "text_1rccqam",
+      "kind": "text",
+      "value": "Household access",
+      "section": "Centriq Alternative"
+    },
+    "text_1fus0sy": {
+      "id": "text_1fus0sy",
+      "kind": "text",
+      "value": "Centriq Alternative — Free Home Device & Warranty Record",
+      "section": "Centriq Alternative"
+    },
+    "text_1jufq8u": {
+      "id": "text_1jufq8u",
+      "kind": "text",
+      "value": "Give buyers a useful home record at closing. Keep appliances, manuals, warranties and service details together with Home Tech Vault.",
+      "section": "For Realtors & Builders"
+    },
+    "text_1o38fm": {
+      "id": "text_1o38fm",
+      "kind": "text",
+      "value": "If you have your Centriq export",
+      "section": "Centriq Alternative"
+    },
+    "text_1kqvc97": {
+      "id": "text_1kqvc97",
+      "kind": "text",
+      "value": "Give every home you sell a memory.",
+      "section": "For Realtors & Builders"
+    },
+    "text_1tp7unb": {
+      "id": "text_1tp7unb",
+      "kind": "text",
+      "value": "Your home remembers more than you think. Keep its useful history in one place.",
+      "section": "HomeMarketingFooter"
+    },
+    "text_r9ipsr": {
+      "id": "text_r9ipsr",
+      "kind": "text",
+      "value": "What it takes from you",
+      "section": "For Realtors & Builders"
+    },
+    "text_gwk21g": {
+      "id": "text_gwk21g",
+      "kind": "text",
+      "value": "FOR REALTORS & BUILDERS",
+      "section": "For Realtors & Builders"
+    },
+    "text_4izl66": {
+      "id": "text_4izl66",
+      "kind": "text",
+      "value": "Create a partner account, prepare a home gift and add the information you have permission to share. When it is ready, send the ownership invitation so the buyer can claim their home record.",
+      "section": "For Realtors & Builders"
+    },
+    "text_k7qycd": {
+      "id": "text_k7qycd",
+      "kind": "text",
+      "value": "Share only the records intended for the buyer. Review documents and remove personal account information before sending the home record.",
+      "section": "For Realtors & Builders"
+    },
+    "text_zu7z6i": {
+      "id": "text_zu7z6i",
+      "kind": "text",
+      "value": "Check the date against your receipt.",
+      "section": "Centriq Alternative"
+    },
+    "text_x3l9ze": {
+      "id": "text_x3l9ze",
+      "kind": "text",
+      "value": "The water heater replacement. The roof repair. The last service visit. Give those details a place to stay, so the next owner has a starting point and your work at closing stays useful.",
+      "section": "For Realtors & Builders"
+    },
+    "text_657f8g": {
+      "id": "text_657f8g",
+      "kind": "text",
+      "value": "Room / location",
+      "section": "Centriq Alternative"
+    },
+    "text_1jimw9v": {
+      "id": "text_1jimw9v",
+      "kind": "text",
+      "value": "Start your free record",
+      "section": "Centriq Alternative"
+    },
+    "text_1cfazlr": {
+      "id": "text_1cfazlr",
+      "kind": "text",
+      "value": "Centriq migration",
+      "section": "Centriq Alternative"
+    },
+    "text_s0ektt": {
+      "id": "text_s0ektt",
+      "kind": "text",
+      "value": "Hand your buyers a record they can keep using after the boxes are unpacked. The useful details of their home, together from the start.",
+      "section": "For Realtors & Builders"
+    },
+    "text_sem880": {
+      "id": "text_sem880",
+      "kind": "text",
+      "value": "FOR REALTORS & BUILDERS",
+      "section": "For Realtors & Builders"
+    },
+    "text_120pn0y": {
+      "id": "text_120pn0y",
+      "kind": "text",
+      "value": "A home's history shouldn't reset at closing.",
+      "section": "For Realtors & Builders"
+    },
+    "text_wv0x2k": {
+      "id": "text_wv0x2k",
+      "kind": "text",
+      "value": "A place for appliances and home systems, model numbers, manuals, receipts, warranty dates and service history. Gather the records available at closing so the buyer has a useful starting point.",
+      "section": "For Realtors & Builders"
+    },
+    "text_10jirrw": {
+      "id": "text_10jirrw",
+      "kind": "text",
+      "value": "Serial number",
+      "section": "Centriq Alternative"
+    },
+    "text_15md78w": {
+      "id": "text_15md78w",
+      "kind": "text",
+      "value": "Home Tech Vault",
+      "section": "HomeMarketingFooter"
+    },
+    "text_172yfsc": {
+      "id": "text_172yfsc",
+      "kind": "text",
+      "value": "Home system notes and useful photos",
+      "section": "For Realtors & Builders"
+    },
+    "text_8dmlqj": {
+      "id": "text_8dmlqj",
+      "kind": "text",
+      "value": "For Realtors & Builders — A Home Record at Closing",
+      "section": "For Realtors & Builders"
+    },
+    "text_1kwiymx": {
+      "id": "text_1kwiymx",
+      "kind": "text",
+      "value": "Your home's record is worth keeping. Home Tech Vault gives appliances, manuals, receipts, warranties and service history a place to stay — on the web and on iPhone.",
+      "section": "Centriq Alternative"
+    },
+    "text_v8eb4l": {
+      "id": "text_v8eb4l",
+      "kind": "text",
+      "value": "Create your partner account",
+      "section": "For Realtors & Builders"
+    },
+    "text_rdl9gt": {
+      "id": "text_rdl9gt",
+      "kind": "text",
+      "value": "Download on the App Store",
+      "section": "Centriq Alternative"
+    },
+    "text_1nbou65": {
+      "id": "text_1nbou65",
+      "kind": "text",
+      "value": "Old attachments and missing data",
+      "section": "Centriq Alternative"
+    },
+    "text_75i4v4": {
+      "id": "text_75i4v4",
+      "kind": "text",
+      "value": "Terms",
+      "section": "HomeMarketingFooter"
+    },
+    "text_8etgs0": {
+      "id": "text_8etgs0",
+      "kind": "text",
+      "value": "app/compare/centriq-alternative/page.tsx",
+      "section": "Centriq Alternative"
+    },
+    "text_s2j8oy": {
+      "id": "text_s2j8oy",
+      "kind": "text",
+      "value": "Keep it as text so spreadsheet software does not alter it.",
+      "section": "Centriq Alternative"
+    },
+    "text_rk0nr": {
+      "id": "text_rk0nr",
+      "kind": "text",
+      "value": "Sign In",
+      "section": "HomeMarketingFooter"
+    },
+    "text_kskg09": {
+      "id": "text_kskg09",
+      "kind": "text",
+      "value": "No dedicated Centriq CSV importer. Use your export as a reference and add the records manually.",
+      "section": "Centriq Alternative"
+    },
+    "text_q1bnb": {
+      "id": "text_q1bnb",
+      "kind": "text",
+      "value": "If you liked having the paperwork beside each appliance in Centriq, that is the job HTV focuses on. It is not a drop-in replacement for every Centriq service.",
+      "section": "Centriq Alternative"
+    },
+    "text_1qlp5lr": {
+      "id": "text_1qlp5lr",
+      "kind": "text",
+      "value": "Request a handoff for your next closing",
+      "section": "For Realtors & Builders"
+    },
+    "text_1b2vhfs": {
+      "id": "text_1b2vhfs",
+      "kind": "text",
+      "value": "Looking for a Centriq replacement? Keep devices, manuals, receipts, warranties and service history together with Home Tech Vault, on web and iPhone. Free to start.",
+      "section": "Centriq Alternative"
+    },
+    "text_26om9u": {
+      "id": "text_26om9u",
+      "kind": "text",
+      "value": "©",
+      "section": "HomeMarketingFooter"
+    },
+    "text_1etdcwt": {
+      "id": "text_1etdcwt",
+      "kind": "text",
+      "value": "Manuals and proof of purchase",
+      "section": "Centriq Alternative"
+    },
+    "text_qxndua": {
+      "id": "text_qxndua",
+      "kind": "text",
+      "value": "Looking for a Centriq alternative?",
+      "section": "Centriq Alternative"
+    },
+    "text_12z5u26": {
+      "id": "text_12z5u26",
+      "kind": "text",
+      "value": "Home Tech Vault. All rights reserved.",
+      "section": "HomeMarketingFooter"
+    },
+    "text_eulqni": {
+      "id": "text_eulqni",
+      "kind": "text",
+      "value": "Request the partner overview",
+      "section": "For Realtors & Builders"
+    },
+    "text_1k4anrk": {
+      "id": "text_1k4anrk",
+      "kind": "text",
+      "value": "What It Remembers",
+      "section": "HomeMarketingFooter"
+    },
+    "text_16dlvj8": {
+      "id": "text_16dlvj8",
+      "kind": "text",
+      "value": "Start with your next closing.",
+      "section": "For Realtors & Builders"
+    },
+    "text_ib4ogl": {
+      "id": "text_ib4ogl",
+      "kind": "text",
+      "value": "No export? Start with five appliances.",
+      "section": "Centriq Alternative"
+    },
+    "text_1ejwb8g": {
+      "id": "text_1ejwb8g",
+      "kind": "text",
+      "value": "A practical closing gift and a reason to follow up with something useful: the HVAC service record, an appliance manual or the details the buyer needs to maintain their new home.",
+      "section": "For Realtors & Builders"
+    },
+    "text_1dwzury": {
+      "id": "text_1dwzury",
+      "kind": "text",
+      "value": "Resources",
+      "section": "HomeMarketingFooter"
+    },
+    "text_le397a": {
+      "id": "text_le397a",
+      "kind": "text",
+      "value": "Photograph the model and serial plates on your refrigerator, dishwasher, washer, water heater and HVAC system where they are safely accessible. Add each device, then look for receipts in your email and purchase history. Find manuals on the manufacturer's website using the exact model number. Leave unknown dates blank rather than guessing.",
+      "section": "Centriq Alternative"
+    },
+    "text_m4v06m": {
+      "id": "text_m4v06m",
+      "kind": "text",
+      "value": "Manufacturer or brand",
+      "section": "Centriq Alternative"
+    },
+    "text_10njekk": {
+      "id": "text_10njekk",
+      "kind": "text",
+      "value": "Parts, filters and recall services",
+      "section": "Centriq Alternative"
+    },
+    "text_lluyv4": {
+      "id": "text_lluyv4",
+      "kind": "text",
+      "value": "Room or location",
+      "section": "Centriq Alternative"
+    },
+    "text_1t40n6n": {
+      "id": "text_1t40n6n",
+      "kind": "text",
+      "value": "Create Your Home",
+      "section": "HomeMarketingFooter"
+    },
+    "image_1jfzyh2": {
+      "id": "image_1jfzyh2",
+      "kind": "image",
+      "value": "/images/home-hero.jpg",
+      "section": "Centriq Alternative"
+    },
+    "text_hnjpe1": {
+      "id": "text_hnjpe1",
+      "kind": "text",
+      "value": "A NEW HOME FOR YOUR RECORDS",
+      "section": "Centriq Alternative"
+    },
+    "text_1wvhsnj": {
+      "id": "text_1wvhsnj",
+      "kind": "text",
+      "value": "What Home Tech Vault can replace today",
+      "section": "Centriq Alternative"
+    },
+    "text_ew86og": {
+      "id": "text_ew86og",
+      "kind": "text",
+      "value": "Tell us about the home and the records you have. We'll walk through the handoff with you and discuss preparation, timing and the right gift option.",
+      "section": "For Realtors & Builders"
+    },
+    "text_fqkl3u": {
+      "id": "text_fqkl3u",
+      "kind": "text",
+      "value": "Use a recognizable name, such as Kitchen refrigerator.",
+      "section": "Centriq Alternative"
+    },
+    "text_s0ln0p": {
+      "id": "text_s0ln0p",
+      "kind": "text",
+      "value": "Maintenance dates and service providers",
+      "section": "For Realtors & Builders"
+    },
+    "text_1cbd0ed": {
+      "id": "text_1cbd0ed",
+      "kind": "text",
+      "value": "Keep an untouched backup of the export and any attachments you saved separately.",
+      "section": "Centriq Alternative"
+    },
+    "text_taz46b": {
+      "id": "text_taz46b",
+      "kind": "text",
+      "value": "Choose around the records you need.",
+      "section": "Centriq Alternative"
+    },
+    "text_5f4e1f": {
+      "id": "text_5f4e1f",
+      "kind": "text",
+      "value": "See how it works",
+      "section": "Centriq Alternative"
+    },
+    "text_1snariu": {
+      "id": "text_1snariu",
+      "kind": "text",
+      "value": "if your needs extend beyond the home record. Review each product's current features, export options and pricing before choosing.",
+      "section": "Centriq Alternative"
+    },
+    "text_1y40gdh": {
+      "id": "text_1y40gdh",
+      "kind": "text",
+      "value": "Free to start. No credit card. Your account works on web and iPhone.",
+      "section": "Centriq Alternative"
+    },
+    "text_alqfmt": {
+      "id": "text_alqfmt",
+      "kind": "text",
+      "value": "Appliances and home equipment",
+      "section": "Centriq Alternative"
+    },
+    "text_irj7jr": {
+      "id": "text_irj7jr",
+      "kind": "text",
+      "value": "Give every home you sell a memory.",
+      "section": "For Realtors & Builders"
+    },
+    "text_l6ksrv": {
+      "id": "text_l6ksrv",
+      "kind": "text",
+      "value": "Warranty and service records",
+      "section": "Centriq Alternative"
+    },
+    "text_utyhav": {
+      "id": "text_utyhav",
+      "kind": "text",
+      "value": "Create a partner account",
+      "section": "For Realtors & Builders"
+    },
+    "text_1jumqvu": {
+      "id": "text_1jumqvu",
+      "kind": "text",
+      "value": "Item name or description",
+      "section": "Centriq Alternative"
+    },
+    "text_1nfne5": {
+      "id": "text_1nfne5",
+      "kind": "text",
+      "value": "centriq export data",
+      "section": "Centriq Alternative"
+    },
+    "text_1nskkff": {
+      "id": "text_1nskkff",
+      "kind": "text",
+      "value": "Your home's record is worth keeping. Home Tech Vault gives appliances, manuals, receipts, warranties and service history a place to stay — on the web and on iPhone.",
+      "section": "Centriq Alternative"
+    },
+    "text_aonn7r": {
+      "id": "text_aonn7r",
+      "kind": "text",
+      "value": "Modern home surrounded by trees and landscaping",
+      "section": "For Realtors & Builders"
+    }
+  },
+  "pages": {
+    "/for-realtors": {
+      "label": "For Realtors & Builders",
+      "fields": [
+        "text_1k4anrk",
+        "text_1dwzury",
+        "text_rk0nr",
+        "text_1t40n6n",
+        "text_1ruzii3",
+        "text_75i4v4",
+        "text_14rrcof",
+        "text_3spu67",
+        "text_15md78w",
+        "text_1tp7unb",
+        "text_26om9u",
+        "text_12z5u26",
+        "text_8dmlqj",
+        "text_1jufq8u",
+        "text_415y60",
+        "text_11g0nq0",
+        "text_wv0x2k",
+        "text_1ejwb8g",
+        "text_r9ipsr",
+        "text_4izl66",
+        "text_gwk21g",
+        "text_sem880",
+        "text_irj7jr",
+        "text_1kqvc97",
+        "text_s0ektt",
+        "text_ftg0t1",
+        "text_aonn7r",
+        "text_1qlp5lr",
+        "text_utyhav",
+        "text_40rb1q",
+        "text_wu504b",
+        "text_187e3cv",
+        "text_1b57ygy",
+        "text_s0ln0p",
+        "text_172yfsc",
+        "text_k7qycd",
+        "text_120pn0y",
+        "text_x3l9ze",
+        "text_czi1ji",
+        "text_16dlvj8",
+        "text_ew86og",
+        "text_eulqni",
+        "text_k084uf",
+        "text_v8eb4l",
+        "image_1jfzyh2"
+      ]
+    },
+    "/compare/centriq-alternative": {
+      "label": "Centriq Alternative",
+      "fields": [
+        "text_1k4anrk",
+        "text_1dwzury",
+        "text_rk0nr",
+        "text_1t40n6n",
+        "text_1ruzii3",
+        "text_75i4v4",
+        "text_14rrcof",
+        "text_3spu67",
+        "text_15md78w",
+        "text_1tp7unb",
+        "text_26om9u",
+        "text_12z5u26",
+        "text_1fus0sy",
+        "text_1b2vhfs",
+        "text_18jyspo",
+        "text_139zvv4",
+        "text_1nfne5",
+        "text_3vx234",
+        "text_8etgs0",
+        "text_1jumqvu",
+        "text_fqkl3u",
+        "text_m4v06m",
+        "text_66yi3f",
+        "text_167vqr1",
+        "text_10jirrw",
+        "text_s2j8oy",
+        "text_lluyv4",
+        "text_657f8g",
+        "text_vm9tv8",
+        "text_neo7ks",
+        "text_zu7z6i",
+        "text_1i4mr7y",
+        "text_alqfmt",
+        "text_ganemh",
+        "text_1etdcwt",
+        "text_cgbwao",
+        "text_l6ksrv",
+        "text_1sn64ly",
+        "text_1rccqam",
+        "text_1cxjm9k",
+        "text_1cfazlr",
+        "text_kskg09",
+        "text_1nbou65",
+        "text_xl3fg5",
+        "text_10njekk",
+        "text_1mrne59",
+        "text_hnjpe1",
+        "text_zg45bn",
+        "text_qxndua",
+        "text_1e5bv08",
+        "text_1nskkff",
+        "text_1kwiymx",
+        "text_1jimw9v",
+        "text_rdl9gt",
+        "text_1o38fm",
+        "text_1cbd0ed",
+        "text_1njseie",
+        "text_1lmaw7b",
+        "text_d3gpfj",
+        "text_7tladg",
+        "text_18dk4eh",
+        "text_1excako",
+        "text_r7ufmu",
+        "text_ib4ogl",
+        "text_le397a",
+        "text_192lf3t",
+        "text_1wvhsnj",
+        "text_q1bnb",
+        "text_taz46b",
+        "text_njb9yi",
+        "text_148yur1",
+        "text_1snariu",
+        "text_mzy4av",
+        "text_1y40gdh",
+        "text_5f4e1f",
+        "image_1jfzyh2"
+      ]
+    }
+  }
+}

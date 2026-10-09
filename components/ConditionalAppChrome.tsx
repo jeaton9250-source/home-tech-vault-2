@@ -21,6 +21,8 @@ const MARKETING_ROUTES = [
   "/resources",
   "/website-preview",
   "/realtors",
+  "/for-realtors",
+  "/compare/centriq-alternative",
   "/pricing",
   "/our-story",
   "/demo",

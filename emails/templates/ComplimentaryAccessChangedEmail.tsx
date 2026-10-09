@@ -10,8 +10,8 @@ import { emailTheme } from "@/emails/styles/emailTheme";
 
 export type ComplimentaryAccessChangedEmailProps = {
   firstName: string;
-  previousPlanLabel: "Pro" | "Family";
-  newPlanLabel: "Pro" | "Family";
+  previousPlanLabel: "Home Plus" | "Household";
+  newPlanLabel: "Home Plus" | "Household";
   accountUrl: string;
   expiresAtLabel?: string | null;
 };
@@ -101,8 +101,8 @@ export default function ComplimentaryAccessChangedEmail({
 
 ComplimentaryAccessChangedEmail.PreviewProps = {
   firstName: "Alex",
-  previousPlanLabel: "Pro",
-  newPlanLabel: "Family",
+  previousPlanLabel: "Home Plus",
+  newPlanLabel: "Household",
   accountUrl: "https://www.hometechvault.com/account",
   expiresAtLabel: "August 20, 2026",
 } satisfies ComplimentaryAccessChangedEmailProps;
