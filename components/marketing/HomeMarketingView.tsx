@@ -1,445 +1,344 @@
-"use client";
 import {
   MarketingText,
-  MarketingImage,
+  MarketingImg,
 } from "@/components/marketing/MarketingContent";
-
-import Image from "next/image";
-import { useEffect, useState } from "react";
-import { ArrowRight, Check, FileText, ShieldCheck, Wrench } from "lucide-react";
-import { Header, Footer } from "./PremiumHomeChrome";
 import type { HomepageContent } from "@/lib/cms/schema";
-import styles from "./PremiumHome.module.css";
-const images = {
-  hero: "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=2200&q=90",
-  paperwork:
-    "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=1400&q=90",
-  break:
-    "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1200&q=85",
-  service:
-    "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=1200&q=85",
-  proof:
-    "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=1200&q=85",
-  sell: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1200&q=85",
-};
+import MarketingHeader from "@/components/marketing/MarketingHeader";
+import HomeMarketingFooter from "@/components/marketing/HomeMarketingFooter";
+import {
+  ArrowUpRight,
+  FileText,
+  Home,
+  ShieldCheck,
+  Wrench,
+  CalendarDays,
+} from "lucide-react";
 const moments = [
-  [
-    images.break,
-    "When something breaks",
-    "Find the model, manual, receipt and warranty fast.",
-  ],
-  [
-    images.service,
-    "When something needs service",
-    "See what was done before and when it was last handled.",
-  ],
-  [
-    images.proof,
-    "When you need proof",
-    "Keep documents, serial numbers and receipts together.",
-  ],
-  [
-    images.sell,
-    "When you sell your home",
-    "Pass along the story and records that belong with it.",
-  ],
+  {
+    icon: Wrench,
+    title: "When something breaks",
+    text: "Find the model, manual, receipt and warranty fast.",
+  },
+  {
+    icon: CalendarDays,
+    title: "When something needs service",
+    text: "See what was done before and when it was last handled.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "When you need proof",
+    text: "Keep documents, serial numbers and receipts together.",
+  },
+  {
+    icon: Home,
+    title: "When you sell your home",
+    text: "Pass along the story and records that belong with it.",
+  },
 ];
 export default function HomeMarketingView({
   content,
 }: {
   content: HomepageContent;
 }) {
-  const [selectedMoment, setSelectedMoment] = useState("Manuals");
-  useEffect(() => {
-    if (
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
-      !("IntersectionObserver" in window)
-    )
-      return;
-    const revealItems =
-      document.querySelectorAll<HTMLElement>("[data-htv-reveal]");
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
-          entry.target.classList.add(styles.visible);
-          observer.unobserve(entry.target);
-        });
-      },
-      { threshold: 0.14 },
-    );
-    revealItems.forEach((item) => observer.observe(item));
-    return () => observer.disconnect();
-  }, []);
   return (
-    <main id="top" className={`${styles.page} bg-[#FFFDF8] text-[#17212A]`}>
-      <Header signupLink={content.primaryLink} />
-      <div className="bg-[#F5F1E8] px-5 pb-5 pt-[4.5rem]">
-        <div className="mx-auto max-w-[760px] rounded-2xl border border-[#DED7CA] bg-[#F5F1E8] px-5 py-4 text-center text-[#183047] shadow-[0_10px_28px_rgba(24,48,71,0.10)]">
-          <p className="flex items-center justify-center gap-2 text-sm font-semibold">
-            <span
-              aria-hidden="true"
-              className="size-2 rounded-full bg-[#617C43]"
-            />
-            {content.announcement ||
-              "Home Tech Vault is now available on the App Store."}
-          </p>
-          <p className="mt-1 text-xs text-[#59625D]">
-            <MarketingText scope="components/marketing/HomeMarketingView.tsx">
-              {"A smarter home record, always within reach."}
-            </MarketingText>
-          </p>
+    <main className="min-h-screen bg-[#f5f2eb] text-[#12233a]">
+      <MarketingHeader />
+      {content.announcement && (
+        <div className="bg-[#142438] py-3 text-center text-xs text-white">
+          {content.announcement}
         </div>
-      </div>
+      )}
+
       <section
-        id="start"
-        data-htv-reveal
-        className="relative overflow-hidden bg-[#F5F1E8] px-5 pb-16 pt-20 text-center lg:pb-24 lg:pt-28"
+        id="top"
+        className="relative min-h-[720px] overflow-hidden lg:min-h-[calc(100vh-106px)]"
       >
-        <div className="mx-auto max-w-[900px]">
-          <p className="text-sm font-medium text-[#59625D]">
-            {content.eyebrow}
-          </p>
-          <h1 className="mt-5 text-[clamp(3.6rem,9vw,8.5rem)] font-semibold leading-[.92] tracking-[-0.075em]">
-            {content.headline.split("\n").map((line, index) => (
-              <span
-                key={index}
-                className={`block ${index ? "text-[#59625D]" : ""}`}
-              >
-                <MarketingText scope="shared">{line}</MarketingText>
-              </span>
-            ))}
-          </h1>
-          <p className="mx-auto mt-8 max-w-xl text-lg leading-8 text-[#59625D]">
-            {content.description}
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <a
-              href={content.primaryLink}
-              className="rounded-full bg-[#183047] px-6 py-3 text-sm font-medium text-[#FFFDF8] hover:bg-[#40502F]"
-            >
-              {content.primaryLabel}{" "}
-              <ArrowRight className="ml-2 inline size-4" />
-            </a>
-            <a
-              href="#explore"
-              className="rounded-full px-6 py-3 text-sm font-medium text-[#1a1a1a] hover:underline"
-            >
+        <MarketingImg
+          fetchPriority="high"
+          src={content.heroImage}
+          alt="Bright modern home interior"
+          className="absolute inset-0 h-full w-full object-cover"
+          scope="components/marketing/HomeMarketingView.tsx"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#f5f2eb]/95 via-[#f5f2eb]/75 to-transparent lg:w-[72%]" />
+        <div className="relative mx-auto flex min-h-[720px] max-w-[1320px] items-center px-6 py-24 lg:min-h-[calc(100vh-106px)] lg:px-10">
+          <div className="max-w-[590px]">
+            <div className="mb-8 inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 text-sm shadow-sm">
+              <Home className="h-4 w-4" />
               <MarketingText scope="components/marketing/HomeMarketingView.tsx">
-                {"See how it works"}
+                {"Built for the place you call home"}
               </MarketingText>
-            </a>
-          </div>
-          {content.showAppStore ? (
-            <a
-              href={content.appStoreLink}
-              aria-label="Download Home Tech Vault on the App Store"
-              className="group mx-auto mt-6 flex w-fit items-center gap-3 rounded-2xl border border-[#183047]/15 bg-[#FFFDF8]/80 px-4 py-3 text-left text-[#183047] shadow-[0_12px_30px_rgba(24,48,71,0.12)] backdrop-blur transition duration-300 hover:-translate-y-1 hover:border-[#617C43]/40 hover:bg-[#FFFDF8] hover:shadow-[0_16px_34px_rgba(24,48,71,0.16)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#617C43]"
-            >
-              <span
-                aria-hidden="true"
-                className="flex size-10 items-center justify-center rounded-xl bg-[#183047] text-[#FFFDF8] shadow-sm transition duration-300 group-hover:bg-[#617C43]"
+            </div>
+            <p className="mb-5 text-sm font-medium uppercase tracking-[0.2em] text-[#b0a83b]">
+              {content.eyebrow}
+            </p>
+            <h1 className="font-serif text-6xl leading-[0.92] tracking-[-0.055em] text-[#18283b] sm:text-7xl lg:text-[100px]">
+              {content.headline.split("\n").map((line, index) => (
+                <span className="block" key={index}>
+                  <MarketingText scope="shared">{line}</MarketingText>
+                </span>
+              ))}
+            </h1>
+            <p className="mt-8 max-w-[540px] text-lg leading-relaxed text-[#304054]">
+              {content.description}
+            </p>
+            <div className="mt-9 flex flex-wrap items-center gap-4">
+              <a
+                href={content.primaryLink}
+                className="rounded-full bg-[#18283b] px-7 py-3.5 font-semibold text-white"
               >
-                <svg
-                  viewBox="0 0 24 24"
-                  className="size-5 fill-current"
-                  aria-hidden="true"
-                >
-                  <path d="M17.05 12.54c-.02-2.25 1.84-3.34 1.92-3.39-1.05-1.53-2.68-1.74-3.25-1.76-1.38-.14-2.72.81-3.42.81-.71 0-1.81-.79-2.97-.77-1.52.02-2.92.88-3.7 2.22-1.6 2.77-.41 6.84 1.13 9.08.75 1.1 1.63 2.32 2.79 2.28 1.12-.05 1.54-.73 2.9-.73 1.35 0 1.73.73 2.9.7 1.2-.02 1.96-1.1 2.69-2.2.84-1.25 1.19-2.46 1.21-2.52-.03-.01-2.18-.84-2.2-3.72ZM14.79 5.92c.62-.75 1.04-1.8.92-2.84-.89.04-1.96.59-2.6 1.34-.57.66-1.08 1.73-.94 2.74.99.08 2-.5 2.62-1.24Z" />
-                </svg>
-              </span>
-              <span className="leading-tight">
-                <span className="block text-[10px] font-medium uppercase tracking-[0.14em] text-[#59625D]">
-                  <MarketingText scope="components/marketing/HomeMarketingView.tsx">
-                    {"Download on the"}
-                  </MarketingText>
-                </span>
-                <span className="block text-base font-semibold tracking-[-0.02em]">
-                  <MarketingText scope="components/marketing/HomeMarketingView.tsx">
-                    {"App Store"}
-                  </MarketingText>
-                </span>
-              </span>
-              <ArrowRight className="ml-1 size-4 text-[#617C43] transition-transform duration-300 group-hover:translate-x-1" />
-            </a>
-          ) : null}
-        </div>
-        <div className="relative mx-auto mt-16 aspect-[16/8] max-w-[1200px] overflow-hidden rounded-[28px] shadow-2xl shadow-black/15">
-          <MarketingImage
-            src={content.heroImage}
-            alt="Bright modern home interior"
-            fill
-            unoptimized
-            priority
-            className="object-cover"
-            sizes="100vw"
-            scope="components/marketing/HomeMarketingView.tsx"
-          />
+                {content.primaryLabel}{" "}
+                <ArrowUpRight className="ml-1 inline h-4 w-4" />
+              </a>
+              <a
+                href="#memory"
+                className="font-semibold text-[#18283b] underline decoration-[#b6b53d] decoration-2 underline-offset-4"
+              >
+                <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+                  {"See How It Works"}
+                </MarketingText>
+              </a>
+            </div>
+            <p className="mt-5 text-sm text-[#304054]/70">
+              <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+                {"Free to start. No credit card required."}
+              </MarketingText>
+            </p>
+            {content.showAppStore && (
+              <a
+                href={content.appStoreLink}
+                className="mt-5 inline-block rounded-full border border-[#18283b]/25 px-5 py-3 text-sm font-semibold"
+              >
+                <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+                  {"Download on the App Store"}
+                </MarketingText>
+              </a>
+            )}
+          </div>
         </div>
       </section>
+
       <section
-        id="remember"
-        data-htv-reveal
-        className="mx-auto max-w-[1200px] px-5 py-24 lg:py-36"
+        id="memory"
+        className="bg-[#18283b] px-6 py-24 text-[#f5f2eb] lg:px-10 lg:py-32"
       >
-        <div className="grid items-center gap-14 lg:grid-cols-2">
-          <div>
-            <p className="text-sm font-medium text-[#59625D]">
-              <MarketingText scope="components/marketing/HomeMarketingView.tsx">
-                {"Everything your home needs"}
-              </MarketingText>
-            </p>
-            <h2 className="mt-4 text-[clamp(2.8rem,6vw,5.5rem)] font-semibold leading-[.95] tracking-[-0.06em]">
-              <MarketingText scope="components/marketing/HomeMarketingView.tsx">
-                {"Beautifully"}
-              </MarketingText>
-              <br />
-              <MarketingText scope="components/marketing/HomeMarketingView.tsx">
-                {"organized."}
-              </MarketingText>
-            </h2>
-            <p className="mt-7 max-w-lg text-lg leading-8 text-[#59625D]">
-              <MarketingText scope="components/marketing/HomeMarketingView.tsx">
-                {
-                  "Home Tech Vault brings the scattered pieces of homeownership together in one calm, searchable place."
-                }
-              </MarketingText>
-            </p>
-            <div className="mt-9 grid max-w-md grid-cols-2 gap-3 text-sm">
-              <button
-                type="button"
-                aria-pressed={selectedMoment === "Manuals"}
-                onClick={() => setSelectedMoment("Manuals")}
-                className="rounded-2xl bg-[#F5F1E8] p-4 text-left transition hover:-translate-y-1 hover:bg-[#DED7CA] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#617C43]"
-              >
-                <FileText className="mb-3 size-5" />
+        <div className="mx-auto max-w-[1180px]">
+          <p className="mb-5 text-xs font-semibold uppercase tracking-[0.24em] text-[#c6c16a]">
+            <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+              {"The home binder, reimagined"}
+            </MarketingText>
+          </p>
+          <h2 className="max-w-3xl font-serif text-5xl leading-none tracking-[-0.05em] md:text-7xl">
+            <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+              {"Every home comes"}
+            </MarketingText>
+            <br />
+            <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+              {"with paperwork."}
+            </MarketingText>
+          </h2>
+          <p className="mt-8 max-w-xl text-lg leading-relaxed text-white/65">
+            <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+              {
+                "Manuals in drawers. Receipts in email. Warranty cards in boxes. Maintenance dates somewhere in your head."
+              }
+            </MarketingText>
+          </p>
+          <p className="mt-4 text-lg text-[#f5f2eb]">
+            <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+              {"There should be one place for all of it."}
+            </MarketingText>
+          </p>
+          <div className="mt-14 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-white/10 bg-white/10 sm:grid-cols-5">
+            <div className="bg-[#20344b] p-6">
+              <FileText className="mb-10 h-5 w-5 text-[#c6c16a]" />
+              <p>
                 <MarketingText scope="components/marketing/HomeMarketingView.tsx">
                   {"Manuals"}
                 </MarketingText>
-              </button>
-              <button
-                type="button"
-                aria-pressed={selectedMoment === "Receipts"}
-                onClick={() => setSelectedMoment("Receipts")}
-                className="rounded-2xl bg-[#F5F1E8] p-4 text-left transition hover:-translate-y-1 hover:bg-[#DED7CA] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#617C43]"
-              >
-                <Check className="mb-3 size-5" />
+              </p>
+            </div>
+            <div className="bg-[#20344b] p-6">
+              <FileText className="mb-10 h-5 w-5 text-[#c6c16a]" />
+              <p>
                 <MarketingText scope="components/marketing/HomeMarketingView.tsx">
                   {"Receipts"}
                 </MarketingText>
-              </button>
-              <button
-                type="button"
-                aria-pressed={selectedMoment === "Warranties"}
-                onClick={() => setSelectedMoment("Warranties")}
-                className="rounded-2xl bg-[#F5F1E8] p-4 text-left transition hover:-translate-y-1 hover:bg-[#DED7CA] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#617C43]"
-              >
-                <ShieldCheck className="mb-3 size-5" />
+              </p>
+            </div>
+            <div className="bg-[#20344b] p-6">
+              <ShieldCheck className="mb-10 h-5 w-5 text-[#c6c16a]" />
+              <p>
                 <MarketingText scope="components/marketing/HomeMarketingView.tsx">
                   {"Warranties"}
                 </MarketingText>
-              </button>
-              <button
-                type="button"
-                aria-pressed={selectedMoment === "Maintenance"}
-                onClick={() => setSelectedMoment("Maintenance")}
-                className="rounded-2xl bg-[#F5F1E8] p-4 text-left transition hover:-translate-y-1 hover:bg-[#DED7CA] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#617C43]"
-              >
-                <Wrench className="mb-3 size-5" />
+              </p>
+            </div>
+            <div className="bg-[#20344b] p-6">
+              <CalendarDays className="mb-10 h-5 w-5 text-[#c6c16a]" />
+              <p>
                 <MarketingText scope="components/marketing/HomeMarketingView.tsx">
                   {"Maintenance"}
                 </MarketingText>
-              </button>
+              </p>
             </div>
-            <p
-              className="mt-5 rounded-2xl border border-[#DED7CA] bg-[#FFFDF8] p-4 text-sm text-[#59625D]"
-              aria-live="polite"
-            >
-              <span className="block text-xs uppercase tracking-wider">
+            <div className="bg-[#20344b] p-6">
+              <FileText className="mb-10 h-5 w-5 text-[#c6c16a]" />
+              <p>
                 <MarketingText scope="components/marketing/HomeMarketingView.tsx">
-                  {"Sample home record"}
+                  {"Documents"}
                 </MarketingText>
-              </span>
-              <span className="mt-2 block font-semibold text-[#183047]">
-                <MarketingText scope="shared">{selectedMoment}</MarketingText>
-              </span>
-              <span className="mt-2 block">
-                {
-                  {
-                    Manuals:
-                      "Kitchen refrigerator · Owner’s manual saved and ready to find.",
-                    Receipts:
-                      "Kitchen refrigerator · Purchase receipt stored with the device.",
-                    Warranties:
-                      "Kitchen refrigerator · Coverage ends June 15, 2028.",
-                    Maintenance:
-                      "HVAC system · Filter replacement due November 1, 2026.",
-                  }[selectedMoment]
-                }
-              </span>
-            </p>
-          </div>
-          <div className="relative aspect-square overflow-hidden rounded-[28px]">
-            <MarketingImage
-              src={images.paperwork}
-              alt="Organized home paperwork"
-              fill
-              unoptimized
-              className="object-cover"
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              scope="components/marketing/HomeMarketingView.tsx"
-            />
+              </p>
+            </div>
           </div>
         </div>
       </section>
-      <section
-        id="explore"
-        data-htv-reveal
-        className="bg-[#F5F1E8] px-5 py-24 lg:py-36"
-      >
-        <div className="mx-auto max-w-[1200px]">
-          <p className="text-sm font-medium text-[#59625D]">
+
+      <section id="explore" className="px-6 py-24 lg:px-10 lg:py-32">
+        <div className="mx-auto max-w-[1180px]">
+          <p className="mb-5 text-xs font-semibold uppercase tracking-[0.24em] text-[#a09b31]">
             <MarketingText scope="components/marketing/HomeMarketingView.tsx">
               {"Made for real life"}
             </MarketingText>
           </p>
-          <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
-            <h2 className="mt-4 text-[clamp(2.8rem,6vw,5.5rem)] font-semibold leading-[.95] tracking-[-0.06em]">
-              <MarketingText scope="components/marketing/HomeMarketingView.tsx">
-                {"Helpful when"}
-              </MarketingText>
-              <br />
-              <MarketingText scope="components/marketing/HomeMarketingView.tsx">
-                {"it matters."}
-              </MarketingText>
-            </h2>
-            <p className="max-w-sm text-lg leading-8 text-[#59625D]">
-              <MarketingText scope="components/marketing/HomeMarketingView.tsx">
-                {"The details are easy to forget. Finding them shouldn't be."}
-              </MarketingText>
-            </p>
-          </div>
-          <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {moments.map(([src, title, body]) => (
-              <article key={title}>
-                <div className="relative aspect-square overflow-hidden rounded-2xl">
-                  <MarketingImage
-                    src={src}
-                    alt={title}
-                    fill
-                    unoptimized
-                    className="object-cover transition duration-500 hover:scale-105"
-                    sizes="(max-width: 768px) 100vw, 25vw"
-                    scope="components/marketing/HomeMarketingView.tsx"
-                  />
-                </div>
-                <h3 className="mt-5 text-lg font-semibold">
+          <h2 className="font-serif text-5xl leading-none tracking-[-0.05em] md:text-7xl">
+            <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+              {"Real life happens at home."}
+            </MarketingText>
+          </h2>
+          <p className="mt-7 max-w-xl text-lg leading-relaxed text-[#536174]">
+            <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+              {
+                "Home Tech Vault is there for the moments when knowing your home matters most."
+              }
+            </MarketingText>
+          </p>
+          <div className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+            {moments.map(({ icon: Icon, title, text }) => (
+              <article
+                key={title}
+                className="rounded-2xl border border-[#d8d5cc] bg-[#faf8f3] p-7"
+              >
+                <Icon className="mb-16 h-6 w-6 text-[#a09b31]" />
+                <h3 className="text-xl font-semibold">
                   <MarketingText scope="shared">{title}</MarketingText>
                 </h3>
-                <p className="mt-2 text-sm leading-6 text-[#59625D]">
-                  <MarketingText scope="shared">{body}</MarketingText>
+                <p className="mt-3 leading-relaxed text-[#536174]">
+                  <MarketingText scope="shared">{text}</MarketingText>
                 </p>
               </article>
             ))}
           </div>
         </div>
       </section>
-      <section
-        id="realtors"
-        data-htv-reveal
-        className="bg-[#183047] px-5 py-24 text-[#FFFDF8] lg:py-36"
-      >
-        <div className="mx-auto grid max-w-[1200px] items-center gap-14 lg:grid-cols-2">
+
+      <section id="story" className="bg-[#e8e4d9] px-6 py-24 lg:px-10 lg:py-32">
+        <div className="mx-auto grid max-w-[1180px] gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
           <div>
-            <p className="text-sm font-medium text-[#DED7CA]">
+            <p className="mb-5 text-xs font-semibold uppercase tracking-[0.24em] text-[#a09b31]">
               <MarketingText scope="components/marketing/HomeMarketingView.tsx">
-                {"For the people who make a house a home"}
+                {"More than storage"}
               </MarketingText>
             </p>
-            <h2 className="mt-4 text-[clamp(2.8rem,6vw,5.5rem)] font-semibold leading-[.95] tracking-[-0.06em]">
+            <h2 className="font-serif text-5xl leading-none tracking-[-0.05em] md:text-7xl">
               <MarketingText scope="components/marketing/HomeMarketingView.tsx">
-                {"Every update."}
+                {"The record"}
               </MarketingText>
               <br />
               <MarketingText scope="components/marketing/HomeMarketingView.tsx">
-                {"One home history."}
+                {"of your home."}
               </MarketingText>
             </h2>
-            <p className="mt-7 max-w-lg text-lg leading-8 text-[#DED7CA]">
-              <MarketingText scope="components/marketing/HomeMarketingView.tsx">
-                {
-                  "Keep renovation documents, appliance purchases, and service records together, so your home\u2019s important details stay easy to find."
-                }
-              </MarketingText>
-            </p>
-            <a
-              href={content.primaryLink}
-              className="mt-8 inline-flex rounded-full bg-white px-6 py-3 text-sm font-medium text-[#1a1a1a]"
-            >
-              {content.primaryLabel} <ArrowRight className="ml-2 size-4" />
-            </a>
           </div>
-          <div className="rounded-[28px] bg-[#40502F] p-7">
-            <p className="text-xs uppercase tracking-wider text-[#DED7CA]">
+          <div>
+            <p className="max-w-lg text-lg leading-relaxed text-[#536174]">
               <MarketingText scope="components/marketing/HomeMarketingView.tsx">
-                {"Illustrative home history"}
+                {"A clearer history for everything your home has been through."}
               </MarketingText>
             </p>
-            {[
-              ["2026", "Refrigerator added"],
-              ["2027", "HVAC service record saved"],
-              ["2028", "Kitchen renovation documented"],
-            ].map(([year, item]) => (
-              <div
-                key={year}
-                className="flex justify-between border-b border-[#DED7CA]/20 py-5 text-sm last:border-0"
-              >
-                <span className="text-[#DED7CA]">
-                  <MarketingText scope="shared">{year}</MarketingText>
-                </span>
+            <div className="mt-12 grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-5 border-t border-[#bdb8ab] pt-5 text-sm">
+              <div>
+                <strong className="block font-serif text-3xl">
+                  <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+                    {"2026"}
+                  </MarketingText>
+                </strong>
                 <span>
-                  <MarketingText scope="shared">{item}</MarketingText>
+                  <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+                    {"Home purchased"}
+                  </MarketingText>
                 </span>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-      <section id="pricing" data-htv-reveal className="px-5 py-24 lg:py-36">
-        <div className="mx-auto flex max-w-[1200px] flex-col justify-between gap-10 rounded-[28px] bg-[#F5F1E8] p-8 md:p-14 lg:flex-row lg:items-end">
-          <div>
-            <p className="text-sm font-medium text-[#59625D]">
-              <MarketingText scope="components/marketing/HomeMarketingView.tsx">
-                {"Simple by design"}
-              </MarketingText>
-            </p>
-            <h2 className="mt-4 text-[clamp(2.8rem,6vw,5.5rem)] font-semibold leading-[.95] tracking-[-0.06em]">
-              {content.finalHeadline.split("\n").map((line, index) => (
-                <span className="block" key={index}>
-                  <MarketingText scope="shared">{line}</MarketingText>
+              <div>
+                <strong className="block font-serif text-3xl">
+                  <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+                    {"2027"}
+                  </MarketingText>
+                </strong>
+                <span>
+                  <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+                    {"Refrigerator installed"}
+                  </MarketingText>
                 </span>
-              ))}
-            </h2>
-            <p className="mt-6 max-w-lg text-lg leading-8 text-[#59625D]">
-              {content.finalDescription}
-            </p>
-          </div>
-          <div>
-            <p className="text-4xl font-semibold tracking-[-0.04em]">
-              <MarketingText scope="components/marketing/HomeMarketingView.tsx">
-                {"Free to start."}
-              </MarketingText>
-            </p>
-            <a
-              href={content.primaryLink}
-              className="mt-5 inline-flex rounded-full bg-[#183047] px-6 py-3 text-sm font-medium text-[#FFFDF8]"
-            >
-              {content.primaryLabel} <ArrowRight className="ml-2 size-4" />
-            </a>
+              </div>
+              <div>
+                <strong className="block font-serif text-3xl">
+                  <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+                    {"2028"}
+                  </MarketingText>
+                </strong>
+                <span>
+                  <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+                    {"HVAC serviced"}
+                  </MarketingText>
+                </span>
+              </div>
+              <div>
+                <strong className="block font-serif text-3xl">
+                  <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+                    {"2029"}
+                  </MarketingText>
+                </strong>
+                <span>
+                  <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+                    {"Washer replaced"}
+                  </MarketingText>
+                </span>
+              </div>
+              <div>
+                <strong className="block font-serif text-3xl">
+                  <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+                    {"2030"}
+                  </MarketingText>
+                </strong>
+                <span>
+                  <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+                    {"Roof documentation added"}
+                  </MarketingText>
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
-      <Footer />
+
+      <section className="bg-[#e8e4d9] px-6 py-24">
+        <div className="mx-auto max-w-[1180px]">
+          <h2 className="whitespace-pre-line font-serif text-5xl">
+            {content.finalHeadline}
+          </h2>
+          <p className="mt-6 max-w-xl text-lg text-[#536174]">
+            {content.finalDescription}
+          </p>
+          <a
+            href={content.primaryLink}
+            className="mt-8 inline-block rounded-full bg-[#18283b] px-7 py-3.5 font-semibold text-white"
+          >
+            {content.primaryLabel}
+          </a>
+        </div>
+      </section>
+      <HomeMarketingFooter />
     </main>
   );
 }

@@ -30,16 +30,15 @@ export const homepageSchema = z.object({
 export type HomepageContent = z.infer<typeof homepageSchema>;
 export const homepageDefaults: HomepageContent = {
   pages: {},
-  eyebrow: "A smarter way to care for your home",
-  headline: "Your home.\nAll in one place.",
+  eyebrow: "Your home, remembered",
+  headline: "Your home\nhas a memory.",
   description:
-    "Keep your devices, manuals, receipts, warranties, and maintenance history together—ready whenever you need them.",
+    "Manuals get lost. Receipts disappear. Warranties expire. Service dates get forgotten. Home Tech Vault keeps the useful history of your home together for the years ahead.",
   primaryLabel: "Start your home vault",
   primaryLink: "/signup",
   secondaryLabel: "See How It Works",
   secondaryLink: "/demo",
-  heroImage:
-    "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=2200&q=90",
+  heroImage: "/images/home-tech-vault-hero.png",
   appStoreLink: "https://apps.apple.com/us/app/home-tech-vault/id6812090967",
   showAppStore: true,
   announcement: "",
