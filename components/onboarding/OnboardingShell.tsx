@@ -1,13 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
-
-import { cn } from "@/lib/design-system/cn";
-
-import {
-  ONBOARDING_STEP_COUNT,
-  stepIndex,
-} from "@/lib/onboarding/steps";
+import { useEffect, useRef, type ReactNode } from "react";
 
 import type { OnboardingStep } from "@/lib/onboarding/types";
 
@@ -20,47 +13,24 @@ export default function OnboardingShell({
   step,
   children,
 }: OnboardingShellProps) {
-  const current = stepIndex(step);
-  const progressPercent = Math.round(
-    (current / ONBOARDING_STEP_COUNT) * 100
-  );
-
+  const contentRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    contentRef.current?.querySelector<HTMLElement>("h1")?.focus();
+  }, [step]);
+  const chapters: Record<OnboardingStep, string> = {
+    welcome: "Welcome home", home: "A place to begin", device: "Remember",
+    document: "Keep it together", network: "Stay connected", complete: "Your home record",
+  };
   return (
-    <main className="min-h-screen bg-surface-sunken px-5 py-8 md:px-8">
+    <main className="min-h-screen bg-[#f7f4ec] px-5 py-8 text-[#172c3e] md:px-8 md:py-14">
       <div className="mx-auto w-full max-w-3xl">
-        <div
-          className="mb-8"
-          role="status"
-          aria-live="polite"
-          aria-label={`Onboarding step ${current} of ${ONBOARDING_STEP_COUNT}`}
-        >
-          <div className="flex items-center justify-between gap-4">
-            <p className="text-sm font-medium text-text-secondary">
-              Step {current} of{" "}
-              {ONBOARDING_STEP_COUNT}
-            </p>
-
-            <p className="text-sm text-text-tertiary">
-              About 3 minutes
-            </p>
-          </div>
-
-          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-border-subtle">
-            <div
-              className={cn(
-                "h-full rounded-full bg-charcoal transition-all duration-300"
-              )}
-              style={{
-                width: `${progressPercent}%`,
-              }}
-            />
-          </div>
-        </div>
-
-        <div className="overflow-hidden rounded-[var(--radius-card)] border border-border-subtle bg-white shadow-sm">
-          <div className="p-7 md:p-10">{children}</div>
+        <p className="mb-12 font-serif text-xl">Home Tech Vault</p>
+        <p className="sr-only" role="status" aria-live="polite">{chapters[step]}</p>
+        <div ref={contentRef} key={step} className="motion-safe:animate-[onboarding-arrive_350ms_ease-out]">
+          <div className="py-4 md:py-8">{children}</div>
         </div>
       </div>
+      <style>{`@keyframes onboarding-arrive { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }`}</style>
     </main>
   );
 }
@@ -95,7 +65,7 @@ export function OnboardingTitle({
   children: ReactNode;
 }) {
   return (
-    <h1 className="mt-3 text-3xl font-bold tracking-[-0.03em] text-text-primary md:text-4xl">
+    <h1 tabIndex={-1} className="mt-3 font-serif text-4xl font-normal leading-tight tracking-[-0.025em] text-[#172c3e] md:text-6xl">
       {children}
     </h1>
   );
