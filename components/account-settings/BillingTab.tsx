@@ -5,7 +5,6 @@ import { useState } from "react";
 import {
   ArrowUpRight,
   CheckCircle2,
-  CreditCard,
   Crown,
   Loader2,
   Sparkles,
@@ -134,13 +133,8 @@ export default function BillingTab() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto w-full max-w-4xl space-y-5">
       <ViewerBanner />
-
-      <PlanAccessSummary
-        showBillingNote
-        showRole
-      />
 
       {!canManageBilling &&
         billingManagedByHousehold &&
@@ -181,7 +175,7 @@ export default function BillingTab() {
       ) : null}
 
       <SettingsCard
-        title="Current plan"
+        title="Your plan"
         description={
           isPlatformAdmin
             ? "All Home Tech Vault features are unlocked."
@@ -223,7 +217,7 @@ export default function BillingTab() {
             />
             {isPlatformAdmin
               ? "Master Access"
-              : formatSubscriptionStatus(
+              : isFree && !isComplimentaryOnly ? "Free plan" : formatSubscriptionStatus(
                   isComplimentaryOnly
                     ? "active"
                     : effectiveStatus
@@ -231,7 +225,9 @@ export default function BillingTab() {
           </span>
         </div>
 
-        <div className="mt-6 grid gap-3 sm:grid-cols-2">
+        <details className="mt-6 border-t border-border-subtle pt-5">
+          <summary className="cursor-pointer text-sm font-medium text-text-secondary focus-visible:outline-2 focus-visible:outline-home-health">Subscription details</summary>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <ReadOnlyRow
             label={
               isComplimentaryOnly
@@ -266,17 +262,12 @@ export default function BillingTab() {
             }
           />
         </div>
-      </SettingsCard>
+          <div className="mt-4"><PlanAccessSummary showRole /></div>
+        </details>
 
-      <SettingsCard
-        title="Plan features"
-        description={
-          isFree
-            ? "Upgrade to unlock premium tools for your home technology vault."
-            : "Your account currently has access to the features included with this plan."
-        }
-      >
-        <div className="space-y-3">
+        <details className="mt-5 border-t border-border-subtle pt-5">
+          <summary className="cursor-pointer text-sm font-medium text-text-secondary focus-visible:outline-2 focus-visible:outline-home-health">What’s included in your plan</summary>
+        <div className="mt-4 space-y-3">
           <FeatureRow
             text={
               isFree
@@ -302,6 +293,8 @@ export default function BillingTab() {
             enabled={plan === "family"}
           />
         </div>
+
+        </details>
 
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
           {isFree && !isPlatformAdmin ? (
@@ -347,24 +340,8 @@ export default function BillingTab() {
         </div>
       </SettingsCard>
 
-      {canManageBilling ? (
-        <SettingsCard
-          title="Stripe customer portal"
-          description="Paid members can securely update payment methods, download invoices, and manage or cancel their subscription through Stripe."
-        >
-          <div className="flex items-start gap-4">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border-subtle bg-surface-sunken text-charcoal">
-              <CreditCard size={20} />
-            </div>
+      {canManageBilling && <p className="px-1 text-sm leading-6 text-text-secondary">Manage billing opens Stripe to update payment methods, download invoices, or cancel your subscription.</p>}
 
-            <p className="text-sm leading-6 text-text-secondary">
-              Billing changes are handled through Stripe&apos;s
-              secure customer portal. You will return here
-              after making updates.
-            </p>
-          </div>
-        </SettingsCard>
-      ) : null}
     </div>
   );
 }
