@@ -23,14 +23,22 @@ export default function OnboardingShell({
   };
   return (
     <main className="min-h-screen bg-[#f7f4ec] px-5 py-8 text-[#172c3e] md:px-8 md:py-14">
-      <div className="mx-auto w-full max-w-3xl">
+      <div className={`mx-auto w-full max-w-3xl ${step === "welcome" ? "flex min-h-[calc(100svh-7rem)] flex-col" : ""}`}>
         <p className="mb-12 font-serif text-xl">Home Tech Vault</p>
         <p className="sr-only" role="status" aria-live="polite">{chapters[step]}</p>
-        <div ref={contentRef} key={step} className="motion-safe:animate-[onboarding-arrive_350ms_ease-out]">
+        <div ref={contentRef} key={step} className={`motion-safe:animate-[onboarding-arrive_350ms_ease-out] ${step === "welcome" ? "my-auto w-full" : ""}`}>
           <div className="py-4 md:py-8">{children}</div>
         </div>
       </div>
-      <style>{`@keyframes onboarding-arrive { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }`}</style>
+      <style>{`
+        @keyframes onboarding-arrive { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes onboarding-welcome-reveal { from { opacity: 0.25; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        @media (prefers-reduced-motion: no-preference) {
+          .onboarding-welcome-title { animation: onboarding-welcome-reveal 650ms ease-out both; }
+          .onboarding-welcome-copy { animation: onboarding-welcome-reveal 850ms ease-out both; }
+          .onboarding-welcome-action { animation: onboarding-welcome-reveal 1000ms ease-out both; }
+        }
+      `}</style>
     </main>
   );
 }

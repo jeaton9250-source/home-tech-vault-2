@@ -564,7 +564,12 @@ function OnboardingFlow() {
         "welcome"
       );
 
-      await persistStep("home");
+      if (!homeName.trim() && !sharedHouseholdLocked) {
+        await saveHomeName(supabase, user.id, "My Home");
+        setHomeName("My Home");
+        trackHomeNamed();
+      }
+      await persistStep("device");
     } catch (error) {
       setErrorMessage(
         getErrorMessage(
@@ -1168,51 +1173,19 @@ function OnboardingFlow() {
       )}
 
       {step === "welcome" && (
-        <form
-          onSubmit={(event) => {
-            event.preventDefault();
-            void handleGetStarted();
-          }}
-        >
-          <OnboardingEyebrow>
-            Welcome home
-          </OnboardingEyebrow>
-
-          <OnboardingTitle>Your home already has a story.</OnboardingTitle>
-          <OnboardingDescription>
-            Let’s give it a place to live. Start with one thing you use every day;
-            keep its details close whenever you need them.
-          </OnboardingDescription>
-          <p className="mt-6 text-sm text-text-secondary">You can add the rest whenever you’re ready.</p>
-
-          <OnboardingActions>
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() =>
-                void handleSkip(
-                  "welcome"
-                )
-              }
-              disabled={submitting}
-            >
-              Explore on my own
-            </Button>
-
-            <Button
-              type="submit"
-              disabled={submitting}
-            >
-              {submitting ? (
-                <Loader2
-                  size={18}
-                  className="animate-spin"
-                />
-              ) : null}
-
-              Begin
-            </Button>
-          </OnboardingActions>
+        <form className="onboarding-welcome text-center" onSubmit={(event) => { event.preventDefault(); void handleGetStarted(); }}>
+          <OnboardingEyebrow>Welcome home</OnboardingEyebrow>
+          <div className="onboarding-welcome-title">
+            <OnboardingTitle>Start building your home,<br /><span className="text-[#617c43]">one device at a time.</span></OnboardingTitle>
+          </div>
+          <div className="onboarding-welcome-copy mx-auto max-w-xl">
+            <OnboardingDescription>Keep the details you’ll need later, starting with something you use every day.</OnboardingDescription>
+          </div>
+          <div className="onboarding-welcome-action mt-10 flex flex-col items-center gap-3">
+            <Button type="submit" size="lg" loading={submitting} loadingLabel="Opening your home…" disabled={submitting}>Add my first device</Button>
+            <Button type="button" variant="ghost" disabled={submitting} onClick={() => void handleSkip("welcome")}>Explore my vault instead</Button>
+            <Button type="button" variant="link" disabled={submitting} onClick={() => void persistStep("home").catch((error) => setErrorMessage(getErrorMessage(error, "Unable to open home naming.")))}>Name my home first</Button>
+          </div>
         </form>
       )}
 
@@ -1808,7 +1781,7 @@ function OnboardingFlow() {
       {step === "complete" && (
         <>
           <OnboardingEyebrow>{homeName || "Your home record"}</OnboardingEyebrow>
-          <OnboardingTitle>{deviceCount > 0 ? "Your home is taking shape." : "A place for your home’s details."}</OnboardingTitle>
+          <OnboardingTitle>{deviceCount === 1 ? "Your first device is remembered." : deviceCount > 1 ? "Your home is taking shape." : "A place for your home’s details."}</OnboardingTitle>
           <OnboardingDescription>
             {deviceCount > 0 ? "You’ve saved something worth remembering. Its receipt, manual, warranty and care history can all live here too." : "Start whenever you’re ready. One appliance, one receipt, one useful detail at a time."}
           </OnboardingDescription>
