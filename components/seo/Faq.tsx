@@ -1,17 +1,15 @@
 "use client";
+import { MarketingText } from "@/components/marketing/MarketingContent";
 
 import { useId, useState } from "react";
 import { ChevronDown } from "lucide-react";
-
 import StructuredData from "@/components/seo/StructuredData";
 import { cn } from "@/lib/design-system/cn";
 import { createFaqJsonLd } from "@/lib/seo/jsonLd";
-
 export type SeoFaqItem = {
   question: string;
   answer: string;
 };
-
 type FaqProps = {
   items: ReadonlyArray<SeoFaqItem>;
   title?: string;
@@ -20,7 +18,6 @@ type FaqProps = {
   /** Emit FAQPage JSON-LD (default true) */
   includeJsonLd?: boolean;
 };
-
 /**
  * Reusable FAQ accordion for marketing/content pages.
  * Emits FAQPage JSON-LD by default.
@@ -33,14 +30,12 @@ export default function Faq({
   includeJsonLd = true,
 }: FaqProps) {
   const baseId = useId();
-  const [openQuestion, setOpenQuestion] = useState<
-    string | null
-  >(items[0]?.question ?? null);
-
+  const [openQuestion, setOpenQuestion] = useState<string | null>(
+    items[0]?.question ?? null,
+  );
   if (items.length === 0) {
     return null;
   }
-
   return (
     <section className={cn("w-full", className)}>
       {includeJsonLd ? (
@@ -52,12 +47,12 @@ export default function Faq({
 
       <div className="mx-auto max-w-3xl">
         <h2 className="text-2xl font-medium tracking-[-0.03em] text-text-primary md:text-3xl">
-          {title}
+          <MarketingText scope="shared">{title}</MarketingText>
         </h2>
 
         {description ? (
           <p className="mt-3 text-base leading-7 text-text-muted">
-            {description}
+            <MarketingText scope="shared">{description}</MarketingText>
           </p>
         ) : null}
 
@@ -66,7 +61,6 @@ export default function Faq({
             const panelId = `${baseId}-panel-${index}`;
             const buttonId = `${baseId}-button-${index}`;
             const isOpen = openQuestion === item.question;
-
             return (
               <div key={item.question} className="py-1">
                 <h3>
@@ -77,17 +71,19 @@ export default function Faq({
                     aria-controls={panelId}
                     className="htv-focus-ring flex w-full items-center justify-between gap-4 py-4 text-left text-base font-medium text-text-primary"
                     onClick={() =>
-                      setOpenQuestion(
-                        isOpen ? null : item.question
-                      )
+                      setOpenQuestion(isOpen ? null : item.question)
                     }
                   >
-                    <span>{item.question}</span>
+                    <span>
+                      <MarketingText scope="shared">
+                        {item.question}
+                      </MarketingText>
+                    </span>
                     <ChevronDown
                       size={18}
                       className={cn(
                         "shrink-0 text-text-muted transition",
-                        isOpen && "rotate-180"
+                        isOpen && "rotate-180",
                       )}
                       aria-hidden
                     />
@@ -101,7 +97,7 @@ export default function Faq({
                   hidden={!isOpen}
                   className="pb-4 text-base leading-7 text-text-muted"
                 >
-                  {item.answer}
+                  <MarketingText scope="shared">{item.answer}</MarketingText>
                 </div>
               </div>
             );

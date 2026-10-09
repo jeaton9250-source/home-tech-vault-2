@@ -22,11 +22,15 @@ const cormorant = Cormorant_Garamond({
 
 export const metadata: Metadata = rootSiteMetadata;
 
-export default function RootLayout({
+import { loadHomepage } from "@/lib/cms/server";
+import { MarketingContentProvider } from "@/components/marketing/MarketingContent";
+
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const content = await loadHomepage();
   return (
     <html
       lang="en"
@@ -39,9 +43,9 @@ export default function RootLayout({
         <ImpersonationBanner />
         <RealtorClientVaultBanner />
 
-        <ConditionalAppChrome>
-          {children}
-        </ConditionalAppChrome>
+        <MarketingContentProvider pages={content.pages}>
+          <ConditionalAppChrome>{children}</ConditionalAppChrome>
+        </MarketingContentProvider>
 
         <LeadPopup />
         <InternalAwareVercelAnalytics />

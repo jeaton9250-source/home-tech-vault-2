@@ -1,10 +1,14 @@
 "use client";
+import { useEffect, useState, type ReactNode } from "react";
 import { MarketingContentScope } from "@/components/marketing/MarketingContent";
-
-import { useEffect, useState } from "react";
-import HomeMarketingView from "@/components/marketing/HomeMarketingView";
 import { homepageSchema, type HomepageContent } from "@/lib/cms/schema";
-export default function HomepagePreview() {
+export default function PublicPagePreview({
+  path,
+  children,
+}: {
+  path: string;
+  children: ReactNode;
+}) {
   const [content, setContent] = useState<HomepageContent | null>(null);
   useEffect(() => {
     const receive = (event: MessageEvent) => {
@@ -28,14 +32,18 @@ export default function HomepagePreview() {
   return (
     <div
       onClickCapture={(event) => {
-        if ((event.target as HTMLElement).closest("a,button")) {
+        if ((event.target as HTMLElement).closest("a")) {
           event.preventDefault();
           event.stopPropagation();
         }
       }}
+      onSubmitCapture={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+      }}
     >
-      <MarketingContentScope content={content.pages["/"] ?? {}}>
-        <HomeMarketingView content={content} />
+      <MarketingContentScope content={content.pages[path] ?? {}}>
+        {children}
       </MarketingContentScope>
     </div>
   );

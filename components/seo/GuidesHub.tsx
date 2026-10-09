@@ -1,6 +1,6 @@
+import { MarketingText } from "@/components/marketing/MarketingContent";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-
 import MarketingLayout, {
   MarketingContent,
 } from "@/components/marketing/MarketingLayout";
@@ -18,12 +18,10 @@ import {
   createSoftwareApplicationJsonLd,
   createWebPageJsonLd,
 } from "@/lib/seo/jsonLd";
-
 type GuidesHubProps = {
   pages: ProgrammaticGuidePage[];
   activeBrand?: string | null;
 };
-
 export default function GuidesHub({
   pages,
   activeBrand = null,
@@ -31,19 +29,12 @@ export default function GuidesHub({
   const filtered = activeBrand
     ? pages.filter((page) => page.brandSlug === activeBrand)
     : pages;
-
   const topicPages = filtered.filter((page) => page.brandSlug === null);
   const brandPages = filtered.filter((page) => page.brandSlug !== null);
-
   const brandsWithPages = SEO_BRANDS.filter((brand) =>
-    pages.some((page) => page.brandSlug === brand.slug)
+    pages.some((page) => page.brandSlug === brand.slug),
   );
-
-  const breadcrumbs = [
-    { name: "Home", href: "/" },
-    { name: "Guides" },
-  ];
-
+  const breadcrumbs = [{ name: "Home", href: "/" }, { name: "Guides" }];
   const jsonLd = [
     createWebPageJsonLd({
       title: "Device Brand Guides",
@@ -61,7 +52,6 @@ export default function GuidesHub({
       urlPath: "/guides",
     }),
   ];
-
   return (
     <MarketingLayout>
       <StructuredData id="guides-hub" data={jsonLd} />
@@ -70,15 +60,21 @@ export default function GuidesHub({
         <div className="mx-auto max-w-6xl">
           <Breadcrumb items={breadcrumbs} />
           <p className="mt-6 text-overline text-text-muted">
-            Programmatic guides
+            <MarketingText scope="components/seo/GuidesHub.tsx">
+              {"Programmatic guides"}
+            </MarketingText>
           </p>
           <h1 className="mt-3 max-w-3xl text-3xl font-medium tracking-[-0.04em] text-text-primary md:text-5xl md:leading-[1.08]">
-            Organize every major device brand in your home
+            <MarketingText scope="components/seo/GuidesHub.tsx">
+              {"Organize every major device brand in your home"}
+            </MarketingText>
           </h1>
           <p className="mt-5 max-w-2xl text-lg leading-8 text-text-muted">
-            Unique guides for Apple, Samsung, networking gear, smart home
-            brands, and more — with metadata, FAQs, and structured data
-            generated for each page.
+            <MarketingText scope="components/seo/GuidesHub.tsx">
+              {
+                "Unique guides for Apple, Samsung, networking gear, smart home brands, and more \u2014 with metadata, FAQs, and structured data generated for each page."
+              }
+            </MarketingText>
           </p>
         </div>
       </header>
@@ -86,7 +82,9 @@ export default function GuidesHub({
       <MarketingContent className="space-y-14">
         <section>
           <h2 className="text-xl font-medium tracking-[-0.03em] text-text-primary">
-            Browse by brand
+            <MarketingText scope="components/seo/GuidesHub.tsx">
+              {"Browse by brand"}
+            </MarketingText>
           </h2>
           <ul className="mt-5 flex flex-wrap gap-2">
             <li>
@@ -98,7 +96,9 @@ export default function GuidesHub({
                     : "border-border-subtle bg-surface-card text-text-secondary hover:border-border-strong"
                 }`}
               >
-                All
+                <MarketingText scope="components/seo/GuidesHub.tsx">
+                  {"All"}
+                </MarketingText>
               </Link>
             </li>
             {brandsWithPages.map((brand) => (
@@ -111,7 +111,7 @@ export default function GuidesHub({
                       : "border-border-subtle bg-surface-card text-text-secondary hover:border-border-strong"
                   }`}
                 >
-                  {brand.name}
+                  <MarketingText scope="shared">{brand.name}</MarketingText>
                 </Link>
               </li>
             ))}
@@ -121,7 +121,9 @@ export default function GuidesHub({
         {topicPages.length > 0 ? (
           <section>
             <h2 className="text-xl font-medium tracking-[-0.03em] text-text-primary">
-              Topic guides
+              <MarketingText scope="components/seo/GuidesHub.tsx">
+                {"Topic guides"}
+              </MarketingText>
             </h2>
             <ul className="mt-6 grid gap-4 md:grid-cols-2">
               {topicPages.map((page) => (
@@ -139,7 +141,10 @@ export default function GuidesHub({
                 : "Brand guides"}
             </h2>
             <p className="text-sm text-text-muted">
-              {brandPages.length} pages
+              <MarketingText scope="shared">{brandPages.length}</MarketingText>
+              <MarketingText scope="components/seo/GuidesHub.tsx">
+                {"pages"}
+              </MarketingText>
             </p>
           </div>
           <ul className="mt-6 grid gap-4 md:grid-cols-2">
@@ -163,7 +168,6 @@ export default function GuidesHub({
     </MarketingLayout>
   );
 }
-
 function GuideCard({ page }: { page: ProgrammaticGuidePage }) {
   return (
     <li>
@@ -175,13 +179,15 @@ function GuideCard({ page }: { page: ProgrammaticGuidePage }) {
           {page.brandName ?? page.group}
         </p>
         <h3 className="mt-2 text-base font-medium text-text-primary">
-          {page.title}
+          <MarketingText scope="shared">{page.title}</MarketingText>
         </h3>
         <p className="mt-2 flex-1 text-sm leading-6 text-text-muted">
-          {page.metaDescription}
+          <MarketingText scope="shared">{page.metaDescription}</MarketingText>
         </p>
         <p className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-text-primary">
-          Read guide
+          <MarketingText scope="components/seo/GuidesHub.tsx">
+            {"Read guide"}
+          </MarketingText>
           <ArrowRight
             size={14}
             className="transition group-hover:translate-x-0.5"

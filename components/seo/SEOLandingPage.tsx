@@ -1,7 +1,10 @@
+import {
+  MarketingImage,
+  MarketingText,
+} from "@/components/marketing/MarketingContent";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ImageIcon } from "lucide-react";
-
 import MarketingLayout, {
   MarketingContent,
   MarketingPageHero,
@@ -20,17 +23,10 @@ import {
   type SeoLandingPageContent,
   type SeoLandingScreenshot,
 } from "@/lib/seo/landingPages";
-
 type SEOLandingPageProps = {
   page: SeoLandingPageContent;
 };
-
-function ScreenshotCard({
-  title,
-  caption,
-  src,
-  alt,
-}: SeoLandingScreenshot) {
+function ScreenshotCard({ title, caption, src, alt }: SeoLandingScreenshot) {
   return (
     <figure className="overflow-hidden border border-border-subtle bg-surface-card">
       <div
@@ -38,11 +34,11 @@ function ScreenshotCard({
           // Taller than 16/10 so portrait app screenshots fit fully in a 3-col row.
           "relative aspect-[4/5] bg-surface-raised",
           !src &&
-            "flex flex-col items-center justify-center gap-3 bg-[linear-gradient(160deg,var(--color-surface-raised)_0%,var(--color-surface-card)_55%,#EEF3F7_100%)]"
+            "flex flex-col items-center justify-center gap-3 bg-[linear-gradient(160deg,var(--color-surface-raised)_0%,var(--color-surface-card)_55%,#EEF3F7_100%)]",
         )}
       >
         {src ? (
-          <Image
+          <MarketingImage
             src={src}
             alt={alt ?? title}
             fill
@@ -50,41 +46,36 @@ function ScreenshotCard({
             unoptimized
             sizes="(max-width: 768px) 100vw, 33vw"
             className="object-contain object-center p-2"
+            scope="components/seo/SEOLandingPage.tsx"
           />
         ) : (
           <>
-            <ImageIcon
-              size={28}
-              className="text-text-muted"
-              aria-hidden
-            />
+            <ImageIcon size={28} className="text-text-muted" aria-hidden />
             <span className="px-4 text-center text-sm font-medium text-text-muted">
-              Screenshot placeholder
+              <MarketingText scope="components/seo/SEOLandingPage.tsx">
+                {"Screenshot placeholder"}
+              </MarketingText>
             </span>
           </>
         )}
       </div>
       <figcaption className="border-t border-border-subtle px-4 py-3">
         <p className="text-sm font-medium text-text-primary">
-          {title}
+          <MarketingText scope="shared">{title}</MarketingText>
         </p>
         <p className="mt-1 text-sm leading-6 text-text-muted">
-          {caption}
+          <MarketingText scope="shared">{caption}</MarketingText>
         </p>
       </figcaption>
     </figure>
   );
 }
-
 /**
  * Shared template for SEO landing pages.
  * Content stays unique via `SeoLandingPageContent`.
  */
-export default function SEOLandingPage({
-  page,
-}: SEOLandingPageProps) {
+export default function SEOLandingPage({ page }: SEOLandingPageProps) {
   const breadcrumbs = breadcrumbsForLanding(page);
-
   return (
     <MarketingLayout>
       <SEOLayout
@@ -110,7 +101,9 @@ export default function SEOLandingPage({
               href={page.heroPrimaryHref}
               className="htv-focus-ring inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--radius-button)] bg-charcoal px-6 py-2.5 text-sm font-medium text-surface-card transition hover:bg-charcoal-hover"
             >
-              {page.heroPrimaryLabel}
+              <MarketingText scope="shared">
+                {page.heroPrimaryLabel}
+              </MarketingText>
               <ArrowRight size={16} aria-hidden />
             </Link>
 
@@ -118,7 +111,9 @@ export default function SEOLandingPage({
               href={page.heroSecondaryHref}
               className="htv-focus-ring inline-flex min-h-11 items-center justify-center rounded-[var(--radius-button)] border border-border-subtle bg-surface-card px-6 py-2.5 text-sm font-medium text-text-primary transition hover:bg-surface-raised"
             >
-              {page.heroSecondaryLabel}
+              <MarketingText scope="shared">
+                {page.heroSecondaryLabel}
+              </MarketingText>
             </Link>
           </div>
         </MarketingPageHero>
@@ -126,7 +121,7 @@ export default function SEOLandingPage({
         <MarketingContent className="space-y-20 md:space-y-24">
           <section>
             <h2 className="text-2xl font-medium tracking-[-0.03em] text-text-primary md:text-3xl">
-              {page.benefitsTitle}
+              <MarketingText scope="shared">{page.benefitsTitle}</MarketingText>
             </h2>
 
             <ul className="mt-8 grid gap-6 md:grid-cols-3">
@@ -136,10 +131,14 @@ export default function SEOLandingPage({
                   className="border border-border-subtle bg-surface-card p-5"
                 >
                   <h3 className="text-base font-medium text-text-primary">
-                    {benefit.title}
+                    <MarketingText scope="shared">
+                      {benefit.title}
+                    </MarketingText>
                   </h3>
                   <p className="mt-2 text-sm leading-6 text-text-muted">
-                    {benefit.description}
+                    <MarketingText scope="shared">
+                      {benefit.description}
+                    </MarketingText>
                   </p>
                 </li>
               ))}
@@ -148,7 +147,9 @@ export default function SEOLandingPage({
 
           <section>
             <h2 className="text-2xl font-medium tracking-[-0.03em] text-text-primary md:text-3xl">
-              {page.screenshotsTitle}
+              <MarketingText scope="shared">
+                {page.screenshotsTitle}
+              </MarketingText>
             </h2>
             <div className="mt-8 grid gap-6 md:grid-cols-3">
               {page.screenshots.map((shot) => (

@@ -22,3 +22,40 @@ test("image types are checked using file bytes, not claimed MIME",()=>{
   assert.equal(imageFormat(new TextEncoder().encode('RIFF0000WEBP'))?.type,"image/webp");
   assert.equal(MAX_IMAGE_BYTES,3145728);
 });
+
+import { pageCatalog, contentId, pageOverridesSchema } from "./pageContent";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { MarketingContentScope, MarketingText, MarketingImg } from "../../components/marketing/MarketingContent";
+
+test("legacy homepage saves gain an empty page override map", () => {
+  const { pages, ...legacy } = homepageDefaults;
+  assert.deepEqual(homepageSchema.parse(legacy).pages, {});
+});
+test("page edits reject private routes, unknown fields, and unsafe images", () => {
+  const field = pageCatalog["/"].fields.find(field => field.kind === "image")!;
+  assert.ok(pageOverridesSchema.safeParse({ "/": { [field.id]: "/images/home.jpg" } }).success);
+  assert.equal(pageOverridesSchema.safeParse({ "/settings": { [field.id]: "/images/home.jpg" } }).success, false);
+  assert.equal(pageOverridesSchema.safeParse({ "/": { unknown: "value" } }).success, false);
+  assert.equal(pageOverridesSchema.safeParse({ "/": { [field.id]: "javascript:alert(1)" } }).success, false);
+});
+test("public wording renders original content, applies edits, and escapes markup", () => {
+  const scope = "shared";
+  const original = "Sample title";
+  const child = createElement(MarketingText, { scope, children: original });
+  assert.equal(renderToStaticMarkup(child), original);
+  const content = { [contentId(scope, "text", original)]: "<script>alert(1)</script>" };
+  const html = renderToStaticMarkup(createElement(MarketingContentScope, {content, children: child}));
+  assert.ok(html.includes("&lt;script&gt;"));
+  assert.ok(!html.includes("<script>"));
+  assert.equal(renderToStaticMarkup(createElement(MarketingContentScope, {content: {}, children: child})), original);
+});
+test("page image edits preserve image attributes and replace only the source", () => {
+  const src = "/images/original.jpg";
+  const child = createElement(MarketingImg, {scope: "sample", src, alt: "Home", width: 400, loading: "lazy"});
+  const html = renderToStaticMarkup(createElement(MarketingContentScope, {content: {[contentId("shared", "image", src)]: "/images/replacement.jpg"}, children: child}));
+  assert.ok(html.includes('src="/images/replacement.jpg"'));
+  assert.ok(html.includes('alt="Home"'));
+  assert.ok(html.includes('width="400"'));
+  assert.ok(html.includes('loading="lazy"'));
+});

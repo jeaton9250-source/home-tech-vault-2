@@ -1,26 +1,16 @@
+import { MarketingText } from "@/components/marketing/MarketingContent";
 import Link from "next/link";
-import {
-  ArrowRight,
-  FileText,
-  ShieldCheck,
-  Sparkles,
-} from "lucide-react";
-
+import { ArrowRight, FileText, ShieldCheck, Sparkles } from "lucide-react";
 import SEOLandingPage from "@/components/seo/SEOLandingPage";
 import { createSeoMetadata } from "@/lib/seo";
 import { getSeoLandingPage } from "@/lib/seo/landingPages";
-
 const basePage = getSeoLandingPage("home-inventory-software")!;
-
 const page = {
   ...basePage,
-
   metaTitle:
     "Home Inventory App for Devices, Receipts & Warranties | Home Tech Vault",
-
   metaDescription:
     "Create a digital home inventory for your appliances and technology. Track devices, receipts, warranties, manuals, serial numbers, and purchase information in one secure vault.",
-
   keywords: [
     "home inventory app",
     "home inventory software",
@@ -35,22 +25,17 @@ const page = {
     "home inventory tracker",
     "Home Tech Vault",
   ],
-
-  heroTitle:
-    "A Home Inventory App Built for the Technology You Own",
-
+  heroTitle: "A Home Inventory App Built for the Technology You Own",
   heroDescription:
     "Keep your appliances, electronics, receipts, warranties, manuals, serial numbers, and purchase details organized in one place — so you can find them when something breaks, needs service, or gets replaced.",
   screenshots: [],
 };
-
 export const metadata = createSeoMetadata({
   title: page.metaTitle,
   description: page.metaDescription,
   path: page.path,
   keywords: page.keywords,
 });
-
 export default function Page() {
   return (
     <>
@@ -60,7 +45,6 @@ export default function Page() {
     </>
   );
 }
-
 function RelatedResources() {
   const resources = [
     {
@@ -88,31 +72,34 @@ function RelatedResources() {
         "Compare a household-focused technology vault with a broader inventory and asset-management platform.",
     },
   ];
-
   return (
     <section className="border-t border-border-subtle bg-surface-sunken/30 px-5 py-16 md:px-8 md:py-20 lg:px-12">
       <div className="mx-auto max-w-6xl">
         <div className="max-w-2xl">
           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-home-health">
-            Explore Home Inventory
+            <MarketingText scope="app/home-inventory-software/page.tsx">
+              {"Explore Home Inventory"}
+            </MarketingText>
           </p>
 
           <h2 className="mt-3 text-2xl font-semibold tracking-tight text-text-primary md:text-3xl">
-            Build a home inventory that is actually useful.
+            <MarketingText scope="app/home-inventory-software/page.tsx">
+              {"Build a home inventory that is actually useful."}
+            </MarketingText>
           </h2>
 
           <p className="mt-3 text-sm leading-7 text-text-secondary md:text-base">
-            Home inventory is more useful when your devices, receipts,
-            warranties, manuals, and purchase information stay connected.
-            Explore these resources to build a system that works when you
-            actually need it.
+            <MarketingText scope="app/home-inventory-software/page.tsx">
+              {
+                "Home inventory is more useful when your devices, receipts, warranties, manuals, and purchase information stay connected. Explore these resources to build a system that works when you actually need it."
+              }
+            </MarketingText>
           </p>
         </div>
 
         <div className="mt-8 grid gap-4 md:grid-cols-3">
           {resources.map((resource) => {
             const Icon = resource.icon;
-
             return (
               <Link
                 key={resource.href}
@@ -124,20 +111,25 @@ function RelatedResources() {
                 </div>
 
                 <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.14em] text-text-muted">
-                  {resource.eyebrow}
+                  <MarketingText scope="shared">
+                    {resource.eyebrow}
+                  </MarketingText>
                 </p>
 
                 <h3 className="mt-2 text-base font-semibold leading-6 text-text-primary">
-                  {resource.title}
+                  <MarketingText scope="shared">{resource.title}</MarketingText>
                 </h3>
 
                 <p className="mt-2 text-sm leading-6 text-text-secondary">
-                  {resource.description}
+                  <MarketingText scope="shared">
+                    {resource.description}
+                  </MarketingText>
                 </p>
 
                 <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-home-health">
-                  Learn more
-
+                  <MarketingText scope="app/home-inventory-software/page.tsx">
+                    {"Learn more"}
+                  </MarketingText>
                   <ArrowRight
                     size={14}
                     className="transition-transform group-hover:translate-x-1"
@@ -152,12 +144,17 @@ function RelatedResources() {
         <div className="mt-8 rounded-[24px] border border-home-health/20 bg-home-health-soft/30 p-5 md:flex md:items-center md:justify-between md:gap-8 md:p-6">
           <div>
             <p className="text-sm font-semibold text-text-primary">
-              Don&apos;t inventory your entire house today.
+              <MarketingText scope="app/home-inventory-software/page.tsx">
+                {"Don't inventory your entire house today."}
+              </MarketingText>
             </p>
 
             <p className="mt-1 text-sm leading-6 text-text-secondary">
-              Start with one important device and build your Home Tech Vault
-              over time.
+              <MarketingText scope="app/home-inventory-software/page.tsx">
+                {
+                  "Start with one important device and build your Home Tech Vault over time."
+                }
+              </MarketingText>
             </p>
           </div>
 
@@ -165,7 +162,9 @@ function RelatedResources() {
             href="/signup"
             className="htv-focus-ring mt-4 inline-flex shrink-0 items-center gap-2 rounded-xl bg-text-primary px-4 py-2.5 text-sm font-semibold text-surface-card transition hover:opacity-90 md:mt-0"
           >
-            Create My Free Vault
+            <MarketingText scope="app/home-inventory-software/page.tsx">
+              {"Create My Free Vault"}
+            </MarketingText>
             <ArrowRight size={15} aria-hidden />
           </Link>
         </div>

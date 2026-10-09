@@ -1,12 +1,9 @@
+import { MarketingText } from "@/components/marketing/MarketingContent";
 import Link from "next/link";
-
 import MarketingLayout from "@/components/marketing/MarketingLayout";
 import FaqAccordion from "@/components/marketing/FaqAccordion";
 import StructuredData from "@/components/marketing/StructuredData";
-import {
-  createFaqJsonLd,
-  createPageMetadata,
-} from "@/lib/marketing/metadata";
+import { createFaqJsonLd, createPageMetadata } from "@/lib/marketing/metadata";
 import { getAllFaqQuestions } from "@/lib/marketing/faq";
 import { MARKETING_ROUTES } from "@/lib/marketing/routes";
 import {
@@ -15,7 +12,6 @@ import {
   seoFaqPath,
 } from "@/lib/seo/faqs/catalog";
 import { MarketingContent } from "@/components/marketing/MarketingLayout";
-
 export const metadata = createPageMetadata({
   title: "FAQ — Home Tech Vault Questions Answered",
   description:
@@ -27,7 +23,6 @@ export const metadata = createPageMetadata({
     "family sharing vault",
   ],
 });
-
 export default function FaqPage() {
   const seoFaqs = getAllSeoFaqs();
   const hubQuestions = [
@@ -37,7 +32,6 @@ export default function FaqPage() {
       answer: faq.answer,
     })),
   ];
-
   return (
     <MarketingLayout>
       <StructuredData data={createFaqJsonLd(hubQuestions)} />
@@ -48,27 +42,28 @@ export default function FaqPage() {
       <MarketingContent className="border-t border-border-subtle/80 pt-12">
         <div className="mx-auto max-w-3xl">
           <h2 className="text-2xl font-medium tracking-[-0.03em] text-text-primary">
-            All FAQ pages
+            <MarketingText scope="app/faq/page.tsx">
+              {"All FAQ pages"}
+            </MarketingText>
           </h2>
           <p className="mt-3 text-sm leading-6 text-[#58666f]">
-            Each question below has its own URL, FAQ schema, and related
-            article links.
+            <MarketingText scope="app/faq/page.tsx">
+              {
+                "Each question below has its own URL, FAQ schema, and related article links."
+              }
+            </MarketingText>
           </p>
 
           <div className="mt-10 space-y-10">
             {SEO_FAQ_CATEGORIES.map((category) => {
-              const items = seoFaqs.filter(
-                (faq) => faq.category === category
-              );
-
+              const items = seoFaqs.filter((faq) => faq.category === category);
               if (items.length === 0) {
                 return null;
               }
-
               return (
                 <section key={category}>
                   <h3 className="text-overline text-[#617c43]">
-                    {category}
+                    <MarketingText scope="shared">{category}</MarketingText>
                   </h3>
                   <ul className="mt-4 space-y-2.5">
                     {items.map((faq) => (
@@ -77,7 +72,9 @@ export default function FaqPage() {
                           href={seoFaqPath(faq.slug)}
                           className="htv-focus-ring text-sm font-medium leading-6 text-[#34424d] transition hover:text-[#17212a]"
                         >
-                          {faq.question}
+                          <MarketingText scope="shared">
+                            {faq.question}
+                          </MarketingText>
                         </Link>
                       </li>
                     ))}

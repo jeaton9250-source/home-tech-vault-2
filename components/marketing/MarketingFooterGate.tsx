@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import MarketingFooter from "@/components/marketing/MarketingFooter";
+import MarketingFooter from "@/components/marketing/HomeMarketingFooter";
 
 const APP_ROUTES = [
   "/dashboard",
@@ -18,9 +18,7 @@ const APP_ROUTES = [
 
 function isAppRoute(pathname: string) {
   return APP_ROUTES.some(
-    (route) =>
-      pathname === route ||
-      pathname.startsWith(`${route}/`)
+    (route) => pathname === route || pathname.startsWith(`${route}/`),
   );
 }
 

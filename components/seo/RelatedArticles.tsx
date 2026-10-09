@@ -1,20 +1,17 @@
+import { MarketingText } from "@/components/marketing/MarketingContent";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-
 import { cn } from "@/lib/design-system/cn";
-
 export type RelatedArticle = {
   title: string;
   description?: string;
   href: string;
 };
-
 type RelatedArticlesProps = {
   articles: ReadonlyArray<RelatedArticle>;
   title?: string;
   className?: string;
 };
-
 /**
  * Related content links for SEO internal linking.
  */
@@ -26,13 +23,12 @@ export default function RelatedArticles({
   if (articles.length === 0) {
     return null;
   }
-
   return (
     <section className={cn("w-full", className)}>
       <div className="flex items-center gap-3">
         <span className="h-px w-6 bg-[#617c43]" />
         <h2 className="font-serif text-2xl font-medium tracking-[-0.035em] text-[#17212a] md:text-3xl">
-          {title}
+          <MarketingText scope="shared">{title}</MarketingText>
         </h2>
       </div>
 
@@ -45,7 +41,7 @@ export default function RelatedArticles({
             >
               <span className="flex items-start justify-between gap-3">
                 <span className="font-serif text-base font-medium leading-6 text-[#17212a]">
-                  {article.title}
+                  <MarketingText scope="shared">{article.title}</MarketingText>
                 </span>
                 <ArrowUpRight
                   size={16}
@@ -56,7 +52,9 @@ export default function RelatedArticles({
 
               {article.description ? (
                 <span className="mt-2 text-sm leading-6 text-[#68737b]">
-                  {article.description}
+                  <MarketingText scope="shared">
+                    {article.description}
+                  </MarketingText>
                 </span>
               ) : null}
             </Link>

@@ -1,19 +1,17 @@
+import { MarketingText } from "@/components/marketing/MarketingContent";
 import Link from "next/link";
-
 import MarketingLayout, {
   MarketingContent,
   MarketingPageHero,
 } from "@/components/marketing/MarketingLayout";
 import { createPageMetadata } from "@/lib/marketing/metadata";
 import { MARKETING_ROUTES } from "@/lib/marketing/routes";
-
 export const metadata = createPageMetadata({
   title: "Terms of Service",
   description:
     "Terms governing your use of Home Tech Vault, including accounts, subscriptions, and acceptable use.",
   path: MARKETING_ROUTES.terms,
 });
-
 const sections = [
   {
     title: "Agreement",
@@ -48,7 +46,6 @@ const sections = [
     body: "Questions about these terms can be sent through our Contact page.",
   },
 ] as const;
-
 export default function TermsPage() {
   return (
     <MarketingLayout>
@@ -63,19 +60,20 @@ export default function TermsPage() {
           {sections.map((section) => (
             <section key={section.title}>
               <h2 className="font-serif text-xl font-medium tracking-[-0.025em] text-[#17212a]">
-                {section.title}
+                <MarketingText scope="shared">{section.title}</MarketingText>
               </h2>
 
               <p className="mt-3">
                 {section.title === "Contact" ? (
                   <>
-                    Questions about these terms can
-                    be sent through our{" "}
+                    Questions about these terms can be sent through our{" "}
                     <Link
                       href={MARKETING_ROUTES.contact}
                       className="font-semibold text-[#617c43] underline decoration-[#617c43]/30 underline-offset-4 transition hover:text-[#718d4f]"
                     >
-                      Contact page
+                      <MarketingText scope="app/terms/page.tsx">
+                        {"Contact page"}
+                      </MarketingText>
                     </Link>
                     .
                   </>

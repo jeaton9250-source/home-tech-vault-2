@@ -1,20 +1,17 @@
+import { MarketingText } from "@/components/marketing/MarketingContent";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
-
 import { cn } from "@/lib/design-system/cn";
-
 export type BreadcrumbItem = {
   name: string;
   href?: string;
 };
-
 type BreadcrumbProps = {
   items: ReadonlyArray<BreadcrumbItem>;
   className?: string;
   /** Visually hide while keeping markup for a11y / progressive enhancement */
   visuallyHidden?: boolean;
 };
-
 /**
  * Accessible breadcrumb navigation. Pair with BreadcrumbList JSON-LD via SEOLayout.
  */
@@ -26,19 +23,14 @@ export default function Breadcrumb({
   if (items.length === 0) {
     return null;
   }
-
   return (
     <nav
       aria-label="Breadcrumb"
-      className={cn(
-        visuallyHidden && "sr-only",
-        className
-      )}
+      className={cn(visuallyHidden && "sr-only", className)}
     >
       <ol className="flex flex-wrap items-center gap-1.5 text-sm text-text-muted">
         {items.map((item, index) => {
           const isLast = index === items.length - 1;
-
           return (
             <li
               key={`${item.name}-${index}`}
@@ -57,16 +49,14 @@ export default function Breadcrumb({
                   href={item.href}
                   className="htv-focus-ring rounded-sm transition hover:text-text-primary"
                 >
-                  {item.name}
+                  <MarketingText scope="shared">{item.name}</MarketingText>
                 </Link>
               ) : (
                 <span
                   aria-current={isLast ? "page" : undefined}
-                  className={cn(
-                    isLast && "font-medium text-text-primary"
-                  )}
+                  className={cn(isLast && "font-medium text-text-primary")}
                 >
-                  {item.name}
+                  <MarketingText scope="shared">{item.name}</MarketingText>
                 </span>
               )}
             </li>

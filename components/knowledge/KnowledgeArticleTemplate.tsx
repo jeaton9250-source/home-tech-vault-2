@@ -1,7 +1,10 @@
+import {
+  MarketingText,
+  MarketingImage,
+} from "@/components/marketing/MarketingContent";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-
 import MarketingLayout, {
   MarketingContent,
 } from "@/components/marketing/MarketingLayout";
@@ -29,23 +32,17 @@ import {
   createFaqJsonLd,
   createSoftwareApplicationJsonLd,
 } from "@/lib/seo/jsonLd";
-
 type KnowledgeArticleTemplateProps = {
   article: KnowledgeArticle;
   related: KnowledgeArticle[];
 };
-
 export default function KnowledgeArticleTemplate({
   article,
   related,
 }: KnowledgeArticleTemplateProps) {
   const category = getKnowledgeCategory(article.category);
-  const path = knowledgeArticlePath(
-    article.category,
-    article.slug
-  );
+  const path = knowledgeArticlePath(article.category, article.slug);
   const hero = getKnowledgeHeroImage(article.slug);
-
   const breadcrumbs = [
     { name: "Home", href: "/" },
     { name: "Knowledge", href: "/knowledge" },
@@ -55,12 +52,10 @@ export default function KnowledgeArticleTemplate({
     },
     { name: article.title },
   ];
-
   const tocItems = article.sections.map((section) => ({
     id: section.id,
     label: section.heading,
   }));
-
   const relatedLinks = [
     ...related.map((item) => ({
       href: knowledgeArticlePath(item.category, item.slug),
@@ -73,7 +68,6 @@ export default function KnowledgeArticleTemplate({
       description: link.description,
     })),
   ];
-
   const jsonLd = [
     createArticleJsonLd({
       title: article.title,
@@ -92,17 +86,13 @@ export default function KnowledgeArticleTemplate({
       breadcrumbs.map((item) => ({
         name: item.name,
         path: item.href,
-      }))
+      })),
     ),
     createFaqJsonLd(article.faq),
   ];
-
   return (
     <MarketingLayout>
-      <StructuredData
-        id={`knowledge-article-${article.slug}`}
-        data={jsonLd}
-      />
+      <StructuredData id={`knowledge-article-${article.slug}`} data={jsonLd} />
 
       <header className="border-b border-white/10 bg-[#183047] px-6 py-12 text-[#f5f1e8] md:px-8 md:py-16">
         <div className="mx-auto max-w-6xl">
@@ -115,15 +105,20 @@ export default function KnowledgeArticleTemplate({
           </p>
 
           <h1 className="mt-3 max-w-4xl font-serif text-4xl font-medium tracking-[-0.045em] text-[#f5f1e8] md:text-6xl md:leading-[1.04]">
-            {article.title}
+            <MarketingText scope="shared">{article.title}</MarketingText>
           </h1>
 
           <p className="mt-5 max-w-3xl text-base leading-8 text-[#b6c0c7] md:text-lg">
-            {article.description}
+            <MarketingText scope="shared">{article.description}</MarketingText>
           </p>
 
           <p className="mt-5 text-xs font-medium uppercase tracking-[0.12em] text-[#8e9aa3]">
-            {article.readingMinutes} min read · Updated{" "}
+            <MarketingText scope="shared">
+              {article.readingMinutes}
+            </MarketingText>
+            <MarketingText scope="components/knowledge/KnowledgeArticleTemplate.tsx">
+              {"min read \u00B7 Updated"}
+            </MarketingText>{" "}
             {article.updatedAt ?? article.publishedAt}
           </p>
         </div>
@@ -133,13 +128,14 @@ export default function KnowledgeArticleTemplate({
         <article className="min-w-0">
           <figure className="overflow-hidden rounded-[28px] border border-[#182533]/10 bg-[#f8f5ef] shadow-[0_22px_55px_-42px_rgba(15,25,35,0.55)]">
             <div className="relative aspect-[21/9] bg-[#e4dfd5]">
-              <Image
+              <MarketingImage
                 src={hero.src}
                 alt={hero.alt}
                 fill
                 priority
                 sizes="(max-width: 1024px) 100vw, 720px"
                 className="object-cover"
+                scope="components/knowledge/KnowledgeArticleTemplate.tsx"
               />
             </div>
             <figcaption className="border-t border-[#182533]/10 px-5 py-3 text-xs leading-5 text-[#68737b]">
@@ -150,7 +146,7 @@ export default function KnowledgeArticleTemplate({
           <div className="mt-10 space-y-5 rounded-[26px] border border-[#182533]/10 bg-[#f8f5ef] p-6 text-[1.02rem] leading-8 text-[#46535c] shadow-[0_18px_45px_-38px_rgba(15,25,35,0.35)] md:p-8">
             {article.intro.map((paragraph) => (
               <p key={paragraph.slice(0, 48)}>
-                {paragraph}
+                <MarketingText scope="shared">{paragraph}</MarketingText>
               </p>
             ))}
           </div>
@@ -167,12 +163,14 @@ export default function KnowledgeArticleTemplate({
                 className="scroll-mt-28 rounded-[26px] border border-[#182533]/10 bg-[#f8f5ef] p-6 shadow-[0_18px_45px_-38px_rgba(15,25,35,0.3)] md:p-8"
               >
                 <h2 className="font-serif text-2xl font-medium tracking-[-0.035em] text-[#17212a] md:text-3xl">
-                  {section.heading}
+                  <MarketingText scope="shared">
+                    {section.heading}
+                  </MarketingText>
                 </h2>
                 <div className="mt-5 space-y-5 text-base leading-8 text-[#4f5b63]">
                   {section.paragraphs.map((paragraph) => (
                     <p key={paragraph.slice(0, 48)}>
-                      {paragraph}
+                      <MarketingText scope="shared">{paragraph}</MarketingText>
                     </p>
                   ))}
                 </div>
@@ -189,10 +187,7 @@ export default function KnowledgeArticleTemplate({
           </div>
 
           <div className="mt-14">
-            <CoreSiteLinks
-              currentPath={path}
-              related={relatedLinks}
-            />
+            <CoreSiteLinks currentPath={path} related={relatedLinks} />
           </div>
 
           <div className="mt-14">
@@ -212,16 +207,24 @@ export default function KnowledgeArticleTemplate({
             <TableOfContents items={tocItems} />
             <div className="rounded-[24px] border border-white/10 bg-[#183047] p-5 text-[#f5f1e8] shadow-[0_20px_45px_-35px_rgba(0,0,0,0.7)]">
               <p className="font-serif text-lg font-medium text-[#f5f1e8]">
-                Ready to organize?
+                <MarketingText scope="components/knowledge/KnowledgeArticleTemplate.tsx">
+                  {"Ready to organize?"}
+                </MarketingText>
               </p>
               <p className="mt-2 text-sm leading-6 text-[#b6c0c7]">
-                Home Tech Vault keeps devices, documents, and warranties in one place.
+                <MarketingText scope="components/knowledge/KnowledgeArticleTemplate.tsx">
+                  {
+                    "Home Tech Vault keeps devices, documents, and warranties in one place."
+                  }
+                </MarketingText>
               </p>
               <Link
                 href={MARKETING_ROUTES.signup}
                 className="htv-focus-ring mt-5 inline-flex items-center gap-2 rounded-full bg-[#617c43] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#718d4f]"
               >
-                Create free account
+                <MarketingText scope="components/knowledge/KnowledgeArticleTemplate.tsx">
+                  {"Create free account"}
+                </MarketingText>
                 <ArrowRight size={14} aria-hidden />
               </Link>
             </div>
@@ -231,9 +234,6 @@ export default function KnowledgeArticleTemplate({
     </MarketingLayout>
   );
 }
-
-export function categoryLabel(
-  slug: KnowledgeCategorySlug
-): string {
+export function categoryLabel(slug: KnowledgeCategorySlug): string {
   return getKnowledgeCategory(slug)?.name ?? slug;
 }
