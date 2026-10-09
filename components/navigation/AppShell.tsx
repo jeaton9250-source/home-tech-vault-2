@@ -73,7 +73,7 @@ const navItems: {
   },
 ];
 
-const utilityItems: typeof navItems = [
+const accountItems: typeof navItems = [
   {
     label: "My Home",
     href: "/home",
@@ -193,7 +193,7 @@ function Sidebar({
         })}
       </nav>
 
-      <div className="mx-7 my-5 h-px bg-white/10" />
+      {showAdminControlCenter && <div className="mx-7 my-5 h-px bg-white/10" />}
 
       <nav className="flex-1 space-y-0.5 px-4">
         {showAdminControlCenter ? (
@@ -215,23 +215,6 @@ function Sidebar({
           </>
         ) : null}
 
-        {utilityItems.map((item) => {
-          const Icon = item.icon;
-          const active = isActiveRoute(pathname, item.href);
-          return (
-            <Link
-              key={item.label}
-              href={item.href}
-              className={[
-                "group flex items-center gap-3 rounded-[12px] px-4 py-2.5 text-[12px] transition-colors",
-                active ? "bg-white/[0.08] text-white" : "text-white/42 hover:bg-white/[0.06] hover:text-white/80",
-              ].join(" ")}
-            >
-              <Icon size={16} strokeWidth={1.7} />
-              {item.label}
-            </Link>
-          );
-        })}
       </nav>
 
       <div className="px-6 pb-8">
@@ -265,6 +248,11 @@ function TopBar({
   showAdminControlCenter,
   isDemo,
 }: TopBarProps) {
+  const pathname = usePathname();
+  const accountMenuRef = useRef<HTMLDetailsElement>(null);
+  useEffect(() => {
+    if (accountMenuRef.current) accountMenuRef.current.open = false;
+  }, [pathname]);
   const router = useRouter();
   const { exitDemo } = useDemoMode();
   const [signingOut, setSigningOut] = useState(false);
@@ -476,8 +464,14 @@ function TopBar({
           </div>
         </details>
 
-        <details className="group relative border-l border-[#e4e2dc] pl-4">
-          <summary className="flex cursor-pointer list-none items-center gap-3 rounded-full py-1 outline-none [&::-webkit-details-marker]:hidden">
+        <details ref={accountMenuRef} className="group relative border-l border-[#e4e2dc] pl-4"
+          onKeyDown={(event) => {
+            if (event.key === "Escape") {
+              event.currentTarget.open = false;
+              event.currentTarget.querySelector<HTMLElement>("summary")?.focus();
+            }
+          }}>
+          <summary aria-label={`Open account menu for ${displayName}`} className="flex cursor-pointer list-none items-center gap-3 rounded-full py-1 outline-none focus-visible:ring-2 focus-visible:ring-[#617c43] [&::-webkit-details-marker]:hidden">
             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#ece8de] text-[12px] font-semibold text-slate-600">
               {initials}
             </span>
@@ -498,7 +492,7 @@ function TopBar({
             />
           </summary>
 
-          <div className="absolute right-0 top-[calc(100%+10px)] z-50 w-56 overflow-hidden rounded-[18px] border border-[#ded7ca] bg-[#fffdf8] p-2 shadow-[0_18px_50px_rgba(23,40,58,0.16)]">
+          <div className="absolute right-0 top-[calc(100%+10px)] z-50 max-h-[70vh] w-64 overflow-y-auto rounded-[18px] border border-[#ded7ca] bg-[#fffdf8] p-2 shadow-[0_18px_50px_rgba(23,40,58,0.16)]">
             <div className="border-b border-[#e8e2d8] px-3 pb-3 pt-2 xl:hidden">
               <p className="text-sm font-semibold text-[#17283a]">{displayName}</p>
               <p className="mt-0.5 text-xs text-[#7a827c]">{roleLabel}</p>
@@ -517,10 +511,18 @@ function TopBar({
               </>
             ) : null}
 
-            <Link href="/settings" className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-[#40505d] hover:bg-[#f0ece3] hover:text-[#17283a]">
-              <Settings size={16} />
-              Settings
-            </Link>
+            {accountItems.map((item) => {
+              const Icon = item.icon;
+              const active = isActiveRoute(pathname, item.href);
+              return (
+                <Link key={item.href} href={item.href} aria-current={active ? "page" : undefined}
+                  onClick={() => { if (accountMenuRef.current) accountMenuRef.current.open = false; }}
+                  className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm focus-visible:outline-2 focus-visible:outline-[#617c43] ${active ? "bg-[#edf0e5] font-semibold text-[#526b39]" : "text-[#40505d] hover:bg-[#f0ece3] hover:text-[#17283a]"}`}>
+                  <Icon size={16} aria-hidden="true" />{item.label}
+                </Link>
+              );
+            })}
+            <div className="mx-2 my-2 h-px bg-[#e8e2d8]" />
             <Link href="/family" className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-[#40505d] hover:bg-[#f0ece3] hover:text-[#17283a]">
               <Home size={16} />
               Household
