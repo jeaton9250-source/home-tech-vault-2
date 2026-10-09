@@ -143,7 +143,7 @@ export async function GET() {
            * Free users still receive the
            * deterministic Vault analysis.
            *
-           * Pro / Family get Groq synthesis.
+           * Home Plus / Household get Groq synthesis.
            */
           skipAiSummary:
             !planContext

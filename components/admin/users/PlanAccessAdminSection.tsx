@@ -619,8 +619,8 @@ export default function PlanAccessAdminSection({
                 <span>
                   I confirm granting{" "}
                   {dialogPlan === "family"
-                    ? "Family"
-                    : "Pro"}{" "}
+                    ? "Household"
+                    : "Home Plus"}{" "}
                   access to this user without changing
                   Stripe billing.
                 </span>

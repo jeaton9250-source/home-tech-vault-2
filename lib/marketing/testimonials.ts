@@ -29,7 +29,7 @@ export const TESTIMONIALS: Testimonial[] = [
     quote:
       "Our family shares one vault now. No more texting router passwords.",
     name: "Priya R.",
-    detail: "Family plan member",
+    detail: "Household plan member",
     featured: true,
   },
   {
@@ -51,6 +51,6 @@ export const TESTIMONIALS: Testimonial[] = [
     quote:
       "The demo sold me in ten minutes. I signed up the same day.",
     name: "Chris W.",
-    detail: "Free plan user",
+    detail: "Home plan user",
   },
 ];

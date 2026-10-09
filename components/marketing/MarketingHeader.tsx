@@ -16,7 +16,7 @@ const navItems = [
   },
   {
     label: "For Realtors",
-    href: "/realtors",
+    href: "/for-realtors",
   },
   {
     label: "Pricing",

@@ -54,7 +54,7 @@ const L = {
   pricing: {
     href: "/pricing",
     label: "Pricing",
-    description: "Compare Free, Pro, and Family plans.",
+    description: "Compare Home, Home Plus, and Household plans.",
   },
   features: {
     href: "/features",
@@ -159,7 +159,7 @@ const L = {
   signup: {
     href: "/signup",
     label: "Create a free account",
-    description: "Start your household inventory on the Free plan.",
+    description: "Start your household inventory on the Home plan.",
   },
 } as const satisfies Record<string, SeoFaqRelatedLink>;
 

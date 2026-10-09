@@ -226,14 +226,14 @@ export function getPlanDisplayName(
   }
 
   if (plan === "family") {
-    return "Family";
+    return "Household";
   }
 
   if (plan === "pro") {
-    return "Pro";
+    return "Home Plus";
   }
 
-  return "Free";
+  return "Home";
 }
 
 export function getRoleDisplayName(
@@ -260,14 +260,14 @@ export function getRoleDisplayName(
         options.userId ===
           options.householdOwnerId)
     ) {
-      return "Family Plan Admin";
+      return "Household Plan Admin";
     }
 
     if (rawRole === "member") {
-      return "Family Member";
+      return "Household Member";
     }
 
-    return "Family Viewer";
+    return "Household Viewer";
   }
 
   if (rawRole === "owner") {
@@ -587,8 +587,8 @@ export function resolveEffectivePlan(
   const planDisplayName =
     hasActiveAdminGrant
       ? adminGrantPlan === "family"
-        ? "Complimentary Family"
-        : "Complimentary Pro"
+        ? "Complimentary Household"
+        : "Complimentary Home Plus"
       : getPlanDisplayName(
           effectivePlan
         );

@@ -120,22 +120,22 @@ export default function FeatureGate({
 
   const planLabel =
     access.requiredPlan === "family"
-      ? "Family"
+      ? "Household"
       : access.requiredPlan === "pro"
-        ? "Pro"
+        ? "Home Plus"
         : "Premium";
 
   const householdPlanLabel = inheritsFamilyPlan
-    ? "Family"
+    ? "Household"
     : inheritsProPlan
-      ? "Pro"
+      ? "Home Plus"
       : "household";
 
   const features = featureList ??
     (isReadOnlyLock
       ? [
           inheritsProPlan || inheritsFamilyPlan
-            ? `This Pro feature is included with your ${householdPlanLabel} plan, but your household role is read-only.`
+            ? `This Home Plus feature is included with your ${householdPlanLabel} plan, but your household role is read-only.`
             : "Contact your household admin if you need edit access.",
         ]
       : [

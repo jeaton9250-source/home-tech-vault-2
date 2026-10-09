@@ -75,7 +75,7 @@ export default function ConnectorCard({
 
               <p className="mt-3 text-sm leading-7 text-text-secondary">
                 Pair a Mac, run manual scans, review discovery results, and
-                import devices into your vault. Upgrade to Pro for automatic
+                import devices into your vault. Upgrade to Home Plus for automatic
                 background monitoring.
               </p>
 
@@ -94,7 +94,7 @@ export default function ConnectorCard({
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-section-network" />
-                  Upgrade to Pro for automatic 15-minute scans
+                  Upgrade to Home Plus for automatic 15-minute scans
                 </li>
               </ul>
 

@@ -333,9 +333,9 @@ export function getHouseholdLimitMessage(
     case "free_device_limit":
       return {
         title:
-          "You've reached the Free plan device limit",
+          "You've reached the Home plan device limit",
         description:
-          "This household has used all Free plan device slots. Upgrade the household to add more devices.",
+          "This household has used all Home plan device slots. Upgrade the household to add more devices.",
         actionLabel: options?.canManageBilling
           ? "Upgrade Household"
           : "View household billing",
@@ -347,9 +347,9 @@ export function getHouseholdLimitMessage(
     case "free_document_limit":
       return {
         title:
-          "You've reached the Free plan document limit",
+          "You've reached the Home plan document limit",
         description:
-          "This household has used all Free plan document slots. Upgrade the household to upload more documents.",
+          "This household has used all Home plan document slots. Upgrade the household to upload more documents.",
         actionLabel: options?.canManageBilling
           ? "Upgrade Household"
           : "View household billing",

@@ -227,19 +227,19 @@ export function createSoftwareApplicationJsonLd() {
     offers: [
       {
         "@type": "Offer",
-        name: "Free",
+        name: "Home",
         price: "0",
         priceCurrency: "USD",
       },
       {
         "@type": "Offer",
-        name: "Pro",
+        name: "Home Plus",
         price: "7.99",
         priceCurrency: "USD",
       },
       {
         "@type": "Offer",
-        name: "Family",
+        name: "Household",
         price: "14.99",
         priceCurrency: "USD",
       },

@@ -11,10 +11,10 @@ export type ConnectorAccessContext = {
 };
 
 export const CONNECTOR_UPGRADE_MESSAGE =
-  "The Home Tech Vault Connector is included on Free. Upgrade to Pro or Family for automatic monitoring and expanded connector features.";
+  "The Home Tech Vault Connector is included on Free. Upgrade to Home Plus or Household for automatic monitoring and expanded connector features.";
 
 export const CONNECTOR_MONITORING_FREE_MESSAGE =
-  "Automatic monitoring requires Pro or Family";
+  "Automatic monitoring requires Home Plus or Household";
 
 export function resolveConnectorLimits(
   plan: SubscriptionPlan,

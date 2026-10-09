@@ -49,33 +49,33 @@ export const DEV_ACCESS_PROFILE_OPTIONS: {
   },
   {
     id: "free",
-    label: "Free User",
+    label: "Home User",
     description:
-      "Simulated Free plan with standard limits and upgrade prompts.",
+      "Simulated Home plan with standard limits and upgrade prompts.",
   },
   {
     id: "pro",
-    label: "Pro User",
+    label: "Home Plus User",
     description:
-      "Simulated Pro plan. Premium features without Family household tools.",
+      "Simulated Home Plus plan. Premium features without Family household tools.",
   },
   {
     id: "family-admin",
-    label: "Family Plan Admin",
+    label: "Household Plan Admin",
     description:
-      "Simulated Family plan with admin household role.",
+      "Simulated Household plan with admin household role.",
   },
   {
     id: "family-member",
-    label: "Family Member",
+    label: "Household Member",
     description:
-      "Simulated Family plan with member role.",
+      "Simulated Household plan with member role.",
   },
   {
     id: "family-viewer",
-    label: "Family Viewer",
+    label: "Household Viewer",
     description:
-      "Simulated Family plan with read-only viewer role.",
+      "Simulated Household plan with read-only viewer role.",
   },
   {
     id: "platform-admin",

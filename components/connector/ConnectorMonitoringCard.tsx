@@ -45,7 +45,7 @@ export default function ConnectorMonitoringCard({
 
         {!monitoringEnabled ? (
           <Button href="/upgrade" variant="secondary">
-            Upgrade to Pro
+            Upgrade to Home Plus
           </Button>
         ) : null}
       </div>

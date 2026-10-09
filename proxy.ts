@@ -38,6 +38,7 @@ const PUBLIC_MARKETING_PREFIXES = [
   "/resources",
   "/guides",
   "/compare",
+  "/for-realtors",
 ];
 
 function normalizePathname(pathname: string) {

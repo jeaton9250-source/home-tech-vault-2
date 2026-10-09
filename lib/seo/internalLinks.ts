@@ -59,7 +59,7 @@ export const CORE_INTERNAL_LINKS: readonly CoreInternalLink[] = [
   },
   {
     id: "pricing",
-    label: "Compare Free, Pro, and Family pricing",
+    label: "Compare Home, Home Plus, and Household pricing",
     href: "/pricing",
     description:
       "See plan limits, sharing, and what to start with.",

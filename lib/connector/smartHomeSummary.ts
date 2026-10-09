@@ -65,7 +65,7 @@ export function buildSmartHomeSummary(input: {
       : "Manual discovery is active",
     description: input.monitoringEnabled
       ? "Background scans keep device presence, discovery, and Home Pulse up to date."
-      : "Manual scans and discovery review are available on Free. Upgrade to Pro for automatic monitoring.",
+      : "Manual scans and discovery review are available on Free. Upgrade to Home Plus for automatic monitoring.",
     metrics: [
       {
         id: "connectors",
@@ -103,7 +103,7 @@ export function buildSmartHomeSummary(input: {
           ]
         : []),
       ...(!input.monitoringEnabled
-        ? ["Upgrade to Pro for automatic scans every 15 minutes."]
+        ? ["Upgrade to Home Plus for automatic scans every 15 minutes."]
         : ["Open diagnostics if a connector stops reporting heartbeats."]),
     ],
   };

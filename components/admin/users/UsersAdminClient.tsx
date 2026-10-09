@@ -60,8 +60,8 @@ const USER_FILTER_OPTIONS = [
   { id: "invited", label: "Invited" },
   { id: "suspended", label: "Suspended" },
   { id: "admins", label: "Admins" },
-  { id: "pro", label: "Pro" },
-  { id: "free", label: "Free" },
+  { id: "pro", label: "Home Plus" },
+  { id: "free", label: "Home" },
   { id: "never_logged_in", label: "Never Logged In" },
   { id: "has_connector", label: "Has Connector" },
   { id: "no_connector", label: "No Connector" },
@@ -648,7 +648,7 @@ export default function UsersAdminClient({
           value={metrics.pendingInvitations}
         />
         <AdminSummaryCard
-          label="Pro Users"
+          label="Home Plus Users"
           value={metrics.proSubscribers}
         />
         <AdminSummaryCard

@@ -159,7 +159,7 @@ export const SEO_LANDING_PAGES: Record<
       {
         question: "Can I start with only a few devices?",
         answer:
-          "Yes. Add what matters most first, then grow the inventory as you go. Free plans include a starter device allowance.",
+          "Yes. Add what matters most first, then grow the inventory as you go. Home plans include a starter device allowance.",
       },
       {
         question: "Is this different from a general home inventory app?",
@@ -226,7 +226,7 @@ export const SEO_LANDING_PAGES: Record<
       {
         title: "Scales with your setup",
         description:
-          "Start small on Free, then expand capacity on Pro or Family as your home grows.",
+          "Start small on Home, then expand capacity on Home Plus or Household as your home grows.",
       },
     ],
     screenshotsTitle: "Your home tech at a glance",
@@ -267,7 +267,7 @@ export const SEO_LANDING_PAGES: Record<
       {
         title: "Plan that fits the home",
         description:
-          "Free to start; Pro and Family when you need more devices or sharing.",
+          "Free to start; Home Plus and Household when you need more devices or sharing.",
       },
     ],
     faqTitle: "Home tech inventory FAQ",
@@ -281,7 +281,7 @@ export const SEO_LANDING_PAGES: Record<
       {
         question: "Can multiple people maintain the inventory?",
         answer:
-          "Yes on Family plans — invite members with roles so viewers stay read-only while others can edit.",
+          "Yes on Household plans — invite members with roles so viewers stay read-only while others can edit.",
       },
       {
         question: "Do I need a connector or scanner?",
@@ -958,7 +958,7 @@ export const SEO_LANDING_PAGES: Record<
       {
         title: "A product path that grows with you",
         description:
-          "Free for getting started; Pro and Family when capacity or sharing matters.",
+          "Free for getting started; Home Plus and Household when capacity or sharing matters.",
       },
     ],
     screenshotsTitle: "Software shaped for households",
@@ -971,9 +971,9 @@ export const SEO_LANDING_PAGES: Record<
       },
       {
         title: "Plans overview",
-        caption: "Transparent Free, Pro, and Family options.",
+        caption: "Transparent Home, Home Plus, and Household options.",
         src: "/seo/screenshots/pricing-plans.png",
-        alt: "Pricing page showing Free, Pro, and Family plan cards",
+        alt: "Pricing page showing Home, Home Plus, and Household plan cards",
       },
       {
         title: "Security posture",

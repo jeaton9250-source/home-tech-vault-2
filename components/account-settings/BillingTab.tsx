@@ -113,9 +113,9 @@ export default function BillingTab() {
         : "$0/month";
 
   const householdPlanLabel = inheritsFamilyPlan
-    ? "Family"
+    ? "Household"
     : inheritsProPlan
-      ? "Pro"
+      ? "Home Plus"
       : "household";
 
   if (loading) {
@@ -217,7 +217,7 @@ export default function BillingTab() {
             />
             {isPlatformAdmin
               ? "Master Access"
-              : isFree && !isComplimentaryOnly ? "Free plan" : formatSubscriptionStatus(
+              : isFree && !isComplimentaryOnly ? "Home plan" : formatSubscriptionStatus(
                   isComplimentaryOnly
                     ? "active"
                     : effectiveStatus

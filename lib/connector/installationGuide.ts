@@ -54,8 +54,8 @@ export const CONNECTOR_INSTALLATION_STEPS: InstallationGuideStep[] = [
     id: "monitor",
     title: "Automatic Monitoring (Pro)",
     description:
-      "Upgrade to Pro for background scans every 15 minutes, presence monitoring, and Home Pulse updates.",
-    actionLabel: "View Pro plans",
+      "Upgrade to Home Plus for background scans every 15 minutes, presence monitoring, and Home Pulse updates.",
+    actionLabel: "View Home Plus plans",
     actionHref: "/upgrade",
   },
 ];

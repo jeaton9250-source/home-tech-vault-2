@@ -96,7 +96,7 @@ export default function FoundingMemberWelcomeEmail({
           label="Complimentary access"
           value={
             includesComplimentaryPro
-              ? "Pro"
+              ? "Home Plus"
               : "Recognition only"
           }
         />

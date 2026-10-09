@@ -1096,7 +1096,7 @@ export default function FamilyPage() {
                 <Crown size={13} className="text-[#9bb27a]" aria-hidden />
 
                 <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#9bb27a]">
-                  Family Plan
+                  Household Plan
                 </span>
               </div>
 

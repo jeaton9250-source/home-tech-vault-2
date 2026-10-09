@@ -147,8 +147,8 @@ export default function ConnectorHubSection({
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-text-secondary">
             The Connector uses a home Vault to organize discovered devices.
-            Connector access is included on Free and does not require a
-            Family plan.
+            Connector access is included on Home and does not require a
+            Household plan.
           </p>
           <div className="mt-5">
             <Button href="/onboarding/create-household">

@@ -10,7 +10,7 @@ import { emailTheme } from "@/emails/styles/emailTheme";
 
 export type ComplimentaryAccessGrantedEmailProps = {
   firstName: string;
-  planLabel: "Pro" | "Family";
+  planLabel: "Home Plus" | "Household";
   dashboardUrl: string;
   startsAtLabel: string;
   expiresAtLabel?: string | null;
@@ -18,7 +18,7 @@ export type ComplimentaryAccessGrantedEmailProps = {
 };
 
 export const complimentaryAccessGrantedSubject = (
-  planLabel: "Pro" | "Family"
+  planLabel: "Home Plus" | "Household"
 ) =>
   `Your Home Tech Vault ${planLabel} access is ready`;
 
@@ -133,7 +133,7 @@ export default function ComplimentaryAccessGrantedEmail({
 
 ComplimentaryAccessGrantedEmail.PreviewProps = {
   firstName: "Alex",
-  planLabel: "Pro",
+  planLabel: "Home Plus",
   dashboardUrl: "https://www.hometechvault.com/dashboard",
   startsAtLabel: "July 21, 2026",
   expiresAtLabel: "August 20, 2026",

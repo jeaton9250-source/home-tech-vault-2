@@ -104,6 +104,7 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   async redirects() {
     return [
+      { source: "/realtors", destination: "/for-realtors", permanent: true },
       {
         source: "/:l([a-z0-9])",
         destination: "/?utm_source=heycatch&utm_campaign=:l",

@@ -1,5 +1,10 @@
 import { z } from "zod";
-import catalog from "./pageCatalog.json";
+import baseCatalog from "./pageCatalog.json";
+import launchCatalog from "./launchPageCatalog.json";
+const catalog = {
+  definitions: { ...baseCatalog.definitions, ...launchCatalog.definitions },
+  pages: { ...baseCatalog.pages, ...launchCatalog.pages },
+};
 import { safeLink } from "./links";
 export type PageField = {
   id: string;

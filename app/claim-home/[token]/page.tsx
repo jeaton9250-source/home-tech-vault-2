@@ -80,10 +80,10 @@ export default async function ClaimHomePage({
 
   const planName =
     gift.gift_plan === "family"
-      ? "Family"
+      ? "Household"
       : gift.gift_plan === "pro"
-        ? "Pro"
-        : "Free";
+        ? "Home Plus"
+        : "Home";
 
   return (
     <main className="min-h-screen bg-[#f7f3ec] px-5 py-12 md:px-8 md:py-20">

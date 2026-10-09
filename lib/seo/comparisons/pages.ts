@@ -429,7 +429,7 @@ export const COMPARISON_PAGES: ComparisonPage[] = [
       {
         question: "Which is cheaper?",
         answer:
-          "Notion has a free tier and paid plans for advanced features. Home Tech Vault offers Free, Pro ($7.99), and Family ($14.99). Compare based on whether you need a full workspace or a tech vault.",
+          "Notion has a free tier and paid plans for advanced features. Home Tech Vault offers Home ($0), Home Plus ($7.99), and Household ($14.99). Compare based on whether you need a full workspace or a tech vault.",
       },
       {
         question: "What about mobile use?",
@@ -720,7 +720,7 @@ export const COMPARISON_PAGES: ComparisonPage[] = [
       {
         question: "Is Google Sheets free for this?",
         answer:
-          "Personal Google accounts include Sheets at no extra cost. Home Tech Vault has a Free plan plus paid tiers for higher limits and family sharing.",
+          "Personal Google accounts include Sheets at no extra cost. Home Tech Vault has a Home plan plus paid tiers for higher limits and family sharing.",
       },
       {
         question: "Can Sheets send warranty reminders?",
@@ -881,7 +881,7 @@ export const COMPARISON_PAGES: ComparisonPage[] = [
       {
         question: "What about pricing?",
         answer:
-          "Airtable’s free tier and paid plans differ by collaboration and automation needs. HTV offers Free, Pro ($7.99), and Family ($14.99).",
+          "Airtable’s free tier and paid plans differ by collaboration and automation needs. HTV offers Home ($0), Home Plus ($7.99), and Household ($14.99).",
       },
       {
         question: "Can I recreate HTV in Airtable?",
@@ -975,7 +975,7 @@ export const COMPARISON_PAGES: ComparisonPage[] = [
       rows: [
         {
           feature: "Upfront cost",
-          values: ["Free plan available", "Binder & printing costs"],
+          values: ["Home plan available", "Binder & printing costs"],
         },
         {
           feature: "Remote access",
@@ -1187,7 +1187,7 @@ export const COMPARISON_PAGES: ComparisonPage[] = [
       {
         question: "What is the best free home inventory software?",
         answer:
-          "Spreadsheets and paper are free beyond time. Home Tech Vault’s Free plan covers getting started with device and document limits. “Best free” still depends on whether you need attachments and sharing.",
+          "Spreadsheets and paper are free beyond time. Home Tech Vault’s Home plan covers getting started with device and document limits. “Best free” still depends on whether you need attachments and sharing.",
       },
       {
         question: "Do I need AI features?",

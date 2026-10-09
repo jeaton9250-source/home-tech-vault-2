@@ -424,7 +424,7 @@ export default function NetworkConnectPage() {
         section="network"
         eyebrow="Connector setup"
         title="Home Tech Vault Connector"
-        description="Download, pair, and manage connectors for your household. Manual discovery is included on Free; automatic monitoring requires Pro."
+        description="Download, pair, and manage connectors for your household. Manual discovery is included on Home; automatic monitoring requires Home Plus."
       >
         <div className="flex flex-wrap gap-3">
           <ConnectorDownloadActions />
@@ -479,8 +479,8 @@ export default function NetworkConnectPage() {
               </h2>
               <p className="mt-2 text-sm leading-6 text-text-secondary">
                 Pairing needs a home Vault so discovered devices have a
-                secure place to live. This is included with Free and does
-                not require a Family plan.
+                secure place to live. This is included with Home and does
+                not require a Household plan.
               </p>
               <div className="mt-4">
                 <Button href="/onboarding/create-household">
@@ -563,7 +563,7 @@ export default function NetworkConnectPage() {
           </h2>
           <p className="mt-2 text-sm leading-6 text-text-secondary">
             {macosVersionLabel} · Manual scans, discovery, matching, and import
-            are included on Free.
+            are included on Home.
           </p>
           <div className="mt-5">
             <ConnectorDownloadActions />
@@ -581,7 +581,7 @@ export default function NetworkConnectPage() {
             Active connectors
           </h2>
           <p className="mt-2 text-sm leading-6 text-text-secondary">
-            {connectorLimitLabel(plan)}. Automatic monitoring requires Pro.
+            {connectorLimitLabel(plan)}. Automatic monitoring requires Home Plus.
           </p>
 
           {loadingConnectors ? (

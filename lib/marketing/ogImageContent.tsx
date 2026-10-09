@@ -521,7 +521,7 @@ export function OgImageContent(): ReactNode {
                   background: colors.green,
                 }}
               />
-              Free plan available
+              Home plan available
             </div>
           </div>
         </div>

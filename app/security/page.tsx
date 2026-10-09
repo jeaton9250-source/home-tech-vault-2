@@ -253,7 +253,7 @@ export default function SecurityPage() {
       requireAuthentication
       redirectPath="/security"
       title="Security Center"
-      description="Advanced account security tools are included with Home Tech Vault Pro and Family."
+      description="Advanced account security tools are included with Home Tech Vault Home Plus and Household."
       features={SECURITY_CENTER_FEATURES}
       upgradeLabel="View Plans"
     >

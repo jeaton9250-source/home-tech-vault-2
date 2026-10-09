@@ -3,9 +3,10 @@ import Link from "next/link";
 const exploreLinks = [
   { label: "What It Remembers", href: "/#memory" },
   { label: "Explore", href: "/explore" },
+  { label: "Centriq Alternative", href: "/compare/centriq-alternative" },
   { label: "Resources", href: "/resources" },
   { label: "Pricing", href: "/pricing" },
-  { label: "For Realtors", href: "/realtors" },
+  { label: "For Realtors", href: "/for-realtors" },
 ] as const;
 const companyLinks = [
   { label: "Our Story", href: "/our-story" },

@@ -42,7 +42,7 @@ export const PLAN_FEATURES: Record<
   PlanFeatureSummary
 > = {
   free: {
-    label: "Free",
+    label: "Home",
     items: [
       `Up to ${FREE_DEVICE_LIMIT} devices`,
       "Up to 25 documents",
@@ -55,7 +55,7 @@ export const PLAN_FEATURES: Record<
     ],
   },
   pro: {
-    label: "Pro",
+    label: "Home Plus",
     items: [
       "Unlimited devices",
       "Unlimited documents",
@@ -72,9 +72,9 @@ export const PLAN_FEATURES: Record<
     ],
   },
   family: {
-    label: "Family",
+    label: "Household",
     items: [
-      "Everything in Pro",
+      "Everything in Home Plus",
       "Unlimited household connectors",
       "Household creation",
       "Household invitations",

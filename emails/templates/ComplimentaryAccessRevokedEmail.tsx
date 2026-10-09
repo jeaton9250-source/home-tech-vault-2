@@ -10,7 +10,7 @@ import { emailTheme } from "@/emails/styles/emailTheme";
 
 export type ComplimentaryAccessRevokedEmailProps = {
   firstName: string;
-  planLabel: "Pro" | "Family";
+  planLabel: "Home Plus" | "Household";
   accountUrl: string;
   effectiveEndLabel: string;
   retainsPremiumAccess: boolean;
@@ -89,7 +89,7 @@ export default function ComplimentaryAccessRevokedEmail({
 
 ComplimentaryAccessRevokedEmail.PreviewProps = {
   firstName: "Alex",
-  planLabel: "Pro",
+  planLabel: "Home Plus",
   accountUrl: "https://www.hometechvault.com/account",
   effectiveEndLabel: "July 21, 2026",
   retainsPremiumAccess: false,

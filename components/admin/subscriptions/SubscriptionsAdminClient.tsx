@@ -168,8 +168,8 @@ export default function SubscriptionsAdminClient() {
           }}
           options={[
             { value: "free", label: "Free" },
-            { value: "pro", label: "Pro" },
-            { value: "family", label: "Family" },
+            { value: "pro", label: "Home Plus" },
+            { value: "family", label: "Household" },
           ]}
         />
         <AdminFilterSelect

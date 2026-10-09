@@ -123,7 +123,7 @@ export function householdOwnerHasGrantingProPlan(
 }
 
 /**
- * Whether the household billing owner has an active Pro or Family subscription
+ * Whether the household billing owner has an active Home Plus or Household subscription
  * that should entitle active household members.
  */
 export function householdOwnerHasGrantingPremiumPlan(

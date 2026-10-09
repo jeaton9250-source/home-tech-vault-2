@@ -41,8 +41,8 @@ export const CUSTOMER_VISIBLE_GRANT_REASONS: PlanGrantReason[] =
 
 export function planToDisplayName(
   plan: AdminGrantPlan
-): "Pro" | "Family" {
-  return plan === "family" ? "Family" : "Pro";
+): "Home Plus" | "Household" {
+  return plan === "family" ? "Household" : "Home Plus";
 }
 
 export function formatGrantEmailDate(
