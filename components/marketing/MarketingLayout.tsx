@@ -29,7 +29,7 @@ export default function MarketingLayout({
   return (
     <div
       className={cn(
-        "min-h-screen bg-[#fffefa] text-[#17212a] antialiased selection:bg-[#617c43]/20",
+        "min-h-screen bg-[#f5f2eb] text-[#12233a] antialiased selection:bg-[#617c43]/20",
         className,
       )}
     >
@@ -89,7 +89,7 @@ export function MarketingPageHero({
   children?: ReactNode;
 }) {
   return (
-    <section className="border-b border-[#e4e2dc] bg-[#fffefa] px-5 py-16 md:px-8 md:py-20">
+    <section className="border-b border-[#d8d5cc] bg-[#f5f2eb] px-5 py-16 md:px-8 md:py-20">
       <div className="mx-auto max-w-3xl">
         {eyebrow ? (
           <div className="flex items-center gap-3">

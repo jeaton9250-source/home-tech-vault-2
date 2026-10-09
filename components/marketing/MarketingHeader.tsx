@@ -8,7 +8,7 @@ import { useState } from "react";
 const navItems = [
   {
     label: "What It Remembers",
-    href: "/what-it-remembers",
+    href: "/#memory",
   },
   {
     label: "Explore",

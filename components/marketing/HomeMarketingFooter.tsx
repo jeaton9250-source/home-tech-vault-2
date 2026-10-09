@@ -1,7 +1,7 @@
 import { MarketingText } from "@/components/marketing/MarketingContent";
 import Link from "next/link";
 const exploreLinks = [
-  { label: "What It Remembers", href: "/what-it-remembers" },
+  { label: "What It Remembers", href: "/#memory" },
   { label: "Explore", href: "/explore" },
   { label: "Resources", href: "/resources" },
   { label: "Pricing", href: "/pricing" },
