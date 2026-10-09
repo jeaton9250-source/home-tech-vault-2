@@ -1,9 +1,8 @@
 "use client";
+import { MarketingText } from "@/components/marketing/MarketingContent";
 
 import type { ReactNode } from "react";
-
 import Link from "next/link";
-
 import {
   ArrowRight,
   Check,
@@ -21,19 +20,8 @@ import {
   Wifi,
   Wrench,
 } from "lucide-react";
-
-import {
-  motion,
-  useReducedMotion,
-} from "framer-motion";
-
-const ease = [
-  0.22,
-  1,
-  0.36,
-  1,
-] as const;
-
+import { motion, useReducedMotion } from "framer-motion";
+const ease = [0.22, 1, 0.36, 1] as const;
 export default function FeaturesPageContent() {
   return (
     <main className="overflow-hidden bg-[#f6f2ea]">
@@ -50,32 +38,43 @@ export default function FeaturesPageContent() {
           <Reveal>
             <Eyebrow>
               <Sparkles size={13} />
-              Everything inside the Vault
+              <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                {"Everything inside the Vault"}
+              </MarketingText>
             </Eyebrow>
 
             <h1 className="mx-auto mt-8 max-w-[1050px] font-serif text-[clamp(58px,7vw,104px)] font-medium leading-[0.9] tracking-[-0.065em] text-[#17212a]">
-              Everything your home
+              <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                {"Everything your home"}
+              </MarketingText>
               <br />
               <span className="text-[#617c43]">
-                wants you to remember.
+                <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                  {"wants you to remember."}
+                </MarketingText>
               </span>
             </h1>
 
             <p className="mx-auto mt-8 max-w-[720px] text-[18px] leading-8 text-[#707a75] md:text-[20px]">
-              Home Tech Vault brings devices,
-              paperwork, warranties, maintenance,
-              Home Wi-Fi and household information
-              together in one thoughtful home record.
+              <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                {
+                  "Home Tech Vault brings devices, paperwork, warranties, maintenance, Home Wi-Fi and household information together in one thoughtful home record."
+                }
+              </MarketingText>
             </p>
 
             <div className="mt-10 flex flex-wrap justify-center gap-3">
               <PrimaryLink href="/signup">
-                Start My Home Vault
+                <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                  {"Start My Home Vault"}
+                </MarketingText>
                 <ArrowRight size={16} />
               </PrimaryLink>
 
               <SecondaryLink href="/demo">
-                Explore the Demo
+                <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                  {"Explore the Demo"}
+                </MarketingText>
               </SecondaryLink>
             </div>
           </Reveal>
@@ -99,45 +98,61 @@ export default function FeaturesPageContent() {
               <div className="lg:sticky lg:top-28">
                 <Reveal>
                   <SectionLabel>
-                    Devices
+                    <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                      {"Devices"}
+                    </MarketingText>
                   </SectionLabel>
 
                   <h2 className="mt-6 max-w-[550px] font-serif text-[clamp(46px,5vw,72px)] font-medium leading-[0.98] tracking-[-0.05em] text-[#17212a]">
-                    Every device gets
-                    a home of its own.
+                    <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                      {"Every device gets a home of its own."}
+                    </MarketingText>
                   </h2>
 
                   <p className="mt-7 max-w-[540px] text-lg leading-8 text-[#747e79]">
-                    Keep the identity of each
-                    appliance and piece of technology
-                    beside the information you will
-                    need later.
+                    <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                      {
+                        "Keep the identity of each appliance and piece of technology beside the information you will need later."
+                      }
+                    </MarketingText>
                   </p>
 
                   <div className="mt-9 space-y-3">
                     <CheckLine>
-                      Model and serial numbers
+                      <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                        {"Model and serial numbers"}
+                      </MarketingText>
                     </CheckLine>
 
                     <CheckLine>
-                      Purchase information
+                      <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                        {"Purchase information"}
+                      </MarketingText>
                     </CheckLine>
 
                     <CheckLine>
-                      Room and location
+                      <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                        {"Room and location"}
+                      </MarketingText>
                     </CheckLine>
 
                     <CheckLine>
-                      Photos and notes
+                      <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                        {"Photos and notes"}
+                      </MarketingText>
                     </CheckLine>
 
                     <CheckLine>
-                      Connected documents
+                      <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                        {"Connected documents"}
+                      </MarketingText>
                     </CheckLine>
                   </div>
 
                   <TextLink href="/devices">
-                    Explore Devices
+                    <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                      {"Explore Devices"}
+                    </MarketingText>
                   </TextLink>
                 </Reveal>
               </div>
@@ -180,18 +195,23 @@ export default function FeaturesPageContent() {
           <Reveal>
             <div className="mx-auto max-w-[820px] text-center">
               <SectionLabel>
-                Documents
+                <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                  {"Documents"}
+                </MarketingText>
               </SectionLabel>
 
               <h2 className="mt-6 font-serif text-[clamp(46px,5.5vw,76px)] font-medium leading-[0.98] tracking-[-0.055em] text-[#17212a]">
-                The file cabinet,
-                without the cabinet.
+                <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                  {"The file cabinet, without the cabinet."}
+                </MarketingText>
               </h2>
 
               <p className="mx-auto mt-7 max-w-[650px] text-lg leading-8 text-[#747e79]">
-                Keep the useful documents around
-                your home organized by what they
-                actually belong to.
+                <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                  {
+                    "Keep the useful documents around your home organized by what they actually belong to."
+                  }
+                </MarketingText>
               </p>
             </div>
           </Reveal>
@@ -210,12 +230,15 @@ export default function FeaturesPageContent() {
               <div className="flex items-start justify-between gap-6">
                 <div>
                   <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-[#b5ca9c]">
-                    Digital Vault
+                    <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                      {"Digital Vault"}
+                    </MarketingText>
                   </p>
 
                   <h3 className="mt-4 max-w-[500px] font-serif text-4xl leading-[1] tracking-[-0.04em]">
-                    The records you need,
-                    already where you expect them.
+                    <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                      {"The records you need, already where you expect them."}
+                    </MarketingText>
                   </h3>
                 </div>
 
@@ -270,7 +293,9 @@ export default function FeaturesPageContent() {
 
           <div className="mt-10 text-center">
             <TextLink href="/documents">
-              Explore Documents
+              <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                {"Explore Documents"}
+              </MarketingText>
             </TextLink>
           </div>
         </div>
@@ -285,40 +310,55 @@ export default function FeaturesPageContent() {
           <Reveal>
             <div>
               <SectionLabel>
-                Warranties
+                <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                  {"Warranties"}
+                </MarketingText>
               </SectionLabel>
 
               <h2 className="mt-6 max-w-[600px] font-serif text-[clamp(46px,5vw,72px)] font-medium leading-[0.98] tracking-[-0.05em] text-[#17212a]">
-                Know what is covered
-                before you need it.
+                <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                  {"Know what is covered before you need it."}
+                </MarketingText>
               </h2>
 
               <p className="mt-7 max-w-[560px] text-lg leading-8 text-[#747e79]">
-                Track coverage dates, proof of
-                purchase and supporting documents
-                beside the things they protect.
+                <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                  {
+                    "Track coverage dates, proof of purchase and supporting documents beside the things they protect."
+                  }
+                </MarketingText>
               </p>
 
               <div className="mt-9 space-y-3">
                 <CheckLine>
-                  Active coverage at a glance
+                  <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                    {"Active coverage at a glance"}
+                  </MarketingText>
                 </CheckLine>
 
                 <CheckLine>
-                  Expiration dates
+                  <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                    {"Expiration dates"}
+                  </MarketingText>
                 </CheckLine>
 
                 <CheckLine>
-                  Proof of purchase
+                  <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                    {"Proof of purchase"}
+                  </MarketingText>
                 </CheckLine>
 
                 <CheckLine>
-                  Warranty documents
+                  <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                    {"Warranty documents"}
+                  </MarketingText>
                 </CheckLine>
               </div>
 
               <TextLink href="/warranties">
-                Explore Warranties
+                <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                  {"Explore Warranties"}
+                </MarketingText>
               </TextLink>
             </div>
           </Reveal>
@@ -339,20 +379,27 @@ export default function FeaturesPageContent() {
         <Reveal>
           <div className="mx-auto max-w-[950px] text-center">
             <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#b5ca9c]">
-              Everything works better together
+              <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                {"Everything works better together"}
+              </MarketingText>
             </p>
 
             <h2 className="mt-7 font-serif text-[clamp(52px,7vw,94px)] font-medium leading-[0.92] tracking-[-0.06em]">
-              One home.
+              <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                {"One home."}
+              </MarketingText>
               <br />
-              One memory.
+              <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                {"One memory."}
+              </MarketingText>
             </h2>
 
             <p className="mx-auto mt-8 max-w-[650px] text-lg leading-8 text-white/55">
-              Devices, records, warranties
-              and maintenance become more
-              valuable when they stop living
-              in separate places.
+              <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                {
+                  "Devices, records, warranties and maintenance become more valuable when they stop living in separate places."
+                }
+              </MarketingText>
             </p>
           </div>
         </Reveal>
@@ -371,46 +418,62 @@ export default function FeaturesPageContent() {
                   <Wifi size={14} />
 
                   <span className="text-[9px] font-semibold uppercase tracking-[0.2em]">
-                    Home Wi-Fi
+                    <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                      {"Home Wi-Fi"}
+                    </MarketingText>
                   </span>
                 </div>
 
                 <h2 className="mt-7 max-w-[590px] font-serif text-[clamp(46px,5vw,72px)] font-medium leading-[0.98] tracking-[-0.05em] text-[#17212a]">
-                  Your network becomes
-                  part of the home record.
+                  <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                    {"Your network becomes part of the home record."}
+                  </MarketingText>
                 </h2>
 
                 <p className="mt-7 max-w-[560px] text-lg leading-8 text-[#747e79]">
-                  Document your network and
-                  use the Connector to help
-                  discover devices already
-                  connected to your home.
+                  <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                    {
+                      "Document your network and use the Connector to help discover devices already connected to your home."
+                    }
+                  </MarketingText>
                 </p>
 
                 <div className="mt-9 space-y-3">
                   <CheckLine>
-                    Router and network information
+                    <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                      {"Router and network information"}
+                    </MarketingText>
                   </CheckLine>
 
                   <CheckLine>
-                    Connected-device discovery
+                    <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                      {"Connected-device discovery"}
+                    </MarketingText>
                   </CheckLine>
 
                   <CheckLine>
-                    Manual scanning included on Free
+                    <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                      {"Manual scanning included on Free"}
+                    </MarketingText>
                   </CheckLine>
 
                   <CheckLine>
-                    One Connector included on Free
+                    <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                      {"One Connector included on Free"}
+                    </MarketingText>
                   </CheckLine>
 
                   <CheckLine>
-                    Automatic monitoring on upgraded plans
+                    <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                      {"Automatic monitoring on upgraded plans"}
+                    </MarketingText>
                   </CheckLine>
                 </div>
 
                 <TextLink href="/network">
-                  Explore Home Wi-Fi
+                  <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                    {"Explore Home Wi-Fi"}
+                  </MarketingText>
                 </TextLink>
               </div>
             </Reveal>
@@ -429,19 +492,23 @@ export default function FeaturesPageContent() {
           <Reveal>
             <div className="mx-auto max-w-[820px] text-center">
               <SectionLabel>
-                Household
+                <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                  {"Household"}
+                </MarketingText>
               </SectionLabel>
 
               <h2 className="mt-6 font-serif text-[clamp(46px,5.5vw,76px)] font-medium leading-[0.98] tracking-[-0.055em] text-[#17212a]">
-                Useful to everyone.
-                Controlled by you.
+                <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                  {"Useful to everyone. Controlled by you."}
+                </MarketingText>
               </h2>
 
               <p className="mx-auto mt-7 max-w-[660px] text-lg leading-8 text-[#747e79]">
-                Share the home record with
-                the people who need it without
-                giving everyone the same level
-                of control.
+                <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                  {
+                    "Share the home record with the people who need it without giving everyone the same level of control."
+                  }
+                </MarketingText>
               </p>
             </div>
           </Reveal>
@@ -470,7 +537,9 @@ export default function FeaturesPageContent() {
 
           <div className="mt-10 text-center">
             <TextLink href="/family">
-              Explore Household
+              <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                {"Explore Household"}
+              </MarketingText>
             </TextLink>
           </div>
         </div>
@@ -487,22 +556,29 @@ export default function FeaturesPageContent() {
           <Reveal>
             <div>
               <SectionLabel>
-                Maintenance
+                <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                  {"Maintenance"}
+                </MarketingText>
               </SectionLabel>
 
               <h2 className="mt-6 max-w-[600px] font-serif text-[clamp(46px,5vw,72px)] font-medium leading-[0.98] tracking-[-0.05em] text-[#17212a]">
-                Remember what happened.
-                Know what comes next.
+                <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                  {"Remember what happened. Know what comes next."}
+                </MarketingText>
               </h2>
 
               <p className="mt-7 max-w-[560px] text-lg leading-8 text-[#747e79]">
-                Build a simple service history
-                around the things in your home
-                instead of relying on memory.
+                <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                  {
+                    "Build a simple service history around the things in your home instead of relying on memory."
+                  }
+                </MarketingText>
               </p>
 
               <TextLink href="/maintenance">
-                Explore Maintenance
+                <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                  {"Explore Maintenance"}
+                </MarketingText>
               </TextLink>
             </div>
           </Reveal>
@@ -522,20 +598,24 @@ export default function FeaturesPageContent() {
                   <Search size={14} />
 
                   <span className="text-[9px] font-semibold uppercase tracking-[0.2em]">
-                    Ask Your Vault
+                    <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                      {"Ask Your Vault"}
+                    </MarketingText>
                   </span>
                 </div>
 
                 <h2 className="mt-7 max-w-[620px] font-serif text-[clamp(46px,5vw,72px)] font-medium leading-[0.98] tracking-[-0.05em]">
-                  Find what your home
-                  already knows.
+                  <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                    {"Find what your home already knows."}
+                  </MarketingText>
                 </h2>
 
                 <p className="mt-7 max-w-[560px] text-lg leading-8 text-white/55">
-                  Search across devices,
-                  warranties, records and
-                  household information instead
-                  of remembering where you saved it.
+                  <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                    {
+                      "Search across devices, warranties, records and household information instead of remembering where you saved it."
+                    }
+                  </MarketingText>
                 </p>
               </div>
 
@@ -554,40 +634,47 @@ export default function FeaturesPageContent() {
 
         <Reveal>
           <div className="mx-auto max-w-[980px] text-center">
-            <Home
-              size={24}
-              className="mx-auto text-[#617c43]"
-            />
+            <Home size={24} className="mx-auto text-[#617c43]" />
 
             <h2 className="mt-8 font-serif text-[clamp(52px,7vw,92px)] font-medium leading-[0.93] tracking-[-0.06em] text-[#17212a]">
-              It isn&apos;t another
-              place to store things.
+              <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                {"It isn't another place to store things."}
+              </MarketingText>
               <br />
               <span className="text-[#617c43]">
-                It&apos;s the memory
-                of your home.
+                <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                  {"It's the memory of your home."}
+                </MarketingText>
               </span>
             </h2>
 
             <p className="mx-auto mt-8 max-w-[650px] text-lg leading-8 text-[#747e79]">
-              Start small. Add what matters.
-              Let Home Tech Vault become more
-              useful as your home changes.
+              <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                {
+                  "Start small. Add what matters. Let Home Tech Vault become more useful as your home changes."
+                }
+              </MarketingText>
             </p>
 
             <div className="mt-10 flex flex-wrap justify-center gap-3">
               <PrimaryLink href="/signup">
-                Start My Home Vault
+                <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                  {"Start My Home Vault"}
+                </MarketingText>
                 <ArrowRight size={16} />
               </PrimaryLink>
 
               <SecondaryLink href="/demo">
-                Explore the Demo
+                <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                  {"Explore the Demo"}
+                </MarketingText>
               </SecondaryLink>
             </div>
 
             <p className="mt-6 text-xs text-[#949b97]">
-              Free to start · No credit card required
+              <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                {"Free to start \u00B7 No credit card required"}
+              </MarketingText>
             </p>
           </div>
         </Reveal>
@@ -595,11 +682,9 @@ export default function FeaturesPageContent() {
     </main>
   );
 }
-
 /* ====================================================== */
 /* VISUAL COMPONENTS */
 /* ====================================================== */
-
 function FeatureOverview() {
   return (
     <motion.div
@@ -660,7 +745,6 @@ function FeatureOverview() {
     </motion.div>
   );
 }
-
 function OverviewTile({
   icon: Icon,
   label,
@@ -682,16 +766,15 @@ function OverviewTile({
       </div>
 
       <p className="mt-5 text-[9px] font-semibold uppercase tracking-[0.17em] text-[#718d4f]">
-        {label}
+        <MarketingText scope="shared">{label}</MarketingText>
       </p>
 
       <p className="mt-2 font-serif text-lg text-[#183047]">
-        {value}
+        <MarketingText scope="shared">{value}</MarketingText>
       </p>
     </motion.div>
   );
 }
-
 function LargeDeviceCard() {
   return (
     <motion.div
@@ -707,15 +790,21 @@ function LargeDeviceCard() {
       <div className="flex items-start justify-between gap-6">
         <div>
           <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-[#718d4f]">
-            Living Room
+            <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+              {"Living Room"}
+            </MarketingText>
           </p>
 
           <h3 className="mt-3 font-serif text-4xl tracking-[-0.04em] text-[#17212a]">
-            Samsung QN90D
+            <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+              {"Samsung QN90D"}
+            </MarketingText>
           </h3>
 
           <p className="mt-2 text-sm text-[#87908b]">
-            Television · Demo Home
+            <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+              {"Television \u00B7 Demo Home"}
+            </MarketingText>
           </p>
         </div>
 
@@ -725,30 +814,17 @@ function LargeDeviceCard() {
       </div>
 
       <div className="mt-10 grid gap-3 sm:grid-cols-2">
-        <RecordCell
-          label="Model"
-          value="QN90D"
-        />
+        <RecordCell label="Model" value="QN90D" />
 
-        <RecordCell
-          label="Serial"
-          value="0A7X••••92"
-        />
+        <RecordCell label="Serial" value="0A7X••••92" />
 
-        <RecordCell
-          label="Purchased"
-          value="Mar 14, 2026"
-        />
+        <RecordCell label="Purchased" value="Mar 14, 2026" />
 
-        <RecordCell
-          label="Location"
-          value="Living Room"
-        />
+        <RecordCell label="Location" value="Living Room" />
       </div>
     </motion.div>
   );
 }
-
 function FloatingFeature({
   icon: Icon,
   eyebrow,
@@ -778,22 +854,21 @@ function FloatingFeature({
 
         <div>
           <p className="text-[8px] font-semibold uppercase tracking-[0.18em] text-[#718d4f]">
-            {eyebrow}
+            <MarketingText scope="shared">{eyebrow}</MarketingText>
           </p>
 
           <h3 className="mt-2 text-base font-semibold text-[#183047]">
-            {title}
+            <MarketingText scope="shared">{title}</MarketingText>
           </h3>
 
           <p className="mt-2 text-sm leading-6 text-[#78827d]">
-            {copy}
+            <MarketingText scope="shared">{copy}</MarketingText>
           </p>
         </div>
       </div>
     </motion.div>
   );
 }
-
 function SmallFeatureCard({
   icon: Icon,
   eyebrow,
@@ -821,20 +896,19 @@ function SmallFeatureCard({
       </div>
 
       <p className="mt-7 text-[9px] font-semibold uppercase tracking-[0.18em] text-[#718d4f]">
-        {eyebrow}
+        <MarketingText scope="shared">{eyebrow}</MarketingText>
       </p>
 
       <h3 className="mt-3 font-serif text-2xl leading-[1.1] text-[#17212a]">
-        {title}
+        <MarketingText scope="shared">{title}</MarketingText>
       </h3>
 
       <p className="mt-4 text-[15px] leading-7 text-[#747e79]">
-        {copy}
+        <MarketingText scope="shared">{copy}</MarketingText>
       </p>
     </motion.article>
   );
 }
-
 function WarrantyExperience() {
   return (
     <motion.div
@@ -849,17 +923,23 @@ function WarrantyExperience() {
     >
       <div className="rounded-[30px] bg-[#f6f2ea] p-6 md:p-8">
         <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-[#718d4f]">
-          Warranty protection
+          <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+            {"Warranty protection"}
+          </MarketingText>
         </p>
 
         <div className="mt-4 flex items-end justify-between gap-6">
           <div>
             <p className="font-serif text-5xl tracking-[-0.05em] text-[#17212a]">
-              8
+              <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                {"8"}
+              </MarketingText>
             </p>
 
             <p className="mt-1 text-sm text-[#7e8782]">
-              active warranties
+              <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                {"active warranties"}
+              </MarketingText>
             </p>
           </div>
 
@@ -869,15 +949,9 @@ function WarrantyExperience() {
         </div>
 
         <div className="mt-8 space-y-3">
-          <WarrantyRow
-            title="Samsung QN90D"
-            value="24 days remaining"
-          />
+          <WarrantyRow title="Samsung QN90D" value="24 days remaining" />
 
-          <WarrantyRow
-            title="MacBook Air"
-            value="Active through Jun 2027"
-          />
+          <WarrantyRow title="MacBook Air" value="Active through Jun 2027" />
 
           <WarrantyRow
             title="LG Refrigerator"
@@ -888,14 +962,7 @@ function WarrantyExperience() {
     </motion.div>
   );
 }
-
-function WarrantyRow({
-  title,
-  value,
-}: {
-  title: string;
-  value: string;
-}) {
+function WarrantyRow({ title, value }: { title: string; value: string }) {
   return (
     <motion.div
       whileHover={{
@@ -904,16 +971,15 @@ function WarrantyRow({
       className="flex items-center justify-between gap-4 rounded-[17px] bg-white px-4 py-4"
     >
       <p className="text-sm font-semibold text-[#183047]">
-        {title}
+        <MarketingText scope="shared">{title}</MarketingText>
       </p>
 
       <span className="text-xs font-semibold text-[#617c43]">
-        {value}
+        <MarketingText scope="shared">{value}</MarketingText>
       </span>
     </motion.div>
   );
 }
-
 function DiscoveryExperience() {
   return (
     <motion.div
@@ -930,15 +996,21 @@ function DiscoveryExperience() {
         <div className="flex items-start justify-between gap-5">
           <div>
             <p className="text-[9px] font-semibold uppercase tracking-[0.19em] text-[#718d4f]">
-              Network discovery
+              <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                {"Network discovery"}
+              </MarketingText>
             </p>
 
             <h3 className="mt-3 font-serif text-3xl tracking-[-0.04em] text-[#17212a]">
-              12 devices found.
+              <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                {"12 devices found."}
+              </MarketingText>
             </h3>
 
             <p className="mt-2 text-sm text-[#848d88]">
-              Ready for your review
+              <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                {"Ready for your review"}
+              </MarketingText>
             </p>
           </div>
 
@@ -953,51 +1025,37 @@ function DiscoveryExperience() {
             detail="Router · Identified"
           />
 
-          <DeviceRow
-            title="Samsung QN90D"
-            detail="Television · Living Room"
-          />
+          <DeviceRow title="Samsung QN90D" detail="Television · Living Room" />
 
-          <DeviceRow
-            title="MacBook Air"
-            detail="Computer · Home Office"
-          />
+          <DeviceRow title="MacBook Air" detail="Computer · Home Office" />
 
-          <DeviceRow
-            title="Ring Doorbell"
-            detail="Smart Home · Front Door"
-          />
+          <DeviceRow title="Ring Doorbell" detail="Smart Home · Front Door" />
         </div>
 
         <div className="mt-6 rounded-[20px] bg-[#e8eedf] p-5">
           <div className="flex items-center gap-2">
-            <Sparkles
-              size={15}
-              className="text-[#617c43]"
-            />
+            <Sparkles size={15} className="text-[#617c43]" />
 
             <p className="text-xs font-semibold text-[#4f633b]">
-              Review. Confirm. Save.
+              <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+                {"Review. Confirm. Save."}
+              </MarketingText>
             </p>
           </div>
 
           <p className="mt-2 text-xs leading-5 text-[#6d7769]">
-            You stay in control of what
-            discovered devices enter your Vault.
+            <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+              {
+                "You stay in control of what discovered devices enter your Vault."
+              }
+            </MarketingText>
           </p>
         </div>
       </div>
     </motion.div>
   );
 }
-
-function RoleCard({
-  title,
-  copy,
-}: {
-  title: string;
-  copy: string;
-}) {
+function RoleCard({ title, copy }: { title: string; copy: string }) {
   return (
     <motion.article
       whileHover={{
@@ -1014,16 +1072,15 @@ function RoleCard({
       </div>
 
       <h3 className="mt-7 font-serif text-2xl text-[#17212a]">
-        {title}
+        <MarketingText scope="shared">{title}</MarketingText>
       </h3>
 
       <p className="mt-3 text-sm leading-6 text-[#747e79]">
-        {copy}
+        <MarketingText scope="shared">{copy}</MarketingText>
       </p>
     </motion.article>
   );
 }
-
 function MaintenanceTimeline() {
   return (
     <motion.div
@@ -1037,11 +1094,15 @@ function MaintenanceTimeline() {
       className="rounded-[38px] border border-[#17212a]/8 bg-[#fffdf8] p-7 shadow-[0_38px_90px_-62px_rgba(23,33,42,0.45)] md:p-9"
     >
       <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-[#718d4f]">
-        Home history
+        <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+          {"Home history"}
+        </MarketingText>
       </p>
 
       <h3 className="mt-3 font-serif text-3xl text-[#17212a]">
-        Refrigerator
+        <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+          {"Refrigerator"}
+        </MarketingText>
       </h3>
 
       <div className="mt-8 space-y-6">
@@ -1066,7 +1127,6 @@ function MaintenanceTimeline() {
     </motion.div>
   );
 }
-
 function TimelineItem({
   date,
   title,
@@ -1079,22 +1139,21 @@ function TimelineItem({
   return (
     <div className="grid grid-cols-[70px_1fr] gap-4">
       <p className="text-xs font-semibold text-[#617c43]">
-        {date}
+        <MarketingText scope="shared">{date}</MarketingText>
       </p>
 
       <div className="border-l border-[#17212a]/10 pl-5">
         <p className="text-sm font-semibold text-[#183047]">
-          {title}
+          <MarketingText scope="shared">{title}</MarketingText>
         </p>
 
         <p className="mt-1 text-xs text-[#89928d]">
-          {detail}
+          <MarketingText scope="shared">{detail}</MarketingText>
         </p>
       </div>
     </div>
   );
 }
-
 function SearchExperience() {
   return (
     <motion.div
@@ -1105,63 +1164,57 @@ function SearchExperience() {
     >
       <div className="rounded-[26px] bg-[#fffdf8] p-6 text-[#17212a]">
         <div className="flex items-center gap-3 rounded-[18px] border border-[#17212a]/10 bg-white px-4 py-4">
-          <Search
-            size={17}
-            className="text-[#718d4f]"
-          />
+          <Search size={17} className="text-[#718d4f]" />
 
           <p className="flex-1 text-sm text-[#7d8782]">
-            Which warranties expire soon?
+            <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+              {"Which warranties expire soon?"}
+            </MarketingText>
           </p>
 
-          <ArrowRight
-            size={15}
-            className="text-[#617c43]"
-          />
+          <ArrowRight size={15} className="text-[#617c43]" />
         </div>
 
         <div className="mt-5 rounded-[20px] bg-[#f2eee5] p-5">
           <p className="text-[8px] font-semibold uppercase tracking-[0.18em] text-[#718d4f]">
-            Your Vault found
+            <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+              {"Your Vault found"}
+            </MarketingText>
           </p>
 
           <p className="mt-3 font-serif text-xl text-[#183047]">
-            Samsung QN90D
+            <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+              {"Samsung QN90D"}
+            </MarketingText>
           </p>
 
           <p className="mt-1 text-sm text-[#737d78]">
-            Warranty expires in 24 days.
+            <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+              {"Warranty expires in 24 days."}
+            </MarketingText>
           </p>
 
           <div className="mt-4 flex items-center gap-2 text-xs font-semibold text-[#617c43]">
             <ShieldCheck size={14} />
-            View warranty
+            <MarketingText scope="components/marketing/FeaturesPageContent.tsx">
+              {"View warranty"}
+            </MarketingText>
           </div>
         </div>
       </div>
     </motion.div>
   );
 }
-
 /* ====================================================== */
 /* SHARED COMPONENTS */
 /* ====================================================== */
-
-function Reveal({
-  children,
-}: {
-  children: ReactNode;
-}) {
-  const reduceMotion =
-    useReducedMotion();
-
+function Reveal({ children }: { children: ReactNode }) {
+  const reduceMotion = useReducedMotion();
   return (
     <motion.div
       initial={{
         opacity: 0,
-        y: reduceMotion
-          ? 0
-          : 34,
+        y: reduceMotion ? 0 : 34,
       }}
       whileInView={{
         opacity: 1,
@@ -1172,43 +1225,30 @@ function Reveal({
         amount: 0.18,
       }}
       transition={{
-        duration: reduceMotion
-          ? 0
-          : 0.75,
+        duration: reduceMotion ? 0 : 0.75,
         ease,
       }}
     >
-      {children}
+      <MarketingText scope="shared">{children}</MarketingText>
     </motion.div>
   );
 }
-
-function Eyebrow({
-  children,
-}: {
-  children: ReactNode;
-}) {
+function Eyebrow({ children }: { children: ReactNode }) {
   return (
     <div className="inline-flex items-center gap-2 rounded-full border border-[#183047]/10 bg-white/70 px-4 py-2 text-[#617c43] shadow-[0_10px_40px_-26px_rgba(24,48,71,0.35)] backdrop-blur-xl">
       <span className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em]">
-        {children}
+        <MarketingText scope="shared">{children}</MarketingText>
       </span>
     </div>
   );
 }
-
-function SectionLabel({
-  children,
-}: {
-  children: ReactNode;
-}) {
+function SectionLabel({ children }: { children: ReactNode }) {
   return (
     <p className="text-[10px] font-semibold uppercase tracking-[0.21em] text-[#617c43]">
-      {children}
+      <MarketingText scope="shared">{children}</MarketingText>
     </p>
   );
 }
-
 function PrimaryLink({
   href,
   children,
@@ -1221,11 +1261,10 @@ function PrimaryLink({
       href={href}
       className="group inline-flex min-h-[58px] items-center justify-center gap-2 rounded-full bg-[#183047] px-9 text-[15px] font-semibold text-white shadow-[0_26px_60px_-34px_rgba(24,48,71,0.9)] transition duration-300 hover:-translate-y-1 hover:bg-[#223f59]"
     >
-      {children}
+      <MarketingText scope="shared">{children}</MarketingText>
     </Link>
   );
 }
-
 function SecondaryLink({
   href,
   children,
@@ -1238,24 +1277,17 @@ function SecondaryLink({
       href={href}
       className="inline-flex min-h-[58px] items-center justify-center rounded-full border border-[#17212a]/10 bg-white/70 px-9 text-[15px] font-semibold text-[#17212a] backdrop-blur-xl transition duration-300 hover:-translate-y-1 hover:bg-white"
     >
-      {children}
+      <MarketingText scope="shared">{children}</MarketingText>
     </Link>
   );
 }
-
-function TextLink({
-  href,
-  children,
-}: {
-  href: string;
-  children: ReactNode;
-}) {
+function TextLink({ href, children }: { href: string; children: ReactNode }) {
   return (
     <Link
       href={href}
       className="group mt-9 inline-flex items-center gap-2 text-sm font-semibold text-[#183047]"
     >
-      {children}
+      <MarketingText scope="shared">{children}</MarketingText>
 
       <ArrowRight
         size={15}
@@ -1264,12 +1296,7 @@ function TextLink({
     </Link>
   );
 }
-
-function CheckLine({
-  children,
-}: {
-  children: ReactNode;
-}) {
+function CheckLine({ children }: { children: ReactNode }) {
   return (
     <div className="flex items-start gap-3">
       <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#718d4f]/10 text-[#617c43]">
@@ -1277,19 +1304,12 @@ function CheckLine({
       </div>
 
       <span className="text-sm leading-6 text-[#68736d]">
-        {children}
+        <MarketingText scope="shared">{children}</MarketingText>
       </span>
     </div>
   );
 }
-
-function RecordCell({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
+function RecordCell({ label, value }: { label: string; value: string }) {
   return (
     <motion.div
       whileHover={{
@@ -1298,16 +1318,15 @@ function RecordCell({
       className="rounded-[18px] bg-[#ebe7df] px-5 py-4"
     >
       <p className="text-[8px] font-semibold uppercase tracking-[0.17em] text-[#89928d]">
-        {label}
+        <MarketingText scope="shared">{label}</MarketingText>
       </p>
 
       <p className="mt-1 text-sm font-semibold text-[#183047]">
-        {value}
+        <MarketingText scope="shared">{value}</MarketingText>
       </p>
     </motion.div>
   );
 }
-
 function DarkDocumentRow({
   icon: Icon,
   title,
@@ -1330,24 +1349,17 @@ function DarkDocumentRow({
 
       <div className="min-w-0">
         <p className="truncate text-sm font-semibold text-white">
-          {title}
+          <MarketingText scope="shared">{title}</MarketingText>
         </p>
 
         <p className="mt-1 text-xs text-white/45">
-          {detail}
+          <MarketingText scope="shared">{detail}</MarketingText>
         </p>
       </div>
     </motion.div>
   );
 }
-
-function DeviceRow({
-  title,
-  detail,
-}: {
-  title: string;
-  detail: string;
-}) {
+function DeviceRow({ title, detail }: { title: string; detail: string }) {
   return (
     <motion.div
       whileHover={{
@@ -1365,22 +1377,18 @@ function DeviceRow({
 
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold text-[#183047]">
-          {title}
+          <MarketingText scope="shared">{title}</MarketingText>
         </p>
 
         <p className="mt-0.5 text-xs text-[#89928d]">
-          {detail}
+          <MarketingText scope="shared">{detail}</MarketingText>
         </p>
       </div>
 
-      <Check
-        size={15}
-        className="text-[#718d4f]"
-      />
+      <Check size={15} className="text-[#718d4f]" />
     </motion.div>
   );
 }
-
 function FlowDivider() {
   return (
     <div className="relative mx-auto h-16 max-w-[1220px] bg-[#f6f2ea]">

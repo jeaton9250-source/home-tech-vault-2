@@ -1,15 +1,11 @@
-import Link from "next/link";
 import {
-  ArrowRight,
-  Heart,
-  Home,
-  Lightbulb,
-  ShieldCheck,
-} from "lucide-react";
-
+  MarketingText,
+  MarketingImg,
+} from "@/components/marketing/MarketingContent";
+import Link from "next/link";
+import { ArrowRight, Heart, Home, Lightbulb, ShieldCheck } from "lucide-react";
 import MarketingHeader from "@/components/marketing/MarketingHeader";
 import HomeMarketingFooter from "@/components/marketing/HomeMarketingFooter";
-
 export default function OurStoryPage() {
   return (
     <main className="min-h-screen bg-[#f7f5f1] text-[#152335]">
@@ -26,19 +22,27 @@ export default function OurStoryPage() {
           <div className="max-w-[680px]">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#152335]/10 bg-white/60 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#6f7e8d] backdrop-blur">
               <Heart className="h-4 w-4" />
-              Our Story
+              <MarketingText scope="app/our-story/page.tsx">
+                {"Our Story"}
+              </MarketingText>
             </div>
 
             <h1 className="font-serif text-[52px] leading-[0.98] tracking-[-0.05em] sm:text-[68px] lg:text-[78px]">
-              I built HTV because
+              <MarketingText scope="app/our-story/page.tsx">
+                {"I built HTV because"}
+              </MarketingText>
               <br />
-              homes deserve a memory.
+              <MarketingText scope="app/our-story/page.tsx">
+                {"homes deserve a memory."}
+              </MarketingText>
             </h1>
 
             <p className="mt-7 max-w-[620px] text-lg leading-8 text-[#637184] sm:text-xl">
-              Home Tech Vault started with a simple frustration:
-              important information about a home was everywhere,
-              except where you actually needed it.
+              <MarketingText scope="app/our-story/page.tsx">
+                {
+                  "Home Tech Vault started with a simple frustration: important information about a home was everywhere, except where you actually needed it."
+                }
+              </MarketingText>
             </p>
 
             <div className="mt-9 flex flex-wrap gap-3">
@@ -46,7 +50,9 @@ export default function OurStoryPage() {
                 href="/signup"
                 className="inline-flex items-center justify-center gap-2 rounded-full bg-[#152335] px-7 py-4 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#24384c]"
               >
-                Start Your Home
+                <MarketingText scope="app/our-story/page.tsx">
+                  {"Start Your Home"}
+                </MarketingText>
                 <ArrowRight className="h-4 w-4" />
               </Link>
 
@@ -54,7 +60,9 @@ export default function OurStoryPage() {
                 href="/explore"
                 className="inline-flex items-center justify-center gap-2 rounded-full border border-[#152335]/12 bg-white/60 px-7 py-4 text-sm font-semibold text-[#152335] backdrop-blur transition hover:bg-white"
               >
-                Explore HTV
+                <MarketingText scope="app/our-story/page.tsx">
+                  {"Explore HTV"}
+                </MarketingText>
               </Link>
             </div>
           </div>
@@ -62,20 +70,25 @@ export default function OurStoryPage() {
           {/* FOUNDER IMAGE */}
           <div className="relative mx-auto w-full max-w-[560px]">
             <div className="overflow-hidden rounded-[36px] border border-white/70 bg-white/40 p-3 shadow-[0_30px_90px_rgba(29,47,66,0.15)] backdrop-blur-xl">
-              <img
+              <MarketingImg
                 src="/images/jason-eaton.jpg"
                 alt="Jason Eaton, founder of Home Tech Vault"
                 className="aspect-[4/3] w-full rounded-[28px] object-cover object-[50%_12%]"
+                scope="app/our-story/page.tsx"
               />
             </div>
 
             <div className="absolute -bottom-6 -left-5 hidden rounded-[20px] bg-[#152335] px-6 py-5 text-white shadow-xl lg:block">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/45">
-                Founder
+                <MarketingText scope="app/our-story/page.tsx">
+                  {"Founder"}
+                </MarketingText>
               </p>
 
               <p className="mt-2 font-serif text-2xl">
-                Jason Eaton
+                <MarketingText scope="app/our-story/page.tsx">
+                  {"Jason Eaton"}
+                </MarketingText>
               </p>
             </div>
           </div>
@@ -87,40 +100,50 @@ export default function OurStoryPage() {
         <div className="mx-auto grid max-w-[1200px] gap-14 lg:grid-cols-[0.7fr_1.3fr]">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#7b8794]">
-              Where it started
+              <MarketingText scope="app/our-story/page.tsx">
+                {"Where it started"}
+              </MarketingText>
             </p>
           </div>
 
           <div>
             <h2 className="font-serif text-4xl leading-[1.08] tracking-[-0.04em] sm:text-5xl">
-              I kept seeing the same problem:
-              homeowners had the information,
-              but no real place to keep it.
+              <MarketingText scope="app/our-story/page.tsx">
+                {
+                  "I kept seeing the same problem: homeowners had the information, but no real place to keep it."
+                }
+              </MarketingText>
             </h2>
 
             <div className="mt-8 space-y-6 text-lg leading-8 text-[#687486]">
               <p>
-                Manuals ended up in drawers. Receipts lived in
-                email. Warranty information got lost. Service
-                dates were written down somewhere — or not at all.
+                <MarketingText scope="app/our-story/page.tsx">
+                  {
+                    "Manuals ended up in drawers. Receipts lived in email. Warranty information got lost. Service dates were written down somewhere \u2014 or not at all."
+                  }
+                </MarketingText>
               </p>
 
               <p>
-                The information existed, but it was scattered.
-                And when something broke, when a warranty was
-                needed, or when it was time to sell, finding the
-                right detail became harder than it should have been.
+                <MarketingText scope="app/our-story/page.tsx">
+                  {
+                    "The information existed, but it was scattered. And when something broke, when a warranty was needed, or when it was time to sell, finding the right detail became harder than it should have been."
+                  }
+                </MarketingText>
               </p>
 
               <p>
-                I started thinking about how much history a home
-                quietly builds over time. Appliances get replaced.
-                Systems get serviced. Rooms get updated. Documents
-                get signed. Every year adds another layer.
+                <MarketingText scope="app/our-story/page.tsx">
+                  {
+                    "I started thinking about how much history a home quietly builds over time. Appliances get replaced. Systems get serviced. Rooms get updated. Documents get signed. Every year adds another layer."
+                  }
+                </MarketingText>
               </p>
 
               <p className="font-serif text-2xl italic text-[#2e4053]">
-                What if the home itself had one place to remember it all?
+                <MarketingText scope="app/our-story/page.tsx">
+                  {"What if the home itself had one place to remember it all?"}
+                </MarketingText>
               </p>
             </div>
           </div>
@@ -132,18 +155,23 @@ export default function OurStoryPage() {
         <div className="mx-auto max-w-[1380px]">
           <div className="mx-auto max-w-[780px] text-center">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#7b8794]">
-              Why it matters
+              <MarketingText scope="app/our-story/page.tsx">
+                {"Why it matters"}
+              </MarketingText>
             </p>
 
             <h2 className="mt-4 font-serif text-4xl leading-[1.05] tracking-[-0.04em] sm:text-5xl lg:text-6xl">
-              HTV is meant to make
-              homeownership feel a little easier.
+              <MarketingText scope="app/our-story/page.tsx">
+                {"HTV is meant to make homeownership feel a little easier."}
+              </MarketingText>
             </h2>
 
             <p className="mx-auto mt-6 max-w-[660px] text-lg leading-8 text-[#687486]">
-              Not by adding another complicated app to your life,
-              but by giving your home a place for the details
-              you&apos;ll eventually need.
+              <MarketingText scope="app/our-story/page.tsx">
+                {
+                  "Not by adding another complicated app to your life, but by giving your home a place for the details you'll eventually need."
+                }
+              </MarketingText>
             </p>
           </div>
 
@@ -152,24 +180,20 @@ export default function OurStoryPage() {
               {
                 icon: Lightbulb,
                 title: "Less searching",
-                copy:
-                  "Know where to look when you need a manual, receipt, warranty or service record.",
+                copy: "Know where to look when you need a manual, receipt, warranty or service record.",
               },
               {
                 icon: ShieldCheck,
                 title: "More confidence",
-                copy:
-                  "Keep a clearer record of what your home owns, what was done, and when.",
+                copy: "Keep a clearer record of what your home owns, what was done, and when.",
               },
               {
                 icon: Home,
                 title: "A history that stays",
-                copy:
-                  "Build a useful home record that can grow with the property over time.",
+                copy: "Build a useful home record that can grow with the property over time.",
               },
             ].map((item) => {
               const Icon = item.icon;
-
               return (
                 <article
                   key={item.title}
@@ -180,11 +204,11 @@ export default function OurStoryPage() {
                   </div>
 
                   <h3 className="mt-8 font-serif text-3xl">
-                    {item.title}
+                    <MarketingText scope="shared">{item.title}</MarketingText>
                   </h3>
 
                   <p className="mt-4 leading-7 text-[#687486]">
-                    {item.copy}
+                    <MarketingText scope="shared">{item.copy}</MarketingText>
                   </p>
                 </article>
               );
@@ -198,32 +222,42 @@ export default function OurStoryPage() {
         <div className="mx-auto grid max-w-[1200px] gap-14 lg:grid-cols-[0.7fr_1.3fr]">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#7b8794]">
-              Where it&apos;s going
+              <MarketingText scope="app/our-story/page.tsx">
+                {"Where it's going"}
+              </MarketingText>
             </p>
           </div>
 
           <div>
             <h2 className="font-serif text-4xl leading-[1.08] tracking-[-0.04em] sm:text-5xl">
-              The long-term idea is bigger than storing documents.
+              <MarketingText scope="app/our-story/page.tsx">
+                {"The long-term idea is bigger than storing documents."}
+              </MarketingText>
             </h2>
 
             <div className="mt-8 space-y-6 text-lg leading-8 text-[#687486]">
               <p>
-                I want Home Tech Vault to become the living record
-                of a home — something that becomes more useful the
-                longer you own the property.
+                <MarketingText scope="app/our-story/page.tsx">
+                  {
+                    "I want Home Tech Vault to become the living record of a home \u2014 something that becomes more useful the longer you own the property."
+                  }
+                </MarketingText>
               </p>
 
               <p>
-                When something breaks, you should know what it is.
-                When something gets serviced, the history should be
-                there. When you replace an appliance, that change
-                should become part of the home&apos;s record.
+                <MarketingText scope="app/our-story/page.tsx">
+                  {
+                    "When something breaks, you should know what it is. When something gets serviced, the history should be there. When you replace an appliance, that change should become part of the home's record."
+                  }
+                </MarketingText>
               </p>
 
               <p>
-                And when that home changes hands, the useful history
-                should not have to disappear with the previous owner.
+                <MarketingText scope="app/our-story/page.tsx">
+                  {
+                    "And when that home changes hands, the useful history should not have to disappear with the previous owner."
+                  }
+                </MarketingText>
               </p>
             </div>
           </div>
@@ -234,41 +268,57 @@ export default function OurStoryPage() {
       <section className="px-5 pb-24 sm:px-6 lg:px-10 lg:pb-32">
         <div className="mx-auto max-w-[1120px] overflow-hidden rounded-[36px] bg-[#152335] text-white shadow-[0_30px_90px_rgba(21,35,53,0.12)]">
           <div className="grid lg:grid-cols-[0.82fr_1.18fr]">
-
             {/* PRINCIPLES */}
             <div className="border-b border-white/10 px-8 py-12 sm:px-12 lg:border-b-0 lg:border-r lg:py-14">
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/40">
-                Why I&apos;m building it
+                <MarketingText scope="app/our-story/page.tsx">
+                  {"Why I'm building it"}
+                </MarketingText>
               </p>
 
               <div className="mt-10 space-y-9">
                 <div>
                   <p className="font-serif text-3xl tracking-[-0.03em]">
-                    Keep it.
+                    <MarketingText scope="app/our-story/page.tsx">
+                      {"Keep it."}
+                    </MarketingText>
                   </p>
                   <p className="mt-2 max-w-[330px] text-sm leading-6 text-white/55">
-                    Important information about your home should have one
-                    dependable place to live.
+                    <MarketingText scope="app/our-story/page.tsx">
+                      {
+                        "Important information about your home should have one dependable place to live."
+                      }
+                    </MarketingText>
                   </p>
                 </div>
 
                 <div>
                   <p className="font-serif text-3xl tracking-[-0.03em]">
-                    Find it.
+                    <MarketingText scope="app/our-story/page.tsx">
+                      {"Find it."}
+                    </MarketingText>
                   </p>
                   <p className="mt-2 max-w-[330px] text-sm leading-6 text-white/55">
-                    When something breaks, expires, or needs service, the
-                    answer should be easy to find.
+                    <MarketingText scope="app/our-story/page.tsx">
+                      {
+                        "When something breaks, expires, or needs service, the answer should be easy to find."
+                      }
+                    </MarketingText>
                   </p>
                 </div>
 
                 <div>
                   <p className="font-serif text-3xl tracking-[-0.03em]">
-                    Pass it on.
+                    <MarketingText scope="app/our-story/page.tsx">
+                      {"Pass it on."}
+                    </MarketingText>
                   </p>
                   <p className="mt-2 max-w-[330px] text-sm leading-6 text-white/55">
-                    A home&apos;s useful history should stay with the home
-                    instead of disappearing over time.
+                    <MarketingText scope="app/our-story/page.tsx">
+                      {
+                        "A home's useful history should stay with the home instead of disappearing over time."
+                      }
+                    </MarketingText>
                   </p>
                 </div>
               </div>
@@ -277,25 +327,32 @@ export default function OurStoryPage() {
             {/* FOUNDER NOTE */}
             <div className="flex flex-col justify-center px-8 py-12 sm:px-12 lg:px-16 lg:py-16">
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/40">
-                A note from the founder
+                <MarketingText scope="app/our-story/page.tsx">
+                  {"A note from the founder"}
+                </MarketingText>
               </p>
 
               <p className="mt-7 max-w-[600px] font-serif text-3xl leading-[1.3] tracking-[-0.03em] sm:text-[40px]">
-                “HTV is still growing, but the goal has stayed simple:
-                make the information that comes with owning a home easier
-                to keep, easier to find, and more useful over time.”
+                <MarketingText scope="app/our-story/page.tsx">
+                  {
+                    "\u201CHTV is still growing, but the goal has stayed simple: make the information that comes with owning a home easier to keep, easier to find, and more useful over time.\u201D"
+                  }
+                </MarketingText>
               </p>
 
               <div className="mt-10 border-t border-white/10 pt-7">
                 <p className="font-semibold">
-                  Jason Eaton
+                  <MarketingText scope="app/our-story/page.tsx">
+                    {"Jason Eaton"}
+                  </MarketingText>
                 </p>
                 <p className="mt-1 text-sm text-white/45">
-                  Founder, Home Tech Vault
+                  <MarketingText scope="app/our-story/page.tsx">
+                    {"Founder, Home Tech Vault"}
+                  </MarketingText>
                 </p>
               </div>
             </div>
-
           </div>
         </div>
       </section>
@@ -306,18 +363,24 @@ export default function OurStoryPage() {
           <Home className="h-8 w-8 text-[#152335]/45" />
 
           <h2 className="mt-6 font-serif text-5xl leading-[1] tracking-[-0.045em] sm:text-6xl">
-            Start building your home&apos;s story.
+            <MarketingText scope="app/our-story/page.tsx">
+              {"Start building your home's story."}
+            </MarketingText>
           </h2>
 
           <p className="mt-7 max-w-[620px] text-lg leading-8 text-[#687486]">
-            One appliance, one receipt, one repair at a time.
+            <MarketingText scope="app/our-story/page.tsx">
+              {"One appliance, one receipt, one repair at a time."}
+            </MarketingText>
           </p>
 
           <Link
             href="/signup"
             className="mt-9 inline-flex items-center gap-2 rounded-full bg-[#152335] px-8 py-4 text-sm font-semibold text-white transition hover:bg-[#24384c]"
           >
-            Start Your Home
+            <MarketingText scope="app/our-story/page.tsx">
+              {"Start Your Home"}
+            </MarketingText>
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>

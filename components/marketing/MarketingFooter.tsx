@@ -1,5 +1,5 @@
+import { MarketingText } from "@/components/marketing/MarketingContent";
 import Link from "next/link";
-
 import Logo from "@/components/brand/Logo";
 import { brand } from "@/lib/design-system/tokens";
 import {
@@ -11,7 +11,6 @@ import {
   FOOTER_SUPPORT_LINKS,
   type FooterLink,
 } from "@/lib/marketing/footer";
-
 export default function MarketingFooter() {
   return (
     <footer className="border-t border-white/10 bg-[#183047] text-[#f5f1e8]">
@@ -23,45 +22,34 @@ export default function MarketingFooter() {
             </div>
 
             <p className="mt-4 text-sm leading-6 text-[#d4d9dd]">
-              {brand.tagline}
+              <MarketingText scope="shared">{brand.tagline}</MarketingText>
             </p>
 
             <p className="mt-3 text-sm leading-6 text-[#9da8b0]">
-              {FOOTER_BRAND_DESCRIPTION}
+              <MarketingText scope="shared">
+                {FOOTER_BRAND_DESCRIPTION}
+              </MarketingText>
             </p>
           </div>
 
           <div className="grid gap-10 sm:grid-cols-2 sm:gap-10 lg:grid-cols-4 lg:gap-12">
-            <FooterColumn
-              title="Product"
-              links={FOOTER_PRODUCT_LINKS}
-            />
+            <FooterColumn title="Product" links={FOOTER_PRODUCT_LINKS} />
 
-            <FooterColumn
-              title="Guides"
-              links={FOOTER_GUIDE_LINKS}
-            />
+            <FooterColumn title="Guides" links={FOOTER_GUIDE_LINKS} />
 
-            <FooterColumn
-              title="Support"
-              links={FOOTER_SUPPORT_LINKS}
-            />
+            <FooterColumn title="Support" links={FOOTER_SUPPORT_LINKS} />
 
-            <FooterColumn
-              title="Legal"
-              links={FOOTER_LEGAL_LINKS}
-            />
+            <FooterColumn title="Legal" links={FOOTER_LEGAL_LINKS} />
           </div>
         </div>
 
         <p className="mt-12 border-t border-white/10 pt-8 text-xs leading-5 text-[#8e99a2]">
-          {FOOTER_COPYRIGHT}
+          <MarketingText scope="shared">{FOOTER_COPYRIGHT}</MarketingText>
         </p>
       </div>
     </footer>
   );
 }
-
 function FooterColumn({
   title,
   links,
@@ -70,14 +58,13 @@ function FooterColumn({
   links: FooterLink[];
 }) {
   const headingId = `footer-${title.toLowerCase()}`;
-
   return (
     <nav aria-labelledby={headingId}>
       <p
         id={headingId}
         className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#718d4f]"
       >
-        {title}
+        <MarketingText scope="shared">{title}</MarketingText>
       </p>
 
       <ul className="mt-4 space-y-2.5">
@@ -87,7 +74,7 @@ function FooterColumn({
               href={link.href}
               className="text-sm leading-6 text-[#c7cfd5] transition-colors duration-200 hover:text-[#f5f1e8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#718d4f]"
             >
-              {link.label}
+              <MarketingText scope="shared">{link.label}</MarketingText>
             </Link>
           </li>
         ))}

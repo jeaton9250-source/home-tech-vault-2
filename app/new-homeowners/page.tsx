@@ -1,6 +1,6 @@
+import { MarketingText } from "@/components/marketing/MarketingContent";
 import type { Metadata } from "next";
 import Link from "next/link";
-
 import {
   ArrowRight,
   Check,
@@ -12,15 +12,12 @@ import {
   ShieldCheck,
   Wrench,
 } from "lucide-react";
-
 import { MARKETING_ROUTES } from "@/lib/marketing/routes";
-
 export const metadata: Metadata = {
   title: "New Homeowner Organizer | Home Tech Vault",
   description:
     "Keep the important details about your new home together from day one — appliances, warranties, receipts, manuals, maintenance records, and home documents.",
 };
-
 const firstThings = [
   "Refrigerator and major kitchen appliances",
   "Washer and dryer",
@@ -31,7 +28,6 @@ const firstThings = [
   "Receipts and warranties",
   "Important home documents",
 ];
-
 const savedItems = [
   {
     icon: PackageCheck,
@@ -54,7 +50,6 @@ const savedItems = [
     detail: "Next replacement date remembered",
   },
 ];
-
 export default function NewHomeownerPage() {
   return (
     <div className="min-h-screen bg-[#f5f1e8] text-[#17212a]">
@@ -68,10 +63,14 @@ export default function NewHomeownerPage() {
 
             <div>
               <p className="font-serif text-base font-medium">
-                Home Tech Vault
+                <MarketingText scope="app/new-homeowners/page.tsx">
+                  {"Home Tech Vault"}
+                </MarketingText>
               </p>
               <p className="text-[9px] uppercase tracking-[0.16em] text-[#778078]">
-                For your new home
+                <MarketingText scope="app/new-homeowners/page.tsx">
+                  {"For your new home"}
+                </MarketingText>
               </p>
             </div>
           </Link>
@@ -80,7 +79,9 @@ export default function NewHomeownerPage() {
             href={MARKETING_ROUTES.signup}
             className="rounded-full bg-[#617c43] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#718d4f]"
           >
-            Set Up My Vault
+            <MarketingText scope="app/new-homeowners/page.tsx">
+              {"Set Up My Vault"}
+            </MarketingText>
           </Link>
         </div>
       </header>
@@ -95,23 +96,30 @@ export default function NewHomeownerPage() {
               <div className="inline-flex items-center gap-2 rounded-full bg-white/60 px-4 py-2 shadow-sm ring-1 ring-[#17212a]/5">
                 <KeyRound size={14} className="text-[#617c43]" />
                 <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#617c43]">
-                  Welcome home
+                  <MarketingText scope="app/new-homeowners/page.tsx">
+                    {"Welcome home"}
+                  </MarketingText>
                 </span>
               </div>
 
               <h1 className="mt-8 max-w-[720px] font-serif text-[3.4rem] font-medium leading-[0.98] tracking-[-0.055em] sm:text-[4.5rem] lg:text-[5.4rem]">
-                You&apos;ve got the keys.
+                <MarketingText scope="app/new-homeowners/page.tsx">
+                  {"You've got the keys."}
+                </MarketingText>
                 <br />
                 <span className="text-[#617c43]">
-                  Now keep the important stuff together.
+                  <MarketingText scope="app/new-homeowners/page.tsx">
+                    {"Now keep the important stuff together."}
+                  </MarketingText>
                 </span>
               </h1>
 
               <p className="mt-7 max-w-[640px] text-lg leading-8 text-[#5f6863]">
-                Your new home comes with more paperwork, appliances,
-                warranties, manuals, receipts, and little details than you
-                realize. Home Tech Vault gives you one simple place to keep the
-                things you&apos;ll want later.
+                <MarketingText scope="app/new-homeowners/page.tsx">
+                  {
+                    "Your new home comes with more paperwork, appliances, warranties, manuals, receipts, and little details than you realize. Home Tech Vault gives you one simple place to keep the things you'll want later."
+                  }
+                </MarketingText>
               </p>
 
               <div className="mt-9 flex flex-col gap-3 sm:flex-row">
@@ -119,7 +127,9 @@ export default function NewHomeownerPage() {
                   href={MARKETING_ROUTES.signup}
                   className="inline-flex min-h-[52px] items-center justify-center gap-2 rounded-full bg-[#617c43] px-7 text-sm font-semibold text-white shadow-[0_16px_35px_-18px_rgba(97,124,67,0.8)] transition hover:bg-[#718d4f]"
                 >
-                  Set Up My Home Vault
+                  <MarketingText scope="app/new-homeowners/page.tsx">
+                    {"Set Up My Home Vault"}
+                  </MarketingText>
                   <ArrowRight size={16} />
                 </Link>
 
@@ -127,12 +137,16 @@ export default function NewHomeownerPage() {
                   href={MARKETING_ROUTES.demo}
                   className="inline-flex min-h-[52px] items-center justify-center rounded-full border border-[#17212a]/15 bg-white/50 px-7 text-sm font-semibold transition hover:bg-white"
                 >
-                  See an Example
+                  <MarketingText scope="app/new-homeowners/page.tsx">
+                    {"See an Example"}
+                  </MarketingText>
                 </Link>
               </div>
 
               <p className="mt-5 text-sm text-[#7b827e]">
-                No credit card required. Start with just one thing.
+                <MarketingText scope="app/new-homeowners/page.tsx">
+                  {"No credit card required. Start with just one thing."}
+                </MarketingText>
               </p>
             </div>
 
@@ -144,15 +158,21 @@ export default function NewHomeownerPage() {
                 <div className="-rotate-[1deg] overflow-hidden rounded-[25px] border border-[#17212a]/10 bg-[#fffdf8]">
                   <div className="border-b border-[#17212a]/10 px-7 py-6">
                     <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#778078]">
-                      My New Home
+                      <MarketingText scope="app/new-homeowners/page.tsx">
+                        {"My New Home"}
+                      </MarketingText>
                     </p>
 
                     <h2 className="mt-2 font-serif text-3xl">
-                      My Home Binder
+                      <MarketingText scope="app/new-homeowners/page.tsx">
+                        {"My Home Binder"}
+                      </MarketingText>
                     </h2>
 
                     <p className="mt-2 text-sm text-[#6c746f]">
-                      The things I don&apos;t want to lose track of.
+                      <MarketingText scope="app/new-homeowners/page.tsx">
+                        {"The things I don't want to lose track of."}
+                      </MarketingText>
                     </p>
                   </div>
 
@@ -160,7 +180,6 @@ export default function NewHomeownerPage() {
                     <div className="space-y-3">
                       {savedItems.map((item) => {
                         const Icon = item.icon;
-
                         return (
                           <div
                             key={item.title}
@@ -172,11 +191,15 @@ export default function NewHomeownerPage() {
 
                             <div>
                               <p className="font-medium">
-                                {item.title}
+                                <MarketingText scope="shared">
+                                  {item.title}
+                                </MarketingText>
                               </p>
 
                               <p className="mt-1 text-sm leading-6 text-[#747c77]">
-                                {item.detail}
+                                <MarketingText scope="shared">
+                                  {item.detail}
+                                </MarketingText>
                               </p>
                             </div>
                           </div>
@@ -186,11 +209,17 @@ export default function NewHomeownerPage() {
 
                     <div className="mt-5 rounded-2xl border border-dashed border-[#617c43]/25 bg-[#617c43]/5 px-5 py-4">
                       <p className="font-serif text-lg text-[#46553a]">
-                        Add things as you settle in.
+                        <MarketingText scope="app/new-homeowners/page.tsx">
+                          {"Add things as you settle in."}
+                        </MarketingText>
                       </p>
 
                       <p className="mt-1 text-sm leading-6 text-[#6d756f]">
-                        There&apos;s no need to organize your whole house today.
+                        <MarketingText scope="app/new-homeowners/page.tsx">
+                          {
+                            "There's no need to organize your whole house today."
+                          }
+                        </MarketingText>
                       </p>
                     </div>
                   </div>
@@ -204,10 +233,15 @@ export default function NewHomeownerPage() {
         <section className="px-5 py-10 md:px-8">
           <div className="mx-auto max-w-[900px] rounded-[30px] bg-[#e7dfd0] px-7 py-10 text-center sm:px-12">
             <p className="font-serif text-2xl leading-10 text-[#354033] sm:text-3xl">
-              Buying a home gives you keys.
+              <MarketingText scope="app/new-homeowners/page.tsx">
+                {"Buying a home gives you keys."}
+              </MarketingText>
               <br className="hidden sm:block" />
-              It doesn&apos;t give you a system for remembering everything that
-              comes with it.
+              <MarketingText scope="app/new-homeowners/page.tsx">
+                {
+                  "It doesn't give you a system for remembering everything that comes with it."
+                }
+              </MarketingText>
             </p>
           </div>
         </section>
@@ -217,17 +251,23 @@ export default function NewHomeownerPage() {
           <div className="mx-auto grid max-w-[1100px] gap-16 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#617c43]">
-                Start here
+                <MarketingText scope="app/new-homeowners/page.tsx">
+                  {"Start here"}
+                </MarketingText>
               </p>
 
               <h2 className="mt-5 font-serif text-4xl font-medium leading-[1.05] tracking-[-0.04em] sm:text-5xl">
-                You don&apos;t need to organize everything today.
+                <MarketingText scope="app/new-homeowners/page.tsx">
+                  {"You don't need to organize everything today."}
+                </MarketingText>
               </h2>
 
               <p className="mt-6 max-w-lg text-base leading-8 text-[#68716c]">
-                Start with the things you&apos;d hate to search for later. A few
-                minutes now can save a lot of frustration when something breaks,
-                needs service, or requires proof of purchase.
+                <MarketingText scope="app/new-homeowners/page.tsx">
+                  {
+                    "Start with the things you'd hate to search for later. A few minutes now can save a lot of frustration when something breaks, needs service, or requires proof of purchase."
+                  }
+                </MarketingText>
               </p>
             </div>
 
@@ -236,7 +276,9 @@ export default function NewHomeownerPage() {
                 <FileText size={18} className="text-[#617c43]" />
 
                 <p className="font-serif text-2xl">
-                  A good first-day list
+                  <MarketingText scope="app/new-homeowners/page.tsx">
+                    {"A good first-day list"}
+                  </MarketingText>
                 </p>
               </div>
 
@@ -248,7 +290,7 @@ export default function NewHomeownerPage() {
                     </div>
 
                     <span className="text-sm leading-6 text-[#59625d]">
-                      {item}
+                      <MarketingText scope="shared">{item}</MarketingText>
                     </span>
                   </div>
                 ))}
@@ -262,11 +304,15 @@ export default function NewHomeownerPage() {
           <div className="mx-auto max-w-[1100px]">
             <div className="max-w-3xl">
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#9bb27a]">
-                You&apos;ll thank yourself later
+                <MarketingText scope="app/new-homeowners/page.tsx">
+                  {"You'll thank yourself later"}
+                </MarketingText>
               </p>
 
               <h2 className="mt-5 font-serif text-4xl font-medium leading-[1.05] tracking-[-0.04em] sm:text-5xl">
-                When something breaks, you already know where to look.
+                <MarketingText scope="app/new-homeowners/page.tsx">
+                  {"When something breaks, you already know where to look."}
+                </MarketingText>
               </h2>
             </div>
 
@@ -296,17 +342,23 @@ export default function NewHomeownerPage() {
         <section className="px-5 py-24 md:px-8 md:py-32">
           <div className="mx-auto max-w-[1000px] text-center">
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#617c43]">
-              Your digital home binder
+              <MarketingText scope="app/new-homeowners/page.tsx">
+                {"Your digital home binder"}
+              </MarketingText>
             </p>
 
             <h2 className="mx-auto mt-5 max-w-3xl font-serif text-4xl font-medium leading-[1.04] tracking-[-0.045em] sm:text-5xl">
-              Keep what matters. Find it when you need it.
+              <MarketingText scope="app/new-homeowners/page.tsx">
+                {"Keep what matters. Find it when you need it."}
+              </MarketingText>
             </h2>
 
             <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-[#68716c]">
-              Home Tech Vault isn&apos;t about turning your home into a project.
-              It&apos;s simply a place to keep the details that are easy to
-              forget and annoying to find later.
+              <MarketingText scope="app/new-homeowners/page.tsx">
+                {
+                  "Home Tech Vault isn't about turning your home into a project. It's simply a place to keep the details that are easy to forget and annoying to find later."
+                }
+              </MarketingText>
             </p>
           </div>
         </section>
@@ -319,24 +371,33 @@ export default function NewHomeownerPage() {
             </div>
 
             <h2 className="mx-auto mt-7 max-w-3xl font-serif text-4xl font-medium leading-[1.03] tracking-[-0.04em] sm:text-5xl">
-              Make your new home a little easier to manage.
+              <MarketingText scope="app/new-homeowners/page.tsx">
+                {"Make your new home a little easier to manage."}
+              </MarketingText>
             </h2>
 
             <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-white/75">
-              Start with one appliance, warranty, receipt, or document. Your
-              Vault can grow with your home.
+              <MarketingText scope="app/new-homeowners/page.tsx">
+                {
+                  "Start with one appliance, warranty, receipt, or document. Your Vault can grow with your home."
+                }
+              </MarketingText>
             </p>
 
             <Link
               href={MARKETING_ROUTES.signup}
               className="mt-8 inline-flex min-h-[54px] items-center justify-center gap-2 rounded-full bg-[#fffdf8] px-8 text-sm font-semibold text-[#40502f] transition hover:bg-white"
             >
-              Set Up My Home Vault
+              <MarketingText scope="app/new-homeowners/page.tsx">
+                {"Set Up My Home Vault"}
+              </MarketingText>
               <ArrowRight size={16} />
             </Link>
 
             <p className="mt-4 text-xs text-white/60">
-              Free to start. No credit card required.
+              <MarketingText scope="app/new-homeowners/page.tsx">
+                {"Free to start. No credit card required."}
+              </MarketingText>
             </p>
           </div>
         </section>
@@ -345,20 +406,28 @@ export default function NewHomeownerPage() {
       <footer className="border-t border-[#17212a]/10 px-5 py-8 md:px-8">
         <div className="mx-auto flex max-w-[1100px] flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-left">
           <p className="text-xs text-[#7b827e]">
-            © 2026 Home Tech Vault
+            <MarketingText scope="app/new-homeowners/page.tsx">
+              {"\u00A9 2026 Home Tech Vault"}
+            </MarketingText>
           </p>
 
           <div className="flex gap-5 text-xs text-[#68716c]">
             <Link href="/privacy" className="hover:text-[#17212a]">
-              Privacy
+              <MarketingText scope="app/new-homeowners/page.tsx">
+                {"Privacy"}
+              </MarketingText>
             </Link>
 
             <Link href="/trust" className="hover:text-[#17212a]">
-              Security
+              <MarketingText scope="app/new-homeowners/page.tsx">
+                {"Security"}
+              </MarketingText>
             </Link>
 
             <Link href="/" className="hover:text-[#17212a]">
-              Home Tech Vault
+              <MarketingText scope="app/new-homeowners/page.tsx">
+                {"Home Tech Vault"}
+              </MarketingText>
             </Link>
           </div>
         </div>
@@ -366,7 +435,6 @@ export default function NewHomeownerPage() {
     </div>
   );
 }
-
 function StoryCard({
   number,
   title,
@@ -379,15 +447,15 @@ function StoryCard({
   return (
     <div className="rounded-[26px] border border-white/10 bg-white/[0.04] p-7">
       <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#9bb27a]">
-        {number}
+        <MarketingText scope="shared">{number}</MarketingText>
       </p>
 
       <h3 className="mt-5 font-serif text-2xl leading-tight">
-        {title}
+        <MarketingText scope="shared">{title}</MarketingText>
       </h3>
 
       <p className="mt-4 text-sm leading-7 text-white/60">
-        {text}
+        <MarketingText scope="shared">{text}</MarketingText>
       </p>
     </div>
   );

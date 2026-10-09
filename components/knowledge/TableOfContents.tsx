@@ -1,18 +1,15 @@
+import { MarketingText } from "@/components/marketing/MarketingContent";
 import type { ReactNode } from "react";
-
 import { cn } from "@/lib/design-system/cn";
-
 type TableOfContentsItem = {
   id: string;
   label: string;
 };
-
 type TableOfContentsProps = {
   items: ReadonlyArray<TableOfContentsItem>;
   title?: string;
   className?: string;
 };
-
 export default function TableOfContents({
   items,
   title = "On this page",
@@ -21,17 +18,16 @@ export default function TableOfContents({
   if (items.length === 0) {
     return null;
   }
-
   return (
     <nav
       aria-label="Table of contents"
       className={cn(
         "border border-border-subtle bg-surface-card p-5",
-        className
+        className,
       )}
     >
       <p className="text-overline text-text-muted">
-        {title}
+        <MarketingText scope="shared">{title}</MarketingText>
       </p>
       <ol className="mt-4 space-y-2.5">
         {items.map((item, index) => (
@@ -41,7 +37,10 @@ export default function TableOfContents({
               className="htv-focus-ring text-sm leading-6 text-text-secondary transition hover:text-text-primary"
             >
               <span className="mr-2 text-text-muted">
-                {index + 1}.
+                {index + 1}
+                <MarketingText scope="components/knowledge/TableOfContents.tsx">
+                  {"."}
+                </MarketingText>
               </span>
               {item.label.replace(/^\d+\.\s*/, "")}
             </a>
@@ -51,5 +50,4 @@ export default function TableOfContents({
     </nav>
   );
 }
-
 export type { TableOfContentsItem, TableOfContentsProps };

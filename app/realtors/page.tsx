@@ -1,3 +1,7 @@
+import {
+  MarketingText,
+  MarketingImg,
+} from "@/components/marketing/MarketingContent";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -10,10 +14,8 @@ import {
   ShieldCheck,
   Wrench,
 } from "lucide-react";
-
 import HomeMarketingFooter from "@/components/marketing/HomeMarketingFooter";
 import MarketingHeader from "@/components/marketing/MarketingHeader";
-
 const keepsakeDetails = [
   {
     icon: ReceiptText,
@@ -31,7 +33,6 @@ const keepsakeDetails = [
     copy: "Service notes and maintenance history that help a new owner understand how their home has been cared for.",
   },
 ] as const;
-
 const handoffSteps = [
   {
     number: "01",
@@ -49,7 +50,6 @@ const handoffSteps = [
     copy: "Present the home record with the keys. Your buyers receive a beautiful starting point that is theirs to keep building.",
   },
 ] as const;
-
 export default function RealtorsPage() {
   return (
     <main className="min-h-screen bg-[#f7f5f0] text-[#152335]">
@@ -63,24 +63,35 @@ export default function RealtorsPage() {
             <div className="relative max-w-[650px]">
               <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#71805f]">
                 <span className="h-px w-8 bg-[#98a267]" />
-                A closing gift for the home
+                <MarketingText scope="app/realtors/page.tsx">
+                  {"A closing gift for the home"}
+                </MarketingText>
               </div>
 
               <h1 className="mt-7 font-serif text-[54px] leading-[0.94] tracking-[-0.055em] sm:text-[70px] lg:text-[76px] xl:text-[86px]">
-                Give them more
+                <MarketingText scope="app/realtors/page.tsx">
+                  {"Give them more"}
+                </MarketingText>
                 <br />
-                than the keys.
+                <MarketingText scope="app/realtors/page.tsx">
+                  {"than the keys."}
+                </MarketingText>
               </h1>
 
               <p className="mt-8 max-w-[590px] text-lg leading-8 text-[#627081] sm:text-xl">
-                Welcome your buyers with a beautifully prepared record of
-                their new home—useful details, documents and history gathered
-                in one place from the very first day.
+                <MarketingText scope="app/realtors/page.tsx">
+                  {
+                    "Welcome your buyers with a beautifully prepared record of their new home\u2014useful details, documents and history gathered in one place from the very first day."
+                  }
+                </MarketingText>
               </p>
 
               <p className="mt-6 max-w-[560px] font-serif text-2xl italic leading-9 text-[#384a59]">
-                A thoughtful gift for closing day. A useful gift for every day
-                after.
+                <MarketingText scope="app/realtors/page.tsx">
+                  {
+                    "A thoughtful gift for closing day. A useful gift for every day after."
+                  }
+                </MarketingText>
               </p>
 
               <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -88,7 +99,9 @@ export default function RealtorsPage() {
                   href="/realtors/signup"
                   className="inline-flex min-h-[54px] items-center justify-center gap-2 rounded-full bg-[#152335] px-8 text-sm font-semibold text-white transition duration-200 hover:-translate-y-0.5 hover:bg-[#24384c]"
                 >
-                  Prepare a home gift
+                  <MarketingText scope="app/realtors/page.tsx">
+                    {"Prepare a home gift"}
+                  </MarketingText>
                   <ArrowRight className="h-4 w-4" />
                 </Link>
 
@@ -96,21 +109,28 @@ export default function RealtorsPage() {
                   href="#the-gift"
                   className="inline-flex min-h-[54px] items-center justify-center px-6 text-sm font-semibold text-[#425366] transition hover:text-[#152335]"
                 >
-                  See what they receive
+                  <MarketingText scope="app/realtors/page.tsx">
+                    {"See what they receive"}
+                  </MarketingText>
                 </a>
               </div>
 
               <p className="mt-5 text-sm text-[#7a8592]">
-                Free Realtor account · Create a gift when the moment is right
+                <MarketingText scope="app/realtors/page.tsx">
+                  {
+                    "Free Realtor account \u00B7 Create a gift when the moment is right"
+                  }
+                </MarketingText>
               </p>
             </div>
           </div>
 
           <div className="relative min-h-[560px] lg:min-h-full">
-            <img
+            <MarketingImg
               src="https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1800&q=90"
               alt="A warm, welcoming home prepared for its new owners"
               className="absolute inset-0 h-full w-full object-cover"
+              scope="app/realtors/page.tsx"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#152335]/45 via-transparent to-transparent" />
 
@@ -120,23 +140,33 @@ export default function RealtorsPage() {
                   <div className="flex items-center justify-between">
                     <Home className="h-5 w-5 text-[#768052]" />
                     <span className="text-[9px] font-semibold uppercase tracking-[0.24em] text-[#89918a]">
-                      Welcome home
+                      <MarketingText scope="app/realtors/page.tsx">
+                        {"Welcome home"}
+                      </MarketingText>
                     </span>
                   </div>
 
                   <p className="mt-10 font-serif text-[34px] leading-[1.02] tracking-[-0.04em]">
-                    The Collins Home
+                    <MarketingText scope="app/realtors/page.tsx">
+                      {"The Collins Home"}
+                    </MarketingText>
                   </p>
                   <p className="mt-2 text-sm text-[#6d7881]">
-                    24 Hawthorne Lane
+                    <MarketingText scope="app/realtors/page.tsx">
+                      {"24 Hawthorne Lane"}
+                    </MarketingText>
                   </p>
 
                   <div className="mt-8 border-t border-[#152335]/10 pt-5">
                     <p className="font-serif text-lg italic text-[#3f4e59]">
-                      May this home hold years of wonderful memories.
+                      <MarketingText scope="app/realtors/page.tsx">
+                        {"May this home hold years of wonderful memories."}
+                      </MarketingText>
                     </p>
                     <p className="mt-4 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#818a91]">
-                      Prepared with care by your Realtor
+                      <MarketingText scope="app/realtors/page.tsx">
+                        {"Prepared with care by your Realtor"}
+                      </MarketingText>
                     </p>
                   </div>
                 </div>
@@ -150,28 +180,40 @@ export default function RealtorsPage() {
         <div className="mx-auto grid max-w-[1240px] gap-14 lg:grid-cols-[1.08fr_0.92fr] lg:items-end">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#849086]">
-              A gift with a longer life
+              <MarketingText scope="app/realtors/page.tsx">
+                {"A gift with a longer life"}
+              </MarketingText>
             </p>
 
             <h2 className="mt-6 max-w-[760px] font-serif text-[48px] leading-[1] tracking-[-0.045em] sm:text-[64px] lg:text-[74px]">
-              Some gifts celebrate the day.
+              <MarketingText scope="app/realtors/page.tsx">
+                {"Some gifts celebrate the day."}
+              </MarketingText>
               <span className="block text-[#87917d]">
-                This one helps them feel at home.
+                <MarketingText scope="app/realtors/page.tsx">
+                  {"This one helps them feel at home."}
+                </MarketingText>
               </span>
             </h2>
           </div>
 
           <div className="max-w-[500px] lg:pb-2">
             <p className="text-lg leading-8 text-[#637183]">
-              Long after the flowers fade and the boxes are unpacked, your
-              buyers will still need the dishwasher manual, the paint color,
-              the HVAC service date or the warranty they forgot they had.
+              <MarketingText scope="app/realtors/page.tsx">
+                {
+                  "Long after the flowers fade and the boxes are unpacked, your buyers will still need the dishwasher manual, the paint color, the HVAC service date or the warranty they forgot they had."
+                }
+              </MarketingText>
             </p>
 
             <div className="mt-8 h-px bg-[#152335]/10" />
 
             <p className="mt-7 font-serif text-2xl italic leading-9 text-[#3b4b59]">
-              Home Tech Vault makes your care part of the home they remember.
+              <MarketingText scope="app/realtors/page.tsx">
+                {
+                  "Home Tech Vault makes your care part of the home they remember."
+                }
+              </MarketingText>
             </p>
           </div>
         </div>
@@ -189,10 +231,14 @@ export default function RealtorsPage() {
                 <div className="flex items-start justify-between gap-6 border-b border-white/10 pb-8">
                   <div>
                     <p className="text-[9px] font-semibold uppercase tracking-[0.24em] text-white/40">
-                      The home book
+                      <MarketingText scope="app/realtors/page.tsx">
+                        {"The home book"}
+                      </MarketingText>
                     </p>
                     <h3 className="mt-3 font-serif text-4xl tracking-[-0.04em]">
-                      24 Hawthorne Lane
+                      <MarketingText scope="app/realtors/page.tsx">
+                        {"24 Hawthorne Lane"}
+                      </MarketingText>
                     </h3>
                   </div>
                   <BookOpen className="h-6 w-6 text-[#c6c96d]" />
@@ -209,8 +255,12 @@ export default function RealtorsPage() {
                       key={title}
                       className="flex items-center justify-between gap-5 border-b border-white/[0.08] py-4"
                     >
-                      <span className="text-sm text-white/80">{title}</span>
-                      <span className="text-xs text-white/35">{detail}</span>
+                      <span className="text-sm text-white/80">
+                        <MarketingText scope="shared">{title}</MarketingText>
+                      </span>
+                      <span className="text-xs text-white/35">
+                        <MarketingText scope="shared">{detail}</MarketingText>
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -221,10 +271,14 @@ export default function RealtorsPage() {
                   </span>
                   <div>
                     <p className="text-xs font-medium text-white/80">
-                      A housewarming gift from your Realtor
+                      <MarketingText scope="app/realtors/page.tsx">
+                        {"A housewarming gift from your Realtor"}
+                      </MarketingText>
                     </p>
                     <p className="mt-1 text-[10px] text-white/35">
-                      Ready for the new owners
+                      <MarketingText scope="app/realtors/page.tsx">
+                        {"Ready for the new owners"}
+                      </MarketingText>
                     </p>
                   </div>
                 </div>
@@ -234,22 +288,28 @@ export default function RealtorsPage() {
 
           <div className="max-w-[610px]">
             <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#7b877e]">
-              What they receive
+              <MarketingText scope="app/realtors/page.tsx">
+                {"What they receive"}
+              </MarketingText>
             </p>
 
             <h2 className="mt-6 font-serif text-5xl leading-[1.02] tracking-[-0.045em] sm:text-6xl">
-              A home already cared for.
+              <MarketingText scope="app/realtors/page.tsx">
+                {"A home already cared for."}
+              </MarketingText>
             </h2>
 
             <p className="mt-7 max-w-[560px] text-lg leading-8 text-[#627081]">
-              Not an empty account or another app to figure out. A welcoming
-              home record with useful information already waiting inside.
+              <MarketingText scope="app/realtors/page.tsx">
+                {
+                  "Not an empty account or another app to figure out. A welcoming home record with useful information already waiting inside."
+                }
+              </MarketingText>
             </p>
 
             <div className="mt-10 border-t border-[#152335]/10">
               {keepsakeDetails.map((item) => {
                 const Icon = item.icon;
-
                 return (
                   <div
                     key={item.title}
@@ -260,10 +320,14 @@ export default function RealtorsPage() {
                     </span>
                     <div>
                       <h3 className="font-serif text-2xl tracking-[-0.02em]">
-                        {item.title}
+                        <MarketingText scope="shared">
+                          {item.title}
+                        </MarketingText>
                       </h3>
                       <p className="mt-2 max-w-[520px] leading-7 text-[#697687]">
-                        {item.copy}
+                        <MarketingText scope="shared">
+                          {item.copy}
+                        </MarketingText>
                       </p>
                     </div>
                   </div>
@@ -277,10 +341,11 @@ export default function RealtorsPage() {
       <section className="overflow-hidden bg-[#f7f5f0]">
         <div className="mx-auto grid max-w-[1440px] lg:grid-cols-2">
           <div className="relative min-h-[480px] lg:min-h-[690px]">
-            <img
+            <MarketingImg
               src="https://images.unsplash.com/photo-1560185007-c5ca9d2c014d?auto=format&fit=crop&w=1600&q=90"
               alt="Front door and keys ready for a new homeowner"
               className="absolute inset-0 h-full w-full object-cover"
+              scope="app/realtors/page.tsx"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#152335]/35 via-transparent to-transparent" />
           </div>
@@ -288,27 +353,37 @@ export default function RealtorsPage() {
           <div className="flex items-center px-5 py-20 sm:px-10 lg:px-16 lg:py-24 xl:px-20">
             <div className="max-w-[590px]">
               <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#849086]">
-                Made personal by you
+                <MarketingText scope="app/realtors/page.tsx">
+                  {"Made personal by you"}
+                </MarketingText>
               </p>
 
               <h2 className="mt-6 font-serif text-5xl leading-[1.02] tracking-[-0.045em] sm:text-6xl">
-                Your care should be part of the presentation.
+                <MarketingText scope="app/realtors/page.tsx">
+                  {"Your care should be part of the presentation."}
+                </MarketingText>
               </h2>
 
               <p className="mt-7 text-lg leading-8 text-[#637183]">
-                The home record is prepared for the buyer and presented as a
-                gift from their Realtor. It feels considered because it is
-                connected to their address, their move and the details of the
-                home you helped them find.
+                <MarketingText scope="app/realtors/page.tsx">
+                  {
+                    "The home record is prepared for the buyer and presented as a gift from their Realtor. It feels considered because it is connected to their address, their move and the details of the home you helped them find."
+                  }
+                </MarketingText>
               </p>
 
               <div className="mt-10 border-l-2 border-[#9ba35f] pl-6">
                 <p className="font-serif text-2xl italic leading-9 text-[#3c4b58]">
-                  “May this home hold years of wonderful memories. I hope this
-                  record makes caring for it a little easier.”
+                  <MarketingText scope="app/realtors/page.tsx">
+                    {
+                      "\u201CMay this home hold years of wonderful memories. I hope this record makes caring for it a little easier.\u201D"
+                    }
+                  </MarketingText>
                 </p>
                 <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#7c878e]">
-                  Your closing note
+                  <MarketingText scope="app/realtors/page.tsx">
+                    {"Your closing note"}
+                  </MarketingText>
                 </p>
               </div>
             </div>
@@ -321,18 +396,27 @@ export default function RealtorsPage() {
           <div className="grid gap-10 border-b border-[#152335]/10 pb-14 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#849086]">
-                A simple handoff
+                <MarketingText scope="app/realtors/page.tsx">
+                  {"A simple handoff"}
+                </MarketingText>
               </p>
               <h2 className="mt-6 font-serif text-5xl leading-[1.02] tracking-[-0.045em] sm:text-6xl">
-                From accepted offer
+                <MarketingText scope="app/realtors/page.tsx">
+                  {"From accepted offer"}
+                </MarketingText>
                 <br />
-                to welcome home.
+                <MarketingText scope="app/realtors/page.tsx">
+                  {"to welcome home."}
+                </MarketingText>
               </h2>
             </div>
 
             <p className="max-w-[550px] text-lg leading-8 text-[#637183]">
-              Prepare what you know, present it with pride and let the buyer
-              carry the home&apos;s useful story forward.
+              <MarketingText scope="app/realtors/page.tsx">
+                {
+                  "Prepare what you know, present it with pride and let the buyer carry the home's useful story forward."
+                }
+              </MarketingText>
             </p>
           </div>
 
@@ -343,13 +427,13 @@ export default function RealtorsPage() {
                 className="grid gap-4 border-b border-[#152335]/10 py-9 sm:grid-cols-[90px_0.9fr_1.25fr] sm:items-start lg:py-11"
               >
                 <span className="font-serif text-3xl text-[#8e9870]">
-                  {step.number}
+                  <MarketingText scope="shared">{step.number}</MarketingText>
                 </span>
                 <h3 className="font-serif text-3xl tracking-[-0.03em]">
-                  {step.title}
+                  <MarketingText scope="shared">{step.title}</MarketingText>
                 </h3>
                 <p className="max-w-[530px] leading-7 text-[#687687]">
-                  {step.copy}
+                  <MarketingText scope="shared">{step.copy}</MarketingText>
                 </p>
               </div>
             ))}
@@ -357,21 +441,25 @@ export default function RealtorsPage() {
 
           <div className="mt-10 flex flex-wrap items-center justify-between gap-6">
             <div className="flex flex-wrap gap-x-6 gap-y-3 text-sm text-[#697687]">
-              {["Free to join", "Gift when you choose", "A year of Pro included"].map(
-                (item) => (
-                  <span key={item} className="flex items-center gap-2">
-                    <Check className="h-4 w-4 text-[#77814e]" />
-                    {item}
-                  </span>
-                ),
-              )}
+              {[
+                "Free to join",
+                "Gift when you choose",
+                "A year of Pro included",
+              ].map((item) => (
+                <span key={item} className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-[#77814e]" />
+                  <MarketingText scope="shared">{item}</MarketingText>
+                </span>
+              ))}
             </div>
 
             <Link
               href="/realtors/signup"
               className="inline-flex items-center gap-2 text-sm font-semibold text-[#152335] underline decoration-[#9ba35f] decoration-2 underline-offset-8"
             >
-              Create your Realtor account
+              <MarketingText scope="app/realtors/page.tsx">
+                {"Create your Realtor account"}
+              </MarketingText>
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -385,25 +473,36 @@ export default function RealtorsPage() {
           </span>
 
           <p className="mt-8 text-[10px] font-semibold uppercase tracking-[0.24em] text-white/40">
-            For the moment the keys change hands
+            <MarketingText scope="app/realtors/page.tsx">
+              {"For the moment the keys change hands"}
+            </MarketingText>
           </p>
 
           <h2 className="mt-5 font-serif text-5xl leading-[1] tracking-[-0.045em] sm:text-6xl lg:text-7xl">
-            Give a better
+            <MarketingText scope="app/realtors/page.tsx">
+              {"Give a better"}
+            </MarketingText>
             <br />
-            welcome home.
+            <MarketingText scope="app/realtors/page.tsx">
+              {"welcome home."}
+            </MarketingText>
           </h2>
 
           <p className="mt-7 max-w-[620px] text-lg leading-8 text-white/60">
-            Create your free Realtor account and prepare a closing gift your
-            buyers will still value years from now.
+            <MarketingText scope="app/realtors/page.tsx">
+              {
+                "Create your free Realtor account and prepare a closing gift your buyers will still value years from now."
+              }
+            </MarketingText>
           </p>
 
           <Link
             href="/realtors/signup"
             className="mt-10 inline-flex min-h-[54px] items-center gap-2 rounded-full bg-[#f7f5ef] px-8 text-sm font-semibold text-[#152335] transition duration-200 hover:-translate-y-0.5 hover:bg-white"
           >
-            Prepare your first home gift
+            <MarketingText scope="app/realtors/page.tsx">
+              {"Prepare your first home gift"}
+            </MarketingText>
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>

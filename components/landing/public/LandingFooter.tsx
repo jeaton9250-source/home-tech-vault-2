@@ -1,7 +1,6 @@
+import { MarketingText } from "@/components/marketing/MarketingContent";
 import Link from "next/link";
-
 import Logo from "@/components/brand/Logo";
-
 const footerLinks = [
   { label: "About", href: "/about" },
   { label: "Pricing", href: "/pricing" },
@@ -12,7 +11,6 @@ const footerLinks = [
   { label: "Terms", href: "/terms" },
   { label: "Contact", href: "/contact" },
 ] as const;
-
 export default function LandingFooter() {
   return (
     <footer className="border-t border-border-subtle bg-surface-card px-5 py-10 md:px-8 lg:px-12">
@@ -20,9 +18,11 @@ export default function LandingFooter() {
         <div>
           <Logo collapsed />
           <p className="mt-3 max-w-md text-sm leading-6 text-text-muted">
-            The digital memory of your home. Keep appliances, receipts,
-            warranties, manuals, maintenance and the useful history around them
-            connected in one private Vault.
+            <MarketingText scope="components/landing/public/LandingFooter.tsx">
+              {
+                "The digital memory of your home. Keep appliances, receipts, warranties, manuals, maintenance and the useful history around them connected in one private Vault."
+              }
+            </MarketingText>
           </p>
         </div>
         <nav className="flex flex-wrap gap-x-5 gap-y-3" aria-label="Footer">
@@ -32,13 +32,19 @@ export default function LandingFooter() {
               href={link.href}
               className="text-sm font-semibold text-text-secondary transition hover:text-text-primary"
             >
-              {link.label}
+              <MarketingText scope="shared">{link.label}</MarketingText>
             </Link>
           ))}
         </nav>
       </div>
       <p className="mx-auto mt-8 max-w-6xl border-t border-border-subtle pt-6 text-xs text-text-muted">
-        © {new Date().getFullYear()} Home Tech Vault. All rights reserved.
+        <MarketingText scope="components/landing/public/LandingFooter.tsx">
+          {"\u00A9"}
+        </MarketingText>
+        {new Date().getFullYear()}
+        <MarketingText scope="components/landing/public/LandingFooter.tsx">
+          {"Home Tech Vault. All rights reserved."}
+        </MarketingText>
       </p>
     </footer>
   );

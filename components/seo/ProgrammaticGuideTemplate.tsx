@@ -1,6 +1,6 @@
+import { MarketingText } from "@/components/marketing/MarketingContent";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-
 import MarketingLayout, {
   MarketingContent,
 } from "@/components/marketing/MarketingLayout";
@@ -18,7 +18,6 @@ import {
   createSoftwareApplicationJsonLd,
   createWebPageJsonLd,
 } from "@/lib/seo/jsonLd";
-
 type ProgrammaticGuideTemplateProps = {
   page: ProgrammaticGuidePage;
   related: Array<{
@@ -27,7 +26,6 @@ type ProgrammaticGuideTemplateProps = {
     description: string;
   }>;
 };
-
 export default function ProgrammaticGuideTemplate({
   page,
   related,
@@ -45,7 +43,6 @@ export default function ProgrammaticGuideTemplate({
       : []),
     { name: page.title },
   ];
-
   const jsonLd = [
     createWebPageJsonLd({
       title: page.title,
@@ -60,32 +57,28 @@ export default function ProgrammaticGuideTemplate({
       breadcrumbs.map((item) => ({
         name: item.name,
         path: item.href,
-      }))
+      })),
     ),
     createFaqJsonLd(page.faq),
   ];
-
   return (
     <MarketingLayout>
-      <StructuredData
-        id={`programmatic-guide-${page.slug}`}
-        data={jsonLd}
-      />
+      <StructuredData id={`programmatic-guide-${page.slug}`} data={jsonLd} />
 
       <header className="border-b border-white/10 bg-[#183047] px-6 py-12 text-[#f5f1e8] md:px-8 md:py-16">
         <div className="mx-auto max-w-6xl">
           <Breadcrumb items={breadcrumbs} />
 
           <p className="mt-6 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#718d4f]">
-            {page.heroEyebrow}
+            <MarketingText scope="shared">{page.heroEyebrow}</MarketingText>
           </p>
 
           <h1 className="mt-3 max-w-4xl font-serif text-4xl font-medium tracking-[-0.045em] text-[#f5f1e8] md:text-6xl md:leading-[1.04]">
-            {page.heroTitle}
+            <MarketingText scope="shared">{page.heroTitle}</MarketingText>
           </h1>
 
           <p className="mt-5 max-w-3xl text-base leading-8 text-[#b6c0c7] md:text-lg">
-            {page.heroDescription}
+            <MarketingText scope="shared">{page.heroDescription}</MarketingText>
           </p>
         </div>
       </header>
@@ -94,7 +87,9 @@ export default function ProgrammaticGuideTemplate({
         <article className="min-w-0">
           <div className="space-y-5 rounded-[26px] border border-[#182533]/10 bg-[#f8f5ef] p-6 text-[1.02rem] leading-8 text-[#46535c] shadow-[0_18px_45px_-38px_rgba(15,25,35,0.35)] md:p-8">
             {page.intro.map((paragraph) => (
-              <p key={paragraph.slice(0, 40)}>{paragraph}</p>
+              <p key={paragraph.slice(0, 40)}>
+                <MarketingText scope="shared">{paragraph}</MarketingText>
+              </p>
             ))}
           </div>
 
@@ -106,7 +101,9 @@ export default function ProgrammaticGuideTemplate({
                 className="scroll-mt-28 rounded-[26px] border border-[#182533]/10 bg-[#f8f5ef] p-6 shadow-[0_18px_45px_-38px_rgba(15,25,35,0.3)] md:p-8"
               >
                 <h2 className="font-serif text-2xl font-medium tracking-[-0.035em] text-[#17212a] md:text-3xl">
-                  {section.heading}
+                  <MarketingText scope="shared">
+                    {section.heading}
+                  </MarketingText>
                 </h2>
                 <div className="mt-5 space-y-5 text-base leading-8 text-[#4f5b63]">
                   {section.paragraphs.map((paragraph) => (
@@ -114,7 +111,7 @@ export default function ProgrammaticGuideTemplate({
                       key={paragraph.slice(0, 40)}
                       className="whitespace-pre-line"
                     >
-                      {paragraph}
+                      <MarketingText scope="shared">{paragraph}</MarketingText>
                     </p>
                   ))}
                 </div>
@@ -160,7 +157,9 @@ export default function ProgrammaticGuideTemplate({
               className="rounded-[24px] border border-[#182533]/10 bg-[#f8f5ef] p-5 shadow-[0_18px_45px_-38px_rgba(15,25,35,0.35)]"
             >
               <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#617c43]">
-                On this page
+                <MarketingText scope="components/seo/ProgrammaticGuideTemplate.tsx">
+                  {"On this page"}
+                </MarketingText>
               </p>
               <ol className="mt-4 space-y-2.5">
                 {page.sections.map((section, index) => (
@@ -170,9 +169,14 @@ export default function ProgrammaticGuideTemplate({
                       className="htv-focus-ring text-sm leading-6 text-[#59656d] transition hover:text-[#17212a]"
                     >
                       <span className="mr-2 font-semibold text-[#617c43]">
-                        {index + 1}.
+                        {index + 1}
+                        <MarketingText scope="components/seo/ProgrammaticGuideTemplate.tsx">
+                          {"."}
+                        </MarketingText>
                       </span>
-                      {section.heading}
+                      <MarketingText scope="shared">
+                        {section.heading}
+                      </MarketingText>
                     </a>
                   </li>
                 ))}
@@ -181,16 +185,22 @@ export default function ProgrammaticGuideTemplate({
 
             <div className="rounded-[24px] border border-white/10 bg-[#183047] p-5 text-[#f5f1e8] shadow-[0_20px_45px_-35px_rgba(0,0,0,0.7)]">
               <p className="font-serif text-lg font-medium text-[#f5f1e8]">
-                Browse more guides
+                <MarketingText scope="components/seo/ProgrammaticGuideTemplate.tsx">
+                  {"Browse more guides"}
+                </MarketingText>
               </p>
               <p className="mt-2 text-sm leading-6 text-[#b6c0c7]">
-                Brand and topic pages for organizing household tech.
+                <MarketingText scope="components/seo/ProgrammaticGuideTemplate.tsx">
+                  {"Brand and topic pages for organizing household tech."}
+                </MarketingText>
               </p>
               <Link
                 href="/guides"
                 className="htv-focus-ring mt-5 inline-flex items-center gap-2 rounded-full bg-[#617c43] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#718d4f]"
               >
-                All guides
+                <MarketingText scope="components/seo/ProgrammaticGuideTemplate.tsx">
+                  {"All guides"}
+                </MarketingText>
                 <ArrowRight size={14} aria-hidden />
               </Link>
             </div>

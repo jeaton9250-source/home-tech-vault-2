@@ -1,7 +1,6 @@
+import { MarketingText } from "@/components/marketing/MarketingContent";
 import type { ReactNode } from "react";
-
 import MarketingHeader from "@/components/marketing/MarketingHeader";
-
 type MarketingPageShellProps = {
   eyebrow?: string;
   title: ReactNode;
@@ -11,7 +10,6 @@ type MarketingPageShellProps = {
   children?: ReactNode;
   heroClassName?: string;
 };
-
 export default function MarketingPageShell({
   eyebrow,
   title,
@@ -42,36 +40,36 @@ export default function MarketingPageShell({
           <div className="max-w-[680px]">
             {eyebrow && (
               <div className="mb-6 inline-flex items-center rounded-full border border-[#152335]/10 bg-white/55 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#647384] backdrop-blur">
-                {eyebrow}
+                <MarketingText scope="shared">{eyebrow}</MarketingText>
               </div>
             )}
 
             <h1 className="font-serif text-[52px] leading-[0.98] tracking-[-0.05em] text-[#152335] sm:text-[68px] lg:text-[78px]">
-              {title}
+              <MarketingText scope="shared">{title}</MarketingText>
             </h1>
 
             {description && (
               <div className="mt-7 max-w-[625px] text-lg leading-8 text-[#647184] sm:text-xl">
-                {description}
+                <MarketingText scope="shared">{description}</MarketingText>
               </div>
             )}
 
             {actions && (
               <div className="mt-9 flex flex-wrap items-center gap-3">
-                {actions}
+                <MarketingText scope="shared">{actions}</MarketingText>
               </div>
             )}
           </div>
 
           {visual && (
             <div className="relative">
-              {visual}
+              <MarketingText scope="shared">{visual}</MarketingText>
             </div>
           )}
         </div>
       </section>
 
-      {children}
+      <MarketingText scope="shared">{children}</MarketingText>
     </main>
   );
 }

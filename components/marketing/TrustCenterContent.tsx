@@ -1,10 +1,6 @@
+import { MarketingText } from "@/components/marketing/MarketingContent";
 import Link from "next/link";
-import {
-  ArrowRight,
-  Mail,
-  ShieldCheck,
-} from "lucide-react";
-
+import { ArrowRight, Mail, ShieldCheck } from "lucide-react";
 import {
   MarketingContent,
   MarketingPageHero,
@@ -16,7 +12,6 @@ import {
   WHY_TRUST_POINTS,
 } from "@/lib/marketing/trust";
 import { MARKETING_ROUTES } from "@/lib/marketing/routes";
-
 export default function TrustCenterContent() {
   return (
     <>
@@ -29,31 +24,31 @@ export default function TrustCenterContent() {
       <MarketingContent className="pt-0">
         <section aria-label="Trust highlights">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {TRUST_BAR_BADGES.map(
-              ({ id, label, description, icon: Icon }) => (
-                <a
-                  key={id}
-                  href={`#${id}`}
-                  className="rounded-[var(--radius-card)] border border-border-subtle bg-surface-card p-5 shadow-[var(--shadow-sm)] transition hover:border-interaction/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interaction"
-                >
-                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-[12px] bg-interaction-soft text-interaction">
-                    <Icon size={18} aria-hidden />
-                  </span>
-                  <h2 className="mt-4 text-base font-medium text-text-primary">
-                    {label}
-                  </h2>
-                  <p className="mt-2 text-sm leading-6 text-text-muted">
-                    {description}
-                  </p>
-                </a>
-              )
-            )}
+            {TRUST_BAR_BADGES.map(({ id, label, description, icon: Icon }) => (
+              <a
+                key={id}
+                href={`#${id}`}
+                className="rounded-[var(--radius-card)] border border-border-subtle bg-surface-card p-5 shadow-[var(--shadow-sm)] transition hover:border-interaction/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interaction"
+              >
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-[12px] bg-interaction-soft text-interaction">
+                  <Icon size={18} aria-hidden />
+                </span>
+                <h2 className="mt-4 text-base font-medium text-text-primary">
+                  <MarketingText scope="shared">{label}</MarketingText>
+                </h2>
+                <p className="mt-2 text-sm leading-6 text-text-muted">
+                  <MarketingText scope="shared">{description}</MarketingText>
+                </p>
+              </a>
+            ))}
           </div>
         </section>
 
         <section className="mt-16">
           <p className="text-overline text-text-muted">
-            Security pillars
+            <MarketingText scope="components/marketing/TrustCenterContent.tsx">
+              {"Security pillars"}
+            </MarketingText>
           </p>
           <div className="mt-8 grid gap-5 md:grid-cols-2">
             {SECURITY_PILLARS.map((pillar) => (
@@ -63,16 +58,15 @@ export default function TrustCenterContent() {
                 className="scroll-mt-28 rounded-[var(--radius-card)] border border-border-subtle bg-surface-card p-7 shadow-[var(--shadow-sm)]"
               >
                 <span className="inline-flex h-10 w-10 items-center justify-center rounded-[12px] bg-interaction-soft text-interaction">
-                  <pillar.icon
-                    size={18}
-                    aria-hidden
-                  />
+                  <pillar.icon size={18} aria-hidden />
                 </span>
                 <h2 className="mt-4 text-xl font-medium tracking-[-0.02em]">
-                  {pillar.title}
+                  <MarketingText scope="shared">{pillar.title}</MarketingText>
                 </h2>
                 <p className="mt-3 text-sm leading-7 text-text-muted">
-                  {pillar.description}
+                  <MarketingText scope="shared">
+                    {pillar.description}
+                  </MarketingText>
                 </p>
               </article>
             ))}
@@ -81,7 +75,9 @@ export default function TrustCenterContent() {
 
         <section className="mt-16">
           <p className="text-overline text-text-muted">
-            Why people trust us
+            <MarketingText scope="components/marketing/TrustCenterContent.tsx">
+              {"Why people trust us"}
+            </MarketingText>
           </p>
           <div className="mt-8 grid gap-5 md:grid-cols-2">
             {WHY_TRUST_POINTS.map((point) => (
@@ -90,10 +86,12 @@ export default function TrustCenterContent() {
                 className="rounded-[var(--radius-card)] border border-border-subtle bg-surface-card p-6"
               >
                 <h3 className="text-lg font-medium">
-                  {point.title}
+                  <MarketingText scope="shared">{point.title}</MarketingText>
                 </h3>
                 <p className="mt-3 text-sm leading-7 text-text-muted">
-                  {point.description}
+                  <MarketingText scope="shared">
+                    {point.description}
+                  </MarketingText>
                 </p>
               </article>
             ))}
@@ -107,28 +105,24 @@ export default function TrustCenterContent() {
             </span>
             <div>
               <h2 className="text-2xl font-medium tracking-[-0.03em]">
-                More resources
+                <MarketingText scope="components/marketing/TrustCenterContent.tsx">
+                  {"More resources"}
+                </MarketingText>
               </h2>
               <p className="mt-3 max-w-2xl text-sm leading-7 text-text-muted">
-                Read our policies, browse common questions,
-                or contact support if you need help.
+                <MarketingText scope="components/marketing/TrustCenterContent.tsx">
+                  {
+                    "Read our policies, browse common questions, or contact support if you need help."
+                  }
+                </MarketingText>
               </p>
             </div>
           </div>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-            <TrustLink
-              href={MARKETING_ROUTES.privacy}
-              label="Privacy Policy"
-            />
-            <TrustLink
-              href={MARKETING_ROUTES.terms}
-              label="Terms of Service"
-            />
-            <TrustLink
-              href={MARKETING_ROUTES.faq}
-              label="FAQ"
-            />
+            <TrustLink href={MARKETING_ROUTES.privacy} label="Privacy Policy" />
+            <TrustLink href={MARKETING_ROUTES.terms} label="Terms of Service" />
+            <TrustLink href={MARKETING_ROUTES.faq} label="FAQ" />
             <TrustLink
               href={MARKETING_ROUTES.contact}
               label="Contact Support"
@@ -140,27 +134,20 @@ export default function TrustCenterContent() {
             className="mt-8 inline-flex items-center gap-2 text-sm font-medium text-interaction hover:text-interaction-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interaction"
           >
             <Mail size={16} aria-hidden />
-            {SUPPORT_EMAIL}
+            <MarketingText scope="shared">{SUPPORT_EMAIL}</MarketingText>
           </a>
         </section>
       </MarketingContent>
     </>
   );
 }
-
-function TrustLink({
-  href,
-  label,
-}: {
-  href: string;
-  label: string;
-}) {
+function TrustLink({ href, label }: { href: string; label: string }) {
   return (
     <Link
       href={href}
       className="inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-button)] border border-border-subtle bg-surface-base px-4 py-2.5 text-sm font-medium text-text-primary transition hover:bg-surface-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interaction"
     >
-      {label}
+      <MarketingText scope="shared">{label}</MarketingText>
       <ArrowRight size={15} aria-hidden />
     </Link>
   );

@@ -1,16 +1,14 @@
 "use client";
+import { MarketingText } from "@/components/marketing/MarketingContent";
 
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowRight, Menu, ShieldCheck, X } from "lucide-react";
-
 import { MARKETING_ROUTES } from "@/lib/marketing/routes";
-
 type LandingHeaderProps = {
   isSignedIn?: boolean;
 };
-
 const mainNav = [
   {
     label: "What It Remembers",
@@ -25,37 +23,29 @@ const mainNav = [
     href: "/realtors",
   },
 ];
-
 export default function LandingHeader({
   isSignedIn = false,
 }: LandingHeaderProps) {
   const pathname = usePathname();
-
   const [mobileOpen, setMobileOpen] = useState(false);
-
   const isRealtorMarketing =
     pathname === "/realtors" || pathname.startsWith("/realtors/");
-
   const primaryHref = isSignedIn
     ? "/dashboard"
     : isRealtorMarketing
       ? "/realtors/signup"
       : MARKETING_ROUTES.signup;
-
   const primaryLabel = isSignedIn
     ? "Open My Vault"
     : isRealtorMarketing
       ? "Realtor Sign Up"
       : "Start My Home Vault";
-
   const isActive = (href: string) => {
     if (href === "/") {
       return pathname === "/";
     }
-
     return pathname === href || pathname.startsWith(`${href}/`);
   };
-
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-[#183047]/95 text-[#f5f1e8] backdrop-blur-xl">
       <div className="mx-auto flex h-[72px] max-w-[1320px] items-center justify-between gap-5 px-5 md:px-8 lg:px-10">
@@ -70,11 +60,15 @@ export default function LandingHeader({
 
           <div className="leading-none">
             <p className="font-serif text-[17px] font-semibold tracking-[-0.02em] text-[#f5f1e8]">
-              Home Tech
+              <MarketingText scope="components/landing/public/LandingHeader.tsx">
+                {"Home Tech"}
+              </MarketingText>
             </p>
 
             <p className="mt-1 font-serif text-[17px] font-semibold tracking-[-0.02em] text-[#f5f1e8]">
-              Vault
+              <MarketingText scope="components/landing/public/LandingHeader.tsx">
+                {"Vault"}
+              </MarketingText>
             </p>
           </div>
         </Link>
@@ -85,7 +79,6 @@ export default function LandingHeader({
         >
           {mainNav.map((item) => {
             const active = isActive(item.href);
-
             return (
               <Link
                 key={item.label}
@@ -97,7 +90,7 @@ export default function LandingHeader({
                     : "text-[#c4c9cf] hover:bg-white/5 hover:text-white",
                 ].join(" ")}
               >
-                {item.label}
+                <MarketingText scope="shared">{item.label}</MarketingText>
               </Link>
             );
           })}
@@ -111,7 +104,9 @@ export default function LandingHeader({
                 : "text-[#c4c9cf] hover:bg-white/5 hover:text-white",
             ].join(" ")}
           >
-            Pricing
+            <MarketingText scope="components/landing/public/LandingHeader.tsx">
+              {"Pricing"}
+            </MarketingText>
           </Link>
 
           <Link
@@ -123,7 +118,9 @@ export default function LandingHeader({
                 : "text-[#c4c9cf] hover:bg-white/5 hover:text-white",
             ].join(" ")}
           >
-            Our Story
+            <MarketingText scope="components/landing/public/LandingHeader.tsx">
+              {"Our Story"}
+            </MarketingText>
           </Link>
         </nav>
 
@@ -133,7 +130,9 @@ export default function LandingHeader({
               href={MARKETING_ROUTES.login}
               className="inline-flex min-h-11 items-center justify-center whitespace-nowrap rounded-xl border border-white/25 px-5 text-sm font-medium text-[#f5f1e8] transition hover:border-white/45 hover:bg-white/10"
             >
-              Sign In
+              <MarketingText scope="components/landing/public/LandingHeader.tsx">
+                {"Sign In"}
+              </MarketingText>
             </Link>
           ) : null}
 
@@ -141,7 +140,7 @@ export default function LandingHeader({
             href={primaryHref}
             className="inline-flex min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-[#617c43]/50 bg-[#617c43] px-5 text-sm font-semibold text-white shadow-[0_10px_30px_-15px_rgba(97,124,67,0.8)] transition hover:bg-[#718d4f]"
           >
-            {primaryLabel}
+            <MarketingText scope="shared">{primaryLabel}</MarketingText>
 
             <ArrowRight size={15} aria-hidden />
           </Link>
@@ -161,7 +160,11 @@ export default function LandingHeader({
       {mobileOpen ? (
         <div className="max-h-[calc(100vh-72px)] overflow-y-auto border-t border-white/10 bg-[#183047] px-5 pb-8 pt-4 overscroll-contain md:hidden">
           <nav className="mx-auto flex max-w-xl flex-col">
-            <MobileHeading>Explore</MobileHeading>
+            <MobileHeading>
+              <MarketingText scope="components/landing/public/LandingHeader.tsx">
+                {"Explore"}
+              </MarketingText>
+            </MobileHeading>
 
             {mainNav.map((item) => (
               <MobileLink
@@ -170,7 +173,7 @@ export default function LandingHeader({
                 active={isActive(item.href)}
                 onClick={() => setMobileOpen(false)}
               >
-                {item.label}
+                <MarketingText scope="shared">{item.label}</MarketingText>
               </MobileLink>
             ))}
 
@@ -179,7 +182,9 @@ export default function LandingHeader({
               active={isActive(MARKETING_ROUTES.pricing)}
               onClick={() => setMobileOpen(false)}
             >
-              Pricing
+              <MarketingText scope="components/landing/public/LandingHeader.tsx">
+                {"Pricing"}
+              </MarketingText>
             </MobileLink>
 
             <div className="my-3 h-px bg-white/10" />
@@ -190,7 +195,9 @@ export default function LandingHeader({
                 active={isActive(MARKETING_ROUTES.login)}
                 onClick={() => setMobileOpen(false)}
               >
-                Sign In
+                <MarketingText scope="components/landing/public/LandingHeader.tsx">
+                  {"Sign In"}
+                </MarketingText>
               </MobileLink>
             ) : null}
 
@@ -199,14 +206,16 @@ export default function LandingHeader({
               onClick={() => setMobileOpen(false)}
               className="mt-4 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#617c43] px-6 text-sm font-semibold text-white"
             >
-              {primaryLabel}
+              <MarketingText scope="shared">{primaryLabel}</MarketingText>
 
               <ArrowRight size={15} />
             </Link>
 
             {!isSignedIn ? (
               <p className="mt-3 text-center text-[11px] text-white/45">
-                Free to start · No credit card required
+                <MarketingText scope="components/landing/public/LandingHeader.tsx">
+                  {"Free to start \u00B7 No credit card required"}
+                </MarketingText>
               </p>
             ) : null}
           </nav>
@@ -215,15 +224,13 @@ export default function LandingHeader({
     </header>
   );
 }
-
 function MobileHeading({ children }: { children: React.ReactNode }) {
   return (
     <p className="px-3 pb-2 pt-1 text-[10px] font-semibold uppercase tracking-[0.17em] text-[#88a761]">
-      {children}
+      <MarketingText scope="shared">{children}</MarketingText>
     </p>
   );
 }
-
 function MobileLink({
   href,
   children,
@@ -246,7 +253,7 @@ function MobileLink({
           : "text-[#c4c9cf] hover:bg-white/5 hover:text-white",
       ].join(" ")}
     >
-      {children}
+      <MarketingText scope="shared">{children}</MarketingText>
     </Link>
   );
 }

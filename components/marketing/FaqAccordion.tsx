@@ -1,9 +1,9 @@
 "use client";
+import { MarketingText } from "@/components/marketing/MarketingContent";
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ChevronDown, Search } from "lucide-react";
-
 import {
   MarketingContent,
   MarketingPageHero,
@@ -15,40 +15,27 @@ import {
 } from "@/lib/marketing/faq";
 import { MARKETING_ROUTES } from "@/lib/marketing/routes";
 import { cn } from "@/lib/design-system/cn";
-
 export default function FaqAccordion() {
   const [query, setQuery] = useState("");
-  const [activeCategory, setActiveCategory] =
-    useState<FaqCategory | "All">("All");
-  const [openQuestion, setOpenQuestion] =
-    useState<string | null>(
-      FAQ_ITEMS[0]?.question ?? null
-    );
-
+  const [activeCategory, setActiveCategory] = useState<FaqCategory | "All">(
+    "All",
+  );
+  const [openQuestion, setOpenQuestion] = useState<string | null>(
+    FAQ_ITEMS[0]?.question ?? null,
+  );
   const filteredItems = useMemo(() => {
-    const normalizedQuery = query
-      .trim()
-      .toLowerCase();
-
+    const normalizedQuery = query.trim().toLowerCase();
     return FAQ_ITEMS.filter((item) => {
       const matchesCategory =
-        activeCategory === "All" ||
-        item.category === activeCategory;
-
+        activeCategory === "All" || item.category === activeCategory;
       if (!normalizedQuery) {
         return matchesCategory;
       }
-
       const haystack =
         `${item.question} ${item.answer} ${item.category}`.toLowerCase();
-
-      return (
-        matchesCategory &&
-        haystack.includes(normalizedQuery)
-      );
+      return matchesCategory && haystack.includes(normalizedQuery);
     });
   }, [activeCategory, query]);
-
   return (
     <>
       <MarketingPageHero
@@ -59,11 +46,10 @@ export default function FaqAccordion() {
 
       <MarketingContent className="pt-0">
         <div className="mx-auto max-w-3xl">
-          <label
-            htmlFor="faq-search"
-            className="sr-only"
-          >
-            Search FAQ
+          <label htmlFor="faq-search" className="sr-only">
+            <MarketingText scope="components/marketing/FaqAccordion.tsx">
+              {"Search FAQ"}
+            </MarketingText>
           </label>
 
           <div className="relative">
@@ -77,9 +63,7 @@ export default function FaqAccordion() {
               id="faq-search"
               type="search"
               value={query}
-              onChange={(event) =>
-                setQuery(event.target.value)
-              }
+              onChange={(event) => setQuery(event.target.value)}
               placeholder="Search questions..."
               className="w-full rounded-[var(--radius-button)] border border-border-subtle bg-surface-card py-3.5 pl-11 pr-4 text-sm outline-none transition focus:border-interaction focus:ring-2 focus:ring-interaction/20"
             />
@@ -93,21 +77,15 @@ export default function FaqAccordion() {
             <CategoryChip
               label="All"
               active={activeCategory === "All"}
-              onClick={() =>
-                setActiveCategory("All")
-              }
+              onClick={() => setActiveCategory("All")}
             />
 
             {FAQ_CATEGORIES.map((category) => (
               <CategoryChip
                 key={category}
                 label={category}
-                active={
-                  activeCategory === category
-                }
-                onClick={() =>
-                  setActiveCategory(category)
-                }
+                active={activeCategory === category}
+                onClick={() => setActiveCategory(category)}
               />
             ))}
           </div>
@@ -115,22 +93,25 @@ export default function FaqAccordion() {
           <div className="mt-8 divide-y divide-border-subtle rounded-[var(--radius-card)] border border-border-subtle bg-surface-card">
             {filteredItems.length === 0 ? (
               <p className="px-6 py-8 text-sm text-text-muted">
-                No questions match your search. Try
-                another keyword or{" "}
+                <MarketingText scope="components/marketing/FaqAccordion.tsx">
+                  {"No questions match your search. Try another keyword or"}
+                </MarketingText>{" "}
                 <Link
                   href={MARKETING_ROUTES.contact}
                   className="font-medium text-interaction hover:text-interaction-hover"
                 >
-                  contact us
+                  <MarketingText scope="components/marketing/FaqAccordion.tsx">
+                    {"contact us"}
+                  </MarketingText>
                 </Link>
-                .
+                <MarketingText scope="components/marketing/FaqAccordion.tsx">
+                  {"."}
+                </MarketingText>
               </p>
             ) : (
               filteredItems.map((item) => {
-                const isOpen =
-                  openQuestion === item.question;
+                const isOpen = openQuestion === item.question;
                 const panelId = `faq-${item.question.replace(/\W+/g, "-").toLowerCase()}`;
-
                 return (
                   <div key={item.question}>
                     <button
@@ -139,19 +120,19 @@ export default function FaqAccordion() {
                       aria-expanded={isOpen}
                       aria-controls={panelId}
                       onClick={() =>
-                        setOpenQuestion(
-                          isOpen
-                            ? null
-                            : item.question
-                        )
+                        setOpenQuestion(isOpen ? null : item.question)
                       }
                     >
                       <span>
                         <span className="text-overline text-text-muted">
-                          {item.category}
+                          <MarketingText scope="shared">
+                            {item.category}
+                          </MarketingText>
                         </span>
                         <span className="mt-1 block text-base font-medium">
-                          {item.question}
+                          <MarketingText scope="shared">
+                            {item.question}
+                          </MarketingText>
                         </span>
                       </span>
 
@@ -159,7 +140,7 @@ export default function FaqAccordion() {
                         size={18}
                         className={cn(
                           "shrink-0 text-text-muted transition",
-                          isOpen && "rotate-180"
+                          isOpen && "rotate-180",
                         )}
                         aria-hidden
                       />
@@ -171,7 +152,9 @@ export default function FaqAccordion() {
                         role="region"
                         className="px-6 pb-5 text-sm leading-7 text-text-muted"
                       >
-                        {item.answer}
+                        <MarketingText scope="shared">
+                          {item.answer}
+                        </MarketingText>
                       </div>
                     )}
                   </div>
@@ -181,28 +164,37 @@ export default function FaqAccordion() {
           </div>
 
           <p className="mt-10 text-center text-sm text-text-muted">
-            Still curious?{" "}
+            <MarketingText scope="components/marketing/FaqAccordion.tsx">
+              {"Still curious?"}
+            </MarketingText>{" "}
             <Link
               href={MARKETING_ROUTES.contact}
               className="font-medium text-interaction hover:text-interaction-hover"
             >
-              Contact us
+              <MarketingText scope="components/marketing/FaqAccordion.tsx">
+                {"Contact us"}
+              </MarketingText>
             </Link>{" "}
-            or{" "}
+            <MarketingText scope="components/marketing/FaqAccordion.tsx">
+              {"or"}
+            </MarketingText>{" "}
             <Link
               href={MARKETING_ROUTES.demo}
               className="font-medium text-interaction hover:text-interaction-hover"
             >
-              explore the demo
+              <MarketingText scope="components/marketing/FaqAccordion.tsx">
+                {"explore the demo"}
+              </MarketingText>
             </Link>
-            .
+            <MarketingText scope="components/marketing/FaqAccordion.tsx">
+              {"."}
+            </MarketingText>
           </p>
         </div>
       </MarketingContent>
     </>
   );
 }
-
 function CategoryChip({
   label,
   active,
@@ -222,10 +214,10 @@ function CategoryChip({
         "rounded-full px-3.5 py-1.5 text-xs font-medium transition",
         active
           ? "bg-charcoal text-surface-card"
-          : "border border-border-subtle text-text-muted hover:bg-surface-hover"
+          : "border border-border-subtle text-text-muted hover:bg-surface-hover",
       )}
     >
-      {label}
+      <MarketingText scope="shared">{label}</MarketingText>
     </button>
   );
 }

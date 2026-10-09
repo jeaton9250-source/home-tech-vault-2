@@ -1,4 +1,8 @@
 "use client";
+import {
+  MarketingText,
+  MarketingImage,
+} from "@/components/marketing/MarketingContent";
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -6,7 +10,6 @@ import { ArrowRight, Check, FileText, ShieldCheck, Wrench } from "lucide-react";
 import { Header, Footer } from "./PremiumHomeChrome";
 import type { HomepageContent } from "@/lib/cms/schema";
 import styles from "./PremiumHome.module.css";
-
 const images = {
   hero: "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=2200&q=90",
   paperwork:
@@ -19,7 +22,6 @@ const images = {
     "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=1200&q=85",
   sell: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1200&q=85",
 };
-
 const moments = [
   [
     images.break,
@@ -42,14 +44,12 @@ const moments = [
     "Pass along the story and records that belong with it.",
   ],
 ];
-
 export default function HomeMarketingView({
   content,
 }: {
   content: HomepageContent;
 }) {
   const [selectedMoment, setSelectedMoment] = useState("Manuals");
-
   useEffect(() => {
     if (
       window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
@@ -71,7 +71,6 @@ export default function HomeMarketingView({
     revealItems.forEach((item) => observer.observe(item));
     return () => observer.disconnect();
   }, []);
-
   return (
     <main id="top" className={`${styles.page} bg-[#FFFDF8] text-[#17212A]`}>
       <Header signupLink={content.primaryLink} />
@@ -86,7 +85,9 @@ export default function HomeMarketingView({
               "Home Tech Vault is now available on the App Store."}
           </p>
           <p className="mt-1 text-xs text-[#59625D]">
-            A smarter home record, always within reach.
+            <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+              {"A smarter home record, always within reach."}
+            </MarketingText>
           </p>
         </div>
       </div>
@@ -105,7 +106,7 @@ export default function HomeMarketingView({
                 key={index}
                 className={`block ${index ? "text-[#59625D]" : ""}`}
               >
-                {line}
+                <MarketingText scope="shared">{line}</MarketingText>
               </span>
             ))}
           </h1>
@@ -124,7 +125,9 @@ export default function HomeMarketingView({
               href="#explore"
               className="rounded-full px-6 py-3 text-sm font-medium text-[#1a1a1a] hover:underline"
             >
-              See how it works
+              <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+                {"See how it works"}
+              </MarketingText>
             </a>
           </div>
           {content.showAppStore ? (
@@ -147,10 +150,14 @@ export default function HomeMarketingView({
               </span>
               <span className="leading-tight">
                 <span className="block text-[10px] font-medium uppercase tracking-[0.14em] text-[#59625D]">
-                  Download on the
+                  <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+                    {"Download on the"}
+                  </MarketingText>
                 </span>
                 <span className="block text-base font-semibold tracking-[-0.02em]">
-                  App Store
+                  <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+                    {"App Store"}
+                  </MarketingText>
                 </span>
               </span>
               <ArrowRight className="ml-1 size-4 text-[#617C43] transition-transform duration-300 group-hover:translate-x-1" />
@@ -158,7 +165,7 @@ export default function HomeMarketingView({
           ) : null}
         </div>
         <div className="relative mx-auto mt-16 aspect-[16/8] max-w-[1200px] overflow-hidden rounded-[28px] shadow-2xl shadow-black/15">
-          <Image
+          <MarketingImage
             src={content.heroImage}
             alt="Bright modern home interior"
             fill
@@ -166,6 +173,7 @@ export default function HomeMarketingView({
             priority
             className="object-cover"
             sizes="100vw"
+            scope="components/marketing/HomeMarketingView.tsx"
           />
         </div>
       </section>
@@ -177,16 +185,25 @@ export default function HomeMarketingView({
         <div className="grid items-center gap-14 lg:grid-cols-2">
           <div>
             <p className="text-sm font-medium text-[#59625D]">
-              Everything your home needs
+              <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+                {"Everything your home needs"}
+              </MarketingText>
             </p>
             <h2 className="mt-4 text-[clamp(2.8rem,6vw,5.5rem)] font-semibold leading-[.95] tracking-[-0.06em]">
-              Beautifully
+              <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+                {"Beautifully"}
+              </MarketingText>
               <br />
-              organized.
+              <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+                {"organized."}
+              </MarketingText>
             </h2>
             <p className="mt-7 max-w-lg text-lg leading-8 text-[#59625D]">
-              Home Tech Vault brings the scattered pieces of homeownership
-              together in one calm, searchable place.
+              <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+                {
+                  "Home Tech Vault brings the scattered pieces of homeownership together in one calm, searchable place."
+                }
+              </MarketingText>
             </p>
             <div className="mt-9 grid max-w-md grid-cols-2 gap-3 text-sm">
               <button
@@ -196,7 +213,9 @@ export default function HomeMarketingView({
                 className="rounded-2xl bg-[#F5F1E8] p-4 text-left transition hover:-translate-y-1 hover:bg-[#DED7CA] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#617C43]"
               >
                 <FileText className="mb-3 size-5" />
-                Manuals
+                <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+                  {"Manuals"}
+                </MarketingText>
               </button>
               <button
                 type="button"
@@ -205,7 +224,9 @@ export default function HomeMarketingView({
                 className="rounded-2xl bg-[#F5F1E8] p-4 text-left transition hover:-translate-y-1 hover:bg-[#DED7CA] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#617C43]"
               >
                 <Check className="mb-3 size-5" />
-                Receipts
+                <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+                  {"Receipts"}
+                </MarketingText>
               </button>
               <button
                 type="button"
@@ -214,7 +235,9 @@ export default function HomeMarketingView({
                 className="rounded-2xl bg-[#F5F1E8] p-4 text-left transition hover:-translate-y-1 hover:bg-[#DED7CA] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#617C43]"
               >
                 <ShieldCheck className="mb-3 size-5" />
-                Warranties
+                <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+                  {"Warranties"}
+                </MarketingText>
               </button>
               <button
                 type="button"
@@ -223,7 +246,9 @@ export default function HomeMarketingView({
                 className="rounded-2xl bg-[#F5F1E8] p-4 text-left transition hover:-translate-y-1 hover:bg-[#DED7CA] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#617C43]"
               >
                 <Wrench className="mb-3 size-5" />
-                Maintenance
+                <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+                  {"Maintenance"}
+                </MarketingText>
               </button>
             </div>
             <p
@@ -231,10 +256,12 @@ export default function HomeMarketingView({
               aria-live="polite"
             >
               <span className="block text-xs uppercase tracking-wider">
-                Sample home record
+                <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+                  {"Sample home record"}
+                </MarketingText>
               </span>
               <span className="mt-2 block font-semibold text-[#183047]">
-                {selectedMoment}
+                <MarketingText scope="shared">{selectedMoment}</MarketingText>
               </span>
               <span className="mt-2 block">
                 {
@@ -253,13 +280,14 @@ export default function HomeMarketingView({
             </p>
           </div>
           <div className="relative aspect-square overflow-hidden rounded-[28px]">
-            <Image
+            <MarketingImage
               src={images.paperwork}
               alt="Organized home paperwork"
               fill
               unoptimized
               className="object-cover"
               sizes="(max-width: 1024px) 100vw, 50vw"
+              scope="components/marketing/HomeMarketingView.tsx"
             />
           </div>
         </div>
@@ -271,33 +299,46 @@ export default function HomeMarketingView({
       >
         <div className="mx-auto max-w-[1200px]">
           <p className="text-sm font-medium text-[#59625D]">
-            Made for real life
+            <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+              {"Made for real life"}
+            </MarketingText>
           </p>
           <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
             <h2 className="mt-4 text-[clamp(2.8rem,6vw,5.5rem)] font-semibold leading-[.95] tracking-[-0.06em]">
-              Helpful when
+              <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+                {"Helpful when"}
+              </MarketingText>
               <br />
-              it matters.
+              <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+                {"it matters."}
+              </MarketingText>
             </h2>
             <p className="max-w-sm text-lg leading-8 text-[#59625D]">
-              The details are easy to forget. Finding them shouldn&apos;t be.
+              <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+                {"The details are easy to forget. Finding them shouldn't be."}
+              </MarketingText>
             </p>
           </div>
           <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             {moments.map(([src, title, body]) => (
               <article key={title}>
                 <div className="relative aspect-square overflow-hidden rounded-2xl">
-                  <Image
+                  <MarketingImage
                     src={src}
                     alt={title}
                     fill
                     unoptimized
                     className="object-cover transition duration-500 hover:scale-105"
                     sizes="(max-width: 768px) 100vw, 25vw"
+                    scope="components/marketing/HomeMarketingView.tsx"
                   />
                 </div>
-                <h3 className="mt-5 text-lg font-semibold">{title}</h3>
-                <p className="mt-2 text-sm leading-6 text-[#59625D]">{body}</p>
+                <h3 className="mt-5 text-lg font-semibold">
+                  <MarketingText scope="shared">{title}</MarketingText>
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-[#59625D]">
+                  <MarketingText scope="shared">{body}</MarketingText>
+                </p>
               </article>
             ))}
           </div>
@@ -311,17 +352,25 @@ export default function HomeMarketingView({
         <div className="mx-auto grid max-w-[1200px] items-center gap-14 lg:grid-cols-2">
           <div>
             <p className="text-sm font-medium text-[#DED7CA]">
-              For the people who make a house a home
+              <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+                {"For the people who make a house a home"}
+              </MarketingText>
             </p>
             <h2 className="mt-4 text-[clamp(2.8rem,6vw,5.5rem)] font-semibold leading-[.95] tracking-[-0.06em]">
-              Every update.
+              <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+                {"Every update."}
+              </MarketingText>
               <br />
-              One home history.
+              <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+                {"One home history."}
+              </MarketingText>
             </h2>
             <p className="mt-7 max-w-lg text-lg leading-8 text-[#DED7CA]">
-              Keep renovation documents, appliance purchases, and service
-              records together, so your home’s important details stay easy to
-              find.
+              <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+                {
+                  "Keep renovation documents, appliance purchases, and service records together, so your home\u2019s important details stay easy to find."
+                }
+              </MarketingText>
             </p>
             <a
               href={content.primaryLink}
@@ -332,7 +381,9 @@ export default function HomeMarketingView({
           </div>
           <div className="rounded-[28px] bg-[#40502F] p-7">
             <p className="text-xs uppercase tracking-wider text-[#DED7CA]">
-              Illustrative home history
+              <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+                {"Illustrative home history"}
+              </MarketingText>
             </p>
             {[
               ["2026", "Refrigerator added"],
@@ -343,8 +394,12 @@ export default function HomeMarketingView({
                 key={year}
                 className="flex justify-between border-b border-[#DED7CA]/20 py-5 text-sm last:border-0"
               >
-                <span className="text-[#DED7CA]">{year}</span>
-                <span>{item}</span>
+                <span className="text-[#DED7CA]">
+                  <MarketingText scope="shared">{year}</MarketingText>
+                </span>
+                <span>
+                  <MarketingText scope="shared">{item}</MarketingText>
+                </span>
               </div>
             ))}
           </div>
@@ -354,12 +409,14 @@ export default function HomeMarketingView({
         <div className="mx-auto flex max-w-[1200px] flex-col justify-between gap-10 rounded-[28px] bg-[#F5F1E8] p-8 md:p-14 lg:flex-row lg:items-end">
           <div>
             <p className="text-sm font-medium text-[#59625D]">
-              Simple by design
+              <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+                {"Simple by design"}
+              </MarketingText>
             </p>
             <h2 className="mt-4 text-[clamp(2.8rem,6vw,5.5rem)] font-semibold leading-[.95] tracking-[-0.06em]">
               {content.finalHeadline.split("\n").map((line, index) => (
                 <span className="block" key={index}>
-                  {line}
+                  <MarketingText scope="shared">{line}</MarketingText>
                 </span>
               ))}
             </h2>
@@ -369,7 +426,9 @@ export default function HomeMarketingView({
           </div>
           <div>
             <p className="text-4xl font-semibold tracking-[-0.04em]">
-              Free to start.
+              <MarketingText scope="components/marketing/HomeMarketingView.tsx">
+                {"Free to start."}
+              </MarketingText>
             </p>
             <a
               href={content.primaryLink}

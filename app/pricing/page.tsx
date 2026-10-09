@@ -1,3 +1,4 @@
+import { MarketingText } from "@/components/marketing/MarketingContent";
 import Link from "next/link";
 import type { Metadata } from "next";
 import {
@@ -8,16 +9,13 @@ import {
   Sparkles,
   Users,
 } from "lucide-react";
-
 import MarketingHeader from "@/components/marketing/MarketingHeader";
 import HomeMarketingFooter from "@/components/marketing/HomeMarketingFooter";
-
 export const metadata: Metadata = {
   title: "Pricing | Home Tech Vault",
   description:
     "Start Home Tech Vault for free, then choose Home Plus or Household when you need more storage, smarter tools, or shared access.",
 };
-
 const plans = [
   {
     name: "Home",
@@ -59,8 +57,7 @@ const plans = [
     name: "Household",
     price: "$14.99",
     cadence: "per month",
-    description:
-      "For families who want to manage the home together.",
+    description: "For families who want to manage the home together.",
     cta: "Start Household",
     href: "/signup",
     highlighted: false,
@@ -74,7 +71,6 @@ const plans = [
     ],
   },
 ];
-
 export default function PricingPage() {
   return (
     <main className="min-h-screen bg-[#f7f5f1] text-[#152335]">
@@ -91,18 +87,27 @@ export default function PricingPage() {
           <div className="max-w-[680px]">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#152335]/10 bg-white/60 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#6f7e8d] backdrop-blur">
               <Sparkles className="h-4 w-4" />
-              Simple Pricing
+              <MarketingText scope="app/pricing/page.tsx">
+                {"Simple Pricing"}
+              </MarketingText>
             </div>
 
             <h1 className="font-serif text-[52px] leading-[0.98] tracking-[-0.05em] sm:text-[68px] lg:text-[78px]">
-              A better record
+              <MarketingText scope="app/pricing/page.tsx">
+                {"A better record"}
+              </MarketingText>
               <br />
-              for your home.
+              <MarketingText scope="app/pricing/page.tsx">
+                {"for your home."}
+              </MarketingText>
             </h1>
 
             <p className="mt-7 max-w-[610px] text-lg leading-8 text-[#637184] sm:text-xl">
-              Start free, organize what matters, and upgrade only when
-              you want more room for your home&apos;s history.
+              <MarketingText scope="app/pricing/page.tsx">
+                {
+                  "Start free, organize what matters, and upgrade only when you want more room for your home's history."
+                }
+              </MarketingText>
             </p>
 
             <div className="mt-9 flex flex-wrap gap-3">
@@ -110,7 +115,9 @@ export default function PricingPage() {
                 href="/signup"
                 className="inline-flex items-center justify-center gap-2 rounded-full bg-[#152335] px-7 py-4 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#24384c]"
               >
-                Start Free
+                <MarketingText scope="app/pricing/page.tsx">
+                  {"Start Free"}
+                </MarketingText>
                 <ArrowRight className="h-4 w-4" />
               </Link>
 
@@ -118,7 +125,9 @@ export default function PricingPage() {
                 href="/what-it-remembers"
                 className="inline-flex items-center justify-center gap-2 rounded-full border border-[#152335]/12 bg-white/60 px-7 py-4 text-sm font-semibold text-[#152335] backdrop-blur transition hover:bg-white"
               >
-                See Your Home Record
+                <MarketingText scope="app/pricing/page.tsx">
+                  {"See Your Home Record"}
+                </MarketingText>
               </Link>
             </div>
           </div>
@@ -130,13 +139,17 @@ export default function PricingPage() {
               </div>
 
               <h2 className="mt-6 font-serif text-3xl">
-                Start with your home.
+                <MarketingText scope="app/pricing/page.tsx">
+                  {"Start with your home."}
+                </MarketingText>
               </h2>
 
               <p className="mt-4 leading-7 text-[#697585]">
-                No complicated setup. No enterprise-style pricing.
-                Just a clearer way to keep your home&apos;s useful
-                information together.
+                <MarketingText scope="app/pricing/page.tsx">
+                  {
+                    "No complicated setup. No enterprise-style pricing. Just a clearer way to keep your home's useful information together."
+                  }
+                </MarketingText>
               </p>
             </div>
           </div>
@@ -148,18 +161,27 @@ export default function PricingPage() {
         <div className="mx-auto max-w-[1380px]">
           <div className="mx-auto max-w-[760px] text-center">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#7a8794]">
-              Choose what fits
+              <MarketingText scope="app/pricing/page.tsx">
+                {"Choose what fits"}
+              </MarketingText>
             </p>
 
             <h2 className="mt-4 font-serif text-4xl leading-[1.05] tracking-[-0.04em] sm:text-5xl lg:text-6xl">
-              Start simple.
+              <MarketingText scope="app/pricing/page.tsx">
+                {"Start simple."}
+              </MarketingText>
               <br />
-              Grow when you need to.
+              <MarketingText scope="app/pricing/page.tsx">
+                {"Grow when you need to."}
+              </MarketingText>
             </h2>
 
             <p className="mx-auto mt-6 max-w-[650px] text-lg leading-8 text-[#697585]">
-              Every plan is built around the same idea: keeping the
-              useful history of your home in one place.
+              <MarketingText scope="app/pricing/page.tsx">
+                {
+                  "Every plan is built around the same idea: keeping the useful history of your home in one place."
+                }
+              </MarketingText>
             </p>
           </div>
 
@@ -176,47 +198,45 @@ export default function PricingPage() {
               >
                 {plan.highlighted && (
                   <div className="absolute right-6 top-6 rounded-full bg-[#a5aa4a] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-white">
-                    Most Popular
+                    <MarketingText scope="app/pricing/page.tsx">
+                      {"Most Popular"}
+                    </MarketingText>
                   </div>
                 )}
 
                 <p
                   className={[
                     "text-xs font-semibold uppercase tracking-[0.18em]",
-                    plan.highlighted
-                      ? "text-white/50"
-                      : "text-[#8893a0]",
+                    plan.highlighted ? "text-white/50" : "text-[#8893a0]",
                   ].join(" ")}
                 >
-                  {plan.name}
+                  <MarketingText scope="shared">{plan.name}</MarketingText>
                 </p>
 
                 <div className="mt-5 flex items-end gap-2">
                   <span className="font-serif text-5xl tracking-[-0.04em]">
-                    {plan.price}
+                    <MarketingText scope="shared">{plan.price}</MarketingText>
                   </span>
 
                   <span
                     className={[
                       "pb-1 text-sm",
-                      plan.highlighted
-                        ? "text-white/45"
-                        : "text-[#7b8794]",
+                      plan.highlighted ? "text-white/45" : "text-[#7b8794]",
                     ].join(" ")}
                   >
-                    {plan.cadence}
+                    <MarketingText scope="shared">{plan.cadence}</MarketingText>
                   </span>
                 </div>
 
                 <p
                   className={[
                     "mt-5 min-h-[84px] leading-7",
-                    plan.highlighted
-                      ? "text-white/65"
-                      : "text-[#687486]",
+                    plan.highlighted ? "text-white/65" : "text-[#687486]",
                   ].join(" ")}
                 >
-                  {plan.description}
+                  <MarketingText scope="shared">
+                    {plan.description}
+                  </MarketingText>
                 </p>
 
                 <Link
@@ -228,31 +248,24 @@ export default function PricingPage() {
                       : "bg-[#152335] text-white hover:bg-[#24384c]",
                   ].join(" ")}
                 >
-                  {plan.cta}
+                  <MarketingText scope="shared">{plan.cta}</MarketingText>
                   <ArrowRight className="h-4 w-4" />
                 </Link>
 
                 <div
                   className={[
                     "my-8 h-px",
-                    plan.highlighted
-                      ? "bg-white/10"
-                      : "bg-[#152335]/10",
+                    plan.highlighted ? "bg-white/10" : "bg-[#152335]/10",
                   ].join(" ")}
                 />
 
                 <div className="space-y-4">
                   {plan.features.map((feature) => (
-                    <div
-                      key={feature}
-                      className="flex items-start gap-3"
-                    >
+                    <div key={feature} className="flex items-start gap-3">
                       <div
                         className={[
                           "mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full",
-                          plan.highlighted
-                            ? "bg-white/10"
-                            : "bg-[#edf1f2]",
+                          plan.highlighted ? "bg-white/10" : "bg-[#edf1f2]",
                         ].join(" ")}
                       >
                         <Check className="h-3.5 w-3.5" />
@@ -261,12 +274,10 @@ export default function PricingPage() {
                       <span
                         className={[
                           "text-sm leading-6",
-                          plan.highlighted
-                            ? "text-white/75"
-                            : "text-[#556578]",
+                          plan.highlighted ? "text-white/75" : "text-[#556578]",
                         ].join(" ")}
                       >
-                        {feature}
+                        <MarketingText scope="shared">{feature}</MarketingText>
                       </span>
                     </div>
                   ))}
@@ -282,19 +293,27 @@ export default function PricingPage() {
         <div className="mx-auto grid max-w-[1380px] gap-14 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#788590]">
-              Why it matters
+              <MarketingText scope="app/pricing/page.tsx">
+                {"Why it matters"}
+              </MarketingText>
             </p>
 
             <h2 className="mt-4 font-serif text-4xl leading-[1.04] tracking-[-0.04em] sm:text-5xl lg:text-6xl">
-              A little less to remember.
+              <MarketingText scope="app/pricing/page.tsx">
+                {"A little less to remember."}
+              </MarketingText>
               <br />
-              A lot easier to find.
+              <MarketingText scope="app/pricing/page.tsx">
+                {"A lot easier to find."}
+              </MarketingText>
             </h2>
 
             <p className="mt-7 max-w-[560px] text-lg leading-8 text-[#677485]">
-              Home Tech Vault gives the useful details of your home
-              a place to stay — so when you need something later,
-              you already know where to look.
+              <MarketingText scope="app/pricing/page.tsx">
+                {
+                  "Home Tech Vault gives the useful details of your home a place to stay \u2014 so when you need something later, you already know where to look."
+                }
+              </MarketingText>
             </p>
           </div>
 
@@ -303,30 +322,25 @@ export default function PricingPage() {
               {
                 icon: ShieldCheck,
                 title: "Know what’s still covered",
-                copy:
-                  "Keep warranties and purchase details with the things they belong to.",
+                copy: "Keep warranties and purchase details with the things they belong to.",
               },
               {
                 icon: Home,
                 title: "Remember what’s been done",
-                copy:
-                  "Keep a simple history of repairs, service visits and important home updates.",
+                copy: "Keep a simple history of repairs, service visits and important home updates.",
               },
               {
                 icon: Users,
                 title: "Keep the household informed",
-                copy:
-                  "Make it easier for everyone at home to find the same important details.",
+                copy: "Make it easier for everyone at home to find the same important details.",
               },
               {
                 icon: Sparkles,
                 title: "Build a record over time",
-                copy:
-                  "Each new receipt, repair and replacement becomes part of your home’s history.",
+                copy: "Each new receipt, repair and replacement becomes part of your home’s history.",
               },
             ].map((item) => {
               const Icon = item.icon;
-
               return (
                 <div
                   key={item.title}
@@ -337,11 +351,11 @@ export default function PricingPage() {
                   </div>
 
                   <h3 className="mt-7 font-serif text-2xl">
-                    {item.title}
+                    <MarketingText scope="shared">{item.title}</MarketingText>
                   </h3>
 
                   <p className="mt-3 leading-7 text-[#687486]">
-                    {item.copy}
+                    <MarketingText scope="shared">{item.copy}</MarketingText>
                   </p>
                 </div>
               );
@@ -355,11 +369,15 @@ export default function PricingPage() {
         <div className="mx-auto max-w-[1000px]">
           <div className="text-center">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#788590]">
-              A few common questions
+              <MarketingText scope="app/pricing/page.tsx">
+                {"A few common questions"}
+              </MarketingText>
             </p>
 
             <h2 className="mt-4 font-serif text-4xl tracking-[-0.04em] sm:text-5xl">
-              Before you start.
+              <MarketingText scope="app/pricing/page.tsx">
+                {"Before you start."}
+              </MarketingText>
             </h2>
           </div>
 
@@ -367,23 +385,19 @@ export default function PricingPage() {
             {[
               {
                 q: "Can I start for free?",
-                a:
-                  "Yes. The Home plan lets you start organizing your home without entering a credit card.",
+                a: "Yes. The Home plan lets you start organizing your home without entering a credit card.",
               },
               {
                 q: "Can I upgrade later?",
-                a:
-                  "Yes. You can start simple and move to a larger plan whenever you want more features or household access.",
+                a: "Yes. You can start simple and move to a larger plan whenever you want more features or household access.",
               },
               {
                 q: "Is this only for smart homes?",
-                a:
-                  "No. Home Tech Vault is built for the whole home — appliances, documents, warranties, maintenance records and more.",
+                a: "No. Home Tech Vault is built for the whole home — appliances, documents, warranties, maintenance records and more.",
               },
               {
                 q: "What happens if I move?",
-                a:
-                  "Your home record can become part of the useful history of the property, helping important details stay connected to the home.",
+                a: "Your home record can become part of the useful history of the property, helping important details stay connected to the home.",
               },
             ].map((item) => (
               <div
@@ -391,11 +405,11 @@ export default function PricingPage() {
                 className="grid gap-4 py-7 md:grid-cols-[0.8fr_1.2fr]"
               >
                 <h3 className="font-serif text-2xl">
-                  {item.q}
+                  <MarketingText scope="shared">{item.q}</MarketingText>
                 </h3>
 
                 <p className="leading-7 text-[#687486]">
-                  {item.a}
+                  <MarketingText scope="shared">{item.a}</MarketingText>
                 </p>
               </div>
             ))}
@@ -409,19 +423,26 @@ export default function PricingPage() {
           <Home className="h-8 w-8 text-white/55" />
 
           <h2 className="mt-6 font-serif text-5xl leading-[1] tracking-[-0.045em] sm:text-6xl">
-            Start with your home.
+            <MarketingText scope="app/pricing/page.tsx">
+              {"Start with your home."}
+            </MarketingText>
           </h2>
 
           <p className="mt-7 max-w-[620px] text-lg leading-8 text-white/60">
-            Build a clearer record of the place you live,
-            one useful detail at a time.
+            <MarketingText scope="app/pricing/page.tsx">
+              {
+                "Build a clearer record of the place you live, one useful detail at a time."
+              }
+            </MarketingText>
           </p>
 
           <Link
             href="/signup"
             className="mt-9 inline-flex items-center gap-2 rounded-full bg-white px-8 py-4 text-sm font-semibold text-[#152335] transition hover:bg-[#f1f3f5]"
           >
-            Start Free
+            <MarketingText scope="app/pricing/page.tsx">
+              {"Start Free"}
+            </MarketingText>
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>

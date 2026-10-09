@@ -1,12 +1,9 @@
+import { MarketingText } from "@/components/marketing/MarketingContent";
 import type { ReactNode } from "react";
-
 import MarketingHeaderGate from "@/components/marketing/MarketingHeaderGate";
 import MarketingFooterGate from "@/components/marketing/MarketingFooterGate";
-
 import { cn } from "@/lib/design-system/cn";
-
 import type { PublicFoundingProgramSummary } from "@/lib/founding-members/types";
-
 type MarketingLayoutProps = {
   children: ReactNode;
   className?: string;
@@ -14,7 +11,6 @@ type MarketingLayoutProps = {
   foundingSummary?: PublicFoundingProgramSummary | null;
   minimalNav?: boolean;
 };
-
 /*
  * Public marketing shell.
  *
@@ -34,20 +30,19 @@ export default function MarketingLayout({
     <div
       className={cn(
         "min-h-screen bg-[#fffefa] text-[#17212a] antialiased selection:bg-[#617c43]/20",
-        className
+        className,
       )}
     >
       <MarketingHeaderGate />
 
       <main className={mainClassName}>
-        {children}
+        <MarketingText scope="shared">{children}</MarketingText>
       </main>
 
       <MarketingFooterGate />
     </div>
   );
 }
-
 /*
  * Shared wrapper used throughout public marketing,
  * knowledge, FAQ, comparison, trust and SEO pages.
@@ -69,14 +64,13 @@ export function MarketingContent({
       id={id}
       className={cn(
         "mx-auto w-full max-w-[1240px] px-5 py-16 md:px-8 md:py-24",
-        className
+        className,
       )}
     >
-      {children}
+      <MarketingText scope="shared">{children}</MarketingText>
     </div>
   );
 }
-
 /*
  * Shared public page hero.
  *
@@ -102,7 +96,7 @@ export function MarketingPageHero({
             <span className="h-px w-7 bg-[#718d4f]" />
 
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#718d4f]">
-              {eyebrow}
+              <MarketingText scope="shared">{eyebrow}</MarketingText>
             </p>
           </div>
         ) : null}
@@ -110,19 +104,19 @@ export function MarketingPageHero({
         <h1
           className={cn(
             "text-4xl font-semibold leading-[1.05] tracking-[-0.045em] text-[#17212a] md:text-5xl",
-            eyebrow && "mt-5"
+            eyebrow && "mt-5",
           )}
         >
-          {title}
+          <MarketingText scope="shared">{title}</MarketingText>
         </h1>
 
         {description ? (
           <p className="mt-6 max-w-2xl text-lg leading-8 text-[#68737b]">
-            {description}
+            <MarketingText scope="shared">{description}</MarketingText>
           </p>
         ) : null}
 
-        {children}
+        <MarketingText scope="shared">{children}</MarketingText>
       </div>
     </section>
   );

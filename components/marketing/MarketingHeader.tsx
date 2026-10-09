@@ -1,10 +1,10 @@
 "use client";
+import { MarketingText } from "@/components/marketing/MarketingContent";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowRight, Menu, X } from "lucide-react";
 import { useState } from "react";
-
 const navItems = [
   {
     label: "What It Remembers",
@@ -27,37 +27,30 @@ const navItems = [
     href: "/our-story",
   },
 ];
-
 export default function MarketingHeader() {
   const pathname = usePathname();
-  const [mobileOpen, setMobileOpen] =
-    useState(false);
-
+  const [mobileOpen, setMobileOpen] = useState(false);
   const isActive = (href: string) => {
     if (href === "/") {
       return pathname === "/";
     }
-
-    return (
-      pathname === href ||
-      pathname.startsWith(`${href}/`)
-    );
+    return pathname === href || pathname.startsWith(`${href}/`);
   };
-
   return (
     <>
       <header className="sticky top-0 z-[100] w-full border-b border-white/[0.08] bg-[#132231]/95 text-white backdrop-blur-xl">
         <div className="mx-auto flex h-[76px] max-w-[1440px] items-center justify-between px-5 sm:px-6 lg:px-10">
           {/* LOGO */}
 
-          <Link
-            href="/"
-            className="flex shrink-0 items-center gap-3"
-          >
+          <Link href="/" className="flex shrink-0 items-center gap-3">
             <span className="font-serif text-[28px] font-semibold leading-none tracking-[-0.04em] text-white">
-              Home Tech
+              <MarketingText scope="components/marketing/MarketingHeader.tsx">
+                {"Home Tech"}
+              </MarketingText>
               <br />
-              Vault
+              <MarketingText scope="components/marketing/MarketingHeader.tsx">
+                {"Vault"}
+              </MarketingText>
             </span>
           </Link>
 
@@ -66,7 +59,6 @@ export default function MarketingHeader() {
           <nav className="hidden items-center gap-1 lg:flex">
             {navItems.map((item) => {
               const active = isActive(item.href);
-
               return (
                 <Link
                   key={item.href}
@@ -78,7 +70,7 @@ export default function MarketingHeader() {
                       : "text-white/65 hover:bg-white/[0.05] hover:text-white",
                   ].join(" ")}
                 >
-                  {item.label}
+                  <MarketingText scope="shared">{item.label}</MarketingText>
                 </Link>
               );
             })}
@@ -91,14 +83,18 @@ export default function MarketingHeader() {
               href="/login"
               className="rounded-full border border-white/15 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-white/[0.06]"
             >
-              Sign In
+              <MarketingText scope="components/marketing/MarketingHeader.tsx">
+                {"Sign In"}
+              </MarketingText>
             </Link>
 
             <Link
               href="/signup"
               className="inline-flex items-center gap-2 rounded-full bg-[#a8a842] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#96963a]"
             >
-              Start Free
+              <MarketingText scope="components/marketing/MarketingHeader.tsx">
+                {"Start Free"}
+              </MarketingText>
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -107,9 +103,7 @@ export default function MarketingHeader() {
 
           <button
             type="button"
-            onClick={() =>
-              setMobileOpen((value) => !value)
-            }
+            onClick={() => setMobileOpen((value) => !value)}
             className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-white lg:hidden"
             aria-label="Toggle navigation"
           >
@@ -127,17 +121,12 @@ export default function MarketingHeader() {
           <div className="border-t border-white/[0.08] bg-[#132231] px-5 py-5 lg:hidden">
             <div className="flex flex-col gap-2">
               {navItems.map((item) => {
-                const active = isActive(
-                  item.href
-                );
-
+                const active = isActive(item.href);
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
-                    onClick={() =>
-                      setMobileOpen(false)
-                    }
+                    onClick={() => setMobileOpen(false)}
                     className={[
                       "rounded-2xl px-4 py-3 text-sm font-medium transition",
                       active
@@ -145,7 +134,7 @@ export default function MarketingHeader() {
                         : "text-white/70 hover:bg-white/[0.05] hover:text-white",
                     ].join(" ")}
                   >
-                    {item.label}
+                    <MarketingText scope="shared">{item.label}</MarketingText>
                   </Link>
                 );
               })}
@@ -154,22 +143,22 @@ export default function MarketingHeader() {
 
               <Link
                 href="/login"
-                onClick={() =>
-                  setMobileOpen(false)
-                }
+                onClick={() => setMobileOpen(false)}
                 className="rounded-2xl border border-white/15 px-4 py-3 text-center text-sm font-medium text-white"
               >
-                Sign In
+                <MarketingText scope="components/marketing/MarketingHeader.tsx">
+                  {"Sign In"}
+                </MarketingText>
               </Link>
 
               <Link
                 href="/signup"
-                onClick={() =>
-                  setMobileOpen(false)
-                }
+                onClick={() => setMobileOpen(false)}
                 className="mt-1 inline-flex items-center justify-center gap-2 rounded-2xl bg-[#a8a842] px-4 py-3 text-sm font-semibold text-white"
               >
-                Start Free
+                <MarketingText scope="components/marketing/MarketingHeader.tsx">
+                  {"Start Free"}
+                </MarketingText>
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </div>

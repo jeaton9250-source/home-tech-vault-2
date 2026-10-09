@@ -1,5 +1,5 @@
+import { MarketingText } from "@/components/marketing/MarketingContent";
 import Link from "next/link";
-
 import MarketingLayout, {
   MarketingContent,
 } from "@/components/marketing/MarketingLayout";
@@ -18,7 +18,6 @@ import {
   createSoftwareApplicationJsonLd,
   createWebPageJsonLd,
 } from "@/lib/seo/jsonLd";
-
 type ComparisonPageTemplateProps = {
   page: ComparisonPage;
   related: Array<{
@@ -27,7 +26,6 @@ type ComparisonPageTemplateProps = {
     description: string;
   }>;
 };
-
 export default function ComparisonPageTemplate({
   page,
   related,
@@ -37,7 +35,6 @@ export default function ComparisonPageTemplate({
     { name: "Compare", href: "/compare" },
     { name: page.title },
   ];
-
   const jsonLd = [
     createWebPageJsonLd({
       title: page.title,
@@ -61,29 +58,25 @@ export default function ComparisonPageTemplate({
       breadcrumbs.map((item) => ({
         name: item.name,
         path: item.href,
-      }))
+      })),
     ),
     createFaqJsonLd(page.faq),
   ];
-
   return (
     <MarketingLayout>
-      <StructuredData
-        id={`comparison-${page.slug}`}
-        data={jsonLd}
-      />
+      <StructuredData id={`comparison-${page.slug}`} data={jsonLd} />
 
       <header className="border-b border-border-subtle/80 px-6 py-10 md:px-8 md:py-14">
         <div className="mx-auto max-w-6xl">
           <Breadcrumb items={breadcrumbs} />
           <p className="mt-6 text-overline text-text-muted">
-            {page.heroEyebrow}
+            <MarketingText scope="shared">{page.heroEyebrow}</MarketingText>
           </p>
           <h1 className="mt-3 max-w-3xl text-3xl font-medium tracking-[-0.04em] text-text-primary md:text-5xl md:leading-[1.08]">
-            {page.heroTitle}
+            <MarketingText scope="shared">{page.heroTitle}</MarketingText>
           </h1>
           <p className="mt-5 max-w-2xl text-lg leading-8 text-text-muted">
-            {page.heroDescription}
+            <MarketingText scope="shared">{page.heroDescription}</MarketingText>
           </p>
         </div>
       </header>
@@ -91,7 +84,9 @@ export default function ComparisonPageTemplate({
       <MarketingContent className="space-y-14">
         <div className="space-y-5 text-base leading-8 text-text-secondary">
           {page.intro.map((paragraph) => (
-            <p key={paragraph.slice(0, 48)}>{paragraph}</p>
+            <p key={paragraph.slice(0, 48)}>
+              <MarketingText scope="shared">{paragraph}</MarketingText>
+            </p>
           ))}
         </div>
 
@@ -106,24 +101,34 @@ export default function ComparisonPageTemplate({
               {page.whenAlternativeWins.map((item) => (
                 <li key={item} className="flex gap-2">
                   <span className="text-text-muted" aria-hidden>
-                    –
+                    <MarketingText scope="components/seo/ComparisonPageTemplate.tsx">
+                      {"\u2013"}
+                    </MarketingText>
                   </span>
-                  <span>{item}</span>
+                  <span>
+                    <MarketingText scope="shared">{item}</MarketingText>
+                  </span>
                 </li>
               ))}
             </ul>
           </div>
           <div className="border border-border-subtle bg-surface-card p-6">
             <h2 className="text-lg font-medium tracking-[-0.02em] text-text-primary">
-              When Home Tech Vault fits better
+              <MarketingText scope="components/seo/ComparisonPageTemplate.tsx">
+                {"When Home Tech Vault fits better"}
+              </MarketingText>
             </h2>
             <ul className="mt-4 space-y-3 text-sm leading-6 text-text-secondary">
               {page.whenHtvWins.map((item) => (
                 <li key={item} className="flex gap-2">
                   <span className="text-text-muted" aria-hidden>
-                    –
+                    <MarketingText scope="components/seo/ComparisonPageTemplate.tsx">
+                      {"\u2013"}
+                    </MarketingText>
                   </span>
-                  <span>{item}</span>
+                  <span>
+                    <MarketingText scope="shared">{item}</MarketingText>
+                  </span>
                 </li>
               ))}
             </ul>
@@ -135,15 +140,19 @@ export default function ComparisonPageTemplate({
             id="comparison-table-heading"
             className="text-2xl font-medium tracking-[-0.03em] text-text-primary"
           >
-            Comparison table
+            <MarketingText scope="components/seo/ComparisonPageTemplate.tsx">
+              {"Comparison table"}
+            </MarketingText>
           </h2>
           <p className="mt-2 text-sm text-text-muted">
-            {page.table.caption}
+            <MarketingText scope="shared">{page.table.caption}</MarketingText>
           </p>
           <div className="mt-6 overflow-x-auto border border-border-subtle">
             <table className="min-w-full border-collapse text-left text-sm">
               <caption className="sr-only">
-                {page.table.caption}
+                <MarketingText scope="shared">
+                  {page.table.caption}
+                </MarketingText>
               </caption>
               <thead className="bg-surface-raised">
                 <tr>
@@ -153,7 +162,7 @@ export default function ComparisonPageTemplate({
                       scope="col"
                       className="border-b border-border-subtle px-4 py-3 font-medium text-text-primary"
                     >
-                      {column}
+                      <MarketingText scope="shared">{column}</MarketingText>
                     </th>
                   ))}
                 </tr>
@@ -168,14 +177,16 @@ export default function ComparisonPageTemplate({
                       scope="row"
                       className="px-4 py-3 font-medium text-text-primary"
                     >
-                      {row.feature}
+                      <MarketingText scope="shared">
+                        {row.feature}
+                      </MarketingText>
                     </th>
                     {row.values.map((value, index) => (
                       <td
                         key={`${row.feature}-${index}`}
                         className="px-4 py-3 text-text-secondary"
                       >
-                        {value}
+                        <MarketingText scope="shared">{value}</MarketingText>
                       </td>
                     ))}
                   </tr>
@@ -187,18 +198,14 @@ export default function ComparisonPageTemplate({
 
         <div className="space-y-12">
           {page.sections.map((section) => (
-            <section
-              key={section.id}
-              id={section.id}
-              className="scroll-mt-28"
-            >
+            <section key={section.id} id={section.id} className="scroll-mt-28">
               <h2 className="text-2xl font-medium tracking-[-0.03em] text-text-primary">
-                {section.heading}
+                <MarketingText scope="shared">{section.heading}</MarketingText>
               </h2>
               <div className="mt-4 space-y-4 text-base leading-8 text-text-secondary">
                 {section.paragraphs.map((paragraph) => (
                   <p key={paragraph.slice(0, 48)}>
-                    {paragraph}
+                    <MarketingText scope="shared">{paragraph}</MarketingText>
                   </p>
                 ))}
               </div>
@@ -235,7 +242,9 @@ export default function ComparisonPageTemplate({
             href="/compare"
             className="htv-focus-ring font-medium text-text-secondary hover:text-text-primary"
           >
-            ← All comparisons
+            <MarketingText scope="components/seo/ComparisonPageTemplate.tsx">
+              {"\u2190 All comparisons"}
+            </MarketingText>
           </Link>
         </p>
       </MarketingContent>

@@ -1,3 +1,4 @@
+import { MarketingText } from "@/components/marketing/MarketingContent";
 import MarketingLayout, {
   MarketingContent,
 } from "@/components/marketing/MarketingLayout";
@@ -17,24 +18,20 @@ import {
   createSoftwareApplicationJsonLd,
   createWebPageJsonLd,
 } from "@/lib/seo/jsonLd";
-
 type SeoFaqPageTemplateProps = {
   faq: SeoFaqEntry;
   relatedFaqs: SeoFaqEntry[];
 };
-
 export default function SeoFaqPageTemplate({
   faq,
   relatedFaqs,
 }: SeoFaqPageTemplateProps) {
   const path = seoFaqPath(faq.slug);
-
   const breadcrumbs = [
     { name: "Home", href: "/" },
     { name: "FAQ", href: MARKETING_ROUTES.faq },
     { name: faq.question },
   ];
-
   const jsonLd = [
     createWebPageJsonLd({
       title: faq.question,
@@ -55,10 +52,9 @@ export default function SeoFaqPageTemplate({
       breadcrumbs.map((item) => ({
         name: item.name,
         path: item.href,
-      }))
+      })),
     ),
   ];
-
   return (
     <MarketingLayout>
       <StructuredData id={`seo-faq-${faq.slug}`} data={jsonLd} />
@@ -67,10 +63,13 @@ export default function SeoFaqPageTemplate({
         <div className="mx-auto max-w-3xl">
           <Breadcrumb items={breadcrumbs} />
           <p className="mt-6 text-overline text-text-muted">
-            FAQ · {faq.category}
+            <MarketingText scope="components/seo/SeoFaqPageTemplate.tsx">
+              {"FAQ \u00B7"}
+            </MarketingText>
+            <MarketingText scope="shared">{faq.category}</MarketingText>
           </p>
           <h1 className="mt-3 text-3xl font-medium tracking-[-0.04em] text-text-primary md:text-4xl md:leading-[1.15]">
-            {faq.question}
+            <MarketingText scope="shared">{faq.question}</MarketingText>
           </h1>
         </div>
       </header>
@@ -81,7 +80,9 @@ export default function SeoFaqPageTemplate({
             .split(/(?<=\.)\s+/)
             .filter(Boolean)
             .map((sentence) => (
-              <p key={sentence.slice(0, 40)}>{sentence}</p>
+              <p key={sentence.slice(0, 40)}>
+                <MarketingText scope="shared">{sentence}</MarketingText>
+              </p>
             ))}
         </div>
 

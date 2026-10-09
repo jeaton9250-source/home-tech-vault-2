@@ -1,6 +1,6 @@
+import { MarketingText } from "@/components/marketing/MarketingContent";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-
 import MarketingLayout, {
   MarketingContent,
 } from "@/components/marketing/MarketingLayout";
@@ -23,22 +23,13 @@ import {
   createSoftwareApplicationJsonLd,
   createWebPageJsonLd,
 } from "@/lib/seo/jsonLd";
-
 type KnowledgeHubProps = {
-  articlesByCategory: Record<
-    KnowledgeCategorySlug,
-    KnowledgeArticle[]
-  >;
+  articlesByCategory: Record<KnowledgeCategorySlug, KnowledgeArticle[]>;
 };
-
 export default function KnowledgeHub({
   articlesByCategory,
 }: KnowledgeHubProps) {
-  const breadcrumbs = [
-    { name: "Home", href: "/" },
-    { name: "Knowledge" },
-  ];
-
+  const breadcrumbs = [{ name: "Home", href: "/" }, { name: "Knowledge" }];
   const jsonLd = [
     createWebPageJsonLd({
       title: "Knowledge Center",
@@ -56,30 +47,32 @@ export default function KnowledgeHub({
       urlPath: "/knowledge",
     }),
   ];
-
   return (
     <MarketingLayout>
-      <StructuredData
-        id="knowledge-hub"
-        data={jsonLd}
-      />
+      <StructuredData id="knowledge-hub" data={jsonLd} />
 
       <header className="border-b border-white/10 bg-[#183047] px-6 py-14 text-[#f5f1e8] md:px-8 md:py-20">
         <div className="mx-auto max-w-6xl">
           <Breadcrumb items={breadcrumbs} />
 
           <p className="mt-7 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#718d4f]">
-            Knowledge Center
+            <MarketingText scope="components/knowledge/KnowledgeHub.tsx">
+              {"Knowledge Center"}
+            </MarketingText>
           </p>
 
           <h1 className="mt-4 max-w-4xl font-serif text-4xl font-medium tracking-[-0.045em] text-[#f5f1e8] md:text-6xl md:leading-[1.04]">
-            Helpful guides for managing the technology in your home.
+            <MarketingText scope="components/knowledge/KnowledgeHub.tsx">
+              {"Helpful guides for managing the technology in your home."}
+            </MarketingText>
           </h1>
 
           <p className="mt-6 max-w-3xl text-base leading-8 text-[#b6c0c7] md:text-lg">
-            Learn how to organize devices, document your network,
-            track warranties, maintain smart-home equipment, and
-            keep important household technology records easy to find.
+            <MarketingText scope="components/knowledge/KnowledgeHub.tsx">
+              {
+                "Learn how to organize devices, document your network, track warranties, maintain smart-home equipment, and keep important household technology records easy to find."
+              }
+            </MarketingText>
           </p>
         </div>
       </header>
@@ -88,19 +81,21 @@ export default function KnowledgeHub({
         <section>
           <div className="mb-7">
             <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#617c43]">
-              Browse by topic
+              <MarketingText scope="components/knowledge/KnowledgeHub.tsx">
+                {"Browse by topic"}
+              </MarketingText>
             </p>
 
             <h2 className="mt-2 font-serif text-3xl font-medium tracking-[-0.035em] text-[#17212a]">
-              Find the guide you need.
+              <MarketingText scope="components/knowledge/KnowledgeHub.tsx">
+                {"Find the guide you need."}
+              </MarketingText>
             </h2>
           </div>
 
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {KNOWLEDGE_CATEGORIES.map((category) => {
-              const count =
-                articlesByCategory[category.slug]?.length ?? 0;
-
+              const count = articlesByCategory[category.slug]?.length ?? 0;
               return (
                 <Link
                   key={category.slug}
@@ -109,23 +104,25 @@ export default function KnowledgeHub({
                 >
                   <div className="flex items-start justify-between gap-5">
                     <h3 className="font-serif text-2xl font-medium tracking-[-0.03em] text-[#17212a]">
-                      {category.name}
+                      <MarketingText scope="shared">
+                        {category.name}
+                      </MarketingText>
                     </h3>
 
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#617c43]/20 bg-[#eef3e8] text-[#617c43] transition group-hover:bg-[#617c43] group-hover:text-white">
-                      <ArrowRight
-                        size={15}
-                        aria-hidden
-                      />
+                      <ArrowRight size={15} aria-hidden />
                     </span>
                   </div>
 
                   <p className="mt-4 flex-1 text-sm leading-6 text-[#657078]">
-                    {category.description}
+                    <MarketingText scope="shared">
+                      {category.description}
+                    </MarketingText>
                   </p>
 
                   <p className="mt-5 text-xs font-semibold uppercase tracking-[0.1em] text-[#617c43]">
-                    {count} {count === 1 ? "article" : "articles"}
+                    <MarketingText scope="shared">{count}</MarketingText>{" "}
+                    {count === 1 ? "article" : "articles"}
                   </p>
                 </Link>
               );
@@ -134,23 +131,27 @@ export default function KnowledgeHub({
         </section>
 
         {KNOWLEDGE_CATEGORIES.map((category) => {
-          const articles =
-            articlesByCategory[category.slug] ?? [];
-
+          const articles = articlesByCategory[category.slug] ?? [];
           return (
             <section key={category.slug}>
               <div className="flex items-end justify-between gap-4 border-b border-[#17212a]/10 pb-5">
                 <div>
                   <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#617c43]">
-                    Knowledge
+                    <MarketingText scope="components/knowledge/KnowledgeHub.tsx">
+                      {"Knowledge"}
+                    </MarketingText>
                   </p>
 
                   <h2 className="mt-2 font-serif text-3xl font-medium tracking-[-0.035em] text-[#17212a]">
-                    {category.name}
+                    <MarketingText scope="shared">
+                      {category.name}
+                    </MarketingText>
                   </h2>
 
                   <p className="mt-2 max-w-2xl text-sm leading-6 text-[#657078]">
-                    {category.description}
+                    <MarketingText scope="shared">
+                      {category.description}
+                    </MarketingText>
                   </p>
                 </div>
 
@@ -158,11 +159,10 @@ export default function KnowledgeHub({
                   href={knowledgeCategoryPath(category.slug)}
                   className="htv-focus-ring hidden shrink-0 items-center gap-2 text-sm font-semibold text-[#617c43] transition hover:text-[#718d4f] sm:inline-flex"
                 >
-                  View all
-                  <ArrowRight
-                    size={14}
-                    aria-hidden
-                  />
+                  <MarketingText scope="components/knowledge/KnowledgeHub.tsx">
+                    {"View all"}
+                  </MarketingText>
+                  <ArrowRight size={14} aria-hidden />
                 </Link>
               </div>
 
@@ -175,7 +175,9 @@ export default function KnowledgeHub({
                     >
                       <div className="flex items-start justify-between gap-4">
                         <h3 className="font-serif text-lg font-medium leading-6 tracking-[-0.02em] text-[#17212a]">
-                          {article.title}
+                          <MarketingText scope="shared">
+                            {article.title}
+                          </MarketingText>
                         </h3>
 
                         <ArrowRight
@@ -186,11 +188,18 @@ export default function KnowledgeHub({
                       </div>
 
                       <p className="mt-3 flex-1 text-sm leading-6 text-[#657078]">
-                        {article.description}
+                        <MarketingText scope="shared">
+                          {article.description}
+                        </MarketingText>
                       </p>
 
                       <p className="mt-5 text-xs font-medium text-[#8a9399]">
-                        {article.readingMinutes} min read
+                        <MarketingText scope="shared">
+                          {article.readingMinutes}
+                        </MarketingText>
+                        <MarketingText scope="components/knowledge/KnowledgeHub.tsx">
+                          {"min read"}
+                        </MarketingText>
                       </p>
                     </Link>
                   </li>
