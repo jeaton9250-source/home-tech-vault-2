@@ -968,8 +968,7 @@ export default function WarrantiesPage() {
           </h1>
 
           <p className="mt-4 max-w-2xl text-[15px] leading-6 text-[#68737b]">
-            Know what is covered, what is expiring, and which devices
-            still need warranty information.
+            Coverage and expiration dates for the things in your home.
           </p>
         </div>
 
@@ -1061,120 +1060,6 @@ export default function WarrantiesPage() {
         <WarrantiesSkeleton />
       ) : error && devices.length === 0 ? null : (
         <>
-          <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            {summaryCards.map((card) => {
-              const selected =
-                activeFilter === card.id;
-              const Icon = card.icon;
-
-              return (
-                <button
-                  key={card.id}
-                  type="button"
-                  onClick={() =>
-                    setActiveFilter(
-                      selected
-                        ? "all"
-                        : card.id
-                    )
-                  }
-                  aria-pressed={selected}
-                  className={cn(
-                    "htv-focus-ring rounded-[22px] border p-4 text-left shadow-[0_16px_40px_-34px_rgba(15,25,35,0.45)] transition md:p-5",
-                    selected
-                      ? "border-[#617c43]/35 bg-[#f8f5ef] ring-2 ring-[#617c43]/10"
-                      : "border-[#182533]/10 bg-[#f8f5ef] hover:border-[#617c43]/20 hover:bg-[#f5f1e9]"
-                  )}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[#7a858d]">
-                        {card.title}
-                      </p>
-                      <p className="mt-2 font-serif text-2xl font-medium tracking-[-0.03em] text-[#17212a]">
-                        {card.value}
-                      </p>
-                      <p className="mt-1 text-xs leading-5 text-[#68737b]">
-                        {card.description}
-                      </p>
-                    </div>
-
-                    <div
-                      className={cn(
-                        "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
-                        card.iconClassName
-                      )}
-                    >
-                      <Icon size={16} aria-hidden />
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
-          </section>
-
-          <section className="grid gap-3 lg:grid-cols-2">
-            <PageCard className="border-[#182533]/10 bg-[#f8f5ef] p-4 shadow-[0_16px_40px_-34px_rgba(15,25,35,0.45)] md:p-5">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[#7a858d]">
-                    Protected Value
-                  </p>
-                  <p className="mt-2 font-serif text-2xl font-medium tracking-[-0.03em] text-[#17212a]">
-                    {formatCurrency(protectedValue)}
-                  </p>
-                  <p className="mt-1 text-xs text-text-secondary">
-                    Covered by active warranties
-                  </p>
-                </div>
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#617c43]/10 text-[#617c43]">
-                  <ShieldCheck size={16} />
-                </div>
-              </div>
-            </PageCard>
-
-            <PageCard className="border-[#182533]/10 bg-[#f8f5ef] p-4 shadow-[0_16px_40px_-34px_rgba(15,25,35,0.45)] md:p-5">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[#7a858d]">
-                    Next Expiring
-                  </p>
-                  {nextExpiringDevice ? (
-                    <>
-                      <p className="mt-2 truncate font-serif text-lg font-medium text-[#17212a]">
-                        {nextExpiringDevice.device_name ??
-                          "Unnamed Device"}
-                      </p>
-                      <p className="mt-1 text-xs font-medium text-[#916c31]">
-                        {getStatusDescription(
-                          nextExpiringDevice.warranty_date
-                        )}
-                      </p>
-                      <p className="mt-1 text-xs text-text-secondary">
-                        Expires{" "}
-                        {formatDate(
-                          nextExpiringDevice.warranty_date
-                        )}
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <p className="mt-2 text-lg font-semibold text-text-primary">
-                        Nothing upcoming
-                      </p>
-                      <p className="mt-1 text-xs text-text-secondary">
-                        No active warranty expirations found.
-                      </p>
-                    </>
-                  )}
-                </div>
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#b58a42]/10 text-[#916c31]">
-                  <Clock3 size={16} />
-                </div>
-              </div>
-            </PageCard>
-          </section>
-
           <PageCard className="border-[#182533]/10 bg-[#f8f5ef] p-5 shadow-[0_18px_45px_-36px_rgba(15,25,35,0.45)] md:p-6">
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
@@ -1191,7 +1076,8 @@ export default function WarrantiesPage() {
                         event.target.value
                       )
                     }
-                    placeholder="Search devices, brands, models, or locations..."
+                    aria-label="Search warranties"
+                    placeholder="Search warranties…"
                     className="htv-focus-ring w-full rounded-xl border border-[#182533]/10 bg-[#eee9df]/60 py-3.5 pl-11 pr-11 text-sm text-[#17212a] outline-none transition placeholder:text-[#8a949b] focus:border-[#617c43]/40 focus:bg-[#f8f5ef] focus:ring-4 focus:ring-[#617c43]/10"
                   />
                   {searchQuery ? (
@@ -1255,14 +1141,15 @@ export default function WarrantiesPage() {
                       onClick={() =>
                         setActiveFilter(filter.id)
                       }
+                      aria-pressed={selected}
                       className={cn(
-                        "htv-focus-ring shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition",
+                        "htv-focus-ring shrink-0 rounded-lg px-3 py-2 text-sm font-medium transition",
                         selected
                           ? "bg-[#617c43] text-white shadow-sm"
                           : "border border-[#182533]/10 bg-[#f8f5ef] text-[#68737b] hover:border-[#617c43]/25 hover:text-[#17212a]"
                       )}
                     >
-                      {filter.label}
+                      {filter.label}{summaryCards.find((card) => card.id === filter.id) ? ` (${summaryCards.find((card) => card.id === filter.id)?.value})` : ""}
                     </button>
                   );
                 })}
@@ -1293,6 +1180,14 @@ export default function WarrantiesPage() {
               </div>
             </div>
           </PageCard>
+
+          <details className="rounded-xl border border-[#182533]/10 bg-transparent px-5 py-4">
+            <summary className="htv-focus-ring cursor-pointer text-sm font-medium text-[#52606a]">Coverage overview</summary>
+            <dl className="mt-4 grid gap-5 text-base sm:grid-cols-2">
+              <div><dt className="text-sm text-text-secondary">Value covered by active warranties</dt><dd className="mt-1 font-medium">{formatCurrency(protectedValue)}</dd></div>
+              <div><dt className="text-sm text-text-secondary">Next expiration</dt><dd className="mt-1 font-medium">{nextExpiringDevice ? `${nextExpiringDevice.device_name ?? "Unnamed device"} · ${formatDate(nextExpiringDevice.warranty_date)}` : "No upcoming expirations"}</dd></div>
+            </dl>
+          </details>
 
           <section className="space-y-3">
             {filteredDevices.length === 0 ? (
