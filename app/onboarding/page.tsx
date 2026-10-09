@@ -4,14 +4,13 @@ import {
   FormEvent,
   Suspense,
   useEffect,
-  useMemo,
   useState,
 } from "react";
 
 import { useRouter, useSearchParams } from "next/navigation";
 
 import {
-  CheckCircle2,
+  Tv, Refrigerator, WashingMachine, Thermometer, Router, Camera, Plus,
   Loader2,
   Upload,
 } from "lucide-react";
@@ -24,6 +23,10 @@ import OnboardingShell, {
   OnboardingTitle,
   inputClassName,
 } from "@/components/onboarding/OnboardingShell";
+
+import dynamic from "next/dynamic";
+
+const SmartPhotoAdd = dynamic(() => import("@/components/devices/SmartPhotoAdd"));
 
 import Button from "@/components/ui/Button";
 import {
@@ -46,7 +49,6 @@ import {
 } from "@/lib/data/householdScope";
 
 import {
-  buildProgressSummary,
   completeOnboarding,
   getErrorMessage,
   loadOnboardingDataSnapshot,
@@ -85,7 +87,7 @@ export default function OnboardingPage() {
               size={22}
               className="animate-spin"
             />
-            Preparing your setup...
+            Opening your home record…
           </div>
         </main>
       }
@@ -110,7 +112,6 @@ function OnboardingFlow() {
     canEdit,
     householdId,
     householdOwnerId,
-    hasFamilyFeatureAccess,
     loading: permissionsLoading,
   } = usePermissions();
 
@@ -200,8 +201,8 @@ function OnboardingFlow() {
   const [step, setStep] =
     useState<OnboardingStep>("welcome");
 
-  const [profileName, setProfileName] =
-    useState("");
+  const [captureMode, setCaptureMode] = useState<"choose" | "manual" | "photo">("choose");
+  const [serialNumber, setSerialNumber] = useState("");
 
   const [snapshot, setSnapshot] =
     useState<OnboardingDataSnapshot | null>(
@@ -340,9 +341,7 @@ function OnboardingFlow() {
         }
 
         setSnapshot(dataSnapshot);
-        setProfileName(
-          profile?.full_name?.trim() || ""
-        );
+
 
         const resumeStep =
           resolveResumeStep(
@@ -513,17 +512,6 @@ function OnboardingFlow() {
     householdOwnerId,
   ]);
 
-  const progressSummary = useMemo(() => {
-    if (!snapshot) {
-      return null;
-    }
-
-    return buildProgressSummary(
-      snapshot,
-      homeName
-    );
-  }, [snapshot, homeName]);
-
   const deviceLimitReached =
     !quota.loading &&
     quota.limits.maxDevices !== null &&
@@ -569,51 +557,24 @@ function OnboardingFlow() {
 
     setErrorMessage("");
 
-    const normalizedName =
-      profileName.trim();
-
-    if (!normalizedName) {
-      setErrorMessage(
-        "Enter your name to continue."
-      );
-      return;
-    }
-
     try {
       setSubmitting(true);
-
-      const { error: profileError } =
-        await supabase
-          .from("profiles")
-          .upsert(
-            {
-              id: user.id,
-              full_name:
-                normalizedName,
-            },
-            {
-              onConflict: "id",
-            }
-          );
-
-      if (profileError) {
-        throw profileError;
-      }
-
-      setProfileName(
-        normalizedName
-      );
 
       trackOnboardingStepCompleted(
         "welcome"
       );
 
-      await persistStep("home");
+      if (!homeName.trim() && !sharedHouseholdLocked) {
+        await saveHomeName(supabase, user.id, "My Home");
+        setHomeName("My Home");
+        trackHomeNamed();
+      }
+      await persistStep("device");
     } catch (error) {
       setErrorMessage(
         getErrorMessage(
           error,
-          "Unable to save your name."
+          "Unable to begin your home record."
         )
       );
     } finally {
@@ -779,6 +740,7 @@ function OnboardingFlow() {
             category:
               category.trim(),
             brand: brand.trim(),
+            serial_number: serialNumber.trim() || null,
             model_number:
               modelNumber.trim() || null,
             purchase_date:
@@ -846,7 +808,7 @@ function OnboardingFlow() {
       trackOnboardingStepCompleted(
         "device"
       );
-      await persistStep("document");
+      await persistStep("complete");
     } catch (error) {
       setErrorMessage(
         getErrorMessage(
@@ -995,7 +957,7 @@ function OnboardingFlow() {
       trackOnboardingStepCompleted(
         "document"
       );
-      await persistStep("network");
+      await persistStep("complete");
     } catch (error) {
       setErrorMessage(
         getErrorMessage(
@@ -1109,7 +1071,7 @@ function OnboardingFlow() {
     }
   }
 
-  async function handleFinish() {
+  async function handleFinish(destination = "/dashboard") {
     if (!user) {
       return;
     }
@@ -1123,7 +1085,7 @@ function OnboardingFlow() {
         user.id
       );
       trackOnboardingCompleted();
-      router.replace("/dashboard");
+      router.replace(destination);
     } catch (error) {
       setErrorMessage(
         getErrorMessage(
@@ -1169,7 +1131,7 @@ function OnboardingFlow() {
       }
 
       trackOnboardingStepCompleted(step);
-      await persistStep(nextStep(step));
+      await persistStep(step === "document" ? "complete" : nextStep(step));
     } catch (error) {
       setErrorMessage(
         getErrorMessage(
@@ -1193,7 +1155,7 @@ function OnboardingFlow() {
             size={22}
             className="animate-spin"
           />
-          Preparing your setup...
+          Opening your home record…
         </div>
       </main>
     );
@@ -1211,78 +1173,19 @@ function OnboardingFlow() {
       )}
 
       {step === "welcome" && (
-        <form
-          onSubmit={(event) => {
-            event.preventDefault();
-            void handleGetStarted();
-          }}
-        >
-          <OnboardingEyebrow>
-            Welcome home
-          </OnboardingEyebrow>
-
-          <OnboardingTitle>
-            Let's personalize your vault.
-          </OnboardingTitle>
-
-          <OnboardingDescription>
-            First, tell us what to call you.
-            Your home and device setup comes next.
-          </OnboardingDescription>
-
-          <div className="mt-7">
-            <OnboardingField
-              label="Your name"
-              htmlFor="onboarding-name"
-              required
-            >
-              <input
-                id="onboarding-name"
-                value={profileName}
-                onChange={(event) =>
-                  setProfileName(
-                    event.target.value
-                  )
-                }
-                autoComplete="name"
-                placeholder="Your name"
-                className={
-                  inputClassName
-                }
-                autoFocus
-                required
-              />
-            </OnboardingField>
+        <form className="onboarding-welcome text-center" onSubmit={(event) => { event.preventDefault(); void handleGetStarted(); }}>
+          <OnboardingEyebrow>Welcome home</OnboardingEyebrow>
+          <div className="onboarding-welcome-title">
+            <OnboardingTitle>Start building your home,<br /><span className="text-[#617c43]">one device at a time.</span></OnboardingTitle>
           </div>
-
-          <OnboardingActions>
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() =>
-                void handleSkip(
-                  "welcome"
-                )
-              }
-              disabled={submitting}
-            >
-              Skip for now
-            </Button>
-
-            <Button
-              type="submit"
-              disabled={submitting}
-            >
-              {submitting ? (
-                <Loader2
-                  size={18}
-                  className="animate-spin"
-                />
-              ) : null}
-
-              Continue
-            </Button>
-          </OnboardingActions>
+          <div className="onboarding-welcome-copy mx-auto max-w-xl">
+            <OnboardingDescription>Keep the details you’ll need later, starting with something you use every day.</OnboardingDescription>
+          </div>
+          <div className="onboarding-welcome-action mt-10 flex flex-col items-center gap-3">
+            <Button type="submit" size="lg" loading={submitting} loadingLabel="Opening your home…" disabled={submitting}>Add my first device</Button>
+            <Button type="button" variant="ghost" disabled={submitting} onClick={() => void handleSkip("welcome")}>Explore my vault instead</Button>
+            <Button type="button" variant="link" disabled={submitting} onClick={() => void persistStep("home").catch((error) => setErrorMessage(getErrorMessage(error, "Unable to open home naming.")))}>Name my home first</Button>
+          </div>
         </form>
       )}
 
@@ -1295,14 +1198,12 @@ function OnboardingFlow() {
           </OnboardingEyebrow>
 
           <OnboardingTitle>
-            Name your home
+            What do you call home?
           </OnboardingTitle>
 
           <OnboardingDescription>
-            This label helps personalize
-            your vault. It does not create
-            a shared household unless you
-            later invite family members.
+            A name makes this record yours. Our First Home, Beach House,
+            or simply Home — whatever feels right.
           </OnboardingDescription>
 
           {sharedHouseholdLocked ? (
@@ -1396,16 +1297,42 @@ function OnboardingFlow() {
           </OnboardingEyebrow>
 
           <OnboardingTitle>
-            Add your first device
+            What should we remember first?
           </OnboardingTitle>
 
           <OnboardingDescription>
-            Pick something important — a
-            laptop, TV, router, or
-            appliance. You can add more
-            later.
+            Choose something you would want the details for if it needed
+            a repair, a replacement, or a little care.
           </OnboardingDescription>
 
+          <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3" role="group" aria-label="Choose a device">
+            {[
+              { label: "TV", category: "Entertainment", room: "Living Room", icon: Tv },
+              { label: "Washer", category: "Appliance", room: "Laundry Room", icon: WashingMachine },
+              { label: "Refrigerator", category: "Appliance", room: "Kitchen", icon: Refrigerator },
+              { label: "Thermostat", category: "Climate", room: "Hallway", icon: Thermometer },
+              { label: "Router", category: "Networking", room: "Living Room", icon: Router },
+              { label: "Doorbell", category: "Security", room: "Front Porch", icon: Camera },
+              { label: "Something else", category: "Other", room: "", icon: Plus },
+            ].map(({ label, category: kind, room, icon: Icon }) => (
+              <button key={label} type="button" disabled={submitting || !canCreate || deviceLimitReached}
+                aria-pressed={deviceName === label}
+                onClick={() => { setDeviceName(label === "Something else" ? "" : label); setCategory(kind); setLocation(room); setBrand(""); setModelNumber(""); setSerialNumber(""); setPurchaseDate(""); setWarrantyDate(""); setCaptureMode("manual"); }}
+                className="flex min-h-28 flex-col items-start justify-center gap-3 rounded-2xl border border-[#172c3e]/15 bg-white/60 p-5 text-left text-base transition hover:border-[#617c43] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#617c43] aria-pressed:border-[#617c43] aria-pressed:bg-[#edf0e5] disabled:opacity-50">
+                <Icon size={24} aria-hidden="true" /><span>{label}</span>
+              </button>
+            ))}
+          </div>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Button type="button" variant="secondary" disabled={submitting || !canCreate || deviceLimitReached} onClick={() => setCaptureMode("photo")}>Use a photo or barcode</Button>
+            <Button type="button" variant="ghost" disabled={submitting || !canCreate || deviceLimitReached} onClick={() => setCaptureMode("manual")}>Enter the details myself</Button>
+          </div>
+          {captureMode === "photo" && !submitting && (
+            <div className="mt-6">
+              <SmartPhotoAdd onSelect={(match) => { setDeviceName(match.deviceName); setBrand(match.brand); setCategory(match.category); setModelNumber(match.modelNumber); setCaptureMode("manual"); }} onSerialNumberDetected={setSerialNumber} />
+              <p className="mt-3 text-sm text-text-secondary">Review the suggested details before saving. You can always enter them yourself.</p>
+            </div>
+          )}
           {deviceLimitReached && (
             <div className="mt-6 rounded-2xl border border-warning/40 bg-warning-soft p-4 text-sm text-text-secondary">
               {quota.canUseProFeatures
@@ -1414,6 +1341,8 @@ function OnboardingFlow() {
             </div>
           )}
 
+          {captureMode === "manual" && <div className="mt-8">
+          <h2 className="mb-5 font-serif text-2xl">{deviceName ? `Let’s remember your ${deviceName.toLowerCase()}.` : "Tell us a little about it."}</h2>
           <div className="mt-6 grid gap-5 md:grid-cols-2">
             <OnboardingField
               label="Device name"
@@ -1487,6 +1416,11 @@ function OnboardingFlow() {
               />
             </OnboardingField>
 
+          </div>
+          <details className="mt-6">
+            <summary className="cursor-pointer text-base font-medium">Add a model, serial number or purchase details (optional)</summary>
+            <div className="mt-5 grid gap-5 md:grid-cols-2">
+            <OnboardingField label="Serial number" htmlFor="device-serial"><input id="device-serial" value={serialNumber} onChange={(event) => setSerialNumber(event.target.value)} className={inputClassName} /></OnboardingField>
             <OnboardingField
               label="Model"
               htmlFor="device-model"
@@ -1538,6 +1472,9 @@ function OnboardingFlow() {
             </OnboardingField>
           </div>
 
+          </details>
+          </div>}
+
           <OnboardingActions>
             <div className="flex flex-col gap-3 sm:flex-row">
               <Button
@@ -1567,10 +1504,10 @@ function OnboardingFlow() {
               type="submit"
               disabled={
                 submitting ||
-                deviceLimitReached
+                deviceLimitReached || !canCreate || captureMode !== "manual"
               }
             >
-              Save device
+              {submitting ? "Remembering…" : "Remember this device"}
             </Button>
           </OnboardingActions>
         </form>
@@ -1581,7 +1518,7 @@ function OnboardingFlow() {
           onSubmit={handleDocumentSubmit}
         >
           <OnboardingEyebrow>
-            Protect something important
+            Keep it together
           </OnboardingEyebrow>
 
           <OnboardingTitle>
@@ -1589,10 +1526,8 @@ function OnboardingFlow() {
           </OnboardingTitle>
 
           <OnboardingDescription>
-            Protect the information you may
-            need later — a receipt,
-            warranty, manual, or device
-            photo.
+            A receipt or manual is easier to find when it stays with the device.
+            Keep one here, or come back to this whenever you need it.
           </OnboardingDescription>
 
           {documentLimitReached && (
@@ -1845,124 +1780,28 @@ function OnboardingFlow() {
 
       {step === "complete" && (
         <>
-          <OnboardingEyebrow>
-            Your vault has started
-          </OnboardingEyebrow>
-
-          <OnboardingTitle>
-            Your first home record is in.
-          </OnboardingTitle>
-
+          <OnboardingEyebrow>{homeName || "Your home record"}</OnboardingEyebrow>
+          <OnboardingTitle>{deviceCount === 1 ? "Your first device is remembered." : deviceCount > 1 ? "Your home is taking shape." : "A place for your home’s details."}</OnboardingTitle>
           <OnboardingDescription>
-            That&apos;s all you need to get started. Keep building your vault
-            whenever something is worth remembering.
+            {deviceCount > 0 ? "You’ve saved something worth remembering. Its receipt, manual, warranty and care history can all live here too." : "Start whenever you’re ready. One appliance, one receipt, one useful detail at a time."}
           </OnboardingDescription>
-
-          <ul className="mt-8 space-y-3">
-            <ProgressItem
-              label="Home named"
-              complete={
-                progressSummary?.householdNamed ??
-                false
-              }
-            />
-
-            <ProgressItem
-              label="First item added"
-              complete={
-                (progressSummary?.devicesAdded ??
-                  0) > 0
-              }
-              detail={`${progressSummary?.devicesAdded ?? 0} item${(progressSummary?.devicesAdded ?? 0) === 1 ? "" : "s"} saved`}
-            />
-          </ul>
-
-          <div className="mt-8 rounded-2xl border border-border-subtle bg-surface-sunken p-5">
-            <p className="text-sm font-semibold text-text-primary">
-              What would you like to do next?
-            </p>
-
-            <p className="mt-2 text-sm leading-6 text-text-secondary">
-              You can head into your vault now, add another item, or attach a
-              receipt, manual, or other home document.
-            </p>
-          </div>
-
-          {hasFamilyFeatureAccess && (
-            <p className="mt-6 text-sm leading-6 text-text-secondary">
-              You can also invite family members later from the Family section.
-            </p>
+          {devices.length > 0 && (
+            <div className="mt-8 rounded-2xl border border-[#617c43]/25 bg-white/70 p-6" role="status">
+              <p className="text-sm text-[#617c43]">Remembered in {homeName || "your home"}</p>
+              <h2 className="mt-2 font-serif text-3xl">{devices[devices.length - 1].device_name}</h2>
+              <p className="mt-3 text-base text-text-secondary">{deviceCount} {deviceCount === 1 ? "device" : "devices"} saved. There’s no need to do it all today.</p>
+            </div>
           )}
-
-          <div className="mt-8 grid gap-3 sm:grid-cols-3">
-            <Button
-              type="button"
-              onClick={() =>
-                void handleFinish()
-              }
-              disabled={submitting}
-            >
-              Go to Dashboard
+          {documentCount > 0 && <p className="mt-5 text-base text-[#617c43]">{documentCount} {documentCount === 1 ? "document" : "documents"} kept with your home.</p>}
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <Button type="button" loading={submitting} disabled={submitting} onClick={() => devices.length ? void persistStep("document").catch((error) => setErrorMessage(getErrorMessage(error, "Unable to open document capture."))) : void handleFinish("/devices/add")}>
+              {devices.length ? "Keep a receipt or manual with it" : "Remember a device"}
             </Button>
-
-            <Button
-              href="/devices/add"
-              variant="ghost"
-            >
-              Add Another Item
-            </Button>
-
-            <Button
-              href="/documents"
-              variant="ghost"
-            >
-              Upload a Document
-            </Button>
+            {devices.length > 0 && <Button type="button" variant="secondary" disabled={submitting} onClick={() => void handleFinish("/devices/add")}>Add another device</Button>}
           </div>
+          <Button type="button" variant="ghost" className="mt-4" disabled={submitting} onClick={() => void handleFinish()}>Open my home record</Button>
         </>
       )}
     </OnboardingShell>
-  );
-}
-
-function ProgressItem({
-  label,
-  complete,
-  detail,
-}: {
-  label: string;
-  complete: boolean;
-  detail?: string;
-}) {
-  return (
-    <li className="flex items-center gap-3 rounded-2xl border border-border-subtle bg-surface-sunken px-4 py-3">
-      <CheckCircle2
-        size={18}
-        className={
-          complete
-            ? "text-home-health"
-            : "text-text-tertiary"
-        }
-        aria-hidden="true"
-      />
-
-      <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium text-text-primary">
-          {label}
-        </p>
-
-        {detail && (
-          <p className="text-xs text-text-secondary">
-            {detail}
-          </p>
-        )}
-      </div>
-
-      <span className="sr-only">
-        {complete
-          ? "Completed"
-          : "Not completed"}
-      </span>
-    </li>
   );
 }

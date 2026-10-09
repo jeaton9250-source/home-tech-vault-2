@@ -62,6 +62,7 @@ import {
 
 import { buildDemoHomeHealth } from "@/lib/home-health/demo";
 
+import { useDemoMode } from "@/hooks/useDemoMode";
 import { usePermissions } from "@/hooks/usePermissions";
 
 type DashboardView = {
@@ -104,11 +105,12 @@ const EMPTY_EXTRAS: DashboardExtraData = {
 export default function AppleDashboard() {
   const {
     user,
-    isDemo,
     householdId,
     householdOwnerId,
     loading: permissionsLoading,
   } = usePermissions();
+
+  const { isDemo, loading: demoLoading } = useDemoMode();
 
   const [dashboard, setDashboard] = useState<DashboardView | null>(null);
 
@@ -124,7 +126,7 @@ export default function AppleDashboard() {
 
   const loadDashboard = useCallback(
     async (background = false) => {
-      if (permissionsLoading) {
+      if (permissionsLoading || demoLoading) {
         return;
       }
 
@@ -135,7 +137,7 @@ export default function AppleDashboard() {
        * A signed-in real account always uses
        * Supabase below.
        */
-      if (isDemo && !user) {
+      if (isDemo) {
         const demoHealth = buildDemoHomeHealth();
 
         const overviewStats = {
@@ -365,7 +367,7 @@ export default function AppleDashboard() {
         setRefreshing(false);
       }
     },
-    [user, isDemo, householdId, householdOwnerId, permissionsLoading],
+    [user, isDemo, householdId, householdOwnerId, permissionsLoading, demoLoading],
   );
 
   useEffect(() => {
@@ -409,7 +411,7 @@ export default function AppleDashboard() {
     return "Good evening";
   }, []);
 
-  if (loading || permissionsLoading) {
+  if (loading || permissionsLoading || demoLoading) {
     return <DashboardLoading />;
   }
 
