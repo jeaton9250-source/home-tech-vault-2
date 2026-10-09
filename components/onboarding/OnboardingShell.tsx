@@ -73,7 +73,7 @@ export function OnboardingTitle({
   children: ReactNode;
 }) {
   return (
-    <h1 tabIndex={-1} className="mt-3 font-serif text-4xl font-normal leading-tight tracking-[-0.025em] text-[#172c3e] md:text-6xl">
+    <h1 tabIndex={-1} className="outline-none mt-3 font-serif text-4xl font-normal leading-tight tracking-[-0.025em] text-[#172c3e] md:text-6xl">
       {children}
     </h1>
   );
