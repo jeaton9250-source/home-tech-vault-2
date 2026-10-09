@@ -10,12 +10,12 @@ export const homepageSchema = z.object({
 });
 export type HomepageContent = z.infer<typeof homepageSchema>;
 export const homepageDefaults: HomepageContent = {
-  eyebrow: "Built for the place you call home", headline: "Your home\nhas a memory.",
-  description: "Manuals get lost. Receipts disappear. Warranties expire. Service dates get forgotten. Home Tech Vault keeps the useful history of your home together for the years ahead.",
-  primaryLabel: "Start Your Home", primaryLink: "/signup", secondaryLabel: "See How It Works", secondaryLink: "/demo",
+  eyebrow: "A smarter way to care for your home", headline: "Your home.\nAll in one place.",
+  description: "Keep your devices, manuals, receipts, warranties, and maintenance history together—ready whenever you need them.",
+  primaryLabel: "Start your home vault", primaryLink: "/signup", secondaryLabel: "See How It Works", secondaryLink: "/demo",
   heroImage: "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=2200&q=90",
   appStoreLink: "https://apps.apple.com/us/app/home-tech-vault/id6812090967", showAppStore: true, announcement: "",
-  finalHeadline: "Give your home\na place to remember.", finalDescription: "Manuals, warranties, receipts, maintenance and the history of your home — together at last.",
+  finalHeadline: "Your home,\nin sync.", finalDescription: "Start building a living record of the place you call home.",
 };
 export const articleSchema = z.object({slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(100), title: text, description: z.string().trim().min(1).max(300), body: z.string().trim().min(1).max(50000), published: z.boolean()});
 export type Article = z.infer<typeof articleSchema>;
