@@ -91,7 +91,7 @@ export default function HomeMarketingView({
                 <ArrowUpRight className="ml-1 inline h-4 w-4" />
               </a>
               <a
-                href="#memory"
+                href="/demo"
                 className="font-semibold text-[#18283b] underline decoration-[#b6b53d] decoration-2 underline-offset-4"
               >
                 <MarketingText scope="components/marketing/HomeMarketingView.tsx">
@@ -107,11 +107,16 @@ export default function HomeMarketingView({
             {content.showAppStore && (
               <a
                 href={content.appStoreLink}
-                className="mt-5 inline-block rounded-full border border-[#18283b]/25 px-5 py-3 text-sm font-semibold"
+                className="mt-5 inline-block rounded-lg transition-opacity hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#18283b]"
+                aria-label="Download Home Tech Vault on the App Store"
               >
-                <MarketingText scope="components/marketing/HomeMarketingView.tsx">
-                  {"Download on the App Store"}
-                </MarketingText>
+                <img
+                  src="/images/app-store-badge.svg"
+                  alt="Download on the App Store"
+                  width={180}
+                  height={60}
+                  className="h-[60px] w-[180px]"
+                />
               </a>
             )}
           </div>
