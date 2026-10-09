@@ -102,7 +102,7 @@ function resolveGrantAction(options: {
       grantAction:
         "skip_higher_access" as const,
       grantActionDescription:
-        "Inherited Family access already satisfies the program benefit. Recognition will be recorded without changing household billing.",
+        "Inherited Household access already satisfies the program benefit. Recognition will be recorded without changing household billing.",
     };
   }
 

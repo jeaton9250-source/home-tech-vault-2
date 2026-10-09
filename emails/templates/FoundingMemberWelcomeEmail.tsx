@@ -23,7 +23,7 @@ export function renderFoundingMemberWelcomePlainText(
   props: FoundingMemberWelcomeEmailProps
 ) {
   const accessLine = props.includesComplimentaryPro
-    ? "As a thank you for joining early, you've received complimentary Pro access."
+    ? "As a thank you for joining early, you've received complimentary Home Plus access."
     : "Your Founding Member recognition is now active on your account.";
 
   return `${foundingMemberWelcomeSubject}

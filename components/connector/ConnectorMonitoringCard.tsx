@@ -73,7 +73,7 @@ export default function ConnectorMonitoringCard({
           }
           detail={
             summary.mode === "automatic"
-              ? `Every ${summary.intervalMinutes} minutes on Pro`
+              ? `Every ${summary.intervalMinutes} minutes on Home Plus`
               : "Run Scan My Network from the connector app"
           }
         />

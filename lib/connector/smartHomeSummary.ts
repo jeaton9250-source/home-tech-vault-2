@@ -44,7 +44,7 @@ export function buildSmartHomeSummary(input: {
           id: "online",
           label: "Online now",
           value: "—",
-          detail: "Presence requires Pro monitoring",
+          detail: "Presence requires Home Plus monitoring",
         },
       ],
       recommendations: [

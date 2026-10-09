@@ -244,7 +244,7 @@ export const SEO_LANDING_PAGES: Record<
         alt: "Devices page filtered by Bedroom location and Smart Home category",
       },
       {
-        title: "Family access",
+        title: "Household access",
         caption: "Shared visibility for the people who help manage the house.",
         src: "/seo/screenshots/home-tech-family.png",
         alt: "Family sharing page with household members, seats, and roles",
