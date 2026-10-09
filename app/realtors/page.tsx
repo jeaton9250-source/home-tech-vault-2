@@ -6,6 +6,17 @@ import { SitePage } from "@/components/marketing/RedesignSitePage";
 export default function RealtorsPage() {
   return (
     <SitePage
+      visual={
+        <MarketingImg
+          src="/images/home-hero.jpg"
+          alt="Modern home exterior framed by trees and landscaping"
+          width={800}
+          height={480}
+          fetchPriority="high"
+          className="aspect-[4/3] w-full object-cover lg:aspect-[4/5]"
+          scope="app/realtors/page.tsx"
+        />
+      }
       eyebrow="A CLOSING GIFT FOR THE HOME"
       title={
         <>

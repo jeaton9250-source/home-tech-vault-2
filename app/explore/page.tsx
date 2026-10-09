@@ -6,6 +6,17 @@ import { SitePage } from "@/components/marketing/RedesignSitePage";
 export default function ExplorePage() {
   return (
     <SitePage
+      visual={
+        <MarketingImg
+          src="/knowledge/heroes/how-to-inventory-every-device-in-your-home.jpg"
+          alt="Two people reviewing information together on a laptop"
+          width={1600}
+          height={900}
+          fetchPriority="high"
+          className="aspect-[4/3] w-full object-cover lg:aspect-[4/5]"
+          scope="app/explore/page.tsx"
+        />
+      }
       eyebrow="EXPLORE HOME TECH VAULT"
       title={
         <>
