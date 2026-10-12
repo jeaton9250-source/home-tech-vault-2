@@ -1,3 +1,4 @@
+import { toolGuides } from "@/lib/resources/toolGuides";
 import type { MetadataRoute } from "next";
 
 import { KNOWLEDGE_CATALOG } from "@/lib/knowledge/catalog";
@@ -94,7 +95,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     comparisonSitemapEntries(siteUrl);
 
   return [
-    ...resources.map(article => ({url: `${siteUrl}/resources/${article.slug}`, changeFrequency: "monthly" as const, priority: 0.7})),
+    ...toolGuides.map(guide => ({url: `${siteUrl}/resources/${guide.slug}`, lastModified: new Date("2026-10-12"), changeFrequency: "monthly" as const, priority: 0.7})),
+    ...resources.filter(article => !toolGuides.some(guide => guide.slug === article.slug)).map(article => ({url: `${siteUrl}/resources/${article.slug}`, changeFrequency: "monthly" as const, priority: 0.7})),
     {url: `${siteUrl}/resources`, changeFrequency: "weekly", priority: 0.7},
     ...marketingEntries,
     ...categoryEntries,

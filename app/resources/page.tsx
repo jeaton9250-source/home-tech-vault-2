@@ -1,3 +1,4 @@
+import { toolGuides } from "@/lib/resources/toolGuides";
 import { MarketingText } from "@/components/marketing/MarketingContent";
 import Link from "next/link";
 import MarketingHeader from "@/components/marketing/MarketingHeader";
@@ -9,7 +10,8 @@ export const metadata = {
   description: "Practical guides for keeping your home records organized.",
 };
 export default async function ResourcesPage() {
-  const articles = await loadArticles();
+  const cmsArticles = await loadArticles();
+  const articles = [...toolGuides, ...cmsArticles.filter(article => !toolGuides.some(guide => guide.slug === article.slug))];
   return (
     <>
       <MarketingHeader />
