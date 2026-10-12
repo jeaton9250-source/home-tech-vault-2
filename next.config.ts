@@ -102,6 +102,9 @@ const noIndexHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  images: {
+    remotePatterns: [{ protocol: "https", hostname: "images.unsplash.com", pathname: "/**" }],
+  },
   async redirects() {
     return [
       { source: "/realtors", destination: "/for-realtors", permanent: true },

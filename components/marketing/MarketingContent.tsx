@@ -87,7 +87,7 @@ export function MarketingImage({
       {...props}
       src={resolvedSrc}
       alt={content[contentId(scope, "text", alt)] ?? content[contentId("shared", "text", alt)] ?? alt}
-      unoptimized={props.unoptimized ?? (typeof resolvedSrc === "string" && !resolvedSrc.startsWith("/"))}
+      unoptimized={props.unoptimized ?? (typeof resolvedSrc === "string" && !(resolvedSrc.startsWith("/") || resolvedSrc.startsWith("https://images.unsplash.com/")))}
     />
   );
 }
