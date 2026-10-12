@@ -1,3 +1,5 @@
+import { DevelopmentAccessProvider } from "@/hooks/useDevelopmentAccess";
+import { PermissionsProvider } from "@/hooks/usePermissions";
 import { createPageMetadata } from "@/lib/marketing/metadata";
 import { MARKETING_ROUTES } from "@/lib/marketing/routes";
 
@@ -13,5 +15,5 @@ export default function ContactLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  return <DevelopmentAccessProvider><PermissionsProvider>{children}</PermissionsProvider></DevelopmentAccessProvider>;
 }
