@@ -1,17 +1,21 @@
+import { createPageMetadata } from "@/lib/marketing/metadata";
+export const metadata = createPageMetadata({title:'Explore Home Tech Vault', description:'See how Home Tech Vault organizes appliances, manuals, receipts, warranties and maintenance history into a useful home record.', path:"/explore"});
 import {
   MarketingText,
-  MarketingImg,
+  MarketingImage,
 } from "@/components/marketing/MarketingContent";
 import { SitePage } from "@/components/marketing/RedesignSitePage";
 export default function ExplorePage() {
   return (
     <SitePage
       visual={
-        <MarketingImg
+        <MarketingImage
+          sizes="(max-width: 1024px) 100vw, 50vw"
           src="/knowledge/heroes/how-to-inventory-every-device-in-your-home.jpg"
           alt="Two people reviewing information together on a laptop"
           width={1600}
           height={900}
+          loading="eager"
           fetchPriority="high"
           className="aspect-[4/3] w-full object-cover lg:aspect-[4/5]"
           scope="app/explore/page.tsx"

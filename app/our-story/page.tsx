@@ -1,6 +1,8 @@
+import { createPageMetadata } from "@/lib/marketing/metadata";
+export const metadata = createPageMetadata({title:'Our Story — Built by Jason Eaton', description:'Learn why Jason Eaton built Home Tech Vault to make home records easier to keep, easier to find and more useful over time.', path:"/our-story"});
 import {
   MarketingText,
-  MarketingImg,
+  MarketingImage,
 } from "@/components/marketing/MarketingContent";
 import { SitePage } from "@/components/marketing/RedesignSitePage";
 export default function OurStoryPage() {
@@ -21,7 +23,8 @@ export default function OurStoryPage() {
       intro="Home Tech Vault started with a simple frustration: important information about a home was everywhere, except where you actually needed it."
     >
       <div className="mt-12 overflow-hidden rounded-2xl">
-        <MarketingImg
+        <MarketingImage
+          sizes="(max-width: 1024px) 100vw, 50vw"
           width={1536}
           height={1024}
           loading="lazy"
@@ -158,7 +161,8 @@ export default function OurStoryPage() {
             </MarketingText>
           </p>
         </div>
-        <MarketingImg
+        <MarketingImage
+          sizes="(max-width: 1024px) 100vw, 50vw"
           src="/images/jason-eaton.jpg"
           alt="Jason Eaton, founder of Home Tech Vault"
           width={600}

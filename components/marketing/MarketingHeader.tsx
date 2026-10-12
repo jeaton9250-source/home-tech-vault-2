@@ -106,7 +106,9 @@ export default function MarketingHeader() {
             type="button"
             onClick={() => setMobileOpen((value) => !value)}
             className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-white lg:hidden"
-            aria-label="Toggle navigation"
+            aria-label={mobileOpen ? "Close navigation" : "Open navigation"}
+            aria-expanded={mobileOpen}
+            aria-controls="marketing-mobile-nav"
           >
             {mobileOpen ? (
               <X className="h-5 w-5" />
@@ -119,7 +121,7 @@ export default function MarketingHeader() {
         {/* MOBILE NAV */}
 
         {mobileOpen && (
-          <div className="border-t border-white/[0.08] bg-[#132231] px-5 py-5 lg:hidden">
+          <div id="marketing-mobile-nav" className="border-t border-white/[0.08] bg-[#132231] px-5 py-5 lg:hidden">
             <div className="flex flex-col gap-2">
               {navItems.map((item) => {
                 const active = isActive(item.href);

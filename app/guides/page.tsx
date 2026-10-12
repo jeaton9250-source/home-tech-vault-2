@@ -5,7 +5,7 @@ import { createSeoMetadata } from "@/lib/seo";
 export const metadata = createSeoMetadata({
   title: "Device Brand Guides — Organize Home Tech by Brand",
   description:
-    "Programmatic SEO guides for Apple, Samsung, LG, networking brands, smart home gear, and more. Organize devices, track warranties, and store network context.",
+    "Find practical guides for organizing appliances, electronics and smart home equipment by brand, including purchase records, warranties and manuals.",
   path: "/guides",
   keywords: [
     "device brand guides",

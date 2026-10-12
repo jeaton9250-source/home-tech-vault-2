@@ -34,7 +34,7 @@ export const revalidate = 3600;
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const resources = await loadArticles();
-  const now = new Date();
+
 
   const marketingEntries: MetadataRoute.Sitemap =
     INDEXABLE_MARKETING_PATHS.map((path) => ({
@@ -43,7 +43,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           ? `${siteUrl}/`
           : `${siteUrl}${path}`,
 
-      lastModified: now,
+
 
       changeFrequency:
         path === "/"
@@ -75,7 +75,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: `${siteUrl}${knowledgeCategoryPath(
         category.slug
       )}`,
-      lastModified: now,
+
       changeFrequency: "weekly",
       priority: 0.75,
     }));
@@ -94,7 +94,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const compareEntries: MetadataRoute.Sitemap =
     comparisonSitemapEntries(siteUrl);
 
-  return [
+  const entries: MetadataRoute.Sitemap = [
     ...toolGuides.map(guide => ({url: `${siteUrl}/resources/${guide.slug}`, lastModified: new Date("2026-10-12"), changeFrequency: "monthly" as const, priority: 0.7})),
     ...resources.filter(article => !toolGuides.some(guide => guide.slug === article.slug)).map(article => ({url: `${siteUrl}/resources/${article.slug}`, changeFrequency: "monthly" as const, priority: 0.7})),
     {url: `${siteUrl}/resources`, changeFrequency: "weekly", priority: 0.7},
@@ -103,4 +103,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...articleEntries,
     ...compareEntries,
   ];
+  return Array.from(new Map(entries.map(entry => [entry.url, entry])).values());
 }

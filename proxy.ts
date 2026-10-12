@@ -1,3 +1,4 @@
+import { isPublicMarketingPath } from "@/lib/marketing/routes";
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
@@ -18,29 +19,6 @@ const PUBLIC_AUTH_PATHS = new Set([
   "/invite/setup",
   "/onboarding/create-household",
 ]);
-
-const PUBLIC_MARKETING_PREFIXES = [
-  "/tools",
-  "/",
-  "/pricing",
-  "/about",
-  "/features",
-  "/how-it-works",
-  "/faq",
-  "/contact",
-  "/privacy",
-  "/terms",
-  "/trust",
-  "/security",
-  "/demo",
-  "/dashboard-preview",
-  "/new-homeowners",
-  "/knowledge",
-  "/resources",
-  "/guides",
-  "/compare",
-  "/for-realtors",
-];
 
 function normalizePathname(pathname: string) {
   if (pathname.length > 1 && pathname.endsWith("/")) {
@@ -64,20 +42,6 @@ function isPublicAuthPath(pathname: string) {
   }
 
   return false;
-}
-
-function isPublicMarketingPath(pathname: string) {
-  const path = normalizePathname(pathname);
-
-  if (path === "/") {
-    return true;
-  }
-
-  return PUBLIC_MARKETING_PREFIXES.some(
-    (prefix) =>
-      prefix !== "/" &&
-      (path === prefix || path.startsWith(`${prefix}/`))
-  );
 }
 
 export async function proxy(request: NextRequest) {

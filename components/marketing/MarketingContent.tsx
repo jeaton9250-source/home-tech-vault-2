@@ -81,12 +81,13 @@ export function MarketingImage({
 }: ImageProps & { scope: string }) {
   const content = useContext(ContentContext);
   const fallback = typeof src === "string" ? src : "";
+  const resolvedSrc = content[contentId("shared", "image", fallback)] ?? src;
   return (
     <Image
       {...props}
-      src={content[contentId("shared", "image", fallback)] ?? src}
+      src={resolvedSrc}
       alt={content[contentId(scope, "text", alt)] ?? content[contentId("shared", "text", alt)] ?? alt}
-      unoptimized
+      unoptimized={props.unoptimized ?? (typeof resolvedSrc === "string" && !resolvedSrc.startsWith("/"))}
     />
   );
 }

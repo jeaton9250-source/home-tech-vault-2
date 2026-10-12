@@ -1,14 +1,15 @@
-import type { Metadata } from "next";
+import { createPageMetadata } from "@/lib/marketing/metadata";
 import {
   MarketingText,
-  MarketingImg,
+  MarketingImage,
 } from "@/components/marketing/MarketingContent";
 import { SitePage } from "@/components/marketing/RedesignSitePage";
-export const metadata: Metadata = {
+export const metadata = createPageMetadata({
+  path: "/pricing",
   title: "Pricing | Home Tech Vault",
   description:
     "Start Home Tech Vault for free, then choose Home Plus or Household when you need more storage, smarter tools, or shared access.",
-};
+});
 const plans: [string, string, string, string, string[]][] = [
   [
     "HOME",
@@ -57,11 +58,13 @@ export default function PricingPage() {
   return (
     <SitePage
       visual={
-        <MarketingImg
+        <MarketingImage
+          sizes="(max-width: 1024px) 100vw, 50vw"
           src="/images/pricing-living-room.jpg"
           alt="Sunlit living room with neutral chairs, a brown sofa, and indoor plants"
           width={1200}
           height={900}
+          loading="eager"
           fetchPriority="high"
           className="aspect-[4/3] w-full object-cover lg:aspect-[4/5]"
           scope="app/pricing/page.tsx"

@@ -1,5 +1,5 @@
 import { SitePage } from "@/components/marketing/RedesignSitePage";
-import { MarketingImg, MarketingText } from "@/components/marketing/MarketingContent";
+import { MarketingImage, MarketingText } from "@/components/marketing/MarketingContent";
 import { createPageMetadata } from "@/lib/marketing/metadata";
 
 export const metadata = createPageMetadata({
@@ -14,7 +14,7 @@ const benefits = [
   ["What it takes from you", "Create a partner account, prepare a home gift and add the information you have permission to share. When it is ready, send the ownership invitation so the buyer can claim their home record."],
 ] as const;
 export default function RealtorsPage() {
-  return <SitePage eyebrow="FOR REALTORS & BUILDERS" title="Give every home you sell a memory." intro="Hand your buyers a record they can keep using after the boxes are unpacked. The useful details of their home, together from the start." visual={<MarketingImg scope={scope} src="/images/home-hero.jpg" alt="Modern home surrounded by trees and landscaping" width={1200} height={900} className="aspect-[4/3] w-full object-cover lg:aspect-[4/5]" fetchPriority="high" />}>
+  return <SitePage eyebrow="FOR REALTORS & BUILDERS" title="Give every home you sell a memory." intro="Hand your buyers a record they can keep using after the boxes are unpacked. The useful details of their home, together from the start." visual={<MarketingImage scope={scope} src="/images/home-hero.jpg" alt="Modern home surrounded by trees and landscaping" width={1200} height={900} className="aspect-[4/3] w-full object-cover lg:aspect-[4/5]" fetchPriority="high" />}>
     <div className="mt-8 flex flex-wrap gap-3">
       <a href="mailto:support@hometechvault.com?subject=Home%20handoff%20for%20my%20next%20closing" className="rounded-full bg-[#18283b] px-6 py-3 font-semibold text-white"><MarketingText scope={scope}>Request a handoff for your next closing</MarketingText></a>
       <a href="/realtors/signup" className="rounded-full border border-[#18283b]/20 px-6 py-3 font-semibold"><MarketingText scope={scope}>Create a partner account</MarketingText></a>

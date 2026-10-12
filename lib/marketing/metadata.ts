@@ -55,7 +55,7 @@ export function createPageMetadata({
   const fullTitle =
     path === "/"
       ? SOCIAL_DEFAULT_TITLE
-      : `${title} | ${siteConfig.name}`;
+      : title.endsWith(` | ${siteConfig.name}`) ? title : `${title} | ${siteConfig.name}`;
 
   const openGraph: NonNullable<Metadata["openGraph"]> = {
     type,
@@ -65,7 +65,7 @@ export function createPageMetadata({
     title:
       path === "/"
         ? SOCIAL_OG_TITLE
-        : `${title} | ${siteConfig.name}`,
+        : fullTitle,
     description:
       path === "/"
         ? SOCIAL_OG_DESCRIPTION

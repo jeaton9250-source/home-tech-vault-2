@@ -1,6 +1,6 @@
 import {
   MarketingText,
-  MarketingImg,
+  MarketingImage,
 } from "@/components/marketing/MarketingContent";
 import type { HomepageContent } from "@/lib/cms/schema";
 import MarketingHeader from "@/components/marketing/MarketingHeader";
@@ -53,8 +53,10 @@ export default function HomeMarketingView({
         id="top"
         className="relative min-h-[720px] overflow-hidden lg:min-h-[calc(100vh-106px)]"
       >
-        <MarketingImg
-          fetchPriority="high"
+        <MarketingImage
+          fill
+          sizes="100vw"
+          preload
           src={content.heroImage}
           alt="Bright modern home interior"
           className="absolute inset-0 h-full w-full object-cover"

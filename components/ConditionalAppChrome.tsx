@@ -5,45 +5,15 @@ import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
 
 import ClearDemoOnAuthRoute from "@/components/auth/ClearDemoOnAuthRoute";
-import AppChrome from "@/components/AppChrome";
+import dynamic from "next/dynamic";
+const AppChrome = dynamic(() => import("@/components/AppChrome"));
 
 import { normalizePathname } from "@/lib/isChromeFreeRoute";
-import { isPublicAuthPath } from "@/lib/marketing/routes";
+import { isPublicAuthPath, isPublicMarketingPath } from "@/lib/marketing/routes";
 
 type ConditionalAppChromeProps = {
   children: ReactNode;
 };
-
-const MARKETING_ROUTES = [
-  "/tools",
-  "/",
-  "/what-it-remembers",
-  "/explore",
-  "/resources",
-  "/website-preview",
-  "/realtors",
-  "/for-realtors",
-  "/compare/centriq-alternative",
-  "/pricing",
-  "/our-story",
-  "/demo",
-  "/new-homeowner-checklist",
-  "/appliance-model-serial-number",
-  "/home-maintenance-checklist",
-];
-
-function isMarketingRoute(pathname: string) {
-  return MARKETING_ROUTES.some((route) => {
-    if (route === "/") {
-      return pathname === "/";
-    }
-
-    return (
-      pathname === route ||
-      pathname.startsWith(`${route}/`)
-    );
-  });
-}
 
 export default function ConditionalAppChrome({
   children,
@@ -56,7 +26,7 @@ export default function ConditionalAppChrome({
     isPublicAuthPath(pathname);
 
   const marketingRoute =
-    isMarketingRoute(pathname);
+    isPublicMarketingPath(pathname);
 
   // Public auth pages must never inherit app chrome,
   // AuthGuard, or a stale demo session.

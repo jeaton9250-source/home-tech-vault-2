@@ -52,6 +52,11 @@ export function isPublicAuthPath(
 
 /** Routes accessible without signing in. */
 export const PUBLIC_MARKETING_PATHS = [
+  "/explore",
+  "/our-story",
+  "/what-it-remembers",
+  "/website-preview",
+  "/realtors",
   "/tools",
   MARKETING_ROUTES.home,
   MARKETING_ROUTES.about,
@@ -151,6 +156,8 @@ export const PUBLIC_STATIC_PREFIXES = [
 
 /** Indexable marketing URLs for sitemap generation. */
 export const INDEXABLE_MARKETING_PATHS = [
+  "/explore",
+  "/our-story",
   "/tools",
   "/tools/home-maintenance-planner",
   "/tools/appliance-lifespan-calculator",

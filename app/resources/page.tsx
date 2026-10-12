@@ -1,3 +1,4 @@
+import { createPageMetadata } from "@/lib/marketing/metadata";
 import { toolGuides } from "@/lib/resources/toolGuides";
 import { MarketingText } from "@/components/marketing/MarketingContent";
 import Link from "next/link";
@@ -5,10 +6,11 @@ import MarketingHeader from "@/components/marketing/MarketingHeader";
 import HomeMarketingFooter from "@/components/marketing/HomeMarketingFooter";
 import { loadArticles } from "@/lib/cms/server";
 export const dynamic = "force-dynamic";
-export const metadata = {
+export const metadata = createPageMetadata({
+  path: "/resources",
   title: "Homeowner Resources | Home Tech Vault",
   description: "Practical guides for keeping your home records organized.",
-};
+});
 export default async function ResourcesPage() {
   const cmsArticles = await loadArticles();
   const articles = [...toolGuides, ...cmsArticles.filter(article => !toolGuides.some(guide => guide.slug === article.slug))];
