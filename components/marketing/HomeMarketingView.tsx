@@ -7,6 +7,8 @@ import styles from "./JitterHome.module.css";
 const explore = [["How it works", "/demo"], ["For Realtors", "/for-realtors"], ["Pricing", "/pricing"], ["Our Story", "/our-story"]];
 const company = [["Contact", "/contact"], ["Help Center", "/faq"], ["Privacy", "/privacy"], ["Terms", "/terms"]];
 
+const footerColumns = [{ title: "Explore", links: explore }, { title: "Company", links: company }];
+
 export default function HomeMarketingView({ content }: { content: HomepageContent }) {
   const appStore = content.appStoreLink;
   return (
@@ -43,7 +45,7 @@ export default function HomeMarketingView({ content }: { content: HomepageConten
         <footer className={styles.footer}>
           <div className={styles.footerGrid}>
             <div><a className={styles.brand} href="/"><Home aria-hidden="true" /><span>Home Tech Vault</span></a><h2>Your home, well remembered.</h2><p>Every device, document, and detail—kept together for the life of your home.</p><a className={styles.footerDownload} href={appStore}>Download on the App Store</a></div>
-            {[['Explore', explore], ['Company', company]].map(([title, links]) => <nav key={title as string} aria-label={`${title} footer`}><h3>{title as string}</h3>{(links as string[][]).map(([label, href]) => <a key={href} href={href}>{label}</a>)}</nav>)}
+            {footerColumns.map(({ title, links }) => <nav key={title} aria-label={`${title} footer`}><h3>{title}</h3>{links.map(([label, href]) => <a key={href} href={href}>{label}</a>)}</nav>)}
           </div>
           <div className={styles.footerBottom}><p>© {new Date().getFullYear()} Home Tech Vault</p><p>Built for the moments you need it most.</p></div>
         </footer>
