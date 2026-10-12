@@ -1,6 +1,7 @@
 import { MarketingText } from "@/components/marketing/MarketingContent";
 import Link from "next/link";
 const exploreLinks = [
+  { label: "Free Tools", href: "/tools" },
   { label: "What It Remembers", href: "/#memory" },
   { label: "Explore", href: "/explore" },
   { label: "Centriq Alternative", href: "/compare/centriq-alternative" },

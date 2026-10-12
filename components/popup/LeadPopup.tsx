@@ -24,4 +24,4 @@ function PopupForPage({page}:{page:string}) {
  if(!visible||!configuration||!popupMatchesPage(configuration.settings,page))return null;
  return <PopupDialog settings={configuration.settings} onClose={dismiss} onSubmit={input=>void submit(input)} busy={busy} error={error} success={success}/>;
 }
-export default function LeadPopup(){const page=usePathname();if(!page||!isPublicMarketingPath(page))return null;return <PopupForPage key={page} page={page}/>;}
+export default function LeadPopup(){const page=usePathname();if(!page||page === "/tools"||page.startsWith("/tools/")||!isPublicMarketingPath(page))return null;return <PopupForPage key={page} page={page}/>;}

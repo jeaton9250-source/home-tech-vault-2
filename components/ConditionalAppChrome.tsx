@@ -15,6 +15,7 @@ type ConditionalAppChromeProps = {
 };
 
 const MARKETING_ROUTES = [
+  "/tools",
   "/",
   "/what-it-remembers",
   "/explore",

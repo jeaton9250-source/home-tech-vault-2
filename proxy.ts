@@ -20,6 +20,7 @@ const PUBLIC_AUTH_PATHS = new Set([
 ]);
 
 const PUBLIC_MARKETING_PREFIXES = [
+  "/tools",
   "/",
   "/pricing",
   "/about",

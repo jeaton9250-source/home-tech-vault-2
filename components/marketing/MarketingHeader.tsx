@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { ArrowRight, Menu, X } from "lucide-react";
 import { useState } from "react";
 const navItems = [
+  { label: "Free Tools", href: "/tools" },
   {
     label: "What It Remembers",
     href: "/#memory",

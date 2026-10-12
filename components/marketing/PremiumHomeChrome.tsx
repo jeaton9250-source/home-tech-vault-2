@@ -4,6 +4,7 @@ import { MarketingText } from "@/components/marketing/MarketingContent";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
 const links = [
+  ["Free Tools", "/tools"],
   ["Features", "remember"],
   ["How it works", "explore"],
   ["For Realtors", "/for-realtors"],
