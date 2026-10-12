@@ -1,6 +1,6 @@
 import type { HomepageContent } from "@/lib/cms/schema";
 import { MarketingText } from "@/components/marketing/MarketingContent";
-import { BookOpen, FileText, Folder, Home, ShieldCheck } from "lucide-react";
+import { Home } from "lucide-react";
 import JitterPhone from "./JitterPhone";
 import styles from "./JitterHome.module.css";
 
@@ -18,7 +18,6 @@ export default function HomeMarketingView({ content }: { content: HomepageConten
           <a className={styles.brand} href="/" aria-label="Home Tech Vault home"><img src="/images/jitter/logo.webp" alt="" width={38} height={42} /><span>Home Tech Vault</span></a>
           <nav aria-label="Main navigation"><a href="/explore">Explore</a><a href="/for-realtors">For Realtors</a><a href="/pricing">Pricing</a><a className={styles.login} href="/login">Login</a></nav>
         </header>
-        {content.announcement && <p className={styles.announcement}>{content.announcement}</p>}
         <section className={styles.hero} aria-label="Your home has a memory">
           <div className={styles.heroCopy}>
             <p className={styles.eyebrow}>A smarter home starts here</p>
@@ -27,19 +26,21 @@ export default function HomeMarketingView({ content }: { content: HomepageConten
             <a className={styles.primary} href={appStore}>Download on the App Store</a>
           </div>
           <div className={styles.heroPreview}>
-            <div className={styles.details} aria-label="Example saved home information">
-              <div><FileText /><p><strong>Model number</strong><small>Saved with your device</small></p></div>
-              <div><ShieldCheck /><p><strong>Warranty</strong><small>Know what’s covered</small></p></div>
-              <div><BookOpen /><p><strong>Manual found</strong><small>Ready when you need it</small></p></div>
-            </div>
             <JitterPhone />
           </div>
         </section>
         <section id="memory" className={styles.cards} aria-label="What your home remembers">
-          <article className={`${styles.card} ${styles.bought}`}><span className={styles.quote} aria-hidden="true">“</span><h2>Bought years ago.<br />Needed today.</h2><span className={styles.rule} /><img src="/images/jitter/books-plant.webp" alt="Books and a green houseplant" /></article>
-          <article className={`${styles.card} ${styles.documents}`}><Folder aria-hidden="true" /><h2>Manuals,<br />warranties,<br />and receipts.</h2><img src="/images/jitter/documents.webp" alt="A tidy stack of home manuals, warranties, and receipts" /></article>
-          <article className={`${styles.card} ${styles.record}`}><Home aria-hidden="true" /><h2>One home.<br />One record.</h2><span className={styles.rule} /><img src="/images/jitter/home-record.webp" alt="Line illustration of a home" /></article>
-          <article className={`${styles.card} ${styles.connected}`}><img src="/images/jitter/kitchen.webp" alt="Kitchen appliances and a smart thermostat" /><h2>Everything<br />stays connected.</h2></article>
+          {[
+            ["bought-card", "Bought years ago. Needed today.", 434],
+            ["documents-card", "Manuals, warranties, and receipts.", 410],
+            ["record-card", "One home. One record.", 346],
+            ["connected-card", "Everything stays connected.", 590],
+          ].map(([asset, title, width]) => (
+            <article key={asset} className={styles.artCard}>
+              <h2 className={styles.srOnly}>{title}</h2>
+              <img src={`/images/jitter/${asset}.webp`} alt="" width={width as number} height={399} />
+            </article>
+          ))}
         </section>
         <section className={styles.banner}><h2>Your home information, finally organized.</h2><a href="/demo">See how it works <span aria-hidden="true">→</span></a></section>
         <footer className={styles.footer}>
