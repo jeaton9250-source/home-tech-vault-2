@@ -2,3 +2,19 @@
 @media(min-width:1500px){.heroCopy,.heroPreview{min-height:390px}.card{min-height:300px}}
 @media(max-width:1000px){.header nav{gap:20px}.heroCopy{padding:30px 23px}.heroCopy h1{font-size:48px}.description{max-width:290px;font-size:16px}.details{left:10px;width:42%}.details>div{padding:12px 8px;gap:5px}.details strong{font-size:10px}.details small{font-size:8px}.cards{grid-template-columns:1fr 1fr}.card{min-height:310px}.banner{padding:24px}.banner h2{font-size:26px}.footer{padding:30px}.footer h2{font-size:30px}}
 @media(max-width:640px){.page{padding:0 14px 18px}.header{flex-direction:column;align-items:stretch;gap:18px;padding:20px 0}.brand{font-size:22px;align-self:center}.header nav{justify-content:space-between;gap:10px;font-size:12px}.login{padding:9px 18px}.hero{grid-template-columns:1fr}.heroCopy{min-height:340px;padding:35px 24px}.heroCopy h1{font-size:52px}.description{max-width:290px}.heroPreview{min-height:320px}.details{left:14px;top:20px;bottom:35px;width:43%}.details strong{font-size:12px}.details small{font-size:9px}.cards{gap:7px}.card{padding:20px 17px;min-height:250px}.card h2{font-size:24px}.connected h2{margin:26px 12px;padding:12px;font-size:21px}.banner{align-items:flex-start;flex-direction:column;gap:16px;background-size:auto,60% 100%;padding:25px 22px}.banner h2{max-width:270px;font-size:28px}.banner a{font-size:14px;padding:10px 16px}.footer{padding:25px 22px}.footerGrid{grid-template-columns:1fr 1fr;gap:22px}.footerGrid>div{grid-column:1/-1}.footer .brand{align-self:auto}.footer h2{font-size:31px}.footerBottom{flex-direction:column;gap:8px;margin-top:26px}}
+
+/* Match the source artwork without placing duplicate labels over it. */
+.shell{max-width:1440px}
+.hero{grid-template-columns:.97fr 1.03fr}
+.heroCopy{min-height:410px;padding:42px;background:linear-gradient(90deg,#fbf9f0 43%,#fbf9f0ed 60%,#fbf9f000 90%),url('/images/jitter/hero-interior.webp') right center/40% 100% no-repeat}
+.heroPreview{min-height:410px}
+.heroCopy h1{font-size:clamp(44px,4.5vw,74px);max-width:620px}
+.description{max-width:420px;font-size:20px}
+.phone video{object-fit:contain}
+.cards{grid-template-columns:434fr 410fr 346fr 590fr;align-items:stretch;gap:7px}
+.artCard{overflow:hidden;border-radius:15px}
+.artCard img{display:block;width:100%;height:100%;object-fit:fill}
+.srOnly{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+.banner{background:linear-gradient(90deg,#303c28 63%,#303c2800 95%),url('/images/jitter/banner-plant.webp') right center/30% 100% no-repeat}
+@media(max-width:1000px){.heroCopy{padding:30px}.heroCopy h1{font-size:52px;letter-spacing:-2px}.description{font-size:17px;max-width:330px}.heroCopy,.heroPreview{min-height:380px}.cards{grid-template-columns:1fr 1fr}.artCard img{height:auto;aspect-ratio:1.08;object-fit:cover}.banner{background-size:auto,35% 100%}}
+@media(max-width:640px){.hero{grid-template-columns:1fr}.heroCopy{min-height:340px;padding:30px 24px}.heroCopy h1{font-size:49px}.description{font-size:17px;max-width:285px}.heroPreview{min-height:0;aspect-ratio:1312/720}.cards{gap:8px}.artCard{border-radius:12px}.artCard img{aspect-ratio:1.03;object-fit:fill}.banner{background-size:auto,50% 100%;background-position:0 0,right bottom}.banner h2{max-width:250px}}
