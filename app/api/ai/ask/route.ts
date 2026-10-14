@@ -1,3 +1,4 @@
+import { askHome } from "@/lib/troubleshooting/ask";
 import { NextResponse } from "next/server";
 
 import {
@@ -20,7 +21,7 @@ import {
 } from "@/lib/permissions/requireServerFeatureAccess";
 
 import {
-  createClient,
+  authenticateRequest,
 } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -247,9 +248,11 @@ export async function POST(
      * Server-side Home Plus / Household entitlement.
      * Client gating is not trusted.
      */
+    const authentication = await authenticateRequest(request);
+    if (authentication.error || !authentication.user) return privateJson({ error: "Please sign in again." }, { status: 401 });
     const access =
       await requireServerFeatureAccess(
-        "aiAdvisor"
+        "aiAdvisor", authentication.user
       );
 
     const body =
@@ -257,7 +260,10 @@ export async function POST(
         question?: unknown;
         history?: unknown;
         mode?: unknown;
+        [key: string]: unknown;
       };
+
+    if (body.mode === "troubleshooting" || body.mode === "mobile-chat") return await askHome(authentication.client, access.userId, body);
 
     const question =
       typeof body.question ===
@@ -318,7 +324,7 @@ export async function POST(
      * existing household scope.
      */
     const supabase =
-      await createClient();
+      authentication.client;
 
     const {
       householdId,

@@ -37,14 +37,14 @@ export type ServerFeatureAccessContext = {
  * Household role is not used for authorization.
  */
 export async function requireServerFeatureAccess(
-  feature: FeatureKey
+  feature: FeatureKey,
+  verifiedUser?: User
 ): Promise<ServerFeatureAccessContext> {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
+  // verifiedUser must come from authenticateRequest/getUser, never request JSON.
+  const authentication = verifiedUser
+    ? { data: { user: verifiedUser }, error: null }
+    : await (await createClient()).auth.getUser();
+  const { data: { user }, error: userError } = authentication;
 
   if (userError || !user) {
     throw new FeatureAccessError(

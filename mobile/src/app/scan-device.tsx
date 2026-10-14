@@ -40,6 +40,7 @@ export default function ScanDeviceScreen() {
   const auth = useAuth();
   const cameraRef = useRef<CameraView>(null);
   const [permission, requestPermission] = useCameraPermissions();
+  const [aiConsent, setAiConsent] = useState(false);
   const [scanned, setScanned] = useState(false);
   const [working, setWorking] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -128,19 +129,19 @@ export default function ScanDeviceScreen() {
 
   if (!permission) return <View style={styles.permissionPage} />;
 
-  if (!permission.granted) {
+  if (!aiConsent || !permission.granted) {
     return (
       <SafeAreaView style={styles.permissionPage}>
         <View style={styles.permissionCard}>
           <View style={styles.permissionIcon}>{isPhotoMode ? <Camera size={25} color={colors.oliveDark} /> : <ScanBarcode size={25} color={colors.oliveDark} />}</View>
           <Text style={styles.permissionTitle}>{isPhotoMode ? 'Read the label on your device' : 'Scan the product barcode'}</Text>
-          <Text style={styles.permissionBody}>Camera access lets Home Tech Vault identify the label. The photo is used only to read product details and is not saved to your vault.</Text>
-          {permission.canAskAgain ? (
-            <PrimaryButton label="Allow camera access" onPress={() => void requestPermission()} />
+          <Text style={styles.permissionBody}>When you continue, photos or scanned product identifiers are sent to OpenAI to identify the product. Photos are not saved by HTV. OpenAI may process and retain data under its privacy policy. Avoid sensitive information. iOS will request camera permission if needed.</Text>
+          {!aiConsent || permission.canAskAgain ? (
+            <PrimaryButton label="Continue" onPress={() => { setAiConsent(true); if (!permission.granted) void requestPermission(); }} />
           ) : (
             <PrimaryButton label="Open camera settings" onPress={() => void Linking.openSettings()} />
           )}
-          <Pressable onPress={() => router.back()} style={styles.manualButton}><Text style={styles.manualText}>Type it in instead</Text></Pressable>
+          {!permission.canAskAgain ? <Pressable onPress={() => router.back()} style={styles.manualButton}><Text style={styles.manualText}>Type it in instead</Text></Pressable> : null}
         </View>
       </SafeAreaView>
     );

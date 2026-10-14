@@ -24,7 +24,8 @@
     "mobile:start": "npm --prefix mobile run start",
     "mobile:ios": "npm --prefix mobile run ios",
     "mobile:check": "npm --prefix mobile run check",
-    "test:native-care": "node --import tsx --test lib/maintenance/*.test.ts"
+    "test:native-care": "node --import tsx --test lib/maintenance/*.test.ts",
+    "test:troubleshooting": "NEXT_PUBLIC_SUPABASE_URL=https://example.supabase.co NEXT_PUBLIC_SUPABASE_ANON_KEY=test node --conditions=react-server --import tsx --test lib/troubleshooting/tests/*.test.ts"
   },
   "dependencies": {
     "@heycatch/sdk": "^0.7.0",

@@ -1,3 +1,4 @@
+import { IssueHistory } from '@/components/issue-history';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { BadgeDollarSign, Building2, CalendarDays, ChevronLeft, FileText, Hash, MapPin, Pencil, ShieldCheck, Trash2, Upload, Wifi, WifiOff, Wrench } from 'lucide-react-native';
@@ -75,13 +76,15 @@ export default function DeviceDetailScreen() {
           {device.image ? <Image alt={device.name} source={device.image} contentFit="cover" style={styles.hero} /> : <View style={styles.placeholder}><Text style={styles.initial}>{device.brand.slice(0, 1)}</Text></View>}
           <View style={styles.deviceCopy}><Text style={styles.eyebrow}>{device.category.toUpperCase()}</Text><Text style={styles.title}>{device.name}</Text><Text style={styles.model}>{device.brand} · {device.model}</Text><View style={styles.chips}><View style={styles.chip}><MapPin size={13} color={colors.oliveDark} /><Text style={styles.chipText}>{device.location}</Text></View><View style={styles.chip}>{device.online === false ? <WifiOff size={13} color={colors.amber} /> : <Wifi size={13} color={colors.oliveDark} />}<Text style={styles.chipText}>{device.online === false ? 'Offline' : device.online === true ? 'Online' : 'Saved'}</Text></View></View></View>
         </Card>
+        <PrimaryButton label="Troubleshoot this device" icon={Wrench} onPress={() => router.push({ pathname: '/ask-my-home', params: { mode: 'troubleshooting', deviceId: device.id } })} />
+        <IssueHistory deviceId={device.id} />
         <Text style={styles.section}>WHAT YOUR HOME REMEMBERS</Text>
         <Card>
           <ListRow icon={Building2} title="Manufacturer" detail={device.manufacturer} />
           <ListRow icon={Hash} title="Serial number" detail={device.serialNumber || 'Not recorded yet'} />
           <ListRow icon={CalendarDays} title="Purchase date" detail={device.purchaseDate ? new Date(`${device.purchaseDate}T12:00:00`).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' }) : 'Not recorded yet'} />
           <ListRow icon={BadgeDollarSign} title="Purchase value" detail={device.value ? device.value.toLocaleString(undefined, { style: 'currency', currency: 'USD' }) : 'Not recorded yet'} />
-          <ListRow icon={ShieldCheck} title="Warranty coverage" detail={device.warrantyDate ? `Coverage through ${new Date(`${device.warrantyDate}T12:00:00`).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}` : 'No warranty date saved'} />
+          <ListRow icon={ShieldCheck} title="Warranty coverage" detail={device.warrantyDate ? `Saved warranty end date: ${new Date(`${device.warrantyDate}T12:00:00`).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}` : 'No warranty date saved'} />
           <ListRow icon={FileText} title={`${documents.length} filed document${documents.length === 1 ? '' : 's'}`} detail={documents.length ? documents.map((item) => item.type).join(', ') : 'Add a receipt, manual, or warranty'} />
           <ListRow icon={Wrench} title={`${maintenance.length} care reminder${maintenance.length === 1 ? '' : 's'}`} detail={maintenance[0]?.title || 'No upcoming care recorded'} />
           {device.notes ? <ListRow icon={FileText} title="Notes" detail={device.notes} /> : null}
