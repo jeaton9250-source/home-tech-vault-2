@@ -34,6 +34,14 @@ const sections = [
     body: "If you use Household plan features, information you add to a shared household may be visible to other members according to their assigned role. You control invitations and can manage access from household settings.",
   },
   {
+    title: "Ask My Home and troubleshooting AI",
+    body: "When you choose Continue with AI in the mobile app, your question, recent conversation and relevant user-owned device details (including make/model, purchase and warranty dates), document names and types, maintenance, subscription details, non-secret network information and saved troubleshooting history are sent to Groq to generate answers. Document contents, Wi-Fi passwords and authentication credentials are not included in the vault snapshot. If you attach a troubleshooting photo, the image is sent to OpenAI to read visible text, and that text is sent to Groq. Avoid including passwords, people, addresses or other sensitive information in photos or questions. HTV does not retain troubleshooting photos or full conversations; issue descriptions, AI summaries and resolutions are saved only when you choose Save issue or That fixed it. You can delete individual saved issues, stop sharing with AI, or request account deletion in the app. AI requests use store:false where supported; this does not guarantee zero provider retention. Groq and OpenAI process data under their respective service terms and privacy policies, including applicable security and abuse-monitoring retention. Review https://groq.com/privacy-policy/ and https://openai.com/policies/privacy-policy/ before using AI. Existing device scanning and AI product identification also use OpenAI. Camera permission alone is not consent to send data to AI.",
+  },
+  {
+    title: "Optional app recommendations",
+    body: "If you choose Show recommendations in the mobile app, CrossPromo receives app/platform/version details and app-integrity verification to load third-party app advertisements. It records anonymous ad impressions and clicks. HTV does not send your vault records to CrossPromo. You can choose No thanks before loading ads, hide recommendations, view About this ad, or report an ad. CrossPromo's SDK documentation states these interactions are not linked to identity and are not used for cross-app tracking. The production SDK and privacy disclosures are reviewed for every release.",
+  },
+  {
     title: "Analytics",
     body: "We may use privacy-conscious analytics to understand how the public website is used and to improve conversion, performance, and content. Analytics data is aggregated and does not include document contents.",
   },
@@ -52,7 +60,7 @@ export default function PrivacyPage() {
       <MarketingPageHero
         eyebrow="Legal"
         title="Privacy Policy"
-        description="Last updated: September 11, 2026"
+        description="Last updated: October 14, 2026"
       />
 
       <MarketingContent className="pt-0">

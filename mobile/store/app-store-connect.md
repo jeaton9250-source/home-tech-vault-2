@@ -35,7 +35,7 @@ For features that write data—adding or editing a device, uploading or deleting
 
 Account deletion is available in **Your account → Delete account**. Type `DELETE` and confirm. Access is disabled immediately, push tokens are disabled, and permanent deletion is queued for completion within seven days.
 
-Camera access is requested only when the reviewer opens the device scanner. Photo-library access is requested only when adding a device image. Notification permission is requested only after the user enables reminders.
+Camera access is requested after Continue in the scanner or Take a Photo in troubleshooting. A neutral action precedes the native iOS prompt; manual entry remains available after denial. Photos are also available through the system picker. Explicit provider disclosure and AI consent precede AI use. Notification permission is requested only after the user enables reminders.
 
 ## Screenshot set (6.9-inch iPhone)
 
@@ -60,7 +60,7 @@ Declare only data actually collected in the production build. Based on the curre
 - Purchases: subscription status, if exposed to the app through the shared account
 - Diagnostics: only if production crash or performance tooling is enabled
 
-The current app does not use data for third-party advertising or cross-company tracking. Confirm this again immediately before submission.
+The app includes optional CrossPromo app advertisements. Its SDK privacy guide calls for Usage Data → Product Interaction and Advertising Data, each for Third-Party Advertising and Analytics, not linked to identity and not used for tracking. Validate these vendor claims against the shipped archive and current SDK terms. Add AI questions, saved issues, photo processing and other user content to the existing functionality disclosures. Do not claim this build has no third-party advertising.
 
 ## Release checklist
 

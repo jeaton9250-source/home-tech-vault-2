@@ -1,6 +1,6 @@
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { CheckCircle2, ChevronLeft, Lightbulb, MessageSquareText, Wrench } from 'lucide-react-native';
 import { useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -15,11 +15,12 @@ const webUrl = process.env.EXPO_PUBLIC_WEB_URL || 'https://www.hometechvault.com
 
 export default function FeedbackScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ kind?: string; subject?: string; message?: string }>();
   const auth = useAuth();
   const data = useVaultData();
-  const [kind, setKind] = useState<'idea' | 'issue'>('idea');
-  const [subject, setSubject] = useState('');
-  const [message, setMessage] = useState('');
+  const [kind, setKind] = useState<'idea' | 'issue'>(params.kind === 'issue' ? 'issue' : 'idea');
+  const [subject, setSubject] = useState(params.subject || '');
+  const [message, setMessage] = useState(params.message || '');
   const [busy, setBusy] = useState(false);
   const [ticketNumber, setTicketNumber] = useState<string | null>(null);
 

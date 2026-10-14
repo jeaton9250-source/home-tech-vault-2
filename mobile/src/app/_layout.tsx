@@ -41,6 +41,7 @@ function RootNavigator() {
         <Stack.Screen name="edit-device" options={{ presentation: 'modal' }} />
         <Stack.Screen name="scan-device" options={{ presentation: 'fullScreenModal' }} />
         <Stack.Screen name="device/[id]" />
+        <Stack.Screen name="ask-my-home" />
       </Stack>
     </>
   );

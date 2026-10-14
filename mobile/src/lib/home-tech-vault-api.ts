@@ -1,3 +1,4 @@
+import { fetchWithTimeout } from './request-timeout';
 import { File } from 'expo-file-system';
 
 import type { MaintenanceItem, VaultDevice, VaultDocument } from '@/lib/demo-data';
@@ -26,6 +27,7 @@ export type VisionExtraction = {
   barcode: string;
   identificationBasis: 'model_label' | 'barcode' | 'product' | 'unknown';
   confidence: 'high' | 'medium' | 'low';
+  visibleText?: string[];
 };
 
 type LookupResponse = {
@@ -38,17 +40,16 @@ type VisionResponse = {
   error?: string;
 };
 
-async function authenticatedFetch(path: string, accessToken: string, init?: RequestInit) {
+async function authenticatedFetch(path: string, accessToken: string, init?: RequestInit, timeoutMs?: number) {
   const headers = new Headers(init?.headers);
   headers.set('Accept', 'application/json');
   headers.set('Authorization', `Bearer ${accessToken}`);
 
   if (init?.body) headers.set('Content-Type', 'application/json');
 
-  return fetch(`${WEB_URL.replace(/\/+$/, '')}${path}`, {
-    ...init,
-    headers,
-  });
+  const url = `${WEB_URL.replace(/\/+$/, '')}${path}`;
+  const options = { ...init, headers };
+  return timeoutMs ? fetchWithTimeout(url, options, timeoutMs) : fetch(url, options);
 }
 
 async function readJsonResponse<T>(response: Response, fallbackMessage: string): Promise<T> {
@@ -84,11 +85,11 @@ export async function lookupDevice(query: string, accessToken: string) {
   return readLookup(`/api/devices/ai-lookup?q=${encoded}`, accessToken);
 }
 
-export async function identifyDevicePhoto(imageDataUrl: string, accessToken: string) {
+export async function identifyDevicePhoto(imageDataUrl: string, accessToken: string, troubleshooting = false) {
   const response = await authenticatedFetch('/api/devices/vision', accessToken, {
     method: 'POST',
-    body: JSON.stringify({ imageDataUrl }),
-  });
+    body: JSON.stringify({ imageDataUrl, ...(troubleshooting ? { purpose: "troubleshooting", aiConsent: true } : {}) }),
+  }, 35000);
   const payload = await response.json() as VisionResponse;
 
   if (!response.ok || !payload.extraction) {
@@ -570,4 +571,28 @@ export async function deleteVaultDevice(deviceId: string, accessToken: string) {
   const response = await authenticatedFetch(`/api/mobile/devices/${encodeURIComponent(deviceId)}`, accessToken, { method: 'DELETE' });
   const payload = await readJsonResponse<{ deleted?: boolean; error?: string }>(response, "We couldn't delete this device. Please try again.");
   if (!response.ok || payload.deleted !== true) throw new Error(payload.error || "We couldn't delete this device. Please try again.");
+}
+
+export async function askMyHome(input: { question: string; deviceId?: string | null; category?: string; mode: 'troubleshooting' | 'mobile-chat'; aiConsent: boolean; photoText?: string; history: { role: 'user' | 'assistant'; content: string }[] }, accessToken: string) {
+  const response = await authenticatedFetch('/api/ai/ask', accessToken, { method: 'POST', body: JSON.stringify(input) }, 35000);
+  const payload = await readJsonResponse<{ answer?: string; troubleshooting?: import('./troubleshooting-contract').HelpResult; error?: string }>(response, 'Ask My Home is unavailable. Try again.');
+  if (!response.ok || !payload.troubleshooting) throw new Error(response.status === 401 ? 'Please sign in again.' : response.status === 403 ? 'Ask My Home is not available on your current plan.' : payload.error || 'Please try again.');
+  return payload.troubleshooting;
+}
+
+// Refresh selected-device paperwork rather than relying on the dashboard's recent-document limit.
+export async function findTroubleshootingDocument(deviceId: string, userId: string, type: string, deviceName: string): Promise<VaultDocument | null> {
+  if (!supabase) throw new Error('Your vault connection is unavailable.');
+  const [documents, attachments, device] = await Promise.all([
+    supabase.from('documents').select('id,device_id,document_name,file_name,file_type,document_type,created_at,file_url').eq('user_id',userId).eq('device_id',deviceId).order('created_at',{ascending:false}).limit(100),
+    supabase.from('device_documents').select('id,device_id,document_name,document_type,file_path,created_at').eq('user_id',userId).eq('device_id',deviceId).order('created_at',{ascending:false}).limit(100),
+    supabase.from('devices').select('manual_url').eq('user_id',userId).eq('id',deviceId).maybeSingle(),
+  ]);
+  if (documents.error || attachments.error || device.error) throw new Error('This device’s paperwork could not be loaded. Try again.');
+  const document = documents.data?.find(row => (row.document_type || row.file_type || '').toLowerCase() === type.toLowerCase());
+  if (document) return { id: document.id, deviceId, name: document.document_name || document.file_name || type, type, deviceName, date: document.created_at || '', fileUrl: document.file_url, source: 'documents' };
+  const attachment = attachments.data?.find(row => (row.document_type || '').toLowerCase() === type.toLowerCase());
+  if (attachment) return { id: attachment.id, deviceId, name: attachment.document_name || type, type, deviceName, date: attachment.created_at || '', storagePath: attachment.file_path, source: 'device_documents' };
+  if (type.toLowerCase() === 'manual' && device.data?.manual_url) return { id: `manual:${deviceId}`, deviceId, name: 'Saved device manual', type: 'Manual', deviceName, date: '', fileUrl: device.data.manual_url, source: 'official_manual' };
+  return null;
 }

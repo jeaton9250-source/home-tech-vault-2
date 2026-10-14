@@ -3,7 +3,7 @@
     "name": "Home Tech Vault",
     "slug": "home-tech-vault",
     "description": "A private, lasting record of the technology that makes your home work.",
-    "version": "1.0.1",
+    "version": "1.1.2",
     "orientation": "portrait",
     "icon": "./assets/images/htv-vault-icon.png",
     "scheme": "hometechvault",
@@ -12,7 +12,7 @@
     "ios": {
       "icon": "./assets/images/htv-vault-icon.png",
       "bundleIdentifier": "com.hometechvault.app",
-      "buildNumber": "1",
+      "buildNumber": "17",
       "supportsTablet": false,
       "entitlements": {
         "com.apple.developer.applesignin": [
@@ -23,7 +23,7 @@
         "usesNonExemptEncryption": false
       },
       "infoPlist": {
-        "NSCameraUsageDescription": "Home Tech Vault uses your camera to scan receipts, serial numbers, and home documents.",
+        "NSCameraUsageDescription": "Home Tech Vault uses your camera to scan product labels and photograph errors for troubleshooting when you choose Take a Photo.",
         "NSPhotoLibraryUsageDescription": "Home Tech Vault lets you attach photos and documents to your private home record."
       },
       "deploymentTarget": "16.4"
@@ -66,7 +66,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Home Tech Vault uses your camera to scan product labels and serial numbers.",
+          "cameraPermission": "Home Tech Vault uses your camera to scan product labels and photograph errors for troubleshooting when you choose Take a Photo.",
           "recordAudioAndroid": false,
           "barcodeScannerEnabled": true
         }
@@ -75,7 +75,9 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Home Tech Vault lets you add a photo to the private record for each device."
+          "photosPermission": "Home Tech Vault lets you choose photos for device records and troubleshooting.",
+          "cameraPermission": "Home Tech Vault uses your camera to photograph device labels or errors when you choose Take a Photo.",
+          "microphonePermission": false
         }
       ],
       [

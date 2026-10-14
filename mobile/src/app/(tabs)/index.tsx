@@ -1,4 +1,5 @@
-import { CrossPromoPlacement, PromoCard } from '@crosspromo/react-native';
+import { AppPromoCard } from '@/components/app-promo-card';
+import { CrossPromoPlacement } from '@crosspromo/react-native';
 import { Image } from 'expo-image';
 import * as Haptics from 'expo-haptics';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -6,7 +7,7 @@ import { ArrowRight, BellRing, Camera, Check, ChevronRight, Circle, FileText, Pl
 import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { AppScreen, Card, DemoNotice, EmptyState, LoadingView, SectionTitle } from '@/components/ui';
+import { AppScreen, Card, DemoNotice, EmptyState, LoadingView, PrimaryButton, SectionTitle } from '@/components/ui';
 import { getNotificationPermissionStatus } from '@/lib/device-notifications';
 import { useAuth } from '@/providers/auth-provider';
 import { useVaultData } from '@/providers/vault-data-provider';
@@ -50,6 +51,8 @@ export default function HomeScreen() {
         <Text style={styles.introTitle}>{data.devices.length ? 'Your home is well remembered.' : 'Let’s begin your home’s memory.'}</Text>
       </View>
       {data.error ? <Text style={styles.error}>{data.error}</Text> : null}
+      <Card style={{ padding: 20, gap: 10 }}><Text style={styles.setupTitle}>Ask My Home</Text><Text style={styles.greeting}>Ask anything about your home</Text><PrimaryButton label="Ask a question" onPress={() => router.push('/ask-my-home')} /></Card>
+      <Card style={{ padding: 20, gap: 10, backgroundColor: colors.oliveWash }}><Text style={styles.setupTitle}>Something Isn’t Working?</Text><Text style={styles.greeting}>Troubleshoot a device or home issue</Text><PrimaryButton label="Get Help" icon={Wrench} onPress={() => router.push({ pathname: '/ask-my-home', params: { mode: 'troubleshooting' } })} /></Card>
       {!isDemo && completedSetupSteps < setupSteps.length ? (
         <Card style={styles.setupCard}>
           <View style={styles.setupHeading}>
@@ -96,7 +99,7 @@ export default function HomeScreen() {
             </Pressable>
           ))}
         </ScrollView>
-      ) : <><EmptyState icon={Plus} title="Begin with one device" body="Add the first thing you would want details for during a repair, return, or warranty claim." /><PromoCard placement={CrossPromoPlacement.EmptyState} /></>}
+      ) : <><EmptyState icon={Plus} title="Begin with one device" body="Add the first thing you would want details for during a repair, return, or warranty claim." /><AppPromoCard placement={CrossPromoPlacement.EmptyState} /></>}
 
       <SectionTitle title="Coming up at home" action="View care" onAction={() => router.push('/(tabs)/care')} />
       {data.maintenance.length ? <Card>

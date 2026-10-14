@@ -176,7 +176,12 @@ export async function POST(request: Request) {
 
     const body = (await request.json()) as {
       imageDataUrl?: unknown;
+      purpose?: unknown;
+      aiConsent?: unknown;
     };
+
+    const troubleshooting = body.purpose === "troubleshooting";
+    if (troubleshooting && body.aiConsent !== true) return NextResponse.json({ error: "AI photo consent is required." }, { status: 400 });
 
     const imageDataUrl =
       typeof body.imageDataUrl === "string" ? body.imageDataUrl.trim() : "";
@@ -231,6 +236,7 @@ export async function POST(request: Request) {
       "Inspect this image of a household device, appliance, product, barcode, or manufacturer/model label.",
       "",
       "Your job is extraction, not guessing.",
+      ...(troubleshooting ? ["Read visible error codes, display messages and warning labels in visibleText, even if no product identifiers are visible. Do not provide repair advice. Do not extract serial numbers, passwords or credentials."] : []),
       "",
       "Priority:",
       "1. Read manufacturer/brand and exact model number when visible.",
@@ -329,7 +335,7 @@ export async function POST(request: Request) {
 
     const searchQuery = buildSearchQuery(extraction);
 
-    const useful = Boolean(searchQuery || extraction.serialNumber);
+    const useful = Boolean(searchQuery || extraction.serialNumber || (troubleshooting && extraction.visibleText.length));
 
     if (!useful) {
       return NextResponse.json(
