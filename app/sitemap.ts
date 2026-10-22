@@ -1,3 +1,4 @@
+import { searchContent } from "@/lib/search-tools";
 import { toolGuides } from "@/lib/resources/toolGuides";
 import type { MetadataRoute } from "next";
 
@@ -95,6 +96,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     comparisonSitemapEntries(siteUrl);
 
   const entries: MetadataRoute.Sitemap = [
+    ...["/answers", ...searchContent.tools.map(t=>`/tools/${t.slug}`), ...searchContent.articles.map(a=>`/answers/${a.slug}`)].map(path => ({url: `${siteUrl}${path}`, lastModified: new Date("2026-10-21"), changeFrequency: "monthly" as const, priority: 0.7})), 
     ...toolGuides.map(guide => ({url: `${siteUrl}/resources/${guide.slug}`, lastModified: new Date("2026-10-12"), changeFrequency: "monthly" as const, priority: 0.7})),
     ...resources.filter(article => !toolGuides.some(guide => guide.slug === article.slug)).map(article => ({url: `${siteUrl}/resources/${article.slug}`, changeFrequency: "monthly" as const, priority: 0.7})),
     {url: `${siteUrl}/resources`, changeFrequency: "weekly", priority: 0.7},

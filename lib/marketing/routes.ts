@@ -52,6 +52,7 @@ export function isPublicAuthPath(
 
 /** Routes accessible without signing in. */
 export const PUBLIC_MARKETING_PATHS = [
+  "/answers",
   "/explore",
   "/our-story",
   "/what-it-remembers",
@@ -228,3 +229,4 @@ function normalizePathname(
 
   return pathname;
 }
+

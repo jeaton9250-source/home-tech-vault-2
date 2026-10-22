@@ -18,6 +18,8 @@ export const FOOTER_PRODUCT_LINKS: FooterLink[] =
   }));
 
 export const FOOTER_SUPPORT_LINKS: FooterLink[] = [
+  { label: "Free Homeowner Tools", href: "/tools" },
+  { label: "Homeowner Answers", href: "/answers" },
   {
     label: "Knowledge Center",
     href: "/knowledge",
@@ -64,3 +66,4 @@ export const FOOTER_GUIDE_LINKS: FooterLink[] =
 
 export const FOOTER_COPYRIGHT =
   "© 2026 Home Tech Vault. All rights reserved.";
+

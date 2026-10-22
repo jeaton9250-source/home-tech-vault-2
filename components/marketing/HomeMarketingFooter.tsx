@@ -1,6 +1,7 @@
 import { MarketingText } from "@/components/marketing/MarketingContent";
 import Link from "next/link";
 const exploreLinks = [
+  { label: "Homeowner Answers", href: "/answers" },
   { label: "Free Tools", href: "/tools" },
   { label: "What It Remembers", href: "/#memory" },
   { label: "Explore", href: "/explore" },
@@ -114,3 +115,4 @@ function FooterColumn({
     </nav>
   );
 }
+
