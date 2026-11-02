@@ -4,6 +4,7 @@ import {
 } from "@/components/marketing/MarketingContent";
 import type { HomepageContent } from "@/lib/cms/schema";
 import MarketingHeader from "@/components/marketing/MarketingHeader";
+import LiquidGlassHero from "@/components/marketing/LiquidGlassHero";
 import HomeMarketingFooter from "@/components/marketing/HomeMarketingFooter";
 import {
   ArrowUpRight,
@@ -63,7 +64,8 @@ export default function HomeMarketingView({
           scope="components/marketing/HomeMarketingView.tsx"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-[#f5f2eb]/95 via-[#f5f2eb]/75 to-transparent lg:w-[72%]" />
-        <div className="relative mx-auto flex min-h-[720px] max-w-[1320px] items-center px-6 py-24 lg:min-h-[calc(100vh-106px)] lg:px-10">
+        <LiquidGlassHero />
+        <div className="relative z-[2] mx-auto flex min-h-[720px] max-w-[1320px] items-center px-6 py-24 lg:min-h-[calc(100vh-106px)] lg:px-10">
           <div className="max-w-[590px]">
             <div className="mb-8 inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 text-sm shadow-sm">
               <Home className="h-4 w-4" />
