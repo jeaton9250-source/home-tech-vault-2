@@ -16,6 +16,7 @@ import AuthLayout from "@/components/auth/AuthLayout";
 import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
 import {
   trackAccountCreated,
+  trackConfirmedSignup,
   trackAuthStarted,
   trackSignupViewed,
 } from "@/lib/analytics/activation";
@@ -142,6 +143,7 @@ const [submitting, setSubmitting] =
         trackAccountCreated(
           "email"
         );
+        trackConfirmedSignup("email", "personal");
 
         // Founder notification is intentionally non-blocking.
         // A notification failure must never stop account creation.

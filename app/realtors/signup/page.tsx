@@ -9,6 +9,8 @@ import Alert from "@/components/ui/Alert";
 import Button from "@/components/ui/Button";
 import FormInput from "@/components/ui/FormInput";
 import { clearDemoModeStorage } from "@/lib/demo/demoModeStorage";
+import { trackSignupViewed, trackConfirmedSignup } from "@/lib/analytics/activation";
+import { useEffect } from "react";
 
 const giftDetails = [
   "A home record prepared for their address",
@@ -20,6 +22,7 @@ const fieldStyle =
   "min-h-12 rounded-xl border-[#d8d2c7] bg-[#fffdf9] px-4 shadow-none focus-visible:border-[#77814e] focus-visible:ring-[#77814e]/15";
 
 export default function RealtorSignupPage() {
+  useEffect(() => { trackSignupViewed("realtor"); }, []);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -88,6 +91,8 @@ export default function RealtorSignupPage() {
           payload.error || "Unable to create your Realtor account.",
         );
       }
+
+      trackConfirmedSignup("email", "realtor");
 
       if (payload.sessionCreated) {
         window.location.assign("/realtors/setup");
