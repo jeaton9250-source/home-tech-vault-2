@@ -135,13 +135,14 @@ function trackWhenReady(
   attempt();
 }
 
-export function trackSignupViewed() {
+export function trackSignupViewed(accountType: "personal" | "realtor" = "personal") {
   trackWhenReady(
     "signup_viewed",
     {
       funnel: "activation",
+      account_type: accountType,
     },
-    "signup_viewed"
+    `signup_viewed:${accountType}`
   );
 }
 
@@ -216,4 +217,9 @@ export function trackFirstDocumentAdded(
     },
     "first_document_added"
   );
+}
+
+/** GA4 recommended registration event; call only after the auth provider confirms a new identity. */
+export function trackConfirmedSignup(provider: ActivationAuthProvider, accountType: "personal" | "realtor") {
+  trackWhenReady("sign_up", { method: provider, account_type: accountType }, "confirmed_sign_up");
 }
