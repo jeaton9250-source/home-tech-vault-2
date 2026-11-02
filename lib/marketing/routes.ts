@@ -57,6 +57,7 @@ export const PUBLIC_MARKETING_PATHS = [
   "/our-story",
   "/what-it-remembers",
   "/website-preview",
+  "/design-preview",
   "/realtors",
   "/tools",
   MARKETING_ROUTES.home,
