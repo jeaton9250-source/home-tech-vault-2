@@ -12,7 +12,6 @@ import {
   Grid2X2,
   Home,
   Search,
-  Settings,
   ShieldCheck,
   Sparkles,
   Wifi,
@@ -21,7 +20,6 @@ import {
 import NotificationBell from "@/components/NotificationBell";
 import ProfileMenu from "@/components/navigation/ProfileMenu";
 import { useNotifications } from "@/hooks/useNotifications";
-import { usePermissions } from "@/hooks/usePermissions";
 
 const primary = [
   { href: "/dashboard", label: "My Home", Icon: Home },
@@ -37,7 +35,6 @@ const library = [
   { href: "/network", label: "Connected home", Icon: Wifi },
   { href: "/subscriptions", label: "Subscriptions", Icon: CreditCard },
   { href: "/reports", label: "Reports", Icon: BarChart3 },
-  { href: "/settings", label: "Settings", Icon: Settings },
 ] as const;
 
 function activeRoute(pathname: string, href: string) {
@@ -48,15 +45,35 @@ function activeRoute(pathname: string, href: string) {
 export default function HomeDashboardHeader() {
   const pathname = usePathname();
   const notifications = useNotifications();
-  const { isVerifiedPlatformAdmin } = usePermissions();
   const moreRef = useRef<HTMLDetailsElement>(null);
 
   useEffect(() => {
     if (moreRef.current) moreRef.current.open = false;
   }, [pathname]);
 
+  // Dismiss the home-feature menu when tapping an account icon or anywhere
+  // outside it, rather than leaving two different menus open at once.
+  useEffect(() => {
+    const onPointerDown = (event: PointerEvent) => {
+      const menu = moreRef.current;
+      if (menu?.open && !menu.contains(event.target as Node)) menu.open = false;
+    };
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && moreRef.current?.open) {
+        moreRef.current.open = false;
+        moreRef.current.querySelector("summary")?.focus();
+      }
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onEscape);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onEscape);
+    };
+  }, []);
+
   return (
-    <header className="sticky top-0 z-40 hidden h-[76px] border-b border-white/10 bg-[#172d40] text-[#f5f1e8] shadow-[0_12px_32px_-30px_rgba(0,0,0,.8)] md:block">
+    <header className="sticky top-0 z-40 hidden h-[76px] border-b border-white/10 bg-[#172d40] text-[#f5f1e8] shadow-[0_12px_32px_-30px_rgba(0,0,0,.8)] lg:block">
       <div className="mx-auto flex h-full max-w-[1600px] items-center justify-between gap-3 px-5 lg:gap-5 lg:px-10">
         <Link href="/dashboard" className="flex shrink-0 items-center gap-2.5" aria-label="Home Tech Vault — My Home">
           <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/20 bg-white/[.06] text-[#c0d6a7]">
@@ -113,11 +130,7 @@ export default function HomeDashboardHeader() {
                   </Link>
                 );
               })}
-              {isVerifiedPlatformAdmin ? (
-                <Link href="/admin" className="mt-2 flex items-center gap-3 border-t border-[#e8e5dc] px-3 py-3 text-sm font-semibold text-[#617c43]">
-                  <ShieldCheck size={17} aria-hidden /> Admin control center
-                </Link>
-              ) : null}
+
             </div>
           </details>
         </nav>

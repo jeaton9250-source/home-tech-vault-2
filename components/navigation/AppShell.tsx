@@ -39,6 +39,7 @@ import { useDemoMode } from "@/hooks/useDemoMode";
 import { demoDashboard, demoProfile } from "@/lib/demoData";
 import { supabase } from "@/lib/supabase";
 import HomeDashboardHeader from "@/components/dashboard/HomeDashboardHeader";
+import MobileHomeChrome from "@/components/navigation/MobileHomeChrome";
 
 type AppShellProps = {
   children: ReactNode;
@@ -603,7 +604,10 @@ export default function AppShell({
 
         <div className="min-w-0 flex-1">
           {homeExperience ? (
-            <HomeDashboardHeader />
+            <>
+              <HomeDashboardHeader />
+              <MobileHomeChrome />
+            </>
           ) : (
             <TopBar
               householdLabel={householdLabel}
@@ -619,7 +623,8 @@ export default function AppShell({
             {children}
           </div>
 
-          <nav className="fixed inset-x-3 bottom-3 z-40 flex items-center justify-around rounded-[20px] border border-[#ded7ca] bg-[#fffdf8]/95 px-2 py-2 shadow-[0_16px_48px_rgba(23,40,58,0.16)] backdrop-blur-xl md:hidden">
+          {!homeExperience ? (
+            <nav className="fixed inset-x-3 bottom-3 z-40 flex items-center justify-around rounded-[20px] border border-[#ded7ca] bg-[#fffdf8]/95 px-2 py-2 shadow-[0_16px_48px_rgba(23,40,58,0.16)] backdrop-blur-xl md:hidden">
             {navItems.slice(0, 5).map((item) => {
               const Icon = item.icon;
               return (
@@ -634,7 +639,8 @@ export default function AppShell({
                 </Link>
               );
             })}
-          </nav>
+            </nav>
+          ) : null}
         </div>
       </div>
     </div>
