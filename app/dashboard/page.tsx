@@ -1,5 +1,5 @@
-import AppleDashboard from "@/components/dashboard/AppleDashboard";
+import HomeExperience from "@/components/dashboard/HomeExperience";
 
 export default function DashboardPage() {
-  return <AppleDashboard />;
+  return <HomeExperience />;
 }

@@ -36,6 +36,7 @@ import { useNotifications } from "@/hooks/useNotifications";
 import { useDemoMode } from "@/hooks/useDemoMode";
 import { demoDashboard, demoProfile } from "@/lib/demoData";
 import { supabase } from "@/lib/supabase";
+import HomeDashboardHeader from "@/components/dashboard/HomeDashboardHeader";
 
 type AppShellProps = {
   children: ReactNode;
@@ -563,6 +564,8 @@ function TopBar({
 export default function AppShell({
   children,
 }: AppShellProps) {
+  const pathname = usePathname();
+  const homeExperience = pathname === "/dashboard";
   const {
     user,
     isDemo,
@@ -590,19 +593,23 @@ export default function AppShell({
   return (
     <div className="min-h-screen bg-[#f5f1e8] text-[#17212a]">
       <div className="flex min-h-screen">
-        <Sidebar
-          showAdminControlCenter={isVerifiedPlatformAdmin}
-        />
+        {!homeExperience ? (
+          <Sidebar showAdminControlCenter={isVerifiedPlatformAdmin} />
+        ) : null}
 
         <div className="min-w-0 flex-1">
-          <TopBar
-            householdLabel={householdLabel}
-            displayName={displayName}
-            initials={initials}
-            roleLabel={roleLabel}
-            showAdminControlCenter={isVerifiedPlatformAdmin}
-            isDemo={isDemo}
-          />
+          {homeExperience ? (
+            <HomeDashboardHeader />
+          ) : (
+            <TopBar
+              householdLabel={householdLabel}
+              displayName={displayName}
+              initials={initials}
+              roleLabel={roleLabel}
+              showAdminControlCenter={isVerifiedPlatformAdmin}
+              isDemo={isDemo}
+            />
+          )}
 
           <div className="[&_h1]:font-serif [&_h2]:font-serif">
             {children}
