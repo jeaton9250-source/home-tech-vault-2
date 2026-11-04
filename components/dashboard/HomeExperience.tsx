@@ -10,13 +10,10 @@ import {
 } from "react";
 import {
   ArrowRight,
-  BookOpen,
   CalendarDays,
   CheckCircle2,
   ChevronRight,
   CircleAlert,
-  FileText,
-  FolderOpen,
   Home,
   Laptop,
   Loader2,
@@ -29,9 +26,7 @@ import {
   ChefHat,
   Trees,
   Bath,
-  Wrench,
   Sparkles,
-  Clock3,
   History,
 } from "lucide-react";
 
@@ -216,7 +211,7 @@ export default function HomeExperience() {
           id: task.id,
           title: task.title,
           due_date: task.due_date,
-          completed: task.completed,
+          completed: Boolean(task.completed),
         }));
         const demoWarrantyDevices: DeviceRow[] = demoDevices.map((device) => ({
           id: device.id,
