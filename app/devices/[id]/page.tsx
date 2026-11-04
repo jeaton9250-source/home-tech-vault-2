@@ -533,6 +533,14 @@ export default function DevicePage() {
         : `/devices/${deviceId}`,
       { scroll: false }
     );
+
+    // Shortcut cards sit above the details. Bring selected content into view on touch.
+    window.requestAnimationFrame(() => {
+      document.getElementById("device-sections")?.scrollIntoView({
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+        block: "start",
+      });
+    });
   }
 
   const sampleDocuments = useMemo(
@@ -1422,7 +1430,7 @@ export default function DevicePage() {
   }
 
   return (
-    <PageShell className="space-y-6 pb-10">
+    <PageShell className="htv-native-page space-y-6 pb-10">
       <header className="space-y-4">
         <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-xs font-semibold text-[#68766d]">
           <Link href="/dashboard" className="hover:text-[#183047]">My Home</Link>
@@ -1444,8 +1452,8 @@ export default function DevicePage() {
           <ViewerBanner description="You can view this device, its photos, documents, Home Wi-Fi details, and history. Viewer access cannot edit, upload, or delete anything." />
         ) : null}
 
-        <div className="grid overflow-hidden rounded-[30px] border border-[#dedbd0] bg-[#fffdf8] shadow-[0_22px_58px_rgba(24,48,71,.07)] lg:grid-cols-[.82fr_1.18fr]">
-          <div className="relative min-h-[280px] bg-[#e6ebe3] lg:min-h-[410px]">
+        <div className="grid overflow-hidden rounded-[26px] border sm:rounded-[30px] border-[#dedbd0] bg-[#fffdf8] shadow-[0_22px_58px_rgba(24,48,71,.07)] lg:grid-cols-[.82fr_1.18fr]">
+          <div className="relative min-h-[240px] bg-[#e6ebe3] sm:min-h-[320px] lg:min-h-[410px]">
             {selectedPhoto ? (
               <Image
                 src={selectedPhoto.src}
@@ -1465,7 +1473,7 @@ export default function DevicePage() {
                   demo_image: demoDeviceRecord?.demo_image,
                 }}
                 variant="hero"
-                className="!aspect-auto h-full w-full min-h-[280px] lg:min-h-[410px]"
+                className="!aspect-auto h-full w-full min-h-[240px] sm:min-h-[320px] lg:min-h-[410px]"
               />
             )}
             <span className="absolute bottom-5 left-5 rounded-full bg-[#fffdf8]/95 px-3 py-1.5 text-[11px] font-semibold text-[#526b39] shadow-sm">
@@ -1499,7 +1507,7 @@ export default function DevicePage() {
                 ) : null}
               </div>
 
-              <h1 className="font-serif text-[clamp(2.9rem,5vw,5.3rem)] font-medium leading-[1.04] tracking-[-.05em] text-[#183047]">
+              <h1 className="font-serif text-[clamp(2.6rem,7vw,5.3rem)] font-medium leading-[1.04] tracking-[-.05em] text-[#183047]">
                 {displayValue(device.device_name, "Unnamed Device")}
               </h1>
 
@@ -1660,9 +1668,9 @@ export default function DevicePage() {
 
       </details>
 
-      <div className="border-b border-border-subtle">
+      <div id="device-sections" className="scroll-mt-24 rounded-[20px] border border-[#e0ddd2] bg-[#fffdf8] p-2 lg:scroll-mt-28">
         <div
-          className="-mb-px flex gap-1 overflow-x-auto pb-px"
+          className="htv-mobile-snap-tabs flex gap-1 overflow-x-auto"
           role="tablist"
           aria-label="Device detail sections"
         >
@@ -1679,10 +1687,10 @@ export default function DevicePage() {
                 id={`device-tab-${tab.id}`}
                 onClick={() => selectTab(tab.id)}
                 className={cn(
-                  "htv-focus-ring shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition",
+                  "htv-focus-ring shrink-0 rounded-full px-4 py-3 text-sm font-semibold transition",
                   isActive
-                    ? "border-charcoal text-text-primary"
-                    : "border-transparent text-text-secondary hover:border-border-subtle hover:text-text-primary"
+                    ? "bg-[#183047] text-white"
+                    : "text-[#6a786d] hover:bg-[#eef2e9] hover:text-[#183047]"
                 )}
               >
                 {tab.label}
