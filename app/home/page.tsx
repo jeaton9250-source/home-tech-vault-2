@@ -966,18 +966,23 @@ function RoomsContent() {
       {rooms.length === 0 ? (
         <EmptyState
           icon={Home}
-          title="Every room tells a story"
-          description="Add your first device and assign it a room to begin seeing your home the way you live in it."
+          title="Start with your first space."
+          description="Create a room, then add the things you want to remember. Your home's digital story starts one space at a time."
           section="technology"
         >
           {canCreate ? (
-            <Button
-              href={getActionHref("/devices/add", "devices")}
-              className="mt-6"
-            >
-              <Plus size={17} aria-hidden />
-              {getActionLabel("Add your first device")}
-            </Button>
+            <div className="mt-6 flex flex-col items-center gap-3">
+              <p className="text-[11px] font-bold uppercase tracking-[.19em] text-[#617c43]">
+                STEP 1 OF 2 · CREATE A ROOM
+              </p>
+              <Button type="button" onClick={() => setAddRoomOpen(true)}>
+                <Plus size={17} aria-hidden />
+                Create your first room
+              </Button>
+              <p className="max-w-xs text-center text-xs leading-6 text-[#68766c]">
+                Next, open the room to add your first appliance, device, or home essential.
+              </p>
+            </div>
           ) : isDemo ? (
             <Button type="button" onClick={handleAddDevice} className="mt-6">
               <Plus size={17} aria-hidden />
