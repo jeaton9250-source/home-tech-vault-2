@@ -650,3 +650,103 @@ textarea::placeholder {
 
 
 
+
+/* ============================================================
+   Homeowner iPhone & iPad experience
+   ============================================================ */
+
+/* Respect Home Indicator and never overlap the native-feeling tab bar. */
+.htv-mobile-tabbar {
+  bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+}
+
+.htv-mobile-sheet {
+  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(22px + env(safe-area-inset-bottom, 0px));
+}
+
+@media (max-width: 1023px) {
+  .htv-home-interior {
+    padding-bottom: calc(108px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .htv-home-interior a,
+  .htv-home-interior button {
+    touch-action: manipulation;
+  }
+}
+
+@media (max-width: 767px) {
+  /* Prevent Safari zooming the viewport when focusing smaller form fields. */
+  .htv-home-interior input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  .htv-home-interior select,
+  .htv-home-interior textarea {
+    font-size: max(16px, 1em);
+  }
+
+  .htv-mobile-snap-tabs {
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+  }
+
+  .htv-mobile-snap-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .htv-mobile-snap-tabs > * {
+    scroll-snap-align: start;
+  }
+}
+
+@keyframes htv-mobile-page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(9px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes htv-mobile-sheet-enter {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 1023px) and (prefers-reduced-motion: no-preference) {
+  .htv-native-page {
+    animation: htv-mobile-page-enter 360ms var(--ease-premium) both;
+  }
+
+  .htv-mobile-sheet {
+    animation: htv-mobile-sheet-enter 300ms var(--ease-premium) both;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .htv-native-page .htv-touch-card:hover {
+    transform: none;
+  }
+
+  .htv-native-page .htv-touch-card:active {
+    transform: scale(0.985);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .htv-native-page,
+  .htv-mobile-sheet {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
+}
