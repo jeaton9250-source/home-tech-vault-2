@@ -470,7 +470,7 @@ export default function DocumentsPage() {
 
   if (loading) {
     return (
-      <PageShell className="bg-[#f7f6f2]">
+      <PageShell>
         <PageCard className="flex min-h-72 items-center justify-center">
           <div className="flex items-center gap-3 text-[#68737b]">
             <Loader2 size={22} className="animate-spin" />
@@ -483,7 +483,7 @@ export default function DocumentsPage() {
 
   if (errorMessage) {
     return (
-      <PageShell className="bg-[#f7f6f2]">
+      <PageShell>
         <PageCard className="border-[#a6584e]/20 bg-[#a6584e]/10 p-6 text-[#984e46]">
           <h1 className="text-xl font-semibold">Unable to load documents</h1>
 
@@ -494,19 +494,19 @@ export default function DocumentsPage() {
   }
 
   return (
-    <PageShell className="bg-[#f7f6f2]">
+    <PageShell>
 
-      <section className="flex flex-col gap-6 pb-1 pt-1 lg:flex-row lg:items-end lg:justify-between">
+      <section className="flex flex-col gap-6 border-b border-[#ddd8cb] pb-8 pt-2 lg:flex-row lg:items-end lg:justify-between lg:pb-10">
         <div className="max-w-3xl">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#718d4f]">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#617c43]">
             Document Vault
           </p>
 
-          <h1 className="mt-3 text-[36px] font-semibold leading-none tracking-[-0.045em] text-[#17212a] sm:text-[42px]">
-            Documents
+          <h1 className="mt-4 max-w-3xl font-serif text-[clamp(2.8rem,5vw,5rem)] font-medium leading-[1.02] tracking-[-0.05em] text-[#183047]">
+            Your home, on file.
           </h1>
 
-          <p className="mt-4 max-w-2xl text-[15px] leading-6 text-[#68737b]">
+          <p className="mt-5 max-w-2xl text-[15px] leading-[1.85] text-[#59625d] sm:text-base">
             Keep receipts, manuals, warranties, invoices, and important
             device files together in one organized place.
           </p>

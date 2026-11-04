@@ -963,23 +963,23 @@ export default function DevicesPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-[1600px] px-4 py-6 sm:px-6 lg:px-7 lg:py-8 xl:px-8">
+    <main className="mx-auto w-full max-w-[1460px] bg-[#f5f1e8] px-4 pb-20 pt-7 sm:px-6 sm:pt-9 lg:px-10 lg:pt-12">
       <div data-tour="devices">
-        <section className="mb-7">
+        <section className="mb-8 border-b border-[#ddd8cb] pb-8 lg:pb-10">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-3xl">
-              <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.21em] text-[#617c43]">
                 {isDemo ? "Interactive Demo" : "Home inventory"}
               </p>
 
-              <h1 className="mt-2 text-[34px] font-semibold tracking-[-0.045em] text-slate-950 sm:text-[38px]">
-                {isDemo ? "Morgan Household devices" : "Devices"}
+              <h1 className="mt-4 max-w-2xl font-serif text-[clamp(2.8rem,5vw,5rem)] font-medium leading-[1.02] tracking-[-0.05em] text-[#183047]">
+                {isDemo ? "The things in Morgan’s home." : "Everything that makes it home."}
               </h1>
 
-              <p className="mt-2 max-w-2xl text-[15px] leading-6 text-slate-500">
+              <p className="mt-5 max-w-2xl text-[15px] leading-[1.8] text-[#59625d] sm:text-base">
                 {isDemo
                   ? "23 devices organized with photos, warranties, receipts, and notes."
-                  : "Everything you own, organized in one calm place."}
+                  : "Give your appliances, technology and home essentials a place of their own."}
               </p>
 
               {!loading && devices.length > 0 ? (

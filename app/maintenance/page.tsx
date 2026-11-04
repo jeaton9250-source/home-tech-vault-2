@@ -610,12 +610,12 @@ export default function MaintenancePage() {
   }, [filteredTasks.length, searchTerm, selectedFilter]);
 
   return (
-    <PageShell className="bg-[#f7f6f2]">
+    <PageShell>
       <PageHero
         section="homeHealth"
         eyebrow="Home Maintenance"
-        title="Maintenance"
-        description="Track routine care, upcoming tasks, overdue maintenance, and completed work across your household devices."
+        title="A little homekeeping."
+        description="An easier way to remember the little things that keep your home running smoothly — and the work you’ve already done."
       >
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           {!permissionsLoading && canAddTasks ? (

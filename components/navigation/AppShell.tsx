@@ -19,6 +19,8 @@ import {
   ChevronDown,
   CreditCard,
   FileText,
+  Grid2X2,
+  Archive,
   Home,
   Loader2,
   LogOut,
@@ -48,19 +50,19 @@ const navItems: {
   icon: LucideIcon;
 }[] = [
   {
-    label: "Home",
+    label: "My Home",
     href: "/dashboard",
     icon: Home,
   },
   {
-    label: "My Things",
-    href: "/devices",
-    icon: Monitor,
+    label: "Spaces",
+    href: "/home",
+    icon: Grid2X2,
   },
   {
-    label: "Documents",
-    href: "/documents",
-    icon: FileText,
+    label: "Vault",
+    href: "/devices",
+    icon: Archive,
   },
   {
     label: "Maintenance",
