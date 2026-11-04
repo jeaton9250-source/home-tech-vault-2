@@ -12,7 +12,6 @@ import {
   Grid2X2,
   Home,
   Search,
-  Settings,
   ShieldCheck,
   Sparkles,
   Wifi,
@@ -21,7 +20,6 @@ import {
 import NotificationBell from "@/components/NotificationBell";
 import ProfileMenu from "@/components/navigation/ProfileMenu";
 import { useNotifications } from "@/hooks/useNotifications";
-import { usePermissions } from "@/hooks/usePermissions";
 
 const primary = [
   { href: "/dashboard", label: "My Home", Icon: Home },
@@ -37,7 +35,6 @@ const library = [
   { href: "/network", label: "Connected home", Icon: Wifi },
   { href: "/subscriptions", label: "Subscriptions", Icon: CreditCard },
   { href: "/reports", label: "Reports", Icon: BarChart3 },
-  { href: "/settings", label: "Settings", Icon: Settings },
 ] as const;
 
 function activeRoute(pathname: string, href: string) {
@@ -48,7 +45,6 @@ function activeRoute(pathname: string, href: string) {
 export default function HomeDashboardHeader() {
   const pathname = usePathname();
   const notifications = useNotifications();
-  const { isVerifiedPlatformAdmin } = usePermissions();
   const moreRef = useRef<HTMLDetailsElement>(null);
 
   useEffect(() => {
@@ -113,11 +109,7 @@ export default function HomeDashboardHeader() {
                   </Link>
                 );
               })}
-              {isVerifiedPlatformAdmin ? (
-                <Link href="/admin" className="mt-2 flex items-center gap-3 border-t border-[#e8e5dc] px-3 py-3 text-sm font-semibold text-[#617c43]">
-                  <ShieldCheck size={17} aria-hidden /> Admin control center
-                </Link>
-              ) : null}
+
             </div>
           </details>
         </nav>
