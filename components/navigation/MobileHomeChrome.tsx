@@ -119,10 +119,10 @@ export default function MobileHomeChrome() {
               className="flex h-11 w-11 items-center justify-center rounded-full text-white/90 transition hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-[#bfce9f]">
               <Search size={20} aria-hidden />
             </Link>
-            <div>
+            <div className="[&>button]:!text-white">
               <NotificationBell compact notificationsState={notifications} />
             </div>
-            <div>
+            <div className="[&>button]:!text-white">
               <ProfileMenu compact />
             </div>
           </div>
