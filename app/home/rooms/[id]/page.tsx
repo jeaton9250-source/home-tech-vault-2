@@ -27,6 +27,8 @@ import DeviceImageDisplay from "@/components/devices/DeviceImageDisplay";
 import { usePermissions } from "@/hooks/usePermissions";
 import { applyHouseholdScope } from "@/lib/data/householdScope";
 import { groupHomeRooms } from "@/lib/home/roomGrouping";
+import { MORGAN_ROOMS } from "@/lib/demo/morganRooms";
+import { demoDevices, demoDocuments, demoMaintenance } from "@/lib/demoData";
 import { supabase } from "@/lib/supabase";
 
 type RoomRecord = {
@@ -46,6 +48,7 @@ type RoomDevice = {
   location: string | null;
   room_id: string | null;
   photo_url?: string | null;
+  demo_image?: string | null;
 };
 
 type MaintenanceItem = {
@@ -100,7 +103,52 @@ export default function RoomDetailPage() {
   const loadRoom = useCallback(async () => {
     if (permissionsLoading || !roomId) return;
     if (isDemo) {
-      router.replace("/home");
+      const slug = roomId.startsWith("demo-") ? roomId.slice(5) : "";
+      const demoRoom = MORGAN_ROOMS.find((candidate) =>
+        candidate.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") === slug
+      );
+      if (!demoRoom) {
+        setRoom(null);
+        setError("That sample room isn't available.");
+        setLoading(false);
+        return;
+      }
+      const selected = demoDevices.filter((device) =>
+        (demoRoom.deviceIds as readonly string[]).includes(device.id)
+      );
+      const documentsByDevice: Record<string, number> = {};
+      for (const doc of demoDocuments) {
+        if (doc.device_id && selected.some((device) => device.id === doc.device_id)) {
+          documentsByDevice[doc.device_id] = (documentsByDevice[doc.device_id] || 0) + 1;
+        }
+      }
+      setRoom({
+        record: { id: roomId, name: demoRoom.name, room_type: "room", cover_image_path: null },
+        coverUrl: null,
+        devices: selected.map((device) => ({
+          id: device.id,
+          device_name: device.device_name,
+          brand: device.brand,
+          category: device.category,
+          purchase_price: device.purchase_price,
+          warranty_date: device.warranty_date,
+          location: device.location,
+          room_id: null,
+          demo_image: device.demo_image,
+        })),
+        documentsByDevice,
+        maintenance: demoMaintenance
+          .filter((task) => selected.some((device) => device.id === task.device_id))
+          .map((task) => ({
+            id: task.id,
+            device_id: task.device_id,
+            title: task.title,
+            due_date: task.due_date,
+            completed: Boolean(task.completed),
+          })),
+      });
+      setError("");
+      setLoading(false);
       return;
     }
     if (!user) {
@@ -319,7 +367,7 @@ export default function RoomDetailPage() {
               The things you use, the details you keep, and the stories worth remembering.
             </p>
             <div className="mt-7 flex flex-wrap items-center gap-3">
-              {canCreate ? (
+              {canCreate && !isDemo ? (
                 <Link
                   href={"/devices/add?room=" + encodeURIComponent(record.name)}
                   className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[#718d4f] px-6 text-sm font-semibold text-white transition hover:bg-[#819d5a]"
@@ -385,6 +433,7 @@ export default function RoomDetailPage() {
                           brand: device.brand,
                           category: device.category,
                           photo_url: device.photo_url,
+                  demo_image: device.demo_image,
                         }}
                         variant="room"
                         className="!aspect-[16/10]"
@@ -422,7 +471,7 @@ export default function RoomDetailPage() {
               <p className="mx-auto mt-3 max-w-md text-sm leading-7 text-[#65736b]">
                 {query ? "Try a different name, brand or category." : "Start by adding something you want to keep track of in this room."}
               </p>
-              {canCreate && !query ? (
+              {canCreate && !isDemo && !query ? (
                 <Link href={"/devices/add?room=" + encodeURIComponent(record.name)}
                   className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#617c43] px-5 py-3 text-sm font-semibold text-white">
                   <Plus size={16} /> Add your first item
