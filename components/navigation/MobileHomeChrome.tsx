@@ -13,7 +13,6 @@ import {
   Home,
   Menu,
   Search,
-  Settings,
   ShieldCheck,
   Sparkles,
   Wifi,
@@ -24,7 +23,6 @@ import {
 import NotificationBell from "@/components/NotificationBell";
 import ProfileMenu from "@/components/navigation/ProfileMenu";
 import { useNotifications } from "@/hooks/useNotifications";
-import { usePermissions } from "@/hooks/usePermissions";
 
 const tabs = [
   { href: "/dashboard", label: "Home", Icon: Home },
@@ -40,7 +38,6 @@ const sections = [
   { href: "/network", label: "Connected home", description: "Wi-Fi and network devices", Icon: Wifi },
   { href: "/subscriptions", label: "Subscriptions", description: "Services and renewals", Icon: CreditCard },
   { href: "/reports", label: "Reports", description: "Household summaries and exports", Icon: BarChart3 },
-  { href: "/settings", label: "Settings", description: "Your account and preferences", Icon: Settings },
 ] as const;
 
 function isRoute(pathname: string, href: string) {
@@ -58,7 +55,6 @@ export default function MobileHomeChrome() {
   const moreTrigger = useRef<HTMLButtonElement>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
-  const { isVerifiedPlatformAdmin } = usePermissions();
   const notifications = useNotifications();
   const moreActive = sections.some(({ href }) => isRoute(pathname, href))
     || pathname === "/admin" || pathname.startsWith("/admin/");
@@ -203,13 +199,7 @@ export default function MobileHomeChrome() {
               })}
             </div>
 
-            {isVerifiedPlatformAdmin ? (
-              <Link href="/admin" onClick={() => setMoreOpen(false)}
-                className="mt-3 flex min-h-12 items-center gap-3 rounded-[16px] border border-[#d4dccc] bg-[#e9f0e5] px-4 text-sm font-semibold text-[#536c39]">
-                <ShieldCheck size={18} aria-hidden /> Admin control center
-                <ChevronRight size={17} className="ml-auto" aria-hidden />
-              </Link>
-            ) : null}
+
             <p className="mt-4 text-center text-[11px] leading-5 text-[#728077]">
               Everything in your Home Tech Vault is right here when you need it.
             </p>
