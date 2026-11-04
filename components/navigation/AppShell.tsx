@@ -565,7 +565,9 @@ export default function AppShell({
   children,
 }: AppShellProps) {
   const pathname = usePathname();
-  const homeExperience = pathname === "/dashboard";
+  // Carry the home-first visual shell through all homeowner pages.
+  // Keep administrative tools outside the homeowner navigation.
+  const homeExperience = pathname !== "/admin" && !pathname.startsWith("/admin/");
   const {
     user,
     isDemo,
@@ -611,7 +613,7 @@ export default function AppShell({
             />
           )}
 
-          <div className="[&_h1]:font-serif [&_h2]:font-serif">
+          <div className="htv-home-interior [&_h1]:font-serif [&_h2]:font-serif">
             {children}
           </div>
 
