@@ -56,7 +56,7 @@ export default function HomeDashboardHeader() {
   }, [pathname]);
 
   return (
-    <header className="sticky top-0 z-40 hidden h-[76px] border-b border-white/10 bg-[#172d40] text-[#f5f1e8] shadow-[0_12px_32px_-30px_rgba(0,0,0,.8)] md:block">
+    <header className="sticky top-0 z-40 hidden h-[76px] border-b border-white/10 bg-[#172d40] text-[#f5f1e8] shadow-[0_12px_32px_-30px_rgba(0,0,0,.8)] lg:block">
       <div className="mx-auto flex h-full max-w-[1600px] items-center justify-between gap-3 px-5 lg:gap-5 lg:px-10">
         <Link href="/dashboard" className="flex shrink-0 items-center gap-2.5" aria-label="Home Tech Vault — My Home">
           <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/20 bg-white/[.06] text-[#c0d6a7]">
