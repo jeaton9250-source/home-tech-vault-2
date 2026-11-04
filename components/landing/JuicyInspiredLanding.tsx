@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import type { ReactNode } from "react";
 import {
   ArrowRight,
   BookOpen,
@@ -15,7 +16,6 @@ import {
   LockKeyhole,
   Monitor,
   ShieldCheck,
-  Sparkles,
   Wrench,
   Wifi,
 } from "lucide-react";
@@ -58,7 +58,7 @@ function Eyebrow({
   children,
   dark = false,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
   dark?: boolean;
 }) {
   return (
@@ -108,7 +108,7 @@ function SectionTitle({
   description,
 }: {
   kicker: string;
-  title: React.ReactNode;
+  title: ReactNode;
   description?: string;
 }) {
   return (
