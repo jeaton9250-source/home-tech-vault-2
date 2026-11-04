@@ -214,7 +214,7 @@ export default function DemoRoomCard({ room }: { room: DemoRoom }) {
             </p>
 
             <Link
-              href={`/devices?search=${encodeURIComponent(room.name)}`}
+              href={"/home/rooms/demo-" + room.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}
               className="inline-flex items-center gap-2 text-sm font-semibold text-[#9a6d2c]"
             >
               Open Room

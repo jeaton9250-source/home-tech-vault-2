@@ -79,7 +79,7 @@ export default function RealRoomCard({
 }) {
   const Icon = getRoomIcon(room.name);
 
-  const previewDevices = room.devices.slice(0, 4);
+  const previewDevices = room.devices.slice(0, 2);
 
   const remainingDevices = room.deviceCount - previewDevices.length;
 
@@ -200,11 +200,11 @@ export default function RealRoomCard({
 
           <h3
             className={[
-              "mt-1.5 text-[1.45rem] font-semibold tracking-[-0.04em]",
+              "mt-1.5 font-serif text-[2rem] font-medium leading-[1.04] tracking-[-0.04em]",
               room.coverImageUrl ? "text-white" : "text-[#13232f]",
             ].join(" ")}
           >
-            {room.name}
+            <Link href={room.id ? "/home/rooms/" + room.id : "/devices?search=" + encodeURIComponent(room.name)} className="hover:underline hover:underline-offset-4">{room.name}</Link>
           </h3>
 
           <p
@@ -336,14 +336,14 @@ export default function RealRoomCard({
 
           <div className="mt-4 flex items-center justify-between">
             <p className="text-xs text-text-tertiary">
-              Room Readiness{" "}
+              Record details{" "}
               <span className="font-semibold text-text-primary">
                 {room.completeness}%
               </span>
             </p>
 
             <Link
-              href={`/devices?search=${encodeURIComponent(room.name)}`}
+              href={room.id ? "/home/rooms/" + room.id : "/devices?search=" + encodeURIComponent(room.name)}
               className="inline-flex items-center gap-2 text-sm font-semibold text-[#9a6d2c] transition hover:text-[#20384b]"
             >
               Open Room

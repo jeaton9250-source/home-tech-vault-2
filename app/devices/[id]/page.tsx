@@ -20,6 +20,10 @@ import {
 import {
   Activity,
   ArrowLeft,
+  ArrowRight,
+  ChevronRight,
+  CalendarClock,
+  History,
   Camera,
   FileText,
   HeartPulse,
@@ -76,6 +80,7 @@ import {
 } from "@/app/devices/actions";
 
 import DeviceDocuments from "@/components/DeviceDocuments";
+import DeviceImageDisplay from "@/components/devices/DeviceImageDisplay";
 import DeviceTimeline from "@/components/DeviceTimeline";
 import DeviceProfileMaintenance from "@/components/devices/DeviceProfileMaintenance";
 import PageShell from "@/components/ui/PageShell";
@@ -101,6 +106,7 @@ type Device = {
   warranty_date: string | null;
   purchase_price: number | null;
   location: string | null;
+  room_id?: string | null;
   notes: string | null;
   online?: boolean | null;
   last_seen_at?: string | null;
@@ -1418,19 +1424,55 @@ export default function DevicePage() {
   return (
     <PageShell className="space-y-6 pb-10">
       <header className="space-y-4">
-        <Link
-          href="/devices"
-          className="htv-focus-ring inline-flex items-center gap-2 rounded-full text-sm font-semibold text-text-secondary transition hover:text-text-primary"
-        >
-          <ArrowLeft size={17} aria-hidden />
-          Back to Devices
-        </Link>
+        <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-xs font-semibold text-[#68766d]">
+          <Link href="/dashboard" className="hover:text-[#183047]">My Home</Link>
+          <ChevronRight size={14} aria-hidden />
+          <Link href="/home" className="hover:text-[#183047]">My Spaces</Link>
+          <ChevronRight size={14} aria-hidden />
+          {device.room_id && !isGuestDemo ? (
+            <>
+              <Link href={"/home/rooms/" + device.room_id} className="hover:text-[#183047]">
+                {device.location?.trim() || "Room"}
+              </Link>
+              <ChevronRight size={14} aria-hidden />
+            </>
+          ) : null}
+          <span className="text-[#183047]" aria-current="page">{device.device_name || "Device"}</span>
+        </nav>
 
         {!canEdit && !isGuestDemo ? (
           <ViewerBanner description="You can view this device, its photos, documents, Home Wi-Fi details, and history. Viewer access cannot edit, upload, or delete anything." />
         ) : null}
 
-        <PageCard className="p-6 md:p-8">
+        <div className="grid overflow-hidden rounded-[30px] border border-[#dedbd0] bg-[#fffdf8] shadow-[0_22px_58px_rgba(24,48,71,.07)] lg:grid-cols-[.82fr_1.18fr]">
+          <div className="relative min-h-[280px] bg-[#e6ebe3] lg:min-h-[410px]">
+            {selectedPhoto ? (
+              <Image
+                src={selectedPhoto.src}
+                alt={(device.device_name || "Device") + " photograph"}
+                fill
+                sizes="(max-width: 1024px) 100vw, 42vw"
+                unoptimized={selectedPhoto.isDemoAsset || selectedPhoto.src.startsWith("http")}
+                className="object-contain p-7 md:p-10"
+              />
+            ) : (
+              <DeviceImageDisplay
+                device={{
+                  id: device.id,
+                  device_name: device.device_name,
+                  brand: device.brand,
+                  category: device.category,
+                  demo_image: demoDeviceRecord?.demo_image,
+                }}
+                variant="hero"
+                className="!aspect-auto h-full w-full min-h-[280px] lg:min-h-[410px]"
+              />
+            )}
+            <span className="absolute bottom-5 left-5 rounded-full bg-[#fffdf8]/95 px-3 py-1.5 text-[11px] font-semibold text-[#526b39] shadow-sm">
+              {selectedPhoto ? "Saved device photo" : "Your device collection"}
+            </span>
+          </div>
+          <PageCard className="flex flex-col justify-center !rounded-none !border-0 !bg-transparent !p-7 !shadow-none sm:!p-10 lg:!p-12">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
             <div className="min-w-0 flex-1 space-y-3">
               <div className="flex flex-wrap items-center gap-2">
@@ -1457,7 +1499,7 @@ export default function DevicePage() {
                 ) : null}
               </div>
 
-              <h1 className="text-3xl font-semibold tracking-[-0.04em] text-text-primary md:text-4xl">
+              <h1 className="font-serif text-[clamp(2.9rem,5vw,5.3rem)] font-medium leading-[1.04] tracking-[-.05em] text-[#183047]">
                 {displayValue(device.device_name, "Unnamed Device")}
               </h1>
 
@@ -1520,8 +1562,46 @@ export default function DevicePage() {
             </div>
           </div>
         </PageCard>
+        </div>
       </header>
 
+      <section aria-label="Device records" className="pt-3">
+        <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[#617c43]">EVERYTHING IN ONE PLACE</p>
+        <h2 className="mt-3 font-serif text-[clamp(2rem,3.1vw,3.1rem)] font-medium leading-[1.06] tracking-[-.04em] text-[#183047]">
+          All the little details, kept together.
+        </h2>
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {[
+            { id: "documents" as DeviceDetailTab, Icon: FileText, title: "Files & manuals", detail: documentCount == null ? "Your saved paperwork" : String(documentCount) + " files saved" },
+            { id: "warranty" as DeviceDetailTab, Icon: ShieldCheck, title: "Warranty", detail: warranty.label },
+            { id: "maintenance" as DeviceDetailTab, Icon: CalendarClock, title: "Maintenance", detail: "Service and repairs" },
+            { id: "timeline" as DeviceDetailTab, Icon: History, title: "Item history", detail: "The story so far" },
+          ].map(({ id, Icon, title, detail }) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => selectTab(id)}
+              className={cn(
+                "group flex min-h-[158px] flex-col items-start rounded-[24px] border p-5 text-left shadow-[0_8px_25px_rgba(24,48,71,.035)] transition hover:-translate-y-0.5 hover:shadow-[0_15px_35px_rgba(24,48,71,.09)]",
+                activeTab === id ? "border-[#87a36b] bg-[#edf2e8]" : "border-[#dedbd0] bg-[#fffdf8] hover:border-[#a6b69c]",
+              )}
+            >
+              <span className="flex h-11 w-11 items-center justify-center rounded-[14px] bg-[#edf2e8] text-[#617c43]">
+                <Icon size={21} aria-hidden />
+              </span>
+              <span className="mt-5 text-sm font-semibold text-[#183047]">{title}</span>
+              <span className="mt-1 flex w-full items-center justify-between gap-2 text-xs text-[#67756c]">
+                {detail} <ArrowRight size={15} className="shrink-0 transition group-hover:translate-x-1" aria-hidden />
+              </span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <details className="rounded-[23px] border border-[#e1ded3] bg-[#fffdf8] px-5 py-3">
+        <summary className="cursor-pointer rounded-full py-2 text-sm font-semibold text-[#526b39]">
+          Show device status & record completeness
+        </summary>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         <SummaryCard
           icon={HeartPulse}
@@ -1577,6 +1657,8 @@ export default function DevicePage() {
           }
         />
       </div>
+
+      </details>
 
       <div className="border-b border-border-subtle">
         <div
