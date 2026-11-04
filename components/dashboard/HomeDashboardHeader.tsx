@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowRight, Grid2X2, Home, Search, Sparkles, Archive } from "lucide-react";
+import { Grid2X2, Home, Search, Sparkles, Archive } from "lucide-react";
 import NotificationBell from "@/components/NotificationBell";
 import ProfileMenu from "@/components/navigation/ProfileMenu";
 import { useNotifications } from "@/hooks/useNotifications";
