@@ -19,6 +19,8 @@ import {
   ChevronDown,
   CreditCard,
   FileText,
+  Grid2X2,
+  Archive,
   Home,
   Loader2,
   LogOut,
@@ -48,19 +50,19 @@ const navItems: {
   icon: LucideIcon;
 }[] = [
   {
-    label: "Home",
+    label: "My Home",
     href: "/dashboard",
     icon: Home,
   },
   {
-    label: "My Things",
-    href: "/devices",
-    icon: Monitor,
+    label: "Spaces",
+    href: "/home",
+    icon: Grid2X2,
   },
   {
-    label: "Documents",
-    href: "/documents",
-    icon: FileText,
+    label: "Vault",
+    href: "/devices",
+    icon: Archive,
   },
   {
     label: "Maintenance",
@@ -565,7 +567,9 @@ export default function AppShell({
   children,
 }: AppShellProps) {
   const pathname = usePathname();
-  const homeExperience = pathname === "/dashboard";
+  // Carry the home-first visual shell through all homeowner pages.
+  // Keep administrative tools outside the homeowner navigation.
+  const homeExperience = pathname !== "/admin" && !pathname.startsWith("/admin/");
   const {
     user,
     isDemo,
@@ -611,7 +615,7 @@ export default function AppShell({
             />
           )}
 
-          <div className="[&_h1]:font-serif [&_h2]:font-serif">
+          <div className="htv-home-interior [&_h1]:font-serif [&_h2]:font-serif">
             {children}
           </div>
 

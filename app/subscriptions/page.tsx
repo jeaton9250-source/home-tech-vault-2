@@ -176,7 +176,7 @@ export default function SubscriptionsPage() {
 
   if (loading) {
     return (
-      <PageShell className="bg-[#f7f6f2]">
+      <PageShell>
         <PageCard className="flex min-h-72 items-center justify-center">
           <div className="flex items-center gap-3 text-text-secondary">
             <Loader2 className="animate-spin" size={22} />
@@ -189,7 +189,7 @@ export default function SubscriptionsPage() {
 
   if (errorMessage) {
     return (
-      <PageShell className="bg-[#f7f6f2]">
+      <PageShell>
         <PageCard className="border-red-200 bg-red-50 p-6 text-red-700">
           <h1 className="text-xl font-semibold">
             Unable to load subscriptions
@@ -202,12 +202,12 @@ export default function SubscriptionsPage() {
   }
 
   return (
-    <PageShell className="bg-[#f7f6f2]">
+    <PageShell>
       <PageHero
         section="technology"
         eyebrow="Recurring Services"
-        title="Subscriptions"
-        description="Track recurring technology expenses, renewal dates, and yearly costs in one place."
+        title="The services behind your home."
+        description="Keep your household services, renewal dates, and recurring costs together in one thoughtful place."
       >
         <PageAction
           href="/subscriptions/add"

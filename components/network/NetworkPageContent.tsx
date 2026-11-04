@@ -135,7 +135,7 @@ function NetworkPageInner() {
   const loading = permissionsLoading || data.loading;
 
   return (
-    <PageShell className="bg-[#f7f6f2]">
+    <PageShell>
       <NetworkHeader
         summary={loading ? null : data.summary}
         headerSummary={data.headerSummary}
@@ -264,7 +264,7 @@ export default function NetworkPageContent() {
   return (
     <Suspense
       fallback={
-        <PageShell className="bg-[#f7f6f2]">
+        <PageShell>
           <NetworkPageSkeleton />
         </PageShell>
       }

@@ -52,11 +52,11 @@ function TabPanel({ tab }: { tab: AccountSettingsTabId }) {
 
 export default function AccountSettingsPage() {
   return (
-    <PageShell className="bg-[#f7f6f2]">
+    <PageShell>
       <PageHero
         eyebrow="Account"
-        title="Settings"
-        description="Manage your profile, preferences, security, and subscription."
+        title="Make this space yours."
+        description="Your account, privacy, preferences and membership — all in one place."
       />
 
       <Suspense

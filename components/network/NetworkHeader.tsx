@@ -45,8 +45,8 @@ export default function NetworkHeader({
     <div className="space-y-4">
       <PageHero
         eyebrow="Home Wi-Fi"
-        title="Home Wi-Fi"
-        description="See what's connected to your home and anything that needs attention."
+        title="Your connected home."
+        description="Keep your network equipment and connected devices organized, with the important details close at hand."
       >
         {!loading ? (
           <>

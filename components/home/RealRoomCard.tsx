@@ -87,6 +87,10 @@ export default function RealRoomCard({
 
   const visualClass = getRoomVisualClass(room.name);
 
+  const placeholderPhoto = /living|family|den|lounge/i.test(room.name)
+    ? "/images/pricing-living-room.jpg"
+    : "/images/home-hero.jpg";
+
   if (isUnassigned) {
     return (
       <article className="group h-full overflow-hidden rounded-[28px] border border-dashed border-[#a98650]/30 bg-[#f7f2e8] shadow-[0_18px_45px_-36px_rgba(23,33,42,0.35)] transition duration-300 hover:-translate-y-1 hover:border-[#a98650]/50 hover:shadow-[0_26px_55px_-34px_rgba(23,33,42,0.48)]">
@@ -133,7 +137,7 @@ export default function RealRoomCard({
           className={[
             room.coverImageUrl
               ? "relative min-h-[170px] overflow-hidden"
-              : "relative min-h-[105px] overflow-hidden",
+              : "relative min-h-[170px] overflow-hidden",
             visualClass,
           ].join(" ")}
         >
@@ -150,12 +154,10 @@ export default function RealRoomCard({
           ) : (
             <>
               <div
-                className="absolute inset-0"
-                style={{
-                  background:
-                    "linear-gradient(135deg, #e5ebe4 0%, #f3efe6 56%, #e8dfd2 100%)",
-                }}
+                className="absolute inset-0 bg-cover bg-center"
+                style={{ backgroundImage: "linear-gradient(0deg,rgba(14,29,35,.36),rgba(14,29,35,.06)),url(" + placeholderPhoto + ")" }}
               />
+              <span className="absolute bottom-3 left-5 rounded-full bg-white/90 px-2.5 py-1 text-[9px] font-semibold text-[#526b39]">Sample image · add your own</span>
 
               <div className="pointer-events-none absolute -right-10 -top-14 h-36 w-36 rounded-full bg-white/65 blur-2xl" />
 
