@@ -351,19 +351,19 @@ export default function HomeExperience() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f5f1e8] pb-28 text-[#183047] md:pb-20">
-      <section className="relative isolate min-h-[385px] overflow-hidden bg-[#183047] md:min-h-[420px]">
+    <main className="htv-native-page min-h-screen bg-[#f5f1e8] pb-10 text-[#183047] lg:pb-20">
+      <section className="relative isolate min-h-[340px] overflow-hidden bg-[#183047] sm:min-h-[385px] lg:min-h-[420px]">
         <div
           className="absolute inset-0 -z-10 bg-cover bg-center"
           style={{ backgroundImage: "url('/images/home-hero.jpg')" }}
         />
         <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#0d1c25]/90 via-[#142530]/72 to-[#142530]/10" />
-        <div className="mx-auto flex min-h-[385px] w-full max-w-[1500px] items-center px-6 pb-16 pt-9 md:min-h-[420px] md:px-10 lg:px-16">
+        <div className="mx-auto flex min-h-[340px] w-full max-w-[1500px] items-center px-5 pb-12 pt-10 sm:min-h-[385px] sm:px-8 lg:min-h-[420px] lg:px-16">
           <div className="max-w-[720px]">
             <p className="text-[11px] font-semibold uppercase tracking-[.22em] text-[#b9cb89]">
               YOUR HOME, ORGANIZED
             </p>
-            <h1 className="mt-4 font-serif text-[clamp(3.5rem,7vw,6.9rem)] font-medium leading-[.95] tracking-[-.05em] text-[#fffdf8]">
+            <h1 className="mt-4 font-serif text-[clamp(2.9rem,9vw,6.9rem)] font-medium leading-[.95] tracking-[-.05em] text-[#fffdf8]">
               Welcome home{view?.firstName ? "," : "."}
               {view?.firstName ? (
                 <><span className="sr-only"> </span><br />{view.firstName}.</>
@@ -372,7 +372,7 @@ export default function HomeExperience() {
             <p className="mt-6 max-w-[470px] text-base leading-[1.75] text-[#f1f0e9] md:text-lg">
               Everything worth remembering about your home, right where you need it.
             </p>
-            <Link href="/home" className="mt-7 inline-flex min-h-[50px] items-center gap-3 rounded-2xl bg-[#718d4f] px-6 text-sm font-semibold text-white shadow-[0_14px_32px_rgba(0,0,0,.18)] transition hover:-translate-y-0.5 hover:bg-[#819e59]">
+            <Link href="/home" className="mt-7 inline-flex min-h-[52px] items-center justify-center gap-3 rounded-2xl bg-[#718d4f] px-6 text-sm font-semibold text-white shadow-[0_14px_32px_rgba(0,0,0,.18)] transition hover:-translate-y-0.5 hover:bg-[#819e59]">
               Explore my spaces <ArrowRight size={18} aria-hidden />
             </Link>
           </div>
@@ -415,7 +415,7 @@ export default function HomeExperience() {
                   <Link
                     key={(room.id || room.name) + String(index)}
                     href={href}
-                    className="group relative isolate flex aspect-[.92] min-h-[148px] flex-col justify-end overflow-hidden rounded-[20px] bg-[#e5e6da] p-4 text-white shadow-[0_7px_18px_rgba(24,48,71,.07)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_16px_32px_rgba(24,48,71,.18)] sm:aspect-[1.17] md:p-5 lg:aspect-[1.06]"
+                    className="htv-touch-card group relative isolate flex aspect-[.92] min-h-[148px] flex-col justify-end overflow-hidden rounded-[20px] bg-[#e5e6da] p-4 text-white shadow-[0_7px_18px_rgba(24,48,71,.07)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_16px_32px_rgba(24,48,71,.18)] sm:aspect-[1.17] md:p-5 lg:aspect-[1.06]"
                   >
                     <span
                       className="absolute inset-0 -z-20 bg-cover bg-center transition-transform duration-700 group-hover:scale-[1.055]"
