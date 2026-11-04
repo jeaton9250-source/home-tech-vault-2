@@ -848,7 +848,7 @@ function RoomsContent() {
 
   if (loading) {
     return (
-      <PageShell className="!max-w-[1500px]">
+      <PageShell className="htv-native-page !max-w-[1500px]">
         <PageCard className="flex min-h-72 items-center justify-center">
           <div className="flex items-center gap-3 text-text-secondary">
             <Loader2 size={22} className="animate-spin" />
@@ -861,7 +861,7 @@ function RoomsContent() {
 
   if (errorMessage) {
     return (
-      <PageShell className="!max-w-[1500px]">
+      <PageShell className="htv-native-page !max-w-[1500px]">
         <PageCard className="border-danger/30 bg-danger-soft text-danger">
           <h1 className="text-xl font-semibold">Unable to load rooms</h1>
 
@@ -872,7 +872,7 @@ function RoomsContent() {
   }
 
   return (
-    <PageShell className="!max-w-[1500px]">
+    <PageShell className="htv-native-page !max-w-[1500px]">
 
       <PageHero
         className="mt-0"
@@ -1022,7 +1022,7 @@ function RoomsContent() {
             </div>
           </div>
 
-          <div className="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+          <div className="mt-6 grid gap-4 sm:gap-5 md:grid-cols-2 xl:grid-cols-3">
             {filteredRooms
               .filter((room) => room.name.trim().toLowerCase() !== "network")
               .map((room) =>
