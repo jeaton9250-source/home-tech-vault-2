@@ -1499,7 +1499,7 @@ export default function DevicePage() {
                 ) : null}
               </div>
 
-              <h1 className="text-3xl font-semibold tracking-[-0.04em] text-text-primary md:text-4xl">
+              <h1 className="font-serif text-[clamp(2.9rem,5vw,5.3rem)] font-medium leading-[1.04] tracking-[-.05em] text-[#183047]">
                 {displayValue(device.device_name, "Unnamed Device")}
               </h1>
 
@@ -1565,6 +1565,43 @@ export default function DevicePage() {
         </div>
       </header>
 
+      <section aria-label="Device records" className="pt-3">
+        <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[#617c43]">EVERYTHING IN ONE PLACE</p>
+        <h2 className="mt-3 font-serif text-[clamp(2rem,3.1vw,3.1rem)] font-medium leading-[1.06] tracking-[-.04em] text-[#183047]">
+          All the little details, kept together.
+        </h2>
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {[
+            { id: "documents" as DeviceDetailTab, Icon: FileText, title: "Files & manuals", detail: documentCount == null ? "Your saved paperwork" : String(documentCount) + " files saved" },
+            { id: "warranty" as DeviceDetailTab, Icon: ShieldCheck, title: "Warranty", detail: warranty.label },
+            { id: "maintenance" as DeviceDetailTab, Icon: CalendarClock, title: "Maintenance", detail: "Service and repairs" },
+            { id: "timeline" as DeviceDetailTab, Icon: History, title: "Item history", detail: "The story so far" },
+          ].map(({ id, Icon, title, detail }) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => selectTab(id)}
+              className={cn(
+                "group flex min-h-[158px] flex-col items-start rounded-[24px] border p-5 text-left shadow-[0_8px_25px_rgba(24,48,71,.035)] transition hover:-translate-y-0.5 hover:shadow-[0_15px_35px_rgba(24,48,71,.09)]",
+                activeTab === id ? "border-[#87a36b] bg-[#edf2e8]" : "border-[#dedbd0] bg-[#fffdf8] hover:border-[#a6b69c]",
+              )}
+            >
+              <span className="flex h-11 w-11 items-center justify-center rounded-[14px] bg-[#edf2e8] text-[#617c43]">
+                <Icon size={21} aria-hidden />
+              </span>
+              <span className="mt-5 text-sm font-semibold text-[#183047]">{title}</span>
+              <span className="mt-1 flex w-full items-center justify-between gap-2 text-xs text-[#67756c]">
+                {detail} <ArrowRight size={15} className="shrink-0 transition group-hover:translate-x-1" aria-hidden />
+              </span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <details className="rounded-[23px] border border-[#e1ded3] bg-[#fffdf8] px-5 py-3">
+        <summary className="cursor-pointer rounded-full py-2 text-sm font-semibold text-[#526b39]">
+          Show device status & record completeness
+        </summary>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         <SummaryCard
           icon={HeartPulse}
@@ -1620,6 +1657,8 @@ export default function DevicePage() {
           }
         />
       </div>
+
+      </details>
 
       <div className="border-b border-border-subtle">
         <div
