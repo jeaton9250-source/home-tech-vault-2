@@ -959,7 +959,7 @@ export default function ReportsPage() {
 
   if (loading) {
     return (
-      <PageShell className="bg-[#f7f6f2]">
+      <PageShell>
         <PageCard className="flex min-h-72 items-center justify-center">
           <div className="flex items-center gap-3 text-text-secondary">
             <Loader2 size={22} className="animate-spin" />
@@ -972,7 +972,7 @@ export default function ReportsPage() {
 
   if (errorMessage) {
     return (
-      <PageShell className="bg-[#f7f6f2]">
+      <PageShell>
         <PageCard className="border-red-200 bg-red-50 text-red-700">
           <h1 className="text-xl font-semibold">Unable to load reports</h1>
 
@@ -983,12 +983,12 @@ export default function ReportsPage() {
   }
 
   return (
-    <PageShell className="bg-[#f7f6f2]">
+    <PageShell>
       {/* STANDARD APP HEADER */}
       <PageHero
         eyebrow="Home Reports"
-        title="Reports"
-        description="Create insurance-ready inventories, warranty summaries, and household records from everything saved in your Vault."
+        title="Your home’s story, ready to share."
+        description="Bring your home’s important details together in useful summaries for claims, records and peace of mind."
       >
         <Button
           variant="secondary"

@@ -873,20 +873,19 @@ function RoomsContent() {
 
   return (
     <PageShell className="!max-w-[1500px]">
-      <div className="h-12 sm:h-14" />
 
       <PageHero
         className="mt-0"
         section="technology"
         title={
           isDemo
-            ? "See what a remembered home looks like."
-            : "Your home, room by room."
+            ? "Walk through a remembered home."
+            : "Every room has a story."
         }
         description={
           isDemo
             ? "Explore a complete sample home with devices, records, warranties, rooms, and the details Home Tech Vault keeps ready for you."
-            : "Everything you’ve remembered, organized by where it lives."
+            : "Your rooms, your things, and the important details that belong together."
         }
       >
         {canCreate ? (
