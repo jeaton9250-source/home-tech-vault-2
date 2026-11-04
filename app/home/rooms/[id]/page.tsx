@@ -334,14 +334,14 @@ export default function RoomDetailPage() {
     : "/images/home-hero.jpg";
 
   return (
-    <main className="min-h-screen bg-[#f5f1e8] pb-24 text-[#183047]">
+    <main className="htv-native-page min-h-screen bg-[#f5f1e8] pb-12 text-[#183047] lg:pb-24">
       <div className="mx-auto max-w-[1450px] px-4 pt-6 sm:px-6 lg:px-10">
-        <nav aria-label="Breadcrumb" className="mb-6 flex flex-wrap items-center gap-2 text-[12px] font-semibold text-[#697871]">
+        <nav aria-label="Breadcrumb" className="mb-5 flex min-w-0 items-center gap-2 overflow-x-auto whitespace-nowrap pb-1 text-[12px] font-semibold text-[#697871] sm:mb-6">
           <Link href="/dashboard" className="hover:text-[#183047]">My Home</Link>
           <ChevronRight size={14} />
           <Link href="/home" className="hover:text-[#183047]">My Spaces</Link>
           <ChevronRight size={14} />
-          <span className="text-[#183047]" aria-current="page">{record.name}</span>
+          <span className="truncate text-[#183047]" aria-current="page">{record.name}</span>
         </nav>
 
         <section className="relative isolate overflow-hidden rounded-[30px] bg-[#183047] text-white shadow-[0_24px_60px_rgba(24,48,71,.13)]">
@@ -358,9 +358,9 @@ export default function RoomDetailPage() {
             </span>
           ) : null}
 
-          <div className="flex min-h-[350px] max-w-3xl flex-col justify-end px-7 py-12 sm:min-h-[400px] sm:px-11 lg:min-h-[440px] lg:px-16">
+          <div className="flex min-h-[340px] max-w-3xl flex-col justify-end px-5 py-9 sm:min-h-[400px] sm:px-11 lg:min-h-[440px] lg:px-16">
             <p className="text-[11px] font-bold uppercase tracking-[.22em] text-[#b9d19c]">A SPACE IN YOUR HOME</p>
-            <h1 className="mt-4 font-serif text-[clamp(3.8rem,7vw,7rem)] font-medium leading-[.95] tracking-[-.05em]">
+            <h1 className="mt-4 font-serif text-[clamp(2.75rem,9vw,7rem)] font-medium leading-[.95] tracking-[-.05em]">
               {record.name}
             </h1>
             <p className="mt-5 max-w-lg text-[15px] leading-7 text-[#e7e8e1] sm:text-lg">
@@ -370,7 +370,7 @@ export default function RoomDetailPage() {
               {canCreate && !isDemo ? (
                 <Link
                   href={"/devices/add?room=" + encodeURIComponent(record.name)}
-                  className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[#718d4f] px-6 text-sm font-semibold text-white transition hover:bg-[#819d5a]"
+                  className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#718d4f] sm:w-auto px-6 text-sm font-semibold text-white transition hover:bg-[#819d5a]"
                 >
                   <Plus size={17} /> Add something here
                 </Link>
@@ -382,8 +382,8 @@ export default function RoomDetailPage() {
           </div>
         </section>
 
-        <section aria-label="Room record summary" className="mt-6 grid gap-3 sm:grid-cols-3">
-          <div className="flex items-center gap-4 rounded-[22px] border border-[#dedbd0] bg-[#fffdf8] p-5">
+        <section aria-label="Room record summary" className="htv-room-stat-scroll mt-6 grid auto-cols-[minmax(215px,70vw)] grid-flow-col gap-3 overflow-x-auto pb-2 sm:auto-cols-auto sm:grid-flow-row sm:grid-cols-3 sm:overflow-visible">
+          <div className="snap-start flex items-center gap-4 rounded-[22px] border border-[#dedbd0] bg-[#fffdf8] p-5">
             <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eef2e8] text-[#617c43]"><FileText size={22} /></span>
             <div><p className="font-serif text-3xl leading-none">{documentCount}</p><p className="mt-1 text-xs text-[#68766f]">saved documents</p></div>
           </div>
@@ -413,7 +413,7 @@ export default function RoomDetailPage() {
               <input type="search" value={query} onChange={(event) => setQuery(event.target.value)}
                 placeholder="Find something in this room"
                 aria-label="Search items in this room"
-                className="h-12 w-full rounded-full border border-[#d8d8cc] bg-[#fffdf8] pl-11 pr-11 text-sm text-[#183047] outline-none placeholder:text-[#879084] focus:border-[#718d4f] focus:ring-2 focus:ring-[#718d4f]/15" />
+                className="h-12 w-full rounded-full border border-[#d8d8cc] bg-[#fffdf8] pl-11 pr-11 text-base sm:text-sm text-[#183047] outline-none placeholder:text-[#879084] focus:border-[#718d4f] focus:ring-2 focus:ring-[#718d4f]/15" />
               {query ? <button type="button" onClick={() => setQuery("")} aria-label="Clear search" className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-[#617c43]"><X size={16}/></button> : null}
             </div>
           </div>
@@ -424,7 +424,7 @@ export default function RoomDetailPage() {
                 const docs = documentsByDevice[device.id] || 0;
                 const expiring = warrantyExpiring(device.warranty_date);
                 return (
-                  <Link key={device.id} href={"/devices/" + device.id} className="group flex h-full flex-col overflow-hidden rounded-[26px] border border-[#dedbd0] bg-[#fffdf8] shadow-[0_10px_34px_rgba(24,48,71,.04)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_44px_rgba(24,48,71,.12)]">
+                  <Link key={device.id} href={"/devices/" + device.id} className="htv-touch-card group flex h-full flex-col overflow-hidden rounded-[26px] border border-[#dedbd0] bg-[#fffdf8] shadow-[0_10px_34px_rgba(24,48,71,.04)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_44px_rgba(24,48,71,.12)]">
                     <div className="relative overflow-hidden bg-[#e8ede6]">
                       <DeviceImageDisplay
                         device={{
