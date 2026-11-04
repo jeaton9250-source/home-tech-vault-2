@@ -408,7 +408,9 @@ export default function HomeExperience() {
                 const Icon = visual.Icon;
                 const href = room.id
                   ? "/home/rooms/" + room.id
-                  : "/devices?search=" + encodeURIComponent(room.name);
+                  : isDemo
+                    ? "/home/rooms/demo-" + room.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
+                    : "/devices?search=" + encodeURIComponent(room.name);
                 return (
                   <Link
                     key={(room.id || room.name) + String(index)}
