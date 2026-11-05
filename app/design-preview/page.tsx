@@ -2,7 +2,7 @@
 import {useEffect,useRef,useState} from "react";
 import HomeMarketingFooter from "@/components/marketing/HomeMarketingFooter";
 import {trackEvent} from "@/lib/analytics/gtag";
-import {ArrowRight,BookOpen,FileText,ShieldCheck,Wrench,House,ClipboardList,ChevronDown} from "lucide-react";
+import {ArrowRight,FileText,ShieldCheck,Wrench,House,ClipboardList,ChevronDown} from "lucide-react";
 const cards=[{title:"Save an appliance",body:"Keep the model, serial number, and purchase details in one easy-to-find record.",Icon:ClipboardList},{title:"Keep your warranty",body:"Store warranty information and proof of purchase alongside the appliance.",Icon:ShieldCheck},{title:"Find it when it matters",body:"When a repair comes up, find the receipt and coverage details without digging through drawers or emails.",Icon:FileText}];
 const steps=[["When something breaks","Find the model, manual, receipt and warranty in seconds, not an afternoon of searching drawers."],["When something needs service","See what was done before, by whom, and when it was last handled."],["When you need proof","Pull up your receipts, warranties, and records without digging."],["When you move","Take your home's history with you or share what matters."]];
 export default function DesignPreview(){
