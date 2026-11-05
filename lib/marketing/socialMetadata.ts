@@ -3,26 +3,26 @@ import type { Metadata } from "next";
 export const rootSiteMetadata: Metadata = {
   metadataBase: new URL("https://www.hometechvault.com"),
 
-  title: "Home Tech Vault | Your Home Has a Memory",
+  title: "Home Tech Vault | Appliance Warranty & Receipt Tracker",
 
   description:
-    "Home Tech Vault keeps your home's manuals, warranties, receipts, maintenance history and important details together in one place.",
+    "Keep appliance warranties, purchase receipts, and model details together. Find what you need before paying for an appliance repair. Free to start.",
 
   openGraph: {
     type: "website",
     locale: "en_US",
     url: "https://www.hometechvault.com",
     siteName: "Home Tech Vault",
-    title: "Your home has a memory.",
+    title: "Never lose track of an appliance warranty again.",
     description:
-      "Manuals, warranties, receipts, maintenance and the useful history of your home — together in one place.",
+      "Keep warranties, purchase receipts, and appliance details organized in one place.",
   },
 
   twitter: {
     card: "summary_large_image",
-    title: "Your home has a memory.",
+    title: "Never lose track of an appliance warranty again.",
     description:
-      "Keep the useful history of your home together.",
+      "Keep your appliance warranties and receipts in one easy-to-find place.",
   },
 
   alternates: {
