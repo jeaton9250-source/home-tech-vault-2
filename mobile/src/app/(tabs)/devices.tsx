@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { MonitorSmartphone, Plus, Search } from 'lucide-react-native';
 import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -16,16 +16,20 @@ function shortDate(value: string | null) {
 
 export default function DevicesScreen() {
   const router = useRouter();
+  const {room}=useLocalSearchParams<{room?:string}>();
+  const [selectedRoom,setSelectedRoom]=useState(room || 'All');
   const data = useVaultData();
   const [query, setQuery] = useState('');
   const devices = useMemo(() => {
     const needle = query.trim().toLowerCase();
-    return needle ? data.devices.filter((device) => [device.name, device.brand, device.location, device.category].some((value) => value.toLowerCase().includes(needle))) : data.devices;
-  }, [data.devices, query]);
+    const byRoom=selectedRoom==='All' ? data.devices : data.devices.filter(device=>selectedRoom==='Whole Home' ? !device.location || /whole home|garage|outdoor|utility/i.test(device.location) : device.location?.toLowerCase().includes(selectedRoom.toLowerCase()));
+    return needle ? byRoom.filter((device) => [device.name, device.brand, device.location, device.category,device.model,device.serialNumber].some((value) => (value || '').toLowerCase().includes(needle))) : byRoom;
+  }, [data.devices, query,selectedRoom]);
   if (data.loading) return <LoadingView />;
   return (
     <AppScreen title="Your devices" subtitle={`${data.devices.length} remembered in ${data.householdName}`} refreshing={data.refreshing} onRefresh={data.refresh}>
       <View style={styles.search}><Search size={19} color={colors.muted} /><TextInput value={query} onChangeText={setQuery} placeholder="Search your home" placeholderTextColor="#9AA3A5" style={styles.input} /></View>
+      <View style={styles.roomFilters}>{["All","Kitchen","Living Room","Laundry","Whole Home"].map(label=><Pressable key={label} accessibilityRole="button" accessibilityState={{selected:selectedRoom===label}} onPress={()=>setSelectedRoom(label)} style={[styles.filterPill,selectedRoom===label&&styles.filterPillActive]}><Text style={[styles.filterText,selectedRoom===label&&styles.filterTextActive]}>{label}</Text></Pressable>)}</View>
       <PrimaryButton label="Remember a new device" icon={Plus} onPress={() => router.push('/add-device')} />
       {devices.length ? (
         <View style={styles.grid}>
@@ -51,6 +55,7 @@ export default function DevicesScreen() {
 }
 
 const styles = StyleSheet.create({
+  roomFilters:{flexDirection:'row',flexWrap:'wrap',gap:7},filterPill:{borderWidth:1,borderColor:colors.line,borderRadius:999,backgroundColor:colors.paper,paddingHorizontal:13,paddingVertical:10},filterPillActive:{backgroundColor:colors.navy,borderColor:colors.navy},filterText:{fontFamily:fonts.sans,color:colors.ink,fontSize:11,fontWeight:'700'},filterTextActive:{color:colors.white},
   search: { minHeight: 52, paddingHorizontal: 15, flexDirection: 'row', alignItems: 'center', gap: 10, borderRadius: 16, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.paper },
   input: { flex: 1, color: colors.ink, fontFamily: fonts.sans, fontSize: 14 }, grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   device: { width: '48.2%', borderRadius: 20, overflow: 'hidden', borderWidth: 1, borderColor: colors.line, backgroundColor: colors.paper, ...shadows.card }, image: { width: '100%', height: 120 },
