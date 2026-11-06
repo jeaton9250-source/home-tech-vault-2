@@ -66,7 +66,7 @@ export default function HomeScreen() {
           {name:'Whole Home',icon:House},
         ].map((room) => {
           const count=data.devices.filter(device=>room.name==='Whole Home' ? !device.location || /whole home|garage|outdoor|utility/i.test(device.location) : device.location?.toLowerCase().includes(room.name.toLowerCase())).length;
-          return <Pressable key={room.name} accessibilityRole="button" onPress={() => router.push('/(tabs)/devices')} style={({pressed})=>[styles.roomTile,pressed&&styles.pressed]}><View style={styles.roomIcon}><room.icon size={23} color={colors.oliveDark}/></View><Text style={styles.roomName}>{room.name}</Text><Text style={styles.roomCount}>{count} {count===1?'device':'devices'}</Text></Pressable>;
+          return <Pressable key={room.name} accessibilityRole="button" onPress={() => router.push({pathname:'/(tabs)/devices',params:{room:room.name}})} style={({pressed})=>[styles.roomTile,pressed&&styles.pressed]}><View style={styles.roomIcon}><room.icon size={23} color={colors.oliveDark}/></View><Text style={styles.roomName}>{room.name}</Text><Text style={styles.roomCount}>{count} {count===1?'device':'devices'}</Text></Pressable>;
         })}
       </View>
       <View style={styles.toolsRow}>
