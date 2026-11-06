@@ -3,7 +3,7 @@ import { CrossPromoPlacement } from '@crosspromo/react-native';
 import { Image } from 'expo-image';
 import * as Haptics from 'expo-haptics';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { ArrowRight, BellRing, Camera, Check, ChevronRight, Circle, FileText, Plus, ScanLine, ShieldCheck, Wrench } from 'lucide-react-native';
+import { ArrowRight, BellRing, Camera, Check, ChevronRight, Circle, FileText, Plus, ScanLine, ShieldCheck, Wrench, House, Search, Refrigerator, Sofa, WashingMachine, FolderOpen } from 'lucide-react-native';
 import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -51,8 +51,28 @@ export default function HomeScreen() {
         <Text style={styles.introTitle}>{data.devices.length ? 'Your home is well remembered.' : 'Let’s begin your home’s memory.'}</Text>
       </View>
       {data.error ? <Text style={styles.error}>{data.error}</Text> : null}
-      <Card style={{ padding: 20, gap: 10 }}><Text style={styles.setupTitle}>Ask My Home</Text><Text style={styles.greeting}>Ask anything about your home</Text><PrimaryButton label="Ask a question" onPress={() => router.push('/ask-my-home')} /></Card>
-      <Card style={{ padding: 20, gap: 10, backgroundColor: colors.oliveWash }}><Text style={styles.setupTitle}>Something Isn’t Working?</Text><Text style={styles.greeting}>Troubleshoot a device or home issue</Text><PrimaryButton label="Get Help" icon={Wrench} onPress={() => router.push({ pathname: '/ask-my-home', params: { mode: 'troubleshooting' } })} /></Card>
+      <View style={styles.welcomeHome}>
+        <View style={styles.welcomeTop}><House size={20} color="#C8D6BB" /><Text style={styles.welcomeEyebrow}>YOUR HOME, REMEMBERED</Text></View>
+        <Text style={styles.welcomeTitle}>{data.devices.length ? 'Everything has a place.' : 'Start with one thing you own.'}</Text>
+        <Text style={styles.welcomeBody}>{data.devices.length ? `${data.devices.length} saved devices and ${data.documents.length} documents, ready when you need them.` : 'Add an appliance and give its warranty, receipt and details a home.'}</Text>
+        <Pressable accessibilityRole="button" style={styles.welcomeButton} onPress={() => router.push('/add-device')}><Plus size={16} color={colors.navy}/><Text style={styles.welcomeButtonText}>Add an appliance</Text><ArrowRight size={15} color={colors.navy}/></Pressable>
+      </View>
+      <View style={styles.roomHeader}><Text style={styles.roomHeading}>Explore your home</Text><Pressable accessibilityRole="button" onPress={() => router.push('/(tabs)/devices')}><Text style={styles.roomLink}>All devices →</Text></Pressable></View>
+      <View style={styles.roomsGrid}>
+        {[
+          {name:'Kitchen',icon:Refrigerator},
+          {name:'Living Room',icon:Sofa},
+          {name:'Laundry',icon:WashingMachine},
+          {name:'Whole Home',icon:House},
+        ].map((room) => {
+          const count=data.devices.filter(device=>room.name==='Whole Home' ? !device.location || /whole home|garage|outdoor|utility/i.test(device.location) : device.location?.toLowerCase().includes(room.name.toLowerCase())).length;
+          return <Pressable key={room.name} accessibilityRole="button" onPress={() => router.push('/(tabs)/devices')} style={({pressed})=>[styles.roomTile,pressed&&styles.pressed]}><View style={styles.roomIcon}><room.icon size={23} color={colors.oliveDark}/></View><Text style={styles.roomName}>{room.name}</Text><Text style={styles.roomCount}>{count} {count===1?'device':'devices'}</Text></Pressable>;
+        })}
+      </View>
+      <View style={styles.toolsRow}>
+        <Pressable style={styles.toolTile} onPress={() => router.push('/ask-my-home')}><Search size={19} color={colors.oliveDark}/><Text style={styles.toolText}>Ask My Home</Text><ChevronRight size={16} color={colors.muted}/></Pressable>
+        <Pressable style={styles.toolTile} onPress={() => router.push('/(tabs)/vault')}><FolderOpen size={19} color={colors.oliveDark}/><Text style={styles.toolText}>My records</Text><ChevronRight size={16} color={colors.muted}/></Pressable>
+      </View>
       {!isDemo && completedSetupSteps < setupSteps.length ? (
         <Card style={styles.setupCard}>
           <View style={styles.setupHeading}>
@@ -120,6 +140,7 @@ function QuickAction({ icon: Icon, title, body, onPress }: { icon: typeof Camera
 }
 
 const styles = StyleSheet.create({
+  welcomeHome:{backgroundColor:colors.navy,borderRadius:24,padding:23,gap:13,marginTop:6},welcomeTop:{flexDirection:"row",alignItems:"center",gap:9},welcomeEyebrow:{color:"#C8D6BB",fontSize:10,fontFamily:fonts.sans,fontWeight:"800",letterSpacing:1.3},welcomeTitle:{color:colors.white,fontFamily:fonts.serif,fontSize:31,lineHeight:37,marginTop:8},welcomeBody:{color:"#D9E1E2",fontSize:13,lineHeight:20,fontFamily:fonts.sans},welcomeButton:{marginTop:9,backgroundColor:"#F5F1E8",borderRadius:14,padding:15,flexDirection:"row",alignItems:"center",gap:10},welcomeButtonText:{color:colors.navy,fontFamily:fonts.sans,fontWeight:"700",fontSize:13,flex:1},roomHeader:{flexDirection:"row",justifyContent:"space-between",alignItems:"center",marginTop:18},roomHeading:{fontFamily:fonts.serif,color:colors.navy,fontSize:25},roomLink:{fontFamily:fonts.sans,color:colors.oliveDark,fontSize:12,fontWeight:"700"},roomsGrid:{flexDirection:"row",flexWrap:"wrap",gap:12},roomTile:{width:"48%",flexGrow:1,backgroundColor:colors.paper,borderRadius:19,borderWidth:1,borderColor:colors.line,padding:17,minHeight:137},roomIcon:{width:42,height:42,borderRadius:13,backgroundColor:colors.oliveWash,justifyContent:"center",alignItems:"center"},roomName:{marginTop:12,fontFamily:fonts.sans,color:colors.navy,fontWeight:"700",fontSize:14},roomCount:{marginTop:3,fontFamily:fonts.sans,color:colors.muted,fontSize:11},toolsRow:{gap:9,marginTop:5},toolTile:{backgroundColor:colors.paper,borderWidth:1,borderColor:colors.line,borderRadius:15,padding:16,flexDirection:"row",alignItems:"center",gap:12},toolText:{flex:1,fontFamily:fonts.sans,color:colors.navy,fontWeight:"700",fontSize:13},
   intro: { paddingTop: 5 }, greeting: { color: colors.muted, fontFamily: fonts.sans, fontSize: 13 }, introTitle: { marginTop: 4, color: colors.navy, fontFamily: fonts.serif, fontSize: 29, lineHeight: 34 },
   error: { borderRadius: 14, padding: 13, color: colors.rust, backgroundColor: '#F8EAE7', fontFamily: fonts.sans, fontSize: 12 },
   setupCard: { padding: 19 }, setupHeading: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }, setupEyebrow: { color: colors.oliveDark, fontFamily: fonts.sans, fontSize: 8, fontWeight: '800', letterSpacing: 1.5 }, setupTitle: { marginTop: 5, color: colors.navy, fontFamily: fonts.serif, fontSize: 21 }, setupCount: { color: colors.oliveDark, fontFamily: fonts.sans, fontSize: 12, fontWeight: '800' }, setupProgress: { height: 5, marginTop: 15, overflow: 'hidden', borderRadius: 3, backgroundColor: colors.oliveWash }, setupProgressFill: { height: '100%', borderRadius: 3, backgroundColor: colors.olive }, setupRows: { marginTop: 11 }, setupRow: { minHeight: 48, flexDirection: 'row', alignItems: 'center', gap: 10, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.line }, setupCheck: { width: 20, height: 20, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.oliveDark }, setupRowText: { flex: 1, color: colors.ink, fontFamily: fonts.sans, fontSize: 11, fontWeight: '700' }, setupRowComplete: { color: colors.muted, textDecorationLine: 'line-through' },
