@@ -16,6 +16,7 @@ export default function CinematicHome(){
  const paperworkOpacity=useTransform(scrollYProgress,[0,.1,.28,.49],[.9,.9,.55,0]);
  const paperworkY=useTransform(scrollYProgress,[0,.45],[0,-125]);
  const cleanGlow=useTransform(scrollYProgress,[.3,.82],[.85,1.17]);
+ const cleanFilter=useTransform(cleanGlow,(v:number)=>`brightness(${v})`);
  const titleOpacity=useTransform(scrollYProgress,[0,.12,.23],[1,1,0]);
  const cardOpacity=useTransform(scrollYProgress,[.27,.42,.64,.74],[0,1,1,0]);
  const cardY=useTransform(scrollYProgress,[.25,.5,.8],[90,0,-65]);
@@ -55,7 +56,7 @@ export default function CinematicHome(){
  `}</style>
  <header className="cinema-nav"><Link className="brand" href="/">HOME TECH VAULT</Link><nav className="nav-actions" aria-label="Primary"><Link className="login" href="/login">Log in</Link><Link className="nav-cta" href="/signup">Get started <ArrowUpRight size={15}/></Link></nav></header>
  <section className="scene" ref={scene} aria-label="Discover Home Tech Vault"><div className="scene-sticky">
- <motion.div className="scene-photo" style={{backgroundImage:`url("${photo}")`,scale:reduce?1:zoom,filter:reduce?"brightness(1)":cleanGlow.to(v=>`brightness(${v})`)}}/>
+ <motion.div className="scene-photo" style={{backgroundImage:`url("${photo}")`,scale:reduce?1:zoom,filter:reduce?"brightness(1)":cleanFilter}}/>
  <motion.div className="scene-shade" style={{opacity:reduce?.45:dim}}/>
  <motion.div className="paperwork" aria-hidden="true" style={{opacity:reduce?0:paperworkOpacity,y:reduce?0:paperworkY}}><span className="paper paper-a">WARRANTY<br/>DOCUMENT</span><span className="paper paper-b">RECEIPT<br/># 00428</span><span className="paper paper-c">APPLIANCE<br/>MANUAL</span></motion.div>
  <motion.div className="scene-content" style={{opacity:reduce?1:titleOpacity}}><span className="eyebrow">A home worth remembering</span><h1 className="hero-title">A beautiful home.<br/>A thousand details.</h1><p className="hero-sub">Manuals in drawers. Receipts in emails. Warranties you can never find. There’s a simpler way.</p><Link href="/signup" className="cta" style={{marginTop:28,background:"#f6f2e9",color:"#142438"}}>Start your free vault <ArrowUpRight size={16}/></Link></motion.div>
