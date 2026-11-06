@@ -1,72 +1,63 @@
 "use client";
-import { useScroll, useTransform, motion, useReducedMotion } from "framer-motion";
-import { useRef } from "react";
+import {useRef} from "react";
+import {motion,useScroll,useTransform,useReducedMotion} from "framer-motion";
 import Link from "next/link";
+import {ArrowUpRight,ArrowDown,Check,FileText,ShieldCheck,Refrigerator,House} from "lucide-react";
 import HomeMarketingFooter from "@/components/marketing/HomeMarketingFooter";
-import { ArrowUpRight, FileText, ShieldCheck, ScanLine, ArrowDown, House } from "lucide-react";
 
-const photo="https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=2200&q=85";
-const appStore="https://apps.apple.com/app/id6812090967";
+const room="https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=2400&q=85";
+const store="https://apps.apple.com/app/id6812090967";
 export default function CinematicHome(){
  const scene=useRef<HTMLElement>(null);
  const reduce=useReducedMotion();
- const {scrollYProgress}=useScroll({target:scene,offset:["start start","end end"]});
- const zoom=useTransform(scrollYProgress,[0,.35,.8],[1,1.25,1.6]);
- const dim=useTransform(scrollYProgress,[0,.2,.46,.8,1],[.46,.54,.42,.16,.23]);
- const paperworkOpacity=useTransform(scrollYProgress,[0,.1,.28,.49],[.9,.9,.55,0]);
- const paperworkY=useTransform(scrollYProgress,[0,.45],[0,-125]);
- const cleanGlow=useTransform(scrollYProgress,[.3,.82],[.85,1.17]);
- const cleanFilter=useTransform(cleanGlow,(v:number)=>`brightness(${v})`);
- const titleOpacity=useTransform(scrollYProgress,[0,.12,.23],[1,1,0]);
- const cardOpacity=useTransform(scrollYProgress,[.27,.42,.64,.74],[0,1,1,0]);
- const cardY=useTransform(scrollYProgress,[.25,.5,.8],[90,0,-65]);
- const lastOpacity=useTransform(scrollYProgress,[.79,.93],[0,1]);
- return <main className="cinema">
+ const {scrollYProgress:p}=useScroll({target:scene,offset:["start start","end end"]});
+ const camera=useTransform(p,[0,.28,.55,1],[1,1.13,1.26,1.07]);
+ const brightness=useTransform(p,[0,.35,.75,1],[.68,.75,.96,1.12]);
+ const filter=useTransform(brightness,(v:number)=>`brightness(${v})`);
+ const opening=useTransform(p,[0,.12,.22],[1,1,0]);
+ const first=useTransform(p,[.22,.32,.45,.53],[0,1,1,0]);
+ const second=useTransform(p,[.51,.6,.72,.8],[0,1,1,0]);
+ const ending=useTransform(p,[.79,.9],[0,1]);
+ const progress=useTransform(p,[0,1],["0%","100%"]);
+ return <main className="htv-cinema">
  <style jsx global>{`
- .cinema{--navy:#142438;--ivory:#f6f2e9;--olive:#78856c;background:var(--ivory);color:var(--navy);overflow:clip}
- .cinema *{box-sizing:border-box}.cinema h1,.cinema h2,.cinema h3{font-family:Georgia,serif;letter-spacing:-.055em;font-weight:400}.cinema a{text-decoration:none}
- .cinema .cinema-nav{height:76px;padding:0 clamp(20px,5vw,84px);display:flex;align-items:center;justify-content:space-between;background:var(--ivory);position:relative;z-index:10}
- .cinema .brand{font-size:15px;letter-spacing:.18em;font-weight:750}.cinema .nav-actions{display:flex;align-items:center;gap:24px;font-size:13px;font-weight:650}
- .cinema .nav-cta,.cinema .cta{background:var(--navy);color:white;padding:15px 23px;border-radius:40px;display:inline-flex;align-items:center;gap:10px;font-size:13px;font-weight:700}
- .cinema .scene{height:390vh;position:relative;background:#0e1a21}.cinema .scene-sticky{height:100svh;position:sticky;top:0;overflow:hidden;isolation:isolate;display:grid;place-items:center;color:white}
- .cinema .scene-photo{position:absolute;inset:-4%;background-size:cover;background-position:center;z-index:-3}
- .cinema .scene-shade{position:absolute;inset:0;background:#06121a;z-index:-2}
- .cinema .paperwork{position:absolute;inset:0;z-index:-1;pointer-events:none}.cinema .paper{position:absolute;display:block;padding:17px 13px;width:118px;height:145px;background:#f6f2e9e8;color:#34404a;font-size:10px;font-weight:750;letter-spacing:.12em;line-height:1.7;box-shadow:0 15px 45px #0006;border-top:7px solid #78856c}.cinema .paper-a{bottom:16%;left:12%;transform:rotate(-14deg)}.cinema .paper-b{bottom:11%;right:13%;transform:rotate(12deg)}.cinema .paper-c{top:19%;right:16%;transform:rotate(-8deg)}.cinema .scene-content{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px}
- .cinema .eyebrow{font-size:11px;letter-spacing:.23em;text-transform:uppercase;font-weight:700;color:#d9d5c6}
- .cinema .hero-title{font-size:clamp(58px,9vw,148px);line-height:.94;max-width:1100px;margin:24px 0}
- .cinema .hero-sub{font-size:clamp(15px,1.6vw,21px);line-height:1.6;max-width:520px;color:#eeeae1}
- .cinema .scroll-hint{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);display:flex;gap:12px;align-items:center;font-size:10px;letter-spacing:.2em}
- .cinema .story-card{width:min(92vw,680px);padding:clamp(26px,5vw,55px);border:1px solid #ffffff55;border-radius:24px;background:#f6f2e9ed;backdrop-filter:blur(22px);color:var(--navy);text-align:left;box-shadow:0 35px 90px #0005}
- .cinema .story-card h2{font-size:clamp(42px,6vw,78px);line-height:1.02;margin:15px 0 20px}.cinema .story-card p{font-size:17px;line-height:1.7;color:#48525b}
- .cinema .device{background:white;border:1px solid #d7ddd5;border-radius:16px;padding:23px;margin-top:30px;box-shadow:0 15px 35px #14243818}
- .cinema .device-top{display:flex;justify-content:space-between;align-items:center;gap:16px}.cinema .device-name{font-weight:700}.cinema .device-status{font-size:11px;background:#e4ebdd;color:#53684b;border-radius:30px;padding:7px 10px}
- .cinema .device-row{display:flex;justify-content:space-between;border-top:1px solid #e9e9e5;margin-top:17px;padding-top:17px;font-size:13px;gap:12px}
- .cinema .scene-end h2{font-size:clamp(48px,8vw,112px);line-height:1;max-width:880px;margin:20px auto}.cinema .scene-end p{font-size:18px;line-height:1.6;max-width:500px;margin:0 auto}
- .cinema .light-section{padding:clamp(85px,11vw,180px) 7%;display:grid;grid-template-columns:1fr 1fr;gap:8%;align-items:center;min-height:90vh}
- .cinema .light-section h2{font-size:clamp(48px,6vw,95px);line-height:1.02;margin:16px 0 25px}.cinema .light-section p{font-size:18px;line-height:1.75;max-width:490px;color:#56606a}
- .cinema .editorial-photo{height:min(70vh,700px);border-radius:4px;background:linear-gradient(#14243810,#14243850),url('https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=1300&q=85') center/cover}
- .cinema .chapter{padding:110px 7%;background:var(--navy);color:var(--ivory);text-align:center}
- .cinema .chapter h2{font-size:clamp(52px,8vw,120px);max-width:950px;line-height:1.02;margin:20px auto 35px}
- .cinema .chapter-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:1120px;margin:65px auto 0;text-align:left}
- .cinema .chapter-item{border:1px solid #ffffff35;padding:34px;border-radius:16px}.cinema .chapter-item h3{font-size:30px;margin:25px 0 12px}.cinema .chapter-item p{line-height:1.65;color:#d2d9da;font-size:15px}
- .cinema .final{padding:130px 20px;text-align:center}.cinema .final h2{font-size:clamp(50px,8vw,110px);line-height:1.02;max-width:900px;margin:20px auto}.cinema .final p{max-width:560px;margin:0 auto 32px;line-height:1.7;color:#53606b}
- .cinema .buttons{display:flex;justify-content:center;gap:15px;flex-wrap:wrap}.cinema .outline{border:1px solid var(--navy);color:var(--navy);padding:14px 22px;border-radius:40px;font-size:13px;font-weight:700}
- @media(max-width:720px){.cinema .cinema-nav{height:65px}.cinema .brand{font-size:12px}.cinema .nav-actions{gap:12px}.cinema .nav-actions .login{display:none}.cinema .nav-cta{padding:12px 14px;font-size:11px}.cinema .scene{height:330vh}.cinema .paper{width:76px;height:105px;padding:10px 7px;font-size:7px}.cinema .paper-a{bottom:15%;left:3%}.cinema .paper-b{bottom:13%;right:3%}.cinema .paper-c{top:16%;right:5%}.cinema .scene-photo{background-position:55% center}.cinema .hero-title{font-size:clamp(57px,13vw,90px)}.cinema .story-card p{font-size:14px}.cinema .light-section{grid-template-columns:1fr;gap:45px}.cinema .editorial-photo{height:420px}.cinema .chapter-grid{grid-template-columns:1fr}.cinema .chapter{padding:85px 6%}.cinema .chapter-item{padding:25px}}
- @media(prefers-reduced-motion:reduce){.cinema *{scroll-behavior:auto!important;animation:none!important}.cinema .scene{height:100svh!important}.cinema .scroll-hint{display:none}}
+ .htv-cinema{--navy:#142438;--ivory:#f6f2e9;--olive:#87967b;background:var(--ivory);color:var(--navy);overflow:clip}
+ .htv-cinema *{box-sizing:border-box}.htv-cinema a{text-decoration:none}.htv-cinema h1,.htv-cinema h2{font-family:Georgia,serif;font-weight:400;letter-spacing:-.055em}
+ .htv-cinema .topbar{height:70px;padding:0 clamp(18px,5vw,80px);display:flex;justify-content:space-between;align-items:center;background:var(--ivory);gap:15px}
+ .htv-cinema .wordmark{font-size:13px;font-weight:800;letter-spacing:.16em}.htv-cinema .top-actions{display:flex;align-items:center;gap:20px;font-size:12px;font-weight:700}
+ .htv-cinema .top-actions a:last-child,.htv-cinema .action{background:var(--navy);color:white;padding:13px 19px;border-radius:30px;display:inline-flex;align-items:center;gap:9px;font-size:12px;font-weight:700}
+ .htv-cinema .scene{height:410vh;position:relative;background:#111d23}.htv-cinema .sticky{position:sticky;top:0;height:100svh;overflow:hidden;isolation:isolate;color:#fff}
+ .htv-cinema .room{position:absolute;inset:-5%;background-position:center;background-size:cover;z-index:-2;transform-origin:center center}
+ .htv-cinema .room-shade{position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#07111b85,#07111b12 65%),linear-gradient(0deg,#07111b66,transparent 55%)}
+ .htv-cinema .frame{position:absolute;inset:0;padding:clamp(24px,6vw,100px);display:flex;flex-direction:column;justify-content:center;pointer-events:none}
+ .htv-cinema .frame a{pointer-events:auto}.htv-cinema .kicker{font-size:10px;letter-spacing:.25em;text-transform:uppercase;font-weight:800;color:#d9e0d0}
+ .htv-cinema .opening{align-items:flex-start}.htv-cinema .opening h1{font-size:clamp(45px,6.5vw,108px);line-height:1.04;max-width:620px;margin:18px 0}
+ .htv-cinema .opening p{font-size:clamp(15px,1.5vw,20px);line-height:1.6;max-width:420px;color:#e7e8e5}
+ .htv-cinema .opening .action{margin-top:24px;background:var(--ivory);color:var(--navy)}
+ .htv-cinema .spot{align-items:flex-end}.htv-cinema .spot-inner{width:min(390px,90%);padding:24px;background:#f6f2e9f2;color:var(--navy);border-radius:5px;box-shadow:0 20px 60px #0003;backdrop-filter:blur(12px)}
+ .htv-cinema .spot h2{font-size:clamp(30px,3.6vw,48px);line-height:1.1;margin:12px 0}.htv-cinema .spot p{font-size:14px;line-height:1.6;color:#4f5c62}
+ .htv-cinema .record{border-top:1px solid #d6dbd1;padding:15px 0;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px}.htv-cinema .record:first-of-type{margin-top:17px}.htv-cinema .record strong{font-size:12px}.htv-cinema .saved{color:#56744c;display:flex;align-items:center;gap:5px;font-weight:750}
+ .htv-cinema .hotspot{position:absolute;left:62%;top:42%;width:14px;height:14px;background:#e5f1dd;border:3px solid white;border-radius:50%;box-shadow:0 0 0 13px #ffffff2b,0 0 0 30px #ffffff12;pointer-events:none}
+ .htv-cinema .hotspot.second{left:28%;top:62%}
+ .htv-cinema .finish{align-items:flex-start}.htv-cinema .finish h2{font-size:clamp(49px,7vw,105px);line-height:1.04;max-width:700px;margin:18px 0}.htv-cinema .finish p{font-size:17px;line-height:1.65;max-width:440px;color:#f1f2ec}
+ .htv-cinema .progress-track{position:absolute;bottom:0;left:0;right:0;height:3px;background:#ffffff4d}.htv-cinema .progress-fill{height:100%;background:#c4d7b7}
+ .htv-cinema .scene-label{position:absolute;left:clamp(24px,6vw,100px);bottom:32px;font-size:10px;letter-spacing:.2em;display:flex;align-items:center;gap:12px}
+ .htv-cinema .outro{background:var(--ivory);padding:clamp(90px,12vw,170px) 7%;text-align:center}.htv-cinema .outro h2{font-size:clamp(43px,7vw,100px);line-height:1.06;max-width:850px;margin:18px auto}.htv-cinema .outro p{line-height:1.7;color:#53616a;max-width:510px;margin:0 auto 30px}
+ .htv-cinema .buttons{display:flex;justify-content:center;gap:13px;flex-wrap:wrap}.htv-cinema .outline{border:1px solid var(--navy);border-radius:30px;padding:13px 19px;color:var(--navy);font-size:12px;font-weight:750}
+ @media(max-width:720px){.htv-cinema .topbar{height:62px}.htv-cinema .wordmark{font-size:11px}.htv-cinema .top-actions{gap:10px}.htv-cinema .top-actions .login{display:none}.htv-cinema .top-actions a:last-child{padding:11px 13px}.htv-cinema .scene{height:360vh}.htv-cinema .room{background-position:56% center}.htv-cinema .frame{padding:30px 24px 70px}.htv-cinema .opening{justify-content:flex-start;padding-top:16svh}.htv-cinema .opening h1{font-size:clamp(46px,12vw,70px);max-width:360px}.htv-cinema .opening p{max-width:310px;font-size:15px}.htv-cinema .spot{justify-content:flex-end;align-items:center;padding-bottom:15svh}.htv-cinema .spot-inner{width:min(100%,370px);padding:20px}.htv-cinema .spot h2{font-size:34px}.htv-cinema .finish{justify-content:center}.htv-cinema .finish h2{font-size:clamp(48px,12vw,70px)}.htv-cinema .hotspot{left:65%;top:31%}.htv-cinema .hotspot.second{left:24%;top:43%}}
+ @media(prefers-reduced-motion:reduce){.htv-cinema .scene{height:100svh}.htv-cinema .scene-label{display:none}}
  `}</style>
- <header className="cinema-nav"><Link className="brand" href="/">HOME TECH VAULT</Link><nav className="nav-actions" aria-label="Primary"><Link className="login" href="/login">Log in</Link><Link className="nav-cta" href="/signup">Get started <ArrowUpRight size={15}/></Link></nav></header>
- <section className="scene" ref={scene} aria-label="Discover Home Tech Vault"><div className="scene-sticky">
- <motion.div className="scene-photo" style={{backgroundImage:`url("${photo}")`,scale:reduce?1:zoom,filter:reduce?"brightness(1)":cleanFilter}}/>
- <motion.div className="scene-shade" style={{opacity:reduce?.45:dim}}/>
- <motion.div className="paperwork" aria-hidden="true" style={{opacity:reduce?0:paperworkOpacity,y:reduce?0:paperworkY}}><span className="paper paper-a">WARRANTY<br/>DOCUMENT</span><span className="paper paper-b">RECEIPT<br/># 00428</span><span className="paper paper-c">APPLIANCE<br/>MANUAL</span></motion.div>
- <motion.div className="scene-content" style={{opacity:reduce?1:titleOpacity}}><span className="eyebrow">A home worth remembering</span><h1 className="hero-title">A beautiful home.<br/>A thousand details.</h1><p className="hero-sub">Manuals in drawers. Receipts in emails. Warranties you can never find. There’s a simpler way.</p><Link href="/signup" className="cta" style={{marginTop:28,background:"#f6f2e9",color:"#142438"}}>Start your free vault <ArrowUpRight size={16}/></Link></motion.div>
- <motion.div className="scene-content" style={{opacity:reduce?0:cardOpacity,y:reduce?0:cardY,pointerEvents:"none",visibility:reduce?"hidden":"visible"}}><div className="story-card"><span className="eyebrow" style={{color:"#78856c"}}>01 / Remember everything</span><h2>Everything finds its place.</h2><p>As the paperwork fades, your appliance details, receipts and warranties come together in one organized vault.</p><div className="device"><div className="device-top"><span className="device-name">Kitchen refrigerator</span><span className="device-status">Warranty saved</span></div><div className="device-row"><span>Model & serial number</span><strong>Saved</strong></div><div className="device-row"><span>Receipt & warranty</span><strong>2 documents</strong></div></div><p style={{fontSize:11,marginTop:12}}>Illustrative example · Not your personal records</p></div></motion.div>
- <motion.div className="scene-content scene-end" style={{opacity:reduce?0:lastOpacity,pointerEvents:"none",visibility:reduce?"hidden":"visible"}}><span className="eyebrow">02 / Make it simple</span><h2>A clearer home.<br/>A calmer mind.</h2><p>The same home. Now you know exactly where its important records live.</p></motion.div>
- <div className="scroll-hint"><ArrowDown size={14}/> SCROLL TO EXPLORE</div>
+ <header className="topbar"><Link className="wordmark" href="/">HOME TECH VAULT</Link><nav className="top-actions" aria-label="Primary navigation"><Link className="login" href="/login">Log in</Link><Link href="/signup">Get started <ArrowUpRight size={14}/></Link></nav></header>
+ <section className="scene" ref={scene} aria-label="A home with everything in its place"><div className="sticky">
+ <motion.div className="room" style={{backgroundImage:`url("${room}")`,scale:reduce?1:camera,filter:reduce?"brightness(.85)":filter}}/>
+ <div className="room-shade"/>
+ <motion.div className="frame opening" style={{opacity:reduce?1:opening}}><span className="kicker">HOME TECH VAULT / 01</span><h1>Know your home.<br/>Down to the details.</h1><p>Receipts in emails. Manuals in drawers. Warranty information you can never find.</p><Link href="/signup" className="action">Organize your home <ArrowUpRight size={15}/></Link></motion.div>
+ {!reduce&&<><motion.div className="hotspot" style={{opacity:first}}/><motion.div className="frame spot" style={{opacity:first}}><div className="spot-inner"><span className="kicker" style={{color:"#78856c"}}>02 / YOUR APPLIANCES</span><h2>One appliance.<br/>Every detail.</h2><p>Everything about your refrigerator, exactly where you'd expect to find it.</p><div className="record"><span>Model & serial number</span><span className="saved"><Check size={14}/> Saved</span></div><div className="record"><span>Warranty</span><span className="saved"><ShieldCheck size={14}/> Saved</span></div><div className="record"><span>Purchase receipt</span><span className="saved"><FileText size={14}/> Saved</span></div><p style={{fontSize:10,marginTop:12}}>Illustrative example of an organized appliance record.</p></div></motion.div>
+ <motion.div className="hotspot second" style={{opacity:second}}/><motion.div className="frame spot" style={{opacity:second}}><div className="spot-inner"><span className="kicker" style={{color:"#78856c"}}>03 / HOME RECORDS</span><h2>Nothing lost.<br/>Nothing forgotten.</h2><p>Manuals, maintenance history and documents, organized around the home you already know.</p><div className="record"><span>Appliance manuals</span><span className="saved"><Check size={14}/> Organized</span></div><div className="record"><span>Maintenance records</span><span className="saved"><Check size={14}/> Organized</span></div><div className="record"><span>Important documents</span><span className="saved"><Check size={14}/> Organized</span></div></div></motion.div>
+ <motion.div className="frame finish" style={{opacity:ending}}><span className="kicker">04 / EVERYTHING IN ITS PLACE</span><h2>Peace of mind,<br/>built into your home.</h2><p>The same home. Now you know where its important details live.</p></motion.div></>}
+ <div className="scene-label"><ArrowDown size={14}/> SCROLL TO EXPLORE</div><div className="progress-track"><motion.div className="progress-fill" style={{width:progress}}/></div>
  </div></section>
- <section className="light-section"><div><span className="eyebrow" style={{color:"#78856c"}}>03 / The details matter</span><h2>Every appliance has a story.</h2><p>From the day you bought it to the last time it was serviced, keep the model number, receipt, warranty and maintenance history together.</p><Link href="/signup" className="cta" style={{marginTop:28}}>Save your first appliance <ArrowUpRight size={16}/></Link></div><div className="editorial-photo" role="img" aria-label="Modern home interior"/></section>
- <section className="chapter"><span className="eyebrow">04 / One place for it all</span><h2>Everything important. Nothing complicated.</h2><div className="chapter-grid"><div className="chapter-item"><ScanLine size={29}/><h3>Devices</h3><p>Know what you own and keep its important details close.</p></div><div className="chapter-item"><ShieldCheck size={29}/><h3>Warranties</h3><p>Find coverage details and proof of purchase when you need them.</p></div><div className="chapter-item"><FileText size={29}/><h3>Documents</h3><p>Keep manuals, receipts and home records organized.</p></div></div></section>
- <section className="final"><House size={28} style={{margin:"auto",color:"#78856c"}}/><h2>A more organized home starts with knowing what you own.</h2><p>Start with one appliance. Build a better-organized home, one detail at a time.</p><div className="buttons"><Link href="/signup" className="cta">Create your free vault <ArrowUpRight size={16}/></Link><a className="outline" href={appStore} target="_blank" rel="noopener noreferrer">Get the iPhone app</a></div></section>
+ <section className="outro"><House size={28} style={{margin:"auto",color:"#78856c"}}/><h2>Everything in its place.<br/>Even the things you can't see.</h2><p>Start with one appliance. Give your home a place for every receipt, warranty, manual and record.</p><div className="buttons"><Link className="action" href="/signup">Create your free vault <ArrowUpRight size={15}/></Link><a className="outline" href={store} target="_blank" rel="noopener noreferrer">Get the iPhone app</a></div></section>
  <HomeMarketingFooter/>
  </main>;
 }
