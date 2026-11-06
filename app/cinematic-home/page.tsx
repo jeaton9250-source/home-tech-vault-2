@@ -13,10 +13,10 @@ export default function CinematicHome(){
  const {scrollYProgress}=useScroll({target:scene,offset:["start start","end end"]});
  const zoom=useTransform(scrollYProgress,[0,.35,.8],[1,1.25,1.6]);
  const dim=useTransform(scrollYProgress,[0,.25,.65],[.24,.45,.86]);
- const titleOpacity=useTransform(scrollYProgress,[0,.14,.25],[1,1,0]);
- const cardOpacity=useTransform(scrollYProgress,[.28,.43,.74,.86],[0,1,1,0]);
+ const titleOpacity=useTransform(scrollYProgress,[0,.12,.23],[1,1,0]);
+ const cardOpacity=useTransform(scrollYProgress,[.27,.42,.64,.74],[0,1,1,0]);
  const cardY=useTransform(scrollYProgress,[.25,.5,.8],[90,0,-65]);
- const lastOpacity=useTransform(scrollYProgress,[.73,.9],[0,1]);
+ const lastOpacity=useTransform(scrollYProgress,[.79,.93],[0,1]);
  return <main className="cinema">
  <style jsx global>{`
  .cinema{--navy:#142438;--ivory:#f6f2e9;--olive:#78856c;background:var(--ivory);color:var(--navy);overflow:clip}
@@ -48,15 +48,15 @@ export default function CinematicHome(){
  .cinema .final{padding:130px 20px;text-align:center}.cinema .final h2{font-size:clamp(50px,8vw,110px);line-height:1.02;max-width:900px;margin:20px auto}.cinema .final p{max-width:560px;margin:0 auto 32px;line-height:1.7;color:#53606b}
  .cinema .buttons{display:flex;justify-content:center;gap:15px;flex-wrap:wrap}.cinema .outline{border:1px solid var(--navy);color:var(--navy);padding:14px 22px;border-radius:40px;font-size:13px;font-weight:700}
  @media(max-width:720px){.cinema .cinema-nav{height:65px}.cinema .brand{font-size:12px}.cinema .nav-actions{gap:12px}.cinema .nav-actions .login{display:none}.cinema .nav-cta{padding:12px 14px;font-size:11px}.cinema .scene{height:330vh}.cinema .scene-photo{background-position:55% center}.cinema .hero-title{font-size:clamp(57px,13vw,90px)}.cinema .story-card p{font-size:14px}.cinema .light-section{grid-template-columns:1fr;gap:45px}.cinema .editorial-photo{height:420px}.cinema .chapter-grid{grid-template-columns:1fr}.cinema .chapter{padding:85px 6%}.cinema .chapter-item{padding:25px}}
- @media(prefers-reduced-motion:reduce){.cinema *{scroll-behavior:auto!important;animation:none!important}}
+ @media(prefers-reduced-motion:reduce){.cinema *{scroll-behavior:auto!important;animation:none!important}.cinema .scene{height:100svh!important}.cinema .scroll-hint{display:none}}
  `}</style>
  <header className="cinema-nav"><Link className="brand" href="/">HOME TECH VAULT</Link><nav className="nav-actions" aria-label="Primary"><Link className="login" href="/login">Log in</Link><Link className="nav-cta" href="/signup">Get started <ArrowUpRight size={15}/></Link></nav></header>
  <section className="scene" ref={scene} aria-label="Discover Home Tech Vault"><div className="scene-sticky">
  <motion.div className="scene-photo" style={{backgroundImage:`url("${photo}")`,scale:reduce?1:zoom}}/>
  <motion.div className="scene-shade" style={{opacity:reduce?.65:dim}}/>
  <motion.div className="scene-content" style={{opacity:reduce?1:titleOpacity}}><span className="eyebrow">A home worth remembering</span><h1 className="hero-title">Your home.<br/>Every detail.</h1><p className="hero-sub">Your appliances, warranties, receipts and home records. Beautifully organized in one place.</p><Link href="/signup" className="cta" style={{marginTop:28,background:"#f6f2e9",color:"#142438"}}>Start your free vault <ArrowUpRight size={16}/></Link></motion.div>
- <motion.div className="scene-content" style={{opacity:reduce?1:cardOpacity,y:reduce?0:cardY,pointerEvents:"none"}}><div className="story-card"><span className="eyebrow" style={{color:"#78856c"}}>01 / Remember everything</span><h2>Never hunt for a warranty again.</h2><p>Keep the details that matter right where you need them—before the next appliance breaks.</p><div className="device"><div className="device-top"><span className="device-name">Kitchen refrigerator</span><span className="device-status">Warranty saved</span></div><div className="device-row"><span>Model & serial number</span><strong>Saved</strong></div><div className="device-row"><span>Receipt & warranty</span><strong>2 documents</strong></div></div><p style={{fontSize:11,marginTop:12}}>Illustrative example · Not your personal records</p></div></motion.div>
- <motion.div className="scene-content scene-end" style={{opacity:reduce?0:lastOpacity,pointerEvents:"none"}}><span className="eyebrow">02 / Make it simple</span><h2>Less searching.<br/>More living.</h2><p>Everything important about your home, together when you need it.</p></motion.div>
+ <motion.div className="scene-content" style={{opacity:reduce?0:cardOpacity,y:reduce?0:cardY,pointerEvents:"none",visibility:reduce?"hidden":"visible"}}><div className="story-card"><span className="eyebrow" style={{color:"#78856c"}}>01 / Remember everything</span><h2>Never hunt for a warranty again.</h2><p>Keep the details that matter right where you need them—before the next appliance breaks.</p><div className="device"><div className="device-top"><span className="device-name">Kitchen refrigerator</span><span className="device-status">Warranty saved</span></div><div className="device-row"><span>Model & serial number</span><strong>Saved</strong></div><div className="device-row"><span>Receipt & warranty</span><strong>2 documents</strong></div></div><p style={{fontSize:11,marginTop:12}}>Illustrative example · Not your personal records</p></div></motion.div>
+ <motion.div className="scene-content scene-end" style={{opacity:reduce?0:lastOpacity,pointerEvents:"none",visibility:reduce?"hidden":"visible"}}><span className="eyebrow">02 / Make it simple</span><h2>Less searching.<br/>More living.</h2><p>Everything important about your home, together when you need it.</p></motion.div>
  <div className="scroll-hint"><ArrowDown size={14}/> SCROLL TO EXPLORE</div>
  </div></section>
  <section className="light-section"><div><span className="eyebrow" style={{color:"#78856c"}}>03 / The details matter</span><h2>Every appliance has a story.</h2><p>From the day you bought it to the last time it was serviced, keep the model number, receipt, warranty and maintenance history together.</p><Link href="/signup" className="cta" style={{marginTop:28}}>Save your first appliance <ArrowUpRight size={16}/></Link></div><div className="editorial-photo" role="img" aria-label="Modern home interior"/></section>
