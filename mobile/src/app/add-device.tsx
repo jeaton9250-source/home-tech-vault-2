@@ -40,6 +40,7 @@ export default function AddDeviceScreen() {
   const [warrantyDate, setWarrantyDate] = useState(params.warrantyDate ?? '');
   const [purchasePrice, setPurchasePrice] = useState(params.purchasePrice ?? '');
   const [saving, setSaving] = useState(false);
+  const [showMore,setShowMore]=useState(false);
 
   function openScanner(mode: 'photo' | 'barcode') {
     router.push({
@@ -106,14 +107,17 @@ export default function AddDeviceScreen() {
           <View style={styles.form}>
             <Field label="Device name" value={name} onChangeText={setName} placeholder="Living Room TV" />
             <Field label="Brand" value={brand} onChangeText={setBrand} placeholder="Samsung" />
+            <Field label="Room" value={room} onChangeText={setRoom} placeholder="Kitchen, Laundry, Living Room…" />
             <Field label="Model" value={model} onChangeText={setModel} placeholder="Optional" />
+            <Pressable accessibilityRole="button" accessibilityState={{expanded:showMore}} onPress={()=>setShowMore(value=>!value)} style={styles.optionalToggle}><Text style={styles.optionalToggleText}>{showMore ? "Hide optional details" : "Add warranty, receipt details & more (optional)"}</Text></Pressable>
+            {showMore ? <>
             <Field label="Serial number" value={serial} onChangeText={setSerial} placeholder="Scan or type it" />
             <Field label="Category" value={category} onChangeText={setCategory} placeholder="TV, appliance, network…" />
             <Field label="Product barcode" value={productUpc} onChangeText={setProductUpc} placeholder="UPC or EAN" />
-            <Field label="Room" value={room} onChangeText={setRoom} placeholder="Living Room" />
             <Field label="Purchase date" value={purchaseDate} onChangeText={setPurchaseDate} placeholder="YYYY-MM-DD" />
             <Field label="Warranty through" value={warrantyDate} onChangeText={setWarrantyDate} placeholder="YYYY-MM-DD" />
             <Field label="Purchase price" value={purchasePrice} onChangeText={setPurchasePrice} placeholder="0.00" />
+            </> : null}
           </View>
           <View style={styles.helper}><Sparkles size={17} color={colors.oliveDark} /><Text style={styles.helperText}>Once saved, Home Tech Vault gives this device a lasting place for its receipt, manual, warranty, and care history.</Text></View>
           <PrimaryButton label={saving ? 'Remembering…' : auth.isDemo ? 'Preview save' : 'Save to my home'} disabled={saving} onPress={save} />
@@ -132,6 +136,7 @@ function Field({ label, value, onChangeText, placeholder }: { label: string; val
 }
 
 const styles = StyleSheet.create({
+  optionalToggle:{paddingVertical:13,paddingHorizontal:15,borderRadius:14,backgroundColor:colors.oliveWash},optionalToggleText:{fontFamily:fonts.sans,color:colors.oliveDark,fontSize:12,fontWeight:'700'},
   root: { flex: 1, backgroundColor: colors.cream }, safe: { flex: 1 }, header: { height: 76, paddingHorizontal: 18, flexDirection: 'row', alignItems: 'center', borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.line }, back: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.paper, borderWidth: 1, borderColor: colors.line }, headerCopy: { flex: 1, alignItems: 'center' }, eyebrow: { color: colors.oliveDark, fontFamily: fonts.sans, fontSize: 8, fontWeight: '800', letterSpacing: 1.5 }, headerTitle: { marginTop: 3, color: colors.navy, fontFamily: fonts.serif, fontSize: 22 }, spacer: { width: 42 },
   content: { padding: 22, paddingBottom: 50, gap: 18 }, title: { color: colors.navy, fontFamily: fonts.serif, fontSize: 29, lineHeight: 34 }, body: { marginTop: -10, color: colors.muted, fontFamily: fonts.sans, fontSize: 13, lineHeight: 20 }, methods: { flexDirection: 'row', gap: 9 }, method: { flex: 1, padding: 12, alignItems: 'center', borderRadius: 17, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.paper }, methodActive: { borderColor: colors.olive }, methodIcon: { width: 39, height: 39, borderRadius: 13, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.oliveWash }, methodIconActive: { backgroundColor: colors.oliveDark }, methodLabel: { marginTop: 9, color: colors.ink, fontFamily: fonts.sans, fontSize: 11, fontWeight: '700' }, methodDetail: { marginTop: 2, color: colors.muted, fontFamily: fonts.sans, fontSize: 8, textAlign: 'center' },
   form: { gap: 14 }, fieldWrap: { gap: 7 }, fieldLabel: { color: colors.ink, fontFamily: fonts.sans, fontSize: 11, fontWeight: '700' }, field: { minHeight: 52, paddingHorizontal: 15, borderRadius: 15, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.paper, color: colors.ink, fontFamily: fonts.sans, fontSize: 14 }, helper: { padding: 15, flexDirection: 'row', alignItems: 'flex-start', gap: 10, borderRadius: 16, backgroundColor: colors.oliveWash }, helperText: { flex: 1, color: colors.oliveDark, fontFamily: fonts.sans, fontSize: 10, lineHeight: 16 },
