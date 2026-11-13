@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import GuideSignupCallout from "@/components/conversion/GuideSignupCallout";
 
 import ProgrammaticGuideTemplate from "@/components/seo/ProgrammaticGuideTemplate";
 import {
@@ -49,6 +50,9 @@ export default async function ProgrammaticGuidePage({
   const related = getRelatedProgrammaticGuides(page);
 
   return (
-    <ProgrammaticGuideTemplate page={page} related={related} />
+    <>
+      <ProgrammaticGuideTemplate page={page} related={related} />
+      <GuideSignupCallout source={slug} topic={page.metaTitle} />
+    </>
   );
 }

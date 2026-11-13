@@ -1,5 +1,7 @@
 "use client";
 
+import { track } from "@vercel/analytics";
+
 import {
   ArrowRight,
   Check,
@@ -70,6 +72,7 @@ export default function DemoPage() {
   const { startDemo } = useDemoMode();
 
   function enterDemo() {
+    track("demo_started", { placement: "demo_landing" });
     startDemo();
 
     /*
