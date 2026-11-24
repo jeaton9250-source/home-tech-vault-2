@@ -1,6 +1,6 @@
 import * as Haptics from 'expo-haptics';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Camera, ChevronDown, ChevronLeft, ChevronUp, FileText, Keyboard, ScanBarcode, Sparkles } from 'lucide-react-native';
+import { Camera, ChevronDown, ChevronLeft, ChevronUp, Keyboard, ScanBarcode, Sparkles } from 'lucide-react-native';
 import { useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -40,7 +40,7 @@ export default function AddDeviceScreen() {
   const [warrantyDate, setWarrantyDate] = useState(params.warrantyDate ?? '');
   const [purchasePrice, setPurchasePrice] = useState(params.purchasePrice ?? '');
   const [saving, setSaving] = useState(false);
-  const [showDetails, setShowDetails] = useState(false);
+  const [showDetails, setShowDetails] = useState(Boolean(params.model || params.serial || params.warrantyDate || params.productUpc));
 
   function openScanner(mode: 'photo' | 'barcode') {
     router.push({
