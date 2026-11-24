@@ -19,7 +19,7 @@ export default function TabsLayout() {
       sceneStyle: { backgroundColor: colors.cream },
     }}>
       <Tabs.Screen name="index" options={{ title: 'Home', tabBarIcon: ({ color, size }) => <House size={size} color={color} strokeWidth={1.8} /> }} />
-      <Tabs.Screen name="devices" options={{ title: 'Devices', tabBarIcon: ({ color, size }) => <MonitorSmartphone size={size} color={color} strokeWidth={1.8} /> }} />
+      <Tabs.Screen name="devices" options={{ title: 'My Items', tabBarIcon: ({ color, size }) => <MonitorSmartphone size={size} color={color} strokeWidth={1.8} /> }} />
       <Tabs.Screen name="care" options={{ title: 'Care', tabBarIcon: ({ color, size }) => <ClipboardCheck size={size} color={color} strokeWidth={1.8} /> }} />
       <Tabs.Screen name="vault" options={{ title: 'Vault', tabBarIcon: ({ color, size }) => <Library size={size} color={color} strokeWidth={1.8} /> }} />
       <Tabs.Screen name="more" options={{ title: 'More', tabBarIcon: ({ color, size }) => <CircleEllipsis size={size} color={color} strokeWidth={1.8} /> }} />

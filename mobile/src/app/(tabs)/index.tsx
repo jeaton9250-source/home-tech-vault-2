@@ -14,8 +14,7 @@ import { useVaultData } from '@/providers/vault-data-provider';
 import { colors, fonts } from '@/theme';
 
 const money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
-const today = Date.now();
-const currentHour = new Date().getHours();
+
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -26,10 +25,17 @@ export default function HomeScreen() {
     void getNotificationPermissionStatus().then((status) => setNotificationsOn(status === 'granted')).catch(() => undefined);
   }, []));
   if (data.loading) return <LoadingView />;
-  const protectedValue = data.devices.reduce((sum, device) => sum + device.value, 0);
-  const activeWarranties = data.devices.filter((device) => device.warrantyDate && new Date(device.warrantyDate).getTime() > today).length;
-  const readiness = data.devices.length ? Math.min(96, Math.round(52 + data.documents.length * 2.5 + activeWarranties * 2)) : 18;
-  const greeting = currentHour < 12 ? 'Good morning' : currentHour < 18 ? 'Good afternoon' : 'Good evening';
+  const now = new Date();
+  const greeting = now.getHours() < 12 ? 'Good morning' : now.getHours() < 18 ? 'Good afternoon' : 'Good evening';
+  const expiringWarranties = data.devices.filter((device) => {
+    if (!device.warrantyDate) return false;
+    const expiry = new Date(device.warrantyDate).getTime();
+    return Number.isFinite(expiry) && expiry >= now.getTime() && expiry <= now.getTime() + 30 * 86400000;
+  });
+  const overdueCare = data.maintenance.filter((item) => {
+    const due = new Date(item.dueDate).getTime();
+    return Number.isFinite(due) && due < new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  });
   const setupSteps = [
     { key: 'device', title: 'Remember your first device', complete: data.devices.length > 0, icon: Plus, onPress: () => router.push('/add-device') },
     { key: 'details', title: 'Record a serial or purchase date', complete: data.devices.some((device) => Boolean(device.serialNumber || device.purchaseDate)), icon: ScanLine, onPress: () => data.devices[0] ? router.push({ pathname: '/edit-device', params: { id: data.devices[0].id } }) : router.push('/add-device') },
@@ -51,8 +57,6 @@ export default function HomeScreen() {
         <Text style={styles.introTitle}>{data.devices.length ? 'Your home is well remembered.' : 'Let’s begin your home’s memory.'}</Text>
       </View>
       {data.error ? <Text style={styles.error}>{data.error}</Text> : null}
-      <Card style={{ padding: 20, gap: 10 }}><Text style={styles.setupTitle}>Ask My Home</Text><Text style={styles.greeting}>Ask anything about your home</Text><PrimaryButton label="Ask a question" onPress={() => router.push('/ask-my-home')} /></Card>
-      <Card style={{ padding: 20, gap: 10, backgroundColor: colors.oliveWash }}><Text style={styles.setupTitle}>Something Isn’t Working?</Text><Text style={styles.greeting}>Troubleshoot a device or home issue</Text><PrimaryButton label="Get Help" icon={Wrench} onPress={() => router.push({ pathname: '/ask-my-home', params: { mode: 'troubleshooting' } })} /></Card>
       {!isDemo && completedSetupSteps < setupSteps.length ? (
         <Card style={styles.setupCard}>
           <View style={styles.setupHeading}>
@@ -64,23 +68,24 @@ export default function HomeScreen() {
         </Card>
       ) : null}
       <Card style={styles.heroCard}>
-        <View style={styles.heroTop}>
-          <View>
-            <Text style={styles.heroEyebrow}>HOME READINESS</Text>
-            <Text style={styles.heroScore}>{readiness}%</Text>
-          </View>
-          <View style={styles.scoreRing}><ShieldCheck size={25} color="#DDE5BE" /><Text style={styles.scoreRingText}>{readiness >= 75 ? 'Strong' : readiness >= 45 ? 'Growing' : 'Starting'}</Text></View>
-        </View>
-        <Text style={styles.heroMessage}>The details that matter are close at hand.</Text>
-        <View style={styles.progressTrack}><View style={[styles.progressFill, { width: `${readiness}%` }]} /></View>
+        <Text style={styles.heroEyebrow}>YOUR HOME AT A GLANCE</Text>
+        <Text style={styles.heroHeadline}>{expiringWarranties.length || overdueCare.length ? 'A little attention goes a long way.' : 'Everything in its place.'}</Text>
+        <Text style={styles.heroMessage}>{expiringWarranties.length ? `${expiringWarranties.length} warranty${expiringWarranties.length === 1 ? '' : 'ies'} ending within 30 days.` : overdueCare.length ? `${overdueCare.length} overdue care task${overdueCare.length === 1 ? '' : 's'} to review.` : 'Your items, documents, and reminders are all together.'}</Text>
+        <Pressable accessibilityRole="button" onPress={() => router.push(expiringWarranties.length ? '/(tabs)/devices' : '/(tabs)/care')} style={styles.heroAction}>
+          <Text style={styles.heroActionText}>{expiringWarranties.length ? 'Review warranties' : 'View activity'}</Text><ArrowRight size={16} color={colors.navy} />
+        </Pressable>
         <View style={styles.heroStats}>
-          <View><Text style={styles.statValue}>{data.devices.length}</Text><Text style={styles.statLabel}>devices</Text></View>
+          <View><Text style={styles.statValue}>{data.devices.length}</Text><Text style={styles.statLabel}>items</Text></View>
           <View style={styles.statDivider} />
           <View><Text style={styles.statValue}>{data.documents.length}</Text><Text style={styles.statLabel}>documents</Text></View>
           <View style={styles.statDivider} />
-          <View><Text style={styles.statValue}>{money.format(protectedValue)}</Text><Text style={styles.statLabel}>remembered</Text></View>
+          <View><Text style={styles.statValue}>{data.maintenance.length}</Text><Text style={styles.statLabel}>care reminders</Text></View>
         </View>
       </Card>
+      <View style={styles.assistantGrid}>
+        <Pressable onPress={() => router.push('/ask-my-home')} style={styles.assistantCard}><ShieldCheck size={19} color={colors.oliveDark}/><Text style={styles.quickTitle}>Ask My Home</Text><Text style={styles.quickBody}>Find answers from your home records</Text></Pressable>
+        <Pressable onPress={() => router.push({ pathname: '/ask-my-home', params: { mode: 'troubleshooting' } })} style={styles.assistantCard}><Wrench size={19} color={colors.oliveDark}/><Text style={styles.quickTitle}>Get help</Text><Text style={styles.quickBody}>Troubleshoot a home issue</Text></Pressable>
+      </View>
 
       <SectionTitle title="Add to your home" />
       <View style={styles.quickGrid}>
@@ -93,7 +98,7 @@ export default function HomeScreen() {
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.deviceRail}>
           {data.devices.slice(0, 5).map((device) => (
             <Pressable key={device.id} onPress={() => router.push({ pathname: '/device/[id]', params: { id: device.id } })} style={({ pressed }) => [styles.deviceCard, pressed && styles.pressed]}>
-              {device.image ? <Image alt={device.name} source={device.image} contentFit="cover" style={styles.deviceImage} /> : <View style={styles.devicePlaceholder}><Text style={styles.deviceInitial}>{device.brand.slice(0, 1)}</Text></View>}
+              {device.image ? <Image alt={device.name} source={device.image} contentFit="cover" style={styles.deviceImage} /> : <View style={styles.devicePlaceholder}><Text style={styles.deviceInitial}>{(device.brand || device.name).slice(0, 1)}</Text></View>}
               <View style={styles.deviceCopy}><Text numberOfLines={1} style={styles.deviceName}>{device.name}</Text><Text style={styles.deviceRoom}>{device.location}</Text></View>
               <View style={[styles.onlineDot, { backgroundColor: device.online === false ? colors.amber : colors.olive }]} />
             </Pressable>
@@ -123,7 +128,7 @@ const styles = StyleSheet.create({
   intro: { paddingTop: 5 }, greeting: { color: colors.muted, fontFamily: fonts.sans, fontSize: 13 }, introTitle: { marginTop: 4, color: colors.navy, fontFamily: fonts.serif, fontSize: 29, lineHeight: 34 },
   error: { borderRadius: 14, padding: 13, color: colors.rust, backgroundColor: '#F8EAE7', fontFamily: fonts.sans, fontSize: 12 },
   setupCard: { padding: 19 }, setupHeading: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }, setupEyebrow: { color: colors.oliveDark, fontFamily: fonts.sans, fontSize: 8, fontWeight: '800', letterSpacing: 1.5 }, setupTitle: { marginTop: 5, color: colors.navy, fontFamily: fonts.serif, fontSize: 21 }, setupCount: { color: colors.oliveDark, fontFamily: fonts.sans, fontSize: 12, fontWeight: '800' }, setupProgress: { height: 5, marginTop: 15, overflow: 'hidden', borderRadius: 3, backgroundColor: colors.oliveWash }, setupProgressFill: { height: '100%', borderRadius: 3, backgroundColor: colors.olive }, setupRows: { marginTop: 11 }, setupRow: { minHeight: 48, flexDirection: 'row', alignItems: 'center', gap: 10, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.line }, setupCheck: { width: 20, height: 20, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.oliveDark }, setupRowText: { flex: 1, color: colors.ink, fontFamily: fonts.sans, fontSize: 11, fontWeight: '700' }, setupRowComplete: { color: colors.muted, textDecorationLine: 'line-through' },
-  heroCard: { padding: 22, backgroundColor: colors.navy, borderColor: colors.navy }, heroTop: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }, heroEyebrow: { color: '#DDE5BE', fontFamily: fonts.sans, fontSize: 9, fontWeight: '800', letterSpacing: 1.7 }, heroScore: { marginTop: 4, color: colors.white, fontFamily: fonts.serif, fontSize: 43 },
+  heroCard: { padding: 22, backgroundColor: colors.navy, borderColor: colors.navy }, heroHeadline: { marginTop: 12, color: colors.white, fontFamily: fonts.serif, fontSize: 28, lineHeight: 34 }, heroAction: { marginTop: 17, alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 12, paddingHorizontal: 15, paddingVertical: 12, backgroundColor: colors.cream }, heroActionText: { color: colors.navy, fontFamily: fonts.sans, fontSize: 12, fontWeight: '800' }, assistantGrid: { flexDirection: 'row', gap: 12 }, assistantCard: { flex: 1, padding: 16, borderRadius: 18, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.paper, gap: 5 }, heroTop: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }, heroEyebrow: { color: '#DDE5BE', fontFamily: fonts.sans, fontSize: 9, fontWeight: '800', letterSpacing: 1.7 }, heroScore: { marginTop: 4, color: colors.white, fontFamily: fonts.serif, fontSize: 43 },
   scoreRing: { width: 66, height: 66, borderRadius: 33, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(221,229,190,0.28)', backgroundColor: 'rgba(255,255,255,0.06)' }, scoreRingText: { marginTop: 2, color: '#DDE5BE', fontFamily: fonts.sans, fontSize: 8, fontWeight: '700' },
   heroMessage: { marginTop: 5, color: 'rgba(255,255,255,0.72)', fontFamily: fonts.sans, fontSize: 13 }, progressTrack: { height: 5, marginTop: 19, borderRadius: 3, overflow: 'hidden', backgroundColor: 'rgba(255,255,255,0.12)' }, progressFill: { height: '100%', borderRadius: 3, backgroundColor: '#AAB86F' },
   heroStats: { marginTop: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, statValue: { color: colors.white, fontFamily: fonts.sans, fontSize: 16, fontWeight: '700' }, statLabel: { marginTop: 2, color: 'rgba(255,255,255,0.52)', fontFamily: fonts.sans, fontSize: 9 }, statDivider: { width: 1, height: 29, backgroundColor: 'rgba(255,255,255,0.12)' },
